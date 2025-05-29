@@ -1,6 +1,7 @@
 import * as Minecraft from '@minecraft/server';
-import * as config from '../config.js';
-import { logDebug, sendMessageToAllAdmins } from '../assets/util.js';
+import CONFIG from '../config.js';
+import { sendMessageToAdmins } from '../assets/util.js';
+import { logDebug } from '../assets/logger.js';
 // Removed i18n import
 
 const world = Minecraft.world;
@@ -67,7 +68,7 @@ function handleReachViolation(player, reachTypeStr, actualDistance, maxAllowedDi
  * @returns {void} This function does not return a value.
  */
 export function initializeReachCheck() {
-    const reachConfig = config.default.combat.reachCheck; // Get the full reach config
+    const reachConfig = CONFIG.combat.reachCheck; // Get the full reach config
     if (!reachConfig || !reachConfig.enabled) {
         return;
     }

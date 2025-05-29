@@ -1,5 +1,6 @@
 import { newCommand } from '../handle.js';
 import { getPlayerByName, sendMessageToAllAdmins } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js';
 
 newCommand({
     name: "kick",

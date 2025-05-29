@@ -1,6 +1,7 @@
 import * as Minecraft from '@minecraft/server';
-import * as config from '../config.js';
-import { logDebug, sendMessageToAdmins } from '../assets/util.js';
+import CONFIG from '../config.js';
+import { sendMessageToAdmins } from '../assets/util.js';
+import { logDebug } from '../assets/logger.js';
 // Removed i18n import
 
 const world = Minecraft.world;
@@ -20,7 +21,7 @@ const system = Minecraft.system;
  * @returns {void} This function does not return a value.
  */
 export function initializeContextualKillauraCheck() {
-    const killauraConfig = config.default.combat?.contextualKillauraCheck;
+    const killauraConfig = CONFIG.combat?.contextualKillauraCheck;
     if (!killauraConfig || !killauraConfig.enabled) {
         return;
     }

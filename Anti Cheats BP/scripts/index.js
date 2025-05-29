@@ -2,7 +2,7 @@ import { world, system } from '@minecraft/server'; // Ensure system and world ar
 import * as Minecraft from '@minecraft/server'; // For types like Player, GameMode, etc.
 
 // Local Script Imports
-import * as config from "./config.js"; // Assuming this is still CONFIG.default structure
+import CONFIG from "./config.js"; // Assuming this is still CONFIG.default structure
 import { i18n } from './assets/i18n.js';
 import "./command/importer.js"; // Still needed for command registration?
 import "./slash_commands.js"; // Still needed for slash command registration?
@@ -78,8 +78,8 @@ system.run(() => { // Final initialization run
 system.run(async () => {
     try {
         const currentVersion = world.getDynamicProperty("ac:version");
-        if (currentVersion !== config.version) { // Assuming config is now CONFIG.default -> CONFIG
-            world.setDynamicProperty("ac:version", config.version);
+        if (currentVersion !== CONFIG.version) { // Assuming config is now CONFIG.default -> CONFIG
+            world.setDynamicProperty("ac:version", CONFIG.version);
             // Potentially send a message to admins about the update if it's a significant version change
             // This could also be part of Initialize() or a dedicated update/migration script.
         }

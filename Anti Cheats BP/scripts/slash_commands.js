@@ -1,6 +1,7 @@
 import * as Minecraft from '@minecraft/server';
-import { logDebug, getPlayerByName, sendMessageToAllAdmins } from './assets/util.js';
-import * as config from './config.js';
+import { getPlayerByName, sendMessageToAllAdmins } from './assets/util.js';
+import { logDebug } from './assets/logger.js';
+import CONFIG from './config.js';
 
 const world = Minecraft.world;
 
@@ -138,7 +139,7 @@ const commandDefinitions = [
          * @returns {void}
          */
         callback: (origin, args) => {
-            const versionMessage = `§r§6[§eAnti Cheats§6]§f Version: §ev${config.default.version}`;
+            const versionMessage = `§r§6[§eAnti Cheats§6]§f Version: §ev${CONFIG.version}`;
             if (origin instanceof Minecraft.Player) {
                 origin.sendMessage(versionMessage);
             } else {
@@ -231,7 +232,7 @@ const commandDefinitions = [
             }
             const targetPlayer = targetPlayers[0]; 
 
-            const validRankIds = Object.keys(config.default.ranks);
+            const validRankIds = Object.keys(CONFIG.ranks);
             if (!validRankIds.includes(rankIdInput)) {
                 const msg = `§cInvalid rankId "${rankIdInput}". Valid ranks are: ${validRankIds.join(", ")}.`;
                 if (origin instanceof Minecraft.Player) origin.sendMessage(msg);
@@ -240,7 +241,7 @@ const commandDefinitions = [
             }
 
             targetPlayer.setDynamicProperty("ac:rankId", rankIdInput);
-            const rankName = config.default.ranks[rankIdInput]?.name || rankIdInput;
+            const rankName = CONFIG.ranks[rankIdInput]?.name || rankIdInput;
 
             const successMsgToOrigin = `§aSuccessfully set ${targetPlayer.name}'s rank to ${rankName}.`;
             if (origin instanceof Minecraft.Player) origin.sendMessage(successMsgToOrigin);
@@ -387,9 +388,9 @@ if (Minecraft.world.commands) {
         }
 
         // Register Aliases for this command
-        if (config.default.aliases) {
-            for (const aliasKey in config.default.aliases) {
-                if (config.default.aliases[aliasKey] === commandDef.baseName) {
+        if (CONFIG.aliases) {
+            for (const aliasKey in CONFIG.aliases) {
+                if (CONFIG.aliases[aliasKey] === commandDef.baseName) {
                     const aliasFullName = "ac:" + aliasKey;
                     // Check if the alias is already defined as a main command to prevent conflicts
                     if (commandDefinitions.some(def => def.name === aliasFullName)) {

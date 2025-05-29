@@ -1,8 +1,8 @@
 import { world, system, Player, EffectType, EntityDamageCause, GameMode } from "@minecraft/server";
-import configData from "../config.js";
+import CONFIG from "../config.js";
 import { i18n } from "../assets/i18n.js"; // Assuming i18n is from assets
 import { sendMessageToAdmins, saveLogToFile, LOG_FILE_PREFIX } from "../assets/util.js";
-import { logDebug } from "../assets/util.js"; // Assuming logDebug is in util.js or assets/util.js
+import { logDebug } from "../assets/logger.js"; // Assuming logDebug is in util.js or assets/util.js
 
 // Define the playerInternalStates Map
 export const playerInternalStates = new Map();
@@ -40,7 +40,7 @@ export function getPlayerState(playerId) {
     }
     return state;
 }
-import { ACModule } from "../classes/module.js";
+import { ModuleStatusManager } from "../classes/module.js";
 import { Vector3utils } from "../classes/vector3.js";
 
 // Log arrays and constants
@@ -49,13 +49,6 @@ export let inMemoryCommandLogs = [];
 export let inMemoryPlayerActivityLogs = [];
 
 let currentTickCounter = 0;
-
-// Beta Features Warning (if used)
-function betaFeatures() {
-    if (configData.enable_beta_features_warning) {
-        world.sendMessage(i18n("system.beta_features_enabled"));
-    }
-}
 
 // --- Main Tick-Based Interval (Fly, Speed, NoFall updates, etc.) ---
 system.runInterval(() => {
@@ -77,44 +70,45 @@ system.runInterval(() => {
         const lastTickPos = state.lastLocation; // Use state.lastLocation
 
         // Update fall distance for NoFall
-        if (ACModule.isActive("nofall")) {
-            let currentFallDistance = state.fallDistanceCustom;
-            if (!isPlayerOnGround && player.location.y < state.lastPositionY) {
-                state.fallDistanceCustom = currentFallDistance + (state.lastPositionY - player.location.y);
-            } else if (isPlayerOnGround) {
-                // If player is on ground, fall distance is typically reset by the entityHurt event
-                // after damage calculation, or here if no damage (e.g. creative mode flight landing)
-                // For now, we only accumulate. Resetting logic is primarily in entityHurt or when changing to fly modes.
-                // If a more immediate reset on landing is needed here (outside of damage):
-                // state.fallDistanceCustom = 0; // Uncomment if reset is desired here always on ground
-            }
-            state.lastPositionY = player.location.y;
-        }
+        // TODO: Was ModuleStatusManager.getModuleStatus("nofall") - module "nofall" not defined. Removed check.
+        // if (ModuleStatusManager.getModuleStatus("nofall")) {
+        //     let currentFallDistance = state.fallDistanceCustom;
+        //     if (!isPlayerOnGround && player.location.y < state.lastPositionY) {
+        //         state.fallDistanceCustom = currentFallDistance + (state.lastPositionY - player.location.y);
+        //     } else if (isPlayerOnGround) {
+        //         // If player is on ground, fall distance is typically reset by the entityHurt event
+        //         // after damage calculation, or here if no damage (e.g. creative mode flight landing)
+        //         // For now, we only accumulate. Resetting logic is primarily in entityHurt or when changing to fly modes.
+        //         // If a more immediate reset on landing is needed here (outside of damage):
+        //         // state.fallDistanceCustom = 0; // Uncomment if reset is desired here always on ground
+        //     }
+        //     state.lastPositionY = player.location.y;
+        // }
 
 
         // --- 10-Tick Interval Checks (Speed, Fly) ---
         if (currentTickCounter % 10 === 0) {
-            const movementSpeed = Vector3Utils.magnitude({ x: playerVelocity.x, y: 0, z: playerVelocity.z }); // Horizontal speed
-            const maxSpeed = player.isSprinting ? configData.max_sprint_speed : configData.max_walk_speed;
+            const movementSpeed = Vector3utils.magnitude({ x: playerVelocity.x, y: 0, z: playerVelocity.z }); // Horizontal speed
+            const maxSpeed = player.isSprinting ? CONFIG.movement.speed.highSpeedThreshold : CONFIG.movement.speed.highSpeedThreshold;
 
             // Speed Check
-            if (ACModule.isActive("speed") && movementSpeed > maxSpeed && !player.hasEffect(EffectType.get("speed")) && !player.isFlying) {
+            if (ModuleStatusManager.getModuleStatus(ModuleStatusManager.Modules.velocityCheck) && movementSpeed > maxSpeed && !player.hasEffect(EffectType.get("speed")) && !player.isFlying) {
                 state.speedVL = (state.speedVL || 0) + 1;
-                if (state.speedVL >= configData.speed_detection_threshold) {
+                if (state.speedVL >= CONFIG.movement.speed.speedViolationThreshold) {
                     sendMessageToAdmins("detection.speed_detected_admin", { player: player.name, speed: movementSpeed.toFixed(2), max_speed: maxSpeed, vl: state.speedVL });
-                    if (configData.speed_punish) { /* Implement punishment */ }
+                    // Removed speed_punish block
                     state.speedVL = 0;
                 }
             }
 
             // Fly Check (basic ground check)
             let lastGroundTime = state.lastGroundTime;
-            if (ACModule.isActive("fly") && !isPlayerOnGround && !player.isFlying && !player.hasEffect(EffectType.get("levitation")) && (system.currentTick - lastGroundTime > configData.fly_max_air_time_ticks)) {
+            if (ModuleStatusManager.getModuleStatus(ModuleStatusManager.Modules.flyCheck) && !isPlayerOnGround && !player.isFlying && !player.hasEffect(EffectType.get("levitation")) && (system.currentTick - lastGroundTime > 200 /* TODO: Revisit fly_max_air_time_ticks, was configData.fly_max_air_time_ticks */)) {
                 // More sophisticated checks: e.g., vertical speed, obstacles, gliding
                 state.flyVL = (state.flyVL || 0) + 1;
-                if (state.flyVL >= configData.fly_detection_threshold) {
+                if (state.flyVL >= CONFIG.movement.fly.flyViolationThreshold) {
                     sendMessageToAdmins("detection.fly_detected_admin", { player: player.name, vl: state.flyVL });
-                    if (configData.fly_punish) { /* Implement punishment */ }
+                    // Removed fly_punish block
                     state.flyVL = 0;
                 }
             } else if (isPlayerOnGround) {
@@ -123,11 +117,11 @@ system.runInterval(() => {
             }
 
             // Nuker VL decay/check
-            if (ACModule.isActive("nuker")) {
+            if (ModuleStatusManager.getModuleStatus(ModuleStatusManager.Modules.nukerCheck)) {
                 let nukerBreakVl = state.nukerVLBreak || 0; // Read from state
-                if (nukerBreakVl > configData.nuker_max_breaks_per_interval) {
+                if (nukerBreakVl > CONFIG.world.nuker.maxBlocks) {
                      sendMessageToAdmins("detection.nuker_detected_admin", { player: player.name, blocks: nukerBreakVl });
-                     if (configData.nuker_punish) { /* punishment */ }
+                     // Removed nuker_punish block
                 }
                 state.nukerVLBreak = 0; // Reset in state
             }
@@ -139,7 +133,7 @@ system.runInterval(() => {
 }, 1); // Run every tick for core checks like NoFall updates
 
 // --- Night Vision Detection Interval ---
-if (ACModule.isActive("nightvision")) {
+if (CONFIG.world.nightVisionDetection.enableNightVisionCheck) {
     system.runInterval(() => {
         for (const player of world.getAllPlayers()) {
             if (player.hasEffect(EffectType.get("night_vision"))) {
@@ -148,41 +142,37 @@ if (ACModule.isActive("nightvision")) {
                 // This requires tracking how players get effects, which is complex.
                 // A simpler check could be if they have it for > X minutes without admin intervention.
                 // For now, this is a placeholder for more specific logic.
-                // Example: if (effect.duration > configData.night_vision_max_duration && !isAdmin(player)) { ... }
+                // Example: if (effect.duration > CONFIG.world.nightVisionDetection.suspicionThreshold && !isAdmin(player)) { ... } // Placeholder for actual config path
             }
         }
-    }, configData.night_vision_check_interval_ticks);
+    }, CONFIG.world.nightVisionDetection.checkIntervalTicks);
 }
 
 // --- Log Saving Interval ---
-if (configData.enable_log_saving) {
-    system.runInterval(() => {
-        if (inMemoryCommandLogs.length > 0) {
-            saveLogToFile(LOG_FILE_PREFIX.COMMAND, inMemoryCommandLogs.map(log => `[${log.timestamp}] ${log.player}: ${log.command}`).join("\n"));
-            inMemoryCommandLogs = []; // Clear after saving
-        }
-        if (inMemoryPlayerActivityLogs.length > 0) {
-            saveLogToFile(LOG_FILE_PREFIX.ACTIVITY, inMemoryPlayerActivityLogs.map(log => `[${log.timestamp}] ${log.player}: ${log.activity}`).join("\n"));
-            inMemoryPlayerActivityLogs = []; // Clear after saving
-        }
-    }, configData.log_save_interval_ticks);
-}
+// Removed if (configData.enable_log_saving) condition
+system.runInterval(() => {
+    if (inMemoryCommandLogs.length > 0) {
+        saveLogToFile(LOG_FILE_PREFIX.COMMAND, inMemoryCommandLogs.map(log => `[${log.timestamp}] ${log.player}: ${log.command}`).join("\n"));
+        inMemoryCommandLogs = []; // Clear after saving
+    }
+    if (inMemoryPlayerActivityLogs.length > 0) {
+        saveLogToFile(LOG_FILE_PREFIX.ACTIVITY, inMemoryPlayerActivityLogs.map(log => `[${log.timestamp}] ${log.player}: ${log.activity}`).join("\n"));
+        inMemoryPlayerActivityLogs = []; // Clear after saving
+    }
+}, 1200 /* TODO: Revisit log_save_interval_ticks, was configData.log_save_interval_ticks */);
+
 
 // --- Vanish Reminder Interval ---
-if (ACModule.isActive("vanish")) {
-    system.runInterval(() => {
-        for (const player of world.getAllPlayers()) {
-            if (player.hasTag("vanished") && player.hasAdmin()) {
-                player.onScreenDisplay.setActionBar(i18n("system.vanish_reminder"));
-            }
+// Removed if (ModuleStatusManager.getModuleStatus("vanish")) condition
+system.runInterval(() => {
+    for (const player of world.getAllPlayers()) {
+        if (player.hasTag("vanished") && player.hasAdmin()) {
+            player.onScreenDisplay.setActionBar(i18n("system.vanish_reminder"));
         }
-    }, configData.vanish_reminder_interval_ticks);
-}
+    }
+}, 6000 /* TODO: Revisit vanish_reminder_interval_ticks, was configData.vanish_reminder_interval_ticks */);
 
-// Call betaFeatures on load if enabled
-betaFeatures();
 
 // No explicit exports needed for the intervals themselves as they are self-running.
 // Log arrays are exported for other modules to use.
 // currentTickCounter is module-local.
-// betaFeatures is module-local and called on load.

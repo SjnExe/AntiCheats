@@ -1,4 +1,5 @@
 import { getPlayerByName, sendMessageToAllAdmins } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js';
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
 

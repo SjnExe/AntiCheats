@@ -1,8 +1,9 @@
 import * as Minecraft from '@minecraft/server';
 import { ActionFormData, MessageFormData, ModalFormData } from '@minecraft/server-ui';
-import { addPlayerToUnbanQueue, copyInv, getPlayerByName, invsee, logDebug, millisecondTime, sendMessageToAllAdmins } from './util.js';
+import { addPlayerToUnbanQueue, copyInv, getPlayerByName, invsee, millisecondTime, sendMessageToAllAdmins } from './util.js';
+import { logDebug } from './logger.js';
 import { ModuleStatusManager } from '../classes/module.js';
-import * as config from "../config.js";
+import CONFIG from "../config.js";
 // import { reportPlayerInternal } from '../command/src/report.js'; // No longer needed here, submitReport will be used
 import { submitReport } from '../systems/report_system.js';      // For submitting player reports
 import { i18n } from './i18n.js'; // Added for localization
@@ -244,7 +245,7 @@ export function showPlayerList(player) {
     if (owners.length > 0) {
         owners.forEach(p => {
             const ownerPrefix = i18n.getText("ui.playerlist.label.owner", { playerName: "" }); // Get prefix if any
-            const rankColor = config.default.ranks.owner.nameColor || "§c";
+            const rankColor = CONFIG.ranks.owner.nameColor || "§c";
             bodyText += `${ownerPrefix}${rankColor}${p.name}§r\n`;
         });
     } else {
@@ -257,7 +258,7 @@ export function showPlayerList(player) {
     if (admins.length > 0) {
         admins.forEach(p => {
             const adminPrefix = i18n.getText("ui.playerlist.label.admin", { playerName: "" }); // Get prefix if any
-            const rankColor = config.default.ranks.admin.nameColor || "§6";
+            const rankColor = CONFIG.ranks.admin.nameColor || "§6";
             bodyText += `${adminPrefix}${rankColor}${p.name}§r\n`;
         });
     } else {
@@ -270,10 +271,10 @@ export function showPlayerList(player) {
     if (normalPlayers.length > 0) {
         normalPlayers.forEach(p => {
             // Attempt to get specific rank color, fallback to member color
-            const playerRankId = p.getDynamicProperty("ac:rankId") || config.default.defaultRank;
-            const rankIdStr = typeof playerRankId === 'string' ? playerRankId : config.default.defaultRank;
-            const rankInfo = config.default.ranks[rankIdStr];
-            const rankColor = rankInfo ? rankInfo.nameColor : (config.default.ranks.member.nameColor || "§a");
+            const playerRankId = p.getDynamicProperty("ac:rankId") || CONFIG.defaultRank;
+            const rankIdStr = typeof playerRankId === 'string' ? playerRankId : CONFIG.defaultRank;
+            const rankInfo = CONFIG.ranks[rankIdStr];
+            const rankColor = rankInfo ? rankInfo.nameColor : (CONFIG.ranks.member.nameColor || "§a");
             // For normal players, usually no prefix like "[Rank]" is used unless specified by rankInfo.displayText
             // For simplicity here, just name with color.
             bodyText += `${rankColor}${p.name}§r\n`;
@@ -635,7 +636,7 @@ function showCommandLogDetailForm(player, logEntry, previousForm) {
 /**
  * Displays a settings selector form to the player.
  * Allows navigation to module settings, config editor, and config debug.
- * If `config.default.other.ownerOnlySettings` is true and player is not an owner, it prompts for owner login.
+ * If `CONFIG.other.ownerOnlySettings` is true and player is not an owner, it prompts for owner login.
  *
  * @export
  * @param {Minecraft.Player} player The player to show the settings selector to.
@@ -644,7 +645,7 @@ function showCommandLogDetailForm(player, logEntry, previousForm) {
  * @throws {Error} If an error occurs during UI display or interaction, especially related to owner login.
  */
 export function settingSelector(player, previousForm){ 
-	if (config.default.other.ownerOnlySettings && !player.isOwner()) return ownerLoginForm(player, settingSelector, previousForm);
+	if (CONFIG.other.ownerOnlySettings && !player.isOwner()) return ownerLoginForm(player, settingSelector, previousForm);
 
 	const form = new ActionFormData()
 		.title("§l§7Server Settings") 
@@ -977,7 +978,7 @@ export async function showBanLogFilterSortForm(player, currentOptions = {}) {
 
 /**
  * Displays an owner login form.
- * If the correct owner password (from `config.default.OWNER_PASSWORD`) is entered,
+ * If the correct owner password (from `CONFIG.OWNER_PASSWORD`) is entered,
  * sets temporary owner status for the player and proceeds to `nextForm`.
  *
  * @param {Minecraft.Player} player The player attempting to log in.
@@ -987,7 +988,7 @@ export async function showBanLogFilterSortForm(player, currentOptions = {}) {
  * @throws {Error} If an error occurs during UI display or interaction.
  */
 function ownerLoginForm(player, nextForm, previousFormForNext){
-	if(!config.default.OWNER_PASSWORD){
+	if(!CONFIG.OWNER_PASSWORD){
 		player.sendMessage(`§6[§eAnti Cheats§6]§4 Error!§c You have not set an owner password inside of the configuration file, access denied.`);
 		if (previousFormForNext) return previousFormForNext(player); 
 		return;
@@ -1000,7 +1001,7 @@ function ownerLoginForm(player, nextForm, previousFormForNext){
 			if (previousFormForNext) return previousFormForNext(player); 
 			return;
 		}
-		if (formData.formValues[0] === config.default.OWNER_PASSWORD) {
+		if (formData.formValues[0] === CONFIG.OWNER_PASSWORD) {
 			player.sendMessage("§6[§eAnti Cheats§6]§a Access granted, you now have owner status.");
 			player.setDynamicProperty("ac:ownerStatus",true);
 			player.setDynamicProperty("ac:rankId" ,"owner"); 
@@ -1042,7 +1043,7 @@ function configDebugForm(player, previousForm){
 		if (formData.canceled) return previousForm(player);
 		switch (formData.selection) {
 			case 0:
-				console.warn(JSON.stringify(config.default));
+				console.warn(JSON.stringify(CONFIG));
 				player.sendMessage(`§6[§eAnti Cheats§6]§f The config was exported to the console`);
                 return configDebugForm(player, previousForm); 
 			case 1:
@@ -1062,7 +1063,7 @@ function configDebugForm(player, previousForm){
 
 /**
  * Displays a configuration editor form.
- * Allows editing different modules of the `config.default` object.
+ * Allows editing different modules of the `CONFIG` object.
  * Requires owner privileges; prompts for login if the player is not an owner.
  *
  * @param {Minecraft.Player} player The player using the config editor.
@@ -1076,7 +1077,7 @@ function configEditorForm(player, previousForm) {
 	const mainConfigForm = new ActionFormData()
 		.title("§l§7Config Editor - Modules") 
 		.body("Select a configuration module to edit its settings."); 
-	const configOptions = Object.keys(config.default).filter(key => typeof config.default[key] === "object");
+	const configOptions = Object.keys(CONFIG).filter(key => typeof CONFIG[key] === "object");
 
 	for (let i = 0; i < configOptions.length; i++) {
 		mainConfigForm.button(configOptions[i], "textures/ui/document_glyph.png"); 
@@ -1093,7 +1094,7 @@ function configEditorForm(player, previousForm) {
 		const configModuleForm = new ModalFormData();
 		configModuleForm.title(`§l§7Edit: ${selectedModule}`); 
 
-		const configModuleOptions = Object.entries(config.default[selectedModule]);
+		const configModuleOptions = Object.entries(CONFIG[selectedModule]);
 		const formFields = []; 
 
 		for (const [key, value] of configModuleOptions) {
@@ -1134,7 +1135,7 @@ function configEditorForm(player, previousForm) {
 
 			formFields.forEach((fieldPath, index) => {
 				const keys = fieldPath.split('.');
-				let target = config.default[selectedModule];
+				let target = CONFIG[selectedModule];
 
 				for (let i = 0; i < keys.length - 1; i++) {
 					target = target[keys[i]];
@@ -1156,7 +1157,7 @@ function configEditorForm(player, previousForm) {
 						break;
 				}
 			});
-			world.setDynamicProperty("ac:config",JSON.stringify(config.default)); 
+			world.setDynamicProperty("ac:config",JSON.stringify(CONFIG)); 
 
 			player.sendMessage(`§6[§eAnti Cheats§6]§r Configuration updated successfully!`);
 		}).catch(e => {
@@ -1453,7 +1454,7 @@ export async function showPlayerList_Public(player) {
 }
 
 export async function showPublicInfoPanel(player) {
-    const uiSettings = config.default.uiSettings;
+    const uiSettings = CONFIG.uiSettings;
     const featuresEnabled = uiSettings.featuresEnabled;
 
     const form = new ActionFormData();
@@ -1519,7 +1520,7 @@ async function showSystemInfo(player) {
     const form = new MessageFormData();
     form.title("System Information");
 
-    const uiSettings = config.default.uiSettings;
+    const uiSettings = CONFIG.uiSettings;
     const serverIP = uiSettings.serverIP || "Not Set";
     const serverPort = uiSettings.serverPort || "Not Set";
     
@@ -1648,7 +1649,7 @@ async function showReportPlayerForm(player) {
 
 async function showCustomLink(player) {
     const form = new MessageFormData();
-    const uiSettings = config.default.uiSettings;
+    const uiSettings = CONFIG.uiSettings;
     const linkTitle = uiSettings.customLinkTitle || "Our Link";
     const linkURL = uiSettings.customLinkURL || "No URL configured.";
 
@@ -1681,7 +1682,7 @@ async function showRules(player) {
     const form = new MessageFormData();
     form.title("Server Rules");
 
-    const uiSettings = config.default.uiSettings;
+    const uiSettings = CONFIG.uiSettings;
     const rules = uiSettings.rules || "No rules defined."; // Fallback if rules are not set
 
     form.body(rules.replace(/\\n/g, '\n')); // Replace escaped newlines with actual newlines for display
@@ -1778,7 +1779,7 @@ async function showServerInfo(player) {
     const form = new MessageFormData();
     form.title("Server Information");
 
-    const uiSettings = config.default.uiSettings;
+    const uiSettings = CONFIG.uiSettings;
     const welcomeMessage = uiSettings.welcomeMessage || "Welcome!";
     const currentTimeTicks = world.getTime(); // Gets total world time in ticks
     // Convert ticks to a more readable format (e.g., Day X, HH:MM)

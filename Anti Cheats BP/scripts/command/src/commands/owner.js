@@ -1,8 +1,9 @@
 // Imports (assuming similar structure to other command files)
 import { world } from "@minecraft/server";
-import * as config from "../../../config.js"; // Path is correct
+import CONFIG from "../../../config.js"; // Path is correct
 import { newCommand as registerCommand } from "../../handle.js"; // Adjusted path and import
-import { logDebug, sendMessageToAllAdmins } from "../../../assets/util.js"; // Path is correct
+import { sendMessageToAllAdmins } from "../../../assets/util.js"; // Path is correct
+import { logDebug } from "../../../assets/logger.js";
 
 registerCommand({
     name: "owner",
@@ -36,7 +37,7 @@ registerCommand({
             return;
         }
 
-        if (providedPassword === config.default.OWNER_PASSWORD) {
+        if (providedPassword === CONFIG.OWNER_PASSWORD) {
             try {
                 world.setDynamicProperty("ac:ownerPlayerName", player.name);
                 player.sendMessage("§aYou have successfully claimed ownership of the Anti Cheats addon!");

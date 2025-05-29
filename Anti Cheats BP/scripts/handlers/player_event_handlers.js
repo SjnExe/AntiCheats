@@ -1,8 +1,8 @@
 import { world, system } from "@minecraft/server"; // Ensure world and system are imported
-import configData from "../config.js";
+import CONFIG from "../config.js";
 import { i18n } from "../assets/i18n.js"; // Assuming i18n is from assets
 import { sendMessageToAdmins } from "../assets/util.js"; // Assuming 효율 is still needed, otherwise remove
-import { ACModule } from "../classes/module.js";
+import { ModuleStatusManager as ACModule } from "../classes/module.js";
 import { seedGlobalBanList } from "../assets/global_ban_list.js"; // Assuming this is used or will be used
 import { inMemoryPlayerActivityLogs, MAX_LOG_ENTRIES, initializePlayerState, removePlayerState } from "../systems/periodic_checks.js";
 
@@ -46,7 +46,7 @@ world.afterEvents.playerJoin.subscribe((eventData) => {
     }
 
     // Welcome message
-    if (configData.enable_welcome_message) {
+    if (CONFIG.uiSettings.welcomeMessage && CONFIG.uiSettings.welcomeMessage.length > 0) {
         player.sendMessage(i18n.getText("system.welcome_message", { player: player.name }, player));
     }
 
@@ -56,11 +56,18 @@ world.afterEvents.playerJoin.subscribe((eventData) => {
     }
 
     // Dynamic property initialization for modules (example)
-    ACModule.getAllModules().forEach(module => {
-        if (module.dynamicProperties && player.getDynamicProperty(module.id) === undefined) {
-            player.setDynamicProperty(module.id, module.defaultDynamicValue);
-        }
-    });
+    // TODO: Revisit module dynamic property initialization. 
+    // The previous ACModule.getAllModules() returned objects with id, dynamicProperties, and defaultDynamicValue.
+    // The new ModuleStatusManager.getValidModules() returns an array of module names (strings).
+    // A different approach is needed here if per-module dynamic properties need to be set on player join.
+    // For now, commenting out to prevent errors.
+    // ACModule.getValidModules().forEach(moduleName => {
+    //     // Example: if a module definition object could be retrieved by name:
+    //     // const moduleDefinition = ACModule.getModuleDefinition(moduleName); // This function doesn't exist
+    //     // if (moduleDefinition && moduleDefinition.dynamicProperties && player.getDynamicProperty(moduleDefinition.id) === undefined) {
+    //     //     player.setDynamicProperty(moduleDefinition.id, moduleDefinition.defaultDynamicValue);
+    //     // }
+    // });
 });
 
 // Player Leave Event
@@ -111,13 +118,7 @@ world.afterEvents.playerSpawn.subscribe((eventData) => {
 world.afterEvents.playerGameModeChange.subscribe((eventData) => {
     const player = eventData.player;
     addPlayerActivityLog(player, `game mode changed from ${eventData.oldGameMode} to ${eventData.newGameMode}`);
-    if (configData.log_gamemode_changes) {
-        sendMessageToAdmins("system.gamemode_change_alert", {
-            player: player.name,
-            old_gamemode: eventData.oldGameMode,
-            new_gamemode: eventData.newGameMode
-        });
-    }
+    // Removed: if (configData.log_gamemode_changes) { ... } block as log_gamemode_changes is not in CONFIG.
 });
 
 // Export functions if they need to be called from elsewhere.

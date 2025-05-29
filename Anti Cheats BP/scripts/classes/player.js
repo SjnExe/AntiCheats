@@ -1,6 +1,7 @@
 import { Player, world, InputPermissionCategory } from "@minecraft/server";
-import { formatMilliseconds, generateBanLog, logDebug, sendMessageToAllAdmins, getPlayerByName } from "../assets/util.js";
-import { ACModule } from "./module.js";
+import { formatMilliseconds, generateBanLog, sendMessageToAllAdmins, getPlayerByName } from "../assets/util.js";
+import { logDebug } from '../assets/logger.js';
+import { ModuleStatusManager as ACModule } from "./module.js";
 import { i18n } from '../assets/i18n.js';
 
 /** @property {number} initialClick - Timestamp of the initial click for CPS calculation. Primarily for internal use by anti-cheat modules. */

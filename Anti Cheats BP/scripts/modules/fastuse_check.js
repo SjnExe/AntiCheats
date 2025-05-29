@@ -1,6 +1,7 @@
 import * as Minecraft from '@minecraft/server';
-import * as config from '../config.js';
-import { logDebug, sendMessageToAdmins } from '../assets/util.js';
+import CONFIG from '../config.js';
+import { sendMessageToAdmins } from '../assets/util.js';
+import { logDebug } from '../assets/logger.js';
 // Removed i18n import
 
 const world = Minecraft.world;
@@ -22,7 +23,7 @@ const playerLastItemUseTime = new Map();
  * @returns {void} This function does not return a value.
  */
 export function initializeFastUseCheck() {
-    const fastUseConfig = config.default.itemInteractions?.fastUseCheck;
+    const fastUseConfig = CONFIG.itemInteractions?.fastUseCheck;
     if (!fastUseConfig || !fastUseConfig.enabled) {
         return;
     }

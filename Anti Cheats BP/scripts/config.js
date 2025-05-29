@@ -293,7 +293,7 @@ export default {
         "k": "kick",
         "m": "mute",
         "um": "unmute",
-        "p": "pardon",
+        "p": "unban",
         "uban": "unban",
         "ofb": "offlineban",
         "ofub": "offlineunban",
@@ -313,6 +313,16 @@ export default {
         "ci": "copyinv",
         "wb": "worldborder",
         "t": "teleport",
-        "tpl": "teleport"
+        "tpl": "teleport",
+        "cbl": "clearbanlogs",
+        "fj": "fakejoin",
+        "n": "notify",
+        "admP": "panel",
+        "rmo": "removeowner",
+        "rp": "report",
+        "snpc": "summon_npc",
+        "tdb": "toggledeviceban",
+        "gui": "ui",
+        "own": "owner"
     }
 }

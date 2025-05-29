@@ -1,7 +1,7 @@
 import { newCommand } from '../handle.js';
-import * as config from '../../config.js';
+import CONFIG from '../../config.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js';
 
 newCommand({
     name:"help",
@@ -25,7 +25,7 @@ newCommand({
             const playerIsAdmin = player.hasAdmin(); // Wrapped
             const playerIsOwner = player.isOwner(); // Wrapped
 
-            let helpMessage = `${i18n.getText("command.help.serverPrefixHeader", {}, player)}§6${config.chat.prefix}§e
+            let helpMessage = `${i18n.getText("command.help.serverPrefixHeader", {}, player)}§6${CONFIG.chat.prefix}§e
 ${i18n.getText("command.help.availableCommandsHeader", {}, player)}
 
 `;

@@ -1,6 +1,6 @@
 import * as Minecraft from '@minecraft/server';
-import { logDebug } from './assets/util.js';
-import * as config from './config.js';
+import { logDebug } from './assets/logger.js';
+import CONFIG from './config.js';
 import { globalBanList } from './assets/global_ban_list.js'; // Added import
 // Removed i18n import
 
@@ -124,8 +124,8 @@ export function Initialize(){
          */
         world.acVersion = world.getDynamicProperty("ac:version");
         if(!world.acVersion){
-            world.setDynamicProperty("ac:version",config.version);
-            world.acVersion = config.version;
+            world.setDynamicProperty("ac:version",CONFIG.version);
+            world.acVersion = CONFIG.version;
         }
 
         /**
@@ -194,8 +194,8 @@ export function Initialize(){
             try {
                 const editedConfig = JSON.parse(editedConfigString);
                 for (const i of Object.keys(editedConfig)) {
-                    if (config.hasOwnProperty(i)) { // Ensure we only update existing config keys
-                        config[i] = editedConfig[i];
+                    if (CONFIG.hasOwnProperty(i)) { // Ensure we only update existing config keys
+                        CONFIG[i] = editedConfig[i];
                     }
                 }
                 // Removed logDebug: Loaded config from dynamic properties.
@@ -244,7 +244,7 @@ export function Initialize(){
                 // Removed logDebug: Existing Owner Found
             } else {
                 // Removed logDebug: No existing owner found
-                const configOwnerName = config.other.ownerPlayerNameManual;
+                const configOwnerName = CONFIG.other.ownerPlayerNameManual;
                 if (typeof configOwnerName === 'string' && configOwnerName.trim() !== '') {
                     world.setDynamicProperty("ac:ownerPlayerName", configOwnerName);
                     // Removed logDebug: Owner designated from config.js

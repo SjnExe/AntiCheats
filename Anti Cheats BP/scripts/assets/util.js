@@ -1,7 +1,8 @@
 import * as Minecraft from "@minecraft/server";
-import * as config from "../config.js";
+import CONFIG from "../config.js";
 import { ModuleStatusManager } from "../classes/module.js";
 import { i18n } from './i18n.js'; // Added for localization
+import { logDebug } from './logger.js';
 const world = Minecraft.world;
 
 /**
@@ -251,24 +252,6 @@ export function scoreboardAction(id, type, displayName){
 }
 
 /**
- * Logs messages to the console if `config.default.other.consoleDebugMode` is true.
- * Prepends "[Anti Cheats]" to the message if it doesn't already start with a bracket `[`,
- * implying a custom prefix.
- *
- * @param {...any} msg - The message(s) or values to log. These will be passed directly to `console.warn`.
- * @returns {void}
- */
-export function logDebug(...msg){
-    if(config.default.other.consoleDebugMode) {
-        if (msg.length > 0 && typeof msg[0] === 'string' && !msg[0].startsWith("[")) {
-            console.warn("[Anti Cheats]", ...msg);
-        } else {
-            console.warn(...msg); // Handles empty msg or msg[0] not being a string / already prefixed
-        }
-    }
-}
-
-/**
  * Adds a player's name to the unban queue. The queue is stored as a JSON string
  * in the "ac:unbanQueue" world dynamic property. Players in this queue are typically
  * unbanned when they next join the server.
@@ -487,7 +470,7 @@ export function sendAnticheatAlert(detectedPlayer, detectionType, detectionValue
 			detectedPlayer.runCommand(`kick "${detectedPlayer.name}" ${i18n.getText("util.alert.autoModKick.playerReason", { module: module, detectionValue: detectionValue })}`);
 		}
 
-		if (config.default.other.sendAlertsToEveryone) {
+		if (CONFIG.other.sendAlertsToEveryone) {
 			world.sendMessage(i18n.getText("util.alert.general", { playerName: detectedPlayer.name, detectionType: detectionType, detectionValue: detectionValue }));
 		} else {
 			sendMessageToAllAdmins("util.alert.general", { playerName: detectedPlayer.name, detectionType: detectionType, detectionValue: detectionValue }, false);
