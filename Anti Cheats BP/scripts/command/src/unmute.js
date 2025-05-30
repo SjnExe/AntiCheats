@@ -1,4 +1,5 @@
-import { getPlayerByName, logDebug, sendMessageToAllAdmins } from '../../assets/util.js';
+import { getPlayerByName, sendMessageToAllAdmins } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Moved logDebug to logger.js
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
 
@@ -44,12 +45,12 @@ newCommand({
             player.sendMessage(i18n.getText("command.unmute.success", { targetName: targetPlayer.name }, player));
             sendMessageToAllAdmins("notify.unmute", { adminName: player.name, targetName: targetPlayer.name }, true);
         } catch (e) {
-            logDebug("[SafeGuard ERROR][unmute]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][unmute]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.unmute.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][unmute] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][unmute] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

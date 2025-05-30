@@ -194,7 +194,7 @@ export function Initialize(){
             try {
                 const editedConfig = JSON.parse(editedConfigString);
                 for (const i of Object.keys(editedConfig)) {
-                    if (CONFIG.hasOwnProperty(i)) { // Ensure we only update existing config keys
+                    if (Object.prototype.hasOwnProperty.call(CONFIG, i)) { // Ensure we only update existing config keys
                         CONFIG[i] = editedConfig[i];
                     }
                 }

@@ -1,6 +1,7 @@
 import * as Minecraft from '@minecraft/server';
 import * as config from '../config.js';
-import { logDebug, sendMessageToAllAdmins } from '../assets/util.js';
+import { sendMessageToAllAdmins } from '../assets/util.js';
+import { logDebug } from '../assets/logger.js'; // Moved logDebug to logger.js
 // Removed i18n import
 
 const world = Minecraft.world;

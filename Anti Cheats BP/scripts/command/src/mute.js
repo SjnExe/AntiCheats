@@ -1,9 +1,9 @@
-import { formatMilliseconds, getPlayerByName, sendMessageToAllAdmins } from '../../assets/util.js';
+import { getPlayerByName } from '../../assets/util.js'; // Removed formatMilliseconds, sendMessageToAllAdmins
 import { logDebug } from '../../assets/logger.js';
 import { newCommand } from '../handle.js';
-import CONFIG from "../../config.js";
+// import CONFIG from "../../config.js"; // Removed CONFIG
 import { i18n } from '../../assets/i18n.js';
-import { world } from '@minecraft/server';
+// import { world } from '@minecraft/server'; // Removed world
 
 newCommand({
 	name: "mute",
@@ -104,12 +104,12 @@ newCommand({
 			// Execute the mute action
 			muteTarget.mute(player,reason,timeInMs); // mute is wrapped
 		} catch (e) {
-			logDebug("[SafeGuard ERROR] Error in mute command:", e, e.stack);
+			logDebug("[Anti Cheats ERROR] Error in mute command:", e, e.stack); // Changed SafeGuard to Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.mute.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR] Failed to send error message to command executor in mute:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR] Failed to send error message to command executor in mute:", sendError, sendError.stack); // Changed SafeGuard to Anti Cheats
                 }
             }
 		}

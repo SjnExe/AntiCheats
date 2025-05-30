@@ -55,12 +55,12 @@ newCommand({
             player.runCommand(`kick "${targetPlayer.name}" ${kickReason}`);
 
         } catch (e) {
-            logDebug("[SafeGuard ERROR] Error in ban command:", e, e.stack);
+            logDebug("[Anti Cheats ERROR] Error in ban command:", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) { // Check if player is defined from data
                 try {
                     data.player.sendMessage(i18n.getText("command.ban.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR] Failed to send error message to command executor in ban command:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR] Failed to send error message to command executor in ban command:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

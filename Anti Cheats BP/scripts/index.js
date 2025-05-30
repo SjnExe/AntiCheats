@@ -1,12 +1,11 @@
 import { world, system } from '@minecraft/server'; // Ensure system and world are imported
-import * as Minecraft from '@minecraft/server'; // For types like Player, GameMode, etc.
-
+// import * as Minecraft from '@minecraft/server'; // Unused Minecraft import
 // Local Script Imports
 import CONFIG from "./config.js"; // Assuming this is still CONFIG.default structure
-import { i18n } from './assets/i18n.js';
+// import { i18n } from './assets/i18n.js'; // Unused i18n import
 import "./command/importer.js"; // Still needed for command registration?
 import "./slash_commands.js"; // Still needed for slash command registration?
-import { ModuleStatusManager } from './classes/module.js';
+// import { ModuleStatusManager } from './classes/module.js'; // Unused ModuleStatusManager import
 
 import "./classes/player.js"; // Player prototype extensions
 import { Initialize } from './initialize.js';
@@ -61,7 +60,8 @@ system.run(() => { // Final initialization run
                     // Assuming player.js extension adds currentGamemode or similar handling
                      player.currentGamemode = player.getGameMode();
                 }
-			} catch (playerError) {
+			} catch (_playerError) { // playerError -> _playerError
+			    // Intentionally empty - errors for individual player setup shouldn't stop others
 			}
 		}
 		
@@ -69,7 +69,8 @@ system.run(() => { // Final initialization run
 		initializeNoSwingCheck(); 
 
 
-	} catch (e) {
+	} catch (_e) { // e -> _e
+	    // Intentionally empty - main initialization errors are logged by Initialize() or other sub-initializers
 	}
 });
 
@@ -83,6 +84,7 @@ system.run(async () => {
             // Potentially send a message to admins about the update if it's a significant version change
             // This could also be part of Initialize() or a dedicated update/migration script.
         }
-    } catch (e) {
+    } catch (_e) { // e -> _e
+        // Intentionally empty - version check failure is not critical
     }
 });

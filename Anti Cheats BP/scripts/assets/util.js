@@ -484,10 +484,10 @@ export function sendAnticheatAlert(detectedPlayer, detectionType, detectionValue
  * PLACEHOLDER FUNCTION: Intended to save log data to a file.
  * Actual file saving is not implemented in vanilla Bedrock scripting.
  * This function currently logs to the console.
- * @param {string} logPrefix - A prefix for the log, e.g., from LOG_FILE_PREFIX.
- * @param {string} logData - The string data to log.
+ * @param {string} _logPrefix - A prefix for the log, e.g., from LOG_FILE_PREFIX (intended for future use).
+ * @param {string} _logData - The string data to log (intended for future use).
  */
-export function saveLogToFile(logPrefix, logData) {
+export function saveLogToFile(_logPrefix, _logData) { // logPrefix -> _logPrefix, logData -> _logData
     // In a real environment with file access, this would write to:
-    // e.g., fs.writeFileSync(`${logPrefix}${new Date().toISOString().split('T')[0]}.log`, logData + '\n', { flag: 'a' });
+    // e.g., fs.writeFileSync(`${_logPrefix}${new Date().toISOString().split('T')[0]}.log`, _logData + '\n', { flag: 'a' });
 }

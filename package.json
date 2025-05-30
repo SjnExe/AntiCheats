@@ -1,0 +1,25 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "## Description",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SjnExe/AntiCheats.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SjnExe/AntiCheats/issues"
+  },
+  "homepage": "https://github.com/SjnExe/AntiCheats#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "eslint-plugin-minecraft-linting": "^2.0.5",
+    "globals": "^16.2.0"
+  }
+}

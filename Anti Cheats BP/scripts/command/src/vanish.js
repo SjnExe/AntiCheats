@@ -1,6 +1,6 @@
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Changed path from util.js to logger.js
 
 newCommand({
     name:"vanish",
@@ -18,12 +18,12 @@ newCommand({
         try {
             data.player.runCommand("function admin_cmds/vanish");
         } catch (e) {
-            logDebug("[SafeGuard ERROR][vanish]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][vanish]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.vanish.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][vanish] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][vanish] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

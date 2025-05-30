@@ -1,5 +1,6 @@
 import { newCommand } from '../handle.js';
-import { getPlayerByName, logDebug } from '../../assets/util.js';
+import { getPlayerByName } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Moved logDebug to logger.js
 import { ACModule } from '../../classes/module.js';
 
 newCommand({

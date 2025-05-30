@@ -1,4 +1,4 @@
-import { world, system, Player, EffectType, EntityDamageCause, GameMode } from "@minecraft/server";
+import { world, system, EffectType } from "@minecraft/server"; // Removed Player, EntityDamageCause, GameMode
 import CONFIG from "../config.js";
 import { i18n } from "../assets/i18n.js"; // Assuming i18n is from assets
 import { sendMessageToAdmins, saveLogToFile, LOG_FILE_PREFIX } from "../assets/util.js";
@@ -67,7 +67,7 @@ system.runInterval(() => {
             continue; 
         }
         state.deepValuableOresBrokenThisTick = 0; // Add this line to reset before any other logic uses it for the current tick
-        const lastTickPos = state.lastLocation; // Use state.lastLocation
+        // const lastTickPos = state.lastLocation; // Unused variable: lastTickPos
 
         // Update fall distance for NoFall
         // TODO: Was ModuleStatusManager.getModuleStatus("nofall") - module "nofall" not defined. Removed check.
@@ -137,7 +137,7 @@ if (CONFIG.world.nightVisionDetection.enableNightVisionCheck) {
     system.runInterval(() => {
         for (const player of world.getAllPlayers()) {
             if (player.hasEffect(EffectType.get("night_vision"))) {
-                const effect = player.getEffect(EffectType.get("night_vision"));
+                // const effect = player.getEffect(EffectType.get("night_vision")); // Unused variable: effect
                 // Check if duration is unnaturally long or amplifier too high if not given by admin commands
                 // This requires tracking how players get effects, which is complex.
                 // A simpler check could be if they have it for > X minutes without admin intervention.

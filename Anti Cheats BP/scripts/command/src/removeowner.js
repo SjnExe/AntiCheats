@@ -1,5 +1,5 @@
 import { world } from "@minecraft/server";
-import { logDebug } from '../../assets/util.js'; // Adjusted path
+import { logDebug } from '../../assets/logger.js'; // Corrected path
 import { newCommand } from '../handle.js';
 
 newCommand({
@@ -26,7 +26,7 @@ newCommand({
                 try {
                     data.player.sendMessage("§cAn error occurred while trying to remove owner status. Please check the console.");
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][removeowner] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][removeowner] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

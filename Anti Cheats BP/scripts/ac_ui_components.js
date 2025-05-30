@@ -1,6 +1,6 @@
 import * as Minecraft from '@minecraft/server';
 import { ActionFormData, MessageFormData, ModalFormData } from '@minecraft/server-ui';
-import { addPlayerToUnbanQueue, copyInv, getPlayerByName, invsee, millisecondTime, sendMessageToAllAdmins } from './assets/util.js';
+import { addPlayerToUnbanQueue, copyInv, invsee, millisecondTime, sendMessageToAllAdmins } from './assets/util.js'; // Removed getPlayerByName
 import { logDebug } from './assets/logger.js';
 import { ModuleStatusManager as ACModule } from './classes/module.js'; 
 import CONFIG from "./config.js"; 
@@ -179,7 +179,7 @@ export function banLogForm(player, previousFormCallback){
                                 let currentLogsArr;
                                 try {
                                     currentLogsArr = JSON.parse(currentLogsRaw);
-                                } catch (e) {
+                                } catch (_e) { // e -> _e
                                     player.sendMessage("§cError processing existing ban logs for deletion.");
                                     banLogForm(player, previousFormCallback);
                                     return;
@@ -335,7 +335,7 @@ export function configEditorForm(player, previousFormCallback) {
                         let currentConfig = world.getDynamicProperty("ac:config");
                         let parsedConfig = {};
                         if (currentConfig && typeof currentConfig === 'string') {
-                            try { parsedConfig = JSON.parse(currentConfig); } catch (e) { console.warn("Error parsing dynamic config, starting fresh."); }
+                            try { parsedConfig = JSON.parse(currentConfig); } catch (_e) { console.warn("Error parsing dynamic config, starting fresh."); } // e -> _e
                         } else { 
                             parsedConfig = JSON.parse(JSON.stringify(CONFIG)); 
                         }
@@ -358,7 +358,7 @@ export function configEditorForm(player, previousFormCallback) {
                                         case "boolean":
                                                 targetObject[finalKey] = Boolean(newValue);
                                                 break;
-                                        case "number":
+                                        case "number": {
                                                 // Ensure CONFIG[selectedModule][finalKey] or similar path exists for default value
                                                 let defaultValueNum = 0;
                                                 let tempTarget = CONFIG[selectedModule];
@@ -367,6 +367,7 @@ export function configEditorForm(player, previousFormCallback) {
 
                                                 targetObject[finalKey] = isNaN(parseFloat(String(newValue))) ? defaultValueNum : parseFloat(String(newValue));
                                                 break;
+                                        }
                                         case "string":
                                                 targetObject[finalKey] = String(newValue);
                                                 break;
@@ -471,21 +472,24 @@ export function playerActionForm(player,targetPlayer, previousFormCallback){
                 sendMessageToAllAdmins(`§6[§eAnti Cheats Notify§6]§5§l ${player.name} §bperformed ${playerActions[action]} on§l§5 ${targetPlayer.name}! §r`,true);
 
                 switch(action){
-                        case 0: // Ban Player
+                        case 0: { // Ban Player
                                 banForm(player,targetPlayer,"slow",reason);
                                 if (previousFormCallback) previousFormCallback(player); 
                                 break;
-                        case 1: // Kick Player
+                        }
+                        case 1: { // Kick Player
                                 player.runCommand(`kick "${targetPlayer.name}" ${reason}`); 
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 2: // Warn Player
+                        }
+                        case 2: { // Warn Player
                                 targetPlayer.setWarning("manual"); 
                                 targetPlayer.sendMessage(`§6[§eAnti Cheats§6]§r§4§l You were warned!${reason ? ` Reason: §c${reason}` : ""}`);
                                 player.sendMessage(`§6[§eAnti Cheats§6]§r Successfully warned player §e${targetPlayer.name}`);
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 3: // Freeze Player
+                        }
+                        case 3: { // Freeze Player
                                 if (targetPlayer.getDynamicProperty("ac:freezeStatus")) {
                                     player.sendMessage(`§6[§eAnti Cheats§6]§f §e${targetPlayer.name}§f is already frozen.`);
                                 } else {
@@ -495,19 +499,23 @@ export function playerActionForm(player,targetPlayer, previousFormCallback){
                                 }
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 4: // Mute Player
+                        }
+                        case 4: { // Mute Player
                                 targetPlayer.mute(player,reason,-1); 
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 5: // View Inventory
+                        }
+                        case 5: { // View Inventory
                                 invsee(player,targetPlayer); 
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 6: // Copy Inventory
+                        }
+                        case 6: { // Copy Inventory
                                 copyInv(player,targetPlayer); 
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 7: // Unmute Player
+                        }
+                        case 7: { // Unmute Player
                                 if (!targetPlayer.isMuted) { 
                                         player.sendMessage(`§6[§eAnti Cheats§6]§f Player §e${targetPlayer.name}§f is not muted.`);
                                 } else {
@@ -517,7 +525,8 @@ export function playerActionForm(player,targetPlayer, previousFormCallback){
                                 }
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 8: // Unfreeze Player
+                        }
+                        case 8: { // Unfreeze Player
                                 if (!targetPlayer.getDynamicProperty("ac:freezeStatus")) {
                                     player.sendMessage(`§6[§eAnti Cheats§6]§f §e${targetPlayer.name}§f is not frozen.`);
                                 } else {
@@ -527,11 +536,13 @@ export function playerActionForm(player,targetPlayer, previousFormCallback){
                                 }
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
-                        case 9: // Remove All Warnings
+                        }
+                        case 9: { // Remove All Warnings
                                 targetPlayer.clearWarnings(); 
                                 player.sendMessage(`§6[§eAnti Cheats§6]§r Successfully reset all warnings of §e${targetPlayer.name}`);
                                 if (previousFormCallback) previousFormCallback(player);
                                 break;
+                        }
                 }
         })
 }

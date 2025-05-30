@@ -2,7 +2,7 @@ import { world, system } from "@minecraft/server"; // Ensure world and system ar
 import CONFIG from "../config.js";
 import { i18n } from "../assets/i18n.js"; // Assuming i18n is from assets
 import { sendMessageToAdmins } from "../assets/util.js"; // Assuming 효율 is still needed, otherwise remove
-import { ModuleStatusManager as ACModule } from "../classes/module.js";
+// import { ModuleStatusManager as ACModule } from "../classes/module.js"; // Removed unused ACModule
 import { seedGlobalBanList } from "../assets/global_ban_list.js"; // Assuming this is used or will be used
 import { inMemoryPlayerActivityLogs, MAX_LOG_ENTRIES, initializePlayerState, removePlayerState } from "../systems/periodic_checks.js";
 

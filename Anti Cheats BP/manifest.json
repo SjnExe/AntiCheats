@@ -2,17 +2,18 @@
   "format_version": 2,
   "header": {
     "name": "Anti Cheats BP",
-    "description": "Anti Cheats Behaviour Pack V__VERSION_STRING__.",
+    "description": "Anti Cheats Behavior Pack v1.0.0",
     "uuid": "1564bfa3-6796-4b67-826a-03ca1ac2f3c1",
     "min_engine_version": [
       1,
       21,
       80
     ],
-    "version": "__VERSION_ARRAY__"
+    "version": [1, 0, 0]
   },
   "modules": [
     {
+      "description": "Behavior pack data and functions.",
       "type": "data",
       "uuid": "623bbed8-14c8-45c3-893b-c0492855b668",
       "version": [
@@ -22,6 +23,7 @@
       ]
     },
     {
+      "description": "Core scripting module for Anti Cheats.",
       "type": "script",
       "language": "javascript",
       "entry": "scripts/index.js",
@@ -48,7 +50,7 @@
     },
     {
       "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
-      "version": "__VERSION_ARRAY__"
+      "version": [1, 0, 0]
     }
   ]
 }

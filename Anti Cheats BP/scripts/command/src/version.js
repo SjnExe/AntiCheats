@@ -1,17 +1,17 @@
 import { newCommand } from '../handle.js';
 import * as config from '../../config.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Changed path from util.js to logger.js
 
 // Define a reusable function to get the version message
 /**
- * Retrieves a formatted string containing the SafeGuard version from the configuration.
+ * Retrieves a formatted string containing the Anti Cheats version from the configuration.
  *
  * @export
- * @returns {string} The SafeGuard version message string (e.g., "§r§6[§eSafeGuard§6]§f Version: §evX.Y.Z").
+ * @returns {string} The Anti Cheats version message string (e.g., "§r§6[§eAnti Cheats§6]§f Version: §evX.Y.Z").
  */
-export function getSafeGuardVersionMessage() {
-    return i18n.getText("command.version.message", { version: config.default.version });
+export function getAntiCheatsVersionMessage() { // Renamed function
+    return i18n.getText("command.version.message", { version: config.default.version }); // Assuming i18n key will be updated
 }
 
 newCommand({
@@ -20,7 +20,7 @@ newCommand({
     adminOnly: false,
     /**
      * Executes the version command.
-     * Sends the current SafeGuard version message to the command executor.
+     * Sends the current Anti Cheats version message to the command executor.
      *
      * @param {object} data - The data object provided by the command handler.
      * @param {Minecraft.Player} data.player - The player who executed the command.
@@ -28,9 +28,9 @@ newCommand({
      */
     run: (data) => {
         try {
-            data.player.sendMessage(getSafeGuardVersionMessage()); // API Call
+            data.player.sendMessage(getAntiCheatsVersionMessage()); // API Call, renamed function
         } catch (e) {
-            logDebug("[SafeGuard ERROR][version]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][version]", e, e.stack); // SafeGuard -> Anti Cheats
             // Attempt to notify the player if possible, though sendMessage itself might be the issue
             if (data && data.player) {
                 try {
@@ -39,7 +39,7 @@ newCommand({
                          data.player.sendMessage(i18n.getText("command.version.error", {}, data.player));
                     }
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][version] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][version] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

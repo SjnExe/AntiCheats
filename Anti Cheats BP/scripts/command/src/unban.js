@@ -1,6 +1,7 @@
-import { addPlayerToUnbanQueue, getPlayerByName } from '../../assets/util.js';
+import { addPlayerToUnbanQueue } from '../../assets/util.js'; // Removed getPlayerByName
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
+import { logDebug } from '../../assets/logger.js'; // Added import for logDebug
 
 newCommand({
     name:"unban",
@@ -26,12 +27,12 @@ newCommand({
 
             addPlayerToUnbanQueue(player,setNameUnban); // Already wrapped in util.js
         } catch (e) {
-            logDebug("[SafeGuard ERROR][unban]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][unban]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.unban.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][unban] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][unban] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

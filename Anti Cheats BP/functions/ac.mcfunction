@@ -11,8 +11,8 @@ scoreboard players set @a[scores={ac:setup_success=0,ac:gametest_on=0}] ac:setup
 
 # Add necessary tags and disable command feedback
 tag @s add admin
-gamerule sendcommandfeedback false
-gamerule commandblockoutput false
+gamerule sendCommandFeedback false
+gamerule commandBlockOutput false
 
 tellraw @s[scores={ac:setup_success=3..}] {"rawtext":[{"text":"§6[§eAnti Cheats§6]§r§c§l "},{"text":"SETUP ERROR: §r§4AntiCheat already setup!§r"}]}
 

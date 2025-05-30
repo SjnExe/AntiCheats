@@ -7,7 +7,7 @@ import { commandHandler } from "../command/handle.js";
 import { inMemoryCommandLogs, MAX_LOG_ENTRIES } from "../systems/periodic_checks.js"; // This will be created later
 
 // Function to handle muting players
-function handleMute(player, message) {
+function handleMute(player, _message) { // message -> _message
     if (player.hasTag("is_muted")) {
         player.sendMessage(i18n.getText("system.muted", {}, player));
         return true;
@@ -16,7 +16,7 @@ function handleMute(player, message) {
 }
 
 // Function to handle anti-spam
-function handleAntiSpam(player, message) {
+function handleAntiSpam(player, _message) { // message -> _message
     const now = Date.now();
     const playerSpamData = player.getDynamicProperty("spam_data") || { messages: [], lastMessageTime: 0 };
     const messageLimit = CONFIG.chat.spammer.maxMessageCharLimit;

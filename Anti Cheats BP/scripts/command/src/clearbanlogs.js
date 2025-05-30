@@ -1,5 +1,6 @@
 import { world } from '@minecraft/server';
 import { newCommand } from '../handle.js';
+import { logDebug } from '../../assets/logger.js';
 
 newCommand({
     name:"clearbanlogs",

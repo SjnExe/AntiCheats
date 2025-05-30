@@ -1,6 +1,6 @@
 import { newCommand } from '../handle.js';
 import { world } from '@minecraft/server';
-import { logDebug } from "../../assets/util.js";
+import { logDebug } from "../../assets/logger.js";
 
 newCommand({
     name: "offlineban",

@@ -1,4 +1,4 @@
-import { world, Player } from '@minecraft/server';
+import { world } from '@minecraft/server'; // Removed Player import
 // import * as config from '../config.js'; // If maxReports becomes configurable
 // import { sendMessageToAdmins } from '../assets/util.js'; // If a utility function is preferred for admin notifications
 

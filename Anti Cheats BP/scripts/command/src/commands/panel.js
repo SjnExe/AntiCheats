@@ -11,7 +11,7 @@ export default {
     // The command handler might interpret a 'permission' field, but the subtask specified to rely on the execute check.
     showInHelp: true, 
 
-    execute(player, args, data) {
+    execute(player, _args, _data) { // args -> _args, data -> _data
         // player object is expected to be an instance of Minecraft.Player,
         // which should have the hasAdmin() method as defined in player.js
         if (player.hasAdmin()) {

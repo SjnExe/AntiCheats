@@ -1,7 +1,7 @@
-import { world, system, ItemStack, BlockPermutation } from "@minecraft/server";
+import { world, system } from "@minecraft/server"; // Removed ItemStack, BlockPermutation
 import configData from "../config.js";
 import { i18n } from "../assets/i18n.js"; // Assuming i18n is from assets
-import { sendMessageToAdmins, getScore, getPlayerRank } from "../assets/util.js";
+import { sendMessageToAdmins } from "../assets/util.js"; // Removed getScore, getPlayerRank
 import { ACModule } from "../classes/module.js";
 import { showAdminPanel } from "../forms/admin_panel.js"; // Ensure this path is correct
 import { getPlayerState } from '../systems/periodic_checks.js'; // Import for player state

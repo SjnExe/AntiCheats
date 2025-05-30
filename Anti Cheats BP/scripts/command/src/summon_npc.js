@@ -1,6 +1,6 @@
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Changed path from util.js to logger.js
 
 newCommand({
     name:"summon_npc",
@@ -18,12 +18,12 @@ newCommand({
         try {
             data.player.runCommand("function admin_cmds/summon_npc");
         } catch (e) {
-            logDebug("[SafeGuard ERROR][summon_npc]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][summon_npc]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.summon_npc.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][summon_npc] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][summon_npc] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

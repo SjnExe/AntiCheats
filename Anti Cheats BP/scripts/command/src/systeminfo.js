@@ -1,6 +1,7 @@
-import { getPlayerByName } from "../../assets/util";
-import { newCommand } from "../handle";
+import { getPlayerByName } from "../../assets/util.js"; // Added .js
+import { newCommand } from "../handle.js"; // Added .js
 import {MemoryTier} from "@minecraft/server";
+import { logDebug } from "../../assets/logger.js"; // Added import for logDebug
 
 newCommand({
     name:"systeminfo",
@@ -22,14 +23,14 @@ newCommand({
             const targetPlayer = getPlayerByName(targetPlayerName); // Already wrapped
             
             if (!targetPlayer) {
-                player.sendMessage(`§6[§eSafeGuard§6]§f Player §e${targetPlayerName}§f was not found`);
+                player.sendMessage(`§6[§eAnti Cheats§6]§f Player §e${targetPlayerName}§f was not found`); // SafeGuard -> Anti Cheats
                 return;
             }
             
             const clientInfo = targetPlayer.clientSystemInfo; // API access
             if (!clientInfo) {
-                player.sendMessage(`§6[§eSafeGuard§6]§c Could not retrieve client system info for §e${targetPlayer.name}.`);
-                logDebug(`[SafeGuard ERROR][systeminfo] clientSystemInfo was null or undefined for ${targetPlayer.name}`);
+                player.sendMessage(`§6[§eAnti Cheats§6]§c Could not retrieve client system info for §e${targetPlayer.name}.`); // SafeGuard -> Anti Cheats
+                logDebug(`[Anti Cheats ERROR][systeminfo] clientSystemInfo was null or undefined for ${targetPlayer.name}`); // SafeGuard -> Anti Cheats
                 return;
             }
 
@@ -37,12 +38,12 @@ newCommand({
 
             player.sendMessage(`§eClient Info for §6${targetPlayer.name}§e: \n\nMax Render Distance: §6${maxRenderDistance}§e\nMemory: §6${Object.keys(MemoryTier)[memoryTier]}§e\nPlatform: §6${platformType}`); // API Call
         } catch (e) {
-            logDebug("[SafeGuard ERROR][systeminfo]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][systeminfo]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage("§cAn error occurred while trying to get system info. Please check the console.");
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][systeminfo] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][systeminfo] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

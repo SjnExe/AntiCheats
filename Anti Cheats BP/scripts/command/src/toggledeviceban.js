@@ -1,7 +1,7 @@
 import { PlatformType, world } from '@minecraft/server';
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Changed path from util.js to logger.js
 
 newCommand({
     name:"toggledeviceban",
@@ -68,12 +68,12 @@ newCommand({
             world.safeguardDeviceBan = bannedDevices; // Update the global variable
             world.setDynamicProperty("safeguard:deviceBan", JSON.stringify(world.safeguardDeviceBan)); // API Call
         } catch (e) {
-            logDebug("[SafeGuard ERROR][toggledeviceban]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][toggledeviceban]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.toggledeviceban.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][toggledeviceban] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][toggledeviceban] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }

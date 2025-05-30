@@ -1,6 +1,6 @@
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Changed path from util.js to logger.js
 
 newCommand({
     name:"clearchat",

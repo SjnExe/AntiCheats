@@ -1,7 +1,7 @@
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
 import configData from '../../config.js'; // For command prefix
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Corrected path for logDebug
 
 newCommand({
     name: "mylanguage",
@@ -19,7 +19,7 @@ newCommand({
         }
 
         const langCode = args[1].toLowerCase(); // Normalize to lowercase, e.g., en_us
-        const availableLanguages = i18n.getAvailableLanguages().map(l => l.toLowerCase()); // Normalize for comparison
+        // const availableLanguages = i18n.getAvailableLanguages().map(l => l.toLowerCase()); // Unused variable removed
 
         // Attempt to find a matching language code, handling potential case differences like en_US vs en_us
         let matchedLangCode = null;

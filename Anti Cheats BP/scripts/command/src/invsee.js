@@ -1,6 +1,7 @@
 import { newCommand } from '../handle.js';
 import { getPlayerByName, invsee, sendMessageToAllAdmins } from '../../assets/util.js';
 import { i18n } from '../../assets/i18n.js';
+import { logDebug } from '../../assets/logger.js';
 
 newCommand({
     name:"invsee",
@@ -37,12 +38,12 @@ newCommand({
             
             invsee(data.player, targetPlayer); // Already wrapped in util.js
         } catch (e) {
-            logDebug("[SafeGuard ERROR] Error in invsee command:", e, e.stack);
+            logDebug("[Anti Cheats ERROR] Error in invsee command:", e, e.stack); // Changed SafeGuard to Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.invsee.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR] Failed to send error message to command executor in invsee:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR] Failed to send error message to command executor in invsee:", sendError, sendError.stack); // Changed SafeGuard to Anti Cheats
                 }
             }
         }

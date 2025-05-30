@@ -1,11 +1,11 @@
 import * as Minecraft from '@minecraft/server';
 import CONFIG from '../config.js';
-import { sendMessageToAdmins } from '../assets/util.js';
+import { sendMessageToAllAdmins } from '../assets/util.js'; // Changed to sendMessageToAllAdmins
 import { logDebug } from '../assets/logger.js';
 // Removed i18n import
 
 const world = Minecraft.world;
-const system = Minecraft.system;
+// const system = Minecraft.system; // Unused variable
 
 // We might need to track player states if direct properties aren't available.
 // e.g., const playersUsingItems = new Set(); // player.id
@@ -53,7 +53,7 @@ export function initializeContextualKillauraCheck() {
      * @returns {void}
      */
     world.afterEvents.entityHitEntity.subscribe(event => {
-        const { damagingEntity, hitEntity } = event;
+        const { damagingEntity } = event; // Removed unused hitEntity
 
         if (!(damagingEntity instanceof Minecraft.Player)) {
             return;
@@ -101,7 +101,7 @@ export function initializeContextualKillauraCheck() {
             if (violations >= killauraConfig.violationThreshold) {
                 player.setDynamicProperty("ac:contextKillauraViolations", 0); 
 
-                sendMessageToAdmins("modules.contextualKillaura.notify.adminFlag", {
+                sendMessageToAllAdmins("modules.contextualKillaura.notify.adminFlag", { // Changed to sendMessageToAllAdmins
                     playerName: player.name,
                     violationType: violationType
                 });

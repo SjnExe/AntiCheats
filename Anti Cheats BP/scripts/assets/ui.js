@@ -1,6 +1,6 @@
 import * as Minecraft from '@minecraft/server';
 import { ActionFormData, MessageFormData, ModalFormData } from '@minecraft/server-ui';
-import { addPlayerToUnbanQueue, copyInv, getPlayerByName, invsee, millisecondTime, sendMessageToAllAdmins } from './util.js';
+import { addPlayerToUnbanQueue, copyInv, invsee, millisecondTime, sendMessageToAllAdmins } from './util.js'; // Removed getPlayerByName
 import { logDebug } from './logger.js';
 import { ModuleStatusManager } from '../classes/module.js';
 import CONFIG from "../config.js";
@@ -18,10 +18,10 @@ const UI_LOG_CACHE_DURATION_MS = 3000; // Cache for 3 seconds
 /**
  * Retrieves and parses logs from a dynamic property, utilizing a short-lived cache.
  * @param {string} dynamicPropertyKey The key of the dynamic property.
- * @param {string} logTypeNameForError A user-friendly name for the log type for error messages.
+ * @param {string} _logTypeNameForError A user-friendly name for the log type for error messages (currently unused).
  * @returns {Array<object>} The parsed array of log objects.
  */
-function getLogsFromPropertyWithCache(dynamicPropertyKey, logTypeNameForError) {
+function getLogsFromPropertyWithCache(dynamicPropertyKey, _logTypeNameForError) { // logTypeNameForError -> _logTypeNameForError
     const cached = uiLogCache[dynamicPropertyKey];
     const currentTime = Date.now();
     const rawLogs = world.getDynamicProperty(dynamicPropertyKey); // Read current raw string
@@ -319,7 +319,7 @@ export function showPlayerList(player) {
  */
 export function showSystemInformation(player, previousForm) { 
 	if (!player.hasAdmin()) {
-		player.tell("§cYou do not have permission to view system information.");
+		player.tell("§6[§eAnti Cheats§6]§r §cYou do not have permission to view system information.");
 		return previousForm(player); // Go back if not admin
 	}
 
@@ -382,7 +382,7 @@ export function showSystemInformation(player, previousForm) {
         }).catch(e => {
 		logDebug(`[UI Error][showSystemInformation]: ${e} ${e.stack}`);
 		if (player && typeof player.sendMessage === 'function') {
-			player.sendMessage("§cAn error occurred while displaying system information.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred while displaying system information.");
 		}
 		if (previousForm) { 
 			previousForm(player);
@@ -402,7 +402,7 @@ export function showSystemInformation(player, previousForm) {
  */
 export function showAdminPanelMain(player) {
 	if (!player.hasAdmin()) {
-		return player.tell("§cYou do not have permission to access the admin panel.");
+		return player.tell("§6[§eAnti Cheats§6]§r §cYou do not have permission to access the admin panel.");
 	}
 
 	const form = new ActionFormData()
@@ -451,7 +451,7 @@ export function showAdminPanelMain(player) {
 	}).catch(e => {
 		logDebug(`[Anti Cheats UI Error][showAdminPanelMain]: ${e} ${e.stack}`);
 		if (player && typeof player.sendMessage === 'function') {
-			player.sendMessage("§cAn error occurred with the Admin Panel UI. Please try again.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred with the Admin Panel UI. Please try again.");
 		}
 	});
 }
@@ -472,14 +472,14 @@ export function showAdminPanelMain(player) {
  */
 function _createBasicLogViewerListForm(player, previousForm, options) {
     if (!player.hasAdmin()) {
-        player.tell(`§cYou do not have permission to view ${options.logTypeName} logs.`);
+        player.tell(`§6[§eAnti Cheats§6]§r §cYou do not have permission to view ${options.logTypeName} logs.`);
         if (previousForm) return previousForm(player);
         return;
     }
 
     let logsArray = getLogsFromPropertyWithCache(options.dynamicPropertyKey, options.logTypeName);
     if (logsArray.length === 0 && typeof world.getDynamicProperty(options.dynamicPropertyKey) === 'string' && world.getDynamicProperty(options.dynamicPropertyKey) !== '[]') {
-        player.sendMessage(`§cError reading ${options.logTypeName} logs. Data might be corrupted or empty.`);
+        player.sendMessage(`§6[§eAnti Cheats§6]§r §cError reading ${options.logTypeName} logs. Data might be corrupted or empty.`);
     }
 
 
@@ -521,7 +521,7 @@ function _createBasicLogViewerListForm(player, previousForm, options) {
         }
     }).catch(e => {
         logDebug(`[Anti Cheats UI Error][${options.formTitle}]: ${e} ${e.stack}`);
-        player.sendMessage(`§cAn error occurred while displaying ${options.logTypeName} logs.`);
+        player.sendMessage(`§6[§eAnti Cheats§6]§r §cAn error occurred while displaying ${options.logTypeName} logs.`);
         if (previousForm) previousForm(player);
     });
 }
@@ -572,11 +572,11 @@ function showPlayerActivityLogDetailForm(player, logEntry, previousForm) {
 	form.button1("§cBack");
 	form.button2("§7 "); // Dummy
 
-	form.show(player).then((response) => {
+	form.show(player).then((_response) => { // response -> _response
 		if (previousForm) return previousForm(player);
 	}).catch(e => {
 		logDebug(`[Anti Cheats UI Error][showPlayerActivityLogDetailForm]: ${e} ${e.stack}`);
-		player.sendMessage("§cAn error occurred while displaying the log detail.");
+		player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred while displaying the log detail.");
 		if (previousForm) previousForm(player);
 	});
 }
@@ -624,11 +624,11 @@ function showCommandLogDetailForm(player, logEntry, previousForm) {
 	form.button1("§cBack"); 
 	form.button2("§7 ");    
 
-	form.show(player).then((response) => {
+	form.show(player).then((_response) => { // response -> _response
 		if (previousForm) return previousForm(player);
 	}).catch(e => {
 		logDebug(`[Anti Cheats UI Error][showCommandLogDetailForm]: ${e} ${e.stack}`);
-		player.sendMessage("§cAn error occurred while displaying the log detail.");
+		player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred while displaying the log detail.");
 		if (previousForm) previousForm(player);
 	});
 }
@@ -678,7 +678,7 @@ export function settingSelector(player, previousForm){
 	}).catch(e => {
 		logDebug(`[Anti Cheats UI Error][settingSelector]: ${e} ${e.stack}`);
 		if (player && typeof player.sendMessage === 'function') {
-			player.sendMessage("§cAn error occurred with the UI. Please try again.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred with the UI. Please try again.");
 		}
 	});
 }
@@ -702,7 +702,7 @@ export function settingSelector(player, previousForm){
 export function banLogForm(player, previousForm, filterOptions = {}) {
     let allLogs = getLogsFromPropertyWithCache("ac:banLogs", "ban");
     if (allLogs.length === 0 && typeof world.getDynamicProperty("ac:banLogs") === 'string' && world.getDynamicProperty("ac:banLogs") !== '[]') {
-        player.sendMessage("§6[§eAnti Cheats§6]§c Error reading ban logs. Data might be corrupted or empty.");
+        player.sendMessage("§6[§eAnti Cheats§6]§r §cError reading ban logs. Data might be corrupted or empty.");
     }
 
     const defaultSortBy = "date";
@@ -855,7 +855,7 @@ export function banLogForm(player, previousForm, filterOptions = {}) {
 			if (confirmData.selection === 0 && player.isOwner()) { 
 				const selectedLogId = banLog.logId; 
 				if (!selectedLogId) {
-					player.sendMessage("§6[§eAnti Cheats§6]§c Error: Selected log entry does not have a unique ID. Cannot delete.");
+					player.sendMessage("§6[§eAnti Cheats§6]§r §cError: Selected log entry does not have a unique ID. Cannot delete.");
 					logDebug("[Anti Cheats UI Error][banLogFormConfirm] Selected log for deletion is missing a logId:", banLog);
 					return banLogForm(player, previousForm);
 				}
@@ -867,7 +867,7 @@ export function banLogForm(player, previousForm, filterOptions = {}) {
 					if (!Array.isArray(currentLogsArray)) throw new Error("Ban logs are not an array.");
 				} catch (error) {
 					logDebug("[Anti Cheats UI] Error parsing banLogs JSON in banLogForm (delete log):", error, `Raw: ${currentLogsString}`);
-					player.sendMessage("§6[§eAnti Cheats§6]§c Error processing ban logs for deletion. Data might be corrupted.");
+					player.sendMessage("§6[§eAnti Cheats§6]§r §cError processing ban logs for deletion. Data might be corrupted.");
 					return banLogForm(player, previousForm);
 				}
 
@@ -891,13 +891,13 @@ export function banLogForm(player, previousForm, filterOptions = {}) {
 		}).catch(e => {
 			logDebug(`[Anti Cheats UI Error][banLogFormConfirm]: ${e} ${e.stack}`);
 			if (player && typeof player.sendMessage === 'function') {
-				player.sendMessage("§cAn error occurred with the UI. Please try again.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred with the UI. Please try again.");
 			}
 		});
 	}).catch(e => {
 		logDebug(`[Anti Cheats UI Error][banLogFormInitial]: ${e} ${e.stack}`);
 		if (player && typeof player.sendMessage === 'function') {
-			player.sendMessage("§cAn error occurred with the UI. Please try again.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred with the UI. Please try again.");
 		}
 	});
 }
@@ -970,7 +970,7 @@ export async function showBanLogFilterSortForm(player, currentOptions = {}) {
 	} catch (e) {
 		logDebug(`[UI Error][showBanLogFilterSortForm]: ${e} ${e.stack}`);
 		if (player && typeof player.sendMessage === 'function') {
-			player.sendMessage("§cAn error occurred with the Filter & Sort Logs form. Please try again.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred with the Filter & Sort Logs form. Please try again.");
 		}
 		return null; 
 	}
@@ -1188,6 +1188,8 @@ function configEditorForm(player, previousForm) {
  * @returns {Promise<void>} A promise that resolves when the form handling is complete.
  * @throws {Error} If an error occurs while trying to display the form or handle its submission.
  */
+// Removed unused function showPublicSystemInfo
+/*
 async function showPublicSystemInfo(player, previousForm) {
     const form = new MessageFormData();
     form.title("§l§eSystem Information");
@@ -1262,10 +1264,11 @@ async function showPublicSystemInfo(player, previousForm) {
         }
     }
 }
-
-/**
- * Handles the player reporting process initiated from the public UI.
- * This function allows any player to report another online player.
+*/
+// Removed unused function handlePublicReportPlayer
+/*
+async function handlePublicReportPlayer(reporter, previousForm) {
+    logDebug(`[UI] handlePublicReportPlayer called by ${reporter.name}. Previous form: ${previousForm?.name}`);
  * It presents a ModalFormData with a dropdown to select the target player and a text field for the reason.
  * - Validates that a reason is provided.
  * - If no other players are online, it informs the reporter.
@@ -1279,6 +1282,7 @@ async function showPublicSystemInfo(player, previousForm) {
  * @returns {Promise<void>} A promise that resolves when the form handling is complete.
  * @throws {Error} If an error occurs during form display, validation, or report submission.
  */
+/*
 async function handlePublicReportPlayer(reporter, previousForm) {
     logDebug(`[UI] handlePublicReportPlayer called by ${reporter.name}. Previous form: ${previousForm?.name}`);
 
@@ -1332,7 +1336,7 @@ async function handlePublicReportPlayer(reporter, previousForm) {
             }
         }
         
-        reportPlayerInternal(reporter, targetPlayer, reason); 
+        reportPlayerInternal(reporter, targetPlayer, reason); // This would be a no-undef if function is kept
 
         const confirmationForm = new MessageFormData()
             .title("§aReport Submitted")
@@ -1357,7 +1361,7 @@ async function handlePublicReportPlayer(reporter, previousForm) {
         }
     }
 }
-
+*/
 
 /**
  * Displays the main public information panel accessible via the `!ui` command.
@@ -2015,7 +2019,7 @@ function playerActionForm(player, targetPlayer, previousForm){
 	}).catch(e => {
 		logDebug(`[Anti Cheats UI Error][playerActionForm]: ${e} ${e.stack}`);
 		if (player && typeof player.sendMessage === 'function') {
-			player.sendMessage("§cAn error occurred with the UI. Please try again.");
+			player.sendMessage("§6[§eAnti Cheats§6]§r §cAn error occurred with the UI. Please try again.");
 		}
 	});
 }

@@ -1,7 +1,7 @@
 import { system, world } from '@minecraft/server';
 import { newCommand } from '../handle.js';
 import { i18n } from '../../assets/i18n.js';
-import { logDebug } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Changed path from util.js to logger.js
 
 newCommand({
     name:"lagclear",
@@ -48,20 +48,20 @@ newCommand({
                         entity.remove();
                         totalKilled++;
                     } catch (entityRemoveError) {
-                        logDebug(`[SafeGuard ERROR] Failed to remove entity ${entity.typeId || 'unknown type'} during lagclear:`, entityRemoveError, entityRemoveError.stack);
+                        logDebug(`[Anti Cheats ERROR] Failed to remove entity ${entity.typeId || 'unknown type'} during lagclear:`, entityRemoveError, entityRemoveError.stack);
                     }
                 }
             }
             
-            logDebug(`[SafeGuard] Lagclear command executed by ${playerName}, removed ${totalKilled} entities.`);
+            logDebug(`[Anti Cheats] Lagclear command executed by ${playerName}, removed ${totalKilled} entities.`);
             world.sendMessage(i18n.getText("command.lagclear.success", { totalKilled: totalKilled }));
         } catch (e) {
-            logDebug("[SafeGuard ERROR] Error in lagclear command:", e, e.stack);
+            logDebug("[Anti Cheats ERROR] Error in lagclear command:", e, e.stack);
             if (data && data.player) {
                 try {
                     data.player.sendMessage(i18n.getText("command.lagclear.error", {}, data.player));
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR] Failed to send error message to command executor in lagclear:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR] Failed to send error message to command executor in lagclear:", sendError, sendError.stack);
                 }
             }
         }

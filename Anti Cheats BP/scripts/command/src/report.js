@@ -1,7 +1,8 @@
-import { getPlayerByName, logDebug, sendMessageToAllAdmins } from '../../assets/util.js';
+import { getPlayerByName, sendMessageToAllAdmins } from '../../assets/util.js';
+import { logDebug } from '../../assets/logger.js'; // Moved logDebug to logger
 import {newCommand} from '../handle.js';
-import * as config from "../../config.js";
-import { world } from '@minecraft/server';
+// import * as config from "../../config.js"; // Removed unused import
+// import { world } from '@minecraft/server'; // Removed unused import
 
 newCommand({
     name: "report",
@@ -25,7 +26,7 @@ newCommand({
 
             // Check if there are enough arguments
             if (args.length < 2) {
-                player.sendMessage("§6[§eSafeGuard§6]§f Usage: !report <player name> <reason>");
+                player.sendMessage("§6[§eAnti Cheats§6]§f Usage: !report <player name> <reason>"); // SafeGuard -> Anti Cheats
                 return;
             }
 
@@ -40,7 +41,7 @@ newCommand({
                     }
                 }
                 if (closingQuoteIndex === -1) {
-                    player.sendMessage("§6[§eSafeGuard§6]§f Invalid format! Closing quotation mark missing for player name.");
+                    player.sendMessage("§6[§eAnti Cheats§6]§f Invalid format! Closing quotation mark missing for player name."); // SafeGuard -> Anti Cheats
                     return;
                 }
                 playerNameArg = args.slice(1, closingQuoteIndex + 1).join(" ").replace(/["@]/g, "");
@@ -53,19 +54,19 @@ newCommand({
             const reportedPlayer = getPlayerByName(playerNameArg); // Already wrapped
 
             if (!reportedPlayer) {
-                player.sendMessage(`§6[§eSafeGuard§6]§f Player §e${playerNameArg}§f was not found`);
+                player.sendMessage(`§6[§eAnti Cheats§6]§f Player §e${playerNameArg}§f was not found`); // SafeGuard -> Anti Cheats
                 return;
             }
             
             reportPlayerInternal(player, reportedPlayer, reasonArg);
 
         } catch (e) {
-            logDebug("[SafeGuard ERROR][report]", e, e.stack);
+            logDebug("[Anti Cheats ERROR][report]", e, e.stack); // SafeGuard -> Anti Cheats
             if (data && data.player) {
                 try {
                     data.player.sendMessage("§cAn error occurred while trying to process your report. Please check the console.");
                 } catch (sendError) {
-                    logDebug("[SafeGuard ERROR][report] Failed to send error message to command executor:", sendError, sendError.stack);
+                    logDebug("[Anti Cheats ERROR][report] Failed to send error message to command executor:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
                 }
             }
         }
@@ -86,7 +87,7 @@ newCommand({
 export function reportPlayerInternal(player, reportedPlayer, reason) {
     try {
         if (reportedPlayer.name === player.name) {
-            player.sendMessage(`§6[§eSafeGuard§6]§f Cannot execute this command on yourself!`);
+            player.sendMessage(`§6[§eAnti Cheats§6]§f Cannot execute this command on yourself!`); // SafeGuard -> Anti Cheats
             return;
         }
         
@@ -100,36 +101,36 @@ export function reportPlayerInternal(player, reportedPlayer, reason) {
         
         if(player.hasAdmin()){ // Already wrapped
             logDebug(tempProperty);
-            player.sendMessage(`§6[§eSafeGuard§6]§f This player has been reported §e${tempProperty.filter(Boolean).length}§r times.`); // Filter Boolean to count actual reports
+            player.sendMessage(`§6[§eAnti Cheats§6]§f This player has been reported §e${tempProperty.filter(Boolean).length}§r times.`); // SafeGuard -> Anti Cheats // Filter Boolean to count actual reports
             return;
         }
 
         if(tempProperty.includes(player.id)) {
-            player.sendMessage(`§6[§eSafeGuard§6]§f You have already reported this player!`);
+            player.sendMessage(`§6[§eAnti Cheats§6]§f You have already reported this player!`); // SafeGuard -> Anti Cheats
             return;
         }
         if(reportedPlayer.name === player.name) { // Redundant check, but safe
-            player.sendMessage(`§6[§eSafeGuard§6]§f You cannot report yourself!`);
+            player.sendMessage(`§6[§eAnti Cheats§6]§f You cannot report yourself!`); // SafeGuard -> Anti Cheats
             return;
         }
         if(reportedPlayer.hasAdmin()){ // Already wrapped
-            player.sendMessage(`§6[§eSafeGuard§6]§f You cannot report admins.`);
+            player.sendMessage(`§6[§eAnti Cheats§6]§f You cannot report admins.`); // SafeGuard -> Anti Cheats
             return;
         }
         
         tempProperty.push(player.id);
         reportedPlayer.setDynamicProperty("safeguard:reports",tempProperty.filter(Boolean).toString()); // API Call, filter Boolean to prevent empty strings if initial property was empty
         
-        player.sendMessage(`§6[§eSafeGuard§6]§f Sent your report to all online admins!`); // API Call
+        player.sendMessage(`§6[§eAnti Cheats§6]§f Sent your report to all online admins!`); // SafeGuard -> Anti Cheats // API Call
 
         sendMessageToAllAdmins("notify.report", { reporterName: player.name, reportedName: reportedPlayer.name, reason: reason });
     } catch (e) {
-        logDebug("[SafeGuard ERROR][reportPlayerInternal]", e, e.stack);
+        logDebug("[Anti Cheats ERROR][reportPlayerInternal]", e, e.stack); // SafeGuard -> Anti Cheats
         if (player) { // player is the one who executed the command
             try {
                 player.sendMessage("§cAn error occurred while processing the report details. Please check the console.");
             } catch (sendError) {
-                logDebug("[SafeGuard ERROR][reportPlayerInternal] Failed to send error message to player:", sendError, sendError.stack);
+                logDebug("[Anti Cheats ERROR][reportPlayerInternal] Failed to send error message to player:", sendError, sendError.stack); // SafeGuard -> Anti Cheats
             }
         }
     }

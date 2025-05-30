@@ -1,5 +1,5 @@
 import * as Minecraft from '@minecraft/server';
-import { getPlayerByName, sendMessageToAllAdmins } from './assets/util.js';
+import { sendMessageToAllAdmins } from './assets/util.js'; // Removed getPlayerByName
 import { logDebug } from './assets/logger.js';
 import CONFIG from './config.js';
 
@@ -135,10 +135,10 @@ const commandDefinitions = [
          * Displays the current version of the Anti Cheats pack.
          *
          * @param {Minecraft.Player | object} origin - The entity or context that executed the command.
-         * @param {object} args - Parsed command arguments (empty for this command).
+         * @param {object} _args - Parsed command arguments (empty for this command).
          * @returns {void}
          */
-        callback: (origin, args) => {
+        callback: (origin, _args) => { // args -> _args
             const versionMessage = `§r§6[§eAnti Cheats§6]§f Version: §ev${CONFIG.version}`;
             if (origin instanceof Minecraft.Player) {
                 origin.sendMessage(versionMessage);
@@ -263,10 +263,10 @@ const commandDefinitions = [
          * Clears all stored ban logs.
          *
          * @param {Minecraft.Player | object} origin - The entity or context that executed the command.
-         * @param {object} args - Parsed command arguments (empty for this command).
+         * @param {object} _args - Parsed command arguments (empty for this command).
          * @returns {void}
          */
-        callback: (origin, args) => {
+        callback: (origin, _args) => { // args -> _args
             world.setDynamicProperty("ac:banLogs", undefined);
             
             const feedbackMessage = "§6[§eAnti Cheats§6]§f The ban logs were successfully cleared";
@@ -291,10 +291,10 @@ const commandDefinitions = [
          * Clears the chat for all players by running a Minecraft function.
          *
          * @param {Minecraft.Player | object} origin - The entity or context that executed the command.
-         * @param {object} args - Parsed command arguments (empty for this command).
+         * @param {object} _args - Parsed command arguments (empty for this command).
          * @returns {void}
          */
-        callback: (origin, args) => {
+        callback: (origin, _args) => { // args -> _args
             const executorName = getCommandExecutorName(origin);
             try {
                 if (origin instanceof Minecraft.Player) {

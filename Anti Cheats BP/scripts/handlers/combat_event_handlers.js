@@ -68,7 +68,7 @@ world.afterEvents.entityHurt.subscribe((eventData) => {
     // This is complex; a simple check might look for unexpected lack of knockback.
     // More advanced checks would be part of a dedicated Velocity module.
     if (ACModule.isActive("velocity") && (damageSource.cause === EntityDamageCause.entityAttack || damageSource.cause === EntityDamageCause.projectile)) {
-        const expectedKnockback = 0.4; // Highly dependent on many factors
+        // const expectedKnockback = 0.4; // Highly dependent on many factors - Unused variable
         // This needs a robust way to predict and compare actual vs expected movement.
         // For now, this is a placeholder for where such logic would go.
         // Example: player.getDynamicProperty("last_velocity_vl") could be incremented if knockback is abnormal.
