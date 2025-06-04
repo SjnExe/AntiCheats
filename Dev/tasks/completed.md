@@ -135,7 +135,7 @@ Conducted an investigation into methods for detecting Killaura and Aimbot cheats
         *   Multi-Target / Fast Target Switching (Killaura component).
         *   Attacking During Invalid States (e.g., sleeping).
 *   **Outcome:**
-    *   The detailed findings, API feasibility analysis, outlined detection logic, and recommendations for initial implementation focus (View Snap, Multi-Target Killaura, State Conflict - Sleeping) are documented in the newly created `Dev/Killaura_Aimbot_Investigation.md` file. This document provides a foundation for future development of these advanced cheat detection modules.
+    *   The detailed findings, API feasibility analysis, outlined detection logic, and recommendations for initial implementation focus (View Snap, Multi-Target Killaura, State Conflict - Sleeping) are documented in the newly created `Dev/KillauraAimbotInvestigation.md` file. This document provides a foundation for future development of these advanced cheat detection modules.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
@@ -231,7 +231,7 @@ Conducted an investigation into methods for persisting player anti-cheat data (`
     *   Outlined two potential approaches: one primarily using dynamic properties with JSON, and a hybrid approach.
     *   Provided a recommendation to start with dynamic properties (storing a serialized JSON string of `pData`) due to its flexibility for complex data structures.
 *   **Outcome:**
-    *   The findings, detailed analysis of each mechanism, potential approaches, and the final recommendation are documented in the newly created `Dev/Persistence_Investigation.md` file. This document will serve as a basis for the future implementation of data persistence.
+    *   The detailed findings, detailed analysis of each mechanism, potential approaches, and the final recommendation are documented in the newly created `Dev/PersistenceInvestigation.md` file. This document will serve as a basis for the future implementation of data persistence.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
@@ -281,6 +281,7 @@ Reviewed and initially updated the versions of `@minecraft/server` and related m
         *   `@minecraft/server`: `2.0.0-beta`
         *   `@minecraft/server-ui`: `2.0.0-beta`
         *   `@minecraft/server-gametest`: `1.0.0-beta`
+    *   Ensured versioning procedure documentation is correctly named `Dev/VersioningNotes.md`.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
@@ -346,6 +347,14 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
     *   Reviewed and confirmed `manifest.json` configurations.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]
+
+[end of Dev/tasks/completed.md]
+
+[end of Dev/tasks/completed.md]
+
+[end of Dev/tasks/completed.md]
 
 [end of Dev/tasks/completed.md]
 
