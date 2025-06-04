@@ -1,5 +1,21 @@
 # Completed Tasks
 
+## Updated Root README.md (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+The main project `README.md` was significantly updated to reflect the current state of the Anti-Cheats Addon, including recent feature additions and providing a more comprehensive guide for users and administrators.
+
+*   **Key Sections Added/Revised:**
+    *   **Features:** Summarizes core capabilities including cheat detections (Movement, Combat, World), Admin Tools (text commands and new UI), Configuration options, Data Persistence, and the Player Flagging System.
+    *   **Required Experimental Toggles:** Clarified the need for "Beta APIs."
+    *   **Setup:** Includes a note on the target Minecraft version (1.21.80+).
+    *   **Admin Commands & UI:** Detailed list of available commands, distinguishing between the new `!ac ui` and its sub-menus (Inspect Player, Reset Flags, List Watched) and the existing text-based commands.
+    *   **Configuration:** Highlights the role of `config.js` for adjustments.
+    *   **Player Usage:** Mentions the `!ac myflags` command.
+*   The README now serves as a more accurate and user-friendly documentation for the addon.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Implemented Basic Admin UI (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
