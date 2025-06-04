@@ -2,27 +2,63 @@
 
 This folder contains useful resources, documentation links, and potentially helper scripts for the development and debugging of this Minecraft Bedrock Edition addon.
 
-## Official Documentation & Samples
+## Official Minecraft Bedrock Creator Documentation
 
-*   **Minecraft Creator Documentation (Bedrock)**:
-    *   [https://learn.microsoft.com/en-us/minecraft/creator/?view=minecraft-bedrock-stable](https://learn.microsoft.com/en-us/minecraft/creator/?view=minecraft-bedrock-stable)
-    *   The official hub for Bedrock addon development documentation.
+The primary hub for all official Bedrock addon development documentation is:
+*   **[Minecraft Creator Documentation (Bedrock)](https://learn.microsoft.com/en-us/minecraft/creator/?view=minecraft-bedrock-stable)**
 
+Below are links to specific sections particularly relevant for Add-On development, with an emphasis on Anti-Cheat capabilities:
+
+### Scripting APIs (`@minecraft/server`)
+*   **Overview & Getting Started:**
+    *   [Getting Started with Scripting APIs](https://learn.microsoft.com/en-us/minecraft/creator/documents/scriptingintroduction?view=minecraft-bedrock-stable)
+    *   [Scripting API Reference (Main Page)](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/?view=minecraft-bedrock-stable)
+    *   [Using TypeScript with Minecraft Scripting APIs](https://learn.microsoft.com/en-us/minecraft/creator/documents/scriptinggettingstarted?view=minecraft-bedrock-stable)
+*   **Core World & Event Handling:**
+    *   [World Class (world, events)](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/world?view=minecraft-bedrock-stable)
+    *   [WorldBeforeEvents Class (cancellable events)](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldbeforeevents?view=minecraft-bedrock-stable)
+    *   [WorldAfterEvents Class (post-action events)](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/worldafterevents?view=minecraft-bedrock-stable)
+*   **Entities & Players:**
+    *   [Entity Class (base for all entities)](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/entity?view=minecraft-bedrock-stable)
+    *   [Player Class (specific to players)](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/player?view=minecraft-bedrock-stable)
+    *   [Entity Behavior Introduction](https://learn.microsoft.com/en-us/minecraft/creator/documents/entitybehaviorintroduction?view=minecraft-bedrock-stable)
+    *   [Entity Events (JSON-based)](https://learn.microsoft.com/en-us/minecraft/creator/documents/entityevents?view=minecraft-bedrock-stable)
+*   **Items:**
+    *   [ItemStack Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemstack?view=minecraft-bedrock-stable)
+    *   [Item Components (JSON-based)](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/itemreference/examples/itemcomponents?view=minecraft-bedrock-stable)
+*   **Blocks:**
+    *   [Block Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/block?view=minecraft-bedrock-stable)
+    *   [Block Components (JSON-based)](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/examples/blockcomponents?view=minecraft-bedrock-stable)
+*   **User Interface (Server-Side):**
+    *   [@minecraft/server-ui Module](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/minecraft-server-ui?view=minecraft-bedrock-stable)
+    *   [ActionFormData Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/actionformdata?view=minecraft-bedrock-stable)
+    *   [MessageFormData Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/messageformdata?view=minecraft-bedrock-stable)
+    *   [ModalFormData Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/modalformdata?view=minecraft-bedrock-stable)
+*   **Other Useful Links:**
+    *   [Introduction to Behavior Packs](https://learn.microsoft.com/en-us/minecraft/creator/documents/behaviorpack?view=minecraft-bedrock-stable)
+    *   [manifest.json Reference](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/addonsreference/filedetails/manifest?view=minecraft-bedrock-stable)
+    *   [Commands Introduction](https://learn.microsoft.com/en-us/minecraft/creator/documents/commandsintroduction?view=minecraft-bedrock-stable)
+    *   [Command Reference](https://learn.microsoft.com/en-us/minecraft/creator/commands/?view=minecraft-bedrock-stable)
+
+### Official Mojang & Microsoft Samples/Tools
 *   **Mojang Bedrock Addon Samples**:
     *   [https://github.com/Mojang/bedrock-samples](https://github.com/Mojang/bedrock-samples)
-    *   Example packs and scripts provided by Mojang.
-
 *   **Mojang Minecraft Creator Tools**:
     *   [https://github.com/Mojang/minecraft-creator-tools](https://github.com/Mojang/minecraft-creator-tools)
-    *   Tools to aid in the development of Minecraft addons.
-
 *   **Microsoft Minecraft Samples**:
     *   [https://github.com/microsoft/minecraft-samples](https://github.com/microsoft/minecraft-samples)
-    *   Various samples related to Minecraft development from Microsoft.
-
 *   **Mojang Minecraft Scripting Libraries**:
     *   [https://github.com/Mojang/minecraft-scripting-libraries](https://github.com/Mojang/minecraft-scripting-libraries)
-    *   Reusable scripting libraries from Mojang.
+
+## Community Anti-Cheat Projects & Resources
+
+These are community-driven open-source anti-cheat projects that serve as excellent examples and learning resources:
+*   **Scythe Anticheat:**
+    *   GitHub: [https://github.com/Scythe-Anticheat/Scythe-Anticheat](https://github.com/Scythe-Anticheat/Scythe-Anticheat)
+    *   Focuses on a wide range of detections using Beta APIs and mcfunctions. Features include detailed setup, in-game commands, and a configuration file.
+*   **SafeGuard Anticheat:**
+    *   GitHub: [https://github.com/BlaizerBrumo/SafeGuard](https://github.com/BlaizerBrumo/SafeGuard)
+    *   Offers protection against combat, item, and movement hacks. Includes an admin panel item for configuration, Xray alerts, and various utility features.
 
 ## Purpose of this Folder
 
