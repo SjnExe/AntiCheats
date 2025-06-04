@@ -33,7 +33,7 @@ mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
 });
 
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config);
+    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick); // Pass currentTick
 });
 
 mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
@@ -71,9 +71,10 @@ mc.system.runInterval(async () => {
 
         if (config.ENABLE_FLY_CHECK) checks.checkFly(player, pData);
         if (config.ENABLE_SPEED_CHECK) checks.checkSpeed(player, pData);
-        if (config.ENABLE_NOFALL_CHECK) checks.checkNoFall(player, pData); // Depends on pData.isTakingFallDamage & pData.fallDistance
-        if (config.ENABLE_CPS_CHECK) checks.checkCPS(player, pData); // Uses pData.attackEvents
-        if (config.ENABLE_NUKER_CHECK) checks.checkNuker(player, pData); // Uses pData.blockBreakEvents
+        if (config.ENABLE_NOFALL_CHECK) checks.checkNoFall(player, pData);
+        if (config.ENABLE_CPS_CHECK) checks.checkCPS(player, pData);
+        if (config.ENABLE_NUKER_CHECK) checks.checkNuker(player, pData);
+        if (config.ENABLE_VIEW_SNAP_CHECK) checks.checkViewSnap(player, pData, config, currentTick);
 
         // Fall distance accumulation and isTakingFallDamage reset
         // This logic is critical for NoFall's accuracy.

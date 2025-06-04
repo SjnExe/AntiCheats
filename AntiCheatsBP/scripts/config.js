@@ -15,6 +15,12 @@ export const PREFIX = "!";
 export const ENABLE_REACH_CHECK = true;
 /** @type {boolean} If true, the CPS (Clicks Per Second) check in combatChecks.js is active. */
 export const ENABLE_CPS_CHECK = true;
+/** @type {boolean} If true, the View Snap / Invalid Pitch check is active. */
+export const ENABLE_VIEW_SNAP_CHECK = true;
+/** @type {boolean} If true, the Multi-Target Killaura check is active. */
+export const ENABLE_MULTI_TARGET_CHECK = true;
+/** @type {boolean} If true, various state conflict checks (e.g., attack while sleeping) are active. */
+export const ENABLE_STATE_CONFLICT_CHECK = true;
 /** @type {boolean} If true, the Fly check (both sustained and hover) in movementChecks.js is active. */
 export const ENABLE_FLY_CHECK = true;
 /** @type {boolean} If true, the Speed check in movementChecks.js is active. */
@@ -144,6 +150,43 @@ export const REACH_BUFFER = 0.5;
  * Attack events older than this window are filtered out.
  */
 export const CPS_CALCULATION_WINDOW_MS = 1000;
+
+// --- View Snap / Invalid Pitch (Aimbot/Killaura components) ---
+/** @type {number} Max degrees pitch can change in one tick after an attack. */
+export const MAX_PITCH_SNAP_PER_TICK = 75;
+/** @type {number} Max degrees yaw can change in one tick after an attack (accounts for wrapping). */
+export const MAX_YAW_SNAP_PER_TICK = 100;
+/** @type {number} How many ticks after an attack to monitor for view snaps. */
+export const VIEW_SNAP_WINDOW_TICKS = 10;
+/** @type {number} Minimum pitch considered invalid (e.g., looking straight up and further). */
+export const INVALID_PITCH_THRESHOLD_MIN = -90.5;
+/** @type {number} Maximum pitch considered invalid (e.g., looking straight down and further). */
+export const INVALID_PITCH_THRESHOLD_MAX = 90.5;
+/** @type {string} Reason message for invalid pitch flags. */
+export const FLAG_REASON_INVALID_PITCH = "Invalid Pitch";
+/** @type {string} Reason message for view snap flags. */
+export const FLAG_REASON_VIEW_SNAP = "View Snap";
+/** @type {number} Flag increment value for view snap related flags. */
+export const FLAG_INCREMENT_VIEW_SNAP = 1;
+
+// --- Multi-Target Killaura ---
+/** @type {number} Time window in milliseconds to track recent hits for multi-target detection. */
+export const MULTI_TARGET_WINDOW_MS = 1000;
+/** @type {number} Number of distinct entities hit within the window to trigger a flag. */
+export const MULTI_TARGET_THRESHOLD = 3;
+/** @type {number} Maximum number of recent hit records to store per player. */
+export const MULTI_TARGET_MAX_HISTORY = 10;
+/** @type {string} Reason message for multi-target aura flags. */
+export const FLAG_REASON_MULTI_AURA = "Multi-Target Aura";
+// FLAG_INCREMENT_MULTI_AURA is not strictly needed if addFlag defaults to 1 or takes it from a central place.
+// export const FLAG_INCREMENT_MULTI_AURA = 1;
+
+// --- State Conflict Checks (Killaura components) ---
+/** @type {string} Reason message for attacking while sleeping. */
+export const FLAG_REASON_ATTACK_WHILE_SLEEPING = "Attack While Sleeping";
+// FLAG_INCREMENT_ATTACK_SLEEP is not strictly needed if addFlag defaults to 1.
+// export const FLAG_INCREMENT_ATTACK_SLEEP = 1;
+
 
 // --- World Checks ---
 

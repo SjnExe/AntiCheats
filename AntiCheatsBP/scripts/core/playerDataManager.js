@@ -1,11 +1,25 @@
 import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
-// import * as config from '../config.js'; // Not directly used in this file after addFlag was simplified
 
-// It's better to define these structures here or in a dedicated types.js file
-// For now, we remove the problematic JSDoc imports from main.js
-// Assume structure for PlayerFlagData: { count: number, lastDetectionTime: number }
-// Assume structure for PlayerAntiCheatData: (complex, includes .flags, .isWatched, etc.)
+// PlayerAntiCheatData structure (for clarity, formal JSDoc/TS types would be in a types.js)
+// {
+//   playerNameTag: string,
+//   lastPosition: Vector3, previousPosition: Vector3,
+//   velocity: Vector3, previousVelocity: Vector3,
+//   consecutiveOffGroundTicks: number, fallDistance: number,
+//   lastOnGroundTick: number, lastOnGroundPosition: Vector3,
+//   consecutiveOnGroundSpeedingTicks: number, isTakingFallDamage: boolean,
+//   attackEvents: number[], lastAttackTime: number,
+//   blockBreakEvents: number[],
+//   flags: {
+//     totalFlags: number,
+//     fly: { count: number, lastDetectionTime: number },
+//     // ... other specific flags
+//   },
+//   lastFlagType: string, isWatched: boolean,
+//   lastPitch: number, lastYaw: number,         // NEW SESSION-ONLY
+//   lastAttackTick: number, recentHits: any[]  // NEW SESSION-ONLY
+// }
 
 const playerData = new Map();
 
@@ -13,7 +27,7 @@ export function getPlayerData(playerId) {
     return playerData.get(playerId);
 }
 
-export function getAllPlayerDataValues() { // Added for uiManager
+export function getAllPlayerDataValues() {
     return playerData.values();
 }
 
@@ -36,7 +50,6 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave) {
     }
     try {
         player.setDynamicProperty(dynamicPropertyKey, jsonString);
-        // debugLog(`PDM:save: Success ${player.nameTag}.`, player.nameTag); // Can be too spammy
         return true;
     } catch (error) {
         debugLog(`PDM:save: Fail setDynamicProp ${player.nameTag}. E: ${error}`, player.nameTag);
@@ -82,18 +95,20 @@ export async function prepareAndSavePlayerData(player) {
     if (!player) return;
     const pData = playerData.get(player.id);
     if (pData) {
-        const persistedPData = {
+        const persistedPData = { // Only include fields meant for persistence
             flags: pData.flags,
             isWatched: pData.isWatched,
             lastFlagType: pData.lastFlagType,
             playerNameTag: pData.playerNameTag,
+            // Persisted violation tracking fields
             attackEvents: pData.attackEvents,
             lastAttackTime: pData.lastAttackTime,
             blockBreakEvents: pData.blockBreakEvents,
-            consecutiveOffGroundTicks: pData.consecutiveOffGroundTicks,
-            fallDistance: pData.fallDistance,
-            consecutiveOnGroundSpeedingTicks: pData.consecutiveOnGroundSpeedingTicks
+            consecutiveOffGroundTicks: pData.consecutiveOffGroundTicks, // May be reset on load if preferred
+            fallDistance: pData.fallDistance, // May be reset on load
+            consecutiveOnGroundSpeedingTicks: pData.consecutiveOnGroundSpeedingTicks // May be reset on load
         };
+        // lastPitch, lastYaw, lastAttackTick, recentHits are NOT saved as they are session-only.
         await savePlayerDataToDynamicProperties(player, persistedPData);
     } else {
         debugLog(`PDM:prepSave: No runtime pData for ${player.nameTag}.`, player.nameTag);
@@ -125,9 +140,15 @@ export function initializeDefaultPlayerData(player, currentTick) {
             cps: { count: 0, lastDetectionTime: 0 },
             nuker: { count: 0, lastDetectionTime: 0 },
             illegalItem: { count: 0, lastDetectionTime: 0 }
+            // New Killaura/Aimbot related flags will be added here by their checks if not pre-defined
         },
         lastFlagType: "",
-        isWatched: false
+        isWatched: false,
+        // New session-only fields
+        lastPitch: 0,
+        lastYaw: 0,
+        lastAttackTick: 0,
+        recentHits: [],
     };
 }
 
@@ -135,20 +156,34 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
     if (playerData.has(player.id)) {
         return playerData.get(player.id);
     }
+
+    let newPData = initializeDefaultPlayerData(player, currentTick); // Start with fresh defaults, including session-only
     const loadedData = await loadPlayerDataFromDynamicProperties(player);
-    let newPData = initializeDefaultPlayerData(player, currentTick);
+
     if (loadedData) {
         debugLog(`PDM:ensureInit: Loaded data for ${player.nameTag}. Merging.`, player.nameTag);
+        // Merge persisted fields from loadedData
         newPData.flags = loadedData.flags || newPData.flags;
         newPData.isWatched = typeof loadedData.isWatched === 'boolean' ? loadedData.isWatched : newPData.isWatched;
         newPData.lastFlagType = loadedData.lastFlagType || newPData.lastFlagType;
         newPData.playerNameTag = loadedData.playerNameTag || newPData.playerNameTag;
+
         newPData.attackEvents = loadedData.attackEvents || [];
         newPData.lastAttackTime = loadedData.lastAttackTime || 0;
         newPData.blockBreakEvents = loadedData.blockBreakEvents || [];
+
+        // For counters that might be persisted but should ideally be session-logic driven if starting fresh:
+        // If they are part of persistedPData, they will be loaded.
+        // If they are *not* part of persistedPData, they will keep their fresh default from initializeDefaultPlayerData.
+        // The current persistedPData includes these, so they will be loaded if present.
+        // If we wanted them to always reset per session, they'd be excluded from persistedPData.
         newPData.consecutiveOffGroundTicks = loadedData.consecutiveOffGroundTicks || 0;
         newPData.fallDistance = loadedData.fallDistance || 0;
         newPData.consecutiveOnGroundSpeedingTicks = loadedData.consecutiveOnGroundSpeedingTicks || 0;
+
+        // Session-specific fields are already set to defaults by initializeDefaultPlayerData.
+        // No need to merge them from loadedData, as they should be fresh each session.
+        // If they were accidentally saved in an old version, they'll be overwritten by the fresh defaults.
     } else {
         debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Fresh init.`, player.nameTag);
     }
@@ -171,9 +206,15 @@ export function cleanupActivePlayerData(activePlayers) {
 }
 
 export function updateTransientPlayerData(player, pData, currentTick) {
-    pData.previousVelocity = {...pData.velocity}; // Ensure deep copy for objects/vectors if necessary
+    // Update pitch/yaw for rotation checks
+    const viewDirection = player.getViewDirection();
+    const rotation = player.getRotation();
+    pData.lastPitch = rotation.x; // Pitch
+    pData.lastYaw = rotation.y;   // Yaw
+
+    pData.previousVelocity = {...pData.velocity};
     pData.velocity = player.getVelocity();
-    pData.previousPosition = {...pData.lastPosition}; // Ensure deep copy
+    pData.previousPosition = {...pData.lastPosition};
     pData.lastPosition = player.location;
 
     if (!pData.playerNameTag) pData.playerNameTag = player.nameTag;
@@ -194,7 +235,7 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
         return;
     }
     if (!pData.flags[flagType]) {
-        debugLog(`PDM:addFlag: Invalid flagType "${flagType}" for ${player.nameTag}. Initializing.`, player.nameTag);
+        debugLog(`PDM:addFlag: New flagType "${flagType}" for ${player.nameTag}. Initializing.`, player.nameTag);
         pData.flags[flagType] = { count: 0, lastDetectionTime: 0 };
     }
     pData.flags[flagType].count++;

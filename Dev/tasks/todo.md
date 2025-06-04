@@ -3,7 +3,7 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## High Priority / Next Up
-*No high priority tasks currently identified.*
+*   **Standardize Naming Convention in `config.js`:** Review all variable names in `AntiCheatsBP/scripts/config.js`. Decide on a consistent naming convention (e.g., `camelCase` like `viewSnapWindowTicks` or `PascalCase` like `ViewSnapWindowTicks`). Update all existing config variables in `config.js` to this chosen style. Document the chosen style either in `Dev/README.md` (e.g., under "Scripting Language Notes") or in a new `Dev/CODING_STYLE.md` file. Critically, ensure all parts of the codebase (`checks/*.js`, `core/*.js`, `main.js`, etc.) that import and use these config variables are updated to use the new names. This is a refactoring task that touches many files.
 
 ## Medium Priority
 

@@ -1,18 +1,50 @@
 # Completed Tasks
 
+## Implemented Initial Killaura/Aimbot Checks (v1) (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Implemented the first set of Killaura/Aimbot related detection modules based on prior investigation. These checks provide foundational capabilities for identifying suspicious combat behaviors.
+
+*   **Key Implemented Checks:**
+    *   **Invalid Pitch Detection (`checks/combat/viewSnapCheck.js`):**
+        *   Flags players whose head pitch exceeds valid Minecraft limits (e.g., looking too far up or down).
+        *   Uses `config.INVALID_PITCH_THRESHOLD_MIN` and `config.INVALID_PITCH_THRESHOLD_MAX`.
+    *   **View Snap Detection (`checks/combat/viewSnapCheck.js`):**
+        *   Flags players whose view rotation (pitch or yaw) changes at an impossibly fast rate within a short window (`config.VIEW_SNAP_WINDOW_TICKS`) after they deal damage (`pData.lastAttackTick`).
+        *   Uses `config.MAX_PITCH_SNAP_PER_TICK` and `config.MAX_YAW_SNAP_PER_TICK`.
+        *   Handles yaw wrapping for accurate delta calculation.
+    *   **Multi-Target Killaura (`checks/combat/multiTargetCheck.js`):**
+        *   Tracks recent entities hit by a player within a time window (`config.MULTI_TARGET_WINDOW_MS`).
+        *   Flags if a player hits more than a configured number (`config.MULTI_TARGET_THRESHOLD`) of distinct entities.
+        *   Maintains a limited history of hits (`config.MULTI_TARGET_MAX_HISTORY`).
+    *   **Attack While Sleeping (`checks/combat/stateConflictCheck.js`):**
+        *   Flags players if they deal damage while `player.isSleeping` is true.
+        *   Uses `config.ENABLE_STATE_CONFLICT_CHECK` as its main toggle.
+*   **Configuration:**
+    *   Added new configuration variables to `AntiCheatsBP/scripts/config.js` for all thresholds, enabling/disabling these specific checks, and flag reasons (e.g., `ENABLE_VIEW_SNAP_CHECK`, `MAX_PITCH_SNAP_PER_TICK`, `FLAG_REASON_MULTI_AURA`).
+*   **Player Data (`playerDataManager.js`):**
+    *   `PlayerAntiCheatData` structure was updated to include new session-specific fields for these checks: `lastPitch`, `lastYaw` (updated each tick), `lastAttackTick` (updated on attack), and `recentHits` (array for multi-target check). These are initialized fresh each session and are not persisted, except for the flags they might generate.
+*   **Integration:**
+    *   View Snap and Attack While Sleeping checks are triggered from `handleEntityHurt` in `eventHandlers.js`.
+    *   Multi-Target check is also triggered from `handleEntityHurt`.
+    *   View Snap check is also called in the main tick loop to catch invalid pitch at any time.
+*   All new checks use the centralized `playerDataManager.addFlag()` function for reporting violations.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Elaborated on To-Do List Feature Details (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
 Expanded the descriptions of tasks within `Dev/tasks/todo.md` to provide more specific details and requirements for future feature implementations. This elaboration was based on prior research and a draft of desired functionalities, including inspirations from other anti-cheat systems (Scythe, SjnExe, SafeGuard).
 
 *   **Key Areas of Elaboration:**
-    *   **Advanced Cheat Detections:** Added specific sub-check details for Killaura/Aimbot (View Snap thresholds, Multi-Target parameters, state conflict examples), Scaffold/Tower (defining "tower-like", "flat/invalid rotation"), Timer/FastUse/FastPlace (clarifying game speed vs. action speed, examples for FastUse), Advanced Movement (specific conditions for Invalid Y Velocity, NoSlow, InvalidSprint), Advanced World Interaction (detection logic for AutoTool, InstaBreak, X-Ray), Advanced Player Behavior (violation criteria for Namespoof, Anti-GMC, InventoryMods), and Packet Anomalies/Chat Violations (examples for self-hurt, message content/rate issues). Noted SjnExe parity goals where applicable.
+    *   **Advanced Cheat Detections:** Added specific sub-check details for Killaura/Aimbot (View Snap thresholds, Multi-Target parameters, state conflict examples), Scaffold/Tower (defining "tower-like", "flat/invalid rotation"), Timer/FastUse/FastPlace (clarifying game speed vs. action speed, examples for FastUse), Advanced Movement (specific conditions for Invalid Y Velocity, NoSlow, InvalidSprint), Advanced World Interaction (detection logic for AutoTool, InstaBreak, X-Ray), Advanced Player Behavior (violation criteria for Namespoof, Anti-GMC, InventoryMods), and Packet Anomalies/Chat Violations (examples for self-hurt, message content/rate issues). Noted SjnExe parity goals where relevant.
     *   **Admin Tools & Management:** For new command ideas (ban, kick, mute, freeze, etc.), specified key parameters (like duration formats) and noted needs for persistent storage (e.g., ban lists). SjnExe parity noted.
     *   **UI Enhancements:** Clarified potential scope for UI features like config editors and log viewers. SjnExe parity noted.
     *   **System Features:** Detailed core mechanics for proposed systems like Owner/Rank systems, Combat Log, and Device Ban. SjnExe parity noted.
     *   **World Management & Protection:** Specified actions for Anti-Grief and Dimension Locks. SjnExe parity noted.
     *   **Logging Enhancements:** Listed key data points for various logging types (command usage, join/leave, punitive actions). SjnExe parity noted.
-*   **Outcome:** The `Dev/tasks/todo.md` now contains a more granular and actionable list of future development tasks, providing clearer guidance for implementation.
+*   **Outcome:** The `Dev/tasks/todo.md` file now contains a more granular and actionable list of future development tasks, providing clearer guidance for implementation.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 

@@ -24,8 +24,9 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
  * @param {object} playerDataManager
  * @param {object} combatChecks Module or object containing combat check functions (e.g., checkReach)
  * @param {object} playerUtils
+ * @param {number} currentTick The current game tick from main.js
  */
-export function handleEntityHurt(eventData, playerDataManager, combatChecks, playerUtils) {
+export function handleEntityHurt(eventData, playerDataManager, combatChecks, playerUtils, currentTick) {
     const { hurtEntity, cause, damagingEntity } = eventData;
 
     // NoFall related: Player took fall damage
@@ -52,10 +53,10 @@ export function handleEntityHurt(eventData, playerDataManager, combatChecks, pla
             if (!attackerPData.attackEvents) attackerPData.attackEvents = []; // Ensure array exists if loading from minimal save
             attackerPData.attackEvents.push(now);
             attackerPData.lastAttackTime = now;
-            // Note: prepareAndSavePlayerData might be called by addFlag if CPS check flags
+            attackerPData.lastAttackTick = currentTick; // Set lastAttackTick for ViewSnap check
 
-            // Call Reach Check (assuming it's available via combatChecks object)
-            if (combatChecks && combatChecks.checkReach) {
+            // Call Reach Check
+            if (combatChecks && combatChecks.checkReach && config.ENABLE_REACH_CHECK) { // Added config check
                  let gameMode = attacker.gameMode;
                  // Ensure gameMode is defined (it should be for a player)
                  if (typeof gameMode === 'undefined') {
@@ -63,11 +64,22 @@ export function handleEntityHurt(eventData, playerDataManager, combatChecks, pla
                     if (worldPlayer) gameMode = worldPlayer.gameMode;
                  }
                 if (typeof gameMode !== 'undefined') {
-                    combatChecks.checkReach(attacker, hurtEntity, gameMode, attackerPData);
+                    combatChecks.checkReach(attacker, hurtEntity, gameMode, attackerPData); // pData is attackerPData
                 } else {
                     playerUtils.debugLog(`Could not determine game mode for attacker ${attacker.nameTag} to perform reach check.`, attackerPData.isWatched ? attacker.nameTag : null);
                 }
             }
+
+            // Call Multi-Target Check
+            if (combatChecks && combatChecks.checkMultiTarget && config.ENABLE_MULTI_TARGET_CHECK) {
+                combatChecks.checkMultiTarget(attacker, attackerPData, hurtEntity, config);
+            }
+
+            // Call Attack While Sleeping Check (part of state conflict checks)
+            if (combatChecks && combatChecks.checkAttackWhileSleeping && config.ENABLE_STATE_CONFLICT_CHECK) {
+                combatChecks.checkAttackWhileSleeping(attacker, attackerPData, config);
+            }
+            // Note: CPS check (checkCPS) is called in the main tick loop as it's based on timed event history, not a single hurt event.
         }
     }
 }
