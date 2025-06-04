@@ -1,0 +1,2 @@
+# This file ensures the 'files_pending_deletion' directory is tracked by Git.
+# Files listed in 'Dev/README.md' under the AI file deletion workflow should be moved here.
