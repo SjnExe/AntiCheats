@@ -68,6 +68,18 @@ This directory can be used by developers (including AI assistants like Jules) to
 - Place utility scripts for debugging or build processes.
 - Maintain any other resources that facilitate understanding and working on this addon.
 
+## Task Management for Development
+
+To help track the development progress of this addon, especially when working with AI assistants or multiple developers, a simple task management system is maintained within the `Dev/tasks/` directory. This directory contains the following files:
+
+*   **`Dev/tasks/completed.md`**: Lists tasks and features that have been successfully implemented, tested (where applicable), and submitted to the main codebase. Each entry should ideally include a brief description of the completed work and a reference to the submission (e.g., date, commit SHA if available).
+
+*   **`Dev/tasks/ongoing.md`**: Details the task(s) currently being actively worked on. This file should be updated when a developer or AI assistant begins work on a new task from the `todo.md` list. It should clearly state the objectives of the ongoing task.
+
+*   **`Dev/tasks/todo.md`**: A list of planned features, improvements, bug fixes, and areas for future investigation. Tasks are generally categorized by priority (e.g., High, Medium, Low) or by type (e.g., New Features, Refactoring, Documentation). When a task is selected for development, it should be moved from this file to `ongoing.md`.
+
+Maintaining these files helps ensure clarity on project status and facilitates smoother handoffs or continuations of work.
+
 ## Scripting Language Notes
 
 **Current Scripting Language: Plain JavaScript**
@@ -97,3 +109,21 @@ The Behavior Pack scripts for this addon (`BP/scripts/`) are currently written i
 4.  **Manual Deletion on `main`:** A human developer will then need to manually perform the final `git rm` of these files in the `Dev/files_pending_deletion/` directory directly on the `main` branch (or during the merge process if the platform allows direct commits to main or post-merge cleanups) to ensure they are properly removed from the repository's history.
 
 This process makes the intent to delete clear and works around potential issues with how file deletions in branches are handled by the git tooling or merge process.
+
+### Guidelines for AI Development Sessions (e.g., Jules)
+
+To ensure consistency, continuity, and up-to-date documentation when an AI assistant like Jules works on this addon:
+
+1.  **Maintain Task Files:**
+    *   Before starting new work, review `Dev/tasks/ongoing.md` and `Dev/tasks/todo.md`.
+    *   If continuing a previous task, ensure `Dev/tasks/ongoing.md` reflects this.
+    *   When starting a new task from `Dev/tasks/todo.md`, move it to `Dev/tasks/ongoing.md` and update its description if necessary.
+    *   Upon completion and submission of a task, summarize it in `Dev/tasks/completed.md` and clear `Dev/tasks/ongoing.md` (or update it if starting another task immediately).
+    *   Add any newly identified future work, bugs, or ideas to `Dev/tasks/todo.md`.
+
+2.  **Update Root `README.md`:**
+    *   If significant new user-facing features are added or major changes are made to the addon's functionality, the AI assistant should also update the main project `README.md` (located in the repository root) to reflect these changes. This keeps the primary user documentation current.
+
+3.  **Follow Existing Code Style and Documentation Practices:**
+    *   Adhere to the established coding style found in the existing `.js` files.
+    *   Add JSDoc comments for new functions and complex logic, similar to existing documentation.
