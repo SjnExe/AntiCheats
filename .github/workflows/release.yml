@@ -29,8 +29,8 @@ jobs:
 
     - name: Copy addon folders to staging
       run: |
-        cp -r BP staging/
-        cp -r RP staging/
+        cp -r AntiCheatsBP staging/
+        cp -r AntiCheatsRP staging/
 
     - name: Replace placeholders in staged JSON files
       shell: bash
@@ -51,12 +51,12 @@ jobs:
         find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
 
         echo "Contents of staged BP manifest after replacement:"
-        cat "staging/BP/manifest.json"
+        cat "staging/AntiCheatsBP/manifest.json"
         echo "Contents of staged RP manifest after replacement:"
-        cat "staging/RP/manifest.json"
+        cat "staging/AntiCheatsRP/manifest.json"
 
         # Replace __VERSION_STRING__ placeholder in config.js
-        CONFIG_JS_PATH="staging/BP/scripts/config.js"
+        CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
         if [ -f "$CONFIG_JS_PATH" ]; then
           echo "Replacing __VERSION_STRING__ in $CONFIG_JS_PATH"
           sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_JS_PATH"
@@ -80,7 +80,7 @@ jobs:
       env:
         FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
       run: |
-        cd staging/BP
+        cd staging/AntiCheatsBP
         zip -r "../../AC BP${{ env.FULL_TAG_NAME }}.mcpack" ./*
         cd ../..
 
@@ -100,7 +100,7 @@ jobs:
       env:
         FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
       run: |
-        cd staging/RP
+        cd staging/AntiCheatsRP
         zip -r "../../AC RP${{ env.FULL_TAG_NAME }}.mcpack" ./*
         cd ../..
 
