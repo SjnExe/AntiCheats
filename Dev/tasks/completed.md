@@ -21,13 +21,19 @@ Added two new administrative commands to `AntiCheatsBP/scripts/main.js` to enhan
 ## Manifest API Versioning Update (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
-Reviewed and updated the versions of `@minecraft/server` and related modules in `AntiCheatsBP/manifest.json` to align with the project's `min_engine_version` of `[1, 21, 0]` and utilize recent beta releases for the `1.21.90` engine preview.
+Reviewed and initially updated the versions of `@minecraft/server` and related modules in `AntiCheatsBP/manifest.json` to align with the project's `min_engine_version` of `[1, 21, 0]` and utilize recent beta releases for the `1.21.90` engine preview.
 
-*   **Key Version Changes:**
+*   **Initial Key Version Changes (to `1.21.90-preview.28` series):**
     *   `@minecraft/server`: Updated from `2.0.0-beta` to `2.1.0-beta.1.21.90-preview.28`.
     *   `@minecraft/server-ui`: Updated from `2.0.0-beta` to `2.1.0-beta.1.21.90-preview.28`.
     *   `@minecraft/server-gametest`: Updated from `1.0.0-beta` to `1.0.0-beta.1.21.90-preview.28`.
-*   This ensures the project uses up-to-date script API features and fixes corresponding to the targeted Minecraft engine version.
+
+*   **Update (Reversion due to User Feedback):**
+    *   Based on user feedback, the module versions were reverted to their previous state to maintain compatibility or address other concerns.
+    *   **Current Versions:**
+        *   `@minecraft/server`: `2.0.0-beta`
+        *   `@minecraft/server-ui`: `2.0.0-beta`
+        *   `@minecraft/server-gametest`: `1.0.0-beta`
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
