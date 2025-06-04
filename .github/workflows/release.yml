@@ -29,8 +29,8 @@ jobs:
 
     - name: Copy addon folders to staging
       run: |
-        cp -r "Anti Cheats BP" staging/
-        cp -r "Anti Cheats RP" staging/
+        cp -r BP staging/
+        cp -r RP staging/
 
     - name: Replace placeholders in staged JSON files
       shell: bash
@@ -51,19 +51,19 @@ jobs:
         find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
 
         echo "Contents of staged BP manifest after replacement:"
-        cat "staging/Anti Cheats BP/manifest.json"
+        cat "staging/BP/manifest.json"
         echo "Contents of staged RP manifest after replacement:"
-        cat "staging/Anti Cheats RP/manifest.json"
+        cat "staging/RP/manifest.json"
 
-        # Replace __VERSION_STRING__ placeholder in config.js
-        CONFIG_JS_PATH="staging/Anti Cheats BP/scripts/config.js"
-        if [ -f "$CONFIG_JS_PATH" ]; then
-          echo "Replacing __VERSION_STRING__ in $CONFIG_JS_PATH"
-          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_JS_PATH"
-          echo "Contents of $CONFIG_JS_PATH after replacement:"
-          cat "$CONFIG_JS_PATH"
+        # Replace __VERSION_STRING__ placeholder in config.ts
+        CONFIG_TS_PATH="staging/BP/scripts/config.ts"
+        if [ -f "$CONFIG_TS_PATH" ]; then
+          echo "Replacing __VERSION_STRING__ in $CONFIG_TS_PATH"
+          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_TS_PATH"
+          echo "Contents of $CONFIG_TS_PATH after replacement:"
+          cat "$CONFIG_TS_PATH"
         else
-          echo "Warning: $CONFIG_JS_PATH not found."
+          echo "Warning: $CONFIG_TS_PATH not found."
         fi
 
     - name: Zip addon
@@ -80,7 +80,7 @@ jobs:
       env:
         FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
       run: |
-        cd staging/"Anti Cheats BP"
+        cd staging/BP
         zip -r "../../AC BP${{ env.FULL_TAG_NAME }}.mcpack" ./*
         cd ../..
 
@@ -100,7 +100,7 @@ jobs:
       env:
         FULL_TAG_NAME: ${{ env.FULL_TAG_NAME }}
       run: |
-        cd staging/"Anti Cheats RP"
+        cd staging/RP
         zip -r "../../AC RP${{ env.FULL_TAG_NAME }}.mcpack" ./*
         cd ../..
 
