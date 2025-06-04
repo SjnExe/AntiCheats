@@ -1,5 +1,20 @@
 # Completed Tasks
 
+## Player Data Persistence Investigation (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Conducted an investigation into methods for persisting player anti-cheat data (`pData`) to survive server restarts and player rejoins. The research focused on using Scoreboard Objectives and Entity Dynamic Properties available via the `@minecraft/server` API.
+
+*   **Key Activities:**
+    *   Researched the capabilities, pros, and cons of using `world.scoreboard` for numerical data storage.
+    *   Researched the capabilities, pros, and cons of using dynamic properties (on `Entity` and `World` objects), particularly with JSON stringification for complex data.
+    *   Outlined two potential approaches: one primarily using dynamic properties with JSON, and a hybrid approach.
+    *   Provided a recommendation to start with dynamic properties (storing a serialized JSON string of `pData`) due to its flexibility for complex data structures.
+*   **Outcome:**
+    *   The findings, detailed analysis of each mechanism, potential approaches, and the final recommendation are documented in the newly created `Dev/Persistence_Investigation.md` file. This document will serve as a basis for the future implementation of data persistence.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Specify Target Minecraft Version (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
