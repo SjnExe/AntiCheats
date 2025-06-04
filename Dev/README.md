@@ -68,6 +68,9 @@ This directory can be used by developers (including AI assistants like Jules) to
 - Place utility scripts for debugging or build processes.
 - Maintain any other resources that facilitate understanding and working on this addon.
 
+## Target Minecraft Version
+The addon currently targets Minecraft Bedrock version 1.21.80 and newer. Please ensure development and testing align with this version.
+
 ## Task Management for Development
 
 To help track the development progress of this addon, especially when working with AI assistants or multiple developers, a simple task management system is maintained within the `Dev/tasks/` directory. This directory contains the following files:
