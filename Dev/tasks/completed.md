@@ -1,5 +1,23 @@
 # Completed Tasks
 
+## Killaura/Aimbot Detection Investigation (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Conducted an investigation into methods for detecting Killaura and Aimbot cheats using the `@minecraft/server` API. This involved reviewing existing community projects, researching common detection techniques, analyzing API capabilities, and outlining potential detection logic.
+
+*   **Key Activities & Findings:**
+    *   Reviewed internal documentation and external projects (Scythe Anticheat, SafeGuard Anticheat) for initial insights.
+    *   Researched various detection heuristics, including state conflicts, "no swing" attacks (noted as difficult with current API), multi-target analysis, invalid rotation/view snapping, hit consistency, and targeting anomalies.
+    *   Assessed the feasibility of these techniques based on available `@minecraft/server` API features (player view/rotation, entity hurt events, player states, target information).
+    *   Outlined potential logic for promising checks:
+        *   Invalid Rotation / View Snap (Aimbot component).
+        *   Multi-Target / Fast Target Switching (Killaura component).
+        *   Attacking During Invalid States (e.g., sleeping).
+*   **Outcome:**
+    *   The detailed findings, API feasibility analysis, outlined detection logic, and recommendations for initial implementation focus (View Snap, Multi-Target Killaura, State Conflict - Sleeping) are documented in the newly created `Dev/Killaura_Aimbot_Investigation.md` file. This document provides a foundation for future development of these advanced cheat detection modules.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Updated Root README.md (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 

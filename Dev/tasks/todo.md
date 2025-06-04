@@ -7,7 +7,7 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Medium Priority
 *   **Advanced Cheat Detections:**
-    *   Investigate and implement more complex Killaura/Aimbot detection (e.g., analyzing hit patterns, pitch/yaw consistency).
+    *   Implement Killaura/Aimbot detection (based on investigation in `Dev/Killaura_Aimbot_Investigation.md` - e.g., View Snap, Multi-Target, State Conflicts).
     *   Explore checks for Scaffold, Tower, other automated building cheats.
     *   Consider checks for Timer (game speed manipulation) if possible with Script API.
 
