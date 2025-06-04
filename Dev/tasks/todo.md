@@ -102,7 +102,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **Ban/Mute/Kick Action Logging:** Ensure all punitive admin actions are logged with admin, target, reason, duration, and timestamp.
 *   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
-*   **Refactor: Create `types.js`:** (newly added) Define common JSDoc typedefs (e.g., `PlayerAntiCheatData`, `PlayerFlagData`) in a central `types.js` file to avoid potential circular dependencies and improve type management.
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
