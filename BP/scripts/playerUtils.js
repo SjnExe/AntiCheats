@@ -1,12 +1,12 @@
-import * as mc from '@minecraft/server';
-import { ADMIN_TAG, PREFIX, ENABLE_DEBUG_LOGGING } from './config';
+import { world } from '@minecraft/server';
+import { ADMIN_TAG, ENABLE_DEBUG_LOGGING } from './config'; // PREFIX was not used
 
 /**
  * Checks if a player has admin privileges.
  * @param player The player to check.
  * @returns True if the player is an admin, false otherwise.
  */
-export function isAdmin(player: mc.Player): boolean {
+export function isAdmin(player) {
     return player.hasTag(ADMIN_TAG);
 }
 
@@ -15,7 +15,7 @@ export function isAdmin(player: mc.Player): boolean {
  * @param player The player to warn.
  * @param reason The reason for the warning.
  */
-export function warnPlayer(player: mc.Player, reason: string): void {
+export function warnPlayer(player, reason) {
     player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
     // Potentially add to a warning counter for this player using dynamic properties
 }
@@ -24,8 +24,8 @@ export function warnPlayer(player: mc.Player, reason: string): void {
  * Notifies all online admins with a message.
  * @param message The message to send to admins.
  */
-export function notifyAdmins(message: string): void {
-    const allPlayers = mc.world.getAllPlayers();
+export function notifyAdmins(message) {
+    const allPlayers = world.getAllPlayers();
     for (const player of allPlayers) {
         if (isAdmin(player)) {
             player.sendMessage(`§7[AC Notify] ${message}§r`);
@@ -37,7 +37,7 @@ export function notifyAdmins(message: string): void {
  * Logs a message to the console if debug logging is enabled.
  * @param message The message to log.
  */
-export function debugLog(message: string): void {
+export function debugLog(message) {
     if (ENABLE_DEBUG_LOGGING) {
         console.warn(`[AC Debug] ${message}`);
     }

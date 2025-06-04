@@ -1,4 +1,3 @@
-import * as mc from '@minecraft/server';
 import { warnPlayer, notifyAdmins, debugLog } from './playerUtils';
 import { MAX_VERTICAL_SPEED, MAX_HORIZONTAL_SPEED } from './config';
 
@@ -11,7 +10,7 @@ import { MAX_VERTICAL_SPEED, MAX_HORIZONTAL_SPEED } from './config';
  * This would typically be called from a tick event or playerMove event.
  * @param player The player to check.
  */
-export function checkFly(player: mc.Player): void {
+export function checkFly(player) {
     // Example simplified logic:
     // const velocity = player.getVelocity();
     // if (!player.isOnGround && velocity.y > MAX_VERTICAL_SPEED && !player.isFlying /* and other conditions */) {
@@ -26,7 +25,7 @@ export function checkFly(player: mc.Player): void {
  * Placeholder for speed check.
  * @param player The player to check.
  */
-export function checkSpeed(player: mc.Player): void {
+export function checkSpeed(player) {
     // Example simplified logic:
     // const velocity = player.getVelocity();
     // const horizontalSpeed = Math.sqrt(velocity.x ** 2 + velocity.z ** 2);

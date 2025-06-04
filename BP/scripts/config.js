@@ -15,7 +15,7 @@ export const REACH_DISTANCE_CREATIVE = 6.0; // Max reach distance in creative
 
 // World Checks
 export const NUKER_BLOCKS_PER_TICK = 4; // Max blocks broken per tick before flagging nuker
-export const BANNED_ITEMS_PLACE: string[] = ["minecraft:command_block", "minecraft:moving_block"];
-export const BANNED_ITEMS_USE: string[] = [];
+export const BANNED_ITEMS_PLACE = ["minecraft:command_block", "minecraft:moving_block"];
+export const BANNED_ITEMS_USE = [];
 
 // Add more configuration options as needed

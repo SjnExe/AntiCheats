@@ -1,4 +1,4 @@
-import * as mc from '@minecraft/server';
+import { world, system } from '@minecraft/server';
 import { isAdmin, warnPlayer, notifyAdmins, debugLog } from './playerUtils';
 import { PREFIX } from './config';
 import { checkFly, checkSpeed } from './movementChecks';
@@ -8,7 +8,7 @@ debugLog("Anti-Cheat Script Loaded. Initializing...");
 // --- Event Subscriptions ---
 
 // Example: Before Chat Send Event (for commands or chat filtering)
-mc.world.beforeEvents.chatSend.subscribe((eventData) => {
+world.beforeEvents.chatSend.subscribe((eventData) => {
     const player = eventData.sender;
     const message = eventData.message;
 
@@ -39,9 +39,9 @@ mc.world.beforeEvents.chatSend.subscribe((eventData) => {
 });
 
 // Example: Player Hurt Event (for logging or specific responses to damage)
-mc.world.afterEvents.entityHurt.subscribe((eventData) => {
+world.afterEvents.entityHurt.subscribe((eventData) => {
     if (eventData.hurtEntity.typeId === 'minecraft:player') {
-        const player = eventData.hurtEntity as mc.Player;
+        const player = eventData.hurtEntity; // Removed 'as mc.Player'
         const damage = eventData.damage;
         const cause = eventData.cause;
         const damagingEntity = cause.damagingEntity;
@@ -53,7 +53,7 @@ mc.world.afterEvents.entityHurt.subscribe((eventData) => {
 });
 
 // Example: Block Break Event (for nuker, illegal block breaks)
-mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
+world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
     const player = eventData.player;
     const block = eventData.block;
     // debugLog(`Player ${player.nameTag} attempting to break block ${block.typeId} at ${block.location.x},${block.location.y},${block.location.z}`);
@@ -63,10 +63,10 @@ mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
 
 // Placeholder for tick event subscription for periodic checks
 // let currentTick = 0;
-// mc.system.runInterval(() => {
+// system.runInterval(() => { // mc.system changed to system
 //     currentTick++;
 //     if (currentTick % 20 === 0) { // Every second (assuming 20 ticks/sec)
-//         for (const player of mc.world.getAllPlayers()) {
+//         for (const player of world.getAllPlayers()) { // mc.world changed to world
 //             checkFly(player);
 //             checkSpeed(player);
 //             // Add other periodic checks

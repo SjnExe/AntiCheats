@@ -32,20 +32,6 @@ jobs:
         cp -r BP staging/
         cp -r RP staging/
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18' # Or a suitable LTS version
-
-    - name: Install TypeScript and Minecraft Types
-      run: |
-        npm install -g typescript
-        npm install -g @minecraft/server@1.12.0 @minecraft/server-ui@1.2.0 @minecraft/server-gametest
-
-    - name: Compile TypeScript scripts
-      working-directory: staging/BP/scripts # Ensure tsc runs where tsconfig.json is
-      run: tsc
-
     - name: Replace placeholders in staged JSON files
       shell: bash
       env:
