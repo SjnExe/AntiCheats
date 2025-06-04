@@ -1,0 +1,219 @@
+﻿2025-06-04T10:17:42.9471073Z Current runner version: '2.324.0'
+2025-06-04T10:17:42.9505181Z ##[group]Operating System
+2025-06-04T10:17:42.9506780Z Ubuntu
+2025-06-04T10:17:42.9507587Z 24.04.2
+2025-06-04T10:17:42.9508653Z LTS
+2025-06-04T10:17:42.9509510Z ##[endgroup]
+2025-06-04T10:17:42.9510317Z ##[group]Runner Image
+2025-06-04T10:17:42.9511304Z Image: ubuntu-24.04
+2025-06-04T10:17:42.9512093Z Version: 20250527.1.0
+2025-06-04T10:17:42.9514018Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20250527.1/images/ubuntu/Ubuntu2404-Readme.md
+2025-06-04T10:17:42.9516521Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20250527.1
+2025-06-04T10:17:42.9518008Z ##[endgroup]
+2025-06-04T10:17:42.9519184Z ##[group]Runner Image Provisioner
+2025-06-04T10:17:42.9520204Z 2.0.437.1
+2025-06-04T10:17:42.9521095Z ##[endgroup]
+2025-06-04T10:17:42.9525535Z ##[group]GITHUB_TOKEN Permissions
+2025-06-04T10:17:42.9528693Z Actions: write
+2025-06-04T10:17:42.9529985Z Attestations: write
+2025-06-04T10:17:42.9530909Z Checks: write
+2025-06-04T10:17:42.9531780Z Contents: write
+2025-06-04T10:17:42.9532522Z Deployments: write
+2025-06-04T10:17:42.9533364Z Discussions: write
+2025-06-04T10:17:42.9534636Z Issues: write
+2025-06-04T10:17:42.9535531Z Metadata: read
+2025-06-04T10:17:42.9536608Z Models: read
+2025-06-04T10:17:42.9537588Z Packages: write
+2025-06-04T10:17:42.9538691Z Pages: write
+2025-06-04T10:17:42.9539562Z PullRequests: write
+2025-06-04T10:17:42.9540593Z RepositoryProjects: write
+2025-06-04T10:17:42.9541492Z SecurityEvents: write
+2025-06-04T10:17:42.9542351Z Statuses: write
+2025-06-04T10:17:42.9543263Z ##[endgroup]
+2025-06-04T10:17:42.9546322Z Secret source: Actions
+2025-06-04T10:17:42.9548008Z Prepare workflow directory
+2025-06-04T10:17:43.0025920Z Prepare all required actions
+2025-06-04T10:17:43.0083449Z Getting action download info
+2025-06-04T10:17:43.3262435Z ##[group]Download immutable action package 'actions/checkout@v4'
+2025-06-04T10:17:43.3263414Z Version: 4.2.2
+2025-06-04T10:17:43.3264525Z Digest: sha256:ccb2698953eaebd21c7bf6268a94f9c26518a7e38e27e0b83c1fe1ad049819b1
+2025-06-04T10:17:43.3265711Z Source commit SHA: 11bd71901bbe5b1630ceea73d27597364c9af683
+2025-06-04T10:17:43.3266388Z ##[endgroup]
+2025-06-04T10:17:43.4263709Z ##[group]Download immutable action package 'actions/setup-node@v3'
+2025-06-04T10:17:43.4265050Z Version: 3.9.1
+2025-06-04T10:17:43.4266389Z Digest: sha256:d8c8dbd6e63927801f9de42620f961a361b03be6034dcc11e83ca01f50cb9f40
+2025-06-04T10:17:43.4268399Z Source commit SHA: 3235b876344d2a9aa001b8d1453c930bba69e610
+2025-06-04T10:17:43.4269784Z ##[endgroup]
+2025-06-04T10:17:43.6797736Z Download action repository 'actions/upload-release-asset@v1' (SHA:e8f9f06c4b078e705bd2ea027f0926603fc9b4d5)
+2025-06-04T10:17:44.0169868Z Complete job name: build
+2025-06-04T10:17:44.0845169Z ##[group]Run actions/checkout@v4
+2025-06-04T10:17:44.0845960Z with:
+2025-06-04T10:17:44.0846343Z   repository: SjnExe/AntiCheats
+2025-06-04T10:17:44.0846936Z   token: ***
+2025-06-04T10:17:44.0847300Z   ssh-strict: true
+2025-06-04T10:17:44.0847696Z   ssh-user: git
+2025-06-04T10:17:44.0848082Z   persist-credentials: true
+2025-06-04T10:17:44.0848876Z   clean: true
+2025-06-04T10:17:44.0849273Z   sparse-checkout-cone-mode: true
+2025-06-04T10:17:44.0849723Z   fetch-depth: 1
+2025-06-04T10:17:44.0850087Z   fetch-tags: false
+2025-06-04T10:17:44.0850457Z   show-progress: true
+2025-06-04T10:17:44.0850841Z   lfs: false
+2025-06-04T10:17:44.0851197Z   submodules: false
+2025-06-04T10:17:44.0851581Z   set-safe-directory: true
+2025-06-04T10:17:44.0852296Z ##[endgroup]
+2025-06-04T10:17:44.2593661Z Syncing repository: SjnExe/AntiCheats
+2025-06-04T10:17:44.2595493Z ##[group]Getting Git version info
+2025-06-04T10:17:44.2596251Z Working directory is '/home/runner/work/AntiCheats/AntiCheats'
+2025-06-04T10:17:44.2597360Z [command]/usr/bin/git version
+2025-06-04T10:17:44.2637492Z git version 2.49.0
+2025-06-04T10:17:44.2665605Z ##[endgroup]
+2025-06-04T10:17:44.2685276Z Temporarily overriding HOME='/home/runner/work/_temp/88fae85e-f0b4-444e-96d1-3600dd5d65da' before making global git config changes
+2025-06-04T10:17:44.2687828Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-04T10:17:44.2690168Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/AntiCheats/AntiCheats
+2025-06-04T10:17:44.2722465Z Deleting the contents of '/home/runner/work/AntiCheats/AntiCheats'
+2025-06-04T10:17:44.2725988Z ##[group]Initializing the repository
+2025-06-04T10:17:44.2730029Z [command]/usr/bin/git init /home/runner/work/AntiCheats/AntiCheats
+2025-06-04T10:17:44.2790210Z hint: Using 'master' as the name for the initial branch. This default branch name
+2025-06-04T10:17:44.2791712Z hint: is subject to change. To configure the initial branch name to use in all
+2025-06-04T10:17:44.2792702Z hint: of your new repositories, which will suppress this warning, call:
+2025-06-04T10:17:44.2793417Z hint:
+2025-06-04T10:17:44.2793910Z hint: 	git config --global init.defaultBranch <name>
+2025-06-04T10:17:44.2794519Z hint:
+2025-06-04T10:17:44.2795453Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2025-06-04T10:17:44.2797206Z hint: 'development'. The just-created branch can be renamed via this command:
+2025-06-04T10:17:44.2798722Z hint:
+2025-06-04T10:17:44.2799404Z hint: 	git branch -m <name>
+2025-06-04T10:17:44.2800615Z Initialized empty Git repository in /home/runner/work/AntiCheats/AntiCheats/.git/
+2025-06-04T10:17:44.2810201Z [command]/usr/bin/git remote add origin https://github.com/SjnExe/AntiCheats
+2025-06-04T10:17:44.2844306Z ##[endgroup]
+2025-06-04T10:17:44.2845097Z ##[group]Disabling automatic garbage collection
+2025-06-04T10:17:44.2848139Z [command]/usr/bin/git config --local gc.auto 0
+2025-06-04T10:17:44.2876197Z ##[endgroup]
+2025-06-04T10:17:44.2876936Z ##[group]Setting up auth
+2025-06-04T10:17:44.2882732Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-04T10:17:44.2912414Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-04T10:17:44.3185232Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-04T10:17:44.3218088Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-04T10:17:44.3459723Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2025-06-04T10:17:44.3502635Z ##[endgroup]
+2025-06-04T10:17:44.3504069Z ##[group]Fetching the repository
+2025-06-04T10:17:44.3513540Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +1bb802f1f6fd02a5f2b904e34d064783fbfbfba4:refs/tags/v0.0.4
+2025-06-04T10:17:44.7890256Z From https://github.com/SjnExe/AntiCheats
+2025-06-04T10:17:44.7891934Z  * [new ref]         1bb802f1f6fd02a5f2b904e34d064783fbfbfba4 -> v0.0.4
+2025-06-04T10:17:44.7920651Z ##[endgroup]
+2025-06-04T10:17:44.7921888Z ##[group]Determining the checkout info
+2025-06-04T10:17:44.7923326Z ##[endgroup]
+2025-06-04T10:17:44.7925465Z [command]/usr/bin/git sparse-checkout disable
+2025-06-04T10:17:44.7970559Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2025-06-04T10:17:44.8004141Z ##[group]Checking out the ref
+2025-06-04T10:17:44.8008632Z [command]/usr/bin/git checkout --progress --force refs/tags/v0.0.4
+2025-06-04T10:17:44.8065226Z Note: switching to 'refs/tags/v0.0.4'.
+2025-06-04T10:17:44.8066329Z 
+2025-06-04T10:17:44.8067168Z You are in 'detached HEAD' state. You can look around, make experimental
+2025-06-04T10:17:44.8069407Z changes and commit them, and you can discard any commits you make in this
+2025-06-04T10:17:44.8072455Z state without impacting any branches by switching back to a branch.
+2025-06-04T10:17:44.8074200Z 
+2025-06-04T10:17:44.8075370Z If you want to create a new branch to retain commits you create, you may
+2025-06-04T10:17:44.8078850Z do so (now or later) by using -c with the switch command. Example:
+2025-06-04T10:17:44.8080618Z 
+2025-06-04T10:17:44.8081372Z   git switch -c <new-branch-name>
+2025-06-04T10:17:44.8082554Z 
+2025-06-04T10:17:44.8083215Z Or undo this operation with:
+2025-06-04T10:17:44.8084289Z 
+2025-06-04T10:17:44.8084874Z   git switch -
+2025-06-04T10:17:44.8085690Z 
+2025-06-04T10:17:44.8086948Z Turn off this advice by setting config variable advice.detachedHead to false
+2025-06-04T10:17:44.8088811Z 
+2025-06-04T10:17:44.8092933Z HEAD is now at 1bb802f I've modified the npm install command in the release workflow to install @minecraft/server-gametest without specifying a version number. This is an attempt to resolve previous ETARGET errors by allowing npm to pick a compatible version.
+2025-06-04T10:17:44.8100852Z ##[endgroup]
+2025-06-04T10:17:44.8115284Z [command]/usr/bin/git log -1 --format=%H
+2025-06-04T10:17:44.8138150Z 1bb802f1f6fd02a5f2b904e34d064783fbfbfba4
+2025-06-04T10:17:44.8384953Z ##[group]Run RAW_TAG_NAME="v0.0.4"
+2025-06-04T10:17:44.8386173Z [36;1mRAW_TAG_NAME="v0.0.4"[0m
+2025-06-04T10:17:44.8387492Z [36;1mecho "FULL_TAG_NAME=$RAW_TAG_NAME" >> $GITHUB_ENV[0m
+2025-06-04T10:17:44.8389225Z [36;1m# Remove 'v' prefix for version string[0m
+2025-06-04T10:17:44.8390537Z [36;1mVERSION_STR="${RAW_TAG_NAME#v}"[0m
+2025-06-04T10:17:44.8391910Z [36;1mecho "VERSION_STRING=$VERSION_STR" >> $GITHUB_ENV[0m
+2025-06-04T10:17:44.8393570Z [36;1m# Convert version string "1.2.3" to array string "[1,2,3]"[0m
+2025-06-04T10:17:44.8395262Z [36;1mVERSION_ARR_STR="[$(echo $VERSION_STR | tr '.' ',')]"[0m
+2025-06-04T10:17:44.8397017Z [36;1mecho "VERSION_ARRAY_STRING=$VERSION_ARR_STR" >> $GITHUB_ENV[0m
+2025-06-04T10:17:44.8399473Z [36;1mecho "Full tag: $RAW_TAG_NAME, Version string: $VERSION_STR, Version array string: $VERSION_ARR_STR"[0m
+2025-06-04T10:17:44.8470836Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2025-06-04T10:17:44.8472263Z ##[endgroup]
+2025-06-04T10:17:44.8598624Z Full tag: v0.0.4, Version string: 0.0.4, Version array string: [0,0,4]
+2025-06-04T10:17:44.8666796Z ##[group]Run mkdir staging
+2025-06-04T10:17:44.8667791Z [36;1mmkdir staging[0m
+2025-06-04T10:17:44.8721752Z shell: /usr/bin/bash -e {0}
+2025-06-04T10:17:44.8722673Z env:
+2025-06-04T10:17:44.8723384Z   FULL_TAG_NAME: v0.0.4
+2025-06-04T10:17:44.8724250Z   VERSION_STRING: 0.0.4
+2025-06-04T10:17:44.8725128Z   VERSION_ARRAY_STRING: [0,0,4]
+2025-06-04T10:17:44.8726060Z ##[endgroup]
+2025-06-04T10:17:44.8875879Z ##[group]Run cp -r BP staging/
+2025-06-04T10:17:44.8876905Z [36;1mcp -r BP staging/[0m
+2025-06-04T10:17:44.8877820Z [36;1mcp -r RP staging/[0m
+2025-06-04T10:17:44.8930297Z shell: /usr/bin/bash -e {0}
+2025-06-04T10:17:44.8931180Z env:
+2025-06-04T10:17:44.8931870Z   FULL_TAG_NAME: v0.0.4
+2025-06-04T10:17:44.8932724Z   VERSION_STRING: 0.0.4
+2025-06-04T10:17:44.8933588Z   VERSION_ARRAY_STRING: [0,0,4]
+2025-06-04T10:17:44.8934482Z ##[endgroup]
+2025-06-04T10:17:44.9259342Z ##[group]Run actions/setup-node@v3
+2025-06-04T10:17:44.9260365Z with:
+2025-06-04T10:17:44.9261066Z   node-version: 18
+2025-06-04T10:17:44.9261837Z   always-auth: false
+2025-06-04T10:17:44.9262647Z   check-latest: false
+2025-06-04T10:17:44.9263713Z   token: ***
+2025-06-04T10:17:44.9264414Z env:
+2025-06-04T10:17:44.9265082Z   FULL_TAG_NAME: v0.0.4
+2025-06-04T10:17:44.9265926Z   VERSION_STRING: 0.0.4
+2025-06-04T10:17:44.9266782Z   VERSION_ARRAY_STRING: [0,0,4]
+2025-06-04T10:17:44.9267682Z ##[endgroup]
+2025-06-04T10:17:45.1218848Z Found in cache @ /opt/hostedtoolcache/node/18.20.8/x64
+2025-06-04T10:17:45.1223511Z ##[group]Environment details
+2025-06-04T10:17:48.8239219Z node: v18.20.8
+2025-06-04T10:17:48.8239748Z npm: 10.8.2
+2025-06-04T10:17:48.8240085Z yarn: 1.22.22
+2025-06-04T10:17:48.8241109Z ##[endgroup]
+2025-06-04T10:17:48.8345257Z ##[group]Run npm install -g typescript
+2025-06-04T10:17:48.8345566Z [36;1mnpm install -g typescript[0m
+2025-06-04T10:17:48.8345980Z [36;1mnpm install -g @minecraft/server@1.12.0 @minecraft/server-ui@1.2.0 @minecraft/server-gametest[0m
+2025-06-04T10:17:48.8402396Z shell: /usr/bin/bash -e {0}
+2025-06-04T10:17:48.8402618Z env:
+2025-06-04T10:17:48.8402788Z   FULL_TAG_NAME: v0.0.4
+2025-06-04T10:17:48.8402980Z   VERSION_STRING: 0.0.4
+2025-06-04T10:17:48.8403180Z   VERSION_ARRAY_STRING: [0,0,4]
+2025-06-04T10:17:48.8403380Z ##[endgroup]
+2025-06-04T10:17:51.4304483Z 
+2025-06-04T10:17:51.4310576Z added 1 package in 3s
+2025-06-04T10:17:53.7398461Z 
+2025-06-04T10:17:53.7398972Z added 6 packages in 2s
+2025-06-04T10:17:53.7500886Z ##[group]Run tsc
+2025-06-04T10:17:53.7501112Z [36;1mtsc[0m
+2025-06-04T10:17:53.7554993Z shell: /usr/bin/bash -e {0}
+2025-06-04T10:17:53.7555219Z env:
+2025-06-04T10:17:53.7555382Z   FULL_TAG_NAME: v0.0.4
+2025-06-04T10:17:53.7555583Z   VERSION_STRING: 0.0.4
+2025-06-04T10:17:53.7555772Z   VERSION_ARRAY_STRING: [0,0,4]
+2025-06-04T10:17:53.7555986Z ##[endgroup]
+2025-06-04T10:17:54.4429859Z error TS2688: Cannot find type definition file for '@minecraft/server'.
+2025-06-04T10:17:54.4437340Z   The file is in the program because:
+2025-06-04T10:17:54.4438105Z     Entry point of type library '@minecraft/server' specified in compilerOptions
+2025-06-04T10:17:54.4439423Z error TS2688: Cannot find type definition file for '@minecraft/server-ui'.
+2025-06-04T10:17:54.4440186Z   The file is in the program because:
+2025-06-04T10:17:54.4440934Z     Entry point of type library '@minecraft/server-ui' specified in compilerOptions
+2025-06-04T10:17:54.4550816Z ##[error]Process completed with exit code 2.
+2025-06-04T10:17:54.4674802Z Post job cleanup.
+2025-06-04T10:17:54.5608845Z [command]/usr/bin/git version
+2025-06-04T10:17:54.5644812Z git version 2.49.0
+2025-06-04T10:17:54.5691204Z Temporarily overriding HOME='/home/runner/work/_temp/4e75d205-40f4-4d56-ac1e-8bf2db72d246' before making global git config changes
+2025-06-04T10:17:54.5692707Z Adding repository directory to the temporary git global config as a safe directory
+2025-06-04T10:17:54.5697911Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/AntiCheats/AntiCheats
+2025-06-04T10:17:54.5734778Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2025-06-04T10:17:54.5768840Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2025-06-04T10:17:54.5999577Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2025-06-04T10:17:54.6020022Z http.https://github.com/.extraheader
+2025-06-04T10:17:54.6032401Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2025-06-04T10:17:54.6062757Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2025-06-04T10:17:54.6383716Z Cleaning up orphan processes
