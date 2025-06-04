@@ -1,5 +1,21 @@
 # Completed Tasks
 
+## Folder Renaming and Path Updates (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+This task involved renaming the core Behavior Pack (`BP/`) and Resource Pack (`RP/`) folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively. All references to these paths within the project's configuration and documentation files were updated accordingly.
+
+*   **Task:** Rename `BP/` and `RP/` folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively, and update all references.
+    *   **Status:** Completed
+    *   **Details:**
+        *   Renamed the physical folders `BP/` to `AntiCheatsBP/` and `RP/` to `AntiCheatsRP/`.
+        *   Updated paths in `.github/workflows/release.yml`.
+        *   Updated paths in `Dev/README.md`.
+        *   Updated paths in the root `README.md`.
+        *   Checked and updated paths in `.gitignore`.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Anti-Cheat Feature Implementation (Submitted: 2024-07-24)
 *(Date is a placeholder based on current interaction)*
 
