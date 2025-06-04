@@ -84,14 +84,14 @@ Maintaining these files helps ensure clarity on project status and facilitates s
 
 **Current Scripting Language: Plain JavaScript**
 
-The Behavior Pack scripts for this addon (`BP/scripts/`) are currently written in plain JavaScript (.js files).
+The Behavior Pack scripts for this addon (`AntiCheatsBP/scripts/`) are currently written in plain JavaScript (.js files).
 
 *   **Rationale:** While TypeScript was initially considered for its benefits (static typing, modern features), complexities were encountered in establishing a consistent and reliable TypeScript-to-JavaScript compilation process within the GitHub Actions CI/CD workflow. To ensure a stable and functional build pipeline for releases, the decision was made to use plain JavaScript directly.
 *   **Future Considerations for TypeScript:** If TypeScript is to be reintroduced in the future, it would require:
     *   A robust local development setup for TypeScript compilation (e.g., using `tsc` with a `tsconfig.json`).
     *   A reliable method for managing TypeScript type definitions (e.g., via a `package.json` and `npm install`).
     *   Ensuring that the CI/CD workflow can replicate this compilation process consistently to produce valid JavaScript for the game.
-*   **Guidance for Now:** Please write all new Behavior Pack scripts in plain JavaScript. Ensure that the `entry` point in `BP/manifest.json` correctly points to the JavaScript main file.
+*   **Guidance for Now:** Please write all new Behavior Pack scripts in plain JavaScript. Ensure that the `entry` point in `AntiCheatsBP/manifest.json` correctly points to the JavaScript main file.
 
 ## Important Workflow Notes for AI Assistants
 

@@ -1,6 +1,12 @@
 # Ongoing Tasks
 
-As of the last update (2024-07-24 - *creation of this file*):
+As of 2024-07-24 *(placeholder date)*:
 
-*   The previous major task (Anti-Cheat Feature Implementation and Documentation) has been completed and submitted.
-*   Currently, no new development task is actively in progress. This file should be updated when a new task from `todo.md` is started.
+*   **Task:** Rename `BP/` and `RP/` folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively, and update all references.
+    *   **Status:** In Progress
+    *   **Details:**
+        *   Rename the physical folders.
+        *   Update paths in `.github/workflows/release.yml`.
+        *   Update paths in `Dev/README.md`.
+        *   Update paths in the root `README.md` (if any).
+        *   Check and update paths in `.gitignore` (if any).
