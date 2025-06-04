@@ -10,9 +10,6 @@ This list contains planned features, improvements, and areas for future investig
     *   Investigate and implement more complex Killaura/Aimbot detection (e.g., analyzing hit patterns, pitch/yaw consistency).
     *   Explore checks for Scaffold, Tower, other automated building cheats.
     *   Consider checks for Timer (game speed manipulation) if possible with Script API.
-*   **Persistence for Player Data/Flags:**
-    *   **Implement** using dynamic properties (based on investigation in `Dev/Persistence_Investigation.md`) for persistent storage of player flags or reputation, so data isn't lost on server restart/player rejoin.
-    *   *(Investigation and documentation of methods completed - see `Dev/Persistence_Investigation.md`)*
 *   **Admin Tool Expansion:**
     *   Consider a simple UI for admins using `@minecraft/server-ui`.
     *   *(Completed: `!ac inspect <playername>` command implementation)*

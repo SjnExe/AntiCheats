@@ -1,5 +1,41 @@
 # Completed Tasks
 
+## Implemented Player Data Persistence (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Implemented a system for persisting key player anti-cheat data (`pData`) across sessions (server restarts, player rejoin/leave). This ensures that player flags, watched status, and relevant violation tracking information are maintained.
+
+*   **Core Mechanism:**
+    *   Utilized Entity Dynamic Properties (`player.setDynamicProperty`, `player.getDynamicProperty`) for storing and retrieving player data.
+    *   Data is serialized into a JSON string under the key `anticheat:pdata_v1` on the player entity.
+*   **Key Functions Implemented:**
+    *   **`savePlayerDataToDynamicProperties(player, pDataToSave)`** (in `playerUtils.js`):
+        *   Serializes a defined subset of `pData` (including `flags` object, `isWatched`, `lastFlagType`, `playerNameTag`, `attackEvents`, `lastAttackTime`, `blockBreakEvents`, `consecutiveOffGroundTicks`, `fallDistance`, `consecutiveOnGroundSpeedingTicks`) into JSON.
+        *   Saves the JSON string to the player's dynamic property.
+        *   Includes error handling and size checks.
+    *   **`loadPlayerDataFromDynamicProperties(player)`** (in `playerUtils.js`):
+        *   Retrieves the JSON string from the player's dynamic property.
+        *   Parses the JSON string and returns the reconstituted data object.
+        *   Includes error handling and returns `null` if data is not found or corrupted.
+    *   **`prepareAndSavePlayerData(player)`** (helper in `main.js`):
+        *   Constructs the specific `persistedPData` object from the runtime `pData` map.
+        *   Calls `savePlayerDataToDynamicProperties`.
+    *   **`initializeDefaultPlayerData(player)`** (helper in `main.js`):
+        *   Creates a fresh, default `PlayerAntiCheatData` object for new players or when persisted data is not found/loaded.
+*   **Integration Points:**
+    *   **Saving Data:**
+        *   Data is saved when a player leaves the game (via `world.beforeEvents.playerLeave`).
+        *   Data is saved after modifications via admin commands:
+            *   `!ac watch` (when `isWatched` status changes).
+            *   `!ac resetflags` (after flags and relevant states are cleared).
+    *   **Loading Data:**
+        *   When a player joins (or is first processed by the `system.runInterval` in `main.js`), the system attempts to load their persisted data using `loadPlayerDataFromDynamicProperties`.
+        *   If data is found, it's merged with a default `pData` structure, prioritizing loaded values.
+        *   If no data is found, a fresh default `pData` object is used.
+*   **Outcome:** This implementation provides a foundational persistence layer. Further work could involve saving data more frequently (e.g., after every flag increment) if deemed necessary, which would require refactoring the flag-adding logic.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Player Data Persistence Investigation (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 

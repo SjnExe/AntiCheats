@@ -48,6 +48,91 @@ export function notifyAdmins(baseMessage, player?, pData?): void {
 }
 
 /**
+ * Loads persisted player-specific anti-cheat data from a dynamic property on the player entity.
+ * The data is expected to be a JSON string.
+ * @param {mc.Player} player The player entity to load data from.
+ * @returns {Promise<object|null>} The parsed pData object if successful, or null if no data is found or an error occurs.
+ */
+export async function loadPlayerDataFromDynamicProperties(player) {
+    if (!player) {
+        debugLog("loadPlayerDataFromDynamicProperties: Invalid player object provided.");
+        return null;
+    }
+
+    const dynamicPropertyKey = "anticheat:pdata_v1";
+    let jsonString;
+
+    try {
+        jsonString = player.getDynamicProperty(dynamicPropertyKey);
+    } catch (error) {
+        debugLog(`Failed to get dynamic property '${dynamicPropertyKey}' for ${player.nameTag}. Error: ${error}`, player.nameTag);
+        if (error.message) debugLog(`Error message: ${error.message}`, player.nameTag);
+        return null;
+    }
+
+    if (typeof jsonString === 'string') {
+        try {
+            const parsedData = JSON.parse(jsonString);
+            debugLog(`Successfully retrieved and parsed pData from dynamic property for ${player.nameTag}.`, player.nameTag);
+            return parsedData;
+        } catch (error) {
+            debugLog(`Failed to parse JSON string for pData for ${player.nameTag}. JSON: "${jsonString}". Error: ${error}`, player.nameTag);
+            if (error.message) debugLog(`Parse error message: ${error.message}`, player.nameTag);
+            return null;
+        }
+    } else if (typeof jsonString === 'undefined') {
+        debugLog(`No dynamic property '${dynamicPropertyKey}' found for ${player.nameTag}. Assuming new or non-persisted player.`, player.nameTag);
+        return null;
+    } else {
+        debugLog(`Unexpected data type for dynamic property '${dynamicPropertyKey}' for ${player.nameTag}: ${typeof jsonString}`, player.nameTag);
+        return null;
+    }
+}
+
+/**
+ * Saves a subset of player-specific anti-cheat data to a dynamic property on the player entity.
+ * The data is serialized as a JSON string.
+ * @param {mc.Player} player The player entity to save data to.
+ * @param {object} pDataToSave The subset of pData object to serialize and save.
+ *                             Expected to contain fields like `flags`, `isWatched`, `lastFlagType`, `playerNameTag`.
+ * @returns {Promise<boolean>} True if saving was successful, false otherwise.
+ */
+export async function savePlayerDataToDynamicProperties(player, pDataToSave) {
+    if (!player || !pDataToSave) {
+        debugLog("savePlayerDataToDynamicProperties: Invalid player or pDataToSave object provided.", player?.nameTag);
+        return false;
+    }
+
+    const dynamicPropertyKey = "anticheat:pdata_v1";
+    let jsonString;
+
+    try {
+        jsonString = JSON.stringify(pDataToSave);
+    } catch (error) {
+        debugLog(`Failed to stringify pData for ${player.nameTag}. Error: ${error}`, player.nameTag);
+        return false;
+    }
+
+    if (jsonString.length > 32760) { // A common, though not always exact, limit for string dynamic properties
+        debugLog(`Serialized pData for ${player.nameTag} is too large (${jsonString.length} bytes). Cannot save to dynamic property.`, player.nameTag);
+        // Consider logging the oversized object if possible, or parts of it, for diagnostics
+        // console.warn(JSON.stringify(pDataToSave, null, 2)); // Example: Log pretty-printed object for inspection
+        return false;
+    }
+
+    try {
+        player.setDynamicProperty(dynamicPropertyKey, jsonString);
+        debugLog(`Successfully saved pData to dynamic property for ${player.nameTag}.`, player.nameTag);
+        return true;
+    } catch (error) {
+        debugLog(`Failed to set dynamic property for ${player.nameTag}. Error: ${error}`, player.nameTag);
+        // Additional logging if error object has more details, e.g. error.message, error.stack
+        if (error.message) debugLog(`Error message: ${error.message}`, player.nameTag);
+        return false;
+    }
+}
+
+/**
  * Logs a message to the console if debug logging is enabled in the configuration.
  * Prefixes messages differently if `contextPlayerNameIfWatched` is provided, indicating a log specific to a watched player.
  * @param {string} message The message to log.

@@ -1,5 +1,5 @@
 import * as mc from '@minecraft/server';
-import { isAdmin, warnPlayer, notifyAdmins, debugLog } from './playerUtils';
+import { isAdmin, warnPlayer, notifyAdmins, debugLog, savePlayerDataToDynamicProperties, loadPlayerDataFromDynamicProperties } from './playerUtils';
 import { PREFIX, AC_VERSION } from './config';
 import { checkFly, checkSpeed, checkNoFall } from './movementChecks';
 import { checkReach, checkCPS } from './combatChecks.js';
@@ -50,6 +50,80 @@ debugLog("Anti-Cheat Script Loaded. Initializing...");
  */
 const playerData = new Map();
 
+// --- Helper function to prepare and save player data ---
+/**
+ * Prepares the subset of pData for persistence and calls the saving function.
+ * @param {mc.Player} player The player whose data needs to be saved.
+ */
+async function prepareAndSavePlayerData(player) {
+    if (!player) return;
+
+    const pData = playerData.get(player.id);
+    if (pData) {
+        const persistedPData = {
+            flags: pData.flags,
+            isWatched: pData.isWatched,
+            lastFlagType: pData.lastFlagType,
+            playerNameTag: pData.playerNameTag,
+            // Also persist fields that track state across sessions or are reset by resetflags
+            attackEvents: pData.attackEvents,
+            lastAttackTime: pData.lastAttackTime,
+            blockBreakEvents: pData.blockBreakEvents,
+            consecutiveOffGroundTicks: pData.consecutiveOffGroundTicks,
+            fallDistance: pData.fallDistance,
+            consecutiveOnGroundSpeedingTicks: pData.consecutiveOnGroundSpeedingTicks
+            // lastPosition, previousPosition, velocity, previousVelocity, lastOnGroundTick,
+            // lastOnGroundPosition, isTakingFallDamage are more transient or re-evaluated.
+        };
+        debugLog(`Preparing to save pData for ${player.nameTag}: Watched=${persistedPData.isWatched}, TotalFlags=${persistedPData.flags.totalFlags}, LastType=${persistedPData.lastFlagType}, COGTicks=${persistedPData.consecutiveOffGroundTicks}`, player.nameTag);
+        const success = await savePlayerDataToDynamicProperties(player, persistedPData);
+        if (success) {
+            debugLog(`Successfully prepared and initiated save for ${player.nameTag}'s pData.`, player.nameTag);
+        } else {
+            debugLog(`Failed to save pData for ${player.nameTag}.`, player.nameTag);
+        }
+    } else {
+        debugLog(`No pData found in runtime map for ${player.nameTag} during save attempt.`, player.nameTag);
+    }
+}
+
+/**
+ * Initializes a new PlayerAntiCheatData object with default values.
+ * @param {mc.Player} player The player for whom to initialize data.
+ * @returns {PlayerAntiCheatData} A new pData object.
+ */
+function initializeDefaultPlayerData(player) {
+    return {
+        playerNameTag: player.nameTag,
+        lastPosition: player.location,
+        previousPosition: player.location,
+        velocity: player.getVelocity(),
+        previousVelocity: { x: 0, y: 0, z: 0 },
+        consecutiveOffGroundTicks: 0,
+        fallDistance: 0,
+        lastOnGroundTick: currentTick, // currentTick is globally available in main.js
+        lastOnGroundPosition: player.location,
+        consecutiveOnGroundSpeedingTicks: 0,
+        isTakingFallDamage: false,
+        attackEvents: [],
+        lastAttackTime: 0,
+        blockBreakEvents: [],
+        flags: {
+            totalFlags: 0,
+            fly: { count: 0, lastDetectionTime: 0 },
+            speed: { count: 0, lastDetectionTime: 0 },
+            nofall: { count: 0, lastDetectionTime: 0 },
+            reach: { count: 0, lastDetectionTime: 0 },
+            cps: { count: 0, lastDetectionTime: 0 },
+            nuker: { count: 0, lastDetectionTime: 0 },
+            illegalItem: { count: 0, lastDetectionTime: 0 }
+        },
+        lastFlagType: "",
+        isWatched: false
+    };
+}
+
+
 // --- Event Subscriptions ---
 
 /**
@@ -97,6 +171,7 @@ mc.world.beforeEvents.chatSend.subscribe((eventData) => {
                         targetPData.isWatched = !targetPData.isWatched; // Toggle watch status
                         player.sendMessage(`§7Watch for ${foundPlayer.nameTag} ${targetPData.isWatched ? "§aenabled" : "§cdisabled"}.`);
                         notifyAdmins(`Watch for ${foundPlayer.nameTag} ${targetPData.isWatched ? "enabled" : "disabled"} by ${player.nameTag}.`, foundPlayer, targetPData);
+                        prepareAndSavePlayerData(foundPlayer); // Save data after modification
                     } else {
                         player.sendMessage(`§cPlayer data for ${targetPlayerName} not found (they might need to move or interact).`);
                     }
@@ -209,6 +284,7 @@ mc.world.beforeEvents.chatSend.subscribe((eventData) => {
                         player.sendMessage(`§aFlags and violation data reset for ${resetFoundPlayer.nameTag}.`);
                         notifyAdmins(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag}.`, resetFoundPlayer, targetPData);
                         debugLog(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag}.`, targetPData.isWatched ? resetFoundPlayer.nameTag : null);
+                        prepareAndSavePlayerData(resetFoundPlayer); // Save data after modification
                     } else {
                         player.sendMessage(`§cPlayer data for ${resetTargetName} not found (player may need to move or interact to initialize data).`);
                     }
@@ -221,6 +297,19 @@ mc.world.beforeEvents.chatSend.subscribe((eventData) => {
         }
     }
 });
+
+/**
+ * Handles player leave events to save their anti-cheat data.
+ * @param {mc.PlayerLeaveBeforeEvent} eventData - The player leave event data.
+ */
+mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
+    const player = eventData.player;
+    debugLog(`Player ${player.nameTag} is leaving. Attempting to save pData.`, player.nameTag);
+    prepareAndSavePlayerData(player);
+    // No await needed here if we don't need to block player leave,
+    // but prepareAndSavePlayerData is async, so it will run.
+});
+
 
 /**
  * Handles entity hurt events, primarily for:
@@ -342,39 +431,45 @@ mc.system.runInterval(() => {
     // --- Player Data Initialization & Per-Tick Updates ---
     for (const player of mc.world.getAllPlayers()) {
         if (!playerData.has(player.id)) {
-            playerData.set(player.id, {
-                playerNameTag: player.nameTag,
-                lastPosition: player.location,
-                previousPosition: player.location,
-                velocity: player.getVelocity(),
-                previousVelocity: { x: 0, y: 0, z: 0 },
-                consecutiveOffGroundTicks: 0,
-                fallDistance: 0,
-                lastOnGroundTick: currentTick,
-                lastOnGroundPosition: player.location,
-                consecutiveOnGroundSpeedingTicks: 0,
-                isTakingFallDamage: false,
-                attackEvents: [],
-                lastAttackTime: 0,
-                blockBreakEvents: [],
-                flags: {
-                    totalFlags: 0,
-                    fly: { count: 0, lastDetectionTime: 0 },
-                    speed: { count: 0, lastDetectionTime: 0 },
-                    nofall: { count: 0, lastDetectionTime: 0 },
-                    reach: { count: 0, lastDetectionTime: 0 },
-                    cps: { count: 0, lastDetectionTime: 0 },
-                    nuker: { count: 0, lastDetectionTime: 0 },
-                    illegalItem: { count: 0, lastDetectionTime: 0 }
-                },
-                lastFlagType: "",
-                isWatched: false
-            });
-            // For newly initialized pData, isWatched will be false, so context will be null.
-            debugLog(`Initialized data for ${player.nameTag}.`, null);
+            // Player not in runtime map, try to load or initialize
+            (async () => {
+                const loadedData = await loadPlayerDataFromDynamicProperties(player);
+                let newPData = initializeDefaultPlayerData(player); // Always get a fresh default structure
+
+                if (loadedData) {
+                    debugLog(`Loaded persisted data for ${player.nameTag}. Merging...`, player.nameTag);
+                    // Merge loaded data into the default structure
+                    newPData.flags = loadedData.flags || newPData.flags;
+                    newPData.isWatched = typeof loadedData.isWatched === 'boolean' ? loadedData.isWatched : newPData.isWatched;
+                    newPData.lastFlagType = loadedData.lastFlagType || newPData.lastFlagType;
+                    // Note: playerNameTag is already set by initializeDefaultPlayerData using current player.nameTag
+
+                    // Merge other persisted fields
+                    newPData.attackEvents = loadedData.attackEvents || []; // Ensure array type
+                    newPData.lastAttackTime = loadedData.lastAttackTime || 0;
+                    newPData.blockBreakEvents = loadedData.blockBreakEvents || []; // Ensure array type
+                    newPData.consecutiveOffGroundTicks = loadedData.consecutiveOffGroundTicks || 0;
+                    newPData.fallDistance = loadedData.fallDistance || 0;
+                    newPData.consecutiveOnGroundSpeedingTicks = loadedData.consecutiveOnGroundSpeedingTicks || 0;
+
+                } else {
+                    debugLog(`No persisted data found for ${player.nameTag}. Initializing fresh runtime data.`, player.nameTag);
+                }
+                playerData.set(player.id, newPData);
+                debugLog(`Initialized runtime data for ${player.nameTag}. Watched: ${newPData.isWatched}, Flags: ${newPData.flags.totalFlags}`, player.nameTag);
+            })();
         }
 
         const pData = playerData.get(player.id);
+        if (!pData) {
+            // Data might not be set yet if the async load/init above hasn't completed.
+            // Checks below should be robust to pData not existing immediately.
+            // Alternatively, could await the async block, but that might delay the tick loop.
+            // For now, subsequent operations in this tick for this player might not use full pData.
+            // This should resolve by the next tick.
+            continue;
+        }
+
         if (!pData.playerNameTag) pData.playerNameTag = player.nameTag; // Ensure nameTag is in pData
 
         // Log for watched player periodically
