@@ -14,16 +14,13 @@ import * as config from '../../../config.js';
  * @param {object} config The configuration object.
  */
 export function checkAttackWhileSleeping(player, pData, config) {
-    // This specific check uses ENABLE_STATE_CONFLICT_CHECK,
-    // but more specific toggles could be added if needed for different state conflicts.
-    if (!config.ENABLE_STATE_CONFLICT_CHECK) return;
+    if (!config.enableStateConflictCheck) return; // Renamed
 
     if (player.isSleeping) {
         playerDataManager.addFlag(
             player,
-            "attackWhileSleeping", // New flag type
-            config.FLAG_REASON_ATTACK_WHILE_SLEEPING,
-            // config.FLAG_INCREMENT_ATTACK_SLEEP, // Assuming addFlag handles increment or uses a default
+            "attackWhileSleeping",
+            config.flagReasonAttackWhileSleeping, // Renamed
             "Player attacked while isSleeping was true."
         );
         if (pData.isWatched) {

@@ -1,5 +1,18 @@
 # Completed Tasks
 
+## Created and Named Coding Style Guide (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Created a new documentation file, now named `Dev/CodingStyle.md`, to outline coding style conventions for the project. This includes naming conventions for variables (camelCase for config exports, general variables, functions; PascalCase for classes), JSDoc usage, and general formatting. The file was initially named `Dev/CODING_STYLE.md` and subsequently renamed to `Dev/CodingStyle.md`.
+
+*   **Key Contents of `Dev/CodingStyle.md`:**
+    *   Naming conventions for config variables, general variables, functions, classes, and constants.
+    *   Guidelines for JSDoc comments and typedefs.
+    *   Emphasis on following existing code formatting for consistency.
+*   This document serves as a reference for maintaining code readability and uniformity across the project.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Implemented Initial Killaura/Aimbot Checks (v1) (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
@@ -317,5 +330,7 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
     *   Reviewed and confirmed `manifest.json` configurations.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]
 
 [end of Dev/tasks/completed.md]

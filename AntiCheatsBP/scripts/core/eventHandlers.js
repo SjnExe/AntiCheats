@@ -56,7 +56,7 @@ export function handleEntityHurt(eventData, playerDataManager, combatChecks, pla
             attackerPData.lastAttackTick = currentTick; // Set lastAttackTick for ViewSnap check
 
             // Call Reach Check
-            if (combatChecks && combatChecks.checkReach && config.ENABLE_REACH_CHECK) { // Added config check
+            if (combatChecks && combatChecks.checkReach && config.enableReachCheck) {
                  let gameMode = attacker.gameMode;
                  // Ensure gameMode is defined (it should be for a player)
                  if (typeof gameMode === 'undefined') {
@@ -71,12 +71,12 @@ export function handleEntityHurt(eventData, playerDataManager, combatChecks, pla
             }
 
             // Call Multi-Target Check
-            if (combatChecks && combatChecks.checkMultiTarget && config.ENABLE_MULTI_TARGET_CHECK) {
+            if (combatChecks && combatChecks.checkMultiTarget && config.enableMultiTargetCheck) {
                 combatChecks.checkMultiTarget(attacker, attackerPData, hurtEntity, config);
             }
 
             // Call Attack While Sleeping Check (part of state conflict checks)
-            if (combatChecks && combatChecks.checkAttackWhileSleeping && config.ENABLE_STATE_CONFLICT_CHECK) {
+            if (combatChecks && combatChecks.checkAttackWhileSleeping && config.enableStateConflictCheck) {
                 combatChecks.checkAttackWhileSleeping(attacker, attackerPData, config);
             }
             // Note: CPS check (checkCPS) is called in the main tick loop as it's based on timed event history, not a single hurt event.

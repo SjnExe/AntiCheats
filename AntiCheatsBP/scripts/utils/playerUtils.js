@@ -1,6 +1,6 @@
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
-import { ADMIN_TAG, ENABLE_DEBUG_LOGGING } from '../config';
+import { adminTag, enableDebugLogging } from '../config';
 
 /**
  * Checks if a player has admin privileges based on a specific tag.
@@ -8,7 +8,7 @@ import { ADMIN_TAG, ENABLE_DEBUG_LOGGING } from '../config';
  * @returns {boolean} True if the player has the admin tag, false otherwise.
  */
 export function isAdmin(player) {
-    return player.hasTag(ADMIN_TAG);
+    return player.hasTag(adminTag);
 }
 
 /**
@@ -53,7 +53,7 @@ export function notifyAdmins(baseMessage, player, pData) {
  * @param {string} [contextPlayerNameIfWatched=null] Optional: The nameTag of a player being watched.
  */
 export function debugLog(message, contextPlayerNameIfWatched = null) {
-    if (ENABLE_DEBUG_LOGGING) {
+    if (enableDebugLogging) {
         if (contextPlayerNameIfWatched) {
             console.warn(`[AC Watch - ${contextPlayerNameIfWatched}] ${message}`);
         } else {

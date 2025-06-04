@@ -20,7 +20,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     // playerData map is now managed by playerDataManager
     // The debugLog for command issuance might need pDataManager.getPlayerData if it needs isWatched status
     const senderPDataForLog = playerDataManager.getPlayerData(player.id);
-    playerUtils.debugLog(`Player ${player.nameTag} issued command: ${message.substring(config.PREFIX.length).trim().split(/\s+/)[0] || ''} with args: ${message.substring(config.PREFIX.length).trim().split(/\s+/).slice(1).join(', ')}`, senderPDataForLog?.isWatched ? player.nameTag : null);
+    playerUtils.debugLog(`Player ${player.nameTag} issued command: ${message.substring(config.prefix.length).trim().split(/\s+/)[0] || ''} with args: ${message.substring(config.prefix.length).trim().split(/\s+/).slice(1).join(', ')}`, senderPDataForLog?.isWatched ? player.nameTag : null);
 
     if (!playerUtils.isAdmin(player)) {
         playerUtils.warnPlayer(player, "You do not have permission to use Anti-Cheat commands.");
@@ -28,12 +28,12 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     }
 
     eventData.cancel = true; // Command processed, cancel original message
-    const args = message.substring(config.PREFIX.length).trim().split(/\s+/);
+    const args = message.substring(config.prefix.length).trim().split(/\s+/);
     const command = args.shift()?.toLowerCase();
 
     switch (command) {
         case "version":
-            player.sendMessage(`§a[AntiCheat] Version: ${config.AC_VERSION}`);
+            player.sendMessage(`§a[AntiCheat] Version: ${config.acVersion}`);
             break;
         case "watch":
             if (args.length < 1) {

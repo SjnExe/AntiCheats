@@ -15,7 +15,7 @@ playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 // Pass necessary modules/objects to the handlers
 
 mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-    if (eventData.message.startsWith(config.PREFIX)) {
+    if (eventData.message.startsWith(config.prefix)) { // Renamed
         // Pass necessary dependencies to handleChatCommand
         await commandManager.handleChatCommand(
             eventData,
@@ -69,12 +69,12 @@ mc.system.runInterval(async () => {
         // They will internally use playerDataManager.addFlag if a violation is detected.
         // pData is passed, which includes velocity, positions, etc., updated by updateTransientPlayerData.
 
-        if (config.ENABLE_FLY_CHECK) checks.checkFly(player, pData);
-        if (config.ENABLE_SPEED_CHECK) checks.checkSpeed(player, pData);
-        if (config.ENABLE_NOFALL_CHECK) checks.checkNoFall(player, pData);
-        if (config.ENABLE_CPS_CHECK) checks.checkCPS(player, pData);
-        if (config.ENABLE_NUKER_CHECK) checks.checkNuker(player, pData);
-        if (config.ENABLE_VIEW_SNAP_CHECK) checks.checkViewSnap(player, pData, config, currentTick);
+        if (config.enableFlyCheck) checks.checkFly(player, pData); // Renamed
+        if (config.enableSpeedCheck) checks.checkSpeed(player, pData); // Renamed
+        if (config.enableNofallCheck) checks.checkNoFall(player, pData);  // Renamed
+        if (config.enableCpsCheck) checks.checkCPS(player, pData); // Renamed
+        if (config.enableNukerCheck) checks.checkNuker(player, pData); // Renamed
+        if (config.enableViewSnapCheck) checks.checkViewSnap(player, pData, config, currentTick); // Renamed
 
         // Fall distance accumulation and isTakingFallDamage reset
         // This logic is critical for NoFall's accuracy.

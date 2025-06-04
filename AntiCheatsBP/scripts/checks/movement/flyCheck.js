@@ -2,29 +2,26 @@ import * as mc from '@minecraft/server';
 import { addFlag } from '../../core/playerDataManager.js';
 import { debugLog } from '../../utils/playerUtils.js';
 import {
-    ENABLE_FLY_CHECK,
-    FLY_SUSTAINED_VERTICAL_SPEED_THRESHOLD,
-    FLY_SUSTAINED_OFF_GROUND_TICKS_THRESHOLD,
-    FLY_HOVER_NEAR_GROUND_THRESHOLD,
-    FLY_HOVER_VERTICAL_SPEED_THRESHOLD,
-    FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD,
-    FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD
-    // MAX_VERTICAL_SPEED is also in config but not directly used by checkFly's flagging logic, more for context if needed
+    enableFlyCheck, // Renamed
+    flySustainedVerticalSpeedThreshold, // Renamed
+    flySustainedOffGroundTicksThreshold, // Renamed
+    flyHoverNearGroundThreshold, // Renamed
+    flyHoverVerticalSpeedThreshold, // Renamed
+    flyHoverOffGroundTicksThreshold, // Renamed
+    flyHoverMaxFallDistanceThreshold // Renamed
 } from '../../config.js';
 
 /**
  * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
- * // Or ideally, a central types definition file if PlayerAntiCheatData is used in many places.
  */
 
 /**
  * Checks for fly-related hacks by analyzing player's vertical movement and airborne state.
- * Detects sustained upward movement while airborne (potential fly) and prolonged hovering.
  * @param {mc.Player} player The player instance to check.
  * @param {PlayerAntiCheatData} pData Player-specific data.
  */
 export function checkFly(player, pData) {
-    if (!ENABLE_FLY_CHECK) return;
+    if (!enableFlyCheck) return; // Renamed
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
     if (player.isFlying || player.isGliding) {
@@ -39,37 +36,34 @@ export function checkFly(player, pData) {
     }
 
     const verticalSpeed = pData.velocity.y;
-    // Basic debug log, more detailed logs will come from addFlag if a violation occurs
-    if (pData.isWatched) { // Only log general check info if watched to reduce spam
+    if (pData.isWatched) {
         debugLog(`FlyCheck: Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, watchedPrefix);
     }
 
-
     // Sustained Upward Movement
-    if (!player.isOnGround && verticalSpeed > FLY_SUSTAINED_VERTICAL_SPEED_THRESHOLD && !player.isClimbing) {
-        if (pData.consecutiveOffGroundTicks > FLY_SUSTAINED_OFF_GROUND_TICKS_THRESHOLD) {
+    if (!player.isOnGround && verticalSpeed > flySustainedVerticalSpeedThreshold && !player.isClimbing) { // Renamed
+        if (pData.consecutiveOffGroundTicks > flySustainedOffGroundTicksThreshold) { // Renamed
             addFlag(
                 player,
                 "fly",
                 "Potential fly hack detected (sustained upward movement).",
                 `VSpeed: ${verticalSpeed.toFixed(2)}, OffGroundTicks: ${pData.consecutiveOffGroundTicks}`
             );
-            // No need to return immediately, let hover check also run if applicable, though unlikely for this case.
         }
     }
 
     // Hover Detection
     if (!player.isOnGround &&
-        Math.abs(verticalSpeed) < FLY_HOVER_VERTICAL_SPEED_THRESHOLD &&
-        pData.consecutiveOffGroundTicks > FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD &&
-        pData.fallDistance < FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD &&
+        Math.abs(verticalSpeed) < flyHoverVerticalSpeedThreshold && // Renamed
+        pData.consecutiveOffGroundTicks > flyHoverOffGroundTicksThreshold && // Renamed
+        pData.fallDistance < flyHoverMaxFallDistanceThreshold && // Renamed
         !player.isClimbing &&
         !player.isInWater
     ) {
         const playerLoc = player.location;
         const heightAboveLastGround = playerLoc.y - (pData.lastOnGroundPosition ? pData.lastOnGroundPosition.y : playerLoc.y);
 
-        if (heightAboveLastGround > FLY_HOVER_NEAR_GROUND_THRESHOLD) {
+        if (heightAboveLastGround > flyHoverNearGroundThreshold) { // Renamed
             addFlag(
                 player,
                 "fly",
