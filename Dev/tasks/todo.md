@@ -10,10 +10,6 @@ This list contains planned features, improvements, and areas for future investig
     *   Investigate and implement more complex Killaura/Aimbot detection (e.g., analyzing hit patterns, pitch/yaw consistency).
     *   Explore checks for Scaffold, Tower, other automated building cheats.
     *   Consider checks for Timer (game speed manipulation) if possible with Script API.
-*   **Admin Tool Expansion:**
-    *   Consider a simple UI for admins using `@minecraft/server-ui`.
-    *   *(Completed: `!ac inspect <playername>` command implementation)*
-    *   *(Completed: `!ac resetflags <playername>` command implementation)*
 
 ## Low Priority / Ideas
 *   **Performance Optimization:** Profile existing checks under load and optimize if necessary.

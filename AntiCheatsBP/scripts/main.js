@@ -1,4 +1,5 @@
 import * as mc from '@minecraft/server';
+import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui'; // Added UI imports
 import { isAdmin, warnPlayer, notifyAdmins, debugLog, savePlayerDataToDynamicProperties, loadPlayerDataFromDynamicProperties } from './playerUtils';
 import { PREFIX, AC_VERSION } from './config';
 import { checkFly, checkSpeed, checkNoFall } from './movementChecks';
@@ -84,6 +85,223 @@ async function prepareAndSavePlayerData(player) {
         }
     } else {
         debugLog(`No pData found in runtime map for ${player.nameTag} during save attempt.`, player.nameTag);
+    }
+}
+
+// --- UI Placeholder Functions ---
+async function showInspectPlayerForm(player) {
+    debugLog(`UI: Inspect Player form requested by ${player.nameTag}`, player.nameTag);
+    const modalForm = new ModalFormData();
+    modalForm.title("Inspect Player Data");
+    modalForm.textField("Enter Player Name:", "TargetPlayerName");
+
+    try {
+        const response = await modalForm.show(player);
+
+        if (response.canceled) {
+            debugLog(`Inspect Player form canceled by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag);
+            return;
+        }
+
+        const targetPlayerName = response.formValues[0];
+
+        if (!targetPlayerName || targetPlayerName.trim() === "") {
+            player.sendMessage("§cPlayer name cannot be empty.");
+            debugLog(`Inspect Player form submitted with empty name by ${player.nameTag}`, player.nameTag);
+            return;
+        }
+
+        let inspectFoundPlayer = null;
+        for (const p of mc.world.getAllPlayers()) {
+            if (p.nameTag.toLowerCase() === targetPlayerName.trim().toLowerCase()) {
+                inspectFoundPlayer = p;
+                break;
+            }
+        }
+
+        if (inspectFoundPlayer) {
+            const targetPData = playerData.get(inspectFoundPlayer.id);
+            if (targetPData) {
+                let summary = `§a--- AntiCheat Data for ${inspectFoundPlayer.nameTag} ---\n`;
+                summary += `§eWatched: §f${targetPData.isWatched}\n`;
+                summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
+                summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
+
+                summary += `§eIndividual Flags:\n`;
+                let hasFlags = false;
+                for (const flagKey in targetPData.flags) {
+                    if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
+                        const flagData = targetPData.flags[flagKey];
+                        summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
+                        hasFlags = true;
+                    }
+                }
+                if (!hasFlags) {
+                    summary += `  §fNo specific flags recorded.\n`;
+                }
+                // Consider adding more details from pData if useful, e.g., specific counters not in flags
+                player.sendMessage(summary);
+            } else {
+                player.sendMessage(`§cPlayer data for ${targetPlayerName.trim()} not found (player may need to move or interact to initialize data).`);
+            }
+        } else {
+            player.sendMessage(`§cPlayer '${targetPlayerName.trim()}' not found.`);
+        }
+
+    } catch (error) {
+        debugLog(`Error showing/processing Inspect Player form: ${error}`, player.nameTag);
+        console.error(error, error.stack);
+        player.sendMessage("§cError opening or processing Inspect Player form.");
+    }
+}
+
+async function showResetFlagsForm(player) {
+    debugLog(`UI: Reset Player Flags form requested by ${player.nameTag}`, player.nameTag);
+    const modalForm = new ModalFormData();
+    modalForm.title("Reset Player Flags");
+    modalForm.textField("Enter Player Name:", "TargetPlayerName");
+    modalForm.toggle("CONFIRM: Reset all flags and violation data for this player?", false);
+
+    try {
+        const response = await modalForm.show(player);
+
+        if (response.canceled) {
+            debugLog(`Reset Player Flags form canceled by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag);
+            return;
+        }
+
+        const targetPlayerName = response.formValues[0];
+        const confirmed = response.formValues[1];
+
+        if (!targetPlayerName || targetPlayerName.trim() === "") {
+            new MessageFormData().title("Input Error").body("Player name cannot be empty.").button1("OK").show(player);
+            debugLog(`Reset Player Flags form submitted with empty name by ${player.nameTag}`, player.nameTag);
+            return;
+        }
+
+        if (!confirmed) {
+            player.sendMessage("§7Flag reset operation cancelled by user.");
+            debugLog(`Reset Player Flags operation not confirmed by ${player.nameTag} for ${targetPlayerName.trim()}`, player.nameTag);
+            return;
+        }
+
+        let resetFoundPlayer = null;
+        for (const p of mc.world.getAllPlayers()) {
+            if (p.nameTag.toLowerCase() === targetPlayerName.trim().toLowerCase()) {
+                resetFoundPlayer = p;
+                break;
+            }
+        }
+
+        if (resetFoundPlayer) {
+            const targetPData = playerData.get(resetFoundPlayer.id);
+            if (targetPData) {
+                // Actual flag reset logic (mirrors the !ac resetflags command)
+                targetPData.flags.totalFlags = 0;
+                targetPData.lastFlagType = "";
+                for (const flagKey in targetPData.flags) {
+                    if (typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
+                        targetPData.flags[flagKey].count = 0;
+                        targetPData.flags[flagKey].lastDetectionTime = 0;
+                    }
+                }
+                targetPData.consecutiveOffGroundTicks = 0;
+                targetPData.fallDistance = 0;
+                targetPData.consecutiveOnGroundSpeedingTicks = 0;
+                targetPData.attackEvents = [];
+                targetPData.blockBreakEvents = [];
+
+                await prepareAndSavePlayerData(resetFoundPlayer);
+
+                new MessageFormData().title("Success").body(`Flags and violation data reset for ${resetFoundPlayer.nameTag}.`).button1("OK").show(player);
+                notifyAdmins(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag} via UI.`, resetFoundPlayer, targetPData);
+                debugLog(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag} via UI.`, targetPData.isWatched ? resetFoundPlayer.nameTag : null);
+            } else {
+                new MessageFormData().title("Error").body(`Player data for '${targetPlayerName.trim()}' not found (player may need to move or interact).`).button1("OK").show(player);
+            }
+        } else {
+            new MessageFormData().title("Error").body(`Player '${targetPlayerName.trim()}' not found.`).button1("OK").show(player);
+        }
+
+    } catch (error) {
+        debugLog(`Error showing/processing Reset Player Flags form: ${error}`, player.nameTag);
+        console.error(error, error.stack);
+        player.sendMessage("§cError opening or processing Reset Player Flags form.");
+    }
+}
+
+async function showWatchedPlayersList(player) {
+    debugLog(`UI: List Watched Players requested by ${player.nameTag}`, player.nameTag);
+    const watchedPlayerNames = [];
+
+    for (const pDataEntry of playerData.values()) {
+        if (pDataEntry.isWatched === true && pDataEntry.playerNameTag) {
+            watchedPlayerNames.push(pDataEntry.playerNameTag);
+        }
+    }
+
+    let messageBody;
+    if (watchedPlayerNames.length > 0) {
+        messageBody = "Currently watched players:\n- " + watchedPlayerNames.join("\n- ");
+    } else {
+        messageBody = "No players are currently being watched.";
+    }
+
+    const resultForm = new MessageFormData();
+    resultForm.title("Watched Players List");
+    resultForm.body(messageBody);
+    resultForm.button1("OK");
+
+    try {
+        await resultForm.show(player);
+        // No specific action needed after 'OK' is pressed for a MessageFormData with one button.
+    } catch (error) {
+        debugLog(`Error showing Watched Players List form: ${error}`, player.nameTag);
+        console.error(error, error.stack);
+        player.sendMessage("§cError opening Watched Players List form.");
+    }
+}
+
+
+// --- Admin UI Main Menu ---
+/**
+ * Shows the main admin menu UI to the player.
+ * @param {mc.Player} player The player to show the form to.
+ */
+async function showAdminMainMenu(player) {
+    const menuForm = new ActionFormData()
+        .title("AntiCheat Admin Menu")
+        .body("Select an action:")
+        .button("Inspect Player Data", "textures/ui/spyglass")
+        .button("Reset Player Flags", "textures/ui/refresh")
+        .button("List Watched Players", "textures/ui/magnifying_glass");
+
+    try {
+        const response = await menuForm.show(player);
+
+        if (response.canceled) {
+            debugLog(`Admin menu canceled by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag);
+            return;
+        }
+
+        switch (response.selection) {
+            case 0: // Inspect Player Data
+                showInspectPlayerForm(player);
+                break;
+            case 1: // Reset Player Flags
+                showResetFlagsForm(player);
+                break;
+            case 2: // List Watched Players
+                showWatchedPlayersList(player);
+                break;
+            default:
+                player.sendMessage("§cInvalid selection.");
+                break;
+        }
+    } catch (error) {
+        debugLog(`Error showing admin main menu: ${error}`, player.nameTag);
+        console.error(error, error.stack);
+        player.sendMessage("§cError opening AntiCheat Admin Menu.");
     }
 }
 
@@ -291,6 +509,9 @@ mc.world.beforeEvents.chatSend.subscribe((eventData) => {
                 } else {
                     player.sendMessage(`§cPlayer ${resetTargetName} not found.`);
                 }
+                break;
+            case "ui":
+                showAdminMainMenu(player);
                 break;
             default:
                 player.sendMessage(`§cUnknown command: ${command}§r`);

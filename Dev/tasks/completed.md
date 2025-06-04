@@ -1,5 +1,34 @@
 # Completed Tasks
 
+## Implemented Basic Admin UI (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Implemented a basic Admin User Interface (UI) accessible via the `!ac ui` command. This UI provides administrators with interactive forms for common anti-cheat management tasks.
+
+*   **Access Command:** `!ac ui` (only available to players with the 'admin' tag).
+*   **Main Menu (`ActionFormData`):**
+    *   Title: "AntiCheat Admin Menu"
+    *   Options:
+        1.  **Inspect Player Data:**
+            *   Uses a `ModalFormData` to prompt for a player's name.
+            *   Displays the target player's anti-cheat data (flags, watched status, etc.) in chat, similar to the `!ac inspect` text command.
+            *   Includes input validation and error handling for player/data not found.
+        2.  **Reset Player Flags:**
+            *   Uses a `ModalFormData` to prompt for a player's name and a confirmation toggle.
+            *   If confirmed, resets the target player's flags and relevant violation data (e.g., `consecutiveOffGroundTicks`, `attackEvents`).
+            *   Persists the changes using `prepareAndSavePlayerData`.
+            *   Displays a success/error message to the admin using `MessageFormData`.
+            *   Notifies other admins of the action.
+        3.  **List Watched Players:**
+            *   Uses a `MessageFormData` to display a list of all players currently marked as `isWatched: true`.
+            *   Shows a message if no players are currently being watched.
+*   **General Implementation Details:**
+    *   All UI components are implemented in `AntiCheatsBP/scripts/main.js`.
+    *   Necessary modules (`ActionFormData`, `ModalFormData`, `MessageFormData`) were imported from `@minecraft/server-ui`.
+    *   Includes error handling for form display and processing, with feedback provided to the admin.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Implemented Player Data Persistence (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
