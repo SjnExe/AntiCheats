@@ -32,6 +32,18 @@ jobs:
         cp -r BP staging/
         cp -r RP staging/
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18' # Or a suitable LTS version
+
+    - name: Install TypeScript
+      run: npm install -g typescript
+
+    - name: Compile TypeScript scripts
+      working-directory: staging/BP/scripts # Ensure tsc runs where tsconfig.json is
+      run: tsc
+
     - name: Replace placeholders in staged JSON files
       shell: bash
       env:
@@ -55,15 +67,15 @@ jobs:
         echo "Contents of staged RP manifest after replacement:"
         cat "staging/RP/manifest.json"
 
-        # Replace __VERSION_STRING__ placeholder in config.ts
-        CONFIG_TS_PATH="staging/BP/scripts/config.ts"
-        if [ -f "$CONFIG_TS_PATH" ]; then
-          echo "Replacing __VERSION_STRING__ in $CONFIG_TS_PATH"
-          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_TS_PATH"
-          echo "Contents of $CONFIG_TS_PATH after replacement:"
-          cat "$CONFIG_TS_PATH"
+        # Replace __VERSION_STRING__ placeholder in config.js
+        CONFIG_JS_PATH="staging/BP/scripts/config.js"
+        if [ -f "$CONFIG_JS_PATH" ]; then
+          echo "Replacing __VERSION_STRING__ in $CONFIG_JS_PATH"
+          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_JS_PATH"
+          echo "Contents of $CONFIG_JS_PATH after replacement:"
+          cat "$CONFIG_JS_PATH"
         else
-          echo "Warning: $CONFIG_TS_PATH not found."
+          echo "Warning: $CONFIG_JS_PATH not found."
         fi
 
     - name: Zip addon
