@@ -37,8 +37,10 @@ jobs:
       with:
         node-version: '18' # Or a suitable LTS version
 
-    - name: Install TypeScript
-      run: npm install -g typescript
+    - name: Install TypeScript and Minecraft Types
+      run: |
+        npm install -g typescript
+        npm install -g @minecraft/server@2.0.0-beta @minecraft/server-ui@2.0.0-beta @minecraft/server-gametest@1.0.0-beta
 
     - name: Compile TypeScript scripts
       working-directory: staging/BP/scripts # Ensure tsc runs where tsconfig.json is
