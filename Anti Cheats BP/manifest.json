@@ -26,7 +26,7 @@
       "description": "Core scripting module for Anti Cheats.",
       "type": "script",
       "language": "javascript",
-      "entry": "scripts/index.js",
+      "entry": "scripts/main.js",
       "uuid": "ecb49e35-ade4-459d-83ff-85c3770c1e74",
       "version": [
         1,
@@ -52,5 +52,8 @@
       "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
       "version": "__VERSION_ARRAY__"
     }
+  ],
+  "capabilities": [
+    "script_eval"
   ]
 }
