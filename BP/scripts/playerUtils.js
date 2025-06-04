@@ -1,45 +1,65 @@
-import { world } from '@minecraft/server';
-import { ADMIN_TAG, ENABLE_DEBUG_LOGGING } from './config'; // PREFIX was not used
+import * as mc from '@minecraft/server';
+import { ADMIN_TAG, PREFIX, ENABLE_DEBUG_LOGGING } from './config';
 
 /**
- * Checks if a player has admin privileges.
- * @param player The player to check.
- * @returns True if the player is an admin, false otherwise.
+ * Checks if a player has admin privileges based on a specific tag.
+ * @param {mc.Player} player The player instance to check.
+ * @returns {boolean} True if the player has the admin tag, false otherwise.
  */
-export function isAdmin(player) {
+export function isAdmin(player: mc.Player): boolean { // Keep TS type for context, JSDoc is for JS docs
     return player.hasTag(ADMIN_TAG);
 }
 
 /**
- * Sends a warning message to a specific player.
- * @param player The player to warn.
- * @param reason The reason for the warning.
+ * Sends a formatted warning message directly to a specific player.
+ * @param {mc.Player} player The player instance to warn.
+ * @param {string} reason The reason for the warning, which will be displayed to the player.
  */
-export function warnPlayer(player, reason) {
+export function warnPlayer(player: mc.Player, reason: string): void { // Keep TS type for context
     player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
     // Potentially add to a warning counter for this player using dynamic properties
 }
 
 /**
- * Notifies all online admins with a message.
- * @param message The message to send to admins.
+ * Notifies all online admins with a formatted message.
+ * Optionally includes context about a specific player and their flag data if provided.
+ * @param {string} baseMessage The core message to send.
+ * @param {mc.Player} [player] Optional: The player related to this notification.
+ * @param {object} [pData] Optional: The player-specific data, typically containing a `flags` object and `lastFlagType`.
  */
-export function notifyAdmins(message) {
-    const allPlayers = world.getAllPlayers();
-    for (const player of allPlayers) {
-        if (isAdmin(player)) {
-            player.sendMessage(`§7[AC Notify] ${message}§r`);
+export function notifyAdmins(baseMessage, player?, pData?): void {
+    let fullMessage = `§7[AC Notify] ${baseMessage}§r`;
+
+    if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
+        const flagType = pData.lastFlagType || "N/A";
+        const specificFlagCount = pData.flags[flagType] ? pData.flags[flagType].count : 0;
+        fullMessage += ` §c(Player: ${player.nameTag}, Total Flags: ${pData.flags.totalFlags}, ${flagType}: ${specificFlagCount})§r`;
+    } else if (player) {
+        // Fallback if pData or flags structure is not as expected, but player is provided
+        fullMessage += ` §c(Player: ${player.nameTag})§r`;
+    }
+
+    const allPlayers = mc.world.getAllPlayers();
+    for (const p of allPlayers) { // Renamed 'player' loop variable to 'p'
+        if (isAdmin(p)) {
+            p.sendMessage(fullMessage);
         }
     }
 }
 
 /**
- * Logs a message to the console if debug logging is enabled.
- * @param message The message to log.
+ * Logs a message to the console if debug logging is enabled in the configuration.
+ * Prefixes messages differently if `contextPlayerNameIfWatched` is provided, indicating a log specific to a watched player.
+ * @param {string} message The message to log.
+ * @param {string} [contextPlayerNameIfWatched=null] Optional: The nameTag of a player being watched. If provided, the log message will be prefixed to indicate it's a watched player log.
  */
-export function debugLog(message) {
+export function debugLog(message, contextPlayerNameIfWatched = null): void {
     if (ENABLE_DEBUG_LOGGING) {
-        console.warn(`[AC Debug] ${message}`);
+        if (contextPlayerNameIfWatched) {
+            console.warn(`[AC Watch - ${contextPlayerNameIfWatched}] ${message}`);
+        } else {
+            console.warn(`[AC Debug] ${message}`);
+        }
     }
 }
 
