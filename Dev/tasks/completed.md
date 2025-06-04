@@ -1,5 +1,17 @@
 # Completed Tasks
 
+## Specify Target Minecraft Version (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Clarified the target Minecraft Bedrock version for the addon across relevant project files to ensure consistency in development and usage.
+
+*   **Key Changes:**
+    *   **`AntiCheatsBP/manifest.json`:** Updated the `min_engine_version` property in the `header` section from `[1, 21, 0]` to `[1, 21, 80]`.
+    *   **`README.md` (Root):** Added a note in the "Setup" section: "**Note:** This addon is designed for Minecraft Bedrock version 1.21.80 and newer."
+    *   **`Dev/README.md`:** Added a new section "## Target Minecraft Version" stating: "The addon currently targets Minecraft Bedrock version 1.21.80 and newer. Please ensure development and testing align with this version."
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Admin Command Implementation (`!ac inspect`, `!ac resetflags`) (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
