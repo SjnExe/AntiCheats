@@ -55,15 +55,15 @@ jobs:
         echo "Contents of staged RP manifest after replacement:"
         cat "staging/RP/manifest.json"
 
-        # Replace __VERSION_STRING__ placeholder in config.ts
-        CONFIG_TS_PATH="staging/BP/scripts/config.ts"
-        if [ -f "$CONFIG_TS_PATH" ]; then
-          echo "Replacing __VERSION_STRING__ in $CONFIG_TS_PATH"
-          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_TS_PATH"
-          echo "Contents of $CONFIG_TS_PATH after replacement:"
-          cat "$CONFIG_TS_PATH"
+        # Replace __VERSION_STRING__ placeholder in config.js
+        CONFIG_JS_PATH="staging/BP/scripts/config.js"
+        if [ -f "$CONFIG_JS_PATH" ]; then
+          echo "Replacing __VERSION_STRING__ in $CONFIG_JS_PATH"
+          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_JS_PATH"
+          echo "Contents of $CONFIG_JS_PATH after replacement:"
+          cat "$CONFIG_JS_PATH"
         else
-          echo "Warning: $CONFIG_TS_PATH not found."
+          echo "Warning: $CONFIG_JS_PATH not found."
         fi
 
     - name: Zip addon
