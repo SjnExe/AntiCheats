@@ -1,5 +1,27 @@
 # Completed Tasks
 
+## Configuration Review & Expansion (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+This task involved a comprehensive review and expansion of the `AntiCheatsBP/scripts/config.js` file to improve the configurability and maintainability of the cheat detection system.
+
+*   **Key Changes:**
+    *   **Moved Hardcoded Thresholds:** Identified numerical thresholds previously hardcoded within check functions (`combatChecks.js`, `movementChecks.js`) and moved them to `config.js` as named constants. This centralizes configuration and makes tuning easier. Affected thresholds included those for reach buffer, CPS calculation window, various fly detection parameters (sustained speed/ticks, hover speed/ticks/height/fall distance), and speed check tolerances/durations.
+    *   **Added Enable/Disable Flags:** Introduced boolean flags in `config.js` for each major cheat detection category (Reach, CPS, Fly, Speed, NoFall, Nuker, Illegal Items). Check functions in their respective files (`combatChecks.js`, `movementChecks.js`, `worldChecks.js`) were updated to respect these flags, allowing administrators to easily toggle entire checks on or off.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Refine `debugLog` Calls (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+This task involved reviewing all `debugLog` calls across the primary check functions (`combatChecks.js`, `movementChecks.js`, `worldChecks.js`, `main.js`, `playerUtils.js`) to ensure they adhered to the `debugLog(message, contextPlayerNameIfWatched)` signature.
+
+*   **Outcome:**
+    *   The review confirmed that the existing `debugLog` calls were already correctly implemented. Player-specific logs appropriately used the second argument for `contextPlayerNameIfWatched` (often based on `pData.isWatched` status), and general logs used a single argument.
+    *   No code modifications were necessary as the implementation already met the requirements for detailed contextual logging for watched players.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Folder Renaming and Path Updates (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 

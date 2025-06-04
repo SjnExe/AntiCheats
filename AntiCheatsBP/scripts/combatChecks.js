@@ -5,7 +5,15 @@
 
 import * as mc from '@minecraft/server';
 import { warnPlayer, notifyAdmins, debugLog } from './playerUtils.js';
-import { REACH_DISTANCE_SURVIVAL, REACH_DISTANCE_CREATIVE, MAX_CPS_THRESHOLD } from './config.js';
+import {
+    REACH_DISTANCE_SURVIVAL,
+    REACH_DISTANCE_CREATIVE,
+    MAX_CPS_THRESHOLD,
+    REACH_BUFFER,
+    CPS_CALCULATION_WINDOW_MS,
+    ENABLE_REACH_CHECK,
+    ENABLE_CPS_CHECK
+} from './config.js';
 
 /**
  * Checks if a player is attacking an entity from an excessive distance (Reach).
@@ -17,6 +25,7 @@ import { REACH_DISTANCE_SURVIVAL, REACH_DISTANCE_CREATIVE, MAX_CPS_THRESHOLD } f
  *        Requires `pData.isWatched`, `pData.flags`, `pData.lastFlagType`.
  */
 export function checkReach(player, targetEntity, gameMode, pData) {
+    if (!ENABLE_REACH_CHECK) return;
     const watchedPrefix = pData?.isWatched ? player.nameTag : null; // pData might be null if called incorrectly
 
     // Section: Prerequisite Checks
@@ -47,8 +56,8 @@ export function checkReach(player, targetEntity, gameMode, pData) {
     }
 
     // Section: Violation Check
-    const reachBuffer = 0.5; // Buffer for minor discrepancies
-    if (effectiveDistance > (maxReach + reachBuffer)) {
+    // const reachBuffer = 0.5; // Buffer for minor discrepancies // Replaced by config
+    if (effectiveDistance > (maxReach + REACH_BUFFER)) {
         pData.lastFlagType = "reach";
         pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
         if (!pData.flags.reach) pData.flags.reach = { count: 0, lastDetectionTime: 0 };
@@ -69,6 +78,7 @@ export function checkReach(player, targetEntity, gameMode, pData) {
  *        Requires `pData.isWatched`, `pData.attackEvents`, `pData.flags`, `pData.lastFlagType`.
  */
 export function checkCPS(player, pData) {
+    if (!ENABLE_CPS_CHECK) return;
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
     // Section: Prerequisite Checks
@@ -79,10 +89,10 @@ export function checkCPS(player, pData) {
 
     // Section: Timestamp Management & CPS Calculation
     const now = Date.now();
-    const oneSecondAgo = now - 1000;
+    const windowStartTime = now - CPS_CALCULATION_WINDOW_MS;
 
     // Filter attack events to the last second
-    pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= oneSecondAgo);
+    pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= windowStartTime);
     const currentCPS = pData.attackEvents.length;
 
     if (currentCPS > 0) { // Only log if there's activity to avoid spamming logs

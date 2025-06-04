@@ -10,7 +10,9 @@ import {
     NUKER_MAX_BREAKS_SHORT_INTERVAL,
     NUKER_CHECK_INTERVAL_MS,
     BANNED_ITEMS_PLACE,
-    BANNED_ITEMS_USE
+    BANNED_ITEMS_USE,
+    ENABLE_NUKER_CHECK,
+    ENABLE_ILLEGAL_ITEM_CHECK
 } from './config.js';
 
 /**
@@ -21,6 +23,7 @@ import {
  *        Requires `pData.isWatched`, `pData.blockBreakEvents`, `pData.flags`, `pData.lastFlagType`.
  */
 export function checkNuker(player, pData) {
+    if (!ENABLE_NUKER_CHECK) return;
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
     // Section: Prerequisite Checks
@@ -68,6 +71,7 @@ export function checkNuker(player, pData) {
  *        Requires `pData.isWatched`, `pData.flags`, `pData.lastFlagType`. Can be null if pData is not available.
  */
 export function checkIllegalItems(player, itemStack, eventData, actionType, pData) {
+    if (!ENABLE_ILLEGAL_ITEM_CHECK) return;
     // pData might be null if not available where this is called, so check for pData?.isWatched
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 

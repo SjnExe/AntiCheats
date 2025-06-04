@@ -6,7 +6,23 @@
 
 import * as mc from '@minecraft/server';
 import { warnPlayer, notifyAdmins, debugLog } from './playerUtils';
-import { MAX_VERTICAL_SPEED, MAX_HORIZONTAL_SPEED, SPEED_EFFECT_BONUS, MIN_FALL_DISTANCE_FOR_DAMAGE } from './config';
+import {
+    MAX_VERTICAL_SPEED,
+    MAX_HORIZONTAL_SPEED,
+    SPEED_EFFECT_BONUS,
+    MIN_FALL_DISTANCE_FOR_DAMAGE,
+    FLY_SUSTAINED_VERTICAL_SPEED_THRESHOLD,
+    FLY_SUSTAINED_OFF_GROUND_TICKS_THRESHOLD,
+    FLY_HOVER_NEAR_GROUND_THRESHOLD,
+    FLY_HOVER_VERTICAL_SPEED_THRESHOLD,
+    FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD,
+    FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD,
+    SPEED_TOLERANCE_BUFFER,
+    SPEED_GROUND_CONSECUTIVE_TICKS_THRESHOLD,
+    ENABLE_FLY_CHECK,
+    ENABLE_SPEED_CHECK,
+    ENABLE_NOFALL_CHECK
+} from './config';
 
 /**
  * Checks for fly-related hacks by analyzing player's vertical movement and airborne state.
@@ -17,6 +33,7 @@ import { MAX_VERTICAL_SPEED, MAX_HORIZONTAL_SPEED, SPEED_EFFECT_BONUS, MIN_FALL_
  *        `pData.fallDistance`, `pData.lastOnGroundPosition`, `pData.flags`, `pData.lastFlagType`.
  */
 export function checkFly(player, pData) {
+    if (!ENABLE_FLY_CHECK) return;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
     // Section: Legitimate Flight Checks
@@ -41,8 +58,8 @@ export function checkFly(player, pData) {
 
     // Section: Fly Detection Logic (Sustained Upward Movement)
     // Checks for players moving upwards significantly while airborne for several ticks.
-    if (!player.isOnGround && verticalSpeed > 0.5 && !player.isClimbing) {
-        if (pData.consecutiveOffGroundTicks > 10) {
+    if (!player.isOnGround && verticalSpeed > FLY_SUSTAINED_VERTICAL_SPEED_THRESHOLD && !player.isClimbing) {
+        if (pData.consecutiveOffGroundTicks > FLY_SUSTAINED_OFF_GROUND_TICKS_THRESHOLD) {
             pData.lastFlagType = "fly";
             pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
             if (!pData.flags.fly) pData.flags.fly = { count: 0, lastDetectionTime: 0 };
@@ -57,11 +74,11 @@ export function checkFly(player, pData) {
     // Section: Hover Detection Logic
     // Checks for players hovering (minimal vertical speed) while airborne for an extended period,
     // away from the ground, and not in water or climbing.
-    const nearGroundThreshold = 3;
+    // const nearGroundThreshold = 3; // Replaced by config
     if (!player.isOnGround &&
-        Math.abs(verticalSpeed) < 0.08 &&
-        pData.consecutiveOffGroundTicks > 20 &&
-        pData.fallDistance < 1.0 &&
+        Math.abs(verticalSpeed) < FLY_HOVER_VERTICAL_SPEED_THRESHOLD &&
+        pData.consecutiveOffGroundTicks > FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD &&
+        pData.fallDistance < FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD &&
         !player.isClimbing &&
         !player.isInWater
         ) {
@@ -69,7 +86,7 @@ export function checkFly(player, pData) {
         const lastGroundLoc = pData.lastOnGroundPosition || playerLoc;
         const heightAboveLastGround = playerLoc.y - (pData.lastOnGroundPosition ? pData.lastOnGroundPosition.y : playerLoc.y);
 
-        if (heightAboveLastGround > nearGroundThreshold) {
+        if (heightAboveLastGround > FLY_HOVER_NEAR_GROUND_THRESHOLD) {
             pData.lastFlagType = "fly";
             pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
             if (!pData.flags.fly) pData.flags.fly = { count: 0, lastDetectionTime: 0 };
@@ -92,6 +109,7 @@ export function checkFly(player, pData) {
  *        `pData.flags`, `pData.lastFlagType`.
  */
 export function checkSpeed(player, pData) {
+    if (!ENABLE_SPEED_CHECK) return;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
     // Section: Legitimate Speed Sources
@@ -112,16 +130,16 @@ export function checkSpeed(player, pData) {
         debugLog(`Speed effect active. Amplifier: ${speedEffect.amplifier}. Adjusted MaxSpeed to: ${currentMaxSpeed.toFixed(2)}`, watchedPrefix);
     }
 
-    currentMaxSpeed += 0.5; // Tolerance buffer
+    currentMaxSpeed += SPEED_TOLERANCE_BUFFER; // Tolerance buffer
 
     debugLog(`Speed check: isOnGround=${player.isOnGround}, HSpeed=${hSpeed.toFixed(2)}, MaxSpeed=${currentMaxSpeed.toFixed(2)}, SpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks}`, watchedPrefix);
 
     // Section: Speed Detection Logic
     // Flags players exceeding max horizontal speed while on ground for several consecutive ticks.
-    const SPEEDING_TICKS_THRESHOLD = 5;
+    // const SPEEDING_TICKS_THRESHOLD = 5; // Replaced by config
     if (player.isOnGround && hSpeed > currentMaxSpeed) {
         pData.consecutiveOnGroundSpeedingTicks = (pData.consecutiveOnGroundSpeedingTicks || 0) + 1;
-        if (pData.consecutiveOnGroundSpeedingTicks > SPEEDING_TICKS_THRESHOLD) {
+        if (pData.consecutiveOnGroundSpeedingTicks > SPEED_GROUND_CONSECUTIVE_TICKS_THRESHOLD) {
             pData.lastFlagType = "speed";
             pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
             if (!pData.flags.speed) pData.flags.speed = { count: 0, lastDetectionTime: 0 };
@@ -148,6 +166,7 @@ export function checkSpeed(player, pData) {
  *        `pData.flags`, `pData.lastFlagType`.
  */
 export function checkNoFall(player, pData) {
+    if (!ENABLE_NOFALL_CHECK) return;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
     // Section: Legitimate No Fall Scenarios

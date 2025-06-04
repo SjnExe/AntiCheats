@@ -3,10 +3,7 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## High Priority / Next Up
-*   **Refine `debugLog` Calls:** Ensure all player-specific `debugLog` calls across all check functions are updated to the `debugLog(message, contextPlayerNameIfWatched)` signature, providing detailed output for watched players. (Partially done, but needs full pass).
-*   **Configuration Review & Expansion:**
-    *   Review all hardcoded thresholds within check functions and consider moving them to `config.js`.
-    *   Expand `config.js` with more options for fine-tuning detection sensitivity.
+*No high priority tasks currently identified.*
 
 ## Medium Priority
 *   **Advanced Cheat Detections:**

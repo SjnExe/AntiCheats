@@ -9,6 +9,24 @@ export const ENABLE_DEBUG_LOGGING = true;
 /** @type {string} The prefix used for chat-based commands (e.g., "!ac version"). */
 export const PREFIX = "!";
 
+// --- General Check Toggles ---
+
+/** @type {boolean} If true, the Reach check in combatChecks.js is active. */
+export const ENABLE_REACH_CHECK = true;
+/** @type {boolean} If true, the CPS (Clicks Per Second) check in combatChecks.js is active. */
+export const ENABLE_CPS_CHECK = true;
+/** @type {boolean} If true, the Fly check (both sustained and hover) in movementChecks.js is active. */
+export const ENABLE_FLY_CHECK = true;
+/** @type {boolean} If true, the Speed check in movementChecks.js is active. */
+export const ENABLE_SPEED_CHECK = true;
+/** @type {boolean} If true, the NoFall check in movementChecks.js is active. */
+export const ENABLE_NOFALL_CHECK = true;
+/** @type {boolean} If true, the Nuker check in worldChecks.js is active. */
+export const ENABLE_NUKER_CHECK = true;
+/** @type {boolean} If true, the Illegal Item check (both use and place) in worldChecks.js is active. */
+export const ENABLE_ILLEGAL_ITEM_CHECK = true;
+
+
 // --- Movement Checks ---
 
 /**
@@ -41,6 +59,56 @@ export const SPEED_EFFECT_BONUS = 2.0;
  */
 export const MIN_FALL_DISTANCE_FOR_DAMAGE = 3.5;
 
+/**
+ * @type {number}
+ * Threshold for vertical speed (blocks per tick, positive is upward) above which, if sustained, might indicate flying.
+ * Note: Player's normal jump impulse gives a vertical speed of around 0.42.
+ */
+export const FLY_SUSTAINED_VERTICAL_SPEED_THRESHOLD = 0.5;
+
+/**
+ * @type {number}
+ * Number of consecutive off-ground ticks, while exceeding `FLY_SUSTAINED_VERTICAL_SPEED_THRESHOLD`, to trigger a fly flag.
+ */
+export const FLY_SUSTAINED_OFF_GROUND_TICKS_THRESHOLD = 10;
+
+/**
+ * @type {number}
+ * Minimum height in blocks above the last known ground position to be considered significantly "hovering" (as opposed to being near a ledge).
+ */
+export const FLY_HOVER_NEAR_GROUND_THRESHOLD = 3;
+
+/**
+ * @type {number}
+ * Vertical speed (absolute value, blocks per tick) below which a player is considered to be hovering (if other conditions are met).
+ */
+export const FLY_HOVER_VERTICAL_SPEED_THRESHOLD = 0.08;
+
+/**
+ * @type {number}
+ * Number of consecutive off-ground ticks, while meeting hover speed and height conditions, to trigger a hover flag.
+ */
+export const FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD = 20;
+
+/**
+ * @type {number}
+ * Maximum fall distance accumulated while hovering. If fall distance is below this (and other conditions met), it's more likely to be hover.
+ */
+export const FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD = 1.0;
+
+/**
+ * @type {number}
+ * A tolerance buffer added to the maximum horizontal speed to account for minor variations and prevent false positives.
+ */
+export const SPEED_TOLERANCE_BUFFER = 0.5;
+
+/**
+ * @type {number}
+ * Number of consecutive ticks a player must exceed the calculated maximum horizontal speed (including buffers and effects) while on ground to be flagged for speeding.
+ */
+export const SPEED_GROUND_CONSECUTIVE_TICKS_THRESHOLD = 5;
+
+
 // --- Combat Checks ---
 
 /**
@@ -63,6 +131,19 @@ export const REACH_DISTANCE_SURVIVAL = 4.5;
  * Measured from player's head (eye) location to the target entity's location.
  */
 export const REACH_DISTANCE_CREATIVE = 6.0;
+
+/**
+ * @type {number}
+ * A small buffer added to the maximum reach distance to allow for minor server/client discrepancies or precision issues.
+ */
+export const REACH_BUFFER = 0.5;
+
+/**
+ * @type {number}
+ * Time window in milliseconds for calculating Clicks Per Second (CPS).
+ * Attack events older than this window are filtered out.
+ */
+export const CPS_CALCULATION_WINDOW_MS = 1000;
 
 // --- World Checks ---
 
