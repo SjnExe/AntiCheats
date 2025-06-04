@@ -1,5 +1,36 @@
 # Completed Tasks
 
+## Admin Command Implementation (`!ac inspect`, `!ac resetflags`) (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Added two new administrative commands to `AntiCheatsBP/scripts/main.js` to enhance server management capabilities:
+
+*   **`!ac inspect <playername>`:**
+    *   Allows admins to view a summary of a target player's anti-cheat data (`pData`).
+    *   The summary includes the player's `isWatched` status, total flag count, last flag type, and detailed counts and last detection times for each specific cheat category (e.g., fly, speed, cps).
+    *   Handles cases where the player or their data is not found.
+*   **`!ac resetflags <playername>`:**
+    *   Allows admins to reset a target player's accumulated anti-cheat flags and associated violation-tracking metrics.
+    *   Resets `pData.flags.totalFlags` to 0, clears `pData.lastFlagType`.
+    *   Resets individual flag counts and `lastDetectionTime` for all categories.
+    *   Clears stateful violation trackers such as `consecutiveOffGroundTicks`, `fallDistance`, `consecutiveOnGroundSpeedingTicks`, `attackEvents` (for CPS), and `blockBreakEvents` (for Nuker).
+    *   Provides confirmation to the issuing admin and notifies other online admins.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Manifest API Versioning Update (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Reviewed and updated the versions of `@minecraft/server` and related modules in `AntiCheatsBP/manifest.json` to align with the project's `min_engine_version` of `[1, 21, 0]` and utilize recent beta releases for the `1.21.90` engine preview.
+
+*   **Key Version Changes:**
+    *   `@minecraft/server`: Updated from `2.0.0-beta` to `2.1.0-beta.1.21.90-preview.28`.
+    *   `@minecraft/server-ui`: Updated from `2.0.0-beta` to `2.1.0-beta.1.21.90-preview.28`.
+    *   `@minecraft/server-gametest`: Updated from `1.0.0-beta` to `1.0.0-beta.1.21.90-preview.28`.
+*   This ensures the project uses up-to-date script API features and fixes corresponding to the targeted Minecraft engine version.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Configuration Review & Expansion (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 

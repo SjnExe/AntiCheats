@@ -121,6 +121,101 @@ mc.world.beforeEvents.chatSend.subscribe((eventData) => {
                     player.sendMessage("No flag data found for you.");
                 }
                 break;
+            case "inspect":
+                if (args.length < 1) {
+                    player.sendMessage("§cUsage: !ac inspect <playername>");
+                    return;
+                }
+                const inspectTargetName = args[0];
+                let inspectFoundPlayer = null;
+                for (const p of mc.world.getAllPlayers()) {
+                    if (p.nameTag.toLowerCase() === inspectTargetName.toLowerCase()) {
+                        inspectFoundPlayer = p;
+                        break;
+                    }
+                }
+
+                if (inspectFoundPlayer) {
+                    const targetPData = playerData.get(inspectFoundPlayer.id);
+                    if (targetPData) {
+                        let summary = `§a--- AntiCheat Data for ${inspectFoundPlayer.nameTag} ---\n`;
+                        summary += `§eWatched: §f${targetPData.isWatched}\n`;
+                        summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
+                        summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
+
+                        summary += `§eIndividual Flags:\n`;
+                        let hasFlags = false;
+                        for (const flagKey in targetPData.flags) {
+                            if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object') {
+                                const flagData = targetPData.flags[flagKey];
+                                summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
+                                hasFlags = true;
+                            }
+                        }
+                        if (!hasFlags) {
+                            summary += `  §fNo specific flags recorded.\n`;
+                        }
+
+                        // You can add more pData fields here if needed, for example:
+                        // summary += `§eConsecutive OffGround Ticks: §f${targetPData.consecutiveOffGroundTicks}\n`;
+                        // summary += `§eFall Distance: §f${targetPData.fallDistance?.toFixed(2)}\n`;
+                        // summary += `§eLast OnGround Tick: §f${targetPData.lastOnGroundTick}\n`;
+
+                        player.sendMessage(summary);
+                    } else {
+                        player.sendMessage(`§cPlayer data for ${inspectTargetName} not found (player may need to move or interact to initialize data).`);
+                    }
+                } else {
+                    player.sendMessage(`§cPlayer ${inspectTargetName} not found.`);
+                }
+                break;
+            case "resetflags":
+                if (args.length < 1) {
+                    player.sendMessage("§cUsage: !ac resetflags <playername>");
+                    return;
+                }
+                const resetTargetName = args[0];
+                let resetFoundPlayer = null;
+                for (const p of mc.world.getAllPlayers()) {
+                    if (p.nameTag.toLowerCase() === resetTargetName.toLowerCase()) {
+                        resetFoundPlayer = p;
+                        break;
+                    }
+                }
+
+                if (resetFoundPlayer) {
+                    const targetPData = playerData.get(resetFoundPlayer.id);
+                    if (targetPData) {
+                        // Reset general flag indicators
+                        targetPData.flags.totalFlags = 0;
+                        targetPData.lastFlagType = "";
+
+                        // Reset individual flag counts and timestamps
+                        for (const flagKey in targetPData.flags) {
+                            if (typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
+                                targetPData.flags[flagKey].count = 0;
+                                targetPData.flags[flagKey].lastDetectionTime = 0;
+                            }
+                        }
+
+                        // Reset other relevant pData fields
+                        targetPData.consecutiveOffGroundTicks = 0;
+                        targetPData.fallDistance = 0;
+                        targetPData.consecutiveOnGroundSpeedingTicks = 0;
+                        targetPData.attackEvents = []; // Clear CPS tracking
+                        targetPData.blockBreakEvents = []; // Clear Nuker tracking
+                        // targetPData.isTakingFallDamage is transient, should be fine
+
+                        player.sendMessage(`§aFlags and violation data reset for ${resetFoundPlayer.nameTag}.`);
+                        notifyAdmins(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag}.`, resetFoundPlayer, targetPData);
+                        debugLog(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag}.`, targetPData.isWatched ? resetFoundPlayer.nameTag : null);
+                    } else {
+                        player.sendMessage(`§cPlayer data for ${resetTargetName} not found (player may need to move or interact to initialize data).`);
+                    }
+                } else {
+                    player.sendMessage(`§cPlayer ${resetTargetName} not found.`);
+                }
+                break;
             default:
                 player.sendMessage(`§cUnknown command: ${command}§r`);
         }

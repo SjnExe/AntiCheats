@@ -13,11 +13,9 @@ This list contains planned features, improvements, and areas for future investig
 *   **Persistence for Player Data/Flags:**
     *   Investigate using scoreboard objectives or dynamic properties for more persistent storage of player flags or reputation, so data isn't lost on server restart/player rejoin.
 *   **Admin Tool Expansion:**
-    *   `!ac inspect <playername>`: Command to show a summary of a player's current `pData` (flags, watched status, key stats).
-    *   `!ac resetflags <playername>`: Command to reset flags for a player.
     *   Consider a simple UI for admins using `@minecraft/server-ui`.
-*   **Manifest API Versioning:**
-    *   Review `@minecraft/server` (and related) module versions in `BP/manifest.json`. Pin to specific, tested beta versions or evaluate moving to stable APIs if they meet all feature requirements.
+    *   *(Completed: `!ac inspect <playername>` command implementation)*
+    *   *(Completed: `!ac resetflags <playername>` command implementation)*
 
 ## Low Priority / Ideas
 *   **Performance Optimization:** Profile existing checks under load and optimize if necessary.
