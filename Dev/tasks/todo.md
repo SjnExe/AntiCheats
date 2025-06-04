@@ -15,6 +15,7 @@ This list contains planned features, improvements, and areas for future investig
 *   **Performance Optimization:** Profile existing checks under load and optimize if necessary.
 *   **Localization:** Consider options for localizing warning messages if the addon is intended for a multi-lingual audience.
 *   **Automated Actions:** Based on flag counts, implement configurable automated actions (e.g., temp-kick, reduced player capabilities). This requires careful design to avoid false positives.
+*   **Refactor: Create `types.js`:** Define common JSDoc typedefs (e.g., `PlayerAntiCheatData`, `PlayerFlagData`) in a central `types.js` file to avoid potential circular dependencies and improve type management.
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

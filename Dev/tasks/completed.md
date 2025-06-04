@@ -1,5 +1,33 @@
 # Completed Tasks
 
+## Refactor: Reorganized Script File Structure (Submitted: 2024-07-25)
+*(Date is a placeholder based on current interaction)*
+
+Completed a major reorganization of the `AntiCheatsBP/scripts/` directory to improve modularity, maintainability, and clarity of the codebase.
+
+*   **Key Structural Changes:**
+    *   **`core/` Directory Created:**
+        *   `playerDataManager.js`: Centralizes player data management, including the runtime `playerData` map, loading/saving data via dynamic properties, default data initialization, and the new centralized `addFlag` function.
+        *   `commandManager.js`: Handles parsing and execution of chat commands (e.g., `!ac version`, `!ac watch`, `!ac ui`).
+        *   `uiManager.js`: Manages all admin UI forms (`ActionFormData`, `ModalFormData`, `MessageFormData`) for actions like inspect, reset flags, and list watched players.
+        *   `eventHandlers.js`: Contains the callback logic for various world events (`playerLeave`, `entityHurt`, `playerBreakBlock`, `itemUse`, `itemUseOn`).
+    *   **`checks/` Directory Created:**
+        *   Subdirectories `movement/`, `combat/`, and `world/` were created.
+        *   Original monolithic check files (`movementChecks.js`, `combatChecks.js`, `worldChecks.js`) were split into individual files for each specific check (e.g., `flyCheck.js`, `reachCheck.js`, `nukerCheck.js`) and placed in the appropriate subdirectory.
+        *   A barrel file `checks/index.js` was created to export all check functions for easy importing.
+    *   **`utils/` Directory:**
+        *   `playerUtils.js` was moved here (`utils/playerUtils.js`) and updated to only contain general utility functions like `isAdmin`, `warnPlayer`, `notifyAdmins`, `debugLog`. Persistence functions were moved to `playerDataManager.js`.
+*   **Refactoring Details:**
+    *   **Centralized `addFlag`:** All individual check files were refactored to use the new `addFlag` function in `playerDataManager.js`, removing redundant flagging, notification, and saving logic from each check.
+    *   **`main.js` Slimmed Down:** The main script file (`main.js`) now acts as an orchestrator. It initializes modules, subscribes events to handlers in the `core` modules, and runs the main tick loop. Most of its previous direct logic for commands, UI, data management, and event handling has been delegated.
+    *   **Import Paths Updated:** All `import` statements across the modified and newly created files were updated to reflect the new file locations and module structure.
+*   **Follow-up Considerations:**
+    *   Noted that JSDoc typedefs for `PlayerAntiCheatData` and `PlayerFlagData` (currently commented out or assumed in `playerDataManager.js`) should ideally be moved to a separate `types.js` file to resolve potential circular dependencies and improve type management. This is noted as a new task in `todo.md`.
+
+This reorganization significantly enhances the project's structure, making it easier to navigate, maintain, and extend in the future.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Killaura/Aimbot Detection Investigation (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
