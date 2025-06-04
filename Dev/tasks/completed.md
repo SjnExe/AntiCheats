@@ -1,5 +1,21 @@
 # Completed Tasks
 
+## Standardize Naming Convention in `config.js` (Submitted: 2024-07-26)
+*(Date is a placeholder based on current interaction)*
+
+- **Chosen Convention:** `camelCase` for all exported variables from `AntiCheatsBP/scripts/config.js` (e.g., `exampleConfigVariable`, `maxAllowedSpeed`).
+- **Documentation:** This convention was documented in `Dev/CodingStyle.md`, which specifies `camelCase` for configuration variables.
+- **Refactoring `config.js`:** All `UPPER_SNAKE_CASE` variables in `AntiCheatsBP/scripts/config.js` were successfully renamed to their `camelCase` equivalents.
+- **Updating Dependent Scripts:** All script files that import and use these configuration variables were updated to use the new `camelCase` names. This included:
+    - `AntiCheatsBP/scripts/utils/playerUtils.js`
+    - `AntiCheatsBP/scripts/core/commandManager.js`
+    - `AntiCheatsBP/scripts/core/eventHandlers.js`
+    - All individual check files within `AntiCheatsBP/scripts/checks/` (combat, movement, world subdirectories).
+    - `AntiCheatsBP/scripts/main.js`.
+- **Purpose:** To improve code consistency, readability, and maintainability as per user feedback and established coding style.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Created and Named Coding Style Guide (Submitted: 2024-07-25)
 *(Date is a placeholder based on current interaction)*
 
@@ -330,6 +346,10 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
     *   Reviewed and confirmed `manifest.json` configurations.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]
+
+[end of Dev/tasks/completed.md]
 
 [end of Dev/tasks/completed.md]
 
