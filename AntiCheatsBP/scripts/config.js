@@ -198,6 +198,21 @@ export const flagOnMaxMessageLength = true;
 /** @type {boolean} If true, messages exceeding max length will be cancelled. */
 export const cancelOnMaxMessageLength = true;
 
+/** @type {boolean} If true, checks for players sending the same/similar messages repeatedly. */
+export const SPAM_REPEAT_CHECK_ENABLED = true;
+
+/** @type {number} Number of identical/similar messages within the time window to trigger a spam flag. */
+export const SPAM_REPEAT_MESSAGE_COUNT = 3;
+
+/** @type {number} Time window in seconds to monitor for repeated messages. */
+export const SPAM_REPEAT_TIME_WINDOW_SECONDS = 5;
+
+/** @type {boolean} If true, flags the player for repeated message spam. */
+export const SPAM_REPEAT_FLAG_PLAYER = true;
+
+/** @type {boolean} If true, cancels the message that triggers the repeated spam detection. Generally false for this check. */
+export const SPAM_REPEAT_CANCEL_MESSAGE = false;
+
 // --- X-Ray Detection ---
 
 /** @type {boolean} If true, enables notifications for mining valuable ores. */

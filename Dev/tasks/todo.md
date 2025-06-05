@@ -3,7 +3,7 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## High Priority / Next Up
-*   **Implement X-Ray Detection - Phase 1 (Ore Mining Notifications):** Notify admins when valuable ores (configurable) are mined. Includes per-admin notification toggles via command.
+*No high priority tasks currently identified.*
 
 ## Medium Priority
 
@@ -45,7 +45,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **Packet Anomalies / Chat Violations:**
         *   **Self-Hurt Detection:** Detect if a player takes damage without a clear external source (e.g., another entity, fall, fire). Requires careful context analysis to avoid false positives from suffocation, void, etc. (Scythe 'BadPackets')
         *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
-        *   **Repeated Messages (Spam):** Track recent messages from a player. Flag if the same or very similar messages are sent multiple times in a short period. (SafeGuard)
         *   **Messages Too Close Together (Spam):** Track time between messages from a player. Flag if messages are sent faster than a reasonable typing/command speed. (SafeGuard)
         *   **Message Too Many Words (Spam/Flood):** Check word count of messages. Flag if excessively high. (SafeGuard)
         *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')

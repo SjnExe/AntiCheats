@@ -234,4 +234,44 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
             }
         }
     }
+
+    // Repeated Messages (Spam) Check
+    // Also check !eventData.cancel so we don't process if already cancelled by prior checks.
+    if (config.SPAM_REPEAT_CHECK_ENABLED && !eventData.cancel) {
+        const pData = playerDataManager.getPlayerData(player.id);
+        if (pData) {
+            const currentTime = Date.now();
+            const currentMessageContent = eventData.message;
+
+            if (!pData.recentMessages) {
+                pData.recentMessages = [];
+            }
+            pData.recentMessages.push({ timestamp: currentTime, content: currentMessageContent });
+
+            const timeWindowStart = currentTime - (config.SPAM_REPEAT_TIME_WINDOW_SECONDS * 1000);
+            pData.recentMessages = pData.recentMessages.filter(msg => msg.timestamp >= timeWindowStart);
+
+            let repeatCount = 0;
+            for (const msg of pData.recentMessages) {
+                if (msg.content === currentMessageContent) {
+                    repeatCount++;
+                }
+            }
+
+            if (repeatCount >= config.SPAM_REPEAT_MESSAGE_COUNT) {
+                playerUtils.debugLog(`Player ${player.nameTag} triggered repeat spam detection. Count: ${repeatCount}, Message: "${currentMessageContent}"`, player.nameTag);
+
+                if (config.SPAM_REPEAT_FLAG_PLAYER) {
+                    playerDataManager.addFlag(player, "spamRepeat", `Repeated message ${repeatCount} times: "${currentMessageContent.substring(0,30)}..."`);
+                }
+
+                if (config.SPAM_REPEAT_CANCEL_MESSAGE) {
+                    eventData.cancel = true;
+                    playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to repeat spam.`, player.nameTag);
+                }
+            }
+        } else {
+            playerUtils.debugLog(`PDM:spamRepeat: No pData for ${player.nameTag}. Cannot check for repeat spam.`, player.nameTag);
+        }
+    }
 }

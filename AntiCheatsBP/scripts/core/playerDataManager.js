@@ -131,6 +131,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
         attackEvents: [],
         lastAttackTime: 0,
         blockBreakEvents: [],
+        recentMessages: [],
         flags: {
             totalFlags: 0,
             fly: { count: 0, lastDetectionTime: 0 },
@@ -141,7 +142,8 @@ export function initializeDefaultPlayerData(player, currentTick) {
             nuker: { count: 0, lastDetectionTime: 0 },
             illegalItem: { count: 0, lastDetectionTime: 0 },
             illegalCharInChat: { count: 0, lastDetectionTime: 0 },
-            longMessage: { count: 0, lastDetectionTime: 0 }
+            longMessage: { count: 0, lastDetectionTime: 0 },
+            spamRepeat: { count: 0, lastDetectionTime: 0 }
             // New Killaura/Aimbot related flags will be added here by their checks if not pre-defined
         },
         lastFlagType: "",

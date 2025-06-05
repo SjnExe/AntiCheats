@@ -23,6 +23,7 @@
  * @property {PlayerFlagDetail} [illegalItem] - Illegal item detection data.
  * @property {PlayerFlagDetail} [illegalCharInChat] - Illegal character (e.g. newline) in chat message.
  * @property {PlayerFlagDetail} [longMessage] - Message exceeded maximum configured length.
+ * @property {PlayerFlagDetail} [spamRepeat] - Sent the same/similar message multiple times in a short period.
  * // Add other specific flags here as they are defined, e.g., killaura, aimbot, scaffold
  */
 
@@ -42,6 +43,7 @@
  * @property {number[]} attackEvents - Timestamps of recent attack events.
  * @property {number} lastAttackTime - Timestamp of the last attack.
  * @property {number[]} blockBreakEvents - Timestamps of recent block break events.
+ * @property {Array<{timestamp: number, content: string}>} recentMessages - Stores recent messages for spam detection.
  * @property {PlayerFlagData} flags - Container for all specific cheat flags and their counts.
  * @property {string} lastFlagType - The type of the last flag triggered.
  * @property {boolean} isWatched - Whether the player is currently being watched by admins.
