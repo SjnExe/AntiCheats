@@ -234,3 +234,21 @@ export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
 
 /** @type {string} The current version of the AntiCheat system. */
 export const acVersion = "0.1.0-alpha";
+
+// --- Command Aliases ---
+/**
+ * @typedef {Object.<string, string>} CommandAliasMap
+ * @description Maps short alias strings to full command names.
+ * Example: { "b": "ban", "k": "kick" }
+ */
+
+/** @type {CommandAliasMap} Defines aliases for commands. */
+export const commandAliases = {
+    "v": "version",
+    "w": "watch",
+    "i": "inspect",
+    "rf": "resetflags",
+    "xn": "xraynotify",
+    "mf": "myflags",
+    // Add more aliases as commands are developed
+};
