@@ -13,6 +13,7 @@ const ALL_COMMANDS = [
     { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", permissionLevel: PermissionLevels.ADMIN },
     { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: PermissionLevels.ADMIN },
     { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: PermissionLevels.ADMIN },
     { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
@@ -213,6 +214,40 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 }
             } else {
                 player.sendMessage(`§cPlayer ${resetTargetName} not found.`);
+            }
+            break;
+        case "kick": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`);
+                return;
+            }
+            const targetPlayerNameKick = args[0];
+            const reasonKick = args.slice(1).join(" ") || "Kicked by an administrator.";
+            let foundPlayerKick = null;
+
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameKick.toLowerCase()) {
+                    foundPlayerKick = p;
+                    break;
+                }
+            }
+
+            if (foundPlayerKick) {
+                try {
+                    // Make sure the player to be kicked is not the command issuer to prevent self-kick issues.
+                    if (foundPlayerKick.id === player.id) {
+                        player.sendMessage("§cYou cannot kick yourself.");
+                        return;
+                    }
+                    foundPlayerKick.kick(reasonKick);
+                    player.sendMessage(`§aPlayer ${foundPlayerKick.nameTag} has been kicked. Reason: ${reasonKick}`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerKick.nameTag} was kicked by ${player.nameTag}. Reason: ${reasonKick}`, player, null);
+                } catch (e) {
+                    player.sendMessage(`§cError kicking player ${targetPlayerNameKick}: ${e}`);
+                    playerUtils.debugLog(`Error kicking player ${targetPlayerNameKick}: ${e}`);
+                }
+            } else {
+                player.sendMessage(`§cPlayer ${targetPlayerNameKick} not found.`);
             }
             break;
         case "ui":
