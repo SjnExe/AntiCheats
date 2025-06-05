@@ -14,6 +14,7 @@ const ALL_COMMANDS = [
     { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: PermissionLevels.ADMIN },
     { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: PermissionLevels.ADMIN },
     { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
     { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
@@ -249,6 +250,14 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             } else {
                 player.sendMessage(`§cPlayer ${targetPlayerNameKick} not found.`);
             }
+            break;
+        case "clearchat": // ADMIN
+            const linesToClear = 150; // Number of empty lines to send to effectively clear chat history for most users
+            for (let i = 0; i < linesToClear; i++) {
+                mc.world.sendMessage(""); // Sends an empty message to all players
+            }
+            player.sendMessage("§aChat has been cleared.");
+            playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
             break;
         case "ui":
             uiManager.showAdminMainMenu(player); // Call the UI manager
