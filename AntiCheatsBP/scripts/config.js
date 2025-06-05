@@ -178,10 +178,10 @@ export const nukerMaxBreaksShortInterval = 4;
 export const nukerCheckIntervalMs = 200;
 
 /** @type {string[]} Array of item type IDs banned from being placed. */
-export const bannedItemsPlace: string[] = ["minecraft:command_block", "minecraft:moving_block"];
+export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_block"];
 
 /** @type {string[]} Array of item type IDs banned from being used. */
-export const bannedItemsUse: string[] = [];
+export const bannedItemsUse = [];
 
 // --- Chat Checks ---
 
