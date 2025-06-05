@@ -66,6 +66,142 @@ async function showInspectPlayerForm(player, playerDataManager) {
     }
 }
 
+async function showOnlinePlayersList(adminPlayer, playerDataManager) {
+    playerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+
+    const onlinePlayers = mc.world.getAllPlayers();
+
+    if (onlinePlayers.length === 0) {
+        const msgForm = new MessageFormData()
+            .title("Online Players")
+            .body("No players currently online.")
+            .button1("Close");
+        try {
+            await msgForm.show(adminPlayer);
+        } catch (e) {
+            playerUtils.debugLog(`Error showing 'No players online' form: ${e}`, adminPlayer.nameTag);
+        }
+        return;
+    }
+
+    const form = new ActionFormData();
+    form.title("Online Players");
+    form.body("Select a player to view details:");
+
+    const playerMappings = []; // To map selection to player ID
+
+    for (const p of onlinePlayers) {
+        const targetPData = playerDataManager.getPlayerData(p.id);
+        const buttonText = targetPData
+            ? `${p.nameTag} (Flags: ${targetPData.flags.totalFlags})`
+            : p.nameTag; // Fallback if pData somehow not available
+        form.button(buttonText);
+        playerMappings.push(p.id);
+    }
+
+    try {
+        const response = await form.show(adminPlayer);
+
+        if (response.canceled) {
+            if (response.cancelationReason) {
+                 playerUtils.debugLog(`Online Players list canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            } else {
+                 playerUtils.debugLog(`Online Players list canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+            }
+            return;
+        }
+
+        const selectedPlayerId = playerMappings[response.selection];
+        const targetPlayer = mc.world.getPlayer(selectedPlayerId);
+
+        if (targetPlayer) {
+            const targetPData = playerDataManager.getPlayerData(targetPlayer.id);
+            if (targetPData) {
+                let summary = `§a--- AntiCheat Data for ${targetPlayer.nameTag} ---\n`;
+                summary += `§eID: §f${targetPlayer.id}\n`; // Added player ID
+                summary += `§eDimension: §f${targetPlayer.dimension.id}\n`; // Added dimension
+                summary += `§eLocation: §fX:${targetPlayer.location.x.toFixed(1)}, Y:${targetPlayer.location.y.toFixed(1)}, Z:${targetPlayer.location.z.toFixed(1)}\n`; // Added location
+                summary += `§eWatched: §f${targetPData.isWatched}\n`;
+                summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
+                summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
+                summary += `§eIndividual Flags:\n`;
+                let hasFlags = false;
+                for (const flagKey in targetPData.flags) {
+                    if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
+                        const flagData = targetPData.flags[flagKey];
+                        if (flagData.count > 0) { // Only show flags that have been triggered
+                            summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
+                            hasFlags = true;
+                        }
+                    }
+                }
+                if (!hasFlags) {
+                    summary += `  §fNo specific flags recorded or triggered.\n`;
+                }
+
+                const detailForm = new MessageFormData()
+                    .title(`Details for ${targetPlayer.nameTag}`)
+                    .body(summary)
+                    .button1("OK");
+                await detailForm.show(adminPlayer);
+            } else {
+                adminPlayer.sendMessage("§cCould not retrieve data for the selected player.");
+                playerUtils.debugLog(`Could not retrieve pData for ${targetPlayer.nameTag} (ID: ${targetPlayer.id}) in showOnlinePlayersList.`, adminPlayer.nameTag);
+            }
+        } else {
+            adminPlayer.sendMessage("§cSelected player not found. They may have logged off.");
+            playerUtils.debugLog(`Selected player with ID ${selectedPlayerId} not found in showOnlinePlayersList.`, adminPlayer.nameTag);
+        }
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in showOnlinePlayersList for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showOnlinePlayersList] Error for ${adminPlayer.nameTag}:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while displaying the online players list.");
+    }
+}
+
+export async function showAdminPanelMain(adminPlayer, playerDataManager) {
+    playerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const form = new ActionFormData();
+    form.title("AC Admin Panel");
+    form.body("Select an action:");
+    form.button("View Online Players", "textures/ui/icon_multiplayer"); // Example icon
+    form.button("Server Stats (TODO)", "textures/ui/icon_graph");   // Placeholder
+    form.button("Settings (TODO)", "textures/ui/gear");       // Placeholder
+
+    try {
+        const response = await form.show(adminPlayer);
+
+        if (response.canceled) {
+            if (response.cancelationReason) {
+                playerUtils.debugLog(`Admin Panel Main canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            } else {
+                playerUtils.debugLog(`Admin Panel Main canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+            }
+            return;
+        }
+
+        switch (response.selection) {
+            case 0: // View Online Players
+                await showOnlinePlayersList(adminPlayer, playerDataManager);
+                break;
+            case 1: // Server Stats TODO
+                adminPlayer.sendMessage("§7Server Stats functionality is not yet implemented.");
+                break;
+            case 2: // Settings TODO
+                adminPlayer.sendMessage("§7Settings functionality is not yet implemented.");
+                break;
+            default:
+                adminPlayer.sendMessage("§cInvalid selection from Admin Panel.");
+                break;
+        }
+    } catch (error) {
+        playerUtils.debugLog(`Error in showAdminPanelMain for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showAdminPanelMain] Error for ${adminPlayer.nameTag}:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while trying to display the Admin Panel.");
+    }
+}
+
 /**
  * Displays a read-only view of a target player's inventory to an admin.
  * @param {mc.Player} adminPlayer The admin player who initiated the request.

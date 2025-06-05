@@ -19,6 +19,7 @@ const ALL_COMMANDS = [
     { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
     { name: "freeze", syntax: "!freeze <player> [on|off]", description: "Freezes or unfreezes a player, preventing movement.", permissionLevel: PermissionLevels.ADMIN },
     { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "panel", syntax: "!panel", description: "Opens the AntiCheat Admin Panel UI.", permissionLevel: PermissionLevels.ADMIN },
     { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
@@ -446,7 +447,10 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
             break;
         case "ui":
-            uiManager.showAdminMainMenu(player); // Call the UI manager
+            uiManager.showAdminMainMenu(player, playerDataManager); // Call the old Admin Menu
+            break;
+        case "panel": // ADMIN
+            uiManager.showAdminPanelMain(player, playerDataManager); // Call the new Admin Panel
             break;
         case "notify": // ADMIN (formerly acnotifications)
             const acNotificationsOffTag = "ac_notifications_off";
