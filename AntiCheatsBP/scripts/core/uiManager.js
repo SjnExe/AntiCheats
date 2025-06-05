@@ -66,6 +66,104 @@ async function showInspectPlayerForm(player, playerDataManager) {
     }
 }
 
+/**
+ * Displays a read-only view of a target player's inventory to an admin.
+ * @param {mc.Player} adminPlayer The admin player who initiated the request.
+ * @param {mc.Player} targetPlayer The player whose inventory is to be displayed.
+ */
+export async function showPlayerInventory(adminPlayer, targetPlayer) {
+    if (!(adminPlayer instanceof mc.Player) || !(targetPlayer instanceof mc.Player)) {
+        console.error("[uiManager.showPlayerInventory] Invalid adminPlayer or targetPlayer provided.");
+        if (adminPlayer instanceof mc.Player) {
+            adminPlayer.sendMessage("§cAn error occurred: Invalid player object provided for inventory view.");
+        }
+        return;
+    }
+
+    playerUtils.debugLog(`UI: showPlayerInventory for ${targetPlayer.nameTag} requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+
+    try {
+        const inventoryComponent = targetPlayer.getComponent("minecraft:inventory");
+        if (!inventoryComponent || !inventoryComponent.container) {
+            adminPlayer.sendMessage(`§cCould not access inventory for ${targetPlayer.nameTag}.`);
+            playerUtils.debugLog(`Failed to get inventory component or container for ${targetPlayer.nameTag}`, adminPlayer.nameTag);
+            return;
+        }
+        const container = inventoryComponent.container;
+
+        let inventoryContent = `§lInventory of ${targetPlayer.nameTag}§r\n\n`;
+
+        // 1. Main Hand Slot
+        const mainHandItem = container.getItem(targetPlayer.selectedSlot);
+        inventoryContent += `§eMain Hand (Slot ${targetPlayer.selectedSlot}):§r\n`;
+        if (mainHandItem) {
+            inventoryContent += `  §f- ${mainHandItem.typeId} (x${mainHandItem.amount}) ${mainHandItem.nameTag ? '§7[' + mainHandItem.nameTag + ']§r' : ''}\n`;
+        } else {
+            inventoryContent += `  §7- Empty\n`;
+        }
+
+        // 2. Armor Slots
+        inventoryContent += "\n§eArmor:§r\n";
+        const equippableComponent = targetPlayer.getComponent("minecraft:equippable");
+        if (equippableComponent) {
+            const armorSlots = [
+                { name: "Head", slot: mc.EquipmentSlot.Head },
+                { name: "Chest", slot: mc.EquipmentSlot.Chest },
+                { name: "Legs", slot: mc.EquipmentSlot.Legs },
+                { name: "Feet", slot: mc.EquipmentSlot.Feet },
+                { name: "Offhand", slot: mc.EquipmentSlot.Offhand }
+            ];
+
+            for (const armorSlot of armorSlots) {
+                try {
+                    const armorItem = equippableComponent.getEquipment(armorSlot.slot);
+                    inventoryContent += `  §7${armorSlot.name}:§r `;
+                    if (armorItem) {
+                        inventoryContent += `${armorItem.typeId} (x${armorItem.amount}) ${armorItem.nameTag ? '§7[' + armorItem.nameTag + ']§r' : ''}\n`;
+                    } else {
+                        inventoryContent += `Empty\n`;
+                    }
+                } catch (e) {
+                     inventoryContent += `Error accessing ${armorSlot.name} slot.\n`; // Should not happen if component exists
+                     playerUtils.debugLog(`Error accessing ${armorSlot.name} for ${targetPlayer.nameTag}: ${e}`, adminPlayer.nameTag);
+                }
+            }
+        } else {
+            inventoryContent += "  Could not access armor slots component.\n";
+        }
+
+        // 3. Main Inventory
+        inventoryContent += `\n§eMain Inventory (Size: ${container.size}):§r\n`;
+        let mainInvIsEmpty = true;
+        for (let i = 0; i < container.size; i++) {
+            const itemStack = container.getItem(i);
+            if (itemStack) {
+                mainInvIsEmpty = false;
+                inventoryContent += `  Slot ${i}: ${itemStack.typeId} (x${itemStack.amount}) ${itemStack.nameTag ? '§7[' + itemStack.nameTag + ']§r' : ''}\n`;
+            }
+        }
+        if (mainInvIsEmpty) {
+            inventoryContent += "  Main inventory is empty.\n";
+        }
+
+        if (inventoryContent.trim() === `§lInventory of ${targetPlayer.nameTag}§r`) { // Check if only title part is there
+            inventoryContent = "Inventory appears to be empty or inaccessible after checks.";
+        }
+
+        const form = new MessageFormData();
+        form.title(`Inventory of ${targetPlayer.nameTag}`);
+        form.body(inventoryContent);
+        form.button1("Close"); // "OK" or "Close"
+
+        await form.show(adminPlayer);
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in showPlayerInventory for ${targetPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showPlayerInventory] Error for ${targetPlayer.nameTag}:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while trying to display the player's inventory.");
+    }
+}
+
 async function showResetFlagsForm(player, playerDataManager) {
     playerUtils.debugLog(`UI: Reset Player Flags form requested by ${player.nameTag}`, player.nameTag);
     const modalForm = new ModalFormData();

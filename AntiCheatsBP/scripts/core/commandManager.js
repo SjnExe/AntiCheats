@@ -12,6 +12,7 @@ const ALL_COMMANDS = [
     { name: "version", syntax: "!version", description: "Displays addon version.", permissionLevel: PermissionLevels.ADMIN },
     { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", permissionLevel: PermissionLevels.ADMIN },
     { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "invsee", syntax: "!invsee <player>", description: "Displays a read-only view of a player's inventory.", permissionLevel: PermissionLevels.ADMIN },
     { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: PermissionLevels.ADMIN },
     { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: PermissionLevels.ADMIN },
     { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
@@ -218,6 +219,28 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 }
             } else {
                 player.sendMessage(`§cPlayer ${inspectTargetName} not found.`);
+            }
+            break;
+        case "invsee": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}invsee <playername>`);
+                return;
+            }
+            const targetPlayerNameInvsee = args[0];
+            let targetPlayerInvsee = null;
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameInvsee.toLowerCase()) {
+                    targetPlayerInvsee = p;
+                    break;
+                }
+            }
+
+            if (targetPlayerInvsee) {
+                // Assuming uiManager.showPlayerInventory will handle the UI display
+                // The command manager's role is to validate and pass the correct player objects.
+                uiManager.showPlayerInventory(player, targetPlayerInvsee);
+            } else {
+                player.sendMessage(`§cPlayer ${targetPlayerNameInvsee} not found.`);
             }
             break;
         case "resetflags": // Text command !ac resetflags
