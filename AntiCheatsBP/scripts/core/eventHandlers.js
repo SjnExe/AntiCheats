@@ -225,7 +225,7 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
 
     const originalMessage = eventData.message;
     const rankDisplay = getPlayerRankDisplay(player);
-    const formattedMessage = `${rankDisplay.chatPrefix}${player.nameTag}§f: ${originalMessage}`;
+    const formattedMessage = `${rankDisplay.chatPrefix}${player.name}§f: ${originalMessage}`; // Use player.name for the actual name
     const pData = playerDataManager.getPlayerData(player.id); // Get pData once for potential use in multiple checks
 
     // 1. Newline Character Check (on originalMessage)
