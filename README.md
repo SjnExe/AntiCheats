@@ -99,6 +99,9 @@ The addon features a simple rank system to visually distinguish players in chat 
 
 To correctly configure the **Owner** rank, you **must** edit the `ownerPlayerName` in `AntiCheatsBP/scripts/config.js` to match the exact, case-sensitive in-game name of the project owner.
 
-## Player Usage
+## General Player Commands
 
+These commands are available to all players.
+
+*   **`!help`**: Shows a list of commands available to you based on your permissions.
 *   **`!myflags`**: Allows any player to check their own current flag status.

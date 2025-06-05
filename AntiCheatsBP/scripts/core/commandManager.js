@@ -1,8 +1,20 @@
 import * as mc from '@minecraft/server';
-// Parameter 'config' will provide PREFIX, AC_VERSION
+// Parameter 'config' will provide PREFIX, acVersion (note: renamed from AC_VERSION for consistency), commandAliases
 // Parameter 'playerUtils' will provide isAdmin, warnPlayer, notifyAdmins, debugLog
 // Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData
 // Parameter 'uiManager' will provide showAdminMainMenu
+
+const ALL_COMMANDS = [
+    { name: "help", syntax: "!help", description: "Shows available commands.", adminOnly: false },
+    { name: "myflags", syntax: "!myflags", description: "Shows your own current flag status.", adminOnly: false },
+    { name: "version", syntax: "!version", description: "Displays addon version.", adminOnly: true },
+    { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", adminOnly: true },
+    { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", adminOnly: true },
+    { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", adminOnly: true },
+    { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", adminOnly: true },
+    { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", adminOnly: true },
+    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", adminOnly: true }
+];
 
 /**
  * Handles commands sent by players via chat that start with the configured PREFIX.
@@ -16,40 +28,71 @@ import * as mc from '@minecraft/server';
 export async function handleChatCommand(eventData, playerDataManager, uiManager, config, playerUtils) {
     const player = eventData.sender;
     const message = eventData.message;
-
-    // playerData map is now managed by playerDataManager
-    // The debugLog for command issuance might need pDataManager.getPlayerData if it needs isWatched status
-    const senderPDataForLog = playerDataManager.getPlayerData(player.id);
-    playerUtils.debugLog(`Player ${player.nameTag} issued command: ${message.substring(config.prefix.length).trim().split(/\s+/)[0] || ''} with args: ${message.substring(config.prefix.length).trim().split(/\s+/).slice(1).join(', ')}`, senderPDataForLog?.isWatched ? player.nameTag : null);
-
-    if (!playerUtils.isAdmin(player)) {
-        playerUtils.warnPlayer(player, "You do not have permission to use Anti-Cheat commands.");
-        return;
-    }
-
-    eventData.cancel = true; // Command processed, cancel original message
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     let command = args.shift()?.toLowerCase();
 
+    // Initial debug log for command issuance
+    const senderPDataForLog = playerDataManager.getPlayerData(player.id);
+    playerUtils.debugLog(`Player ${player.nameTag} issued command: ${command || ''} with args: ${args.join(', ')}`, senderPDataForLog?.isWatched ? player.nameTag : null);
+
+    // Resolve alias if applicable
     if (command && config.commandAliases && config.commandAliases[command]) {
         const resolvedCommand = config.commandAliases[command];
         playerUtils.debugLog(`Command alias '${command}' resolved to '${resolvedCommand}'.`, player.nameTag);
         command = resolvedCommand;
     }
 
+    // --- Public Command Handling ---
+    if (command === "help") {
+        eventData.cancel = true;
+        const senderIsAdmin = playerUtils.isAdmin(player);
+        let helpOutput = ["§aAvailable commands:"];
+        ALL_COMMANDS.forEach(cmdDef => {
+            if (!cmdDef.adminOnly || senderIsAdmin) {
+                helpOutput.push(`§e${cmdDef.syntax}§7 - ${cmdDef.description}`);
+            }
+        });
+        player.sendMessage(helpOutput.join('\n'));
+        return;
+    } else if (command === "myflags") {
+        eventData.cancel = true;
+        const pDataSelf = playerDataManager.getPlayerData(player.id);
+        if (pDataSelf && pDataSelf.flags) {
+            player.sendMessage(`Your current flags: Total=${pDataSelf.flags.totalFlags}. Last type: ${pDataSelf.lastFlagType || "None"}`);
+            for (const key in pDataSelf.flags) {
+                if (key !== "totalFlags" && typeof pDataSelf.flags[key] === 'object' && pDataSelf.flags[key] !== null) {
+                    player.sendMessage(` - ${key}: ${pDataSelf.flags[key].count} (Last: ${pDataSelf.flags[key].lastDetectionTime ? new Date(pDataSelf.flags[key].lastDetectionTime).toLocaleTimeString() : 'N/A'})`);
+                }
+            }
+        } else {
+            player.sendMessage("No flag data found for you.");
+        }
+        return;
+    }
+
+    // --- Admin Check for remaining commands ---
+    if (!playerUtils.isAdmin(player)) {
+        // Check if the typed command is an admin command to decide on the warning
+        const cmdDef = ALL_COMMANDS.find(c => c.name === command);
+        if (cmdDef && cmdDef.adminOnly) {
+            playerUtils.warnPlayer(player, "You do not have permission to use this command.");
+        } else if (cmdDef) {
+            // This case should not be reached if public commands are handled above and return.
+            // But as a fallback, if it's a known non-admin command they still typed with prefix but wasn't caught.
+             playerUtils.warnPlayer(player, "This command does not require admin privileges but was used with the admin prefix flow.");
+        } else {
+            // If it's not "help" or "myflags" and not an admin, it's an unknown command to them.
+            // No message here, or a generic "unknown command" if we want to respond to non-admins typing unknown !commands.
+            // For now, let the default switch handle it if it somehow gets there, or just return.
+        }
+        eventData.cancel = true; // Still cancel their attempt to run a prefixed command
+        return;
+    }
+
+    // --- Admin Command Processing ---
+    eventData.cancel = true; // Commands processed here are admin commands, cancel original message
+
     switch (command) {
-        case "help":
-            const helpMessage = `§aAntiCheat Commands:§r
-!help
-!version
-!watch <player>
-!inspect <player>
-!resetflags <player>
-!ui
-!myflags
-!xraynotify <on|off|status>`;
-            player.sendMessage(helpMessage);
-            break;
         case "version":
             player.sendMessage(`§a[AntiCheat] Version: ${config.acVersion}`);
             break;
@@ -86,20 +129,8 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             playerUtils.notifyAdmins("This is a test notification triggered by an admin command.");
             player.sendMessage("Test notification sent to admins.");
             break;
-        case "myflags":
-            const pDataSelf = playerDataManager.getPlayerData(player.id);
-            if (pDataSelf && pDataSelf.flags) {
-                player.sendMessage(`Your current flags: Total=${pDataSelf.flags.totalFlags}. Last type: ${pDataSelf.lastFlagType || "None"}`);
-                for (const key in pDataSelf.flags) {
-                    if (key !== "totalFlags" && typeof pDataSelf.flags[key] === 'object' && pDataSelf.flags[key] !== null) {
-                        player.sendMessage(` - ${key}: ${pDataSelf.flags[key].count} (Last: ${pDataSelf.flags[key].lastDetectionTime ? new Date(pDataSelf.flags[key].lastDetectionTime).toLocaleTimeString() : 'N/A'})`);
-                    }
-                }
-            } else {
-                player.sendMessage("No flag data found for you.");
-            }
-            break;
-        case "inspect": // Text command !ac inspect
+        // "myflags" is now handled in the public section
+        case "inspect": // Text command !inspect
             if (args.length < 1) {
                 player.sendMessage("§cUsage: !inspect <playername>");
                 return;
@@ -230,6 +261,6 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
             break;
         default:
-            player.sendMessage(`§cUnknown command: ${command}§r`);
+            player.sendMessage(`§cUnknown admin command: ${command}§r. Type !help.`);
     }
 }
