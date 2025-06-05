@@ -569,3 +569,19 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Reviewed `Dev/tasks/todo.md` and updated all suggested administrative command syntaxes from the `!ac <command>` format to `!<command>` (e.g., `!ac kick` changed to `!kick`).
     *   This ensures that command suggestions in the to-do list are consistent with the established command prefix (`!`) used for existing commands.
     *   Updated a related line in the logging section of `todo.md` to refer to `!` commands generally.
+
+## Admin Command Verification (Completed on 2025-06-05)
+
+*   **`!kick <player> [reason]` Command:**
+    *   Task was to implement the `!kick` command.
+    *   Upon review of `AntiCheatsBP/scripts/core/commandManager.js`, it was found that the `!kick` command is already implemented.
+    *   The existing implementation correctly handles:
+        *   Syntax: `!kick <playername> [reason]`
+        *   Permissions: `permissionLevels.ADMIN`
+        *   Player lookup.
+        *   Self-kick prevention.
+        *   Kicking the player using `player.kick(reason)`.
+        *   Notification to the admin issuer and other admins.
+        *   Logging the kick action via `addLog`.
+        *   Error handling for player not found or kick failure.
+    *   No new implementation was needed. This task is considered completed by verification.
