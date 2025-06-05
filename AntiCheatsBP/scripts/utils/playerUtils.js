@@ -1,6 +1,7 @@
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
-import { adminTag, enableDebugLogging, ownerPlayerName } from '../config';
+import { adminTag, enableDebugLogging, ownerPlayerName, AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON } from '../config';
+import { PermissionLevels } from '../core/rankManager.js';
 
 /**
  * Checks if a player has admin privileges based on a specific tag.
@@ -22,6 +23,27 @@ export function isOwner(playerName) {
         return false;
     }
     return playerName === ownerPlayerName;
+}
+
+/**
+ * Determines the permission level of a given player.
+ * @param {mc.Player} player The player instance to check.
+ * @returns {PermissionLevels} The permission level of the player.
+ */
+export function getPlayerPermissionLevel(player) {
+    if (!(player instanceof mc.Player)) {
+        console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
+        // Fallback to the lowest permission level if player object is not valid.
+        return PermissionLevels.NORMAL; // Or DEFAULT, depending on desired strictness
+    }
+
+    if (isOwner(player.nameTag)) {
+        return PermissionLevels.OWNER;
+    } else if (isAdmin(player)) {
+        return PermissionLevels.ADMIN;
+    } else {
+        return PermissionLevels.NORMAL;
+    }
 }
 
 /**
@@ -52,9 +74,33 @@ export function notifyAdmins(baseMessage, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
+    const notificationsOffTag = "ac_notifications_off"; // Tag to explicitly disable AC notifications
+    const notificationsOnTag = "ac_notifications_on";   // Tag to explicitly enable AC notifications
+
     for (const p of allPlayers) {
         if (isAdmin(p)) {
-            p.sendMessage(fullMessage);
+            const hasExplicitOn = p.hasTag(notificationsOnTag);
+            const hasExplicitOff = p.hasTag(notificationsOffTag);
+
+            let shouldReceiveMessage = false;
+            if (hasExplicitOn) {
+                shouldReceiveMessage = true;
+            } else if (hasExplicitOff) {
+                shouldReceiveMessage = false;
+            } else {
+                // If no explicit preference, use the server default from config
+                shouldReceiveMessage = AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON;
+            }
+
+            if (shouldReceiveMessage) {
+                try {
+                    p.sendMessage(fullMessage);
+                } catch (e) {
+                    // Log error if sending message fails for a specific admin
+                    console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
+                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag);
+                }
+            }
         }
     }
 }

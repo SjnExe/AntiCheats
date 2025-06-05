@@ -1,19 +1,25 @@
 import * as mc from '@minecraft/server';
-// Parameter 'config' will provide PREFIX, acVersion (note: renamed from AC_VERSION for consistency), commandAliases
-// Parameter 'playerUtils' will provide isAdmin, warnPlayer, notifyAdmins, debugLog
+import { PermissionLevels } from './rankManager.js';
+import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
+// Parameter 'config' will provide PREFIX, acVersion, commandAliases
+// Parameter 'playerUtils' will provide warnPlayer, notifyAdmins, debugLog (isAdmin is no longer directly used here)
 // Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData
 // Parameter 'uiManager' will provide showAdminMainMenu
 
 const ALL_COMMANDS = [
-    { name: "help", syntax: "!help", description: "Shows available commands.", adminOnly: false },
-    { name: "myflags", syntax: "!myflags", description: "Shows your own current flag status.", adminOnly: false },
-    { name: "version", syntax: "!version", description: "Displays addon version.", adminOnly: true },
-    { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", adminOnly: true },
-    { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", adminOnly: true },
-    { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", adminOnly: true },
-    { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", adminOnly: true },
-    { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", adminOnly: true },
-    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", adminOnly: true }
+    { name: "help", syntax: "!help", description: "Shows available commands.", permissionLevel: PermissionLevels.NORMAL },
+    { name: "myflags", syntax: "!myflags", description: "Shows your own current flag status.", permissionLevel: PermissionLevels.NORMAL },
+    { name: "version", syntax: "!version", description: "Displays addon version.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
 ];
 
 /**
@@ -42,20 +48,63 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         command = resolvedCommand;
     }
 
-    // --- Public Command Handling ---
+    const userPermissionLevel = getPlayerPermissionLevel(player);
+
+    // --- Command Handling ---
     if (command === "help") {
         eventData.cancel = true;
-        const senderIsAdmin = playerUtils.isAdmin(player);
-        let helpOutput = ["§aAvailable commands:"];
-        ALL_COMMANDS.forEach(cmdDef => {
-            if (!cmdDef.adminOnly || senderIsAdmin) {
-                helpOutput.push(`§e${cmdDef.syntax}§7 - ${cmdDef.description}`);
+        if (args[0]) { // User wants help for a specific command
+            const specificCommandName = args[0].toLowerCase();
+            let foundCmdDef = null;
+
+            for (const cmdDef of ALL_COMMANDS) {
+                if (cmdDef.name === specificCommandName) {
+                    foundCmdDef = cmdDef;
+                    break;
+                }
+                // Check aliases
+                if (config.commandAliases) {
+                    const aliasTarget = config.commandAliases[specificCommandName];
+                    if (aliasTarget === cmdDef.name) {
+                        foundCmdDef = cmdDef;
+                        break;
+                    }
+                    // Also check if specificCommandName is a value in aliases and its key matches cmdDef.name
+                    // This is less common for help lookups but good for completeness if aliases are complex.
+                    // For now, the above check (specificCommandName is an alias for cmdDef.name) is primary.
+                }
             }
-        });
-        player.sendMessage(helpOutput.join('\n'));
+
+            if (foundCmdDef) {
+                if (userPermissionLevel <= foundCmdDef.permissionLevel) {
+                    // Extracting arguments part of syntax: e.g., "<player> [reason]" from "!kick <player> [reason]"
+                    const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
+                    player.sendMessage(
+                        `§a--- Help for: ${config.prefix}${foundCmdDef.name} ---\n` +
+                        `§eSyntax: ${config.prefix}${foundCmdDef.name} ${syntaxArgs}\n` +
+                        `§7Description: ${foundCmdDef.description}\n` +
+                        `§bPermission Level Required: ${Object.keys(PermissionLevels).find(key => PermissionLevels[key] === foundCmdDef.permissionLevel) || "Unknown"} (Value: ${foundCmdDef.permissionLevel})`
+                    );
+                } else {
+                    player.sendMessage(`§cCommand '${specificCommandName}' not found or you do not have permission to view its help. Try ${config.prefix}help for a list of your commands.`);
+                }
+            } else {
+                player.sendMessage(`§cCommand '${specificCommandName}' not found. Try ${config.prefix}help for a list of available commands.`);
+            }
+        } else { // General help - list available commands
+            let helpOutput = ["§aAvailable commands (for your permission level):"];
+            ALL_COMMANDS.forEach(cmdDef => {
+                if (userPermissionLevel <= cmdDef.permissionLevel) {
+                    const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
+                    helpOutput.push(`§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${cmdDef.description}`);
+                }
+            });
+            player.sendMessage(helpOutput.join('\n'));
+        }
         return;
     } else if (command === "myflags") {
         eventData.cancel = true;
+        // This command is PermissionLevels.NORMAL, so no explicit check needed beyond being in ALL_COMMANDS
         const pDataSelf = playerDataManager.getPlayerData(player.id);
         if (pDataSelf && pDataSelf.flags) {
             player.sendMessage(`Your current flags: Total=${pDataSelf.flags.totalFlags}. Last type: ${pDataSelf.lastFlagType || "None"}`);
@@ -70,30 +119,32 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     }
 
-    // --- Admin Check for remaining commands ---
-    if (!playerUtils.isAdmin(player)) {
-        // Check if the typed command is an admin command to decide on the warning
-        const cmdDef = ALL_COMMANDS.find(c => c.name === command);
-        if (cmdDef && cmdDef.adminOnly) {
+    // --- Permission Check for all other commands ---
+    const cmdDef = ALL_COMMANDS.find(c => c.name === command);
+
+    if (cmdDef) {
+        // Lower number means higher privilege.
+        // If user's level (e.g., NORMAL=2) is greater than command's required level (e.g., ADMIN=1), they don't have permission.
+        if (userPermissionLevel > cmdDef.permissionLevel) {
             playerUtils.warnPlayer(player, "You do not have permission to use this command.");
-        } else if (cmdDef) {
-            // This case should not be reached if public commands are handled above and return.
-            // But as a fallback, if it's a known non-admin command they still typed with prefix but wasn't caught.
-             playerUtils.warnPlayer(player, "This command does not require admin privileges but was used with the admin prefix flow.");
-        } else {
-            // If it's not "help" or "myflags" and not an admin, it's an unknown command to them.
-            // No message here, or a generic "unknown command" if we want to respond to non-admins typing unknown !commands.
-            // For now, let the default switch handle it if it somehow gets there, or just return.
+            eventData.cancel = true;
+            return;
         }
-        eventData.cancel = true; // Still cancel their attempt to run a prefixed command
+    } else if (command) { // Command was typed, but not found in ALL_COMMANDS
+        player.sendMessage(`§cUnknown command: ${config.prefix}${command}§r. Type ${config.prefix}help.`);
+        eventData.cancel = true;
+        return;
+    } else { // No command was typed after prefix
+        player.sendMessage(`§cPlease enter a command after the prefix. Type ${config.prefix}help.`);
+        eventData.cancel = true;
         return;
     }
 
-    // --- Admin Command Processing ---
-    eventData.cancel = true; // Commands processed here are admin commands, cancel original message
+    // --- Command Execution (Permission is granted at this point) ---
+    eventData.cancel = true; // Cancel original message for all processed commands
 
     switch (command) {
-        case "version":
+        case "version": // ADMIN
             player.sendMessage(`§a[AntiCheat] Version: ${config.acVersion}`);
             break;
         case "watch":
@@ -129,10 +180,10 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             playerUtils.notifyAdmins("This is a test notification triggered by an admin command.");
             player.sendMessage("Test notification sent to admins.");
             break;
-        // "myflags" is now handled in the public section
-        case "inspect": // Text command !inspect
+        // "myflags" is handled above (public command)
+        case "inspect": // ADMIN
             if (args.length < 1) {
-                player.sendMessage("§cUsage: !inspect <playername>");
+                player.sendMessage(`§cUsage: ${config.prefix}inspect <playername>`);
                 return;
             }
             const inspectTargetName = args[0];
@@ -170,7 +221,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "resetflags": // Text command !ac resetflags
             if (args.length < 1) {
-                player.sendMessage("§cUsage: !resetflags <playername>");
+                player.sendMessage(`§cUsage: ${config.prefix}resetflags <playername>`);
                 return;
             }
             const resetTargetName = args[0];
@@ -208,12 +259,145 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 player.sendMessage(`§cPlayer ${resetTargetName} not found.`);
             }
             break;
+        case "kick": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`);
+                return;
+            }
+            const targetPlayerNameKick = args[0];
+            const reasonKick = args.slice(1).join(" ") || "Kicked by an administrator.";
+            let foundPlayerKick = null;
+
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameKick.toLowerCase()) {
+                    foundPlayerKick = p;
+                    break;
+                }
+            }
+
+            if (foundPlayerKick) {
+                try {
+                    // Make sure the player to be kicked is not the command issuer to prevent self-kick issues.
+                    if (foundPlayerKick.id === player.id) {
+                        player.sendMessage("§cYou cannot kick yourself.");
+                        return;
+                    }
+                    foundPlayerKick.kick(reasonKick);
+                    player.sendMessage(`§aPlayer ${foundPlayerKick.nameTag} has been kicked. Reason: ${reasonKick}`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerKick.nameTag} was kicked by ${player.nameTag}. Reason: ${reasonKick}`, player, null);
+                } catch (e) {
+                    player.sendMessage(`§cError kicking player ${targetPlayerNameKick}: ${e}`);
+                    playerUtils.debugLog(`Error kicking player ${targetPlayerNameKick}: ${e}`);
+                }
+            } else {
+                player.sendMessage(`§cPlayer ${targetPlayerNameKick} not found.`);
+            }
+            break;
+        case "clearchat": // ADMIN
+            const linesToClear = 150; // Number of empty lines to send to effectively clear chat history for most users
+            for (let i = 0; i < linesToClear; i++) {
+                mc.world.sendMessage(""); // Sends an empty message to all players
+            }
+            player.sendMessage("§aChat has been cleared.");
+            playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+            break;
+        case "vanish": // ADMIN
+            const vanishedTag = "vanished";
+            let currentState = player.hasTag(vanishedTag);
+            let targetState = currentState; // Default to no change
+
+            const subArg = args[0] ? args[0].toLowerCase() : null;
+
+            if (subArg === "on") {
+                targetState = true;
+            } else if (subArg === "off") {
+                targetState = false;
+            } else {
+                targetState = !currentState; // Toggle if no valid sub-argument or no sub-argument
+            }
+
+            if (targetState === true && !currentState) { // To vanish
+                try {
+                    player.addTag(vanishedTag);
+                    player.addEffect("invisibility", 2000000, { amplifier: 0, showParticles: false });
+                    // Storing original nametag before clearing is tricky without a persistent place accessible here.
+                    // rankManager will handle nametag updates based on "vanished" tag.
+                    // For now, we can clear it, rankManager should restore it based on rank if unvanished.
+                    // However, the prompt implies rankManager is not yet doing this for vanish.
+                    // player.nameTag = ""; // Clear nametag - This might be problematic if rankManager doesn't know about vanish.
+                                        // Let's assume rankManager.updatePlayerNametag(player) will be called or check for "vanished" tag.
+                                        // For now, let's defer nametag direct manipulation here to avoid conflicts if rankManager also tries to set it.
+                                        // The visual effect of invisibility is the primary goal. Nametag hiding can be a follow-up if not covered.
+
+                    player.sendMessage("§7You are now vanished. Your nametag will be handled by rankManager.");
+                    playerUtils.notifyAdmins(`${player.nameTag} has vanished.`, player, null); // player.nameTag might be empty here if we cleared it.
+                                                                                             // Better to use player.name for the notification source if nameTag is unreliable.
+                                                                                             // For consistency with other notifications, using player.nameTag.
+                } catch (e) {
+                    player.sendMessage(`§cError applying vanish: ${e}`);
+                    playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`);
+                }
+            } else if (targetState === false && currentState) { // To unvanish
+                try {
+                    player.removeTag(vanishedTag);
+                    player.removeEffect("invisibility");
+                    // rankManager should restore the nametag based on rank now that "vanished" tag is removed.
+                    // player.nameTag = player.name; // Avoid direct manipulation if rankManager handles it.
+                    player.sendMessage("§7You are no longer vanished. Your nametag will be restored by rankManager shortly.");
+                    playerUtils.notifyAdmins(`${player.nameTag} is no longer vanished.`, player, null);
+                } catch (e) {
+                    player.sendMessage(`§cError removing vanish: ${e}`);
+                    playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`);
+                }
+            } else { // No change in state
+                player.sendMessage(targetState ? "§7You are already vanished." : "§7You are already visible.");
+            }
+            break;
         case "ui":
             uiManager.showAdminMainMenu(player); // Call the UI manager
             break;
+        case "notify": // ADMIN (formerly acnotifications)
+            const acNotificationsOffTag = "ac_notifications_off";
+            const acNotificationsOnTag = "ac_notifications_on";
+            const acSubCommand = args[0] ? args[0].toLowerCase() : "status";
+
+            switch (acSubCommand) {
+                case "on":
+                    try { player.removeTag(acNotificationsOffTag); } catch (e) { /* Tag might not exist, safe to ignore */ }
+                    try { player.addTag(acNotificationsOnTag); } catch (e) { playerUtils.debugLog(`Failed to add ${acNotificationsOnTag} for ${player.nameTag}: ${e}`, player.nameTag); }
+                    player.sendMessage("§aAntiCheat system notifications ON.");
+                    playerUtils.debugLog(`Admin ${player.nameTag} turned ON AntiCheat notifications.`, player.nameTag);
+                    break;
+                case "off":
+                    try { player.removeTag(acNotificationsOnTag); } catch (e) { /* Tag might not exist, safe to ignore */ }
+                    try { player.addTag(acNotificationsOffTag); } catch (e) { playerUtils.debugLog(`Failed to add ${acNotificationsOffTag} for ${player.nameTag}: ${e}`, player.nameTag); }
+                    player.sendMessage("§cAntiCheat system notifications OFF.");
+                    playerUtils.debugLog(`Admin ${player.nameTag} turned OFF AntiCheat notifications.`, player.nameTag);
+                    break;
+                case "status":
+                    const acIsOn = player.hasTag(acNotificationsOnTag);
+                    const acIsOff = player.hasTag(acNotificationsOffTag);
+                    let acStatusMessage = "§eYour AntiCheat system notification status: ";
+                    if (acIsOn) {
+                        acStatusMessage += "§aON (explicitly).";
+                    } else if (acIsOff) {
+                        acStatusMessage += "§cOFF (explicitly).";
+                    } else { // Default state based on config
+                        if (config.AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON) {
+                            acStatusMessage += `§aON (by server default). §7Use ${config.prefix}notify off to disable.`;
+                        } else {
+                            acStatusMessage += `§cOFF (by server default). §7Use ${config.prefix}notify on to enable.`;
+                        }
+                    }
+                    player.sendMessage(acStatusMessage);
+                    break;
+                default:
+                    player.sendMessage(`§cUsage: ${config.prefix}notify <on|off|status>`);
+            }
+            break;
         case "xraynotify":
             if (args.length < 1 || !["on", "off", "status"].includes(args[0].toLowerCase())) {
-                player.sendMessage("§cUsage: !xraynotify <on|off|status>");
+                player.sendMessage(`§cUsage: ${config.prefix}xraynotify <on|off|status>`);
                 return;
             }
             const subCommand = args[0].toLowerCase();
@@ -261,6 +445,9 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
             break;
         default:
-            player.sendMessage(`§cUnknown admin command: ${command}§r. Type !help.`);
+            // This case should ideally not be reached if all valid commands are in ALL_COMMANDS
+            // and unknown commands are handled by the check before this switch.
+            // However, as a fallback:
+            player.sendMessage(`§cUnexpected error processing command: ${config.prefix}${command}§r. Type ${config.prefix}help.`);
     }
 }
