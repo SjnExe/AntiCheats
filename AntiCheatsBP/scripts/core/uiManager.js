@@ -66,6 +66,134 @@ async function showInspectPlayerForm(player, playerDataManager) {
     }
 }
 
+async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager) {
+    playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+
+    const form = new ActionFormData();
+    form.title(`Actions for ${targetPlayer.nameTag}`);
+    // form.body("Select an action:"); // Optional body
+    form.button("View Detailed Info/Flags", "textures/ui/magnifying_glass");
+    form.button("Reset Player Flags", "textures/ui/refresh");
+    form.button("Back to Player List", "textures/ui/undo");
+    // Potential future actions: Kick, Ban, InvSee, Freeze could be added here.
+
+    try {
+        const response = await form.show(adminPlayer);
+
+        if (response.canceled) {
+            if (response.cancelationReason) {
+                playerUtils.debugLog(`Player Actions form for ${targetPlayer.nameTag} canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            } else {
+                playerUtils.debugLog(`Player Actions form for ${targetPlayer.nameTag} canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+            }
+            // Optionally, go back to player list if action form is cancelled from here
+            // await showOnlinePlayersList(adminPlayer, playerDataManager);
+            return;
+        }
+
+        switch (response.selection) {
+            case 0: // View Detailed Info/Flags
+                const targetPData = playerDataManager.getPlayerData(targetPlayer.id);
+                if (targetPData) {
+                    let summary = `§a--- AntiCheat Data for ${targetPlayer.nameTag} ---\n`;
+                    summary += `§eID: §f${targetPlayer.id}\n`;
+                    summary += `§eDimension: §f${targetPlayer.dimension.id}\n`;
+                    summary += `§eLocation: §fX:${targetPlayer.location.x.toFixed(1)}, Y:${targetPlayer.location.y.toFixed(1)}, Z:${targetPlayer.location.z.toFixed(1)}\n`;
+                    summary += `§eWatched: §f${targetPData.isWatched}\n`;
+                    summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
+                    summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
+                    summary += `§eIndividual Flags:\n`;
+                    let hasFlags = false;
+                    for (const flagKey in targetPData.flags) {
+                        if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
+                            const flagData = targetPData.flags[flagKey];
+                            if (flagData.count > 0) {
+                                summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
+                                hasFlags = true;
+                            }
+                        }
+                    }
+                    if (!hasFlags) {
+                        summary += `  §fNo specific flags recorded or triggered.\n`;
+                    }
+
+                    const detailForm = new MessageFormData()
+                        .title(`Details for ${targetPlayer.nameTag}`)
+                        .body(summary)
+                        .button1("OK");
+                    await detailForm.show(adminPlayer);
+                } else {
+                    adminPlayer.sendMessage("§cCould not retrieve data for " + targetPlayer.nameTag);
+                    playerUtils.debugLog(`Could not retrieve pData for ${targetPlayer.nameTag} (ID: ${targetPlayer.id}) in showPlayerActionsForm.`, adminPlayer.nameTag);
+                }
+                // After viewing details, re-show this actions form to allow further actions or going back.
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+                break;
+
+            case 1: // Reset Player Flags
+                const confirmForm = new ModalFormData();
+                confirmForm.title("Confirm Reset Flags");
+                confirmForm.toggle(`Reset all flags for ${targetPlayer.nameTag}? This action cannot be undone.`, false);
+
+                const confirmResponse = await confirmForm.show(adminPlayer);
+
+                if (confirmResponse.canceled) {
+                    adminPlayer.sendMessage("§7Flag reset cancelled for " + targetPlayer.nameTag);
+                    await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); // Re-show actions form
+                    return;
+                }
+
+                const confirmed = confirmResponse.formValues[0];
+                if (confirmed) {
+                    const pData = playerDataManager.getPlayerData(targetPlayer.id);
+                    if (pData) {
+                        pData.flags.totalFlags = 0;
+                        pData.lastFlagType = "";
+                        for (const flagKey in pData.flags) {
+                            if (typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null) {
+                                pData.flags[flagKey].count = 0;
+                                pData.flags[flagKey].lastDetectionTime = 0;
+                            }
+                        }
+                        pData.consecutiveOffGroundTicks = 0;
+                        pData.fallDistance = 0;
+                        pData.consecutiveOnGroundSpeedingTicks = 0;
+                        pData.attackEvents = [];
+                        pData.blockBreakEvents = [];
+                        // pData.isWatched = false; // Decide if watch status should also be reset
+
+                        await playerDataManager.prepareAndSavePlayerData(targetPlayer);
+                        adminPlayer.sendMessage(`§aFlags reset for ${targetPlayer.nameTag}.`);
+                        playerUtils.notifyAdmins(`Flags for ${targetPlayer.nameTag} were reset by ${adminPlayer.nameTag} via panel.`, adminPlayer, pData);
+                        playerUtils.debugLog(`Flags reset for ${targetPlayer.nameTag} by ${adminPlayer.nameTag} via panel.`, adminPlayer.nameTag);
+                    } else {
+                        adminPlayer.sendMessage("§cCould not retrieve data to reset flags for " + targetPlayer.nameTag);
+                    }
+                } else {
+                    adminPlayer.sendMessage("§7Flag reset cancelled for " + targetPlayer.nameTag);
+                }
+                // After action or cancellation, re-show this player's actions form.
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+                break;
+
+            case 2: // Back to Player List
+                await showOnlinePlayersList(adminPlayer, playerDataManager); // Re-shows the player list
+                break;
+
+            default:
+                adminPlayer.sendMessage("§cInvalid action selected.");
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); // Re-show on invalid selection
+                break;
+        }
+    } catch (error) {
+        playerUtils.debugLog(`Error in showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showPlayerActionsForm] Error for ${targetPlayer.nameTag}:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while displaying player actions.");
+        // Optionally, try to return to a safe state, like the main player list, if an error occurs
+        // await showOnlinePlayersList(adminPlayer, playerDataManager);
+    }
+}
+
 async function showOnlinePlayersList(adminPlayer, playerDataManager) {
     playerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
 
@@ -86,7 +214,7 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
 
     const form = new ActionFormData();
     form.title("Online Players");
-    form.body("Select a player to view details:");
+    form.body("Select a player to view actions:"); // Changed body text
 
     const playerMappings = []; // To map selection to player ID
 
@@ -94,7 +222,7 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
         const targetPData = playerDataManager.getPlayerData(p.id);
         const buttonText = targetPData
             ? `${p.nameTag} (Flags: ${targetPData.flags.totalFlags})`
-            : p.nameTag; // Fallback if pData somehow not available
+            : p.nameTag;
         form.button(buttonText);
         playerMappings.push(p.id);
     }
@@ -115,39 +243,8 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
         const targetPlayer = mc.world.getPlayer(selectedPlayerId);
 
         if (targetPlayer) {
-            const targetPData = playerDataManager.getPlayerData(targetPlayer.id);
-            if (targetPData) {
-                let summary = `§a--- AntiCheat Data for ${targetPlayer.nameTag} ---\n`;
-                summary += `§eID: §f${targetPlayer.id}\n`; // Added player ID
-                summary += `§eDimension: §f${targetPlayer.dimension.id}\n`; // Added dimension
-                summary += `§eLocation: §fX:${targetPlayer.location.x.toFixed(1)}, Y:${targetPlayer.location.y.toFixed(1)}, Z:${targetPlayer.location.z.toFixed(1)}\n`; // Added location
-                summary += `§eWatched: §f${targetPData.isWatched}\n`;
-                summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
-                summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
-                summary += `§eIndividual Flags:\n`;
-                let hasFlags = false;
-                for (const flagKey in targetPData.flags) {
-                    if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
-                        const flagData = targetPData.flags[flagKey];
-                        if (flagData.count > 0) { // Only show flags that have been triggered
-                            summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
-                            hasFlags = true;
-                        }
-                    }
-                }
-                if (!hasFlags) {
-                    summary += `  §fNo specific flags recorded or triggered.\n`;
-                }
-
-                const detailForm = new MessageFormData()
-                    .title(`Details for ${targetPlayer.nameTag}`)
-                    .body(summary)
-                    .button1("OK");
-                await detailForm.show(adminPlayer);
-            } else {
-                adminPlayer.sendMessage("§cCould not retrieve data for the selected player.");
-                playerUtils.debugLog(`Could not retrieve pData for ${targetPlayer.nameTag} (ID: ${targetPlayer.id}) in showOnlinePlayersList.`, adminPlayer.nameTag);
-            }
+            // Instead of showing details directly, call showPlayerActionsForm
+            await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
         } else {
             adminPlayer.sendMessage("§cSelected player not found. They may have logged off.");
             playerUtils.debugLog(`Selected player with ID ${selectedPlayerId} not found in showOnlinePlayersList.`, adminPlayer.nameTag);
