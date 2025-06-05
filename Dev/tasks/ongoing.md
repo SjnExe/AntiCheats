@@ -1,32 +1,13 @@
 # Ongoing Tasks
 
-As of 2024-07-25 *(placeholder date)*:
+As of 2024-07-31
 
 ## Admin Panel UI (`!panel`) Development
-*   **Phase 1: Basic Structure & Player List:** (Completed)
-    *   Command `!panel open main` (or similar).
-    *   Initial UI form displaying a list of currently online players (name, basic stats like flag count).
-    *   Selection of a player leads to a "Player Actions" form.
-*   **Phase 1.5: Player Actions Form with Reset Flags & Detailed View:** (Completed)
-    *   Player Actions form includes "View Detailed Info/Flags" and "Reset Player Flags" (with confirmation).
-*   **Phase 2: Integrate Old `!ui` Tools & Dynamic Views:** (Completed with this commit)
-    *   Consolidated `!ui` and `!panel` commands. `!panel` is primary, `!ui` is an alias.
-    *   `showAdminPanelMain` in `uiManager.js` now dynamically shows:
-        *   For Admins/Owners: Buttons for "View Online Players", "Inspect Player (Text)", "Reset Flags (Text)", "List Watched Players", and placeholders for Server Stats/Settings.
-        *   For Normal Users: Placeholders for "My Stats", "Server Rules", "Help & Links".
-*   **Phase 3: Player Actions - Moderation (TODO)**:
-    *   "Kick Player" button with reason input (integrates with kick system). (Completed)
-    *   "Mute Player" button with duration/reason input (integrates with mute system). (Completed)
-    *   "Freeze/Unfreeze Player" toggle (integrates with freeze system). (Completed)
-*   **Phase 4: Server Management Actions (New Section in Panel) (TODO):**
-    *   "View System Info": Basic server stats, AC version.
-    *   "Clear Chat" button.
-    *   "Lag Clear" button (if implemented).
-*   **Phase 5: Configuration & Advanced (Future) (TODO):**
-    *   View/Edit parts of `config.js` (read-only first, then consider edits for simple values).
-    *   View Ban/Mute/Warning Logs.
+*   **Phase 5: Configuration & Advanced (Future) (In Progress):**
+    *   View/Edit parts of `config.js`: (View read-only: Completed; Edit simple values: TODO).
+    *   Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Log actions with details (admin, target, reason, duration, timestamp) and create a UI to view these logs. (Completed)
 
-## Normal Player Panel Features (`!panel`)
-*   Implement "My Stats" view for normal players in `!panel`. (Completed)
-*   Implement "Server Rules" view for normal players in `!panel`. (Completed)
-*   Implement "Help & Links" view for normal players in `!panel`. (Completed)
+## New Admin Commands (User Suggested)
+*   `!tp <playerName>` & `!tp <x> <y> <z>`: Implement teleport command for admins/owner. (User Suggestion) (TODO)
+    *   *Enhancement: Add optional dimension parameter for coordinate-based teleports (e.g., `!tp <playerToMoveOrSelf> <x> <y> <z> [dimension: overworld|nether|end]`). If omitted, defaults to current dimension of player being moved.*
+*   `!gmc`, `!gms`, `!gma`, `!gmsp`: Implement game mode change commands for admins/owner. (User Suggestion) (TODO)

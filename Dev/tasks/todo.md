@@ -39,6 +39,7 @@ This list contains planned features, improvements, and areas for future investig
 
     *   **Player Behavior - Advanced:** SjnExe parity goal.
         *   **Namespoof:** Check `player.nameTag` for excessive length, use of disallowed characters (e.g., non-ASCII, control characters beyond typical gameplay names), or rapid changes. (Scythe, SjnExe)
+            *   *Note: Concern raised about potential false positives for console players (e.g., due to spaces, specific character sets, or typical console Gamertag lengths). Ensure implementation is flexible or provides configuration to handle this when developing this feature.*
         *   **Anti-Gamemode Creative (Anti-GMC):** If a player is unexpectedly in Creative mode (not an admin or by legitimate means), flag and potentially switch them back to Survival. Notify admins. (SafeGuard, SjnExe)
         *   **InventoryMods (Hotbar Switch):** Detect if items are moved or used from the hotbar in ways that are impossible manually, e.g., switching active slot and using an item in the same tick, or moving items in inventory while performing other actions that should lock inventory. (Scythe - may require careful API event correlation)
 
@@ -51,9 +52,7 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!ac ban <player> [reason] [duration]` & `!ac unban <player>`: Implement a ban management system. Bans should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (SjnExe, SafeGuard)
         *   `!ac kick <player> [reason]`: Standard kick functionality.
-        *   `!ac mute <player> [duration] [reason]` & `!ac unmute <player>`: Implement a persistent mute system. (SjnExe, SafeGuard)
         *   `!ac freeze <player>`: Toggle to prevent a player from moving, interacting, or being targeted.
         *   `!ac warnings <player>` (detailed warning list) & `!ac clearwarnings <playername>`: View a list of specific warnings/flags a player has received. Clear them. Needs persistent storage of detailed warnings if not just relying on aggregated flags.
         *   `!ac invsee <playername>`: Allow admin to view a read-only representation of another player's inventory (API dependent for accuracy).
@@ -106,7 +105,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Admin Command Usage Logging:** Log when an admin uses an `!ac` command, what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
-    *   **Ban/Mute/Kick Action Logging:** Ensure all punitive admin actions are logged with admin, target, reason, duration, and timestamp.
 *   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 

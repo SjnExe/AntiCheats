@@ -291,8 +291,6 @@ export const commandAliases = {
     "rf": "resetflags",
     "xn": "xraynotify",
     "mf": "myflags",
-    "acnotifications": "notify",
-    "acenotify": "notify",
     "notifications": "notify",
     "ui": "panel"
     // Add more aliases as commands are developed
