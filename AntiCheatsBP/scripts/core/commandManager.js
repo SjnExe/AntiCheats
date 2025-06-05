@@ -17,7 +17,7 @@ const ALL_COMMANDS = [
     { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
     { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
     { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "acnotifications", syntax: "!acnotifications <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
 ];
@@ -53,14 +53,54 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     // --- Command Handling ---
     if (command === "help") {
         eventData.cancel = true;
-        let helpOutput = ["§aAvailable commands:"];
-        ALL_COMMANDS.forEach(cmdDef => {
-            // Lower number means higher privilege, so user level must be <= command's required level
-            if (userPermissionLevel <= cmdDef.permissionLevel) {
-                helpOutput.push(`§e${config.prefix}${cmdDef.name} ${cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1)}§7 - ${cmdDef.description}`);
+        if (args[0]) { // User wants help for a specific command
+            const specificCommandName = args[0].toLowerCase();
+            let foundCmdDef = null;
+
+            for (const cmdDef of ALL_COMMANDS) {
+                if (cmdDef.name === specificCommandName) {
+                    foundCmdDef = cmdDef;
+                    break;
+                }
+                // Check aliases
+                if (config.commandAliases) {
+                    const aliasTarget = config.commandAliases[specificCommandName];
+                    if (aliasTarget === cmdDef.name) {
+                        foundCmdDef = cmdDef;
+                        break;
+                    }
+                    // Also check if specificCommandName is a value in aliases and its key matches cmdDef.name
+                    // This is less common for help lookups but good for completeness if aliases are complex.
+                    // For now, the above check (specificCommandName is an alias for cmdDef.name) is primary.
+                }
             }
-        });
-        player.sendMessage(helpOutput.join('\n'));
+
+            if (foundCmdDef) {
+                if (userPermissionLevel <= foundCmdDef.permissionLevel) {
+                    // Extracting arguments part of syntax: e.g., "<player> [reason]" from "!kick <player> [reason]"
+                    const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
+                    player.sendMessage(
+                        `§a--- Help for: ${config.prefix}${foundCmdDef.name} ---\n` +
+                        `§eSyntax: ${config.prefix}${foundCmdDef.name} ${syntaxArgs}\n` +
+                        `§7Description: ${foundCmdDef.description}\n` +
+                        `§bPermission Level Required: ${Object.keys(PermissionLevels).find(key => PermissionLevels[key] === foundCmdDef.permissionLevel) || "Unknown"} (Value: ${foundCmdDef.permissionLevel})`
+                    );
+                } else {
+                    player.sendMessage(`§cCommand '${specificCommandName}' not found or you do not have permission to view its help. Try ${config.prefix}help for a list of your commands.`);
+                }
+            } else {
+                player.sendMessage(`§cCommand '${specificCommandName}' not found. Try ${config.prefix}help for a list of available commands.`);
+            }
+        } else { // General help - list available commands
+            let helpOutput = ["§aAvailable commands (for your permission level):"];
+            ALL_COMMANDS.forEach(cmdDef => {
+                if (userPermissionLevel <= cmdDef.permissionLevel) {
+                    const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
+                    helpOutput.push(`§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${cmdDef.description}`);
+                }
+            });
+            player.sendMessage(helpOutput.join('\n'));
+        }
         return;
     } else if (command === "myflags") {
         eventData.cancel = true;
@@ -316,7 +356,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         case "ui":
             uiManager.showAdminMainMenu(player); // Call the UI manager
             break;
-        case "acnotifications": // ADMIN
+        case "notify": // ADMIN (formerly acnotifications)
             const acNotificationsOffTag = "ac_notifications_off";
             const acNotificationsOnTag = "ac_notifications_on";
             const acSubCommand = args[0] ? args[0].toLowerCase() : "status";
@@ -344,15 +384,15 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                         acStatusMessage += "§cOFF (explicitly).";
                     } else { // Default state based on config
                         if (config.AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON) {
-                            acStatusMessage += `§aON (by server default). §7Use ${config.prefix}acnotifications off to disable.`;
+                            acStatusMessage += `§aON (by server default). §7Use ${config.prefix}notify off to disable.`;
                         } else {
-                            acStatusMessage += `§cOFF (by server default). §7Use ${config.prefix}acnotifications on to enable.`;
+                            acStatusMessage += `§cOFF (by server default). §7Use ${config.prefix}notify on to enable.`;
                         }
                     }
                     player.sendMessage(acStatusMessage);
                     break;
                 default:
-                    player.sendMessage(`§cUsage: ${config.prefix}acnotifications <on|off|status>`);
+                    player.sendMessage(`§cUsage: ${config.prefix}notify <on|off|status>`);
             }
             break;
         case "xraynotify":
