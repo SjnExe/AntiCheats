@@ -8,6 +8,24 @@ import { Player } from '@minecraft/server';
 import { isOwner, isAdmin } from '../utils/playerUtils.js';
 
 /**
+ * @typedef {number} PermissionLevel
+ * Defines the numeric hierarchy for command permissions.
+ * Higher numbers indicate higher permission.
+ */
+
+/**
+ * Enum for permission levels.
+ * @readonly
+ * @enum {PermissionLevel}
+ */
+export const PermissionLevels = {
+    OWNER: 3,
+    ADMIN: 2,
+    NORMAL: 1, // Assuming MEMBER_RANK corresponds to a "NORMAL" user
+    DEFAULT: 0 // For commands accessible by anyone, or as a base level
+};
+
+/**
  * @typedef {object} RankDisplayProperties
  * @property {string} name - The display name of the rank (e.g., "Owner", "Admin").
  * @property {string} chatPrefix - The prefix to use before a player's chat message.

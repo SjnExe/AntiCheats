@@ -1,6 +1,7 @@
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
 import { adminTag, enableDebugLogging, ownerPlayerName } from '../config';
+import { PermissionLevels } from '../core/rankManager.js';
 
 /**
  * Checks if a player has admin privileges based on a specific tag.
@@ -22,6 +23,27 @@ export function isOwner(playerName) {
         return false;
     }
     return playerName === ownerPlayerName;
+}
+
+/**
+ * Determines the permission level of a given player.
+ * @param {mc.Player} player The player instance to check.
+ * @returns {PermissionLevels} The permission level of the player.
+ */
+export function getPlayerPermissionLevel(player) {
+    if (!(player instanceof mc.Player)) {
+        console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
+        // Fallback to the lowest permission level if player object is not valid.
+        return PermissionLevels.NORMAL; // Or DEFAULT, depending on desired strictness
+    }
+
+    if (isOwner(player.nameTag)) {
+        return PermissionLevels.OWNER;
+    } else if (isAdmin(player)) {
+        return PermissionLevels.ADMIN;
+    } else {
+        return PermissionLevels.NORMAL;
+    }
 }
 
 /**
