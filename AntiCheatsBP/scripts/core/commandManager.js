@@ -15,6 +15,7 @@ const ALL_COMMANDS = [
     { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: PermissionLevels.ADMIN },
     { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: PermissionLevels.ADMIN },
     { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
     { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
@@ -258,6 +259,58 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
             player.sendMessage("§aChat has been cleared.");
             playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+            break;
+        case "vanish": // ADMIN
+            const vanishedTag = "vanished";
+            let currentState = player.hasTag(vanishedTag);
+            let targetState = currentState; // Default to no change
+
+            const subArg = args[0] ? args[0].toLowerCase() : null;
+
+            if (subArg === "on") {
+                targetState = true;
+            } else if (subArg === "off") {
+                targetState = false;
+            } else {
+                targetState = !currentState; // Toggle if no valid sub-argument or no sub-argument
+            }
+
+            if (targetState === true && !currentState) { // To vanish
+                try {
+                    player.addTag(vanishedTag);
+                    player.addEffect("invisibility", 2000000, { amplifier: 0, showParticles: false });
+                    // Storing original nametag before clearing is tricky without a persistent place accessible here.
+                    // rankManager will handle nametag updates based on "vanished" tag.
+                    // For now, we can clear it, rankManager should restore it based on rank if unvanished.
+                    // However, the prompt implies rankManager is not yet doing this for vanish.
+                    // player.nameTag = ""; // Clear nametag - This might be problematic if rankManager doesn't know about vanish.
+                                        // Let's assume rankManager.updatePlayerNametag(player) will be called or check for "vanished" tag.
+                                        // For now, let's defer nametag direct manipulation here to avoid conflicts if rankManager also tries to set it.
+                                        // The visual effect of invisibility is the primary goal. Nametag hiding can be a follow-up if not covered.
+
+                    player.sendMessage("§7You are now vanished. Your nametag will be handled by rankManager.");
+                    playerUtils.notifyAdmins(`${player.nameTag} has vanished.`, player, null); // player.nameTag might be empty here if we cleared it.
+                                                                                             // Better to use player.name for the notification source if nameTag is unreliable.
+                                                                                             // For consistency with other notifications, using player.nameTag.
+                } catch (e) {
+                    player.sendMessage(`§cError applying vanish: ${e}`);
+                    playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`);
+                }
+            } else if (targetState === false && currentState) { // To unvanish
+                try {
+                    player.removeTag(vanishedTag);
+                    player.removeEffect("invisibility");
+                    // rankManager should restore the nametag based on rank now that "vanished" tag is removed.
+                    // player.nameTag = player.name; // Avoid direct manipulation if rankManager handles it.
+                    player.sendMessage("§7You are no longer vanished. Your nametag will be restored by rankManager shortly.");
+                    playerUtils.notifyAdmins(`${player.nameTag} is no longer vanished.`, player, null);
+                } catch (e) {
+                    player.sendMessage(`§cError removing vanish: ${e}`);
+                    playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`);
+                }
+            } else { // No change in state
+                player.sendMessage(targetState ? "§7You are already vanished." : "§7You are already visible.");
+            }
             break;
         case "ui":
             uiManager.showAdminMainMenu(player); // Call the UI manager

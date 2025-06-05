@@ -104,13 +104,32 @@ export function updatePlayerNametag(player) {
         return;
     }
 
-    const rankDisplay = getPlayerRankDisplay(player);
-    // player.name is the read-only actual name of the player.
-    // player.nameTag is the modifiable display name shown above the player.
+    const vanishedTag = "vanished"; // Standard tag for vanished players
+
     try {
+        if (player.hasTag(vanishedTag)) {
+            player.nameTag = ""; // Clear nametag for vanished players
+            return; // No further nametag processing needed
+        }
+
+        // If not vanished, proceed with standard rank-based nametag
+        const rankDisplay = getPlayerRankDisplay(player);
+        // player.name is the read-only actual name of the player.
+        // player.nameTag is the modifiable display name shown above the player.
         player.nameTag = rankDisplay.nametagPrefix + player.name;
+
     } catch (error) {
-        console.error(`[rankManager] Error setting nametag for ${player.name}: ${error}`);
+        // It's good to log the specific player if possible, especially if player.name is accessible
+        // However, player object might be in a bad state if error occurs.
+        let playerNameForError = "UnknownPlayer";
+        try {
+            if (player && player.name) {
+                playerNameForError = player.name;
+            }
+        } catch (nameError) {
+            // player or player.name might not be accessible
+        }
+        console.error(`[rankManager] Error setting nametag for ${playerNameForError}: ${error}`);
         // Potentially, the player object might not be valid anymore (e.g., left during the tick)
         // or some other unexpected issue.
     }
