@@ -248,7 +248,7 @@ export const AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON = true;
 // --- UI Display Texts ---
 
 /** @type {string[]} Defines the server rules to be displayed in the UI. Each string is a rule line. */
-export const SERVER_RULES = [
+export const serverRules = [
   "1. Be respectful to all players and staff.",
   "2. No cheating, exploiting, or unfair advantages.",
   "3. No griefing or stealing.",
