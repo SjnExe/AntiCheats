@@ -175,6 +175,17 @@ export const bannedItemsPlace: string[] = ["minecraft:command_block", "minecraft
 /** @type {string[]} Array of item type IDs banned from being used. */
 export const bannedItemsUse: string[] = [];
 
+// --- Chat Checks ---
+
+/** @type {boolean} If true, checks for newline/carriage return characters in chat messages. */
+export const enableNewlineCheck = true;
+
+/** @type {boolean} If true, sending a message with newlines/carriage returns will flag the player. */
+export const flagOnNewline = true;
+
+/** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
+export const cancelMessageOnNewline = true;
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */

@@ -21,6 +21,7 @@
  * @property {PlayerFlagDetail} [cps] - Clicks per second hack detection data.
  * @property {PlayerFlagDetail} [nuker] - Nuker hack detection data.
  * @property {PlayerFlagDetail} [illegalItem] - Illegal item detection data.
+ * @property {PlayerFlagDetail} [illegalCharInChat] - Illegal character (e.g. newline) in chat message.
  * // Add other specific flags here as they are defined, e.g., killaura, aimbot, scaffold
  */
 

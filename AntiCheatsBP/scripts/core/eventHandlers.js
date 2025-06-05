@@ -136,3 +136,37 @@ export function handleItemUseOn(eventData, playerDataManager, worldChecks) {
         }
     }
 }
+
+/**
+ * Handles chat messages before they are sent, checking for illegal characters.
+ * @param {mc.PlayerChatSendBeforeEvent} eventData
+ * @param {object} playerDataManager Module or object containing playerDataManager functions
+ * @param {object} config The configuration object
+ * @param {object} playerUtils Module for utility functions like debugLog
+ */
+export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
+    const player = eventData.sender;
+    const message = eventData.message;
+
+    if (config.enableNewlineCheck) {
+        const hasNewline = message.includes('\n') || message.includes('\r');
+
+        if (hasNewline) {
+            playerUtils.debugLog(`Player ${player.nameTag} attempted to send message with newline/carriage return: "${message}"`, player.nameTag);
+
+            if (config.cancelMessageOnNewline) {
+                eventData.cancel = true;
+                playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to newline characters.`, player.nameTag);
+            }
+
+            if (config.flagOnNewline) {
+                const pData = playerDataManager.getPlayerData(player.id);
+                if (pData) {
+                    playerDataManager.addFlag(player, "illegalCharInChat", "Sent message with newline/carriage return characters.");
+                } else {
+                    playerUtils.debugLog(`Could not retrieve pData for ${player.nameTag} to flag for illegalCharInChat.`, player.nameTag);
+                }
+            }
+        }
+    }
+}

@@ -46,7 +46,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **Packet Anomalies / Chat Violations:**
         *   **Abnormal Message Lengths:** Flag chat messages that are excessively long, potentially indicating attempts to crash or lag clients/server. (Scythe 'BadPackets')
         *   **Self-Hurt Detection:** Detect if a player takes damage without a clear external source (e.g., another entity, fall, fire). Requires careful context analysis to avoid false positives from suffocation, void, etc. (Scythe 'BadPackets')
-        *   **Newline/Carriage Return in Messages:** Check chat messages for `\n` or `\r` characters if these are disallowed or cause formatting issues. (Scythe 'BadPackets')
         *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
         *   **Repeated Messages (Spam):** Track recent messages from a player. Flag if the same or very similar messages are sent multiple times in a short period. (SafeGuard)
         *   **Messages Too Close Together (Spam):** Track time between messages from a player. Flag if messages are sent faster than a reasonable typing/command speed. (SafeGuard)

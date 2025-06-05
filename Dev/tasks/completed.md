@@ -348,5 +348,14 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
+## Packet Anomalies / Chat Violations
+*(Date is a placeholder based on current interaction)*
+*   **Newline/Carriage Return in Messages:** Implemented a check in `eventHandlers.js` (`handleBeforeChatSend`) to detect `\n` or `\r` characters in chat messages.
+    - Added new flag type `illegalCharInChat` to `types.js` and `playerDataManager.js`.
+    - Added configuration options (`enableNewlineCheck`, `flagOnNewline`, `cancelMessageOnNewline`) to `config.js`.
+    - The check can be configured to cancel the message and/or flag the player.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Refactoring
 *   **Refactor: Create `types.js`:** Defined common JSDoc typedefs (`PlayerAntiCheatData`, `PlayerFlagData`, etc.) in `AntiCheatsBP/scripts/types.js`. This helps in avoiding potential circular dependencies and improves overall type management for player data structures.
