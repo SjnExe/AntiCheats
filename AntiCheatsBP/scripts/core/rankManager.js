@@ -13,18 +13,23 @@ import { isOwner, isAdmin } from '../utils/playerUtils.js';
  * Lower numbers indicate higher privileges.
  * - 0: Owner
  * - 1: Admin
- * - 2: Normal (standard user)
+ * - 1024: Normal (standard user). This value is set high to allow for the
+ *         potential addition of many intermediate permission levels (e.g., Moderator, VIP)
+ *         between Admin and Normal in the future.
  */
 
 /**
  * Enum for permission levels. Lower values mean higher privileges.
+ * NORMAL is set to 1024 to allow for future intermediate permission levels.
  * @readonly
  * @enum {PermissionLevel}
  */
 export const PermissionLevels = {
-    OWNER: 0,  // Highest privilege
-    ADMIN: 1,  // Intermediate privilege
-    NORMAL: 2 // Standard user privilege, corresponds to MEMBER_RANK
+    OWNER: 0,     // Highest privilege
+    ADMIN: 1,     // Intermediate privilege (e.g., server administrators)
+    NORMAL: 1024  // Standard user privilege, corresponds to MEMBER_RANK.
+                  // Chosen to be a higher number to leave room for many potential
+                  // intermediate ranks (e.g., Moderator, VIP, etc.) between ADMIN and NORMAL.
 };
 
 /**
