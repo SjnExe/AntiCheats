@@ -1,6 +1,6 @@
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
-import { adminTag, enableDebugLogging } from '../config';
+import { adminTag, enableDebugLogging, ownerPlayerName } from '../config';
 
 /**
  * Checks if a player has admin privileges based on a specific tag.
@@ -9,6 +9,19 @@ import { adminTag, enableDebugLogging } from '../config';
  */
 export function isAdmin(player) {
     return player.hasTag(adminTag);
+}
+
+/**
+ * Checks if a player is the owner based on their exact name.
+ * @param {string} playerName The name of the player to check.
+ * @returns {boolean} True if the player is the owner, false otherwise.
+ *                  Returns false if ownerPlayerName is not set or is a placeholder.
+ */
+export function isOwner(playerName) {
+    if (!ownerPlayerName || ownerPlayerName === "" || ownerPlayerName === "PlayerNameHere") {
+        return false;
+    }
+    return playerName === ownerPlayerName;
 }
 
 /**

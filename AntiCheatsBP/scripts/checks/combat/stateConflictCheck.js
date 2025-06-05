@@ -1,10 +1,10 @@
 import * as mc from '@minecraft/server';
-import * as playerDataManager from '../../../core/playerDataManager.js';
-import * as playerUtils from '../../../utils/playerUtils.js'; // For debugLog if pData.isWatched
-import * as config from '../../../config.js';
+import * as playerDataManager from '../../core/playerDataManager.js';
+import * as playerUtils from '../../utils/playerUtils.js'; // For debugLog if pData.isWatched
+import * as config from '../../config.js';
 
 /**
- * @typedef {import('../../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
  */
 
 /**

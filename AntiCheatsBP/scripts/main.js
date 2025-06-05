@@ -25,7 +25,16 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
             playerUtils,
             playerDataManager.getPlayerData(eventData.sender.id) // Pass sender's pData for convenience
         );
+    } else {
+        // Call the general chat handler for non-command messages
+        eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config, playerUtils);
     }
+});
+
+// Player Spawn Event for nametag updates and other initializations
+mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
+    // PlayerDataManager and PlayerUtils are generally useful for most event handlers.
+    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils);
 });
 
 mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
@@ -33,7 +42,8 @@ mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
 });
 
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick); // Pass currentTick
+    // Pass config as well, if any handler needs it directly, though many will get it via checks or utils
+    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick);
 });
 
 mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
@@ -48,7 +58,10 @@ mc.world.beforeEvents.itemUse.subscribe((eventData) => {
     eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config);
 });
 
-mc.world.beforeEvents.itemUseOn.subscribe((eventData) => {
+// Changed from itemUseOn to playerPlaceBlock for illegal item placement checks.
+// The handleItemUseOn function expects eventData.player (or source) and eventData.itemStack,
+// which PlayerPlaceBlockBeforeEvent provides.
+mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config);
 });
 

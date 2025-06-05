@@ -1,5 +1,32 @@
 # Completed Tasks
 
+## Implemented Owner and Rank System
+*(Date is a placeholder based on current interaction)*
+
+Added a visual rank system (Owner, Admin, Member) that affects chat and nametags.
+
+*   **Configuration:**
+    *   `ownerPlayerName` added to `AntiCheatsBP/scripts/config.js` to define the server owner by exact name.
+    *   Admins are still determined by `adminTag` in `config.js`.
+*   **Core Logic:**
+    *   `isOwner(playerName)` function added to `AntiCheatsBP/scripts/utils/playerUtils.js` to check against `ownerPlayerName`.
+    *   New file `AntiCheatsBP/scripts/core/rankManager.js` created:
+        *   Defines `OWNER_RANK`, `ADMIN_RANK`, `MEMBER_RANK` constants with `chatPrefix` and `nametagPrefix` properties (including color codes).
+        *   `getPlayerRankDisplay(player)`: Determines a player's rank (Owner > Admin > Member).
+        *   `updatePlayerNametag(player)`: Sets the player's `nameTag` property using the rank's `nametagPrefix` and the player's actual name (`player.name`).
+*   **Integration:**
+    *   **Chat:** In `AntiCheatsBP/scripts/core/eventHandlers.js`, `handleBeforeChatSend` now uses `getPlayerRankDisplay` to prepend the colored rank prefix and player name to chat messages (e.g., `§c[Owner] §fPlayerName§f: message`).
+    *   **Nametags:**
+        *   A new `handlePlayerSpawn` function was added to `AntiCheatsBP/scripts/core/eventHandlers.js`.
+        *   This handler calls `updatePlayerNametag` when a player spawns.
+        *   The `mc.world.afterEvents.playerSpawn` event is now subscribed in `AntiCheatsBP/scripts/main.js` to trigger `handlePlayerSpawn`.
+        *   Nametags are formatted like: `§cOwner§f\nPlayerActualName`.
+*   **Visual Output:**
+    *   Chat messages are prefixed with colored rank indicators.
+    *   Player nametags display their rank in color above their actual name.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## High Priority / Next Up
 *(Date is a placeholder based on current interaction)*
 *   **Implement X-Ray Detection - Phase 1 (Ore Mining Notifications):** Added a system to notify admins when specified valuable ores are mined.

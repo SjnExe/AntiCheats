@@ -2,13 +2,13 @@
   "format_version": 2,
   "header": {
     "name": "Anti Cheats RP",
-    "description": "Anti Cheats Resource Pack V__VERSION_STRING__.",
+    "description": "Anti Cheats Resource Pack v__VERSION_STRING__.",
     "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
     "version": "__VERSION_ARRAY__",
     "min_engine_version": [
       1,
       21,
-      0
+      80
     ]
   },
   "modules": [

@@ -3,6 +3,14 @@
 /** @type {string} Tag required for players to be recognized as administrators. */
 export const adminTag = "admin";
 
+/**
+ * @type {string}
+ * Stores the exact in-game name of the project owner.
+ * This is used to grant special permissions or bypass certain checks
+ * for the owner. Case-sensitive.
+ */
+export const ownerPlayerName = "PlayerNameHere"; // TODO: Replace with actual owner name
+
 /** @type {boolean} If true, enables detailed console logging for debugging purposes. */
 export const enableDebugLogging = true;
 
@@ -170,10 +178,10 @@ export const nukerMaxBreaksShortInterval = 4;
 export const nukerCheckIntervalMs = 200;
 
 /** @type {string[]} Array of item type IDs banned from being placed. */
-export const bannedItemsPlace: string[] = ["minecraft:command_block", "minecraft:moving_block"];
+export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_block"];
 
 /** @type {string[]} Array of item type IDs banned from being used. */
-export const bannedItemsUse: string[] = [];
+export const bannedItemsUse = [];
 
 // --- Chat Checks ---
 
@@ -233,7 +241,7 @@ export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */
-export const acVersion = "0.1.0-alpha";
+export const acVersion = "v__VERSION_STRING__";
 
 // --- Command Aliases ---
 /**
@@ -249,6 +257,6 @@ export const commandAliases = {
     "i": "inspect",
     "rf": "resetflags",
     "xn": "xraynotify",
-    "mf": "myflags",
+    "mf": "myflags"
     // Add more aliases as commands are developed
 };

@@ -43,8 +43,8 @@ jobs:
         echo "VERSION_STRING: ${VERSION_STRING}"
         echo "VERSION_ARRAY_STRING: ${VERSION_ARRAY_STRING}"
 
-        # Replace __VERSION_STRING__ placeholder in JSONs
-        find staging -type f -name "*.json" -exec sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" {} +
+        # Replace v__VERSION_STRING__ placeholder in JSONs with v<version_numbers> (e.g., v1.2.3)
+        find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
 
         # Replace "__VERSION_ARRAY__" placeholder in JSONs
         # This replaces the JSON string ""__VERSION_ARRAY__"" with the array string like [1,2,3]
@@ -55,11 +55,11 @@ jobs:
         echo "Contents of staged RP manifest after replacement:"
         cat "staging/AntiCheatsRP/manifest.json"
 
-        # Replace __VERSION_STRING__ placeholder in config.js
+        # Replace v__VERSION_STRING__ placeholder in config.js with v<version_numbers> (e.g., v1.2.3)
         CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
         if [ -f "$CONFIG_JS_PATH" ]; then
-          echo "Replacing __VERSION_STRING__ in $CONFIG_JS_PATH"
-          sed -i "s/__VERSION_STRING__/${VERSION_STRING}/g" "$CONFIG_JS_PATH"
+          echo "Replacing v__VERSION_STRING__ in $CONFIG_JS_PATH"
+          sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
           echo "Contents of $CONFIG_JS_PATH after replacement:"
           cat "$CONFIG_JS_PATH"
         else
