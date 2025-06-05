@@ -93,6 +93,7 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Refactoring & Enhancements
 *   **Refactor: Standardize Check Actions & Configurable Punishments:** Create a unified system for how checks trigger actions (flag, log, notify, command execution) and allow these actions/parameters to be configured per check (e.g., kick after N flags for 'fly'). (Scythe, SafeGuard)
+*   **Comprehensive Coding Style Review:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
 
 ## Low Priority / Ideas
 
