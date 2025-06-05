@@ -37,7 +37,7 @@ Administrators (players with the `admin` tag, configurable in `config.js`) can m
 
 ### Admin UI (Recommended)
 
-*   **`!ui`**: Opens the main AntiCheat Admin Menu.
+*   **`!panel`** (or `!ui` alias): Opens the main AntiCheat Admin Menu.
     *   **Inspect Player Data**: View detailed anti-cheat stats for a player.
     *   **Reset Player Flags**: Clear all flags and violation data for a player.
     *   **List Watched Players**: See which players are currently being monitored with verbose logging.
