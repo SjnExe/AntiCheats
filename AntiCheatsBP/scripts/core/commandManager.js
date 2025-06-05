@@ -17,6 +17,7 @@ const ALL_COMMANDS = [
     { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
     { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
     { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "acnotifications", syntax: "!acnotifications <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
 ];
@@ -314,6 +315,45 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "ui":
             uiManager.showAdminMainMenu(player); // Call the UI manager
+            break;
+        case "acnotifications": // ADMIN
+            const acNotificationsOffTag = "ac_notifications_off";
+            const acNotificationsOnTag = "ac_notifications_on";
+            const acSubCommand = args[0] ? args[0].toLowerCase() : "status";
+
+            switch (acSubCommand) {
+                case "on":
+                    try { player.removeTag(acNotificationsOffTag); } catch (e) { /* Tag might not exist, safe to ignore */ }
+                    try { player.addTag(acNotificationsOnTag); } catch (e) { playerUtils.debugLog(`Failed to add ${acNotificationsOnTag} for ${player.nameTag}: ${e}`, player.nameTag); }
+                    player.sendMessage("§aAntiCheat system notifications ON.");
+                    playerUtils.debugLog(`Admin ${player.nameTag} turned ON AntiCheat notifications.`, player.nameTag);
+                    break;
+                case "off":
+                    try { player.removeTag(acNotificationsOnTag); } catch (e) { /* Tag might not exist, safe to ignore */ }
+                    try { player.addTag(acNotificationsOffTag); } catch (e) { playerUtils.debugLog(`Failed to add ${acNotificationsOffTag} for ${player.nameTag}: ${e}`, player.nameTag); }
+                    player.sendMessage("§cAntiCheat system notifications OFF.");
+                    playerUtils.debugLog(`Admin ${player.nameTag} turned OFF AntiCheat notifications.`, player.nameTag);
+                    break;
+                case "status":
+                    const acIsOn = player.hasTag(acNotificationsOnTag);
+                    const acIsOff = player.hasTag(acNotificationsOffTag);
+                    let acStatusMessage = "§eYour AntiCheat system notification status: ";
+                    if (acIsOn) {
+                        acStatusMessage += "§aON (explicitly).";
+                    } else if (acIsOff) {
+                        acStatusMessage += "§cOFF (explicitly).";
+                    } else { // Default state based on config
+                        if (config.AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON) {
+                            acStatusMessage += `§aON (by server default). §7Use ${config.prefix}acnotifications off to disable.`;
+                        } else {
+                            acStatusMessage += `§cOFF (by server default). §7Use ${config.prefix}acnotifications on to enable.`;
+                        }
+                    }
+                    player.sendMessage(acStatusMessage);
+                    break;
+                default:
+                    player.sendMessage(`§cUsage: ${config.prefix}acnotifications <on|off|status>`);
+            }
             break;
         case "xraynotify":
             if (args.length < 1 || !["on", "off", "status"].includes(args[0].toLowerCase())) {

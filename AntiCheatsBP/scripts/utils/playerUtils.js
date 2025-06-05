@@ -1,6 +1,6 @@
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
-import { adminTag, enableDebugLogging, ownerPlayerName } from '../config';
+import { adminTag, enableDebugLogging, ownerPlayerName, AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON } from '../config';
 import { PermissionLevels } from '../core/rankManager.js';
 
 /**
@@ -74,9 +74,33 @@ export function notifyAdmins(baseMessage, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
+    const notificationsOffTag = "ac_notifications_off"; // Tag to explicitly disable AC notifications
+    const notificationsOnTag = "ac_notifications_on";   // Tag to explicitly enable AC notifications
+
     for (const p of allPlayers) {
         if (isAdmin(p)) {
-            p.sendMessage(fullMessage);
+            const hasExplicitOn = p.hasTag(notificationsOnTag);
+            const hasExplicitOff = p.hasTag(notificationsOffTag);
+
+            let shouldReceiveMessage = false;
+            if (hasExplicitOn) {
+                shouldReceiveMessage = true;
+            } else if (hasExplicitOff) {
+                shouldReceiveMessage = false;
+            } else {
+                // If no explicit preference, use the server default from config
+                shouldReceiveMessage = AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON;
+            }
+
+            if (shouldReceiveMessage) {
+                try {
+                    p.sendMessage(fullMessage);
+                } catch (e) {
+                    // Log error if sending message fails for a specific admin
+                    console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
+                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag);
+                }
+            }
         }
     }
 }
