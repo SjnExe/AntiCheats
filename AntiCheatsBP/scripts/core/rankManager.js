@@ -24,7 +24,7 @@ import { isOwner, isAdmin } from '../utils/playerUtils.js';
  * @readonly
  * @enum {PermissionLevel}
  */
-export const PermissionLevels = {
+export const permissionLevels = {
     OWNER: 0,     // Highest privilege
     ADMIN: 1,     // Intermediate privilege (e.g., server administrators)
     NORMAL: 1024  // Standard user privilege, corresponds to MEMBER_RANK.
@@ -43,7 +43,7 @@ export const PermissionLevels = {
  * Display properties for the Owner rank.
  * @type {RankDisplayProperties}
  */
-export const OWNER_RANK = {
+export const ownerRank = {
     name: "Owner",
     chatPrefix: "§c[Owner] §f", // Red prefix, white text
     nametagPrefix: "§cOwner§f\n"   // Red "Owner" above nametag, white player name
@@ -53,7 +53,7 @@ export const OWNER_RANK = {
  * Display properties for the Admin rank.
  * @type {RankDisplayProperties}
  */
-export const ADMIN_RANK = {
+export const adminRank = {
     name: "Admin",
     chatPrefix: "§b[Admin] §f", // Aqua prefix, white text
     nametagPrefix: "§bAdmin§f\n"   // Aqua "Admin" above nametag, white player name
@@ -63,7 +63,7 @@ export const ADMIN_RANK = {
  * Display properties for the Member rank.
  * @type {RankDisplayProperties}
  */
-export const MEMBER_RANK = {
+export const memberRank = {
     name: "Member",
     chatPrefix: "§7[Member] §f", // Gray prefix, white text
     nametagPrefix: "§7Member§f\n"  // Gray "Member" above nametag, white player name
@@ -79,15 +79,15 @@ export function getPlayerRankDisplay(player) {
     if (!(player instanceof Player)) {
         console.error("[rankManager] Invalid player object passed to getPlayerRankDisplay.");
         // Fallback to member if player object is not valid, though this shouldn't happen in normal use.
-        return MEMBER_RANK;
+        return memberRank;
     }
 
     if (isOwner(player.nameTag)) {
-        return OWNER_RANK;
+        return ownerRank;
     } else if (isAdmin(player)) {
-        return ADMIN_RANK;
+        return adminRank;
     } else {
-        return MEMBER_RANK;
+        return memberRank;
     }
 }
 
