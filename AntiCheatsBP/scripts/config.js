@@ -295,3 +295,105 @@ export const commandAliases = {
     "ui": "panel"
     // Add more aliases as commands are developed
 };
+
+// --- Editable Configuration ---
+
+// This object will hold the current values of configurations that can be edited at runtime.
+// It's initialized with the default values from the const declarations above.
+export let editableConfigValues = {
+    adminTag: adminTag,
+    ownerPlayerName: ownerPlayerName,
+    enableDebugLogging: enableDebugLogging,
+    prefix: prefix,
+    enableReachCheck: enableReachCheck,
+    enableCpsCheck: enableCpsCheck,
+    enableViewSnapCheck: enableViewSnapCheck,
+    enableMultiTargetCheck: enableMultiTargetCheck,
+    enableStateConflictCheck: enableStateConflictCheck,
+    enableFlyCheck: enableFlyCheck,
+    enableSpeedCheck: enableSpeedCheck,
+    enableNofallCheck: enableNofallCheck,
+    enableNukerCheck: enableNukerCheck,
+    enableIllegalItemCheck: enableIllegalItemCheck,
+    maxVerticalSpeed: maxVerticalSpeed,
+    maxHorizontalSpeed: maxHorizontalSpeed,
+    speedEffectBonus: speedEffectBonus,
+    minFallDistanceForDamage: minFallDistanceForDamage,
+    flySustainedVerticalSpeedThreshold: flySustainedVerticalSpeedThreshold,
+    flySustainedOffGroundTicksThreshold: flySustainedOffGroundTicksThreshold,
+    flyHoverNearGroundThreshold: flyHoverNearGroundThreshold,
+    flyHoverVerticalSpeedThreshold: flyHoverVerticalSpeedThreshold,
+    flyHoverOffGroundTicksThreshold: flyHoverOffGroundTicksThreshold,
+    flyHoverMaxFallDistanceThreshold: flyHoverMaxFallDistanceThreshold,
+    speedToleranceBuffer: speedToleranceBuffer,
+    speedGroundConsecutiveTicksThreshold: speedGroundConsecutiveTicksThreshold,
+    maxCpsThreshold: maxCpsThreshold,
+    reachDistanceSurvival: reachDistanceSurvival,
+    reachDistanceCreative: reachDistanceCreative,
+    reachBuffer: reachBuffer,
+    cpsCalculationWindowMs: cpsCalculationWindowMs,
+    maxPitchSnapPerTick: maxPitchSnapPerTick,
+    maxYawSnapPerTick: maxYawSnapPerTick,
+    viewSnapWindowTicks: viewSnapWindowTicks,
+    invalidPitchThresholdMin: invalidPitchThresholdMin,
+    invalidPitchThresholdMax: invalidPitchThresholdMax,
+    multiTargetWindowMs: multiTargetWindowMs,
+    multiTargetThreshold: multiTargetThreshold,
+    multiTargetMaxHistory: multiTargetMaxHistory,
+    nukerMaxBreaksShortInterval: nukerMaxBreaksShortInterval,
+    nukerCheckIntervalMs: nukerCheckIntervalMs,
+    enableNewlineCheck: enableNewlineCheck,
+    flagOnNewline: flagOnNewline,
+    cancelMessageOnNewline: cancelMessageOnNewline,
+    enableMaxMessageLengthCheck: enableMaxMessageLengthCheck,
+    maxMessageLength: maxMessageLength,
+    flagOnMaxMessageLength: flagOnMaxMessageLength,
+    cancelOnMaxMessageLength: cancelOnMaxMessageLength,
+    spamRepeatCheckEnabled: spamRepeatCheckEnabled,
+    spamRepeatMessageCount: spamRepeatMessageCount,
+    spamRepeatTimeWindowSeconds: spamRepeatTimeWindowSeconds,
+    spamRepeatFlagPlayer: spamRepeatFlagPlayer,
+    spamRepeatCancelMessage: spamRepeatCancelMessage,
+    xrayDetectionNotifyOnOreMineEnabled: xrayDetectionNotifyOnOreMineEnabled, // Matches prompt
+    xrayDetectionAdminNotifyByDefault: xrayDetectionAdminNotifyByDefault,
+    acGlobalNotificationsDefaultOn: acGlobalNotificationsDefaultOn,
+};
+
+/**
+ * Updates a configuration value in memory.
+ * @param {string} key The configuration key to update.
+ * @param {boolean|string|number} newValue The new value for the configuration.
+ * @returns {boolean} True if the update was successful, false otherwise.
+ */
+export function updateConfigValue(key, newValue) {
+    if (!editableConfigValues.hasOwnProperty(key)) {
+        console.warn(`[ConfigManager] Attempted to update non-existent config key: ${key}`);
+        return false;
+    }
+
+    const originalValue = editableConfigValues[key];
+    const originalType = typeof originalValue;
+    const newType = typeof newValue;
+
+    if (originalType !== newType) {
+        // Allow string to number conversion if original is number and newValue is a parsable string
+        if (originalType === 'number' && newType === 'string') {
+            const parsedValue = Number(newValue);
+            if (!isNaN(parsedValue)) {
+                editableConfigValues[key] = parsedValue;
+                if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from ${originalValue} to ${parsedValue} (type coerced from string)`);
+                return true;
+            } else {
+                console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${newType} (unparsable string for number). Update rejected.`);
+                return false;
+            }
+        } else {
+            console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${newType}. Update rejected.`);
+            return false;
+        }
+    }
+
+    editableConfigValues[key] = newValue;
+    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from ${originalValue} to ${newValue}`);
+    return true;
+}
