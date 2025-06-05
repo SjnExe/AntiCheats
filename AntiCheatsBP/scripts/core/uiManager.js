@@ -537,16 +537,16 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
                 case 1: await showInspectPlayerForm(adminPlayer, playerDataManager); break;
                 case 2: await showResetFlagsForm(adminPlayer, playerDataManager); break;
                 case 3: await showWatchedPlayersList(adminPlayer, playerDataManager); break;
-                case 4: adminPlayer.sendMessage("§7Server Stats functionality is not yet implemented."); break;
+                case 4: await showServerManagementForm(adminPlayer, playerDataManager, config); break; // Changed
                 case 5: adminPlayer.sendMessage("§7Settings functionality is not yet implemented."); break;
                 default: adminPlayer.sendMessage("§cInvalid selection from Admin Panel."); break;
             }
         } else {
             form.title("AntiCheat Info");
             form.body("Select an option:");
-            form.button("My Stats (TODO)", "textures/ui/icon_profile_generic");
-            form.button("Server Rules (TODO)", "textures/ui/book_writable");
-            form.button("Help & Links (TODO)", "textures/ui/icon_Web");
+    form.button("My Stats", "textures/ui/icon_profile_generic"); // Removed (TODO)
+    form.button("Server Rules", "textures/ui/book_writable"); // Removed (TODO)
+    form.button("Help & Links", "textures/ui/icon_Web"); // Removed (TODO)
 
             response = await form.show(adminPlayer);
 
@@ -618,6 +618,134 @@ async function showSystemInfo(adminPlayer, config, playerDataManager) { // Added
         adminPlayer.sendMessage("§cAn error occurred while displaying system information.");
     }
     await showAdminPanelMain(adminPlayer, playerDataManager, config); // Pass config back
+}
+
+// New function to clear all chat
+async function clearAllChat(adminPerformingAction) {
+    playerUtils.debugLog(`UI: clearAllChat initiated by ${adminPerformingAction.nameTag}`, adminPerformingAction.nameTag);
+    const chatClearLines = 150; // Number of empty lines to send
+
+    try {
+        for (let i = 0; i < chatClearLines; i++) {
+            // Send to all players
+            for (const p of mc.world.getAllPlayers()) {
+                // Using a single space might be more reliable across platforms than a truly empty string
+                p.sendMessage(" ");
+            }
+            // Optional: Add a tiny delay every few messages if performance issues are observed.
+            // However, for chat messages, this is usually not necessary.
+            // if (i % 20 === 0) {
+            //    await new Promise(resolve => mc.system.runTimeout(resolve, 1));
+            // }
+        }
+        playerUtils.debugLog(`UI: Chat cleared successfully by ${adminPerformingAction.nameTag}`, adminPerformingAction.nameTag);
+    } catch (error) {
+        playerUtils.debugLog(`Error during clearAllChat by ${adminPerformingAction.nameTag}: ${error}`, adminPerformingAction.nameTag);
+        console.error(`[uiManager.clearAllChat] Error:`, error, error.stack);
+        // Notify the admin who tried to clear chat if it fails.
+        adminPerformingAction.sendMessage("§cAn error occurred while trying to clear chat.");
+    }
+}
+
+// New function to handle the clear chat action flow
+async function handleClearChatAction(adminPlayer, playerDataManager, config) {
+    playerUtils.debugLog(`UI: handleClearChatAction requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const confirmForm = new ModalFormData();
+    confirmForm.title("Confirm Clear Chat");
+    confirmForm.content("Are you sure you want to clear chat for all players? This action will send many blank messages and cannot be undone.");
+    confirmForm.toggle("Confirm Clear Chat", false);
+
+    try {
+        const response = await confirmForm.show(adminPlayer);
+
+        if (response.canceled) {
+            adminPlayer.sendMessage("§7Clear chat cancelled.");
+            await showServerManagementForm(adminPlayer, playerDataManager, config);
+            return;
+        }
+
+        const confirmed = response.formValues[0];
+        if (!confirmed) {
+            adminPlayer.sendMessage("§7Clear chat not confirmed.");
+            await showServerManagementForm(adminPlayer, playerDataManager, config);
+            return;
+        }
+
+        await clearAllChat(adminPlayer); // Execute the chat clearing
+
+        playerUtils.notifyAdmins(`Chat was cleared by ${adminPlayer.nameTag} via Admin Panel.`, adminPlayer, null);
+        playerUtils.debugLog(`Chat cleared by ${adminPlayer.nameTag} via Admin Panel.`, adminPlayer.nameTag);
+
+        const successForm = new MessageFormData();
+        successForm.title("Success");
+        successForm.body("Chat cleared for all players.");
+        successForm.button1("OK");
+        await successForm.show(adminPlayer);
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in handleClearChatAction for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.handleClearChatAction] Error:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred during the clear chat process.");
+    }
+    // Return to server management form
+    await showServerManagementForm(adminPlayer, playerDataManager, config);
+}
+
+// New function for Server Management options
+async function showServerManagementForm(adminPlayer, playerDataManager, config) {
+    playerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const form = new ActionFormData();
+    form.title("Server Management");
+    form.body("Select a server management action:");
+
+    form.button("View System Info", "textures/ui/icon_graph");             // 0
+    form.button("Clear Chat for All Players", "textures/ui/speech_bubble_glyph_color"); // 1
+    form.button("Lag Clear (TODO)", "textures/ui/icon_trash");              // 2
+    form.button("Back to Admin Panel", "textures/ui/undo");                 // 3
+
+    try {
+        const response = await form.show(adminPlayer);
+
+        if (response.canceled) {
+            if (response.cancelationReason) {
+                playerUtils.debugLog(`Server Management form canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            } else {
+                playerUtils.debugLog(`Server Management form canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+            }
+            // Optionally return to main admin panel or do nothing
+            // await showAdminPanelMain(adminPlayer, playerDataManager, config);
+            return;
+        }
+
+        switch (response.selection) {
+            case 0: // View System Info
+                await showSystemInfo(adminPlayer, config, playerDataManager);
+                // showSystemInfo now returns to showAdminPanelMain, which might be fine.
+                // If we want it to return here, showSystemInfo needs modification or we call this form again.
+                // For now, allow it to go back to the main panel.
+                break;
+            case 1: // Clear Chat for All Players
+                await handleClearChatAction(adminPlayer, playerDataManager, config);
+                break;
+            case 2: // Lag Clear (TODO)
+                adminPlayer.sendMessage("§7Lag Clear functionality is not yet implemented.");
+                await showServerManagementForm(adminPlayer, playerDataManager, config); // Re-show current form
+                break;
+            case 3: // Back to Admin Panel
+                await showAdminPanelMain(adminPlayer, playerDataManager, config);
+                break;
+            default:
+                adminPlayer.sendMessage("§cInvalid selection from Server Management.");
+                await showServerManagementForm(adminPlayer, playerDataManager, config); // Re-show current form
+                break;
+        }
+    } catch (error) {
+        playerUtils.debugLog(`Error in showServerManagementForm for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showServerManagementForm] Error:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while displaying server management options.");
+        // Optionally, try to return to main panel on error
+        await showAdminPanelMain(adminPlayer, playerDataManager, config);
+    }
 }
 
 export async function showPlayerInventory(adminPlayer, targetPlayer) {
