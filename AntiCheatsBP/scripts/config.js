@@ -186,6 +186,18 @@ export const flagOnNewline = true;
 /** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
 export const cancelMessageOnNewline = true;
 
+/** @type {boolean} If true, checks if chat messages exceed the maximum configured length. */
+export const enableMaxMessageLengthCheck = true;
+
+/** @type {number} Maximum allowed character length for a chat message. */
+export const maxMessageLength = 256; // Minecraft default is 256
+
+/** @type {boolean} If true, sending a message exceeding max length will flag the player. */
+export const flagOnMaxMessageLength = true;
+
+/** @type {boolean} If true, messages exceeding max length will be cancelled. */
+export const cancelOnMaxMessageLength = true;
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */

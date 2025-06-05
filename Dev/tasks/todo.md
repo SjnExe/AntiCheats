@@ -44,7 +44,6 @@ This list contains planned features, improvements, and areas for future investig
         *   **InventoryMods (Hotbar Switch):** Detect if items are moved or used from the hotbar in ways that are impossible manually, e.g., switching active slot and using an item in the same tick, or moving items in inventory while performing other actions that should lock inventory. (Scythe - may require careful API event correlation)
 
     *   **Packet Anomalies / Chat Violations:**
-        *   **Abnormal Message Lengths:** Flag chat messages that are excessively long, potentially indicating attempts to crash or lag clients/server. (Scythe 'BadPackets')
         *   **Self-Hurt Detection:** Detect if a player takes damage without a clear external source (e.g., another entity, fall, fire). Requires careful context analysis to avoid false positives from suffocation, void, etc. (Scythe 'BadPackets')
         *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
         *   **Repeated Messages (Spam):** Track recent messages from a player. Flag if the same or very similar messages are sent multiple times in a short period. (SafeGuard)

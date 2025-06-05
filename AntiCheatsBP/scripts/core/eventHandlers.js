@@ -148,6 +148,7 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
     const player = eventData.sender;
     const message = eventData.message;
 
+    // Newline character check
     if (config.enableNewlineCheck) {
         const hasNewline = message.includes('\n') || message.includes('\r');
 
@@ -160,11 +161,34 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
             }
 
             if (config.flagOnNewline) {
+                // It's possible pData was already fetched if we restructure, but for now, this is fine.
                 const pData = playerDataManager.getPlayerData(player.id);
                 if (pData) {
                     playerDataManager.addFlag(player, "illegalCharInChat", "Sent message with newline/carriage return characters.");
                 } else {
                     playerUtils.debugLog(`Could not retrieve pData for ${player.nameTag} to flag for illegalCharInChat.`, player.nameTag);
+                }
+            }
+        }
+    }
+
+    // Max message length check
+    // Also check !eventData.cancel so we don't flag/cancel twice if newline check already did.
+    if (config.enableMaxMessageLengthCheck && !eventData.cancel) {
+        if (message.length > config.maxMessageLength) {
+            playerUtils.debugLog(`Player ${player.nameTag} attempted to send an overly long message (${message.length} > ${config.maxMessageLength}). Message: "${message.substring(0, 50)}..."`, player.nameTag);
+
+            if (config.cancelOnMaxMessageLength) {
+                eventData.cancel = true;
+                playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to excessive length.`, player.nameTag);
+            }
+
+            if (config.flagOnMaxMessageLength) {
+                const pData = playerDataManager.getPlayerData(player.id);
+                if (pData) {
+                    playerDataManager.addFlag(player, "longMessage", `Sent message exceeding max length (${message.length}/${config.maxMessageLength}).`);
+                } else {
+                    playerUtils.debugLog(`Could not retrieve pData for ${player.nameTag} to flag for longMessage.`, player.nameTag);
                 }
             }
         }

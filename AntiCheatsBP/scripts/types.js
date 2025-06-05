@@ -22,6 +22,7 @@
  * @property {PlayerFlagDetail} [nuker] - Nuker hack detection data.
  * @property {PlayerFlagDetail} [illegalItem] - Illegal item detection data.
  * @property {PlayerFlagDetail} [illegalCharInChat] - Illegal character (e.g. newline) in chat message.
+ * @property {PlayerFlagDetail} [longMessage] - Message exceeded maximum configured length.
  * // Add other specific flags here as they are defined, e.g., killaura, aimbot, scaffold
  */
 
