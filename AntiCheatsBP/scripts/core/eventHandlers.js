@@ -1,4 +1,5 @@
 import * as mc from '@minecraft/server';
+import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
 // playerUtils will be passed or imported for debugLog, notifyAdmins, warnPlayer
 // playerDataManager will be passed for pData access and manipulation
 // check functions (checkReach, checkIllegalItems etc.) will be imported from ../checks/ when ready
@@ -16,6 +17,36 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
     // prepareAndSavePlayerData is async but we don't necessarily need to await it here
     // as the player is leaving anyway.
     playerDataManager.prepareAndSavePlayerData(player);
+}
+
+/**
+ * Handles player spawn events to initialize player-specific settings like nametags.
+ * @param {mc.PlayerSpawnAfterEvent} eventData
+ * @param {object} playerDataManager Typically passed for consistency, though not used directly in this version.
+ * @param {object} playerUtils Passed for debugLog, though not used directly in this version.
+ */
+export function handlePlayerSpawn(eventData, playerDataManager, playerUtils) {
+    const player = eventData.player;
+    if (!player) {
+        // This case should ideally not happen if the event is firing correctly.
+        console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined. Cannot update nametag.');
+        return;
+    }
+
+    // It's generally safe to call this even if the player object might not be fully "ready"
+    // for all operations, as nameTag modification is a basic property.
+    // If issues arise, a systemTick.delay might be considered, but usually not needed for nametags.
+    try {
+        updatePlayerNametag(player);
+        if (playerUtils && playerUtils.debugLog) { // Optional debug logging
+            playerUtils.debugLog(`Updated nametag for ${player.nameTag} on spawn.`, player.nameTag);
+        }
+    } catch (error) {
+        console.error(`[AntiCheat] Error in handlePlayerSpawn calling updatePlayerNametag for ${player.nameTag}: ${error}`);
+        if (playerUtils && playerUtils.debugLog) {
+            playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
+        }
+    }
 }
 
 /**
@@ -187,11 +218,24 @@ export function handleItemUseOn(eventData, playerDataManager, worldChecks) {
  */
 export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
     const player = eventData.sender;
-    const message = eventData.message;
+    // Basic validation
+    if (!player) {
+        console.warn("[AntiCheat] handleBeforeChatSend: eventData.sender is undefined. Skipping chat processing.");
+        return;
+    }
 
-    // Newline character check
+    // Get rank display properties and format the message
+    const rankDisplay = getPlayerRankDisplay(player);
+    const originalMessage = eventData.message;
+    eventData.message = `${rankDisplay.chatPrefix}${player.nameTag}§f: ${originalMessage}`;
+
+    // Newline character check - now operates on the modified eventData.message
     if (config.enableNewlineCheck) {
-        const hasNewline = message.includes('\n') || message.includes('\r');
+        // Note: player.nameTag or rankPrefix could technically contain newlines if manually set with them,
+        // though unlikely for player.nameTag. This check is primarily for originalMessage content.
+        // For simplicity, we check the final eventData.message.
+        // If rank prefixes *could* have newlines and that's an issue, the check might need to be on originalMessage.
+        const hasNewline = eventData.message.includes('\n') || eventData.message.includes('\r');
 
         if (hasNewline) {
             playerUtils.debugLog(`Player ${player.nameTag} attempted to send message with newline/carriage return: "${message}"`, player.nameTag);
@@ -215,9 +259,11 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
 
     // Max message length check
     // Also check !eventData.cancel so we don't flag/cancel twice if newline check already did.
+    // This check now operates on the formatted message length.
     if (config.enableMaxMessageLengthCheck && !eventData.cancel) {
-        if (message.length > config.maxMessageLength) {
-            playerUtils.debugLog(`Player ${player.nameTag} attempted to send an overly long message (${message.length} > ${config.maxMessageLength}). Message: "${message.substring(0, 50)}..."`, player.nameTag);
+        if (eventData.message.length > config.maxMessageLength) {
+            // Log original message length for clarity if needed, or adjust log.
+            playerUtils.debugLog(`Player ${player.nameTag} attempted to send an overly long message (formatted length ${eventData.message.length} > ${config.maxMessageLength}). Original: "${originalMessage.substring(0, 50)}..."`, player.nameTag);
 
             if (config.cancelOnMaxMessageLength) {
                 eventData.cancel = true;
@@ -237,32 +283,36 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
 
     // Repeated Messages (Spam) Check
     // Also check !eventData.cancel so we don't process if already cancelled by prior checks.
+    // This check now operates on the *original* message content to prevent rank prefix from affecting spam detection.
     if (config.SPAM_REPEAT_CHECK_ENABLED && !eventData.cancel) {
         const pData = playerDataManager.getPlayerData(player.id);
         if (pData) {
             const currentTime = Date.now();
-            const currentMessageContent = eventData.message;
+            // const currentMessageContent = eventData.message; // OLD: Used formatted message
+            const currentMessageContent = originalMessage; // NEW: Use original message for spam check
 
             if (!pData.recentMessages) {
                 pData.recentMessages = [];
             }
-            pData.recentMessages.push({ timestamp: currentTime, content: currentMessageContent });
+            // Store original message content for accurate spam detection
+            pData.recentMessages.push({ timestamp: currentTime, content: originalMessage });
 
             const timeWindowStart = currentTime - (config.SPAM_REPEAT_TIME_WINDOW_SECONDS * 1000);
             pData.recentMessages = pData.recentMessages.filter(msg => msg.timestamp >= timeWindowStart);
 
             let repeatCount = 0;
             for (const msg of pData.recentMessages) {
-                if (msg.content === currentMessageContent) {
+                // Compare against originalMessage for spam detection
+                if (msg.content === originalMessage) {
                     repeatCount++;
                 }
             }
 
             if (repeatCount >= config.SPAM_REPEAT_MESSAGE_COUNT) {
-                playerUtils.debugLog(`Player ${player.nameTag} triggered repeat spam detection. Count: ${repeatCount}, Message: "${currentMessageContent}"`, player.nameTag);
+                playerUtils.debugLog(`Player ${player.nameTag} triggered repeat spam detection. Count: ${repeatCount}, Original Message: "${originalMessage}"`, player.nameTag);
 
                 if (config.SPAM_REPEAT_FLAG_PLAYER) {
-                    playerDataManager.addFlag(player, "spamRepeat", `Repeated message ${repeatCount} times: "${currentMessageContent.substring(0,30)}..."`);
+                    playerDataManager.addFlag(player, "spamRepeat", `Repeated message ${repeatCount} times: "${originalMessage.substring(0,30)}..."`);
                 }
 
                 if (config.SPAM_REPEAT_CANCEL_MESSAGE) {

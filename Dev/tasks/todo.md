@@ -75,16 +75,13 @@ This list contains planned features, improvements, and areas for future investig
         *   Investigate: View Ban/Mute/Warning Logs in UI (requires persistent logging of these actions).
         *   Investigate: Player inventory view (InvSee) within the UI.
     *   **System Features:** SjnExe parity goal.
-        *   **Owner System:** Designate a single player (e.g., via `config.js` or first admin) as "Owner" with immutable admin rights and potentially exclusive commands.
-        *   **Rank System:** Implement a visual rank system with chat and nametag display.
-            -   **Ranks & Criteria:**
-                -   **Owner:** Red color. Derived from 'Owner System' in `config.js`.
-                -   **Admin:** Specific color (e.g., Aqua/Gold). Player has `adminTag` but is not an Owner.
-                -   **Member:** Default color (e.g., Gray). All other players.
-            -   **Chat Display:** Rank prefix before player name (e.g., `[Owner] PlayerName: message`).
-            -   **Nametag Display:** Rank displayed above player's name using a newline (e.g., `Owner\nPlayerName`). Investigate API feasibility for nametag modification (color, newlines).
-            -   Permissions for AC commands could be tied to ranks (existing point).
-            -   Requires persistent storage if not solely derived from config/tags at runtime.*
+        *   **Owner System:** Designate a single player (e.g., via `config.js` or first admin) as "Owner" with immutable admin rights and potentially exclusive commands. *(Core functionality implemented as part of Rank System via `ownerPlayerName` in `config.js`)*
+        *   **Rank System:** Visual rank system with chat and nametag display. *(Core functionality IMPLEMENTED)*
+            -   **Ranks & Criteria:** *(IMPLEMENTED: Owner, Admin, Member defined; Owner via `ownerPlayerName` in `config.js`, Admin via `adminTag`)*
+            -   **Chat Display:** *(IMPLEMENTED: Rank prefix like `[Owner] PlayerName: message` with colors)*
+            -   **Nametag Display:** *(IMPLEMENTED: Rank above player name like `Owner\nPlayerName` with colors. Nametag modification via `player.nameTag` was successful.)*
+            -   Permissions for AC commands could be tied to ranks. *(Still to do)*
+            -   Requires persistent storage if not solely derived from config/tags at runtime. *(Still relevant; current implementation is runtime derived from config/tags)*
         *   **Combat Log Detection & Punishment:** If a player leaves the game shortly after entering combat (e.g., being hit or hitting someone), flag them or apply a configurable punishment. (SafeGuard)
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 

@@ -3,6 +3,14 @@
 /** @type {string} Tag required for players to be recognized as administrators. */
 export const adminTag = "admin";
 
+/**
+ * @type {string}
+ * Stores the exact in-game name of the project owner.
+ * This is used to grant special permissions or bypass certain checks
+ * for the owner. Case-sensitive.
+ */
+export const ownerPlayerName = "PlayerNameHere"; // TODO: Replace with actual owner name
+
 /** @type {boolean} If true, enables detailed console logging for debugging purposes. */
 export const enableDebugLogging = true;
 

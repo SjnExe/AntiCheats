@@ -28,12 +28,19 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     }
 });
 
+// Player Spawn Event for nametag updates and other initializations
+mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
+    // PlayerDataManager and PlayerUtils are generally useful for most event handlers.
+    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils);
+});
+
 mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
     eventHandlers.handlePlayerLeave(eventData, playerDataManager, playerUtils);
 });
 
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick); // Pass currentTick
+    // Pass config as well, if any handler needs it directly, though many will get it via checks or utils
+    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick);
 });
 
 mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
