@@ -40,6 +40,10 @@ mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
     eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager);
 });
 
+mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
+    eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils);
+});
+
 mc.world.beforeEvents.itemUse.subscribe((eventData) => {
     eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config);
 });

@@ -36,7 +36,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **World Interaction - Advanced:** SjnExe parity goal.
         *   **AutoTool:** Monitor `player.selectedSlot` changes in conjunction with block break events. Detect if player's selected slot almost instantaneously switches to the optimal tool for breaking a block type just before the break occurs, and then potentially switches back. (Scythe)
         *   **InstaBreak:** Detect breaking of blocks that are typically unbreakable (e.g., bedrock, barriers, command blocks by non-ops) or blocks broken significantly faster than possible even with enchantments/effects. (Scythe)
-        *   **X-Ray Detection:** Track player mining patterns. Flag suspicious behavior such as mining directly towards valuable ores (diamonds, ancient debris) through large amounts of stone with no prior visual access (e.g., no nearby caves/ravines). Analyze ratio of ores to stone mined over time, or unusual "vein mining" patterns that ignore normal exploration. (SafeGuard, SjnExe)
 
     *   **Player Behavior - Advanced:** SjnExe parity goal.
         *   **Namespoof:** Check `player.nameTag` for excessive length, use of disallowed characters (e.g., non-ASCII, control characters beyond typical gameplay names), or rapid changes. (Scythe, SjnExe)
@@ -44,11 +43,8 @@ This list contains planned features, improvements, and areas for future investig
         *   **InventoryMods (Hotbar Switch):** Detect if items are moved or used from the hotbar in ways that are impossible manually, e.g., switching active slot and using an item in the same tick, or moving items in inventory while performing other actions that should lock inventory. (Scythe - may require careful API event correlation)
 
     *   **Packet Anomalies / Chat Violations:**
-        *   **Abnormal Message Lengths:** Flag chat messages that are excessively long, potentially indicating attempts to crash or lag clients/server. (Scythe 'BadPackets')
         *   **Self-Hurt Detection:** Detect if a player takes damage without a clear external source (e.g., another entity, fall, fire). Requires careful context analysis to avoid false positives from suffocation, void, etc. (Scythe 'BadPackets')
-        *   **Newline/Carriage Return in Messages:** Check chat messages for `\n` or `\r` characters if these are disallowed or cause formatting issues. (Scythe 'BadPackets')
         *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
-        *   **Repeated Messages (Spam):** Track recent messages from a player. Flag if the same or very similar messages are sent multiple times in a short period. (SafeGuard)
         *   **Messages Too Close Together (Spam):** Track time between messages from a player. Flag if messages are sent faster than a reasonable typing/command speed. (SafeGuard)
         *   **Message Too Many Words (Spam/Flood):** Check word count of messages. Flag if excessively high. (SafeGuard)
         *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')
@@ -80,13 +76,44 @@ This list contains planned features, improvements, and areas for future investig
         *   Investigate: Player inventory view (InvSee) within the UI.
     *   **System Features:** SjnExe parity goal.
         *   **Owner System:** Designate a single player (e.g., via `config.js` or first admin) as "Owner" with immutable admin rights and potentially exclusive commands.
-        *   **Rank System:** Implement a basic rank system (e.g., Member, Mod, Admin, Owner) stored persistently. Permissions for AC commands could be tied to ranks. Chat formatting per rank.
+        *   **Rank System:** Implement a visual rank system with chat and nametag display.
+            -   **Ranks & Criteria:**
+                -   **Owner:** Red color. Derived from 'Owner System' in `config.js`.
+                -   **Admin:** Specific color (e.g., Aqua/Gold). Player has `adminTag` but is not an Owner.
+                -   **Member:** Default color (e.g., Gray). All other players.
+            -   **Chat Display:** Rank prefix before player name (e.g., `[Owner] PlayerName: message`).
+            -   **Nametag Display:** Rank displayed above player's name using a newline (e.g., `Owner\nPlayerName`). Investigate API feasibility for nametag modification (color, newlines).
+            -   Permissions for AC commands could be tied to ranks (existing point).
+            -   Requires persistent storage if not solely derived from config/tags at runtime.*
         *   **Combat Log Detection & Punishment:** If a player leaves the game shortly after entering combat (e.g., being hit or hitting someone), flag them or apply a configurable punishment. (SafeGuard)
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
 *   **World Management & Protection:** SjnExe parity goal.
     *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
     *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
+
+## Admin Panel UI (`!panel`) Development
+*   **Phase 1: Basic Structure & Player List:**
+    *   Command `!panel open main` (or similar).
+    *   Initial UI form displaying a list of currently online players (name, basic stats like flag count).
+    *   Selection of a player leads to a "Player Actions" form.
+*   **Phase 2: Player Actions - Inspect & Flags:**
+    *   "View Detailed Info/Flags" button: Shows comprehensive data similar to `!ac inspect <player>`.
+    *   "Reset Player Flags" button with confirmation.
+*   **Phase 3: Player Actions - Moderation:**
+    *   "Kick Player" button with reason input.
+    *   "Mute Player" button with duration/reason input (integrates with mute system).
+    *   "Freeze/Unfreeze Player" toggle.
+*   **Phase 4: Server Management Actions (New Section in Panel):**
+    *   "View System Info": Basic server stats, AC version.
+    *   "Clear Chat" button.
+    *   "Lag Clear" button (if implemented).
+*   **Phase 5: Configuration & Advanced (Future):**
+    *   View/Edit parts of `config.js` (read-only first, then consider edits for simple values).
+    *   View Ban/Mute/Warning Logs.
+
+## Refactoring & Enhancements
+*   **Refactor: Standardize Check Actions & Configurable Punishments:** Create a unified system for how checks trigger actions (flag, log, notify, command execution) and allow these actions/parameters to be configured per check (e.g., kick after N flags for 'fly'). (Scythe, SafeGuard)
 
 ## Low Priority / Ideas
 
@@ -102,7 +129,14 @@ This list contains planned features, improvements, and areas for future investig
     *   **Ban/Mute/Kick Action Logging:** Ensure all punitive admin actions are logged with admin, target, reason, duration, and timestamp.
 *   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
-*   **Refactor: Create `types.js`:** (newly added) Define common JSDoc typedefs (e.g., `PlayerAntiCheatData`, `PlayerFlagData`) in a central `types.js` file to avoid potential circular dependencies and improve type management.
+
+## Public Info UI (`!ui`) Development
+*   **Phase 1: My Stats & Info:**
+    *   Command `!ui open mystats` (or just `!ui`).
+    *   Displays the calling player's own flag counts, and basic AC rules/help.
+*   **Phase 2: Server Info & Links:**
+    *   Section for server rules (brief).
+    *   Links to Discord/website (configurable).
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

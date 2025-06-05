@@ -175,7 +175,80 @@ export const bannedItemsPlace: string[] = ["minecraft:command_block", "minecraft
 /** @type {string[]} Array of item type IDs banned from being used. */
 export const bannedItemsUse: string[] = [];
 
+// --- Chat Checks ---
+
+/** @type {boolean} If true, checks for newline/carriage return characters in chat messages. */
+export const enableNewlineCheck = true;
+
+/** @type {boolean} If true, sending a message with newlines/carriage returns will flag the player. */
+export const flagOnNewline = true;
+
+/** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
+export const cancelMessageOnNewline = true;
+
+/** @type {boolean} If true, checks if chat messages exceed the maximum configured length. */
+export const enableMaxMessageLengthCheck = true;
+
+/** @type {number} Maximum allowed character length for a chat message. */
+export const maxMessageLength = 256; // Minecraft default is 256
+
+/** @type {boolean} If true, sending a message exceeding max length will flag the player. */
+export const flagOnMaxMessageLength = true;
+
+/** @type {boolean} If true, messages exceeding max length will be cancelled. */
+export const cancelOnMaxMessageLength = true;
+
+/** @type {boolean} If true, checks for players sending the same/similar messages repeatedly. */
+export const SPAM_REPEAT_CHECK_ENABLED = true;
+
+/** @type {number} Number of identical/similar messages within the time window to trigger a spam flag. */
+export const SPAM_REPEAT_MESSAGE_COUNT = 3;
+
+/** @type {number} Time window in seconds to monitor for repeated messages. */
+export const SPAM_REPEAT_TIME_WINDOW_SECONDS = 5;
+
+/** @type {boolean} If true, flags the player for repeated message spam. */
+export const SPAM_REPEAT_FLAG_PLAYER = true;
+
+/** @type {boolean} If true, cancels the message that triggers the repeated spam detection. Generally false for this check. */
+export const SPAM_REPEAT_CANCEL_MESSAGE = false;
+
+// --- X-Ray Detection ---
+
+/** @type {boolean} If true, enables notifications for mining valuable ores. */
+export const XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED = true;
+
+/** @type {string[]} List of block type IDs to monitor for mining notifications. */
+export const XRAY_DETECTION_MONITORED_ORES = [
+    "minecraft:diamond_ore",
+    "minecraft:deepslate_diamond_ore",
+    "minecraft:ancient_debris",
+    "minecraft:emerald_ore",
+    "minecraft:deepslate_emerald_ore"
+];
+
+/** @type {boolean} If true, admins will receive X-Ray mining notifications by default, unless they explicitly turn them off. */
+export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */
 export const acVersion = "0.1.0-alpha";
+
+// --- Command Aliases ---
+/**
+ * @typedef {Object.<string, string>} CommandAliasMap
+ * @description Maps short alias strings to full command names.
+ * Example: { "b": "ban", "k": "kick" }
+ */
+
+/** @type {CommandAliasMap} Defines aliases for commands. */
+export const commandAliases = {
+    "v": "version",
+    "w": "watch",
+    "i": "inspect",
+    "rf": "resetflags",
+    "xn": "xraynotify",
+    "mf": "myflags",
+    // Add more aliases as commands are developed
+};

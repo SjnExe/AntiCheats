@@ -29,7 +29,13 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
 
     eventData.cancel = true; // Command processed, cancel original message
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
-    const command = args.shift()?.toLowerCase();
+    let command = args.shift()?.toLowerCase();
+
+    if (command && config.commandAliases && config.commandAliases[command]) {
+        const resolvedCommand = config.commandAliases[command];
+        playerUtils.debugLog(`Command alias '${command}' resolved to '${resolvedCommand}'.`, player.nameTag);
+        command = resolvedCommand;
+    }
 
     switch (command) {
         case "version":
@@ -37,7 +43,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "watch":
             if (args.length < 1) {
-                player.sendMessage("§cUsage: !ac watch <playername>");
+                player.sendMessage("§cUsage: !watch <playername>");
                 return;
             }
             const targetPlayerNameWatch = args[0];
@@ -83,7 +89,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "inspect": // Text command !ac inspect
             if (args.length < 1) {
-                player.sendMessage("§cUsage: !ac inspect <playername>");
+                player.sendMessage("§cUsage: !inspect <playername>");
                 return;
             }
             const inspectTargetName = args[0];
@@ -121,7 +127,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "resetflags": // Text command !ac resetflags
             if (args.length < 1) {
-                player.sendMessage("§cUsage: !ac resetflags <playername>");
+                player.sendMessage("§cUsage: !resetflags <playername>");
                 return;
             }
             const resetTargetName = args[0];
@@ -161,6 +167,55 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "ui":
             uiManager.showAdminMainMenu(player); // Call the UI manager
+            break;
+        case "xraynotify":
+            if (args.length < 1 || !["on", "off", "status"].includes(args[0].toLowerCase())) {
+                player.sendMessage("§cUsage: !xraynotify <on|off|status>");
+                return;
+            }
+            const subCommand = args[0].toLowerCase();
+            const notifyOnTag = "xray_notify_on";
+            const notifyOffTag = "xray_notify_off";
+
+            switch (subCommand) {
+                case "on":
+                    try {
+                        player.removeTag(notifyOffTag);
+                    } catch (e) {
+                        playerUtils.debugLog(`Player ${player.nameTag} did not have tag ${notifyOffTag} to remove.`, player.nameTag);
+                    }
+                    player.addTag(notifyOnTag);
+                    player.sendMessage("§aX-Ray ore mining notifications enabled for you.");
+                    playerUtils.debugLog(`Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
+                    break;
+                case "off":
+                    try {
+                        player.removeTag(notifyOnTag);
+                    } catch (e) {
+                        playerUtils.debugLog(`Player ${player.nameTag} did not have tag ${notifyOnTag} to remove.`, player.nameTag);
+                    }
+                    player.addTag(notifyOffTag);
+                    player.sendMessage("§cX-Ray ore mining notifications disabled for you.");
+                    playerUtils.debugLog(`Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
+                    break;
+                case "status":
+                    const isOn = player.hasTag(notifyOnTag);
+                    const isOff = player.hasTag(notifyOffTag);
+                    let statusMessage = "§eYour X-Ray notification status: ";
+                    if (isOn) {
+                        statusMessage += "§aON (explicitly).";
+                    } else if (isOff) {
+                        statusMessage += "§cOFF (explicitly).";
+                    } else {
+                        if (config.XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT) {
+                            statusMessage += "§aON (by server default). §7Use '!ac xraynotify off' to disable.";
+                        } else {
+                            statusMessage += "§cOFF (by server default). §7Use '!ac xraynotify on' to enable.";
+                        }
+                    }
+                    player.sendMessage(statusMessage);
+                    break;
+            }
             break;
         default:
             player.sendMessage(`§cUnknown command: ${command}§r`);

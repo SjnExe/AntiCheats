@@ -18,7 +18,7 @@ This document outlines coding style conventions to be followed for this project 
 *   Class names should use **`PascalCase`** (e.g., `class MyClass {}`).
 
 ### Constants (outside of `config.js` exports)
-*   If there are true, hardcoded, unchangeable constants defined within files (not meant for external configuration via `config.js`), they can use **`UPPER_SNAKE_CASE`** (e.g., `const MAX_RETRIES = 3;`). However, prefer values from `config.js` where possible.
+*   For any constants defined within files (not intended for external configuration via `config.js`), also use **`camelCase`** (e.g., `const maxRetries = 3;`). Avoid using `UPPER_SNAKE_CASE` to maintain consistency. If a value is truly global and fixed, it should ideally still be exposed via `config.js` using `camelCase`.
 
 ## JSDoc
 *   Use JSDoc comments for all functions, especially exported ones, detailing their purpose, parameters, and return values.
