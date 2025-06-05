@@ -25,3 +25,6 @@ As of 2024-07-25 *(placeholder date)*:
 *   **Phase 5: Configuration & Advanced (Future) (TODO):**
     *   View/Edit parts of `config.js` (read-only first, then consider edits for simple values).
     *   View Ban/Mute/Warning Logs.
+
+## Normal Player Panel Features (`!panel`)
+*   Implement "My Stats" view for normal players in `!panel`. (Completed)

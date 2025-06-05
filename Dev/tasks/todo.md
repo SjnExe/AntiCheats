@@ -90,7 +90,6 @@ This list contains planned features, improvements, and areas for future investig
     *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
 
 *   **Normal Player Panel Features (`!panel`):**
-    *   Implement "My Stats" view for normal players in `!panel`.
     *   Implement "Server Rules" view for normal players in `!panel`.
     *   Implement "Help & Links" view for normal players in `!panel`.
 

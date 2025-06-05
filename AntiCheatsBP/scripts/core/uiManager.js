@@ -70,6 +70,50 @@ async function showInspectPlayerForm(player, playerDataManager) {
     }
 }
 
+async function showMyStats(player, playerDataManager) {
+    playerUtils.debugLog(`UI: showMyStats for ${player.nameTag}`, player.nameTag);
+    const form = new MessageFormData();
+    form.title("My AntiCheat Stats");
+
+    const pData = playerDataManager.getPlayerData(player.id);
+    let bodyContent = "";
+
+    if (pData && pData.flags) {
+        bodyContent += `§eYour Total Flags:§r ${pData.flags.totalFlags}\n`;
+        bodyContent += `§eLast Flag Type:§r ${pData.lastFlagType || 'None'}\n\n`;
+        bodyContent += "§eBreakdown:§r\n";
+        let specificFlagsShown = 0;
+        for (const flagKey in pData.flags) {
+            if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
+                const flagData = pData.flags[flagKey];
+                bodyContent += `  §f- ${flagKey}: Count=${flagData.count}, Last Seen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
+                specificFlagsShown++;
+            }
+        }
+        if (specificFlagsShown === 0) {
+            bodyContent += "  No specific flags recorded.\n";
+        }
+    } else {
+        bodyContent = "§cCould not retrieve your AntiCheat stats at this time.";
+    }
+
+    form.body(bodyContent);
+    form.button1("Close");
+
+    try {
+        await form.show(player);
+    } catch (error) {
+        playerUtils.debugLog(`Error in showMyStats for ${player.nameTag}: ${error}`, player.nameTag);
+        console.error(`[uiManager.showMyStats] Error:`, error, error.stack);
+        // player.sendMessage("§cAn error occurred while displaying your stats."); // MessageFormData has no direct error feedback to player on show() fail
+    }
+    // Always return to the main panel.
+    // As 'config' is not passed to this function, and showAdminPanelMain requires it,
+    // this call might lead to issues if not handled carefully in showAdminPanelMain or if user is not admin.
+    // For normal users, config isn't strictly necessary for their view of showAdminPanelMain.
+    await showAdminPanelMain(player, playerDataManager, null);
+}
+
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager) {
     playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
 
@@ -390,7 +434,7 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
     }
 }
 
-export async function showAdminPanelMain(adminPlayer, playerDataManager) {
+export async function showAdminPanelMain(adminPlayer, playerDataManager, config) { // Added config
     playerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData();
     const userPermLevel = getPlayerPermissionLevel(adminPlayer);
@@ -447,7 +491,7 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager) {
             }
 
             switch (response.selection) {
-                case 0: adminPlayer.sendMessage("§7'My Stats' is not yet implemented."); break;
+                case 0: await showMyStats(adminPlayer, playerDataManager); break; // Updated
                 case 1: adminPlayer.sendMessage("§7'Server Rules' display is not yet implemented."); break;
                 case 2: adminPlayer.sendMessage("§7'Help & Links' is not yet implemented."); break;
                 default: adminPlayer.sendMessage("§cInvalid selection from Info Panel."); break;
@@ -458,6 +502,46 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager) {
         console.error(`[uiManager.showAdminPanelMain] Error for ${adminPlayer.nameTag}:`, error, error.stack);
         adminPlayer.sendMessage("§cAn error occurred while trying to display the panel.");
     }
+}
+
+async function showSystemInfo(adminPlayer, config, playerDataManager) { // Added config
+    playerUtils.debugLog(`UI: showSystemInfo requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    try {
+        const onlinePlayersCount = mc.world.getAllPlayers().length;
+
+        let watchedPlayersCount = 0;
+        const allPDataValues = typeof playerDataManager.getAllPlayerDataValues === 'function'
+            ? playerDataManager.getAllPlayerDataValues()
+            : [];
+        for (const pDataEntry of allPDataValues) {
+            if (pDataEntry.isWatched === true) {
+                watchedPlayersCount++;
+            }
+        }
+
+        const mutedPlayersCount = typeof playerDataManager.getActiveMuteCount === 'function'
+            ? playerDataManager.getActiveMuteCount()
+            : 'N/A';
+
+
+        let bodyContent = `§lAntiCheat System Information§r\n\n`;
+        bodyContent += `§eAC Version:§r ${config.acVersion || 'Unknown'}\n`;
+        bodyContent += `§eOnline Players:§r ${onlinePlayersCount}\n`;
+        bodyContent += `§eWatched Players:§r ${watchedPlayersCount}\n`;
+        bodyContent += `§eSession Muted Players:§r ${mutedPlayersCount}\n`;
+
+        const form = new MessageFormData();
+        form.title("System Information");
+        form.body(bodyContent);
+        form.button1("Close");
+
+        await form.show(adminPlayer);
+    } catch (error) {
+        playerUtils.debugLog(`Error in showSystemInfo for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showSystemInfo] Error:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while displaying system information.");
+    }
+    await showAdminPanelMain(adminPlayer, playerDataManager, config); // Pass config back
 }
 
 export async function showPlayerInventory(adminPlayer, targetPlayer) {
