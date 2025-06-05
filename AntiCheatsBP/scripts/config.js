@@ -207,27 +207,27 @@ export const flagOnMaxMessageLength = true;
 export const cancelOnMaxMessageLength = true;
 
 /** @type {boolean} If true, checks for players sending the same/similar messages repeatedly. */
-export const SPAM_REPEAT_CHECK_ENABLED = true;
+export const spamRepeatCheckEnabled = true;
 
 /** @type {number} Number of identical/similar messages within the time window to trigger a spam flag. */
-export const SPAM_REPEAT_MESSAGE_COUNT = 3;
+export const spamRepeatMessageCount = 3;
 
 /** @type {number} Time window in seconds to monitor for repeated messages. */
-export const SPAM_REPEAT_TIME_WINDOW_SECONDS = 5;
+export const spamRepeatTimeWindowSeconds = 5;
 
 /** @type {boolean} If true, flags the player for repeated message spam. */
-export const SPAM_REPEAT_FLAG_PLAYER = true;
+export const spamRepeatFlagPlayer = true;
 
 /** @type {boolean} If true, cancels the message that triggers the repeated spam detection. Generally false for this check. */
-export const SPAM_REPEAT_CANCEL_MESSAGE = false;
+export const spamRepeatCancelMessage = false;
 
 // --- X-Ray Detection ---
 
 /** @type {boolean} If true, enables notifications for mining valuable ores. */
-export const XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED = true;
+export const xrayDetectionNotifyOnOreMineEnabled = true; // Note: This was XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED, but not in the list for change. Keeping it as per file for now.
 
 /** @type {string[]} List of block type IDs to monitor for mining notifications. */
-export const XRAY_DETECTION_MONITORED_ORES = [
+export const xrayDetectionMonitoredOres = [
     "minecraft:diamond_ore",
     "minecraft:deepslate_diamond_ore",
     "minecraft:ancient_debris",
@@ -236,14 +236,14 @@ export const XRAY_DETECTION_MONITORED_ORES = [
 ];
 
 /** @type {boolean} If true, admins will receive X-Ray mining notifications by default, unless they explicitly turn them off. */
-export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
+export const xrayDetectionAdminNotifyByDefault = true;
 
 /**
  * @type {boolean}
  * If true, admins will receive all AntiCheat system notifications by default,
  * unless they explicitly turn them off using !acnotifications off.
  */
-export const AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON = true;
+export const acGlobalNotificationsDefaultOn = true;
 
 // --- UI Display Texts ---
 

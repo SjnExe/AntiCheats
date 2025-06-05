@@ -442,3 +442,15 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
         - Calls `playerDataManager.removeMute`.
         - Provides feedback to admin (chat) and target (action bar).
     - Refreshes the `showPlayerActionsForm` after mute/unmute actions to update button state.
+
+## `!warnings` and `!clearwarnings` Commands - Task Completion Date
+- **`commandManager.js`**:
+    - Added `!warnings <player>` command (Admin permission):
+        - Shows a detailed, multi-line textual summary of a player's flags.
+        - Includes total flags, last flag type.
+        - For each flag type with a count > 0, displays its name, count, and the last detection timestamp formatted with `toLocaleString()`.
+    - Added `!clearwarnings <player>` command (Admin permission):
+        - Functionally an alias to `!resetflags`.
+        - Clears all flag counts, total flags, last flag type, and other violation trackers (e.g., `consecutiveOffGroundTicks`, `fallDistance`, `attackEvents`).
+        - Saves the updated player data.
+        - Provides specific "warnings cleared" feedback messages to admins.

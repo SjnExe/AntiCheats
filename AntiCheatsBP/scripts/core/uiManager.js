@@ -3,7 +3,7 @@ import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/serve
 // Assuming playerUtils contains debugLog, notifyAdmins
 import * as playerUtils from '../utils/playerUtils.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // Added
-import { PermissionLevels } from './rankManager.js'; // Added
+import { permissionLevels } from './rankManager.js'; // Added
 // playerDataManager will be passed as a parameter to functions that need it.
 // Import mute functions from playerDataManager for Mute/Unmute UI
 import { getMuteInfo, addMute, removeMute } from '../core/playerDataManager.js';
@@ -511,7 +511,7 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
     let response;
 
     try {
-        if (userPermLevel <= PermissionLevels.ADMIN) {
+        if (userPermLevel <= permissionLevels.ADMIN) {
             form.title("AC Admin Panel");
             form.body("Select an admin action:");
             form.button("View Online Players", "textures/ui/icon_multiplayer");    // 0

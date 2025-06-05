@@ -137,14 +137,14 @@ export function handlePlayerBreakBlock(eventData, playerDataManager) {
  * @param {object} playerUtils Module for utility functions like debugLog and notifyAdmins (or direct player.sendMessage)
  */
 export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
-    if (!config.XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED) {
+    if (!config.xrayDetectionNotifyOnOreMineEnabled) {
         return;
     }
 
     const player = eventData.player;
     const brokenBlockId = eventData.brokenBlockPermutation.type.id;
 
-    if (config.XRAY_DETECTION_MONITORED_ORES.includes(brokenBlockId)) {
+    if (config.xrayDetectionMonitoredOres.includes(brokenBlockId)) {
         const location = player.location; // Or eventData.block.location if more precise for future
         const prettyBlockName = brokenBlockId.replace("minecraft:", "");
         const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(location.y)}, ${Math.floor(location.z)}§7.`;
@@ -159,7 +159,7 @@ export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
                 let shouldNotify = false;
                 if (wantsNotificationsExplicitly) {
                     shouldNotify = true;
-                } else if (config.XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT && !explicitlyDisabled) {
+                } else if (config.xrayDetectionAdminNotifyByDefault && !explicitlyDisabled) {
                     shouldNotify = true;
                 }
 
@@ -300,7 +300,7 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
     }
 
     // 3. Repeated Messages (Spam) Check (on originalMessage)
-    if (config.SPAM_REPEAT_CHECK_ENABLED) {
+    if (config.spamRepeatCheckEnabled) {
         if (pData) {
             const currentTime = Date.now();
             if (!pData.recentMessages) {
@@ -308,7 +308,7 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
             }
             pData.recentMessages.push({ timestamp: currentTime, content: originalMessage });
 
-            const timeWindowStart = currentTime - (config.SPAM_REPEAT_TIME_WINDOW_SECONDS * 1000);
+            const timeWindowStart = currentTime - (config.spamRepeatTimeWindowSeconds * 1000);
             pData.recentMessages = pData.recentMessages.filter(msg => msg.timestamp >= timeWindowStart);
 
             let repeatCount = 0;
@@ -318,12 +318,12 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
                 }
             }
 
-            if (repeatCount >= config.SPAM_REPEAT_MESSAGE_COUNT) {
+            if (repeatCount >= config.spamRepeatMessageCount) {
                 playerUtils.debugLog(`Player ${player.nameTag} triggered repeat spam detection. Count: ${repeatCount}, Original Message: "${originalMessage}"`, player.nameTag);
-                if (config.SPAM_REPEAT_FLAG_PLAYER) {
+                if (config.spamRepeatFlagPlayer) {
                     playerDataManager.addFlag(player, "spamRepeat", `Repeated message ${repeatCount} times: "${originalMessage.substring(0,30)}..."`);
                 }
-                if (config.SPAM_REPEAT_CANCEL_MESSAGE) {
+                if (config.spamRepeatCancelMessage) {
                     eventData.cancel = true;
                     playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to repeat spam.`, player.nameTag);
                     // player.sendMessage("§cYour message was cancelled due to spam.§r");

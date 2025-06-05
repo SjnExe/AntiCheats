@@ -1,5 +1,5 @@
 import * as mc from '@minecraft/server';
-import { PermissionLevels } from './rankManager.js';
+import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
 import { addMute, removeMute, isMuted } from '../core/playerDataManager.js'; // Updated imports for mute/unmute
 // Parameter 'config' will provide PREFIX, acVersion, commandAliases
@@ -7,25 +7,27 @@ import { addMute, removeMute, isMuted } from '../core/playerDataManager.js'; // 
 // Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData, addMute, removeMute, isMuted
 // Parameter 'uiManager' will provide showAdminMainMenu
 
-const ALL_COMMANDS = [
-    { name: "help", syntax: "!help", description: "Shows available commands.", permissionLevel: PermissionLevels.NORMAL },
-    { name: "myflags", syntax: "!myflags", description: "Shows your own current flag status.", permissionLevel: PermissionLevels.NORMAL },
-    { name: "version", syntax: "!version", description: "Displays addon version.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "invsee", syntax: "!invsee <player>", description: "Displays a read-only view of a player's inventory.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "freeze", syntax: "!freeze <player> [on|off]", description: "Freezes or unfreezes a player, preventing movement.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "mute", syntax: "!mute <player> [duration] [reason]", description: "Mutes a player for a specified duration (e.g., 5m, 1h, 1d, perm).", permissionLevel: PermissionLevels.ADMIN },
-    { name: "unmute", syntax: "!unmute <player>", description: "Unmutes a player.", permissionLevel: PermissionLevels.ADMIN },
-    // { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN }, // Removed, use !panel
-    { name: "panel", syntax: "!panel", description: "Opens the AntiCheat Admin Panel UI.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
-    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
+const allCommands = [
+    { name: "help", syntax: "!help", description: "Shows available commands.", permissionLevel: permissionLevels.NORMAL },
+    { name: "myflags", syntax: "!myflags", description: "Shows your own current flag status.", permissionLevel: permissionLevels.NORMAL },
+    { name: "version", syntax: "!version", description: "Displays addon version.", permissionLevel: permissionLevels.ADMIN },
+    { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", permissionLevel: permissionLevels.ADMIN },
+    { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: permissionLevels.ADMIN },
+    { name: "warnings", syntax: "!warnings <player>", description: "Shows a detailed list of warnings/flags for a player.", permissionLevel: permissionLevels.ADMIN },
+    { name: "invsee", syntax: "!invsee <player>", description: "Displays a read-only view of a player's inventory.", permissionLevel: permissionLevels.ADMIN },
+    { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: permissionLevels.ADMIN },
+    { name: "clearwarnings", syntax: "!clearwarnings <player>", description: "Clears all warnings/flags for a player (similar to !resetflags).", permissionLevel: permissionLevels.ADMIN },
+    { name: "kick", syntax: "!kick <player> [reason]", description: "Kicks a player from the server.", permissionLevel: permissionLevels.ADMIN },
+    { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: permissionLevels.ADMIN },
+    { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: permissionLevels.ADMIN },
+    { name: "freeze", syntax: "!freeze <player> [on|off]", description: "Freezes or unfreezes a player, preventing movement.", permissionLevel: permissionLevels.ADMIN },
+    { name: "mute", syntax: "!mute <player> [duration] [reason]", description: "Mutes a player for a specified duration (e.g., 5m, 1h, 1d, perm).", permissionLevel: permissionLevels.ADMIN },
+    { name: "unmute", syntax: "!unmute <player>", description: "Unmutes a player.", permissionLevel: permissionLevels.ADMIN },
+    // { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: permissionLevels.ADMIN }, // Removed, use !panel
+    { name: "panel", syntax: "!panel", description: "Opens the AntiCheat Admin Panel UI.", permissionLevel: permissionLevels.ADMIN },
+    { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: permissionLevels.ADMIN },
+    { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: permissionLevels.ADMIN },
+    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: permissionLevels.OWNER }
 ];
 
 /**
@@ -97,7 +99,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             const specificCommandName = args[0].toLowerCase();
             let foundCmdDef = null;
 
-            for (const cmdDef of ALL_COMMANDS) {
+            for (const cmdDef of allCommands) {
                 if (cmdDef.name === specificCommandName) {
                     foundCmdDef = cmdDef;
                     break;
@@ -123,7 +125,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                         `§a--- Help for: ${config.prefix}${foundCmdDef.name} ---\n` +
                         `§eSyntax: ${config.prefix}${foundCmdDef.name} ${syntaxArgs}\n` +
                         `§7Description: ${foundCmdDef.description}\n` +
-                        `§bPermission Level Required: ${Object.keys(PermissionLevels).find(key => PermissionLevels[key] === foundCmdDef.permissionLevel) || "Unknown"} (Value: ${foundCmdDef.permissionLevel})`
+                        `§bPermission Level Required: ${Object.keys(permissionLevels).find(key => permissionLevels[key] === foundCmdDef.permissionLevel) || "Unknown"} (Value: ${foundCmdDef.permissionLevel})`
                     );
                 } else {
                     player.sendMessage(`§cCommand '${specificCommandName}' not found or you do not have permission to view its help. Try ${config.prefix}help for a list of your commands.`);
@@ -133,7 +135,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
         } else { // General help - list available commands
             let helpOutput = ["§aAvailable commands (for your permission level):"];
-            ALL_COMMANDS.forEach(cmdDef => {
+            allCommands.forEach(cmdDef => {
                 if (userPermissionLevel <= cmdDef.permissionLevel) {
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
                     helpOutput.push(`§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${cmdDef.description}`);
@@ -144,7 +146,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     } else if (command === "myflags") {
         eventData.cancel = true;
-        // This command is PermissionLevels.NORMAL, so no explicit check needed beyond being in ALL_COMMANDS
+        // This command is permissionLevels.NORMAL, so no explicit check needed beyond being in ALL_COMMANDS
         const pDataSelf = playerDataManager.getPlayerData(player.id);
         if (pDataSelf && pDataSelf.flags) {
             player.sendMessage(`Your current flags: Total=${pDataSelf.flags.totalFlags}. Last type: ${pDataSelf.lastFlagType || "None"}`);
@@ -160,7 +162,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     }
 
     // --- Permission Check for all other commands ---
-    const cmdDef = ALL_COMMANDS.find(c => c.name === command);
+    const cmdDef = allCommands.find(c => c.name === command);
 
     if (cmdDef) {
         // Lower number means higher privilege.
@@ -259,6 +261,52 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 player.sendMessage(`§cPlayer ${inspectTargetName} not found.`);
             }
             break;
+        case "warnings": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}warnings <playername>`);
+                return;
+            }
+            const targetPlayerNameWarn = args[0];
+            let foundPlayerWarn = null;
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameWarn.toLowerCase()) {
+                    foundPlayerWarn = p;
+                    break;
+                }
+            }
+
+            if (!foundPlayerWarn) {
+                player.sendMessage(`§cPlayer ${targetPlayerNameWarn} not found.`);
+                return;
+            }
+
+            const pDataWarn = playerDataManager.getPlayerData(foundPlayerWarn.id);
+            if (!pDataWarn || !pDataWarn.flags) {
+                player.sendMessage(`§cNo warning data found for ${foundPlayerWarn.nameTag}.`);
+                return;
+            }
+
+            let warningMessage = [`§a--- Detailed Warnings for ${foundPlayerWarn.nameTag} ---`];
+            warningMessage.push(`§eTotal Flags: §f${pDataWarn.flags.totalFlags}`);
+            warningMessage.push(`§eLast Flag Type: §f${pDataWarn.lastFlagType || "None"}`);
+            warningMessage.push("§eIndividual Flag Details:§r");
+
+            let specificFlagsFound = false;
+            for (const flagKey in pDataWarn.flags) {
+                if (flagKey === "totalFlags") continue;
+                const flagData = pDataWarn.flags[flagKey];
+                if (typeof flagData === 'object' && flagData !== null && flagData.count > 0) {
+                    warningMessage.push(`  §f- ${flagKey}: §c${flagData.count} occurrence(s)`);
+                    warningMessage.push(`    Last detected: §7${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleString() : 'N/A'}`);
+                    specificFlagsFound = true;
+                }
+            }
+
+            if (!specificFlagsFound) {
+                warningMessage.push("  No specific flags triggered.");
+            }
+            player.sendMessage(warningMessage.join("\n"));
+            break;
         case "invsee": // ADMIN
             if (args.length < 1) {
                 player.sendMessage(`§cUsage: ${config.prefix}invsee <playername>`);
@@ -279,6 +327,46 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 uiManager.showPlayerInventory(player, targetPlayerInvsee);
             } else {
                 player.sendMessage(`§cPlayer ${targetPlayerNameInvsee} not found.`);
+            }
+            break;
+        case "clearwarnings": // Text command !ac clearwarnings (alias for resetflags essentially)
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}clearwarnings <playername>`);
+                return;
+            }
+            const resetTargetNameCw = args[0]; // Using cw suffix to avoid redeclaration if someday these are not identical
+            let resetFoundPlayerCw = null;
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === resetTargetNameCw.toLowerCase()) {
+                    resetFoundPlayerCw = p;
+                    break;
+                }
+            }
+            if (resetFoundPlayerCw) {
+                const targetPDataResetCw = playerDataManager.getPlayerData(resetFoundPlayerCw.id);
+                if (targetPDataResetCw) {
+                    targetPDataResetCw.flags.totalFlags = 0;
+                    targetPDataResetCw.lastFlagType = "";
+                    for (const flagKey in targetPDataResetCw.flags) {
+                        if (typeof targetPDataResetCw.flags[flagKey] === 'object' && targetPDataResetCw.flags[flagKey] !== null) {
+                            targetPDataResetCw.flags[flagKey].count = 0;
+                            targetPDataResetCw.flags[flagKey].lastDetectionTime = 0;
+                        }
+                    }
+                    targetPDataResetCw.consecutiveOffGroundTicks = 0;
+                    targetPDataResetCw.fallDistance = 0;
+                    targetPDataResetCw.consecutiveOnGroundSpeedingTicks = 0;
+                    targetPDataResetCw.attackEvents = [];
+                    targetPDataResetCw.blockBreakEvents = [];
+                    await playerDataManager.prepareAndSavePlayerData(resetFoundPlayerCw);
+                    player.sendMessage(`§aWarnings and violation data cleared for ${resetFoundPlayerCw.nameTag}.`);
+                    playerUtils.notifyAdmins(`Warnings cleared for ${resetFoundPlayerCw.nameTag} by ${player.nameTag}.`, resetFoundPlayerCw, targetPDataResetCw);
+                    playerUtils.debugLog(`Warnings cleared for ${resetFoundPlayerCw.nameTag} by ${player.nameTag}.`, targetPDataResetCw.isWatched ? resetFoundPlayerCw.nameTag : null);
+                } else {
+                    player.sendMessage(`§cPlayer data for ${resetTargetNameCw} not found.`);
+                }
+            } else {
+                player.sendMessage(`§cPlayer ${resetTargetNameCw} not found.`);
             }
             break;
         case "resetflags": // Text command !ac resetflags
@@ -311,7 +399,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                     targetPDataReset.attackEvents = [];
                     targetPDataReset.blockBreakEvents = [];
                     await playerDataManager.prepareAndSavePlayerData(resetFoundPlayer);
-                    player.sendMessage(`§aFlags and violation data reset for ${resetFoundPlayer.nameTag}.`);
+                    player.sendMessage(`§aFlags and violation data reset for ${resetFoundPlayer.nameTag}.`); // Kept "reset" here as this is the original resetflags command
                     playerUtils.notifyAdmins(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag}.`, resetFoundPlayer, targetPDataReset);
                     playerUtils.debugLog(`Flags reset for ${resetFoundPlayer.nameTag} by ${player.nameTag}.`, targetPDataReset.isWatched ? resetFoundPlayer.nameTag : null);
                 } else {
@@ -663,7 +751,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                     } else if (acIsOff) {
                         acStatusMessage += "§cOFF (explicitly).";
                     } else { // Default state based on config
-                        if (config.AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON) {
+                        if (config.acGlobalNotificationsDefaultOn) {
                             acStatusMessage += `§aON (by server default). §7Use ${config.prefix}notify off to disable.`;
                         } else {
                             acStatusMessage += `§cOFF (by server default). §7Use ${config.prefix}notify on to enable.`;
@@ -714,7 +802,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                     } else if (isOff) {
                         statusMessage += "§cOFF (explicitly).";
                     } else {
-                        if (config.XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT) {
+                        if (config.xrayDetectionAdminNotifyByDefault) {
                             statusMessage += "§aON (by server default). §7Use '!ac xraynotify off' to disable.";
                         } else {
                             statusMessage += "§cOFF (by server default). §7Use '!ac xraynotify on' to enable.";
