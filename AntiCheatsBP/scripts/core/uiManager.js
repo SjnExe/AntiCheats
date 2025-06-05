@@ -518,8 +518,8 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
             form.button("Inspect Player (Text)", "textures/ui/spyglass");         // 1
             form.button("Reset Flags (Text)", "textures/ui/refresh");           // 2
             form.button("List Watched Players", "textures/ui/magnifying_glass");  // 3
-            form.button("Server Stats (TODO)", "textures/ui/icon_graph");         // 4
-            form.button("Settings (TODO)", "textures/ui/gear");                 // 5
+            form.button("Server Management", "textures/ui/icon_graph");         // 4
+            form.button("View Configuration", "textures/ui/gear");                 // 5
 
             response = await form.show(adminPlayer);
 
@@ -537,8 +537,8 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
                 case 1: await showInspectPlayerForm(adminPlayer, playerDataManager); break;
                 case 2: await showResetFlagsForm(adminPlayer, playerDataManager); break;
                 case 3: await showWatchedPlayersList(adminPlayer, playerDataManager); break;
-                case 4: await showServerManagementForm(adminPlayer, playerDataManager, config); break; // Changed
-                case 5: adminPlayer.sendMessage("§7Settings functionality is not yet implemented."); break;
+                case 4: await showServerManagementForm(adminPlayer, playerDataManager, config); break;
+                case 5: await showViewConfigForm(adminPlayer, config, playerDataManager); break;
                 default: adminPlayer.sendMessage("§cInvalid selection from Admin Panel."); break;
             }
         } else {
@@ -618,6 +618,70 @@ async function showSystemInfo(adminPlayer, config, playerDataManager) { // Added
         adminPlayer.sendMessage("§cAn error occurred while displaying system information.");
     }
     await showAdminPanelMain(adminPlayer, playerDataManager, config); // Pass config back
+}
+
+async function showViewConfigForm(adminPlayer, config, playerDataManager) {
+    playerUtils.debugLog(`UI: showViewConfigForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const form = new MessageFormData();
+    form.title("View Configuration (Read-Only)");
+
+    const keysToShow = [
+        // General
+        { key: 'adminTag', label: 'Admin Tag' },
+        { key: 'ownerPlayerName', label: 'Owner Player Name' },
+        { key: 'enableDebugLogging', label: 'Debug Logging Enabled' },
+        { key: 'prefix', label: 'Command Prefix' },
+        { key: 'acVersion', label: 'AntiCheat Version' },
+        { key: 'acGlobalNotificationsDefaultOn', label: 'Global Admin Notifications Default On' },
+        // Check Toggles
+        { key: 'enableReachCheck', label: 'Reach Check Enabled' },
+        { key: 'enableCpsCheck', label: 'CPS Check Enabled' },
+        { key: 'enableViewSnapCheck', label: 'View Snap Check Enabled' },
+        { key: 'enableMultiTargetCheck', label: 'Multi-Target Check Enabled' },
+        { key: 'enableStateConflictCheck', label: 'State Conflict Check Enabled' },
+        { key: 'enableFlyCheck', label: 'Fly Check Enabled' },
+        { key: 'enableSpeedCheck', label: 'Speed Check Enabled' },
+        { key: 'enableNofallCheck', label: 'NoFall Check Enabled' },
+        { key: 'enableNukerCheck', label: 'Nuker Check Enabled' },
+        { key: 'enableIllegalItemCheck', label: 'Illegal Item Check Enabled' },
+        // Key Thresholds/Values
+        { key: 'maxCpsThreshold', label: 'Max CPS Threshold' },
+        { key: 'reachDistanceSurvival', label: 'Reach Distance (Survival)' },
+        { key: 'reachDistanceCreative', label: 'Reach Distance (Creative)' },
+        { key: 'minFallDistanceForDamage', label: 'Min Fall Distance for Damage' },
+        // Chat Checks
+        { key: 'enableNewlineCheck', label: 'Newline Chat Check Enabled' },
+        { key: 'maxMessageLength', label: 'Max Chat Message Length' },
+        { key: 'spamRepeatCheckEnabled', label: 'Spam Repeat Check Enabled' },
+        // X-Ray
+        { key: 'xrayDetectionNotifyOnOreMineEnabled', label: 'X-Ray Ore Notify Enabled' },
+        { key: 'xrayDetectionAdminNotifyByDefault', label: 'X-Ray Admin Notify Default On' }
+    ];
+
+    let bodyContent = "§lKey Configuration Values:§r\n\n";
+
+    if (!config) {
+        bodyContent = "§cConfiguration data is currently unavailable.";
+    } else {
+        for (const item of keysToShow) {
+            const key = item.key;
+            const label = item.label;
+            const value = config[key];
+            bodyContent += `§e${label}:§r ${typeof value === 'object' ? JSON.stringify(value) : value}\n`;
+        }
+    }
+
+    form.body(bodyContent);
+    form.button1("Back");
+
+    try {
+        await form.show(adminPlayer);
+    } catch (error) {
+        playerUtils.debugLog(`Error in showViewConfigForm for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showViewConfigForm] Error:`, error, error.stack);
+    }
+    // Always return to the main admin panel
+    await showAdminPanelMain(adminPlayer, playerDataManager, config); // Pass config and playerDataManager
 }
 
 // New function to clear all chat
