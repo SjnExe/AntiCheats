@@ -267,6 +267,7 @@ export const commandAliases = {
     "mf": "myflags",
     "acnotifications": "notify",
     "acenotify": "notify",
-    "notifications": "notify"
+    "notifications": "notify",
+    "ui": "panel"
     // Add more aliases as commands are developed
 };

@@ -2,6 +2,8 @@ import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 // Assuming playerUtils contains debugLog, notifyAdmins
 import * as playerUtils from '../utils/playerUtils.js';
+import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // Added
+import { PermissionLevels } from './rankManager.js'; // Added
 // playerDataManager will be passed as a parameter to functions that need it.
 
 async function showInspectPlayerForm(player, playerDataManager) {
@@ -260,42 +262,70 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
 export async function showAdminPanelMain(adminPlayer, playerDataManager) {
     playerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData();
-    form.title("AC Admin Panel");
-    form.body("Select an action:");
-    form.button("View Online Players", "textures/ui/icon_multiplayer"); // Example icon
-    form.button("Server Stats (TODO)", "textures/ui/icon_graph");   // Placeholder
-    form.button("Settings (TODO)", "textures/ui/gear");       // Placeholder
+    const userPermLevel = getPlayerPermissionLevel(adminPlayer);
+
+    let response; // Declare response here to be used after conditional blocks
 
     try {
-        const response = await form.show(adminPlayer);
+        if (userPermLevel <= PermissionLevels.ADMIN) { // Admin/Owner View
+            form.title("AC Admin Panel");
+            form.body("Select an admin action:");
+            form.button("View Online Players", "textures/ui/icon_multiplayer");    // 0
+            form.button("Inspect Player (Text)", "textures/ui/spyglass");         // 1
+            form.button("Reset Flags (Text)", "textures/ui/refresh");           // 2
+            form.button("List Watched Players", "textures/ui/magnifying_glass");  // 3
+            form.button("Server Stats (TODO)", "textures/ui/icon_graph");         // 4
+            form.button("Settings (TODO)", "textures/ui/gear");                 // 5
 
-        if (response.canceled) {
-            if (response.cancelationReason) {
-                playerUtils.debugLog(`Admin Panel Main canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
-            } else {
-                playerUtils.debugLog(`Admin Panel Main canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+            response = await form.show(adminPlayer);
+
+            if (response.canceled) {
+                if (response.cancelationReason) {
+                    playerUtils.debugLog(`Admin Panel (Admin View) canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+                } else {
+                    playerUtils.debugLog(`Admin Panel (Admin View) canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+                }
+                return;
             }
-            return;
-        }
 
-        switch (response.selection) {
-            case 0: // View Online Players
-                await showOnlinePlayersList(adminPlayer, playerDataManager);
-                break;
-            case 1: // Server Stats TODO
-                adminPlayer.sendMessage("§7Server Stats functionality is not yet implemented.");
-                break;
-            case 2: // Settings TODO
-                adminPlayer.sendMessage("§7Settings functionality is not yet implemented.");
-                break;
-            default:
-                adminPlayer.sendMessage("§cInvalid selection from Admin Panel.");
-                break;
+            switch (response.selection) {
+                case 0: await showOnlinePlayersList(adminPlayer, playerDataManager); break;
+                case 1: await showInspectPlayerForm(adminPlayer, playerDataManager); break;
+                case 2: await showResetFlagsForm(adminPlayer, playerDataManager); break;
+                case 3: await showWatchedPlayersList(adminPlayer, playerDataManager); break;
+                case 4: adminPlayer.sendMessage("§7Server Stats functionality is not yet implemented."); break;
+                case 5: adminPlayer.sendMessage("§7Settings functionality is not yet implemented."); break;
+                default: adminPlayer.sendMessage("§cInvalid selection from Admin Panel."); break;
+            }
+        } else { // Normal Player View (userPermLevel >= PermissionLevels.NORMAL)
+            form.title("AntiCheat Info");
+            form.body("Select an option:");
+            form.button("My Stats (TODO)", "textures/ui/icon_profile_generic"); // 0
+            form.button("Server Rules (TODO)", "textures/ui/book_writable");    // 1
+            form.button("Help & Links (TODO)", "textures/ui/icon_Web");        // 2
+
+            response = await form.show(adminPlayer);
+
+            if (response.canceled) {
+                if (response.cancelationReason) {
+                    playerUtils.debugLog(`AC Info Panel (User View) canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+                } else {
+                    playerUtils.debugLog(`AC Info Panel (User View) canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+                }
+                return;
+            }
+
+            switch (response.selection) {
+                case 0: adminPlayer.sendMessage("§7'My Stats' is not yet implemented."); break;
+                case 1: adminPlayer.sendMessage("§7'Server Rules' display is not yet implemented."); break;
+                case 2: adminPlayer.sendMessage("§7'Help & Links' is not yet implemented."); break;
+                default: adminPlayer.sendMessage("§cInvalid selection from Info Panel."); break;
+            }
         }
     } catch (error) {
-        playerUtils.debugLog(`Error in showAdminPanelMain for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        playerUtils.debugLog(`Error in showAdminPanelMain for ${adminPlayer.nameTag} (Perm: ${userPermLevel}): ${error}`, adminPlayer.nameTag);
         console.error(`[uiManager.showAdminPanelMain] Error for ${adminPlayer.nameTag}:`, error, error.stack);
-        adminPlayer.sendMessage("§cAn error occurred while trying to display the Admin Panel.");
+        adminPlayer.sendMessage("§cAn error occurred while trying to display the panel.");
     }
 }
 
@@ -495,33 +525,5 @@ async function showWatchedPlayersList(player, playerDataManager) {
         playerUtils.debugLog(`Error in showWatchedPlayersList: ${error}`, player.nameTag);
         console.error(error, error.stack);
         player.sendMessage("§cError showing Watched Players List.");
-    }
-}
-
-export async function showAdminMainMenu(player, playerDataManager) {
-    const menuForm = new ActionFormData()
-        .title("AntiCheat Admin Menu")
-        .body("Select an action:")
-        .button("Inspect Player Data", "textures/ui/spyglass")
-        .button("Reset Player Flags", "textures/ui/refresh")
-        .button("List Watched Players", "textures/ui/magnifying_glass");
-
-    try {
-        const response = await menuForm.show(player);
-        if (response.canceled) {
-            playerUtils.debugLog(`Admin menu cancelled by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag);
-            return;
-        }
-
-        switch (response.selection) {
-            case 0: showInspectPlayerForm(player, playerDataManager); break;
-            case 1: showResetFlagsForm(player, playerDataManager); break;
-            case 2: showWatchedPlayersList(player, playerDataManager); break;
-            default: player.sendMessage("§cInvalid selection."); break;
-        }
-    } catch (error) {
-        playerUtils.debugLog(`Error in showAdminMainMenu: ${error}`, player.nameTag);
-        console.error(error, error.stack);
-        player.sendMessage("§cError opening Admin Menu.");
     }
 }
