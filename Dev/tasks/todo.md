@@ -84,6 +84,29 @@ This list contains planned features, improvements, and areas for future investig
     *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
     *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
 
+## Admin Panel UI (`!panel`) Development
+*   **Phase 1: Basic Structure & Player List:**
+    *   Command `!panel open main` (or similar).
+    *   Initial UI form displaying a list of currently online players (name, basic stats like flag count).
+    *   Selection of a player leads to a "Player Actions" form.
+*   **Phase 2: Player Actions - Inspect & Flags:**
+    *   "View Detailed Info/Flags" button: Shows comprehensive data similar to `!ac inspect <player>`.
+    *   "Reset Player Flags" button with confirmation.
+*   **Phase 3: Player Actions - Moderation:**
+    *   "Kick Player" button with reason input.
+    *   "Mute Player" button with duration/reason input (integrates with mute system).
+    *   "Freeze/Unfreeze Player" toggle.
+*   **Phase 4: Server Management Actions (New Section in Panel):**
+    *   "View System Info": Basic server stats, AC version.
+    *   "Clear Chat" button.
+    *   "Lag Clear" button (if implemented).
+*   **Phase 5: Configuration & Advanced (Future):**
+    *   View/Edit parts of `config.js` (read-only first, then consider edits for simple values).
+    *   View Ban/Mute/Warning Logs.
+
+## Refactoring & Enhancements
+*   **Refactor: Standardize Check Actions & Configurable Punishments:** Create a unified system for how checks trigger actions (flag, log, notify, command execution) and allow these actions/parameters to be configured per check (e.g., kick after N flags for 'fly'). (Scythe, SafeGuard)
+
 ## Low Priority / Ideas
 
 *   **Automated Actions (AutoMod):** (from original todo, Scythe, SafeGuard)
@@ -98,6 +121,14 @@ This list contains planned features, improvements, and areas for future investig
     *   **Ban/Mute/Kick Action Logging:** Ensure all punitive admin actions are logged with admin, target, reason, duration, and timestamp.
 *   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
+
+## Public Info UI (`!ui`) Development
+*   **Phase 1: My Stats & Info:**
+    *   Command `!ui open mystats` (or just `!ui`).
+    *   Displays the calling player's own flag counts, and basic AC rules/help.
+*   **Phase 2: Server Info & Links:**
+    *   Section for server rules (brief).
+    *   Links to Discord/website (configurable).
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
