@@ -64,8 +64,6 @@ This list contains planned features, improvements, and areas for future investig
         *   `!ac systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
         *   `!ac notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
         *   `!ac help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
-        *   `!tp <playerName>` & `!tp <x> <y> <z>`: Implement teleport command for admins/owner. (User Suggestion)
-        *   `!gmc`, `!gms`, `!gma`, `!gmsp`: Implement game mode change commands for admins/owner. (User Suggestion)
     *   **Reporting System:** (SafeGuard)
         *   `!ac report <player> [reason]`: Allows players to report others. Reports stored persistently for admin review.
         *   `!ac viewreports [playername|clearall]`: Admins can view reports, optionally filtered by player, or clear all reports.

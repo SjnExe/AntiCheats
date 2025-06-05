@@ -536,6 +536,19 @@ As of 2024-07-27
     *   "Clear Chat" button: Implemented a button that allows admins to clear chat for all players after a confirmation prompt. (Completed)
     *   "Lag Clear" button: Implemented a button that allows admins to remove all dropped item entities from all standard dimensions (Overworld, Nether, End) after a confirmation prompt. Reports the number of items cleared. (Completed)
 
+## Persistent Admin Action Logging & UI Viewer (Task Completion Date: 2024-07-31)
+
+**Original Task Description (from ongoing.md, merged from todo.md):**
+Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Log actions with details (admin, target, reason, duration, timestamp) and create a UI to view these logs.
+
+**Summary of Implementation:**
+*   Implemented a persistent logging system for admin actions (ban, unban, mute, unmute, kick).
+*   Created `AntiCheatsBP/scripts/core/logManager.js` to handle log storage (in world dynamic property `anticheat:action_logs_v1`) and retrieval, with log rotation (max 200 entries). Key functions include `addLog`, `getLogs`, and `clearAllLogs_DEV_ONLY`.
+*   Integrated `logManager.addLog()` calls into `commandManager.js` for relevant text commands (`!ban`, `!unban`, `!mute`, `!unmute`, `!kick`) and into `uiManager.js` for actions performed via the Admin Panel (`showPlayerActionsForm`).
+*   Added a "View Action Logs" button to the "Server Management" section of the Admin Panel (`!panel`) in `uiManager.js`.
+*   Implemented `showActionLogsForm` in `uiManager.js` to display the latest 50 formatted log entries (timestamp, admin, action, target, duration, reason) in a read-only view, with navigation back to the server management form.
+*   This completes a major part of "Phase 5: Configuration & Advanced (Future)" from `ongoing.md` and the "Ban/Mute/Kick Action Logging" task originally from `todo.md`.
+
 [end of Dev/tasks/completed.md]
 
 [start of Dev/tasks/todo.md]
