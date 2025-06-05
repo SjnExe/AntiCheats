@@ -10,7 +10,7 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
     *   **World:** Nuker (rapid block breaking), Illegal Item usage/placement.
 *   **Admin Tools:**
     *   Text-based commands for quick actions (see "Admin Commands & UI" section).
-    *   A User Interface (`!ac ui`) for easier management.
+    *   A User Interface (`!panel` or `!ui` alias) for easier management.
 *   **Configuration:** Many detection thresholds and feature toggles can be adjusted via `AntiCheatsBP/scripts/config.js`.
 *   **Data Persistence:** Player flags and violation data are saved and persist across server restarts and player sessions.
 *   **Player Flagging System:** Players accumulate flags for violations, with notifications to admins.
