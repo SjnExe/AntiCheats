@@ -58,6 +58,9 @@ The behavior of many checks can be fine-tuned by editing the `AntiCheatsBP/scrip
 
 Please refer to the comments within `config.js` for details on each option.
 
+### Versioning Placeholder
+Note for contributors or those inspecting the source code: The version string displayed by `!ac version` (from `config.js`) and used in the manifest file descriptions is managed by a placeholder `v__VERSION_STRING__`. This placeholder is automatically replaced by the actual tagged version number during the automated GitHub release process.
+
 ## Owner and Rank System
 
 The addon features a simple rank system to visually distinguish players in chat and on their nametags. There are three ranks:
