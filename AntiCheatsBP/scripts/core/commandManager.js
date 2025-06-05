@@ -38,6 +38,18 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     }
 
     switch (command) {
+        case "help":
+            const helpMessage = `§aAntiCheat Commands:§r
+!help
+!version
+!watch <player>
+!inspect <player>
+!resetflags <player>
+!ui
+!myflags
+!xraynotify <on|off|status>`;
+            player.sendMessage(helpMessage);
+            break;
         case "version":
             player.sendMessage(`§a[AntiCheat] Version: ${config.acVersion}`);
             break;

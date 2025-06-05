@@ -37,17 +37,18 @@ Administrators (players with the `admin` tag, configurable in `config.js`) can m
 
 ### Admin UI (Recommended)
 
-*   **`!ac ui`**: Opens the main AntiCheat Admin Menu.
+*   **`!ui`**: Opens the main AntiCheat Admin Menu.
     *   **Inspect Player Data**: View detailed anti-cheat stats for a player.
     *   **Reset Player Flags**: Clear all flags and violation data for a player.
     *   **List Watched Players**: See which players are currently being monitored with verbose logging.
 
 ### Text Commands
 
-*   **`!ac version`**: Displays the current AntiCheat addon version.
-*   **`!ac watch <playername>`**: Toggles verbose debug logging for the specified player. Useful for observing detection details.
-*   **`!ac inspect <playername>`**: Shows a summary of a player's current anti-cheat data (flags, watched status, etc.) in chat.
-*   **`!ac resetflags <playername>`**: Resets all flags and violation data for the specified player.
+*   **`!version`**: Displays the current AntiCheat addon version.
+*   **`!watch <playername>`**: Toggles verbose debug logging for the specified player. Useful for observing detection details.
+*   **`!inspect <playername>`**: Shows a summary of a player's current anti-cheat data (flags, watched status, etc.) in chat.
+*   **`!resetflags <playername>`**: Resets all flags and violation data for the specified player.
+*   **`!xraynotify <on|off|status>`**: Allows admins to control their X-Ray ore mining notifications.
 
 ## Configuration
 
@@ -59,7 +60,7 @@ The behavior of many checks can be fine-tuned by editing the `AntiCheatsBP/scrip
 Please refer to the comments within `config.js` for details on each option.
 
 ### Versioning Placeholder
-Note for contributors or those inspecting the source code: The version string displayed by `!ac version` (from `config.js`) and used in the manifest file descriptions is managed by a placeholder `v__VERSION_STRING__`. This placeholder is automatically replaced by the actual tagged version number during the automated GitHub release process.
+Note for contributors or those inspecting the source code: The version string displayed by `!version` (from `config.js`) and used in the manifest file descriptions is managed by a placeholder `v__VERSION_STRING__`. This placeholder is automatically replaced by the actual tagged version number during the automated GitHub release process.
 
 ## Owner and Rank System
 
@@ -100,4 +101,4 @@ To correctly configure the **Owner** rank, you **must** edit the `ownerPlayerNam
 
 ## Player Usage
 
-*   **`!ac myflags`**: Allows any player to check their own current flag status.
+*   **`!myflags`**: Allows any player to check their own current flag status.
