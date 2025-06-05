@@ -727,9 +727,8 @@ async function showServerManagementForm(adminPlayer, playerDataManager, config) 
             case 1: // Clear Chat for All Players
                 await handleClearChatAction(adminPlayer, playerDataManager, config);
                 break;
-            case 2: // Lag Clear (TODO)
-                adminPlayer.sendMessage("§7Lag Clear functionality is not yet implemented.");
-                await showServerManagementForm(adminPlayer, playerDataManager, config); // Re-show current form
+            case 2: // Lag Clear
+                await handleLagClearAction(adminPlayer, config, playerDataManager); // Changed from TODO
                 break;
             case 3: // Back to Admin Panel
                 await showAdminPanelMain(adminPlayer, playerDataManager, config);
