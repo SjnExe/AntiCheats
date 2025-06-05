@@ -457,6 +457,51 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayerUnmute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
             }
             break;
+        case "unmute": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}unmute <playername>`);
+                return;
+            }
+            const targetPlayerNameUnmute = args[0];
+            let foundPlayerUnmute = null;
+
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameUnmute.toLowerCase()) {
+                    foundPlayerUnmute = p;
+                    break;
+                }
+            }
+
+            if (!foundPlayerUnmute) {
+                player.sendMessage(`§cPlayer ${targetPlayerNameUnmute} not found.`);
+                return;
+            }
+
+            try {
+                if (!playerDataManager.isMuted(foundPlayerUnmute.id)) { // Check if player is muted
+                    player.sendMessage(`§7Player ${foundPlayerUnmute.nameTag} is not currently muted.`);
+                    return;
+                }
+
+                const unmuted = playerDataManager.removeMute(foundPlayerUnmute.id);
+                if (unmuted) {
+                    try {
+                        foundPlayerUnmute.onScreenDisplay.setActionBar("§aYou have been unmuted.");
+                    } catch (e) {
+                        playerUtils.debugLog(`Failed to set action bar for unmuted player ${foundPlayerUnmute.nameTag}: ${e}`, player.nameTag);
+                    }
+                    player.sendMessage(`§aPlayer ${foundPlayerUnmute.nameTag} has been unmuted.`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerUnmute.nameTag} was unmuted by ${player.nameTag}.`, player, null);
+                    playerUtils.debugLog(`Player ${foundPlayerUnmute.nameTag} unmuted by ${player.nameTag}.`, player.nameTag);
+                } else {
+                    // This case might be redundant due to the isMuted check, but good as a fallback
+                    player.sendMessage(`§cFailed to unmute player ${foundPlayerUnmute.nameTag}. They might not have been muted or an error occurred.`);
+                }
+            } catch (e) {
+                player.sendMessage(`§cAn unexpected error occurred while trying to unmute ${foundPlayerUnmute.nameTag}: ${e}`);
+                playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayerUnmute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            }
+            break;
         case "freeze": // ADMIN
             const frozenTag = "frozen";
             const effectDuration = 2000000; // Very long duration

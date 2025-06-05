@@ -326,3 +326,20 @@ export function getMuteInfo(playerId) {
 export function isMuted(playerId) {
     return getMuteInfo(playerId) !== null;
 }
+
+/**
+ * Gets the current count of active (non-expired) mutes.
+ * This function also triggers the cleanup of any expired mutes.
+ * @returns {number} The number of currently active mutes.
+ */
+export function getActiveMuteCount() {
+    // Calling getMuteInfo for each key will trigger the expiry check and removal for that key.
+    // This ensures the .size property reflects non-expired mutes.
+    // Note: Iterating and calling getMuteInfo can modify the map during iteration if mutes expire.
+    // It's generally safe for Maps, but creating a list of keys first is even safer.
+    const allMutedPlayerIds = Array.from(activeMutes.keys());
+    for (const playerId of allMutedPlayerIds) {
+        getMuteInfo(playerId); // This will remove if expired
+    }
+    return activeMutes.size;
+}
