@@ -89,28 +89,11 @@ This list contains planned features, improvements, and areas for future investig
     *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
     *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
 
-## Admin Panel UI (`!panel`) Development
-*   **Phase 1: Basic Structure & Player List:**
-    *   Command `!panel open main` (or similar).
-    *   Initial UI form displaying a list of currently online players (name, basic stats like flag count).
-    *   Selection of a player leads to a "Player Actions" form.
-*   **Phase 2: Player Actions - Inspect & Flags:**
-    *   "View Detailed Info/Flags" button: Shows comprehensive data similar to `!ac inspect <player>`.
-    *   "Reset Player Flags" button with confirmation.
-*   **Phase 3: Player Actions - Moderation:**
-    *   "Kick Player" button with reason input.
-    *   "Mute Player" button with duration/reason input (integrates with mute system).
-    *   "Freeze/Unfreeze Player" toggle.
-*   **Phase 4: Server Management Actions (New Section in Panel):**
-    *   "View System Info": Basic server stats, AC version.
-    *   "Clear Chat" button.
-    *   "Lag Clear" button (if implemented).
-*   **Phase 5: Configuration & Advanced (Future):**
-    *   View/Edit parts of `config.js` (read-only first, then consider edits for simple values).
-    *   View Ban/Mute/Warning Logs.
+*   **Normal Player Panel Features (`!panel`):**
 
 ## Refactoring & Enhancements
 *   **Refactor: Standardize Check Actions & Configurable Punishments:** Create a unified system for how checks trigger actions (flag, log, notify, command execution) and allow these actions/parameters to be configured per check (e.g., kick after N flags for 'fly'). (Scythe, SafeGuard)
+*   **Comprehensive Coding Style Review:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
 
 ## Low Priority / Ideas
 

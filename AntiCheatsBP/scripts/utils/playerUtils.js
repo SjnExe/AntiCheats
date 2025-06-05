@@ -1,7 +1,7 @@
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
-import { adminTag, enableDebugLogging, ownerPlayerName, AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON } from '../config';
-import { PermissionLevels } from '../core/rankManager.js';
+import { adminTag, enableDebugLogging, ownerPlayerName, acGlobalNotificationsDefaultOn } from '../config';
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * Checks if a player has admin privileges based on a specific tag.
@@ -28,21 +28,21 @@ export function isOwner(playerName) {
 /**
  * Determines the permission level of a given player.
  * @param {mc.Player} player The player instance to check.
- * @returns {PermissionLevels} The permission level of the player.
+ * @returns {permissionLevels} The permission level of the player.
  */
 export function getPlayerPermissionLevel(player) {
     if (!(player instanceof mc.Player)) {
         console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
         // Fallback to the lowest permission level if player object is not valid.
-        return PermissionLevels.NORMAL; // Or DEFAULT, depending on desired strictness
+        return permissionLevels.NORMAL; // Or DEFAULT, depending on desired strictness
     }
 
     if (isOwner(player.nameTag)) {
-        return PermissionLevels.OWNER;
+        return permissionLevels.OWNER;
     } else if (isAdmin(player)) {
-        return PermissionLevels.ADMIN;
+        return permissionLevels.ADMIN;
     } else {
-        return PermissionLevels.NORMAL;
+        return permissionLevels.NORMAL;
     }
 }
 
@@ -89,7 +89,7 @@ export function notifyAdmins(baseMessage, player, pData) {
                 shouldReceiveMessage = false;
             } else {
                 // If no explicit preference, use the server default from config
-                shouldReceiveMessage = AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON;
+                shouldReceiveMessage = acGlobalNotificationsDefaultOn;
             }
 
             if (shouldReceiveMessage) {
