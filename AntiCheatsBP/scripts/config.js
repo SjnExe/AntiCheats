@@ -257,6 +257,6 @@ export const commandAliases = {
     "i": "inspect",
     "rf": "resetflags",
     "xn": "xraynotify",
-    "mf": "myflags",
+    "mf": "myflags"
     // Add more aliases as commands are developed
 };
