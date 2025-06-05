@@ -47,6 +47,55 @@ export function getPlayerPermissionLevel(player) {
 }
 
 /**
+ * Clears all dropped item entities across all standard dimensions.
+ * @param {mc.Player} [adminPerformingAction] Optional: The admin player who initiated the action, for logging context.
+ * @returns {Promise<{clearedItemsCount: number, dimensionsProcessed: number, error: string | null}>}
+ *          An object containing the count of cleared items, dimensions processed, and any error messages.
+ */
+export async function executeLagClear(adminPerformingAction) {
+    let clearedItemsCount = 0;
+    let dimensionsProcessed = 0;
+    let errorMessages = [];
+    const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
+
+    debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, adminPerformingAction?.nameTag);
+
+    for (const dimensionId of dimensionIds) {
+        try {
+            const dimension = mc.world.getDimension(dimensionId);
+            dimensionsProcessed++;
+            const itemEntities = dimension.getEntities({ type: "minecraft:item" });
+
+            let countInDimension = 0;
+            for (const entity of itemEntities) {
+                try {
+                    entity.kill();
+                    clearedItemsCount++;
+                    countInDimension++;
+                } catch (killError) {
+                    const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`;
+                    errorMessages.push(errMsg);
+                    debugLog(errMsg, adminPerformingAction?.nameTag);
+                }
+            }
+            debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag);
+
+        } catch (dimError) {
+            const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
+            errorMessages.push(errMsg);
+            debugLog(errMsg, adminPerformingAction?.nameTag);
+        }
+    }
+
+    debugLog(`LagClear: Finished. Processed ${dimensionsProcessed} dimensions. Total items cleared: ${clearedItemsCount}. Errors: ${errorMessages.length}`, adminPerformingAction?.nameTag);
+    return {
+        clearedItemsCount,
+        dimensionsProcessed,
+        error: errorMessages.length > 0 ? errorMessages.join('\n') : null
+    };
+}
+
+/**
  * Sends a formatted warning message directly to a specific player.
  * @param {mc.Player} player The player instance to warn.
  * @param {string} reason The reason for the warning, which will be displayed to the player.
