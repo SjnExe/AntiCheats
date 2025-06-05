@@ -10,19 +10,21 @@ import { isOwner, isAdmin } from '../utils/playerUtils.js';
 /**
  * @typedef {number} PermissionLevel
  * Defines the numeric hierarchy for command permissions.
- * Higher numbers indicate higher permission.
+ * Lower numbers indicate higher privileges.
+ * - 0: Owner
+ * - 1: Admin
+ * - 2: Normal (standard user)
  */
 
 /**
- * Enum for permission levels.
+ * Enum for permission levels. Lower values mean higher privileges.
  * @readonly
  * @enum {PermissionLevel}
  */
 export const PermissionLevels = {
-    OWNER: 3,
-    ADMIN: 2,
-    NORMAL: 1, // Assuming MEMBER_RANK corresponds to a "NORMAL" user
-    DEFAULT: 0 // For commands accessible by anyone, or as a base level
+    OWNER: 0,  // Highest privilege
+    ADMIN: 1,  // Intermediate privilege
+    NORMAL: 2 // Standard user privilege, corresponds to MEMBER_RANK
 };
 
 /**

@@ -51,7 +51,8 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         eventData.cancel = true;
         let helpOutput = ["§aAvailable commands:"];
         ALL_COMMANDS.forEach(cmdDef => {
-            if (userPermissionLevel >= cmdDef.permissionLevel) {
+            // Lower number means higher privilege, so user level must be <= command's required level
+            if (userPermissionLevel <= cmdDef.permissionLevel) {
                 helpOutput.push(`§e${config.prefix}${cmdDef.name} ${cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1)}§7 - ${cmdDef.description}`);
             }
         });
@@ -78,7 +79,9 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     const cmdDef = ALL_COMMANDS.find(c => c.name === command);
 
     if (cmdDef) {
-        if (userPermissionLevel < cmdDef.permissionLevel) {
+        // Lower number means higher privilege.
+        // If user's level (e.g., NORMAL=2) is greater than command's required level (e.g., ADMIN=1), they don't have permission.
+        if (userPermissionLevel > cmdDef.permissionLevel) {
             playerUtils.warnPlayer(player, "You do not have permission to use this command.");
             eventData.cancel = true;
             return;
