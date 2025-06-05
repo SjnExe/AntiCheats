@@ -241,7 +241,7 @@ export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */
-export const acVersion = "__AC_VERSION__";
+export const acVersion = "v__VERSION_STRING__";
 
 // --- Command Aliases ---
 /**
