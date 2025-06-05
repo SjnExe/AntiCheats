@@ -218,83 +218,57 @@ export function handleItemUseOn(eventData, playerDataManager, worldChecks) {
  */
 export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
     const player = eventData.sender;
-    // Basic validation
     if (!player) {
         console.warn("[AntiCheat] handleBeforeChatSend: eventData.sender is undefined. Skipping chat processing.");
         return;
     }
 
-    // Get rank display properties and format the message
-    const rankDisplay = getPlayerRankDisplay(player);
     const originalMessage = eventData.message;
-    eventData.message = `${rankDisplay.chatPrefix}${player.nameTag}§f: ${originalMessage}`;
+    const rankDisplay = getPlayerRankDisplay(player);
+    const formattedMessage = `${rankDisplay.chatPrefix}${player.nameTag}§f: ${originalMessage}`;
+    const pData = playerDataManager.getPlayerData(player.id); // Get pData once for potential use in multiple checks
 
-    // Newline character check - now operates on the modified eventData.message
+    // 1. Newline Character Check (on originalMessage)
     if (config.enableNewlineCheck) {
-        // Note: player.nameTag or rankPrefix could technically contain newlines if manually set with them,
-        // though unlikely for player.nameTag. This check is primarily for originalMessage content.
-        // For simplicity, we check the final eventData.message.
-        // If rank prefixes *could* have newlines and that's an issue, the check might need to be on originalMessage.
-        const hasNewline = eventData.message.includes('\n') || eventData.message.includes('\r');
-
+        const hasNewline = originalMessage.includes('\n') || originalMessage.includes('\r');
         if (hasNewline) {
-            playerUtils.debugLog(`Player ${player.nameTag} attempted to send message with newline/carriage return: "${message}"`, player.nameTag);
-
+            playerUtils.debugLog(`Player ${player.nameTag} attempted to send message with newline/carriage return: "${originalMessage}"`, player.nameTag);
+            if (config.flagOnNewline && pData) {
+                playerDataManager.addFlag(player, "illegalCharInChat", "Sent message with newline/carriage return characters.");
+            }
             if (config.cancelMessageOnNewline) {
                 eventData.cancel = true;
                 playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to newline characters.`, player.nameTag);
-            }
-
-            if (config.flagOnNewline) {
-                // It's possible pData was already fetched if we restructure, but for now, this is fine.
-                const pData = playerDataManager.getPlayerData(player.id);
-                if (pData) {
-                    playerDataManager.addFlag(player, "illegalCharInChat", "Sent message with newline/carriage return characters.");
-                } else {
-                    playerUtils.debugLog(`Could not retrieve pData for ${player.nameTag} to flag for illegalCharInChat.`, player.nameTag);
-                }
+                // Send a direct message to the player informing them their message was cancelled, if desired.
+                // player.sendMessage("§cYour message was cancelled due to invalid characters.§r");
+                return; // Stop further processing
             }
         }
     }
 
-    // Max message length check
-    // Also check !eventData.cancel so we don't flag/cancel twice if newline check already did.
-    // This check now operates on the formatted message length.
-    if (config.enableMaxMessageLengthCheck && !eventData.cancel) {
-        if (eventData.message.length > config.maxMessageLength) {
-            // Log original message length for clarity if needed, or adjust log.
-            playerUtils.debugLog(`Player ${player.nameTag} attempted to send an overly long message (formatted length ${eventData.message.length} > ${config.maxMessageLength}). Original: "${originalMessage.substring(0, 50)}..."`, player.nameTag);
-
+    // 2. Max Message Length Check (on originalMessage)
+    if (config.enableMaxMessageLengthCheck) {
+        if (originalMessage.length > config.maxMessageLength) {
+            playerUtils.debugLog(`Player ${player.nameTag} attempted to send an overly long message (${originalMessage.length} > ${config.maxMessageLength}). Message: "${originalMessage.substring(0, 50)}..."`, player.nameTag);
+            if (config.flagOnMaxMessageLength && pData) {
+                playerDataManager.addFlag(player, "longMessage", `Sent message exceeding max length (${originalMessage.length}/${config.maxMessageLength}).`);
+            }
             if (config.cancelOnMaxMessageLength) {
                 eventData.cancel = true;
                 playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to excessive length.`, player.nameTag);
-            }
-
-            if (config.flagOnMaxMessageLength) {
-                const pData = playerDataManager.getPlayerData(player.id);
-                if (pData) {
-                    playerDataManager.addFlag(player, "longMessage", `Sent message exceeding max length (${message.length}/${config.maxMessageLength}).`);
-                } else {
-                    playerUtils.debugLog(`Could not retrieve pData for ${player.nameTag} to flag for longMessage.`, player.nameTag);
-                }
+                // player.sendMessage("§cYour message was cancelled because it was too long.§r");
+                return; // Stop further processing
             }
         }
     }
 
-    // Repeated Messages (Spam) Check
-    // Also check !eventData.cancel so we don't process if already cancelled by prior checks.
-    // This check now operates on the *original* message content to prevent rank prefix from affecting spam detection.
-    if (config.SPAM_REPEAT_CHECK_ENABLED && !eventData.cancel) {
-        const pData = playerDataManager.getPlayerData(player.id);
+    // 3. Repeated Messages (Spam) Check (on originalMessage)
+    if (config.SPAM_REPEAT_CHECK_ENABLED) {
         if (pData) {
             const currentTime = Date.now();
-            // const currentMessageContent = eventData.message; // OLD: Used formatted message
-            const currentMessageContent = originalMessage; // NEW: Use original message for spam check
-
             if (!pData.recentMessages) {
                 pData.recentMessages = [];
             }
-            // Store original message content for accurate spam detection
             pData.recentMessages.push({ timestamp: currentTime, content: originalMessage });
 
             const timeWindowStart = currentTime - (config.SPAM_REPEAT_TIME_WINDOW_SECONDS * 1000);
@@ -302,7 +276,6 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
 
             let repeatCount = 0;
             for (const msg of pData.recentMessages) {
-                // Compare against originalMessage for spam detection
                 if (msg.content === originalMessage) {
                     repeatCount++;
                 }
@@ -310,18 +283,40 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
 
             if (repeatCount >= config.SPAM_REPEAT_MESSAGE_COUNT) {
                 playerUtils.debugLog(`Player ${player.nameTag} triggered repeat spam detection. Count: ${repeatCount}, Original Message: "${originalMessage}"`, player.nameTag);
-
                 if (config.SPAM_REPEAT_FLAG_PLAYER) {
                     playerDataManager.addFlag(player, "spamRepeat", `Repeated message ${repeatCount} times: "${originalMessage.substring(0,30)}..."`);
                 }
-
                 if (config.SPAM_REPEAT_CANCEL_MESSAGE) {
                     eventData.cancel = true;
                     playerUtils.debugLog(`Cancelled message from ${player.nameTag} due to repeat spam.`, player.nameTag);
+                    // player.sendMessage("§cYour message was cancelled due to spam.§r");
+                    return; // Stop further processing
                 }
             }
         } else {
             playerUtils.debugLog(`PDM:spamRepeat: No pData for ${player.nameTag}. Cannot check for repeat spam.`, player.nameTag);
         }
     }
+
+    // 4. Send Formatted Message
+    // If we've reached this point, the message was not cancelled by any of the above checks.
+    eventData.cancel = true; // Cancel the original event to prevent default Minecraft chat behavior
+
+    // Send the formatted message manually to all players (or use world.sendMessage if that's preferred for global chat)
+    // mc.world.sendMessage(formattedMessage); // This sends to everyone
+    // To send only to the player (like a preview or if chat is handled differently):
+    // player.sendMessage(formattedMessage);
+    // For typical server chat, it should be broadcast.
+    // The original event would have broadcast it. So we replicate that.
+    // However, world.sendMessage does not show in the chat UI of the sender if they have chat off.
+    // A common pattern is to iterate all players and send them the message.
+    for (const p of mc.world.getAllPlayers()) {
+        p.sendMessage(formattedMessage);
+    }
+    // player.sendMessage(formattedMessage); // This might be redundant if the player is in getAllPlayers()
+
+    // If there's a specific requirement to only simulate the original broadcast without sending to each player individually,
+    // and if `eventData.message = formattedMessage; eventData.cancel = false;` was the old way,
+    // then the new way must ensure the formatted message reaches everyone as the original would have.
+    // The most direct way to ensure everyone (including sender) sees it in their chat UI is per-player sendMessage.
 }
