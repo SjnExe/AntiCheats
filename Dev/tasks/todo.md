@@ -64,6 +64,8 @@ This list contains planned features, improvements, and areas for future investig
         *   `!ac systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
         *   `!ac notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
         *   `!ac help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
+        *   `!tp <playerName>` & `!tp <x> <y> <z>`: Implement teleport command for admins/owner. (User Suggestion)
+        *   `!gmc`, `!gms`, `!gma`, `!gmsp`: Implement game mode change commands for admins/owner. (User Suggestion)
     *   **Reporting System:** (SafeGuard)
         *   `!ac report <player> [reason]`: Allows players to report others. Reports stored persistently for admin review.
         *   `!ac viewreports [playername|clearall]`: Admins can view reports, optionally filtered by player, or clear all reports.
@@ -105,7 +107,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Admin Command Usage Logging:** Log when an admin uses an `!ac` command, what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
-    *   **Ban/Mute/Kick Action Logging:** Ensure all punitive admin actions are logged with admin, target, reason, duration, and timestamp.
 *   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
