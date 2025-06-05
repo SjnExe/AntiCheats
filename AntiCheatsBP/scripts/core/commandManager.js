@@ -29,8 +29,88 @@ const allCommands = [
     { name: "panel", syntax: "!panel", description: "Opens the AntiCheat Admin Panel UI.", permissionLevel: permissionLevels.ADMIN },
     { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: permissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: permissionLevels.ADMIN },
-    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: permissionLevels.OWNER }
+    { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: permissionLevels.OWNER },
+    {
+        name: "tp",
+        syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]",
+        description: "Teleports a player. Examples: !tp <player_to_move> <destination_player> OR !tp <player_to_move> <x> <y> <z> [dimension] OR !tp <x> <y> <z> [dimension] (teleports yourself). Dimensions: overworld, nether, end.",
+        permissionLevel: permissionLevels.ADMIN
+    },
+    { name: "gmc", syntax: "!gmc [player]", description: "Sets Creative mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
+    { name: "gms", syntax: "!gms [player]", description: "Sets Survival mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
+    { name: "gma", syntax: "!gma [player]", description: "Sets Adventure mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
+    { name: "gmsp", syntax: "!gmsp [player]", description: "Sets Spectator mode for self or [player].", permissionLevel: permissionLevels.ADMIN }
 ];
+
+// Helper function to find a player by name (case-insensitive)
+function findPlayer(playerName, playerUtils) { // playerUtils is passed for potential future debug logging
+    if (!playerName || typeof playerName !== 'string') return null;
+    const nameToFind = playerName.toLowerCase();
+    for (const p of mc.world.getAllPlayers()) {
+        if (p.nameTag.toLowerCase() === nameToFind) {
+            return p;
+        }
+    }
+    // playerUtils.debugLog(`findPlayer: Player \"${playerName}\" not found.`); // Debug log moved to command logic
+    return null;
+}
+
+// Helper function to parse dimension string
+function parseDimension(dimStr, playerUtils) { // playerUtils is passed for potential future debug logging
+    if (!dimStr || typeof dimStr !== 'string') return null;
+    switch (dimStr.toLowerCase()) {
+        case "overworld": return mc.world.overworld;
+        case "nether": return mc.world.nether;
+        case "end": return mc.world.theEnd;
+        default:
+            // playerUtils.debugLog(`parseDimension: Invalid dimension string \"${dimStr}\".`); // Debug log moved
+            return null;
+    }
+}
+
+// Helper function to handle gamemode changes
+async function setPlayerGameMode(adminPlayer, targetPlayerName, gameMode, gameModeName, config, playerUtils, addLogFunc) {
+    let targetPlayer = adminPlayer; // Default to self
+    if (targetPlayerName) {
+        targetPlayer = findPlayer(targetPlayerName, playerUtils); // findPlayer is from the previous !tp subtask
+        if (!targetPlayer) {
+            adminPlayer.sendMessage(`§cPlayer "${targetPlayerName}" not found.`);
+            return;
+        }
+    }
+
+    try {
+        // Ensure targetPlayer.getGameMode() is valid before using it.
+        // Some entities might not have this method if targetPlayer is not a Player object.
+        // However, findPlayer should ensure it's a Player object.
+        if (typeof targetPlayer.getGameMode === 'function' && targetPlayer.getGameMode() === gameMode) {
+             adminPlayer.sendMessage(`§7${targetPlayer.nameTag} is already in ${gameModeName} mode.`);
+             return;
+        }
+
+        await targetPlayer.setGameMode(gameMode); // setGameMode is async in some environments/versions
+        const messageToAdmin = `§aSet ${gameModeName} mode for ${targetPlayer.nameTag}.`;
+        adminPlayer.sendMessage(messageToAdmin);
+
+        if (adminPlayer.id !== targetPlayer.id) {
+            targetPlayer.sendMessage(`§7Your game mode has been changed to ${gameModeName} by ${adminPlayer.nameTag}.`);
+        }
+
+        addLogFunc({ // Use the passed addLog function
+            timestamp: Date.now(),
+            adminName: adminPlayer.nameTag,
+            actionType: `gamemode_change_${gameModeName.toLowerCase().replace(/\s+/g, '_')}`, // e.g. gamemode_change_creative
+            targetName: targetPlayer.nameTag,
+            details: `Changed to ${gameModeName}`
+        });
+        playerUtils.debugLog(`Admin ${adminPlayer.nameTag} set ${gameModeName} mode for ${targetPlayer.nameTag}.`, adminPlayer.nameTag);
+
+    } catch (e) {
+        adminPlayer.sendMessage(`§cFailed to set ${gameModeName} mode for ${targetPlayer.nameTag}: ${e.message}`);
+        playerUtils.debugLog(`Error setting ${gameModeName} for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}: ${e}`, adminPlayer.nameTag);
+    }
+}
+
 
 function parseDuration(durationString) {
     if (!durationString) return null;
@@ -300,6 +380,167 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 case "off": try { player.removeTag(notifyOnTagXN); } catch (e) {} player.addTag(notifyOffTagXN); player.sendMessage("§cX-Ray ore mining notifications disabled for you."); playerUtils.debugLog(`Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag); break;
                 case "status": const isOnXN = player.hasTag(notifyOnTagXN); const isOffXN = player.hasTag(notifyOffTagXN); let statusMessageXN = "§eYour X-Ray notification status: "; if (isOnXN) statusMessageXN += "§aON (explicitly)."; else if (isOffXN) statusMessageXN += "§cOFF (explicitly)."; else { if (config.xrayDetectionAdminNotifyByDefault) statusMessageXN += "§aON (by server default). §7Use '!ac xraynotify off' to disable."; else statusMessageXN += "§cOFF (by server default). §7Use '!ac xraynotify on' to enable.";} player.sendMessage(statusMessageXN); break;
             }
+            break;
+        case "tp":
+            // Logic from the prompt will be inserted here by the user.
+            // Ensure addLog is imported or available: import { addLog } from './logManager.js';
+            // Ensure mc, permissionLevels are imported.
+
+            // const player = eventData.sender; // Already defined in handleChatCommand scope
+
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}tp <target_player | x> [destination_player | y] [z] [dimension]. Try ${config.prefix}help tp.`);
+                return;
+            }
+
+            let playerToMove;
+            let destinationLocation; // Vector3 {x, y, z}
+            let targetDimension;
+            let destinationDescription; // For logging/feedback
+
+            // Syntax 1: !tp <playerToMoveName> <destinationPlayerName>
+            if (args.length === 2 && isNaN(parseFloat(args[0])) && isNaN(parseFloat(args[1]))) {
+                playerToMove = findPlayer(args[0], playerUtils);
+                const destinationPlayer = findPlayer(args[1], playerUtils);
+
+                if (!playerToMove) {
+                    player.sendMessage(`§cPlayer to move \"${args[0]}\" not found.`);
+                    return;
+                }
+                if (!destinationPlayer) {
+                    player.sendMessage(`§cDestination player \"${args[1]}\" not found.`);
+                    return;
+                }
+                if (playerToMove.id === destinationPlayer.id && player.id !== playerToMove.id) { // Admin trying to tp player to self by name
+                        player.sendMessage(`§7Cannot teleport ${playerToMove.nameTag} to themselves this way. If moving ${playerToMove.nameTag} to your (admin's) location, use coordinates or teleport yourself to them.`);
+                        return;
+                }
+                if (playerToMove.id === destinationPlayer.id && player.id === playerToMove.id) { // Admin trying to tp self to self by name
+                    player.sendMessage(`§7You are already ${playerToMove.nameTag}.`);
+                    return;
+                }
+
+                destinationLocation = destinationPlayer.location;
+                targetDimension = destinationPlayer.dimension;
+                destinationDescription = `player ${destinationPlayer.nameTag}`;
+
+            }
+            // Syntax 2: !tp <x> <y> <z> [dimension] (teleports sender)
+            // Adjusted condition to be more robust: checks if first 3 args are numbers, and 4th is either a valid dimension or not a player.
+            else if ( (args.length === 3 || args.length === 4) &&
+                      !isNaN(parseFloat(args[0])) && !isNaN(parseFloat(args[1])) && !isNaN(parseFloat(args[2])) &&
+                      (args.length === 3 || (args.length === 4 && (parseDimension(args[3], playerUtils) !== null || findPlayer(args[3], playerUtils) === null)))
+                    ) {
+                playerToMove = player; // Command sender
+                const x = parseFloat(args[0]);
+                const y = parseFloat(args[1]);
+                const z = parseFloat(args[2]);
+                destinationLocation = { x, y, z };
+                destinationDescription = `coordinates ${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}`;
+                targetDimension = playerToMove.dimension; // Default to sender's current dimension
+
+                if (args.length === 4) {
+                    const parsedDim = parseDimension(args[3], playerUtils);
+                    if (parsedDim) {
+                        targetDimension = parsedDim;
+                        destinationDescription += ` in ${args[3].toLowerCase()}`;
+                    } else {
+                        // args[3] was not a valid dimension string, and also not a player (due to outer condition)
+                        // This implies it was an invalid dimension string.
+                        player.sendMessage(`§cInvalid dimension \"${args[3]}\". Use 'overworld', 'nether', or 'end'. Teleporting to current dimension.`);
+                        playerUtils.debugLog(`TP command: Invalid dimension ${args[3]} for self-teleport to coords. Using current.`, player.nameTag);
+                    }
+                }
+            }
+            // Syntax 3: !tp <playerToMoveName> <x> <y> <z> [dimension]
+            // This will be evaluated if Syntax 1 didn't match and Syntax 2 didn't fully resolve.
+            // Check if playerToMove is not set yet (meaning syntax 1 & 2 didn't fully match or were not intended)
+            // and if the argument count fits, and if the first arg is potentially a player name (not a number, or if it is, it wasn't processed by syntax 2)
+            if (!playerToMove && (args.length === 4 || args.length === 5) && isNaN(parseFloat(args[0]))) {
+                playerToMove = findPlayer(args[0], playerUtils);
+                if (!playerToMove) {
+                    // Only send error if it was clearly intended as player name (not a number for syntax 2)
+                     player.sendMessage(`§cPlayer to move \"${args[0]}\" not found.`);
+                     return;
+                }
+
+                if (isNaN(parseFloat(args[1])) || isNaN(parseFloat(args[2])) || isNaN(parseFloat(args[3]))) {
+                    player.sendMessage(`§cInvalid coordinates. X, Y, Z must be numbers for player teleport to coordinates.`);
+                    return;
+                }
+                const x = parseFloat(args[1]);
+                const y = parseFloat(args[2]);
+                const z = parseFloat(args[3]);
+                destinationLocation = { x, y, z };
+                destinationDescription = `coordinates ${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)}`;
+                targetDimension = playerToMove.dimension; // Default to player's current dimension
+
+                if (args.length === 5) {
+                    const parsedDim = parseDimension(args[4], playerUtils);
+                    if (parsedDim) {
+                        targetDimension = parsedDim;
+                        destinationDescription += ` in ${args[4].toLowerCase()}`;
+                    } else {
+                        player.sendMessage(`§cInvalid dimension \"${args[4]}\". Use 'overworld', 'nether', or 'end'. Teleporting to ${playerToMove.nameTag}'s current dimension.`);
+                        playerUtils.debugLog(`TP command: Invalid dimension ${args[4]} for player ${playerToMove.nameTag} to coords. Using their current.`, player.nameTag);
+                    }
+                }
+            }
+
+
+            if (!playerToMove || !destinationLocation || !targetDimension) {
+                player.sendMessage(`§cInvalid command syntax or arguments. Use ${config.prefix}help tp for details.`);
+                playerUtils.debugLog(`TP command failed processing: playerToMove=${playerToMove?.nameTag}, destLoc=${JSON.stringify(destinationLocation)}, targetDim=${targetDimension?.id}. Args: ${args.join(' ')}`, player.nameTag);
+                return;
+            }
+
+            // Execute Teleport
+            try {
+                // Check if teleporting to the exact same location and dimension
+                    if (playerToMove.location.x.toFixed(1) === destinationLocation.x.toFixed(1) &&
+                        playerToMove.location.y.toFixed(1) === destinationLocation.y.toFixed(1) &&
+                        playerToMove.location.z.toFixed(1) === destinationLocation.z.toFixed(1) &&
+                        playerToMove.dimension.id === targetDimension.id) {
+                        player.sendMessage(`§7${playerToMove.nameTag} is already at ${destinationDescription}.`);
+                        return;
+                    }
+
+                const oldLocation = { ...playerToMove.location }; // Shallow copy for logging
+                const oldDimensionId = playerToMove.dimension.id;
+
+                playerToMove.teleport(destinationLocation, { dimension: targetDimension });
+                const messageToSender = `§aSuccessfully teleported ${playerToMove.nameTag} to ${destinationDescription}.`;
+                player.sendMessage(messageToSender);
+
+                if (player.id !== playerToMove.id) {
+                    playerToMove.sendMessage(`§7You have been teleported by ${player.nameTag} to ${destinationDescription}.`);
+                }
+
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'teleport',
+                    targetName: playerToMove.nameTag,
+                    details: `To: ${destinationDescription}. From loc: ${oldLocation.x.toFixed(1)},${oldLocation.y.toFixed(1)},${oldLocation.z.toFixed(1)} in ${oldDimensionId.split(':')[1]}`
+                });
+                playerUtils.debugLog(`Admin ${player.nameTag} teleported ${playerToMove.nameTag} to ${destinationDescription}. From ${oldLocation.x.toFixed(1)},${oldLocation.y.toFixed(1)},${oldLocation.z.toFixed(1)} (${oldDimensionId.split(':')[1]})`, player.nameTag);
+
+            } catch (e) {
+                player.sendMessage(`§cTeleportation failed: ${e.message}`);
+                playerUtils.debugLog(`Teleport command error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e} - ${e.stack || e.message}`, player.nameTag);
+            }
+            break;
+        case "gmc":
+            await setPlayerGameMode(player, args[0], mc.GameMode.creative, "Creative", config, playerUtils, addLog);
+            break;
+        case "gms":
+            await setPlayerGameMode(player, args[0], mc.GameMode.survival, "Survival", config, playerUtils, addLog);
+            break;
+        case "gma":
+            await setPlayerGameMode(player, args[0], mc.GameMode.adventure, "Adventure", config, playerUtils, addLog);
+            break;
+        case "gmsp":
+            await setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, playerUtils, addLog);
             break;
         default:
             player.sendMessage(`§cUnexpected error processing command: ${config.prefix}${command}§r. Type ${config.prefix}help.`);

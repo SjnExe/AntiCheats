@@ -52,21 +52,21 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!ac kick <player> [reason]`: Standard kick functionality.
-        *   `!ac freeze <player>`: Toggle to prevent a player from moving, interacting, or being targeted.
-        *   `!ac warnings <player>` (detailed warning list) & `!ac clearwarnings <playername>`: View a list of specific warnings/flags a player has received. Clear them. Needs persistent storage of detailed warnings if not just relying on aggregated flags.
-        *   `!ac invsee <playername>`: Allow admin to view a read-only representation of another player's inventory (API dependent for accuracy).
-        *   `!ac copyinv <playername>`: Admin copies another player's inventory to their own.
-        *   `!ac clearchat`: Clears chat for all players by sending multiple empty messages.
-        *   `!ac vanish`: Toggles admin visibility (requires careful implementation, may involve effects, nametag changes, and potentially packet manipulation if API allows, otherwise limited).
-        *   `!ac worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
-        *   `!ac lagclear`: Attempt to clear ground items or other entities known to cause lag (requires careful targeting).
-        *   `!ac systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
-        *   `!ac notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
-        *   `!ac help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
+        *   `!kick <player> [reason]`: Standard kick functionality.
+        *   `!freeze <player>`: Toggle to prevent a player from moving, interacting, or being targeted.
+        *   `!warnings <player>` (detailed warning list) & `!clearwarnings <playername>`: View a list of specific warnings/flags a player has received. Clear them. Needs persistent storage of detailed warnings if not just relying on aggregated flags.
+        *   `!invsee <playername>`: Allow admin to view a read-only representation of another player's inventory (API dependent for accuracy).
+        *   `!copyinv <playername>`: Admin copies another player's inventory to their own.
+        *   `!clearchat`: Clears chat for all players by sending multiple empty messages.
+        *   `!vanish`: Toggles admin visibility (requires careful implementation, may involve effects, nametag changes, and potentially packet manipulation if API allows, otherwise limited).
+        *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
+        *   `!lagclear`: Attempt to clear ground items or other entities known to cause lag (requires careful targeting).
+        *   `!systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
+        *   `!notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
+        *   `!help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
     *   **Reporting System:** (SafeGuard)
-        *   `!ac report <player> [reason]`: Allows players to report others. Reports stored persistently for admin review.
-        *   `!ac viewreports [playername|clearall]`: Admins can view reports, optionally filtered by player, or clear all reports.
+        *   `!report <player> [reason]`: Allows players to report others. Reports stored persistently for admin review.
+        *   `!viewreports [playername|clearall]`: Admins can view reports, optionally filtered by player, or clear all reports.
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
         *   Investigate: In-game config editor via UI (for `config.js` values).
@@ -103,7 +103,7 @@ This list contains planned features, improvements, and areas for future investig
     *   Death Coords / Death Effects: Announce player death coordinates in chat (to player or party), possibly with cosmetic effects.
     *   Chat Formatting (potentially linked to the Rank System).
 *   **Logging Enhancements:** SjnExe parity goal.
-    *   **Admin Command Usage Logging:** Log when an admin uses an `!ac` command, what command, target (if any), and timestamp. (Store persistently or to console).
+    *   **Admin Command Usage Logging:** Log when an admin uses an `!` command (especially AC related), what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
