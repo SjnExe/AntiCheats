@@ -585,3 +585,11 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
         *   Logging the kick action via `addLog`.
         *   Error handling for player not found or kick failure.
     *   No new implementation was needed. This task is considered completed by verification.
+
+## Command Enhancement (Completed on 2025-06-05)
+
+*   **`!freeze <player> [on|off]` Command Logging:**
+    *   Enhanced the existing `!freeze` command in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Added `addLog` calls for both freeze and unfreeze actions.
+    *   Log entries include timestamp, admin name, action type ('freeze'/'unfreeze'), target player name, and details.
+    *   This ensures that administrative freeze/unfreeze actions are now properly logged for auditing.

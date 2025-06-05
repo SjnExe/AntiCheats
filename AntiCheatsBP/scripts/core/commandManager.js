@@ -339,9 +339,35 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             let currentFreezeState = foundPlayerFreeze.hasTag(frozenTag); let targetFreezeState;
             if (subCommandFreeze === "on") targetFreezeState = true; else if (subCommandFreeze === "off") targetFreezeState = false; else targetFreezeState = !currentFreezeState;
             if (targetFreezeState === true && !currentFreezeState) {
-                try { foundPlayerFreeze.addTag(frozenTag); foundPlayerFreeze.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false }); foundPlayerFreeze.sendMessage("§cYou have been frozen by an administrator!"); player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is now frozen.`); playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was frozen by ${player.nameTag}.`, player, null); } catch (e) { player.sendMessage(`§cError freezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error freezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
+                try {
+                    foundPlayerFreeze.addTag(frozenTag);
+                    foundPlayerFreeze.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false });
+                    foundPlayerFreeze.sendMessage("§cYou have been frozen by an administrator!");
+                    player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is now frozen.`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was frozen by ${player.nameTag}.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'freeze',
+                        targetName: foundPlayerFreeze.nameTag,
+                        details: 'Player frozen'
+                    });
+                } catch (e) { player.sendMessage(`§cError freezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error freezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
             } else if (targetFreezeState === false && currentFreezeState) {
-                try { foundPlayerFreeze.removeTag(frozenTag); foundPlayerFreeze.removeEffect("slowness"); foundPlayerFreeze.sendMessage("§aYou have been unfrozen."); player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is no longer frozen.`); playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was unfrozen by ${player.nameTag}.`, player, null); } catch (e) { player.sendMessage(`§cError unfreezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error unfreezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
+                try {
+                    foundPlayerFreeze.removeTag(frozenTag);
+                    foundPlayerFreeze.removeEffect("slowness");
+                    foundPlayerFreeze.sendMessage("§aYou have been unfrozen.");
+                    player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is no longer frozen.`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was unfrozen by ${player.nameTag}.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'unfreeze',
+                        targetName: foundPlayerFreeze.nameTag,
+                        details: 'Player unfrozen'
+                    });
+                } catch (e) { player.sendMessage(`§cError unfreezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error unfreezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
             } else { player.sendMessage(targetFreezeState ? `§7Player ${foundPlayerFreeze.nameTag} is already frozen.` : `§7Player ${foundPlayerFreeze.nameTag} is already unfrozen.`);}
             break;
         case "clearchat":
