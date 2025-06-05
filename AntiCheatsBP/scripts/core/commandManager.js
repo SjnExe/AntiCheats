@@ -1,9 +1,10 @@
 import * as mc from '@minecraft/server';
 import { PermissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
+import { addMute, removeMute, isMuted } from '../core/playerDataManager.js'; // Updated imports for mute/unmute
 // Parameter 'config' will provide PREFIX, acVersion, commandAliases
 // Parameter 'playerUtils' will provide warnPlayer, notifyAdmins, debugLog (isAdmin is no longer directly used here)
-// Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData
+// Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData, addMute, removeMute, isMuted
 // Parameter 'uiManager' will provide showAdminMainMenu
 
 const ALL_COMMANDS = [
@@ -18,12 +19,48 @@ const ALL_COMMANDS = [
     { name: "clearchat", syntax: "!clearchat", description: "Clears the chat for all players.", permissionLevel: PermissionLevels.ADMIN },
     { name: "vanish", syntax: "!vanish [on|off]", description: "Toggles admin visibility. Makes you invisible and hides your nametag.", permissionLevel: PermissionLevels.ADMIN },
     { name: "freeze", syntax: "!freeze <player> [on|off]", description: "Freezes or unfreezes a player, preventing movement.", permissionLevel: PermissionLevels.ADMIN },
+    { name: "mute", syntax: "!mute <player> [duration] [reason]", description: "Mutes a player for a specified duration (e.g., 5m, 1h, 1d, perm).", permissionLevel: PermissionLevels.ADMIN },
+    { name: "unmute", syntax: "!unmute <player>", description: "Unmutes a player.", permissionLevel: PermissionLevels.ADMIN },
     // { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: PermissionLevels.ADMIN }, // Removed, use !panel
     { name: "panel", syntax: "!panel", description: "Opens the AntiCheat Admin Panel UI.", permissionLevel: PermissionLevels.ADMIN },
     { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "xraynotify", syntax: "!xraynotify <on|off|status>", description: "Manage X-Ray notifications.", permissionLevel: PermissionLevels.ADMIN },
     { name: "testnotify", syntax: "!testnotify", description: "Sends a test admin notification.", permissionLevel: PermissionLevels.OWNER }
 ];
+
+/**
+ * Parses a duration string (e.g., "5m", "1h", "2d", "perm") into milliseconds.
+ * @param {string} durationString The duration string to parse.
+ * @returns {number|null} Duration in milliseconds, Infinity for permanent, or null if invalid.
+ */
+function parseDuration(durationString) {
+    if (!durationString) return null;
+    durationString = durationString.toLowerCase();
+
+    if (durationString === "perm" || durationString === "permanent") {
+        return Infinity;
+    }
+
+    const regex = /^(\d+)([smhd])$/;
+    const match = durationString.match(regex);
+
+    if (match) {
+        const value = parseInt(match[1]);
+        const unit = match[2];
+        switch (unit) {
+            case 's': return value * 1000;
+            case 'm': return value * 60 * 1000;
+            case 'h': return value * 60 * 60 * 1000;
+            case 'd': return value * 24 * 60 * 60 * 1000;
+        }
+    } else if (/^\d+$/.test(durationString)) { // Plain number, assume minutes
+        const value = parseInt(durationString);
+        if (!isNaN(value)) {
+            return value * 60 * 1000;
+        }
+    }
+    return null; // Invalid format
+}
 
 /**
  * Handles commands sent by players via chat that start with the configured PREFIX.
@@ -316,6 +353,108 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 }
             } else {
                 player.sendMessage(`§cPlayer ${targetPlayerNameKick} not found.`);
+            }
+            break;
+        case "mute": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}mute <playername> [duration] [reason]`);
+                return;
+            }
+            const targetPlayerNameMute = args[0];
+            const durationStringMute = args[1] || "1h"; // Default duration 1 hour
+            const reasonMute = args.slice(2).join(" ") || "Muted by an administrator.";
+
+            let foundPlayerMute = null;
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameMute.toLowerCase()) {
+                    foundPlayerMute = p;
+                    break;
+                }
+            }
+
+            if (!foundPlayerMute) {
+                player.sendMessage(`§cPlayer ${targetPlayerNameMute} not found.`);
+                return;
+            }
+
+            if (foundPlayerMute.id === player.id) {
+                player.sendMessage("§cYou cannot mute yourself.");
+                return;
+            }
+
+            const durationMsMute = parseDuration(durationStringMute);
+
+            if (durationMsMute === null || (durationMsMute <= 0 && durationMsMute !== Infinity)) {
+                player.sendMessage("§cInvalid duration format. Use formats like 5m, 2h, 1d, or perm (for permanent session mute). Default is 1h if unspecified.");
+                return;
+            }
+
+            try {
+                const muteAdded = playerDataManager.addMute(foundPlayerMute.id, durationMsMute, reasonMute);
+                if (muteAdded) {
+                    const durationText = durationMsMute === Infinity ? "permanently (this session)" : `for ${durationStringMute}`;
+
+                    try {
+                        foundPlayerMute.onScreenDisplay.setActionBar(`§cYou have been muted ${durationText}. Reason: ${reasonMute}`);
+                    } catch (e) {
+                        playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayerMute.nameTag}: ${e}`, player.nameTag);
+                        // Non-critical, proceed
+                    }
+
+                    player.sendMessage(`§aPlayer ${foundPlayerMute.nameTag} has been muted ${durationText}. Reason: ${reasonMute}`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerMute.nameTag} was muted ${durationText} by ${player.nameTag}. Reason: ${reasonMute}`, player, null);
+                    playerUtils.debugLog(`Player ${foundPlayerMute.nameTag} muted by ${player.nameTag} ${durationText}. Reason: ${reasonMute}`, player.nameTag);
+                } else {
+                     player.sendMessage(`§cFailed to apply mute for ${foundPlayerMute.nameTag}. Check logs.`);
+                }
+            } catch (e) {
+                player.sendMessage(`§cAn unexpected error occurred while trying to mute ${foundPlayerMute.nameTag}: ${e}`);
+                playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayerMute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            }
+            break;
+        case "unmute": // ADMIN
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}unmute <playername>`);
+                return;
+            }
+            const targetPlayerNameUnmute = args[0];
+            let foundPlayerUnmute = null;
+
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameUnmute.toLowerCase()) {
+                    foundPlayerUnmute = p;
+                    break;
+                }
+            }
+
+            if (!foundPlayerUnmute) {
+                player.sendMessage(`§cPlayer ${targetPlayerNameUnmute} not found.`);
+                return;
+            }
+
+            try {
+                if (!playerDataManager.isMuted(foundPlayerUnmute.id)) {
+                    player.sendMessage(`§7Player ${foundPlayerUnmute.nameTag} is not currently muted.`);
+                    return;
+                }
+
+                const unmuted = playerDataManager.removeMute(foundPlayerUnmute.id);
+                if (unmuted) {
+                    try {
+                        foundPlayerUnmute.onScreenDisplay.setActionBar("§aYou have been unmuted.");
+                    } catch (e) {
+                        playerUtils.debugLog(`Failed to set action bar for unmuted player ${foundPlayerUnmute.nameTag}: ${e}`, player.nameTag);
+                    }
+                    player.sendMessage(`§aPlayer ${foundPlayerUnmute.nameTag} has been unmuted.`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerUnmute.nameTag} was unmuted by ${player.nameTag}.`, player, null);
+                    playerUtils.debugLog(`Player ${foundPlayerUnmute.nameTag} unmuted by ${player.nameTag}.`, player.nameTag);
+                } else {
+                    // This case should ideally be caught by isMuted, but as a fallback:
+                    player.sendMessage(`§cFailed to unmute player ${foundPlayerUnmute.nameTag}. They might not have been muted or an error occurred.`);
+                }
+            } catch (e) {
+                player.sendMessage(`§cAn unexpected error occurred while trying to unmute ${foundPlayerUnmute.nameTag}: ${e}`);
+                playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayerUnmute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
             }
             break;
         case "freeze": // ADMIN

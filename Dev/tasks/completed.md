@@ -404,4 +404,41 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
 ## Refactoring
 *   **Refactor: Create `types.js`:** Defined common JSDoc typedefs (`PlayerAntiCheatData`, `PlayerFlagData`, etc.) in `AntiCheatsBP/scripts/types.js`. This helps in avoiding potential circular dependencies and improves overall type management for player data structures.
 
-[end of Dev/tasks/completed.md]
+## Mute/Unmute System & Panel Integration (Session-only) - Task Completion Date
+- **`playerDataManager.js`**:
+    - Added `activeMutes` Map to store session-only mutes (`playerId -> { unmuteTime, reason }`).
+    - Implemented `addMute(playerId, durationMs, reason)`: Calculates `unmuteTime` (handles `Infinity` for permanent session mutes) and stores mute details.
+    - Implemented `removeMute(playerId)`: Removes mute from the map.
+    - Implemented `getMuteInfo(playerId)`: Retrieves mute details; automatically removes and returns `null` for expired mutes.
+    - Implemented `isMuted(playerId)`: Helper that uses `getMuteInfo`.
+- **`commandManager.js`**:
+    - Added `parseDuration(durationString)` helper function to convert inputs like "5m", "1h", "perm" to milliseconds or `Infinity`.
+    - Defined and implemented `!mute <player> [duration] [reason]` command (Admin permission):
+        - Uses `parseDuration`. Validates duration and player. Prevents self-mute.
+        - Calls `playerDataManager.addMute`.
+        - Notifies target player via action bar (e.g., "You have been muted for 1h. Reason: Spamming").
+        - Notifies admin issuer and other admins via chat.
+    - Defined and implemented `!unmute <player>` command (Admin permission):
+        *   Validates player. Checks `playerDataManager.isMuted` first.
+        *   Calls `playerDataManager.removeMute`.
+        *   Notifies target player via action bar (e.g., "You have been unmuted.").
+        *   Notifies admin issuer and other admins via chat.
+- **`eventHandlers.js` (`handleBeforeChatSend`)**:
+    - Integrated mute check at the beginning of chat processing.
+    - If player is muted:
+        - Cancels the chat event (`eventData.cancel = true`).
+        - Sends an action bar message to the muted player displaying their mute status, remaining duration (formatted like "Xm Ys" or "Permanent for this session"), and reason.
+- **`uiManager.js` (`showPlayerActionsForm`)**:
+    - Added a dynamic "Mute/Unmute Player" button:
+        - Text changes to "Mute Player", "Unmute Player (Permanent)", or "Unmute Player (exp. HH:MM:SS)" based on mute status.
+        - Icon changes accordingly.
+    - Mute action via panel:
+        - Prompts admin for duration (minutes or "perm") and reason using a `ModalFormData`.
+        - Validates duration input.
+        - Calls `playerDataManager.addMute`.
+        - Provides feedback to admin (chat) and target (action bar).
+    - Unmute action via panel:
+        - Prompts admin for confirmation using a `ModalFormData`.
+        - Calls `playerDataManager.removeMute`.
+        - Provides feedback to admin (chat) and target (action bar).
+    - Refreshes the `showPlayerActionsForm` after mute/unmute actions to update button state.

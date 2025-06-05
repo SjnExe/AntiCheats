@@ -22,6 +22,7 @@ import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 // }
 
 const playerData = new Map();
+const activeMutes = new Map(); // Map to store active mutes: playerId -> { unmuteTime, reason }
 
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
@@ -253,4 +254,75 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: ${fullReason}. Total: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
 
     prepareAndSavePlayerData(player);
+}
+
+// --- Mute Management Functions ---
+
+/**
+ * Adds or updates a mute for a player.
+ * @param {string} playerId The ID of the player to mute.
+ * @param {number} durationMs The duration of the mute in milliseconds. Use Infinity for permanent (session-only).
+ * @param {string} [reason] Optional reason for the mute.
+ * @returns {boolean} True if mute was added/updated, false otherwise.
+ */
+export function addMute(playerId, durationMs, reason) {
+    if (!playerId || typeof durationMs !== 'number' || durationMs <= 0) {
+        debugLog(`PDM:addMute: Invalid arguments - playerId: ${playerId}, durationMs: ${durationMs}`);
+        return false;
+    }
+    const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
+    const muteReason = reason || "Muted by admin.";
+    activeMutes.set(playerId, { unmuteTime, reason: muteReason });
+
+    let logMsg = `PDM:addMute: Player ${playerId} muted. Reason: ${muteReason}.`;
+    if (durationMs === Infinity) {
+        logMsg += " Duration: Permanent (session)";
+    } else {
+        logMsg += ` Unmute time: ${new Date(unmuteTime).toISOString()}`;
+    }
+    debugLog(logMsg);
+    return true;
+}
+
+/**
+ * Removes a mute for a player.
+ * @param {string} playerId The ID of the player to unmute.
+ * @returns {boolean} True if mute was removed, false if player was not muted.
+ */
+export function removeMute(playerId) {
+    if (activeMutes.has(playerId)) {
+        activeMutes.delete(playerId);
+        debugLog(`PDM:removeMute: Player ${playerId} unmuted.`);
+        return true;
+    }
+    debugLog(`PDM:removeMute: Player ${playerId} was not muted or already unmuted.`);
+    return false;
+}
+
+/**
+ * Retrieves mute information for a player, and removes it if expired.
+ * @param {string} playerId The ID of the player.
+ * @returns {{unmuteTime: number, reason: string} | null} Mute object or null if not muted/expired.
+ */
+export function getMuteInfo(playerId) {
+    if (!activeMutes.has(playerId)) {
+        return null;
+    }
+    const mute = activeMutes.get(playerId);
+
+    if (mute.unmuteTime !== Infinity && Date.now() >= mute.unmuteTime) {
+        activeMutes.delete(playerId); // Expired mute
+        debugLog(`PDM:getMuteInfo: Mute for player ${playerId} expired and removed.`);
+        return null;
+    }
+    return mute; // Returns { unmuteTime, reason }
+}
+
+/**
+ * Checks if a player is currently muted (and handles expired mutes).
+ * @param {string} playerId The ID of the player to check.
+ * @returns {boolean} True if the player is currently muted, false otherwise.
+ */
+export function isMuted(playerId) {
+    return getMuteInfo(playerId) !== null;
 }

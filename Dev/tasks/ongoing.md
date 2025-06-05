@@ -16,7 +16,7 @@ As of 2024-07-25 *(placeholder date)*:
         *   For Normal Users: Placeholders for "My Stats", "Server Rules", "Help & Links".
 *   **Phase 3: Player Actions - Moderation (TODO)**:
     *   "Kick Player" button with reason input (integrates with kick system). (Completed)
-    *   "Mute Player" button with duration/reason input (integrates with mute system).
+    *   "Mute Player" button with duration/reason input (integrates with mute system). (Completed)
     *   "Freeze/Unfreeze Player" toggle (integrates with freeze system). (Completed)
 *   **Phase 4: Server Management Actions (New Section in Panel) (TODO):**
     *   "View System Info": Basic server stats, AC version.

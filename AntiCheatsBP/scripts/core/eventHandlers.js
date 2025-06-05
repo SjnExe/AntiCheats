@@ -223,6 +223,43 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
         return;
     }
 
+    // Mute Check - Placed at the very beginning
+    if (playerDataManager.isMuted(player.id)) {
+        eventData.cancel = true;
+        const muteInfo = playerDataManager.getMuteInfo(player.id);
+        let muteMsg = "§cYou are currently muted.";
+        if (muteInfo) {
+            if (muteInfo.unmuteTime === Infinity) {
+                muteMsg += " (Permanent for this session)";
+            } else {
+                // Calculate remaining time for a more user-friendly message
+                const remainingMs = muteInfo.unmuteTime - Date.now();
+                if (remainingMs > 0) {
+                    const remainingSeconds = Math.ceil(remainingMs / 1000);
+                    const remainingMinutes = Math.floor(remainingSeconds / 60);
+                    const actualSeconds = remainingSeconds % 60;
+                    if (remainingMinutes > 0) {
+                        muteMsg += ` (Expires in approx. ${remainingMinutes}m ${actualSeconds}s)`;
+                    } else {
+                        muteMsg += ` (Expires in approx. ${actualSeconds}s)`;
+                    }
+                } else {
+                     // Should have been cleaned up by getMuteInfo, but as a fallback:
+                    muteMsg += " (Expires: Past)";
+                }
+            }
+            if (muteInfo.reason) {
+                muteMsg += ` Reason: ${muteInfo.reason}`;
+            }
+        }
+        try {
+            player.onScreenDisplay.setActionBar(muteMsg);
+        } catch (e) {
+            playerUtils.debugLog(`Failed to set action bar for muted player ${player.nameTag}: ${e}`, player.nameTag);
+        }
+        return; // Stop further chat processing for muted player
+    }
+
     const originalMessage = eventData.message;
     const rankDisplay = getPlayerRankDisplay(player);
     const formattedMessage = `${rankDisplay.chatPrefix}${player.name}§f: ${originalMessage}`; // Use player.name for the actual name

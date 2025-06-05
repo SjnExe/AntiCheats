@@ -5,6 +5,9 @@ import * as playerUtils from '../utils/playerUtils.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // Added
 import { PermissionLevels } from './rankManager.js'; // Added
 // playerDataManager will be passed as a parameter to functions that need it.
+// Import mute functions from playerDataManager for Mute/Unmute UI
+import { getMuteInfo, addMute, removeMute } from '../core/playerDataManager.js';
+
 
 async function showInspectPlayerForm(player, playerDataManager) {
     playerUtils.debugLog(`UI: Inspect Player form requested by ${player.nameTag}`, player.nameTag);
@@ -78,11 +81,23 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
     const freezeButtonText = isTargetFrozen ? "Unfreeze Player" : "Freeze Player";
     const freezeButtonIcon = isTargetFrozen ? "textures/ui/icon_unlocked" : "textures/ui/icon_locked";
 
+    const muteInfo = playerDataManager.getMuteInfo(targetPlayer.id);
+    const isTargetMuted = muteInfo !== null;
+    let muteButtonText = isTargetMuted ? "Unmute Player" : "Mute Player";
+    if (isTargetMuted && muteInfo.unmuteTime !== Infinity) {
+        muteButtonText += ` (exp. ${new Date(muteInfo.unmuteTime).toLocaleTimeString()})`;
+    } else if (isTargetMuted) {
+        muteButtonText += " (Permanent)";
+    }
+    const muteButtonIcon = isTargetMuted ? "textures/ui/speaker_off_light" : "textures/ui/speaker_on_light";
+
+
     form.button("View Detailed Info/Flags", "textures/ui/magnifying_glass"); // 0
     form.button("Kick Player", "textures/ui/icon_hammer");                   // 1
     form.button(freezeButtonText, freezeButtonIcon);                         // 2
-    form.button("Reset Player Flags", "textures/ui/refresh");                // 3
-    form.button("Back to Player List", "textures/ui/undo");                  // 4
+    form.button(muteButtonText, muteButtonIcon);                             // 3
+    form.button("Reset Player Flags", "textures/ui/refresh");                // 4
+    form.button("Back to Player List", "textures/ui/undo");                  // 5
 
     try {
         const response = await form.show(adminPlayer);
@@ -130,7 +145,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     adminPlayer.sendMessage("§cCould not retrieve data for " + targetPlayer.nameTag);
                     playerUtils.debugLog(`Could not retrieve pData for ${targetPlayer.nameTag} (ID: ${targetPlayer.id}) in showPlayerActionsForm.`, adminPlayer.nameTag);
                 }
-                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); // Re-show actions form
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
                 break;
 
             case 1: // Kick Player
@@ -146,20 +161,20 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
                     return;
                 }
-                const reason = kickConfirmResponse.formValues[0] || "Kicked by an administrator via panel.";
+                const reasonKick = kickConfirmResponse.formValues[0] || "Kicked by an administrator via panel.";
                 const confirmedKick = kickConfirmResponse.formValues[1];
 
                 if (confirmedKick) {
                     try {
-                        targetPlayer.kick(reason);
-                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} has been kicked. Reason: ${reason}`);
-                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was kicked by ${adminPlayer.nameTag} via panel. Reason: ${reason}`, adminPlayer, null);
-                        playerUtils.debugLog(`Player ${targetPlayer.nameTag} kicked by ${adminPlayer.nameTag} via panel. Reason: ${reason}`, adminPlayer.nameTag);
-                        await showOnlinePlayersList(adminPlayer, playerDataManager); // Go back to player list after kick
+                        targetPlayer.kick(reasonKick);
+                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} has been kicked. Reason: ${reasonKick}`);
+                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was kicked by ${adminPlayer.nameTag} via panel. Reason: ${reasonKick}`, adminPlayer, null);
+                        playerUtils.debugLog(`Player ${targetPlayer.nameTag} kicked by ${adminPlayer.nameTag} via panel. Reason: ${reasonKick}`, adminPlayer.nameTag);
+                        await showOnlinePlayersList(adminPlayer, playerDataManager);
                     } catch (e) {
                         adminPlayer.sendMessage(`§cError kicking ${targetPlayer.nameTag}: ${e}`);
                         playerUtils.debugLog(`Error kicking ${targetPlayer.nameTag}: ${e}`, adminPlayer.nameTag);
-                        await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); // Re-show actions form on error
+                        await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
                     }
                 } else {
                     adminPlayer.sendMessage("§7Kick cancelled for " + targetPlayer.nameTag);
@@ -168,12 +183,11 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                 break;
 
             case 2: // Freeze/Unfreeze Player
-                // const frozenTag = "frozen"; // Already defined above before button creation
-                // const isTargetFrozen = targetPlayer.hasTag(frozenTag); // Already defined above
-                const targetFreezeState = !isTargetFrozen; // We are toggling
+                const currentFreezeState = targetPlayer.hasTag(frozenTag); // isTargetFrozen already has this
+                const targetFreezeState = !currentFreezeState;
                 const effectDuration = 2000000;
 
-                if (targetFreezeState === true) { // Action is to freeze
+                if (targetFreezeState === true) {
                     try {
                         targetPlayer.addTag(frozenTag);
                         targetPlayer.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false });
@@ -185,7 +199,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                         adminPlayer.sendMessage(`§cError freezing ${targetPlayer.nameTag}: ${e}`);
                         playerUtils.debugLog(`Error freezing ${targetPlayer.nameTag} via panel: ${e}`, adminPlayer.nameTag);
                     }
-                } else { // Action is to unfreeze
+                } else {
                     try {
                         targetPlayer.removeTag(frozenTag);
                         targetPlayer.removeEffect("slowness");
@@ -198,16 +212,69 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                         playerUtils.debugLog(`Error unfreezing ${targetPlayer.nameTag} via panel: ${e}`, adminPlayer.nameTag);
                     }
                 }
-                // After action, re-show the actions form to reflect the new state
                 await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
                 break;
 
-            case 3: // Reset Player Flags
-                const confirmResetForm = new ModalFormData(); // Renamed to avoid conflict
+            case 3: // Mute/Unmute Player
+                const currentMuteInfo = playerDataManager.getMuteInfo(targetPlayer.id); // Re-fetch for current state
+                const currentIsTargetMuted = currentMuteInfo !== null;
+
+                if (currentIsTargetMuted) { // Action is to Unmute
+                    const confirmUnmuteForm = new ModalFormData();
+                    confirmUnmuteForm.title(`Unmute ${targetPlayer.nameTag}`);
+                    confirmUnmuteForm.toggle("Confirm Unmute", false);
+                    const unmuteResponse = await confirmUnmuteForm.show(adminPlayer);
+
+                    if (unmuteResponse.canceled) {
+                        adminPlayer.sendMessage("§7Unmute cancelled.");
+                    } else if (unmuteResponse.formValues[0]) {
+                        playerDataManager.removeMute(targetPlayer.id);
+                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} unmuted.`);
+                        try { targetPlayer.onScreenDisplay.setActionBar("§aYou have been unmuted."); } catch(e){}
+                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was unmuted by ${adminPlayer.nameTag} via panel.`, adminPlayer, null);
+                    } else {
+                        adminPlayer.sendMessage("§7Unmute cancelled.");
+                    }
+                } else { // Action is to Mute
+                    const muteForm = new ModalFormData();
+                    muteForm.title(`Mute ${targetPlayer.nameTag}`);
+                    muteForm.textField("Duration (minutes, or 'perm'):", "e.g., 60 or perm", "60");
+                    muteForm.textField("Reason (optional):", "Enter reason");
+                    const muteFormResponse = await muteForm.show(adminPlayer);
+
+                    if (muteFormResponse.canceled) {
+                        adminPlayer.sendMessage("§7Mute action cancelled.");
+                    } else {
+                        const durationInput = muteFormResponse.formValues[0];
+                        const reason = muteFormResponse.formValues[1] || "Muted by admin via panel.";
+                        let durationMs;
+                        if (durationInput.toLowerCase() === "perm") {
+                            durationMs = Infinity;
+                        } else {
+                            const minutes = parseInt(durationInput);
+                            if (isNaN(minutes) || minutes <= 0) {
+                                adminPlayer.sendMessage("§cInvalid duration. Must be a positive number of minutes or 'perm'.");
+                                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+                                return; // Exit case to prevent re-showing form twice
+                            }
+                            durationMs = minutes * 60 * 1000;
+                        }
+                        playerDataManager.addMute(targetPlayer.id, durationMs, reason);
+                        const durationText = durationMs === Infinity ? "permanently" : `for ${durationInput}${durationInput.toLowerCase()==="perm"?"":" minutes"}`;
+                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} muted ${durationText}.`);
+                        try { targetPlayer.onScreenDisplay.setActionBar(`§cYou are muted ${durationText}. Reason: ${reason}`); } catch(e){}
+                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was muted ${durationText} by ${adminPlayer.nameTag} via panel. Reason: ${reason}`, adminPlayer, null);
+                    }
+                }
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+                break;
+
+            case 4: // Reset Player Flags
+                const confirmResetForm = new ModalFormData();
                 confirmResetForm.title("Confirm Reset Flags");
                 confirmResetForm.toggle(`Reset all flags for ${targetPlayer.nameTag}? This action cannot be undone.`, false);
 
-                const confirmResetResponse = await confirmResetForm.show(adminPlayer); // Renamed to avoid conflict
+                const confirmResetResponse = await confirmResetForm.show(adminPlayer);
 
                 if (confirmResetResponse.canceled) {
                     adminPlayer.sendMessage("§7Flag reset cancelled for " + targetPlayer.nameTag);
@@ -215,7 +282,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     return;
                 }
 
-                const confirmedReset = confirmResetResponse.formValues[0]; // Renamed to avoid conflict
+                const confirmedReset = confirmResetResponse.formValues[0];
                 if (confirmedReset) {
                     const pData = playerDataManager.getPlayerData(targetPlayer.id);
                     if (pData) {
@@ -245,7 +312,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                 await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
                 break;
 
-            case 4: // Back to Player List
+            case 5: // Back to Player List
                 await showOnlinePlayersList(adminPlayer, playerDataManager);
                 break;
 
