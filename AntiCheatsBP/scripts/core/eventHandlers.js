@@ -37,12 +37,28 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils) {
     // for all operations, as nameTag modification is a basic property.
     // If issues arise, a systemTick.delay might be considered, but usually not needed for nametags.
     try {
+        // Check for bans first
+        const banInfo = playerDataManager.getBanInfo(player);
+        if (banInfo) {
+            let kickReason = `You are banned from this server.\nReason: ${banInfo.reason}\n`;
+            if (banInfo.unbanTime === Infinity) {
+                kickReason += "This ban is permanent.";
+            } else {
+                kickReason += `Expires: ${new Date(banInfo.unbanTime).toLocaleString()}`;
+            }
+            player.kick(kickReason);
+            if (playerUtils && playerUtils.debugLog) {
+                playerUtils.debugLog(`Player ${player.nameTag} automatically kicked due to active ban.`, player.nameTag);
+            }
+            return; // Don't proceed with nametag update if kicked
+        }
+
         updatePlayerNametag(player);
         if (playerUtils && playerUtils.debugLog) { // Optional debug logging
             playerUtils.debugLog(`Updated nametag for ${player.nameTag} on spawn.`, player.nameTag);
         }
     } catch (error) {
-        console.error(`[AntiCheat] Error in handlePlayerSpawn calling updatePlayerNametag for ${player.nameTag}: ${error}`);
+        console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error}`);
         if (playerUtils && playerUtils.debugLog) {
             playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
         }

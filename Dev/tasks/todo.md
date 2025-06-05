@@ -51,7 +51,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!ac ban <player> [reason] [duration]` & `!ac unban <player>`: Implement a ban management system. Bans should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (SjnExe, SafeGuard)
         *   `!ac kick <player> [reason]`: Standard kick functionality.
         *   `!ac freeze <player>`: Toggle to prevent a player from moving, interacting, or being targeted.
         *   `!ac warnings <player>` (detailed warning list) & `!ac clearwarnings <playername>`: View a list of specific warnings/flags a player has received. Clear them. Needs persistent storage of detailed warnings if not just relying on aggregated flags.

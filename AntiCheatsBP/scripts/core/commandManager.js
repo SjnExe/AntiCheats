@@ -23,6 +23,8 @@ const allCommands = [
     { name: "freeze", syntax: "!freeze <player> [on|off]", description: "Freezes or unfreezes a player, preventing movement.", permissionLevel: permissionLevels.ADMIN },
     { name: "mute", syntax: "!mute <player> [duration] [reason]", description: "Mutes a player for a specified duration (e.g., 5m, 1h, 1d, perm).", permissionLevel: permissionLevels.ADMIN },
     { name: "unmute", syntax: "!unmute <player>", description: "Unmutes a player.", permissionLevel: permissionLevels.ADMIN },
+    { name: "ban", syntax: "!ban <player> [duration] [reason]", description: "Bans a player for a specified duration (e.g., 7d, 2h, perm).", permissionLevel: permissionLevels.ADMIN },
+    { name: "unban", syntax: "!unban <player>", description: "Unbans a player.", permissionLevel: permissionLevels.ADMIN },
     // { name: "ui", syntax: "!ui", description: "Opens the Admin UI.", permissionLevel: permissionLevels.ADMIN }, // Removed, use !panel
     { name: "panel", syntax: "!panel", description: "Opens the AntiCheat Admin Panel UI.", permissionLevel: permissionLevels.ADMIN },
     { name: "notify", syntax: "!notify <on|off|status>", description: "Toggles or checks your AntiCheat system notifications.", permissionLevel: permissionLevels.ADMIN },
@@ -588,6 +590,103 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             } catch (e) {
                 player.sendMessage(`§cAn unexpected error occurred while trying to unmute ${foundPlayerUnmute.nameTag}: ${e}`);
                 playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayerUnmute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            }
+            break;
+        case "ban": // ADMIN
+            if (args.length < 1) { // args[0] is command, args[1] is playerName
+                player.sendMessage(`§cUsage: ${config.prefix}ban <playername> [duration] [reason]`);
+                return;
+            }
+            const targetPlayerNameBan = args[0]; // Corrected: args[0] is playername after command
+            const durationStringBan = args[1] || "perm"; // Default to permanent if not specified
+            const reasonBan = args.slice(2).join(" ") || "Banned by an administrator.";
+
+            let foundPlayerBan = null;
+            for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameBan.toLowerCase()) {
+                    foundPlayerBan = p;
+                    break;
+                }
+            }
+
+            if (!foundPlayerBan) {
+                player.sendMessage(`§cPlayer ${targetPlayerNameBan} not found.`);
+                return;
+            }
+
+            if (foundPlayerBan.id === player.id) {
+                player.sendMessage("§cYou cannot ban yourself.");
+                return;
+            }
+
+            const durationMsBan = parseDuration(durationStringBan);
+            if (durationMsBan === null || (durationMsBan <= 0 && durationMsBan !== Infinity)) {
+                player.sendMessage("§cInvalid duration format. Use formats like 7d, 2h30m, 5s, or perm. Default is perm if unspecified.");
+                return;
+            }
+
+            const successBan = playerDataManager.addBan(foundPlayerBan, durationMsBan, reasonBan);
+            if (successBan) {
+                let kickMessage = `You are banned from this server.\nReason: ${reasonBan}\n`;
+                if (durationMsBan === Infinity) {
+                    kickMessage += "This ban is permanent.";
+                } else {
+                    const unbanTime = Date.now() + durationMsBan; // Calculate approximate unban time for message
+                    kickMessage += `Expires: ${new Date(unbanTime).toLocaleString()}`;
+                }
+                try {
+                    foundPlayerBan.kick(kickMessage);
+                } catch (e) {
+                    playerUtils.debugLog(`Attempted to kick banned player ${foundPlayerBan.nameTag} but they might have already disconnected: ${e}`, player.nameTag);
+                }
+
+                playerUtils.notifyAdmins(`Player ${foundPlayerBan.nameTag} was banned by ${player.nameTag}. Duration: ${durationStringBan}. Reason: ${reasonBan}`, player, null);
+                player.sendMessage(`§aSuccessfully banned ${foundPlayerBan.nameTag}. Duration: ${durationStringBan}. Reason: ${reasonBan}`);
+            } else {
+                // addBan currently always returns true or errors, this path might not be hit.
+                player.sendMessage(`§cFailed to ban ${foundPlayerBan.nameTag}. Check server logs.`);
+            }
+            break;
+        case "unban": // ADMIN
+            if (args.length < 1) { // args[0] is command, args[1] is playerName
+                player.sendMessage(`§cUsage: ${config.prefix}unban <playername>`);
+                return;
+            }
+            const targetPlayerNameUnban = args[0]; // Corrected: args[0] is playername after command
+            let foundPlayerUnban = null;
+            // For unban, the player might be offline. We need a way to get their data.
+            // This requires playerDataManager to potentially load data for an offline player if possible,
+            // or for bans to be stored in a way that unban can access them by name/ID.
+            // For now, let's assume unban works if player is online.
+            // If player is offline, this command would need playerDataManager.loadOfflinePlayerData(name) or similar.
+            // This is a simplification for Phase 2. True offline unbanning is more complex.
+
+            // First, try to find if player is online:
+             for (const p of mc.world.getAllPlayers()) {
+                if (p.nameTag.toLowerCase() === targetPlayerNameUnban.toLowerCase()) {
+                    foundPlayerUnban = p;
+                    break;
+                }
+            }
+
+            if (foundPlayerUnban) { // Player is online
+                const successUnbanOnline = playerDataManager.removeBan(foundPlayerUnban);
+                if (successUnbanOnline) {
+                    playerUtils.notifyAdmins(`Player ${foundPlayerUnban.nameTag} was unbanned by ${player.nameTag}.`, player, null);
+                    player.sendMessage(`§aPlayer ${foundPlayerUnban.nameTag} has been unbanned. They can rejoin if they were kicked.`);
+                } else {
+                    player.sendMessage(`§cPlayer ${foundPlayerUnban.nameTag} is not currently banned or could not be unbanned.`);
+                }
+            } else {
+                // Player is not online. This is where offline player data modification would be needed.
+                // For this phase, we'll state this limitation.
+                // TODO: Implement offline player unbanning (requires loading/saving pData for offline players by name)
+                player.sendMessage(`§cPlayer ${targetPlayerNameUnban} not found online. Offline unbanning is not yet fully supported by this command directly.`);
+                playerUtils.debugLog(`Unban attempt for offline player ${targetPlayerNameUnban} by ${player.nameTag}. Offline modification needed.`, player.nameTag);
+
+                // As a temporary measure for Phase 2, if you know the player's ID (e.g. from logs or external means)
+                // and playerDataManager could hypothetically load/save by ID for offline users (it can't currently without the player object):
+                // For now, this command will only work for online players.
             }
             break;
         case "freeze": // ADMIN

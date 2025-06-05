@@ -500,3 +500,29 @@ As of 2024-07-27
         *   Updated `showSystemInfo` to calculate `mutedPlayersCount` by iterating through all players and checking their persisted `muteInfo`, replacing the call to the removed `getActiveMuteCount`.
 
 *User testing required to fully verify persistence across server restarts and player sessions.*
+
+## Implement Persistent Ban System (Task Completion Date: 2024-07-29)
+
+**Original Task Description:**
+`!ac ban <player> [reason] [duration]` & `!ac unban <player>`: Implement a ban management system. Bans should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (SjnExe, SafeGuard)
+
+**Summary of Implementation:**
+*   **Modified `playerDataManager.js`:**
+    *   Added `banInfo: null` to the default player data structure in `initializeDefaultPlayerData`.
+    *   Included `pData.banInfo` in `persistedPData` within `prepareAndSavePlayerData` for saving to dynamic properties.
+    *   Updated `ensurePlayerDataInitialized` to load `banInfo` from dynamic properties and to include logic that clears expired bans upon player data initialization.
+    *   Created new functions: `addBan(player, durationMs, reason)`, `removeBan(player)`, `getBanInfo(player)`, and `isBanned(player)` to manage persistent ban data, including saving changes to dynamic properties.
+*   **Modified `eventHandlers.js`:**
+    *   In `handlePlayerSpawn`, added logic to call `playerDataManager.getBanInfo(player)`. If an active ban is found, the player is kicked from the server with a detailed ban message including the reason and expiration (or permanent status).
+*   **Modified `commandManager.js`:**
+    *   Added `!ac ban <player> [duration] [reason]` command:
+        *   Allows administrators to ban a player with a specified duration (e.g., "7d", "2h", "perm") and reason.
+        *   The command parses the duration, applies the ban using `playerDataManager.addBan`, and then kicks the banned player with a message detailing the ban reason and duration.
+        *   Admins are notified of the action.
+    *   Added `!ac unban <player>` command:
+        *   Allows administrators to unban a player.
+        *   The command uses `playerDataManager.removeBan` to remove the ban information for the specified (online) player.
+        *   Admins are notified.
+        *   A note was included in the implementation that the current `!unban` command primarily targets online players, and full offline player unbanning might require further enhancements.
+
+*UI integration for ban/unban in the admin panel is deferred for a future task.*
