@@ -256,6 +256,21 @@ export const serverRules = [
   "5. PVP is only allowed in designated areas or if agreed upon."
 ];
 
+/** @type {{title: string, url: string}[]} Defines links to be displayed in the Help & Links UI. */
+export const helpLinks = [
+  { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
+  { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
+  { title: "Report a Player", url: "https://yourwebsite.com/report" }
+];
+
+/** @type {string[]} General help messages or tips to display in the UI. */
+export const generalHelpMessages = [
+  "Welcome to the server! We hope you have a great time.",
+  "For a list of commands, type !help in chat.",
+  "If you suspect a player of cheating, please use the report link or contact staff.",
+  "Please be familiar with our server rules, available via !panel."
+];
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */

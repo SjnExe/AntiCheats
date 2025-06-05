@@ -140,6 +140,49 @@ async function showServerRules(player, config, playerDataManager) {
     await showAdminPanelMain(player, playerDataManager, config);
 }
 
+async function showHelpAndLinks(player, config, playerDataManager) {
+    playerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
+    const form = new MessageFormData();
+    form.title("Help & Useful Links");
+
+    let bodyContent = "";
+
+    // General Help Messages
+    if (config && config.generalHelpMessages && config.generalHelpMessages.length > 0) {
+        bodyContent += "§lGeneral Help:§r\n"; // Bold title
+        config.generalHelpMessages.forEach(msg => {
+            bodyContent += `- ${msg}\n`;
+        });
+        bodyContent += "\n"; // Add a space before links if help messages exist
+    }
+
+    // Help Links
+    if (config && config.helpLinks && config.helpLinks.length > 0) {
+        bodyContent += "§lUseful Links:§r\n"; // Bold title
+        config.helpLinks.forEach(link => {
+            bodyContent += `- ${link.title}: ${link.url}\n`; // URLs are not clickable in MessageFormData
+        });
+    }
+
+    if (bodyContent === "") {
+        bodyContent = "§cNo help information or links have been configured by the server admin yet.";
+    }
+
+    form.body(bodyContent.trim()); // Trim to remove trailing newline if only one section exists
+    form.button1("Close");
+
+    try {
+        await form.show(player);
+    } catch (error) {
+        playerUtils.debugLog(`Error in showHelpAndLinks for ${player.nameTag}: ${error}`, player.nameTag);
+        console.error(`[uiManager.showHelpAndLinks] Error: ${error}`, error.stack);
+        // No direct message to player as MessageFormData show() error is usually client-side
+    }
+
+    // Always return to the main panel for the player
+    await showAdminPanelMain(player, playerDataManager, config);
+}
+
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager) {
     playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
 
@@ -518,8 +561,8 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
 
             switch (response.selection) {
                 case 0: await showMyStats(adminPlayer, playerDataManager); break;
-                case 1: await showServerRules(adminPlayer, config, playerDataManager); break; // Updated
-                case 2: adminPlayer.sendMessage("§7'Help & Links' is not yet implemented."); break;
+                case 1: await showServerRules(adminPlayer, config, playerDataManager); break;
+                case 2: await showHelpAndLinks(adminPlayer, config, playerDataManager); break; // Updated
                 default: adminPlayer.sendMessage("§cInvalid selection from Info Panel."); break;
             }
         }

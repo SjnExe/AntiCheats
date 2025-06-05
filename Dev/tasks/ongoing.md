@@ -29,3 +29,4 @@ As of 2024-07-25 *(placeholder date)*:
 ## Normal Player Panel Features (`!panel`)
 *   Implement "My Stats" view for normal players in `!panel`. (Completed)
 *   Implement "Server Rules" view for normal players in `!panel`. (Completed)
+*   Implement "Help & Links" view for normal players in `!panel`. (Completed)

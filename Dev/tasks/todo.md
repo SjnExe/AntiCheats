@@ -90,7 +90,6 @@ This list contains planned features, improvements, and areas for future investig
     *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
 
 *   **Normal Player Panel Features (`!panel`):**
-    *   Implement "Help & Links" view for normal players in `!panel`.
 
 ## Refactoring & Enhancements
 *   **Refactor: Standardize Check Actions & Configurable Punishments:** Create a unified system for how checks trigger actions (flag, log, notify, command execution) and allow these actions/parameters to be configured per check (e.g., kick after N flags for 'fly'). (Scythe, SafeGuard)
