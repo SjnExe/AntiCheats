@@ -1,5 +1,15 @@
 # Completed Tasks
 
+## High Priority / Next Up
+*(Date is a placeholder based on current interaction)*
+*   **Implement X-Ray Detection - Phase 1 (Ore Mining Notifications):** Added a system to notify admins when specified valuable ores are mined.
+    - New configurations in `config.js`: `XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED`, `XRAY_DETECTION_MONITORED_ORES`, `XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT`.
+    - Implemented `handlePlayerBreakBlockAfter` in `eventHandlers.js` to check broken blocks against monitored ores and notify qualifying admins.
+    - Admin notification preferences are managed via tags (`xray_notify_on`, `xray_notify_off`), controlled by the new `!ac xraynotify <on|off|status>` command in `commandManager.js`.
+    - Registered the new event handler in `main.js`.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 ## Standardize Naming Convention in `config.js` (Submitted: 2024-07-26)
 *(Date is a placeholder based on current interaction)*
 
@@ -353,6 +363,13 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
 *   **Newline/Carriage Return in Messages:** Implemented a check in `eventHandlers.js` (`handleBeforeChatSend`) to detect `\n` or `\r` characters in chat messages.
     - Added new flag type `illegalCharInChat` to `types.js` and `playerDataManager.js`.
     - Added configuration options (`enableNewlineCheck`, `flagOnNewline`, `cancelMessageOnNewline`) to `config.js`.
+    - The check can be configured to cancel the message and/or flag the player.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+*   **Abnormal Message Lengths:** Extended `handleBeforeChatSend` in `eventHandlers.js` to check for messages exceeding a configurable maximum length.
+    - Added new flag type `longMessage` to `types.js` and `playerDataManager.js`.
+    - Added configuration options (`enableMaxMessageLengthCheck`, `maxMessageLength`, `flagOnMaxMessageLength`, `cancelOnMaxMessageLength`) to `config.js`.
     - The check can be configured to cancel the message and/or flag the player.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]

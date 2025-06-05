@@ -100,6 +100,47 @@ export function handlePlayerBreakBlock(eventData, playerDataManager) {
 }
 
 /**
+ * Handles block break events by players for X-Ray detection notifications.
+ * @param {mc.PlayerBreakBlockAfterEvent} eventData
+ * @param {object} config The configuration object
+ * @param {object} playerUtils Module for utility functions like debugLog and notifyAdmins (or direct player.sendMessage)
+ */
+export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
+    if (!config.XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED) {
+        return;
+    }
+
+    const player = eventData.player;
+    const brokenBlockId = eventData.brokenBlockPermutation.type.id;
+
+    if (config.XRAY_DETECTION_MONITORED_ORES.includes(brokenBlockId)) {
+        const location = player.location; // Or eventData.block.location if more precise for future
+        const prettyBlockName = brokenBlockId.replace("minecraft:", "");
+        const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(location.y)}, ${Math.floor(location.z)}§7.`;
+
+        playerUtils.debugLog(message, null); // Log all alerts for audit
+
+        mc.world.getAllPlayers().forEach(adminPlayer => {
+            if (adminPlayer.hasTag(config.adminTag)) {
+                const wantsNotificationsExplicitly = adminPlayer.hasTag("xray_notify_on");
+                const explicitlyDisabled = adminPlayer.hasTag("xray_notify_off");
+
+                let shouldNotify = false;
+                if (wantsNotificationsExplicitly) {
+                    shouldNotify = true;
+                } else if (config.XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT && !explicitlyDisabled) {
+                    shouldNotify = true;
+                }
+
+                if (shouldNotify) {
+                    adminPlayer.sendMessage(message);
+                }
+            }
+        });
+    }
+}
+
+/**
  * Handles item use events for illegal item checks.
  * @param {mc.ItemUseBeforeEvent} eventData
  * @param {object} playerDataManager

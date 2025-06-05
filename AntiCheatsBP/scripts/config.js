@@ -198,6 +198,23 @@ export const flagOnMaxMessageLength = true;
 /** @type {boolean} If true, messages exceeding max length will be cancelled. */
 export const cancelOnMaxMessageLength = true;
 
+// --- X-Ray Detection ---
+
+/** @type {boolean} If true, enables notifications for mining valuable ores. */
+export const XRAY_DETECTION_NOTIFY_ON_ORE_MINE_ENABLED = true;
+
+/** @type {string[]} List of block type IDs to monitor for mining notifications. */
+export const XRAY_DETECTION_MONITORED_ORES = [
+    "minecraft:diamond_ore",
+    "minecraft:deepslate_diamond_ore",
+    "minecraft:ancient_debris",
+    "minecraft:emerald_ore",
+    "minecraft:deepslate_emerald_ore"
+];
+
+/** @type {boolean} If true, admins will receive X-Ray mining notifications by default, unless they explicitly turn them off. */
+export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */

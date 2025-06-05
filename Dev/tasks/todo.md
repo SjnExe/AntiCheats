@@ -3,7 +3,7 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## High Priority / Next Up
-*No high priority tasks currently identified.*
+*   **Implement X-Ray Detection - Phase 1 (Ore Mining Notifications):** Notify admins when valuable ores (configurable) are mined. Includes per-admin notification toggles via command.
 
 ## Medium Priority
 
@@ -36,7 +36,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **World Interaction - Advanced:** SjnExe parity goal.
         *   **AutoTool:** Monitor `player.selectedSlot` changes in conjunction with block break events. Detect if player's selected slot almost instantaneously switches to the optimal tool for breaking a block type just before the break occurs, and then potentially switches back. (Scythe)
         *   **InstaBreak:** Detect breaking of blocks that are typically unbreakable (e.g., bedrock, barriers, command blocks by non-ops) or blocks broken significantly faster than possible even with enchantments/effects. (Scythe)
-        *   **X-Ray Detection:** Track player mining patterns. Flag suspicious behavior such as mining directly towards valuable ores (diamonds, ancient debris) through large amounts of stone with no prior visual access (e.g., no nearby caves/ravines). Analyze ratio of ores to stone mined over time, or unusual "vein mining" patterns that ignore normal exploration. (SafeGuard, SjnExe)
 
     *   **Player Behavior - Advanced:** SjnExe parity goal.
         *   **Namespoof:** Check `player.nameTag` for excessive length, use of disallowed characters (e.g., non-ASCII, control characters beyond typical gameplay names), or rapid changes. (Scythe, SjnExe)
