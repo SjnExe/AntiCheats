@@ -19,7 +19,7 @@ export function checkNoFall(player, pData) {
     if (!enableNofallCheck) return; // Renamed
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    if (player.isFlying || player.isGliding || player.isInWater || player.isClimbing || player.getVehicle()) {
+    if (player.isFlying || player.isGliding || player.isInWater || player.isClimbing || player.hasComponent('minecraft:rider')) {
         return;
     }
 
