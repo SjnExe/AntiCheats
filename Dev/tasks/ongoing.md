@@ -1,13 +1,12 @@
 # Ongoing Tasks
 
-As of 2024-07-31
+As of 2025-06-05
 
-## Admin Panel UI (`!panel`) Development
-*   **Phase 5: Configuration & Advanced (Future) (In Progress):**
-    *   View/Edit parts of `config.js`: (View read-only: Completed; Edit simple values: TODO).
-    *   Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Log actions with details (admin, target, reason, duration, timestamp) and create a UI to view these logs. (Completed)
+The following tasks previously listed in `ongoing.md` have now been completed and documented in `Dev/tasks/completed.md`:
+- Admin Panel UI (`!panel`) Development: View/Edit parts of `config.js` (Edit simple values).
+- New Admin Commands (User Suggested): `!tp` command implementation.
+- New Admin Commands (User Suggested): `!gmc`, `!gms`, `!gma`, `!gmsp` command implementation.
 
-## New Admin Commands (User Suggested)
-*   `!tp <playerName>` & `!tp <x> <y> <z>`: Implement teleport command for admins/owner. (User Suggestion) (TODO)
-    *   *Enhancement: Add optional dimension parameter for coordinate-based teleports (e.g., `!tp <playerToMoveOrSelf> <x> <y> <z> [dimension: overworld|nether|end]`). If omitted, defaults to current dimension of player being moved.*
-*   `!gmc`, `!gms`, `!gma`, `!gmsp`: Implement game mode change commands for admins/owner. (User Suggestion) (TODO)
+The task "Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick)" under "Admin Panel UI (`!panel`) Development / Phase 5" was already marked as completed in a previous version of this file.
+
+All specific items from the last version of `ongoing.md` that were marked 'TODO' have now been addressed. This file should be updated if new tasks are started or if other ongoing initiatives are identified.
