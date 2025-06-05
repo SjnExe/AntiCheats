@@ -454,3 +454,49 @@ This major update introduced a comprehensive suite of anti-cheat features, impro
         - Clears all flag counts, total flags, last flag type, and other violation trackers (e.g., `consecutiveOffGroundTicks`, `fallDistance`, `attackEvents`).
         - Saves the updated player data.
         - Provides specific "warnings cleared" feedback messages to admins.
+
+## Admin Panel UI & Normal Player Panel Features (from ongoing.md)
+As of 2024-07-27
+
+*   **Phase 1: Basic Structure & Player List:** (Completed)
+    *   Command `!panel open main` (or similar).
+    *   Initial UI form displaying a list of currently online players (name, basic stats like flag count).
+    *   Selection of a player leads to a "Player Actions" form.
+*   **Phase 1.5: Player Actions Form with Reset Flags & Detailed View:** (Completed)
+    *   Player Actions form includes "View Detailed Info/Flags" and "Reset Player Flags" (with confirmation).
+*   **Phase 2: Integrate Old `!ui` Tools & Dynamic Views:** (Completed with this commit)
+    *   Consolidated `!ui` and `!panel` commands. `!panel` is primary, `!ui` is an alias.
+    *   `showAdminPanelMain` in `uiManager.js` now dynamically shows:
+        *   For Admins/Owners: Buttons for "View Online Players", "Inspect Player (Text)", "Reset Flags (Text)", "List Watched Players", and placeholders for Server Stats/Settings.
+        *   For Normal Users: Placeholders for "My Stats", "Server Rules", "Help & Links".
+*   **Phase 3: Player Actions - Moderation (TODO)**:
+    *   "Kick Player" button with reason input (integrates with kick system). (Completed)
+    *   "Mute Player" button with duration/reason input (integrates with mute system). (Completed)
+    *   "Freeze/Unfreeze Player" toggle (integrates with freeze system). (Completed)
+
+## Normal Player Panel Features (`!panel`)
+*   Implement "My Stats" view for normal players in `!panel`. (Completed)
+*   Implement "Server Rules" view for normal players in `!panel`. (Completed)
+*   Implement "Help & Links" view for normal players in `!panel`. (Completed)
+
+## Implement Persistent Mute System (Task Completion Date: 2024-07-28)
+
+**Original Task Description:**
+`!ac mute <player> [duration] [reason]` & `!ac unmute <player>`: Implement a persistent mute system. Mutes should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (Inspired by SjnExe, SafeGuard)
+
+**Summary of Implementation:**
+*   Modified `playerDataManager.js`:
+    *   Added `muteInfo: null` to the default player data structure in `initializeDefaultPlayerData`.
+    *   Included `pData.muteInfo` in `persistedPData` within `prepareAndSavePlayerData` for saving to dynamic properties.
+    *   Updated `ensurePlayerDataInitialized` to load `muteInfo` from dynamic properties and to include logic that clears expired mutes upon player data initialization.
+    *   Removed the global `activeMutes` map.
+    *   Refactored `addMute`, `removeMute`, `getMuteInfo`, and `isMuted` functions to operate on `pData.muteInfo` (stored per player) instead of the global map. These functions now accept the full `player` object.
+    *   Removed the `getActiveMuteCount` function as it was tied to the global map.
+*   Updated Callers:
+    *   Modified `commandManager.js`: Updated `!mute` and `!unmute` command handlers to pass the `targetPlayer` object (instead of `targetPlayer.id`) to `playerDataManager.addMute`, `playerDataManager.removeMute`, and `playerDataManager.isMuted`.
+    *   Modified `eventHandlers.js`: Updated `handleBeforeChatSend` to pass the `eventData.sender` object (player object) to `playerDataManager.isMuted` and `playerDataManager.getMuteInfo`.
+    *   Modified `uiManager.js`:
+        *   Updated `showPlayerActionsForm` to pass the `targetPlayer` object to `playerDataManager.getMuteInfo`, `playerDataManager.addMute`, and `playerDataManager.removeMute`.
+        *   Updated `showSystemInfo` to calculate `mutedPlayersCount` by iterating through all players and checking their persisted `muteInfo`, replacing the call to the removed `getActiveMuteCount`.
+
+*User testing required to fully verify persistence across server restarts and player sessions.*

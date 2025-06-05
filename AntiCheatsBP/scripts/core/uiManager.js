@@ -194,7 +194,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
     const freezeButtonText = isTargetFrozen ? "Unfreeze Player" : "Freeze Player";
     const freezeButtonIcon = isTargetFrozen ? "textures/ui/icon_unlocked" : "textures/ui/icon_locked";
 
-    const muteInfo = playerDataManager.getMuteInfo(targetPlayer.id);
+    const muteInfo = playerDataManager.getMuteInfo(targetPlayer);
     const isTargetMuted = muteInfo !== null;
     let muteButtonText = isTargetMuted ? "Unmute Player" : "Mute Player";
     if (isTargetMuted && muteInfo.unmuteTime !== Infinity) {
@@ -329,7 +329,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                 break;
 
             case 3: // Mute/Unmute Player
-                const currentMuteInfo = playerDataManager.getMuteInfo(targetPlayer.id); // Re-fetch for current state
+                const currentMuteInfo = playerDataManager.getMuteInfo(targetPlayer); // Re-fetch for current state
                 const currentIsTargetMuted = currentMuteInfo !== null;
 
                 if (currentIsTargetMuted) { // Action is to Unmute
@@ -341,7 +341,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     if (unmuteResponse.canceled) {
                         adminPlayer.sendMessage("§7Unmute cancelled.");
                     } else if (unmuteResponse.formValues[0]) {
-                        playerDataManager.removeMute(targetPlayer.id);
+                        playerDataManager.removeMute(targetPlayer);
                         adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} unmuted.`);
                         try { targetPlayer.onScreenDisplay.setActionBar("§aYou have been unmuted."); } catch(e){}
                         playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was unmuted by ${adminPlayer.nameTag} via panel.`, adminPlayer, null);
@@ -372,7 +372,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                             }
                             durationMs = minutes * 60 * 1000;
                         }
-                        playerDataManager.addMute(targetPlayer.id, durationMs, reason);
+                        playerDataManager.addMute(targetPlayer, durationMs, reason);
                         const durationText = durationMs === Infinity ? "permanently" : `for ${durationInput}${durationInput.toLowerCase()==="perm"?"":" minutes"}`;
                         adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} muted ${durationText}.`);
                         try { targetPlayer.onScreenDisplay.setActionBar(`§cYou are muted ${durationText}. Reason: ${reason}`); } catch(e){}
@@ -588,16 +588,23 @@ async function showSystemInfo(adminPlayer, config, playerDataManager) { // Added
             }
         }
 
-        const mutedPlayersCount = typeof playerDataManager.getActiveMuteCount === 'function'
-            ? playerDataManager.getActiveMuteCount()
-            : 'N/A';
+        let mutedPlayersCount = 0;
+        for (const p of mc.world.getAllPlayers()) {
+            const pData = playerDataManager.getPlayerData(p.id);
+            if (pData && pData.muteInfo) {
+                // Optionally, re-check expiration here if getMuteInfo isn't called regularly for all players
+                if (pData.muteInfo.unmuteTime === Infinity || Date.now() < pData.muteInfo.unmuteTime) {
+                    mutedPlayersCount++;
+                }
+            }
+        }
 
 
         let bodyContent = `§lAntiCheat System Information§r\n\n`;
         bodyContent += `§eAC Version:§r ${config.acVersion || 'Unknown'}\n`;
         bodyContent += `§eOnline Players:§r ${onlinePlayersCount}\n`;
         bodyContent += `§eWatched Players:§r ${watchedPlayersCount}\n`;
-        bodyContent += `§eSession Muted Players:§r ${mutedPlayersCount}\n`;
+        bodyContent += `§eMuted Players (Persistent):§r ${mutedPlayersCount}\n`;
 
         const form = new MessageFormData();
         form.title("System Information");

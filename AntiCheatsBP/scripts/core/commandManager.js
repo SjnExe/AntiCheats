@@ -478,7 +478,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
 
             try {
-                const muteAdded = playerDataManager.addMute(foundPlayerMute.id, durationMsMute, reasonMute);
+                const muteAdded = playerDataManager.addMute(foundPlayerMute, durationMsMute, reasonMute);
                 if (muteAdded) {
                     const durationText = durationMsMute === Infinity ? "permanently (this session)" : `for ${durationStringMute}`;
 
@@ -521,12 +521,12 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
 
             try {
-                if (!playerDataManager.isMuted(foundPlayerUnmute.id)) {
+                if (!playerDataManager.isMuted(foundPlayerUnmute)) {
                     player.sendMessage(`§7Player ${foundPlayerUnmute.nameTag} is not currently muted.`);
                     return;
                 }
 
-                const unmuted = playerDataManager.removeMute(foundPlayerUnmute.id);
+                const unmuted = playerDataManager.removeMute(foundPlayerUnmute);
                 if (unmuted) {
                     try {
                         foundPlayerUnmute.onScreenDisplay.setActionBar("§aYou have been unmuted.");
@@ -566,12 +566,12 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             }
 
             try {
-                if (!playerDataManager.isMuted(foundPlayerUnmute.id)) { // Check if player is muted
+                if (!playerDataManager.isMuted(foundPlayerUnmute)) { // Check if player is muted
                     player.sendMessage(`§7Player ${foundPlayerUnmute.nameTag} is not currently muted.`);
                     return;
                 }
 
-                const unmuted = playerDataManager.removeMute(foundPlayerUnmute.id);
+                const unmuted = playerDataManager.removeMute(foundPlayerUnmute);
                 if (unmuted) {
                     try {
                         foundPlayerUnmute.onScreenDisplay.setActionBar("§aYou have been unmuted.");

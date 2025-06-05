@@ -224,9 +224,9 @@ export function handleBeforeChatSend(eventData, playerDataManager, config, playe
     }
 
     // Mute Check - Placed at the very beginning
-    if (playerDataManager.isMuted(player.id)) {
+    if (playerDataManager.isMuted(player)) {
         eventData.cancel = true;
-        const muteInfo = playerDataManager.getMuteInfo(player.id);
+        const muteInfo = playerDataManager.getMuteInfo(player);
         let muteMsg = "§cYou are currently muted.";
         if (muteInfo) {
             if (muteInfo.unmuteTime === Infinity) {
