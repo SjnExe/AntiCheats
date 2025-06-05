@@ -245,6 +245,17 @@ export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
  */
 export const AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON = true;
 
+// --- UI Display Texts ---
+
+/** @type {string[]} Defines the server rules to be displayed in the UI. Each string is a rule line. */
+export const SERVER_RULES = [
+  "1. Be respectful to all players and staff.",
+  "2. No cheating, exploiting, or unfair advantages.",
+  "3. No griefing or stealing.",
+  "4. Do not spam chat or use excessive caps.",
+  "5. PVP is only allowed in designated areas or if agreed upon."
+];
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */

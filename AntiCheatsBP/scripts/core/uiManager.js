@@ -114,6 +114,32 @@ async function showMyStats(player, playerDataManager) {
     await showAdminPanelMain(player, playerDataManager, null);
 }
 
+async function showServerRules(player, config, playerDataManager) {
+    playerUtils.debugLog(`UI: showServerRules for ${player.nameTag}`, player.nameTag);
+    const form = new MessageFormData();
+    form.title("Server Rules");
+
+    let bodyContent = "";
+    if (config && config.SERVER_RULES && config.SERVER_RULES.length > 0) {
+        bodyContent = config.SERVER_RULES.join("\n");
+    } else {
+        bodyContent = "§cServer rules have not been configured by the server admin yet.";
+    }
+
+    form.body(bodyContent);
+    form.button1("Close");
+
+    try {
+        await form.show(player);
+    } catch (error) {
+        playerUtils.debugLog(`Error in showServerRules for ${player.nameTag}: ${error}`, player.nameTag);
+        console.error(`[uiManager.showServerRules] Error: ${error}`, error.stack);
+        // No need to send message to player as MessageFormData show() errors are usually client-side
+    }
+    // Always return to the main panel for the player
+    await showAdminPanelMain(player, playerDataManager, config);
+}
+
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager) {
     playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
 
@@ -491,8 +517,8 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
             }
 
             switch (response.selection) {
-                case 0: await showMyStats(adminPlayer, playerDataManager); break; // Updated
-                case 1: adminPlayer.sendMessage("§7'Server Rules' display is not yet implemented."); break;
+                case 0: await showMyStats(adminPlayer, playerDataManager); break;
+                case 1: await showServerRules(adminPlayer, config, playerDataManager); break; // Updated
                 case 2: adminPlayer.sendMessage("§7'Help & Links' is not yet implemented."); break;
                 default: adminPlayer.sendMessage("§cInvalid selection from Info Panel."); break;
             }
