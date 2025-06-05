@@ -8,6 +8,31 @@ import { Player } from '@minecraft/server';
 import { isOwner, isAdmin } from '../utils/playerUtils.js';
 
 /**
+ * @typedef {number} PermissionLevel
+ * Defines the numeric hierarchy for command permissions.
+ * Lower numbers indicate higher privileges.
+ * - 0: Owner
+ * - 1: Admin
+ * - 1024: Normal (standard user). This value is set high to allow for the
+ *         potential addition of many intermediate permission levels (e.g., Moderator, VIP)
+ *         between Admin and Normal in the future.
+ */
+
+/**
+ * Enum for permission levels. Lower values mean higher privileges.
+ * NORMAL is set to 1024 to allow for future intermediate permission levels.
+ * @readonly
+ * @enum {PermissionLevel}
+ */
+export const PermissionLevels = {
+    OWNER: 0,     // Highest privilege
+    ADMIN: 1,     // Intermediate privilege (e.g., server administrators)
+    NORMAL: 1024  // Standard user privilege, corresponds to MEMBER_RANK.
+                  // Chosen to be a higher number to leave room for many potential
+                  // intermediate ranks (e.g., Moderator, VIP, etc.) between ADMIN and NORMAL.
+};
+
+/**
  * @typedef {object} RankDisplayProperties
  * @property {string} name - The display name of the rank (e.g., "Owner", "Admin").
  * @property {string} chatPrefix - The prefix to use before a player's chat message.
@@ -79,13 +104,32 @@ export function updatePlayerNametag(player) {
         return;
     }
 
-    const rankDisplay = getPlayerRankDisplay(player);
-    // player.name is the read-only actual name of the player.
-    // player.nameTag is the modifiable display name shown above the player.
+    const vanishedTag = "vanished"; // Standard tag for vanished players
+
     try {
+        if (player.hasTag(vanishedTag)) {
+            player.nameTag = ""; // Clear nametag for vanished players
+            return; // No further nametag processing needed
+        }
+
+        // If not vanished, proceed with standard rank-based nametag
+        const rankDisplay = getPlayerRankDisplay(player);
+        // player.name is the read-only actual name of the player.
+        // player.nameTag is the modifiable display name shown above the player.
         player.nameTag = rankDisplay.nametagPrefix + player.name;
+
     } catch (error) {
-        console.error(`[rankManager] Error setting nametag for ${player.name}: ${error}`);
+        // It's good to log the specific player if possible, especially if player.name is accessible
+        // However, player object might be in a bad state if error occurs.
+        let playerNameForError = "UnknownPlayer";
+        try {
+            if (player && player.name) {
+                playerNameForError = player.name;
+            }
+        } catch (nameError) {
+            // player or player.name might not be accessible
+        }
+        console.error(`[rankManager] Error setting nametag for ${playerNameForError}: ${error}`);
         // Potentially, the player object might not be valid anymore (e.g., left during the tick)
         // or some other unexpected issue.
     }
