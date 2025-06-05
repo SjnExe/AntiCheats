@@ -238,6 +238,13 @@ export const XRAY_DETECTION_MONITORED_ORES = [
 /** @type {boolean} If true, admins will receive X-Ray mining notifications by default, unless they explicitly turn them off. */
 export const XRAY_DETECTION_ADMIN_NOTIFY_BY_DEFAULT = true;
 
+/**
+ * @type {boolean}
+ * If true, admins will receive all AntiCheat system notifications by default,
+ * unless they explicitly turn them off using !acnotifications off.
+ */
+export const AC_GLOBAL_NOTIFICATIONS_DEFAULT_ON = true;
+
 // --- System ---
 
 /** @type {string} The current version of the AntiCheat system. */
