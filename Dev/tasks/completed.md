@@ -562,3 +562,94 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   **`!gmc`, `!gms`, `!gma`, `!gmsp`:** Implemented game mode change commands for admins/owner.
         *   Allows changing gamemode (Creative, Survival, Adventure, Spectator) for self or a target player.
         *   This completes the task: "`!gmc`, `!gms`, `!gma`, `!gmsp`: Implement game mode change commands for admins/owner. (User Suggestion) (TODO)".
+
+## Documentation Update (Completed on 2025-06-05)
+
+*   **Standardize Command Syntax in `Dev/tasks/todo.md`:**
+    *   Reviewed `Dev/tasks/todo.md` and updated all suggested administrative command syntaxes from the `!ac <command>` format to `!<command>` (e.g., `!ac kick` changed to `!kick`).
+    *   This ensures that command suggestions in the to-do list are consistent with the established command prefix (`!`) used for existing commands.
+    *   Updated a related line in the logging section of `todo.md` to refer to `!` commands generally.
+
+## Admin Command Verification (Completed on 2025-06-05)
+
+*   **`!kick <player> [reason]` Command:**
+    *   Task was to implement the `!kick` command.
+    *   Upon review of `AntiCheatsBP/scripts/core/commandManager.js`, it was found that the `!kick` command is already implemented.
+    *   The existing implementation correctly handles:
+        *   Syntax: `!kick <playername> [reason]`
+        *   Permissions: `permissionLevels.ADMIN`
+        *   Player lookup.
+        *   Self-kick prevention.
+        *   Kicking the player using `player.kick(reason)`.
+        *   Notification to the admin issuer and other admins.
+        *   Logging the kick action via `addLog`.
+        *   Error handling for player not found or kick failure.
+    *   No new implementation was needed. This task is considered completed by verification.
+
+## Command Enhancement (Completed on 2025-06-05)
+
+*   **`!freeze <player> [on|off]` Command Logging:**
+    *   Enhanced the existing `!freeze` command in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Added `addLog` calls for both freeze and unfreeze actions.
+    *   Log entries include timestamp, admin name, action type ('freeze'/'unfreeze'), target player name, and details.
+    *   This ensures that administrative freeze/unfreeze actions are now properly logged for auditing.
+
+## Admin Commands Implementation (Completed on 2025-06-05)
+
+*   **`!warnings <player>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Displays a detailed list of the target player's flags, including total flags, last flag type, and individual flag counts with timestamps.
+    *   Handles cases for player/data not found.
+    *   Logs the action using `addLog` with `actionType: 'view_warnings'`.
+*   **`!resetflags <player>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js` (alongside `!clearwarnings` due to functional similarity).
+    *   Resets all flag counts (total and individual), clears the last flag type, and resets other violation-specific trackers (e.g., `consecutiveOffGroundTicks`).
+    *   Persists changes using `playerDataManager.prepareAndSavePlayerData()`.
+    *   Sends feedback to the admin and notifies other admins.
+    *   Logs the action using `addLog` with `actionType: 'reset_flags'`.
+*   **`!clearwarnings <player>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Functionally mirrors `!resetflags` in terms of resetting player flag data and violation trackers.
+    *   Provides specific "Warnings cleared" feedback messages.
+    *   Logs the action using `addLog` with `actionType: 'clear_warnings'`, distinguishing it from a direct `!resetflags` invocation.
+
+## Admin Command Implementation (Completed on 2025-06-05)
+
+*   **`!invsee <playername>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Allows an admin to view a read-only representation of a target player's main inventory (36 slots).
+    *   Accessed `EntityInventoryComponent` and its `container` to iterate through slots and `ItemStack` objects.
+    *   Displays item details: slot number, type ID, amount, custom name tag, lore, durability (from `ItemDurabilityComponent`), and enchantments (from `ItemEnchantableComponent` and `Enchantment` details).
+    *   Uses `MessageFormData` for UI display, presenting the inventory in a scrollable list.
+    *   Logs the action using `addLog` with `actionType: 'invsee'`.
+    *   Handles cases for player not found or inventory inaccessible.
+
+## UI Enhancements (Completed on 2025-06-05)
+
+*   **`!panel` Icon Enhancement:**
+    *   Enhanced `AntiCheatsBP/scripts/core/uiManager.js` by adding icons to dynamically generated player buttons in the `showOnlinePlayersList` function. Used `"textures/ui/icon_steve"` for these player buttons.
+    *   Verified that other main navigation buttons in `showAdminPanelMain`, `showPlayerActionsForm`, and `showServerManagementForm` already had appropriate icons.
+    *   This improves the visual consistency and appeal of the admin panel.
+
+## Command Enhancement (Completed on 2025-06-05)
+
+*   **`!clearchat` Command Logging:**
+    *   Enhanced the existing `!clearchat` command in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Added an `addLog` call to record when the command is used.
+    *   Log entries include timestamp, admin name, action type ('clear_chat'), and details.
+    *   This ensures that this global administrative action is logged for auditing.
+
+## Admin Command Implementation (Completed on 2025-06-05)
+
+*   **`!systeminfo <playername>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Allows an admin to view client system information for a target player.
+    *   Retrieves and displays:
+        *   Platform Type (e.g., Windows, Android) from `player.clientSystemInfo.platformType`.
+        *   Max Render Distance from `player.clientSystemInfo.maxRenderDistance`.
+        *   Memory Tier from `player.clientSystemInfo.memoryTier`.
+        *   Last Input Mode (e.g., MouseKeyboard, Touch) from `player.inputInfo.lastInputModeUsed`.
+        *   Graphics Mode (e.g., Fancy, Simple) from `player.graphicsMode`.
+    *   Defaults to "N/A" if a specific piece of info is unavailable.
+    *   The action is logged using `addLog` with `actionType: 'system_info'`.
+    *   Handles cases for player not found or errors during info retrieval.

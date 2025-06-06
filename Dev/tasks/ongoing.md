@@ -2,11 +2,8 @@
 
 As of 2025-06-05
 
-The following tasks previously listed in `ongoing.md` have now been completed and documented in `Dev/tasks/completed.md`:
-- Admin Panel UI (`!panel`) Development: View/Edit parts of `config.js` (Edit simple values).
-- New Admin Commands (User Suggested): `!tp` command implementation.
-- New Admin Commands (User Suggested): `!gmc`, `!gms`, `!gma`, `!gmsp` command implementation.
+*   **Documentation:**
+    *   Update task files (`ongoing.md`, `completed.md`) to accurately reflect current work and completions. (In Progress)
 
-The task "Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick)" under "Admin Panel UI (`!panel`) Development / Phase 5" was already marked as completed in a previous version of this file.
-
-All specific items from the last version of `ongoing.md` that were marked 'TODO' have now been addressed. This file should be updated if new tasks are started or if other ongoing initiatives are identified.
+*The implementation of the `!systeminfo` command was completed on 2025-06-05 and its details moved to `completed.md`.*
+*Previous tasks, including `!copyinv` command, `!vanish` logging, `!clearchat` logging, `!invsee` implementation, Lag Clear via Admin Panel, `!warnings`/`!clearwarnings`/`!resetflags` commands, `!freeze` logging, `!kick` verification, and `todo.md` syntax updates, were also completed and documented.*
