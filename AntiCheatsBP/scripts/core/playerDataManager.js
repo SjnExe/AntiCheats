@@ -3,17 +3,29 @@ import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 
 const playerData = new Map();
 
-/** @todo Add JSDoc */
+/**
+ * Retrieves the anti-cheat data for a specific player by their ID.
+ * @param {string} playerId - The ID of the player.
+ * @returns {import('../types.js').PlayerAntiCheatData | undefined} The player's anti-cheat data, or undefined if not found.
+ */
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
 }
 
-/** @todo Add JSDoc */
+/**
+ * Retrieves all player anti-cheat data currently in memory.
+ * @returns {IterableIterator<import('../types.js').PlayerAntiCheatData>} An iterator for all player data values.
+ */
 export function getAllPlayerDataValues() {
     return playerData.values();
 }
 
-/** @todo Add JSDoc */
+/**
+ * Saves a subset of player's anti-cheat data to their dynamic properties for persistence.
+ * @param {mc.Player} player - The player object.
+ * @param {object} pDataToSave - The portion of PlayerAntiCheatData to save.
+ * @returns {Promise<boolean>} True if saving was successful, false otherwise.
+ */
 export async function savePlayerDataToDynamicProperties(player, pDataToSave) {
     if (!player || !pDataToSave) {
         debugLog("PDM:save: Invalid player or pDataToSave", player?.nameTag);
@@ -41,7 +53,11 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave) {
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Loads player's anti-cheat data from their dynamic properties.
+ * @param {mc.Player} player - The player object.
+ * @returns {Promise<object | null>} The parsed player data object, or null if not found or an error occurs.
+ */
 export async function loadPlayerDataFromDynamicProperties(player) {
     if (!player) {
         debugLog("PDM:load: Invalid player");
@@ -75,7 +91,11 @@ export async function loadPlayerDataFromDynamicProperties(player) {
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Prepares a subset of the runtime player data and saves it to dynamic properties.
+ * @param {mc.Player} player - The player whose data needs to be saved.
+ * @returns {Promise<void>}
+ */
 export async function prepareAndSavePlayerData(player) {
     if (!player) return;
     const pData = playerData.get(player.id);
@@ -101,7 +121,12 @@ export async function prepareAndSavePlayerData(player) {
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Initializes a new default PlayerAntiCheatData object for a player.
+ * @param {mc.Player} player - The player object.
+ * @param {number} currentTick - The current game tick.
+ * @returns {import('../types.js').PlayerAntiCheatData} The default player data object.
+ */
 export function initializeDefaultPlayerData(player, currentTick) {
     return {
         playerNameTag: player.nameTag,
@@ -144,7 +169,13 @@ export function initializeDefaultPlayerData(player, currentTick) {
     };
 }
 
-/** @todo Add JSDoc */
+/**
+ * Ensures that a player has their anti-cheat data initialized, loading from persistence if available or creating new data.
+ * Also handles expiry of mutes/bans found in persisted data.
+ * @param {mc.Player} player - The player object.
+ * @param {number} currentTick - The current game tick, used for initializing some fields.
+ * @returns {Promise<import('../types.js').PlayerAntiCheatData>} The initialized or loaded player data.
+ */
 export async function ensurePlayerDataInitialized(player, currentTick) {
     if (playerData.has(player.id)) {
         return playerData.get(player.id);
@@ -197,7 +228,11 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
     return newPData;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Cleans up runtime player data for players who are no longer in the game.
+ * @param {mc.Player[]} activePlayers - An array of currently active player objects.
+ * @returns {void}
+ */
 export function cleanupActivePlayerData(activePlayers) {
     const activePlayerIds = new Set();
     for (const player of activePlayers) {
@@ -212,7 +247,13 @@ export function cleanupActivePlayerData(activePlayers) {
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Updates transient (session-only) player data that changes frequently, like position and velocity.
+ * @param {mc.Player} player - The player object.
+ * @param {import('../types.js').PlayerAntiCheatData} pData - The player's current anti-cheat data.
+ * @param {number} currentTick - The current game tick.
+ * @returns {void}
+ */
 export function updateTransientPlayerData(player, pData, currentTick) {
     const rotation = player.getRotation();
     pData.lastPitch = rotation.x;
@@ -234,7 +275,15 @@ export function updateTransientPlayerData(player, pData, currentTick) {
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Adds a flag to a player's data, warns them, and notifies admins.
+ * Also handles saving the updated player data.
+ * @param {mc.Player} player - The player to flag.
+ * @param {string} flagType - The type of flag (e.g., "fly", "speed").
+ * @param {string} reasonMessage - The message/reason for the flag, shown to the player.
+ * @param {string} [detailsForNotify=""] - Additional details for admin notifications.
+ * @returns {void}
+ */
 export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") {
     const pData = getPlayerData(player.id);
     if (!pData) {
@@ -258,7 +307,13 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     prepareAndSavePlayerData(player);
 }
 
-/** @todo Add JSDoc */
+/**
+ * Adds a mute to a player's data. Mute information is persisted.
+ * @param {mc.Player} player - The player to mute.
+ * @param {number | Infinity} durationMs - The duration of the mute in milliseconds, or Infinity for permanent.
+ * @param {string} reason - The reason for the mute.
+ * @returns {boolean} True if the mute was successfully applied, false otherwise.
+ */
 export function addMute(player, durationMs, reason) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addMute: Invalid arguments - player: ${player?.nameTag}, durationMs: ${durationMs}`, player?.nameTag);
@@ -280,7 +335,11 @@ export function addMute(player, durationMs, reason) {
     return true;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Removes a mute from a player's data.
+ * @param {mc.Player} player - The player to unmute.
+ * @returns {boolean} True if the player was unmuted, false if they were not muted or an error occurred.
+ */
 export function removeMute(player) {
     if (!player) { debugLog(`PDM:removeMute: Invalid player object provided.`); return false; }
     const pData = getPlayerData(player.id);
@@ -295,7 +354,11 @@ export function removeMute(player) {
     return false;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Retrieves a player's current mute information, clearing it if expired.
+ * @param {mc.Player} player - The player whose mute info is requested.
+ * @returns {{unmuteTime: number | Infinity, reason: string} | null} The mute information object, or null if not muted or expired.
+ */
 export function getMuteInfo(player) {
     if (!player) { return null; }
     const pData = getPlayerData(player.id);
@@ -310,12 +373,22 @@ export function getMuteInfo(player) {
     return mute;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Checks if a player is currently muted.
+ * @param {mc.Player} player - The player to check.
+ * @returns {boolean} True if the player is muted, false otherwise.
+ */
 export function isMuted(player) {
     return getMuteInfo(player) !== null;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Adds a ban to a player's data. Ban information is persisted.
+ * @param {mc.Player} player - The player to ban.
+ * @param {number | Infinity} durationMs - The duration of the ban in milliseconds, or Infinity for permanent.
+ * @param {string} reason - The reason for the ban.
+ * @returns {boolean} True if the ban was successfully applied, false otherwise.
+ */
 export function addBan(player, durationMs, reason) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addBan: Invalid arguments - player: ${player?.nameTag}, durationMs: ${durationMs}`, player?.nameTag);
@@ -337,7 +410,11 @@ export function addBan(player, durationMs, reason) {
     return true;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Removes a ban from a player's data.
+ * @param {mc.Player} player - The player to unban.
+ * @returns {boolean} True if the player was unbanned, false if they were not banned or an error occurred.
+ */
 export function removeBan(player) {
     if (!player) { debugLog(`PDM:removeBan: Invalid player object provided.`); return false; }
     const pData = getPlayerData(player.id);
@@ -352,7 +429,11 @@ export function removeBan(player) {
     return false;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Retrieves a player's current ban information, clearing it if expired.
+ * @param {mc.Player} player - The player whose ban info is requested.
+ * @returns {{unbanTime: number | Infinity, reason: string} | null} The ban information object, or null if not banned or expired.
+ */
 export function getBanInfo(player) {
     if (!player) { return null; }
     const pData = getPlayerData(player.id);
@@ -367,12 +448,22 @@ export function getBanInfo(player) {
     return currentBanInfo;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Checks if a player is currently banned.
+ * @param {mc.Player} player - The player to check.
+ * @returns {boolean} True if the player is banned, false otherwise.
+ */
 export function isBanned(player) {
     return getBanInfo(player) !== null;
 }
 
-/** @todo Add JSDoc */
+/**
+ * Sets or updates the runtime anti-cheat data for a specific player.
+ * Primarily used when initializing or loading data.
+ * @param {string} playerId - The ID of the player.
+ * @param {import('../types.js').PlayerAntiCheatData} data - The player data to set.
+ * @returns {void}
+ */
 export function setPlayerData(playerId, data) {
     if (!playerId || !data) {
         debugLog("PDM:setPlayerData: Invalid playerId or data.", null);

@@ -34,15 +34,15 @@ export function getPlayerPermissionLevel(player) {
     if (!(player instanceof mc.Player)) {
         console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
         // Fallback to the lowest permission level if player object is not valid.
-        return permissionLevels.NORMAL; // Or DEFAULT, depending on desired strictness
+        return permissionLevels.normal; // Or DEFAULT, depending on desired strictness
     }
 
     if (isOwner(player.nameTag)) {
-        return permissionLevels.OWNER;
+        return permissionLevels.owner;
     } else if (isAdmin(player)) {
-        return permissionLevels.ADMIN;
+        return permissionLevels.admin;
     } else {
-        return permissionLevels.NORMAL;
+        return permissionLevels.normal;
     }
 }
 

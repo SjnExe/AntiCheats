@@ -66,7 +66,13 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
     playerDataManager.prepareAndSavePlayerData(player);
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles player spawn events, checks for active bans, and updates nametags.
+ * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ */
 export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config) {
     const player = eventData.player;
     if (!player) {
@@ -100,7 +106,17 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles entity hurt events to track fall damage and trigger combat-related checks.
+ * @param {mc.EntityHurtAfterEvent} eventData The entity hurt event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ * @param {number} currentTick The current game tick.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ */
 export function handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction) {
     const { hurtEntity, cause, damagingEntity } = eventData;
 
@@ -145,7 +161,13 @@ export function handleEntityHurt(eventData, playerDataManager, checks, playerUti
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Subscribes to entity hurt events specifically for combat log detection if enabled.
+ * Updates last combat interaction time for players involved in PvP.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} config The server configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ */
 export function subscribeToCombatLogEvents(playerDataManager, config, playerUtils) {
     if (config.enableCombatLogDetection) {
         mc.world.afterEvents.entityHurt.subscribe(async (eventData) => {
@@ -186,7 +208,14 @@ export function subscribeToCombatLogEvents(playerDataManager, config, playerUtil
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles player break block events before they occur, primarily for recording block break rates.
+ * @param {mc.PlayerBreakBlockBeforeEvent} eventData The event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions (currently unused here but available).
+ * @param {object} config The server configuration object (currently unused here but available).
+ * @param {object} playerUtils Utility functions for players (currently unused here but available).
+ */
 export function handlePlayerBreakBlock(eventData, playerDataManager, checks, config, playerUtils) {
     const player = eventData.player;
     const pData = playerDataManager.getPlayerData(player.id);
@@ -200,7 +229,12 @@ export function handlePlayerBreakBlock(eventData, playerDataManager, checks, con
     // }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles player break block events after they occur, for X-Ray detection notifications.
+ * @param {mc.PlayerBreakBlockAfterEvent} eventData The event data.
+ * @param {object} config The server configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ */
 export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
     if (!config.xrayDetectionNotifyOnOreMineEnabled) {
         return;
@@ -225,7 +259,15 @@ export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles item use events, primarily for checking illegal item usage.
+ * @param {mc.ItemUseBeforeEvent} eventData The event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ */
 export function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
@@ -246,7 +288,16 @@ export function handleItemUse(eventData, playerDataManager, checks, playerUtils,
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles item use on block events, primarily for checking illegal item placement.
+ * @param {mc.ItemUseOnBeforeEvent} eventData The event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ */
 export function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
@@ -260,7 +311,13 @@ export function handleItemUseOn(eventData, playerDataManager, checks, playerUtil
     }
 }
 
-/** @todo Add JSDoc */
+/**
+ * Handles chat messages before they are sent to apply rank prefixes and perform chat-based checks.
+ * @param {mc.ChatSendBeforeEvent} eventData The chat send event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} config The server configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ */
 export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
     const player = eventData.sender;
     if (!player) {

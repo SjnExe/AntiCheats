@@ -1,3 +1,12 @@
+## Comprehensive Coding Style Review
+- **Objective:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
+- **Process & Status:**
+  - (Completed) Identified files needing review.
+  - (Completed) Performed style review and applied changes (naming conventions, JSDocs placeholders, filled JSDocs for key files like eventHandlers.js, playerDataManager.js, reportManager.js, and uiManager.js).
+  - (Completed) Documented changes implicitly via code updates.
+(Completed)
+
+---
 ## Refactor: Standardize Check Actions & Configurable Punishments
 - **Objective:** Create a unified system for how cheat detections trigger actions (flag, log, notify, command execution) and make these actions configurable per check type in `config.js`.
 - **Process & Status:**
@@ -762,3 +771,22 @@ Removed the '### Text Commands' subsection and its table from the '## Admin Comm
 Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]
+
+[start of Dev/tasks/ongoing.md]
+# Ongoing Tasks
+*(Date: Current Session)*
+
+## Comprehensive Coding Style Review
+- **Objective:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
+- **Process & Status:**
+  - (Completed) Identified files needing review.
+  - (Completed) Performed style review and applied changes (naming conventions, JSDocs placeholders, filled JSDocs for key files like eventHandlers.js, playerDataManager.js, reportManager.js, and uiManager.js).
+  - (Completed) Documented changes implicitly via code updates.
+(Completed)
+
+---
+*Previous tasks, including "Refactor: Standardize Check Actions & Configurable Punishments", "Admin Panel UI: View Ban/Mute Logs", "Admin Panel UI: Integrate InvSee", "Admin Panel UI: Quick Actions (Player Inspection)", the "Refactor `commandManager.js`" (modular command system), Reporting System (`!report`, `!viewreports`), `!uinfo` UI implementation, `!help` command verification, `!systeminfo` command, `!copyinv` command, `!vanish` logging, `!clearchat` logging, `!invsee` implementation, Lag Clear via Admin Panel, `!warnings`/`!clearwarnings`/`!resetflags` commands, `!freeze` logging, `!kick` verification, and `todo.md` syntax updates, were completed and documented in `completed.md`.*
+
+[end of Dev/tasks/ongoing.md]

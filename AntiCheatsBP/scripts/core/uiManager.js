@@ -7,7 +7,14 @@ import { permissionLevels } from './rankManager.js';
 import * as logManager from './logManager.js';
 import { editableConfigValues, updateConfigValue } from '../config.js';
 
-/** @todo Add JSDoc */
+/**
+ * Displays a modal form to prompt for a player's name and then shows their inspection data.
+ * This function calls the 'inspect' command module to display the data.
+ * @param {mc.Player} player - The admin player initiating the inspection.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies, including commandModules.
+ * @returns {Promise<void>} A promise that resolves when the form is processed.
+ */
 async function showInspectPlayerForm(player, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: Inspect Player form requested by ${player.nameTag}`, player.nameTag);
     const modalForm = new ModalFormData();
@@ -39,26 +46,58 @@ async function showInspectPlayerForm(player, playerDataManager, dependencies) {
     // No automatic navigation back to main panel after this text-based inspect.
 }
 
-/** @todo Add JSDoc */
+/**
+ * Informs the player to use the `!uinfo` command to view their stats.
+ * This UI function acts as a redirector or informational placeholder.
+ * @param {mc.Player} player - The player requesting their stats.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {object} config - The system configuration.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showMyStats(player, playerDataManager, config, dependencies) {
     playerUtils.debugLog(`UI: showMyStats for ${player.nameTag}`, player.nameTag);
     player.sendMessage("§7Please use the `!uinfo` command and select 'My Anti-Cheat Stats'.");
     // No automatic navigation as this is typically a final action from a user-facing part of a menu
 }
 
-/** @todo Add JSDoc */
+/**
+ * Informs the player to use the `!uinfo` command to view server rules.
+ * This UI function acts as a redirector or informational placeholder.
+ * @param {mc.Player} player - The player requesting the server rules.
+ * @param {object} config - The system configuration (expected to contain serverRules).
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showServerRules(player, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showServerRules for ${player.nameTag}`, player.nameTag);
     player.sendMessage("§7Please use `!uinfo` and select 'Server Rules'.");
 }
 
-/** @todo Add JSDoc */
+/**
+ * Informs the player to use the `!uinfo` command to view help and links.
+ * This UI function acts as a redirector or informational placeholder.
+ * @param {mc.Player} player - The player requesting help and links.
+ * @param {object} config - The system configuration (expected to contain helpLinks and generalHelpMessages).
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showHelpAndLinks(player, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
     player.sendMessage("§7Please use `!uinfo` and select 'Helpful Links' or 'General Tips'.");
 }
 
-/** @todo Add JSDoc */
+/**
+ * Displays a form with various administrative actions for a target player.
+ * Actions include viewing info, inventory, kicking, freezing, muting, banning, and resetting flags.
+ * @param {mc.Player} adminPlayer - The admin player initiating the actions.
+ * @param {mc.Player} targetPlayer - The player on whom actions can be performed.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>} A promise that resolves when the form is processed.
+ */
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const { config, playerUtils: localPlayerUtils } = dependencies; // Removed addLog as it's in dependencies
@@ -160,7 +199,13 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager, dependencie
     // if (targetPlayer) { await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); }
     // else { ... await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); }
     // catch { ... await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies); }
-/** @todo Add JSDoc */
+/**
+ * Displays a list of online players to an admin. Selecting a player navigates to the player actions form.
+ * @param {mc.Player} adminPlayer - The admin player viewing the list.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>} A promise that resolves when the form is processed.
+ */
 async function showOnlinePlayersList(adminPlayer, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const onlinePlayers = mc.world.getAllPlayers();
@@ -198,6 +243,17 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config,
     // case 0: await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); break;
     // case 1: await showInspectPlayerForm(adminPlayer, playerDataManager, dependencies); break;
     // case 4: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
+/**
+ * Displays the main admin panel UI, providing navigation to various admin functionalities.
+ * Access is restricted based on player permission level.
+ * @export
+ * @param {mc.Player} adminPlayer - The player attempting to open the admin panel.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {object} config - The system configuration.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>} A promise that resolves when the form is processed.
+ */
+export async function showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies) {
     playerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData();
     const userPermLevel = getPlayerPermissionLevel(adminPlayer);
@@ -230,27 +286,71 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config,
     }
 }
 
+/**
+ * Placeholder or redirector function, currently navigates back to the server management form.
+ * Intended to show system information.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {object} config - The system configuration.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showSystemInfo(adminPlayer, config, playerDataManager, dependencies) {
     // ... (ensure call to showServerManagementForm passes dependencies)
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
 }
 
+/**
+ * Placeholder or redirector function, currently navigates back to the server management form.
+ * Intended for viewing/editing system configuration.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {object} config - The system configuration.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showEditConfigForm(adminPlayer, playerDataManager, config, dependencies) {
     // ... (ensure call to showServerManagementForm passes dependencies)
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
 }
 
+/**
+ * Placeholder or redirector function, currently navigates back to the server management form.
+ * Intended to handle the clear chat action.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {object} config - The system configuration.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function handleClearChatAction(adminPlayer, playerDataManager, config, dependencies) {
     // ... (ensure call to showServerManagementForm passes dependencies)
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
 }
 
+/**
+ * Placeholder or redirector function, currently navigates back to the server management form.
+ * Intended to handle the lag clear (remove items) action.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {object} config - The system configuration.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function handleLagClearAction(adminPlayer, config, playerDataManager, dependencies) {
     // ... (ensure call to showServerManagementForm passes dependencies)
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
 }
 
 // --- NEW FUNCTIONS START ---
+/**
+ * Displays a form for selecting the type of moderation logs to view (Ban/Unban or Mute/Unmute)
+ * and allows filtering by player name.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @param {string | null} [currentFilterName=null] - The currently active player name filter, if any.
+ * @returns {Promise<void>}
+ */
 async function showModLogTypeSelectionForm(adminPlayer, dependencies, currentFilterName = null) {
     const { playerDataManager, config, playerUtils: localPlayerUtils } = dependencies;
     const form = new ActionFormData();
@@ -382,7 +482,14 @@ async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray,
 }
 // --- NEW FUNCTIONS END ---
 
-
+/**
+ * Displays the server management panel to an admin player, offering actions like system info, chat clear, etc.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {object} config - The system configuration.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showServerManagementForm(adminPlayer, playerDataManager, config, dependencies) {
     playerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData(); form.title("Server Management"); form.body("Select action:");
@@ -411,6 +518,14 @@ async function showServerManagementForm(adminPlayer, playerDataManager, config, 
     }
 }
 
+/**
+ * Displays a form showing all general action logs to the admin player.
+ * @param {mc.Player} adminPlayer - The admin player viewing the logs.
+ * @param {object} config - The system configuration.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showActionLogsForm(adminPlayer, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: Action Logs requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new MessageFormData(); form.title("Action Logs (All - Latest)");
@@ -437,6 +552,13 @@ async function showActionLogsForm(adminPlayer, config, playerDataManager, depend
     await showServerManagementForm(adminPlayer, config, playerDataManager, dependencies);
 }
 
+/**
+ * Displays a form to reset a player's flags using a text input for the target player's name.
+ * @param {mc.Player} player - The admin player initiating the reset.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showResetFlagsForm(player, playerDataManager, dependencies) {
     // This form could call the 'resetflags' command module
     const resetFlagsModule = dependencies.commandModules.find(m => m.definition.name === 'resetflags');
@@ -455,6 +577,13 @@ async function showResetFlagsForm(player, playerDataManager, dependencies) {
     }
     await showAdminPanelMain(player, playerDataManager, dependencies.config, dependencies);
 }
+/**
+ * Displays a list of currently watched players to the admin.
+ * @param {mc.Player} player - The admin player viewing the list.
+ * @param {object} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
 async function showWatchedPlayersList(player, playerDataManager, dependencies) {
     // This form could call a (yet to be created) '!watchlist' command module or use playerDataManager directly
     let body = "§e--- Watched Players ---\n";
