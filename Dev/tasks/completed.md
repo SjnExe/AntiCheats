@@ -710,4 +710,11 @@ Enhanced the Admin Panel's player inspection UI (`showPlayerActionsForm` in `uiM
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
+## Admin Panel UI: Integrated Player Inventory View (InvSee)
+*(Date: Current Session)*
+
+Enhanced the Admin Panel's player inspection UI (`showPlayerActionsForm` in `uiManager.js`) by adding a 'View Inventory (InvSee)' button. This button's action calls the `execute` method of the `invsee.js` command module, allowing admins to view a target player's inventory directly from the UI. The `invsee.js` module displays the inventory in its own form, and the admin is returned to the player actions menu afterwards.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 [end of Dev/tasks/completed.md]
