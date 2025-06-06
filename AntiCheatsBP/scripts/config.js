@@ -313,6 +313,136 @@ export const checkActionProfiles = {
             detailsPrefix: "Nuker Violation: ",
             includeViolationDetails: true
         }
+    },
+    "combat_cps_high": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected abnormally high CPS (Clicks Per Second).",
+            type: "combat_cps"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}"
+        },
+        log: {
+            actionType: "detected_combat_cps_high",
+            detailsPrefix: "High CPS Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_viewsnap_pitch": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected suspicious pitch snap after attack.",
+            type: "combat_viewsnap"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+        },
+        log: {
+            actionType: "detected_viewsnap_pitch",
+            detailsPrefix: "Pitch Snap Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_viewsnap_yaw": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected suspicious yaw snap after attack.",
+            type: "combat_viewsnap"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+        },
+        log: {
+            actionType: "detected_viewsnap_yaw",
+            detailsPrefix: "Yaw Snap Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_invalid_pitch": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected invalid view pitch (e.g., looking straight up/down).",
+            type: "combat_view_violation"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)"
+        },
+        log: {
+            actionType: "detected_invalid_pitch",
+            detailsPrefix: "Invalid Pitch Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_multitarget_aura": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected Multi-Target Aura (hitting multiple entities rapidly).",
+            type: "combat_aura"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})"
+        },
+        log: {
+            actionType: "detected_multitarget_aura",
+            detailsPrefix: "Multi-Target Aura Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_attack_while_sleeping": {
+        enabled: true,
+        flag: {
+            increment: 5, // Higher severity as it's a very clear violation
+            reason: "System detected player attacking while sleeping.",
+            type: "combat_state_conflict"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntity}"
+        },
+        log: {
+            actionType: "detected_attack_while_sleeping",
+            detailsPrefix: "Attack While Sleeping Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_illegal_item_use": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected use of a banned item: {itemTypeId}.",
+            type: "world_illegal_item"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "detected_illegal_item_use",
+            detailsPrefix: "Illegal Item Use Violation: ",
+            includeViolationDetails: true
+        }
+        // Consider adding a 'messagePlayer' action here if direct feedback beyond flag reason is needed
+        // Or rely on the flag reason being displayed to the player by addFlag.
+    },
+    "world_illegal_item_place": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected placement of a banned item: {itemTypeId}.",
+            type: "world_illegal_item"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "detected_illegal_item_place",
+            detailsPrefix: "Illegal Item Placement Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 

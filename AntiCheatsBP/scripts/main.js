@@ -65,14 +65,14 @@ mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
 });
 
 mc.world.beforeEvents.itemUse.subscribe((eventData) => {
-    eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction);
+    eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
 });
 
 mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     // Assuming handleItemUseOn is a typo and should be handlePlayerPlaceBlock or similar,
     // or that checkIllegalItems within it handles the eventData type correctly.
     // For now, keeping as is from previous state.
-    eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction);
+    eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
 });
 
 let currentTick = 0;

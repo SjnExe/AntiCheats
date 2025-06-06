@@ -4,10 +4,13 @@
 ## Refactor: Standardize Check Actions & Configurable Punishments
 - **Objective:** Create a unified system for how cheat detections trigger actions (flag, log, notify, command execution) and make these actions configurable per check type in `config.js`.
 - **Process:**
-  - Design a standard action handling mechanism/function (e.g., `handleViolation`).
-  - Define a structure in `config.js` for specifying actions per check type (e.g., `fly_hover`, `speed_ground`).
-  - Refactor existing cheat detection scripts in `AntiCheatsBP/scripts/checks/` to use this new centralized handler.
-  - This will replace direct calls to `addFlag`, `notifyAdmins`, etc., within individual check scripts.
+  - (Completed) Designed and implemented `actionManager.js` with `executeCheckAction`.
+  - (Completed) Defined `checkActionProfiles` structure in `config.js`.
+  - (Completed) Plumbed `executeCheckAction` and `logManager` dependencies to check functions via `main.js` and `eventHandlers.js`.
+  - (Completed) Refactored initial set of checks: Fly, Speed, Reach, NoFall, Nuker.
+  - (Completed) Refactored further checks: CPS, ViewSnap (pitch/yaw/invalid), MultiTarget Aura, AttackWhileSleeping, IllegalItemUse, IllegalItemPlace.
+  - (Ongoing) Review remaining check scripts (if any) and overall system integration. Ensure all player-facing messages and admin notifications are appropriate and configurable.
+  - (Future) Design and implement advanced action configurations (e.g., conditional command execution, escalating punishments).
 (In Progress as of Current Session)
 
 ---

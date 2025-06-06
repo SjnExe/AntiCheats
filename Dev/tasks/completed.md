@@ -1,5 +1,12 @@
 # Completed Tasks
 
+## Refactoring: Standardized Actions for Combat & IllegalItem Checks
+**Date:** Current Session
+
+Continued the 'Standardize Check Actions' refactor. Migrated several combat checks (`cpsCheck.js`, `viewSnapCheck.js` for pitch/yaw/invalid, `multiTargetCheck.js`, `stateConflictCheck.js` for attack-while-sleeping) and the `illegalItemsCheck.js` (for use/place) to use the new `actionManager.executeCheckAction` system. Added corresponding action profiles for these new check types (e.g., 'combat_cps_high', 'combat_viewsnap_pitch', 'world_illegal_item_use') to `checkActionProfiles` in `config.js`.
+
+---
+
 ## Features: Combat Log Detection
 **Date:** Current Session
 
@@ -737,3 +744,5 @@ Removed the '### Text Commands' subsection and its table from the '## Admin Comm
 Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]

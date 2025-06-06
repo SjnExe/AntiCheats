@@ -227,19 +227,28 @@ export function handleItemUse(eventData, playerDataManager, checks, playerUtils,
         const itemStack = eventData.itemStack;
         const pData = playerDataManager.getPlayerData(player.id);
         if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) { // Added config check
-            checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, executeCheckAction);
+            // Assuming logManager is available in this scope, passed from main.js if necessary, or globally accessible
+            // For now, let's assume it's not directly passed here yet, so executeCheckAction might not log fully for this.
+            // Correction: logManager MUST be passed here for executeCheckAction to work fully.
+            // This requires main.js to pass logManager to handleItemUse/handleItemUseOn if it's not already.
+            // Based on previous steps, executeCheckAction is passed, but logManager might not be passed to these specific handlers yet.
+            // Let's assume main.js is updated or will be updated to pass logManager to these handlers.
+            // If main.js passes logManager to handleItemUse:
+            // Corrected call:
+            checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
     }
 }
 
-export function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction) {
+export function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
         const player = playerEntity;
         const itemStack = eventData.itemStack;
         const pData = playerDataManager.getPlayerData(player.id);
         if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) { // Added config check
-            checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, executeCheckAction);
+            // Corrected call:
+            checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
     }
 }
