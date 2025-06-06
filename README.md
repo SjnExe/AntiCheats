@@ -93,6 +93,7 @@ These commands are available to all players.
 
 *   ``!help``: Shows a list of commands available to you based on your permissions.
 *   ``!myflags``: Allows any player to check their own current flag status.
+*   ``!uinfo``: Shows your anti-cheat stats, server rules, and other helpful information in a UI.
 
 ## Contributing
 

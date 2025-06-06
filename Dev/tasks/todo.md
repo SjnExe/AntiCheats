@@ -99,9 +99,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
 ## Public Info UI (`!ui`) Development
-*   **Phase 1: My Stats & Info:**
-    *   Command `!ui open mystats` (or just `!ui`).
-    *   Displays the calling player's own flag counts, and basic AC rules/help.
 *   **Phase 2: Server Info & Links:**
     *   Section for server rules (brief).
     *   Links to Discord/website (configurable).

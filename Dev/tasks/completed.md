@@ -681,3 +681,10 @@ These changes significantly improve the project's documentation, making it more 
 Verified existing `!help` command functionality in `commandManager.js`. The command already supported listing available commands based on permission level and providing detailed help for specific commands (e.g., `!help <commandName>`). Ensured it was correctly documented in `README.md` for general users. No significant code changes were required as the feature was largely pre-existing.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Player Features: User Information UI (`!uinfo`)
+*(Date: Current Session)*
+
+Implemented the `!uinfo` command, which provides a user interface for players to view their own anti-cheat flag statistics, server rules, and helpful links/tips. This feature was developed as 'Public Info UI Development - Phase 1' from the todo list. The command uses ActionFormData for navigation and MessageFormData for displaying information, all handled within `commandManager.js`. Updated `README.md` to include this new command.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
