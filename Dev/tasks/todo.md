@@ -54,16 +54,11 @@ This list contains planned features, improvements, and areas for future investig
     *   **Enhanced Commands:**
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
         *   `!notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
-        *   `!help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
-    *   **Reporting System:** (SafeGuard)
-        *   `!report <player> [reason]`: Allows players to report others. Reports stored persistently for admin review.
-        *   `!viewreports [playername|clearall]`: Admins can view reports, optionally filtered by player, or clear all reports.
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
         *   Investigate: In-game config editor via UI (for `config.js` values).
-        *   Add Ban/Mute/Kick/Warn direct actions to player lists or player inspection results within the UI.
-        *   Investigate: View Ban/Mute/Warning Logs in UI (requires persistent logging of these actions).
-        *   Investigate: Player inventory view (InvSee) within the UI.
+        *   (Started) Admin Panel UI: View Ban/Mute Logs. (Warning logs are typically player flags, viewed differently).
+        *   (Started) Integrate Player Inventory View (InvSee) into Admin Panel's player inspection UI.
     *   **System Features:** SjnExe parity goal.
         *   **Owner System:** Designate a single player (e.g., via `config.js` or first admin) as "Owner" with immutable admin rights and potentially exclusive commands. *(Core functionality implemented as part of Rank System via `ownerPlayerName` in `config.js`)*
         *   **Rank System:** Visual rank system with chat and nametag display. *(Core functionality IMPLEMENTED)*
@@ -72,7 +67,6 @@ This list contains planned features, improvements, and areas for future investig
             -   **Nametag Display:** *(IMPLEMENTED: Rank above player name like `Owner\nPlayerName` with colors. Nametag modification via `player.nameTag` was successful.)*
             -   Permissions for AC commands could be tied to ranks. *(Still to do)*
             -   Requires persistent storage if not solely derived from config/tags at runtime. *(Still relevant; current implementation is runtime derived from config/tags)*
-        *   **Combat Log Detection & Punishment:** If a player leaves the game shortly after entering combat (e.g., being hit or hitting someone), flag them or apply a configurable punishment. (SafeGuard)
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
 *   **World Management & Protection:** SjnExe parity goal.
@@ -82,8 +76,8 @@ This list contains planned features, improvements, and areas for future investig
 *   **Normal Player Panel Features (`!panel`):**
 
 ## Refactoring & Enhancements
-*   **Refactor: Standardize Check Actions & Configurable Punishments:** Create a unified system for how checks trigger actions (flag, log, notify, command execution) and allow these actions/parameters to be configured per check (e.g., kick after N flags for 'fly'). (Scythe, SafeGuard)
 *   **Comprehensive Coding Style Review:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
+*   **Refactor `commandManager.js`**: Split commands into individual modules under a new `commands/` directory to improve organization and maintainability. `commandManager.js` will become a command loader and dispatcher.
 
 ## Low Priority / Ideas
 
@@ -93,6 +87,13 @@ This list contains planned features, improvements, and areas for future investig
     *   Welcomer message for new players (optionally show their device type if API allows).
     *   Death Coords / Death Effects: Announce player death coordinates in chat (to player or party), possibly with cosmetic effects.
     *   Chat Formatting (potentially linked to the Rank System).
+*   **Fake Leave/Join Command (`!fakeleave`/`!fakejoin` or `!vanish` enhancement):**
+    *   **Objective:** Allow admins to simulate leaving and rejoining the game.
+    *   **Mechanics:**
+        *   Combines current `!vanish` functionality (invisibility, hidden nametag).
+        *   Broadcasts a server message: "§ePlayerName left the game." on activation, and "§ePlayerName joined the game." on deactivation.
+        *   **Investigate:** Further methods to ensure the vanished player is hidden from player lists (tab menu) for other players as effectively as possible.
+    *   **Considerations:** True removal from one's own tab list via server scripts is likely infeasible; focus on appearance to others.
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Admin Command Usage Logging:** Log when an admin uses an `!` command (especially AC related), what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
@@ -100,9 +101,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
 ## Public Info UI (`!ui`) Development
-*   **Phase 1: My Stats & Info:**
-    *   Command `!ui open mystats` (or just `!ui`).
-    *   Displays the calling player's own flag counts, and basic AC rules/help.
 *   **Phase 2: Server Info & Links:**
     *   Section for server rules (brief).
     *   Links to Discord/website (configurable).

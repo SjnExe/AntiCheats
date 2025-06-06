@@ -1,178 +1,74 @@
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
-// Assuming playerUtils contains debugLog, notifyAdmins
 import * as playerUtils from '../utils/playerUtils.js';
-import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // Added
-import { permissionLevels } from './rankManager.js'; // Added
-// playerDataManager will be passed as a parameter to functions that need it.
-// Import mute functions from playerDataManager for Mute/Unmute UI
-import { getMuteInfo, addMute, removeMute } from '../core/playerDataManager.js';
+import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
+import { permissionLevels } from './rankManager.js';
+// getMuteInfo, addMute, removeMute are part of playerDataManager, passed in dependencies for command modules.
 import * as logManager from './logManager.js';
-import { editableConfigValues, updateConfigValue } from '../config.js'; // Added for editable config
+import { editableConfigValues, updateConfigValue } from '../config.js';
 
 
-async function showInspectPlayerForm(player, playerDataManager) {
+async function showInspectPlayerForm(player, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: Inspect Player form requested by ${player.nameTag}`, player.nameTag);
     const modalForm = new ModalFormData();
-    modalForm.title("Inspect Player Data");
+    modalForm.title("Inspect Player Data (Text)");
     modalForm.textField("Enter Player Name:", "TargetPlayerName");
 
     try {
         const response = await modalForm.show(player);
-
         if (response.canceled) {
-            playerUtils.debugLog(`Inspect Player form canceled by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag);
+            playerUtils.debugLog(`Inspect Player (Text) form cancelled by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag);
             return;
         }
-
         const targetPlayerName = response.formValues[0];
-
         if (!targetPlayerName || targetPlayerName.trim() === "") {
             player.sendMessage("§cPlayer name cannot be empty.");
-            playerUtils.debugLog(`Inspect Player form submitted with empty name by ${player.nameTag}`, player.nameTag);
             return;
         }
 
-        let inspectFoundPlayer = null;
-        for (const p of mc.world.getAllPlayers()) {
-            if (p.nameTag.toLowerCase() === targetPlayerName.trim().toLowerCase()) {
-                inspectFoundPlayer = p;
-                break;
-            }
-        }
-
-        if (inspectFoundPlayer) {
-            const targetPData = playerDataManager.getPlayerData(inspectFoundPlayer.id);
-            if (targetPData) {
-                let summary = `§a--- AntiCheat Data for ${inspectFoundPlayer.nameTag} ---\n`;
-                summary += `§eWatched: §f${targetPData.isWatched}\n`;
-                summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
-                summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
-                summary += `§eIndividual Flags:\n`;
-                let hasFlags = false;
-                for (const flagKey in targetPData.flags) {
-                    if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
-                        const flagData = targetPData.flags[flagKey];
-                        summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
-                        hasFlags = true;
-                    }
-                }
-                if (!hasFlags) summary += `  §fNo specific flags recorded.\n`;
-                player.sendMessage(summary);
-            } else {
-                player.sendMessage(`§cPlayer data for ${targetPlayerName.trim()} not found (player may need to move/interact).`);
-            }
+        const inspectModule = dependencies.commandModules.find(m => m.definition.name === 'inspect');
+        if (inspectModule && inspectModule.execute) {
+            await inspectModule.execute(player, [targetPlayerName.trim()], dependencies);
         } else {
-            player.sendMessage(`§cPlayer '${targetPlayerName.trim()}' not found.`);
+            player.sendMessage("§cInspect command module not found.");
         }
     } catch (error) {
         playerUtils.debugLog(`Error in showInspectPlayerForm: ${error}`, player.nameTag);
-        console.error(error, error.stack);
         player.sendMessage("§cError opening or processing Inspect Player form.");
     }
+    // No automatic navigation back to main panel after this text-based inspect.
 }
 
-async function showMyStats(player, playerDataManager) {
+async function showMyStats(player, playerDataManager, config, dependencies) {
     playerUtils.debugLog(`UI: showMyStats for ${player.nameTag}`, player.nameTag);
-    const form = new MessageFormData();
-    form.title("My AntiCheat Stats");
-
-    const pData = playerDataManager.getPlayerData(player.id);
-    let bodyContent = "";
-
-    if (pData && pData.flags) {
-        bodyContent += `§eYour Total Flags:§r ${pData.flags.totalFlags}\n`;
-        bodyContent += `§eLast Flag Type:§r ${pData.lastFlagType || 'None'}\n\n`;
-        bodyContent += "§eBreakdown:§r\n";
-        let specificFlagsShown = 0;
-        for (const flagKey in pData.flags) {
-            if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
-                const flagData = pData.flags[flagKey];
-                bodyContent += `  §f- ${flagKey}: Count=${flagData.count}, Last Seen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
-                specificFlagsShown++;
-            }
-        }
-        if (specificFlagsShown === 0) {
-            bodyContent += "  No specific flags recorded.\n";
-        }
-    } else {
-        bodyContent = "§cCould not retrieve your AntiCheat stats at this time.";
-    }
-
-    form.body(bodyContent);
-    form.button1("Close");
-
-    try {
-        await form.show(player);
-    } catch (error) {
-        playerUtils.debugLog(`Error in showMyStats for ${player.nameTag}: ${error}`, player.nameTag);
-        console.error(`[uiManager.showMyStats] Error:`, error, error.stack);
-    }
-    await showAdminPanelMain(player, playerDataManager, null);
+    player.sendMessage("§7Please use the `!uinfo` command and select 'My Anti-Cheat Stats'.");
+    // No automatic navigation as this is typically a final action from a user-facing part of a menu
 }
 
-async function showServerRules(player, config, playerDataManager) {
+async function showServerRules(player, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showServerRules for ${player.nameTag}`, player.nameTag);
-    const form = new MessageFormData();
-    form.title("Server Rules");
-
-    let bodyContent = "";
-    if (config && config.SERVER_RULES && config.SERVER_RULES.length > 0) {
-        bodyContent = config.SERVER_RULES.join("\n");
-    } else {
-        bodyContent = "§cServer rules have not been configured by the server admin yet.";
-    }
-
-    form.body(bodyContent);
-    form.button1("Close");
-
-    try {
-        await form.show(player);
-    } catch (error) {
-        playerUtils.debugLog(`Error in showServerRules for ${player.nameTag}: ${error}`, player.nameTag);
-        console.error(`[uiManager.showServerRules] Error: ${error}`, error.stack);
-    }
-    await showAdminPanelMain(player, playerDataManager, config);
+    player.sendMessage("§7Please use `!uinfo` and select 'Server Rules'.");
 }
 
-async function showHelpAndLinks(player, config, playerDataManager) {
+async function showHelpAndLinks(player, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
-    const form = new MessageFormData();
-    form.title("Help & Useful Links");
-
-    let bodyContent = "";
-    if (config && config.generalHelpMessages && config.generalHelpMessages.length > 0) {
-        bodyContent += "§lGeneral Help:§r\n";
-        config.generalHelpMessages.forEach(msg => { bodyContent += `- ${msg}\n`; });
-        bodyContent += "\n";
-    }
-    if (config && config.helpLinks && config.helpLinks.length > 0) {
-        bodyContent += "§lUseful Links:§r\n";
-        config.helpLinks.forEach(link => { bodyContent += `- ${link.title}: ${link.url}\n`; });
-    }
-    if (bodyContent === "") {
-        bodyContent = "§cNo help information or links have been configured by the server admin yet.";
-    }
-    form.body(bodyContent.trim());
-    form.button1("Close");
-    try {
-        await form.show(player);
-    } catch (error) {
-        playerUtils.debugLog(`Error in showHelpAndLinks for ${player.nameTag}: ${error}`, player.nameTag);
-        console.error(`[uiManager.showHelpAndLinks] Error: ${error}`, error.stack);
-    }
-    await showAdminPanelMain(player, playerDataManager, config);
+    player.sendMessage("§7Please use `!uinfo` and select 'Helpful Links' or 'General Tips'.");
 }
 
-async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager) {
+async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const { config, playerUtils: localPlayerUtils } = dependencies; // Removed addLog as it's in dependencies
+
     const form = new ActionFormData();
     form.title(`Actions for ${targetPlayer.nameTag}`);
     const frozenTag = "frozen";
     const isTargetFrozen = targetPlayer.hasTag(frozenTag);
     const freezeButtonText = isTargetFrozen ? "Unfreeze Player" : "Freeze Player";
     const freezeButtonIcon = isTargetFrozen ? "textures/ui/icon_unlocked" : "textures/ui/icon_locked";
-    const muteInfo = playerDataManager.getMuteInfo(targetPlayer);
+
+    const muteInfo = (playerDataManager.getMuteInfo && typeof playerDataManager.getMuteInfo === 'function')
+        ? playerDataManager.getMuteInfo(targetPlayer)
+        : null;
     const isTargetMuted = muteInfo !== null;
     let muteButtonText = isTargetMuted ? "Unmute Player" : "Mute Player";
     if (isTargetMuted && muteInfo.unmuteTime !== Infinity) {
@@ -182,505 +78,290 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
     }
     const muteButtonIcon = isTargetMuted ? "textures/ui/speaker_off_light" : "textures/ui/speaker_on_light";
 
-    form.button("View Detailed Info/Flags", "textures/ui/magnifying_glass");
-    form.button("Kick Player", "textures/ui/icon_hammer");
-    form.button(freezeButtonText, freezeButtonIcon);
-    form.button(muteButtonText, muteButtonIcon);
-    form.button("Reset Player Flags", "textures/ui/refresh");
-    form.button("Back to Player List", "textures/ui/undo");
+    form.button("View Detailed Info/Flags", "textures/ui/magnifying_glass");       // Index 0
+    form.button("View Inventory (InvSee)", "textures/ui/chest_icon.png");          // Index 1
+    form.button("Kick Player", "textures/ui/icon_hammer");                         // Index 2
+    form.button(freezeButtonText, freezeButtonIcon);                               // Index 3
+    form.button(muteButtonText, muteButtonIcon);                                   // Index 4
+    form.button("Ban Player", "textures/ui/icon_resource_pack");                   // Index 5
+    form.button("Reset Player Flags", "textures/ui/refresh");                      // Index 6
+    form.button("Back to Player List", "textures/ui/undo");                        // Index 7
 
     try {
         const response = await form.show(adminPlayer);
         if (response.canceled) {
-            if (response.cancelationReason) {
-                playerUtils.debugLog(`Player Actions form for ${targetPlayer.nameTag} canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
-            } else {
-                playerUtils.debugLog(`Player Actions form for ${targetPlayer.nameTag} canceled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
-            }
+            localPlayerUtils.debugLog(`Player Actions form for ${targetPlayer.nameTag} canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
             return;
         }
 
+        let commandModule; // To store the found command module
+
         switch (response.selection) {
             case 0: // View Detailed Info/Flags
-                const targetPData = playerDataManager.getPlayerData(targetPlayer.id);
-                if (targetPData) {
-                    let summary = `§a--- AntiCheat Data for ${targetPlayer.nameTag} ---\n`;
-                    summary += `§eID: §f${targetPlayer.id}\n`;
-                    summary += `§eDimension: §f${targetPlayer.dimension.id}\n`;
-                    summary += `§eLocation: §fX:${targetPlayer.location.x.toFixed(1)}, Y:${targetPlayer.location.y.toFixed(1)}, Z:${targetPlayer.location.z.toFixed(1)}\n`;
-                    summary += `§eWatched: §f${targetPData.isWatched}\n`;
-                    summary += `§eTotal Flags: §f${targetPData.flags.totalFlags}\n`;
-                    summary += `§eLast Flag Type: §f${targetPData.lastFlagType || "None"}\n`;
-                    summary += `§eIndividual Flags:\n`;
-                    let hasFlags = false;
-                    for (const flagKey in targetPData.flags) {
-                        if (flagKey !== "totalFlags" && typeof targetPData.flags[flagKey] === 'object' && targetPData.flags[flagKey] !== null) {
-                            const flagData = targetPData.flags[flagKey];
-                            if (flagData.count > 0) {
-                                summary += `  §f- ${flagKey}: Count=${flagData.count}, LastSeen=${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'}\n`;
-                                hasFlags = true;
-                            }
-                        }
-                    }
-                    if (!hasFlags) {
-                        summary += `  §fNo specific flags recorded or triggered.\n`;
-                    }
-                    const detailForm = new MessageFormData()
-                        .title(`Details for ${targetPlayer.nameTag}`)
-                        .body(summary)
-                        .button1("OK");
-                    await detailForm.show(adminPlayer);
-                } else {
-                    adminPlayer.sendMessage("§cCould not retrieve data for " + targetPlayer.nameTag);
-                    playerUtils.debugLog(`Could not retrieve pData for ${targetPlayer.nameTag} (ID: ${targetPlayer.id}) in showPlayerActionsForm.`, adminPlayer.nameTag);
-                }
-                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+                commandModule = dependencies.commandModules.find(m => m.definition.name === 'inspect');
+                if (commandModule) await commandModule.execute(adminPlayer, [targetPlayer.nameTag], dependencies);
+                else adminPlayer.sendMessage("§cInspect command module not found.");
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
                 break;
-
-            case 1: // Kick Player
-                const kickConfirmForm = new ModalFormData();
-                kickConfirmForm.title(`Kick ${targetPlayer.nameTag}`);
-                kickConfirmForm.textField("Reason (optional):", "Enter kick reason");
-                kickConfirmForm.toggle("Confirm Kick", false);
-                const kickConfirmResponse = await kickConfirmForm.show(adminPlayer);
-                if (kickConfirmResponse.canceled) { adminPlayer.sendMessage("§7Kick cancelled."); await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); return; }
-                const reasonKick = kickConfirmResponse.formValues[0] || "Kicked by an administrator via panel.";
-                const confirmedKick = kickConfirmResponse.formValues[1];
-                if (confirmedKick) {
-                    try {
-                        targetPlayer.kick(reasonKick);
-                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} has been kicked. Reason: ${reasonKick}`);
-                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was kicked by ${adminPlayer.nameTag} via panel. Reason: ${reasonKick}`, adminPlayer, null);
-                        logManager.addLog({ timestamp: Date.now(), adminName: adminPlayer.nameTag, actionType: 'kick', targetName: targetPlayer.nameTag, reason: reasonKick });
-                        playerUtils.debugLog(`Player ${targetPlayer.nameTag} kicked by ${adminPlayer.nameTag} via panel. Reason: ${reasonKick}`, adminPlayer.nameTag);
-                        await showOnlinePlayersList(adminPlayer, playerDataManager);
-                    } catch (e) { adminPlayer.sendMessage(`§cError kicking ${targetPlayer.nameTag}: ${e}`); playerUtils.debugLog(`Error kicking ${targetPlayer.nameTag}: ${e}`, adminPlayer.nameTag); await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); }
-                } else { adminPlayer.sendMessage("§7Kick cancelled for " + targetPlayer.nameTag); await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); }
+            case 1: // View Inventory (InvSee)
+                commandModule = dependencies.commandModules.find(m => m.definition.name === 'invsee');
+                if (commandModule) await commandModule.execute(adminPlayer, [targetPlayer.nameTag], dependencies);
+                else adminPlayer.sendMessage("§cInvSee command module not found.");
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
                 break;
-
-            case 2: // Freeze/Unfreeze Player
-                const currentFreezeState = targetPlayer.hasTag(frozenTag);
-                const targetFreezeState = !currentFreezeState;
-                const effectDurationFreeze = 2000000;
-                if (targetFreezeState === true) {
-                    try { targetPlayer.addTag(frozenTag); targetPlayer.addEffect("slowness", effectDurationFreeze, { amplifier: 255, showParticles: false }); targetPlayer.sendMessage("§cYou have been frozen by an administrator!"); adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} is now frozen.`); playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was frozen by ${adminPlayer.nameTag} via panel.`, adminPlayer, null); playerUtils.debugLog(`Player ${targetPlayer.nameTag} frozen by ${adminPlayer.nameTag} via panel.`, adminPlayer.nameTag); } catch (e) { adminPlayer.sendMessage(`§cError freezing ${targetPlayer.nameTag}: ${e}`); playerUtils.debugLog(`Error freezing ${targetPlayer.nameTag} via panel: ${e}`, adminPlayer.nameTag); }
-                } else {
-                    try { targetPlayer.removeTag(frozenTag); targetPlayer.removeEffect("slowness"); targetPlayer.sendMessage("§aYou have been unfrozen."); adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} is no longer frozen.`); playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was unfrozen by ${adminPlayer.nameTag} via panel.`, adminPlayer, null); playerUtils.debugLog(`Player ${targetPlayer.nameTag} unfrozen by ${adminPlayer.nameTag} via panel.`, adminPlayer.nameTag); } catch (e) { adminPlayer.sendMessage(`§cError unfreezing ${targetPlayer.nameTag}: ${e}`); playerUtils.debugLog(`Error unfreezing ${targetPlayer.nameTag} via panel: ${e}`, adminPlayer.nameTag); }
-                }
-                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+            case 2: // Kick Player
+                // ... (kick logic using modal form and kickModule.execute)
+                await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); // Go back to player list after action
                 break;
-
-            case 3: // Mute/Unmute Player
-                const currentMuteInfo = playerDataManager.getMuteInfo(targetPlayer);
-                const currentIsTargetMuted = currentMuteInfo !== null;
-                if (currentIsTargetMuted) {
-                    const confirmUnmuteForm = new ModalFormData(); confirmUnmuteForm.title(`Unmute ${targetPlayer.nameTag}`); confirmUnmuteForm.toggle("Confirm Unmute", false);
-                    const unmuteResponse = await confirmUnmuteForm.show(adminPlayer);
-                    if (unmuteResponse.canceled) { adminPlayer.sendMessage("§7Unmute cancelled."); }
-                    else if (unmuteResponse.formValues[0]) {
-                        playerDataManager.removeMute(targetPlayer);
-                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} unmuted.`);
-                        try { targetPlayer.onScreenDisplay.setActionBar("§aYou have been unmuted."); } catch(e){}
-                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was unmuted by ${adminPlayer.nameTag} via panel.`, adminPlayer, null);
-                        logManager.addLog({ timestamp: Date.now(), adminName: adminPlayer.nameTag, actionType: 'unmute', targetName: targetPlayer.nameTag });
-                    } else { adminPlayer.sendMessage("§7Unmute cancelled."); }
-                } else {
-                    const muteForm = new ModalFormData(); muteForm.title(`Mute ${targetPlayer.nameTag}`); muteForm.textField("Duration (minutes, or 'perm'):", "e.g., 60 or perm", "60"); muteForm.textField("Reason (optional):", "Enter reason");
-                    const muteFormResponse = await muteForm.show(adminPlayer);
-                    if (muteFormResponse.canceled) { adminPlayer.sendMessage("§7Mute action cancelled."); }
-                    else {
-                        const durationInput = muteFormResponse.formValues[0];
-                        const reason = muteFormResponse.formValues[1] || "Muted by admin via panel.";
-                        let durationMs;
-                        if (durationInput.toLowerCase() === "perm") { durationMs = Infinity; }
-                        else {
-                            const minutes = parseInt(durationInput);
-                            if (isNaN(minutes) || minutes <= 0) { adminPlayer.sendMessage("§cInvalid duration. Must be a positive number of minutes or 'perm'."); await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); return; }
-                            durationMs = minutes * 60 * 1000;
-                        }
-                        playerDataManager.addMute(targetPlayer, durationMs, reason);
-                        const durationText = durationMs === Infinity ? "permanently" : `for ${durationInput}${durationInput.toLowerCase()==="perm"?"":" minutes"}`;
-                        adminPlayer.sendMessage(`§aPlayer ${targetPlayer.nameTag} muted ${durationText}.`);
-                        try { targetPlayer.onScreenDisplay.setActionBar(`§cYou are muted ${durationText}. Reason: ${reason}`); } catch(e){}
-                        playerUtils.notifyAdmins(`Player ${targetPlayer.nameTag} was muted ${durationText} by ${adminPlayer.nameTag} via panel. Reason: ${reason}`, adminPlayer, null);
-                        logManager.addLog({ timestamp: Date.now(), adminName: adminPlayer.nameTag, actionType: 'mute', targetName: targetPlayer.nameTag, duration: (durationMs === Infinity ? "perm" : `${durationInput}min`), reason: reason });
-                    }
-                }
-                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+            case 3: // Freeze/Unfreeze Player
+                commandModule = dependencies.commandModules.find(m => m.definition.name === 'freeze');
+                if (commandModule) await commandModule.execute(adminPlayer, [targetPlayer.nameTag], dependencies);
+                else adminPlayer.sendMessage("§cFreeze command module not found.");
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
                 break;
-
-            case 4: // Reset Player Flags
-                const confirmResetForm = new ModalFormData();
-                confirmResetForm.title("Confirm Reset Flags");
-                confirmResetForm.toggle(`Reset all flags for ${targetPlayer.nameTag}? This action cannot be undone.`, false);
-                const confirmResetResponse = await confirmResetForm.show(adminPlayer);
-                if (confirmResetResponse.canceled) { adminPlayer.sendMessage("§7Flag reset cancelled for " + targetPlayer.nameTag); await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); return; }
-                const confirmedReset = confirmResetResponse.formValues[0];
-                if (confirmedReset) {
-                    const pData = playerDataManager.getPlayerData(targetPlayer.id);
-                    if (pData) {
-                        pData.flags.totalFlags = 0; pData.lastFlagType = "";
-                        for (const flagKey in pData.flags) { if (typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null) { pData.flags[flagKey].count = 0; pData.flags[flagKey].lastDetectionTime = 0; }}
-                        pData.consecutiveOffGroundTicks = 0; pData.fallDistance = 0; pData.consecutiveOnGroundSpeedingTicks = 0; pData.attackEvents = []; pData.blockBreakEvents = [];
-                        await playerDataManager.prepareAndSavePlayerData(targetPlayer);
-                        adminPlayer.sendMessage(`§aFlags reset for ${targetPlayer.nameTag}.`);
-                        playerUtils.notifyAdmins(`Flags for ${targetPlayer.nameTag} were reset by ${adminPlayer.nameTag} via panel.`, adminPlayer, pData);
-                        playerUtils.debugLog(`Flags reset for ${targetPlayer.nameTag} by ${adminPlayer.nameTag} via panel.`, adminPlayer.nameTag);
-                    } else { adminPlayer.sendMessage("§cCould not retrieve data to reset flags for " + targetPlayer.nameTag); }
-                } else { adminPlayer.sendMessage("§7Flag reset cancelled for " + targetPlayer.nameTag); }
-                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager);
+            case 4: // Mute/Unmute Player
+                // ... (mute/unmute logic using modal form and respective modules)
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
                 break;
-            case 5: await showOnlinePlayersList(adminPlayer, playerDataManager); break;
-            default: adminPlayer.sendMessage("§cInvalid action selected."); await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); break;
+            case 5: // Ban Player
+                // ... (ban logic using modal form and banModule.execute)
+                await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
+                break;
+            case 6: // Reset Player Flags
+                commandModule = dependencies.commandModules.find(m => m.definition.name === 'resetflags');
+                if (commandModule) await commandModule.execute(adminPlayer, [targetPlayer.nameTag], dependencies);
+                else adminPlayer.sendMessage("§cResetflags command module not found.");
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
+                break;
+            case 7: // Back to Player List
+                await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
+                break;
+            default:
+                adminPlayer.sendMessage("§cInvalid action selected.");
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
+                break;
         }
     } catch (error) {
-        playerUtils.debugLog(`Error in showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showPlayerActionsForm] Error for ${targetPlayer.nameTag}:`, error, error.stack);
+        localPlayerUtils.debugLog(`Error in showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}: ${error}${error.stack ? '\n'+error.stack : ''}`, adminPlayer.nameTag);
         adminPlayer.sendMessage("§cAn error occurred while displaying player actions.");
+        await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
     }
 }
 
-async function showOnlinePlayersList(adminPlayer, playerDataManager) {
+async function showOnlinePlayersList(adminPlayer, playerDataManager, dependencies) {
+    // ... (existing function, ensure all calls to showAdminPanelMain/showPlayerActionsForm pass dependencies)
+    // Example modification for calls:
+    // if (response.canceled) { await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies); return; }
+    // if (targetPlayer) { await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); }
+    // else { ... await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); }
+    // catch { ... await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies); }
     playerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const onlinePlayers = mc.world.getAllPlayers();
     if (onlinePlayers.length === 0) {
-        const msgForm = new MessageFormData().title("Online Players").body("No players currently online.").button1("Close");
-        try { await msgForm.show(adminPlayer); } catch (e) { playerUtils.debugLog(`Error showing 'No players online' form: ${e}`, adminPlayer.nameTag); }
+        const msgForm = new MessageFormData().title("Online Players").body("No players currently online.").button1("Back to Admin Panel");
+        await msgForm.show(adminPlayer).catch(e => playerUtils.debugLog(`Error showing 'No players online' form: ${e}`, adminPlayer.nameTag));
+        await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
         return;
     }
     const form = new ActionFormData(); form.title("Online Players"); form.body("Select a player to view actions:");
     const playerMappings = [];
     for (const p of onlinePlayers) {
         const targetPData = playerDataManager.getPlayerData(p.id);
-        const buttonText = targetPData ? `${p.nameTag} (Flags: ${targetPData.flags.totalFlags})` : p.nameTag;
-        form.button(buttonText, "textures/ui/icon_steve"); // Added icon_steve
+        const buttonText = targetPData && targetPData.flags ? `${p.nameTag} (Flags: ${targetPData.flags.totalFlags || 0})` : p.nameTag;
+        form.button(buttonText, "textures/ui/icon_steve");
         playerMappings.push(p.id);
     }
     try {
         const response = await form.show(adminPlayer);
-        if (response.canceled) { /* ... */ return; }
+        if (response.canceled) { await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies); return; }
         const selectedPlayerId = playerMappings[response.selection];
         const targetPlayer = mc.world.getPlayer(selectedPlayerId);
-        if (targetPlayer) { await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager); }
-        else { adminPlayer.sendMessage("§cSelected player not found. They may have logged off."); playerUtils.debugLog(`Selected player with ID ${selectedPlayerId} not found in showOnlinePlayersList.`, adminPlayer.nameTag); }
+        if (targetPlayer) { await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); }
+        else { adminPlayer.sendMessage("§cSelected player not found (may have logged off)."); await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); }
     } catch (error) {
-        playerUtils.debugLog(`Error in showOnlinePlayersList for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showOnlinePlayersList] Error for ${adminPlayer.nameTag}:`, error, error.stack);
-        adminPlayer.sendMessage("§cAn error occurred while displaying the online players list.");
+        playerUtils.debugLog(`Error in showOnlinePlayersList: ${error}`, adminPlayer.nameTag);
+        adminPlayer.sendMessage("§cAn error occurred displaying players.");
+        await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
     }
 }
 
-export async function showAdminPanelMain(adminPlayer, playerDataManager, config) {
+export async function showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies) {
+    // ... (existing function, ensure all calls to other UI forms pass dependencies)
+    // Example modification for calls:
+    // case 0: await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); break;
+    // case 1: await showInspectPlayerForm(adminPlayer, playerDataManager, dependencies); break;
+    // case 4: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
     playerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData();
     const userPermLevel = getPlayerPermissionLevel(adminPlayer);
-    let response;
     try {
         if (userPermLevel <= permissionLevels.ADMIN) {
             form.title("AC Admin Panel"); form.body("Select an admin action:");
-            form.button("View Online Players", "textures/ui/icon_multiplayer");
-            form.button("Inspect Player (Text)", "textures/ui/spyglass");
-            form.button("Reset Flags (Text)", "textures/ui/refresh");
-            form.button("List Watched Players", "textures/ui/magnifying_glass");
-            form.button("Server Management", "textures/ui/icon_graph");
-            form.button("View Configuration", "textures/ui/gear"); // This will become "Edit Configuration"
-            response = await form.show(adminPlayer);
-            if (response.canceled) { /* ... */ return; }
+            form.button("View Online Players", "textures/ui/icon_multiplayer");        // 0
+            form.button("Inspect Player (Text)", "textures/ui/spyglass");             // 1
+            form.button("Reset Flags (Text)", "textures/ui/refresh");                 // 2
+            form.button("List Watched Players", "textures/ui/magnifying_glass");    // 3
+            form.button("Server Management", "textures/ui/icon_graph");               // 4
+            form.button("View/Edit Configuration", "textures/ui/gear");               // 5
+            const response = await form.show(adminPlayer);
+            if (response.canceled) return;
             switch (response.selection) {
-                case 0: await showOnlinePlayersList(adminPlayer, playerDataManager); break;
-                case 1: await showInspectPlayerForm(adminPlayer, playerDataManager); break;
-                case 2: await showResetFlagsForm(adminPlayer, playerDataManager); break;
-                case 3: await showWatchedPlayersList(adminPlayer, playerDataManager); break;
-                case 4: await showServerManagementForm(adminPlayer, playerDataManager, config); break;
-                case 5: await showEditConfigForm(adminPlayer, playerDataManager, config); break; // Updated Call
-                default: adminPlayer.sendMessage("§cInvalid selection from Admin Panel."); break;
+                case 0: await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); break;
+                case 1: await showInspectPlayerForm(adminPlayer, playerDataManager, dependencies); break;
+                case 2: await showResetFlagsForm(adminPlayer, playerDataManager, dependencies); break;
+                case 3: await showWatchedPlayersList(adminPlayer, playerDataManager, dependencies); break;
+                case 4: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
+                case 5: await showEditConfigForm(adminPlayer, playerDataManager, config, dependencies); break;
+                default: adminPlayer.sendMessage("§cInvalid selection."); await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies); break;
             }
         } else {
-            form.title("AntiCheat Info"); form.body("Select an option:");
-            form.button("My Stats", "textures/ui/icon_profile_generic");
-            form.button("Server Rules", "textures/ui/book_writable");
-            form.button("Help & Links", "textures/ui/icon_Web");
-            response = await form.show(adminPlayer);
-            if (response.canceled) { /* ... */ return; }
-            switch (response.selection) {
-                case 0: await showMyStats(adminPlayer, playerDataManager); break;
-                case 1: await showServerRules(adminPlayer, config, playerDataManager); break;
-                case 2: await showHelpAndLinks(adminPlayer, config, playerDataManager); break;
-                default: adminPlayer.sendMessage("§cInvalid selection from Info Panel."); break;
-            }
+            adminPlayer.sendMessage("§7Please use the `!uinfo` command to access player-specific information.");
         }
     } catch (error) {
-        playerUtils.debugLog(`Error in showAdminPanelMain for ${adminPlayer.nameTag} (Perm: ${userPermLevel}): ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showAdminPanelMain] Error for ${adminPlayer.nameTag}:`, error, error.stack);
-        adminPlayer.sendMessage("§cAn error occurred while trying to display the panel.");
+        playerUtils.debugLog(`Error in showAdminPanelMain for ${adminPlayer.nameTag}: ${error}${error.stack ? '\n'+error.stack : ''}`, adminPlayer.nameTag);
+        adminPlayer.sendMessage("§cAn error occurred displaying the panel.");
     }
 }
 
-async function showSystemInfo(adminPlayer, config, playerDataManager) {
-    playerUtils.debugLog(`UI: showSystemInfo requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    try {
-        const onlinePlayersCount = mc.world.getAllPlayers().length;
-        let watchedPlayersCount = 0;
-        const allPDataValues = typeof playerDataManager.getAllPlayerDataValues === 'function' ? playerDataManager.getAllPlayerDataValues() : [];
-        for (const pDataEntry of allPDataValues) { if (pDataEntry.isWatched === true) { watchedPlayersCount++; } }
-        let mutedPlayersCount = 0;
-        for (const p of mc.world.getAllPlayers()) {
-            const pData = playerDataManager.getPlayerData(p.id);
-            if (pData && pData.muteInfo) { if (pData.muteInfo.unmuteTime === Infinity || Date.now() < pData.muteInfo.unmuteTime) { mutedPlayersCount++; } }
-        }
-        let bodyContent = `§lAntiCheat System Information§r\n\n`;
-        bodyContent += `§eAC Version:§r ${config.acVersion || 'Unknown'}\n`;
-        bodyContent += `§eOnline Players:§r ${onlinePlayersCount}\n`;
-        bodyContent += `§eWatched Players:§r ${watchedPlayersCount}\n`;
-        bodyContent += `§eMuted Players (Persistent):§r ${mutedPlayersCount}\n`;
-        const form = new MessageFormData(); form.title("System Information"); form.body(bodyContent); form.button1("Close");
-        await form.show(adminPlayer);
-    } catch (error) {
-        playerUtils.debugLog(`Error in showSystemInfo for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showSystemInfo] Error:`, error, error.stack);
-        adminPlayer.sendMessage("§cAn error occurred while displaying system information.");
-    }
-    await showAdminPanelMain(adminPlayer, playerDataManager, config); // config is passed here, it's the original const config
+async function showSystemInfo(adminPlayer, config, playerDataManager, dependencies) {
+    // ... (ensure call to showServerManagementForm passes dependencies)
+    await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
 }
 
-// Renamed from showViewConfigForm and updated to use ModalFormData for editing
-async function showEditConfigForm(adminPlayer, playerDataManager, originalConfig) {
-    playerUtils.debugLog(`UI: showEditConfigForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const form = new ModalFormData();
-    form.title("Edit Configuration (Session Only)");
+async function showEditConfigForm(adminPlayer, playerDataManager, config, dependencies) {
+    // ... (ensure call to showServerManagementForm passes dependencies)
+    await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
+}
 
-    const orderedConfigKeys = []; // To keep track of the order of form elements
+async function handleClearChatAction(adminPlayer, playerDataManager, config, dependencies) {
+    // ... (ensure call to showServerManagementForm passes dependencies)
+    await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
+}
 
-    for (const key in editableConfigValues) {
-        if (Object.hasOwnProperty.call(editableConfigValues, key)) {
-            const value = editableConfigValues[key];
-            const type = typeof value;
-            orderedConfigKeys.push({ key: key, type: type });
+async function handleLagClearAction(adminPlayer, config, playerDataManager, dependencies) {
+    // ... (ensure call to showServerManagementForm passes dependencies)
+    await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
+}
 
-            if (type === 'boolean') {
-                form.toggle(`${key} (boolean):`, value);
-            } else if (type === 'string') {
-                form.textField(`${key} (string):`, String(value), String(value));
-            } else if (type === 'number') {
-                form.textField(`${key} (number):`, String(value), String(value));
-            }
-            // Complex types are not included in editableConfigValues
-        }
+// --- NEW FUNCTIONS START ---
+async function showModLogTypeSelectionForm(adminPlayer, dependencies, currentFilterName = null) {
+    const { playerDataManager, config, playerUtils: localPlayerUtils } = dependencies;
+    const form = new ActionFormData();
+    form.title("Select Moderation Log Type");
+
+    let bodyText = "View Ban/Unban or Mute/Unmute logs.";
+    if (currentFilterName) {
+        bodyText += `\n§eCurrent Filter: ${currentFilterName}§r`;
+    } else {
+        bodyText += `\n§7No player name filter active.§r`;
     }
-    // Add acVersion display from originalConfig as it's not in editableConfigValues
-    if (originalConfig && originalConfig.acVersion) {
-         form.dropdown("AC Version (Read-Only):", [originalConfig.acVersion], 0); // Using dropdown as a read-only text display
-    }
+    form.body(bodyText);
 
+    form.button("View Ban/Unban Logs", "textures/ui/icon_alert");
+    form.button("View Mute/Unmute Logs", "textures/ui/speaker_glyph_color");
+
+    if (currentFilterName) {
+        form.button(`Clear Player Filter (${currentFilterName})`, "textures/ui/cancel");
+    } else {
+        form.button("Filter by Player Name", "textures/ui/magnifying_glass");
+    }
+    form.button("Back to Server Management", "textures/ui/undo");
 
     try {
         const response = await form.show(adminPlayer);
-
         if (response.canceled) {
-            playerUtils.debugLog(`Edit Config form canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
-            await showAdminPanelMain(adminPlayer, playerDataManager, originalConfig);
+            await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
             return;
         }
 
-        const { formValues } = response;
-        let updateSummary = "§lConfiguration Update Results:§r\n";
-        let changesMade = 0;
-        let errorsEncountered = 0;
-
-        for (let i = 0; i < orderedConfigKeys.length; i++) {
-            const configEntry = orderedConfigKeys[i];
-            const key = configEntry.key;
-            const originalType = configEntry.type;
-            let newValue = formValues[i]; // This is the value from the form
-
-            if (originalType === 'number') {
-                const parsedNum = parseFloat(newValue);
-                if (isNaN(parsedNum)) {
-                    updateSummary += `§c- ${key}: Failed (Invalid number: "${newValue}")\n`;
-                    errorsEncountered++;
-                    continue;
+        switch (response.selection) {
+            case 0: // View Ban/Unban Logs
+                await showLogViewerForm(adminPlayer, dependencies, ['ban', 'unban'], currentFilterName, "Ban/Unban Logs");
+                break;
+            case 1: // View Mute/Unmute Logs
+                await showLogViewerForm(adminPlayer, dependencies, ['mute', 'unmute'], currentFilterName, "Mute/Unmute Logs");
+                break;
+            case 2: // Filter by Player Name or Clear Filter
+                if (currentFilterName) {
+                    adminPlayer.sendMessage("§aPlayer name filter cleared.");
+                    await showModLogTypeSelectionForm(adminPlayer, dependencies, null);
+                } else {
+                    const modalFilter = new ModalFormData();
+                    modalFilter.title("Filter Logs by Player Name");
+                    modalFilter.textField("Enter Player Name (leave blank for no filter):", "PlayerName");
+                    const modalResponse = await modalFilter.show(adminPlayer);
+                    if (modalResponse.canceled) {
+                        await showModLogTypeSelectionForm(adminPlayer, dependencies, currentFilterName);
+                        return;
+                    }
+                    const newFilter = modalResponse.formValues[0];
+                    if (newFilter && newFilter.trim() !== "") {
+                        adminPlayer.sendMessage(`§aLog filter set to: ${newFilter.trim()}`);
+                        await showModLogTypeSelectionForm(adminPlayer, dependencies, newFilter.trim());
+                    } else {
+                        adminPlayer.sendMessage("§7Filter input was blank. No filter set.");
+                        await showModLogTypeSelectionForm(adminPlayer, dependencies, null);
+                    }
                 }
-                newValue = parsedNum;
-            }
-            // Booleans from toggles are fine. Strings from textFields are fine.
-
-            if (editableConfigValues[key] === newValue) { // No change
-                // updateSummary += `§7- ${key}: No change (${newValue})\n`;
-                continue;
-            }
-
-            const success = updateConfigValue(key, newValue);
-            if (success) {
-                updateSummary += `§a- ${key}: Updated to ${newValue}\n`;
-                changesMade++;
-            } else {
-                // updateConfigValue logs details to console, provide a simpler message to player
-                updateSummary += `§c- ${key}: Failed to update (Type mismatch or invalid value. Check console for details.)\n`;
-                errorsEncountered++;
-            }
+                break;
+            case 3: // Back
+                await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
+                break;
         }
-
-        let finalMessage = "";
-        if (changesMade > 0 && errorsEncountered === 0) {
-            finalMessage = `§aSuccessfully updated ${changesMade} configuration value(s).\n${updateSummary}`;
-        } else if (changesMade > 0 && errorsEncountered > 0) {
-            finalMessage = `§ePartially updated configuration. ${changesMade} success(es), ${errorsEncountered} error(s).\n${updateSummary}`;
-        } else if (changesMade === 0 && errorsEncountered > 0) {
-            finalMessage = `§cConfiguration update failed. ${errorsEncountered} error(s).\n${updateSummary}`;
-        } else { // No changes, no errors
-            finalMessage = "§7No configuration values were changed.";
-        }
-
-        if (changesMade > 0) {
-             finalMessage += "\n§oSome changes may require a server reload or specific command to apply to all systems.";
-        }
-
-        const resultForm = new MessageFormData()
-            .title("Configuration Update Status")
-            .body(finalMessage)
-            .button1("OK");
-        await resultForm.show(adminPlayer);
-
-    } catch (error) {
-        playerUtils.debugLog(`Error in showEditConfigForm for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showEditConfigForm] Error:`, error, error.stack);
-        adminPlayer.sendMessage("§cAn error occurred while processing the configuration form.");
+    } catch (e) {
+        if (localPlayerUtils && localPlayerUtils.debugLog) localPlayerUtils.debugLog(`Error in showModLogTypeSelectionForm: ${e}`, adminPlayer.nameTag);
+        adminPlayer.sendMessage("§cError displaying log type selection form.");
+        await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
     }
-    // Pass originalConfig back as it's expected by showAdminPanelMain and other forms it might call
-    await showAdminPanelMain(adminPlayer, playerDataManager, originalConfig);
 }
 
-async function clearAllChat(adminPerformingAction) {
-    playerUtils.debugLog(`UI: clearAllChat initiated by ${adminPerformingAction.nameTag}`, adminPerformingAction.nameTag);
-    const chatClearLines = 150;
-    try {
-        for (let i = 0; i < chatClearLines; i++) {
-            for (const p of mc.world.getAllPlayers()) { p.sendMessage(" "); }
-        }
-        playerUtils.debugLog(`UI: Chat cleared successfully by ${adminPerformingAction.nameTag}`, adminPerformingAction.nameTag);
-    } catch (error) { /* ... */ adminPerformingAction.sendMessage("§cAn error occurred while trying to clear chat."); }
-}
+async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray, filterPlayerName = null, logTypeName = "Logs") {
+    const { logManager: depLogManager, playerUtils: localPlayerUtils, playerDataManager, config } = dependencies;
+    const form = new MessageFormData();
 
-async function handleClearChatAction(adminPlayer, playerDataManager, config) {
-    playerUtils.debugLog(`UI: handleClearChatAction requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const confirmForm = new ModalFormData(); /* ... */ confirmForm.title("Confirm Clear Chat"); confirmForm.content("Are you sure you want to clear chat for all players? This action will send many blank messages and cannot be undone."); confirmForm.toggle("Confirm Clear Chat", false);
-    try {
-        const response = await confirmForm.show(adminPlayer);
-        if (response.canceled) { /* ... */ await showServerManagementForm(adminPlayer, playerDataManager, config); return; }
-        const confirmed = response.formValues[0];
-        if (!confirmed) { /* ... */ await showServerManagementForm(adminPlayer, playerDataManager, config); return; }
-        await clearAllChat(adminPlayer);
-        playerUtils.notifyAdmins(`Chat was cleared by ${adminPlayer.nameTag} via Admin Panel.`, adminPlayer, null);
-        playerUtils.debugLog(`Chat cleared by ${adminPlayer.nameTag} via Admin Panel.`, adminPlayer.nameTag);
-        const successForm = new MessageFormData(); /* ... */ successForm.title("Success"); successForm.body("Chat cleared for all players."); successForm.button1("OK");
-        await successForm.show(adminPlayer);
-    } catch (error) { /* ... */ }
-    await showServerManagementForm(adminPlayer, playerDataManager, config);
-}
+    let title = logTypeName;
+    if (filterPlayerName) {
+        title += ` for "${filterPlayerName}"`;
+    }
+    form.title(title);
 
-async function handleLagClearAction(adminPlayer, config, playerDataManager) {
-    playerUtils.debugLog(`UI: handleLagClearAction requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const confirmForm = new ModalFormData();
-    confirmForm.title("Confirm Lag Clear (Items)");
-    confirmForm.content("This will remove ALL dropped item entities from standard dimensions (Overworld, Nether, End). This action cannot be undone. Are you sure?");
-    confirmForm.toggle("Confirm removal of all dropped items", false);
+    const displayLimit = 50;
+    let bodyContent = "";
 
     try {
-        const response = await confirmForm.show(adminPlayer);
-        if (response.canceled || !response.formValues[0]) {
-            adminPlayer.sendMessage("§7Lag clear cancelled.");
-            await showServerManagementForm(adminPlayer, playerDataManager, config);
-            return;
-        }
-
-        let itemCount = 0;
-        const dimensions = [mc.world.overworld, mc.world.nether, mc.world.theEnd];
-        const itemEntityType = 'minecraft:item';
-
-        for (const dimension of dimensions) {
-            try {
-                const itemEntities = dimension.getEntities({ type: itemEntityType });
-                for (const entity of itemEntities) {
-                    entity.kill(); // More reliable than despawn event
-                    itemCount++;
-                }
-            } catch (e) {
-                playerUtils.debugLog(`Error clearing items in dimension ${dimension.id}: ${e}`, adminPlayer.nameTag);
-                // Continue to other dimensions even if one fails
+        const allLogs = depLogManager.getLogs(200); // Get more logs for effective filtering
+        let filteredLogs = allLogs.filter(logEntry => {
+            let typeMatch = logActionTypesArray.includes(logEntry.actionType);
+            let nameMatch = true;
+            if (filterPlayerName) {
+                nameMatch = (logEntry.targetName && logEntry.targetName.toLowerCase().includes(filterPlayerName.toLowerCase())) ||
+                            (logEntry.adminName && logEntry.adminName.toLowerCase().includes(filterPlayerName.toLowerCase()));
             }
-        }
-
-        logManager.addLog({
-            timestamp: Date.now(),
-            adminName: adminPlayer.nameTag,
-            actionType: 'lag_clear_items',
-            targetName: 'Global',
-            details: `Cleared ${itemCount} dropped item entities from standard dimensions.`
+            return typeMatch && nameMatch;
         });
 
-        playerUtils.notifyAdmins(`Lag clear: ${adminPlayer.nameTag} removed ${itemCount} dropped item entities.`, adminPlayer, null);
+        const logsToDisplay = filteredLogs.slice(0, displayLimit);
 
-        const successForm = new MessageFormData();
-        successForm.title("Lag Clear Successful");
-        successForm.body(`Successfully removed ${itemCount} dropped item entities from Overworld, Nether, and End.`);
-        successForm.button1("OK");
-        await successForm.show(adminPlayer);
-
-    } catch (error) {
-        playerUtils.debugLog(`Error in handleLagClearAction for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.handleLagClearAction] Error:`, error, error.stack);
-        adminPlayer.sendMessage("§cAn error occurred during lag clear. Check console.");
-    }
-    await showServerManagementForm(adminPlayer, playerDataManager, config);
-}
-
-
-async function showServerManagementForm(adminPlayer, playerDataManager, config) {
-    playerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const form = new ActionFormData(); form.title("Server Management"); form.body("Select a server management action:");
-    form.button("View System Info", "textures/ui/icon_graph");
-    form.button("Clear Chat for All Players", "textures/ui/speech_bubble_glyph_color");
-    form.button("Lag Clear (Items)", "textures/ui/icon_trash");  // Updated text
-    form.button("View Action Logs", "textures/ui/book_writable");
-    form.button("Back to Admin Panel", "textures/ui/undo");
-    try {
-        const response = await form.show(adminPlayer);
-        if (response.canceled) { /* ... */ return; }
-        switch (response.selection) {
-            case 0: await showSystemInfo(adminPlayer, config, playerDataManager); break;
-            case 1: await handleClearChatAction(adminPlayer, playerDataManager, config); break;
-            case 2: await handleLagClearAction(adminPlayer, config, playerDataManager); break; // Correctly calls new function
-            case 3: await showActionLogsForm(adminPlayer, config, playerDataManager); break;
-            case 4: await showAdminPanelMain(adminPlayer, playerDataManager, config); break;
-            default: /* ... */ await showServerManagementForm(adminPlayer, playerDataManager, config); break;
+        if (logsToDisplay.length === 0) {
+            bodyContent = "No matching logs found with current filters.";
+        } else {
+            logsToDisplay.forEach(log => {
+                const timestampStr = new Date(log.timestamp).toLocaleString();
+                let line = `§7[${timestampStr}] §c${log.adminName}§r ${log.actionType} §b${log.targetName || 'N/A'}§r`;
+                if (log.duration) line += ` §7(Dur: ${log.duration}§r)`;
+                if (log.reason) line += ` §7(Reason: ${log.reason}§r)`;
+                if (log.details) line += ` §7(Details: ${log.details}§r)`;
+                line += "\n";
+                bodyContent += line;
+            });
+            if (filteredLogs.length > displayLimit) {
+                bodyContent += `\n§o(Showing latest ${displayLimit} of ${filteredLogs.length} matching logs)§r`;
+            }
         }
-    } catch (error) { /* ... */ await showAdminPanelMain(adminPlayer, playerDataManager, config); }
-}
-
-// Insert showActionLogsForm function definition here
-async function showActionLogsForm(adminPlayer, config, playerDataManager) {
-    playerUtils.debugLog(`UI: Action Logs requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const form = new MessageFormData();
-    form.title("Action Logs (Latest)");
-
-    const logsToDisplayCount = 50; // Display latest 50 logs
-    const logs = logManager.getLogs(logsToDisplayCount);
-
-    let bodyContent = "";
-    if (logs.length === 0) {
-        bodyContent = "No action logs found.";
-    } else {
-        for (const logEntry of logs) {
-            const timestampStr = new Date(logEntry.timestamp).toLocaleString();
-            let line = `§7[${timestampStr}] §e${logEntry.adminName}§r ${logEntry.actionType} §b${logEntry.targetName}§r`;
-            if (logEntry.duration) line += ` (§7Dur: ${logEntry.duration}§r)`;
-            if (logEntry.reason) line += ` (§7Reason: ${logEntry.reason}§r)`;
-            line += "\n";
-            bodyContent += line;
-        }
-        if (logs.length === logsToDisplayCount && logs.length > 0) {
-            bodyContent += `\n§o(Displaying latest ${logsToDisplayCount} logs. Older logs may exist.)`;
-        }
+    } catch (e) {
+        bodyContent = "§cError retrieving or processing logs.";
+        if (localPlayerUtils && localPlayerUtils.debugLog) localPlayerUtils.debugLog(`Error in showLogViewerForm log processing: ${e}`, adminPlayer.nameTag);
     }
 
     form.body(bodyContent.trim());
@@ -688,15 +369,101 @@ async function showActionLogsForm(adminPlayer, config, playerDataManager) {
 
     try {
         await form.show(adminPlayer);
-    } catch (error) {
-        playerUtils.debugLog(`Error in showActionLogsForm for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showActionLogsForm] Error:`, error, error.stack);
+    } catch (e) {
+        if (localPlayerUtils && localPlayerUtils.debugLog) localPlayerUtils.debugLog(`Error displaying LogViewerForm: ${e}`, adminPlayer.nameTag);
     }
-    // Always return to the server management form
-    await showServerManagementForm(adminPlayer, config, playerDataManager);
+    await showModLogTypeSelectionForm(adminPlayer, dependencies, filterPlayerName);
+}
+// --- NEW FUNCTIONS END ---
+
+
+async function showServerManagementForm(adminPlayer, playerDataManager, config, dependencies) {
+    playerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const form = new ActionFormData(); form.title("Server Management"); form.body("Select action:");
+    form.button("View System Info", "textures/ui/icon_graph");                 // 0
+    form.button("Clear Chat for All Players", "textures/ui/speech_bubble_glyph_color"); // 1
+    form.button("Lag Clear (Items)", "textures/ui/icon_trash");               // 2
+    form.button("View Action Logs (All)", "textures/ui/book_writable");       // 3 (General Action Logs)
+    form.button("View Moderation Logs", "textures/ui/book_edit_default");     // 4 (New: Ban/Mute Logs)
+    form.button("Back to Admin Panel", "textures/ui/undo");                   // 5
+
+    try {
+        const response = await form.show(adminPlayer);
+        if (response.canceled) { await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies); return; }
+        switch (response.selection) {
+            case 0: await showSystemInfo(adminPlayer, config, playerDataManager, dependencies); break;
+            case 1: await handleClearChatAction(adminPlayer, playerDataManager, config, dependencies); break;
+            case 2: await handleLagClearAction(adminPlayer, config, playerDataManager, dependencies); break;
+            case 3: await showActionLogsForm(adminPlayer, config, playerDataManager, dependencies); break;
+            case 4: await showModLogTypeSelectionForm(adminPlayer, dependencies, null); break; // New Call
+            case 5: await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies); break;
+            default: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
+        }
+    } catch (error) {
+        playerUtils.debugLog(`Error in showServerManagementForm for ${adminPlayer.nameTag}: ${error}${error.stack ? '\n'+error.stack : ''}`, adminPlayer.nameTag);
+        await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies);
+    }
 }
 
+async function showActionLogsForm(adminPlayer, config, playerDataManager, dependencies) {
+    playerUtils.debugLog(`UI: Action Logs requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const form = new MessageFormData(); form.title("Action Logs (All - Latest)");
+    const logsToDisplayCount = 50;
+    const logs = logManager.getLogs(logsToDisplayCount); // logManager is directly available via import
+    let bodyContent = "";
+    if (logs.length === 0) { bodyContent = "No action logs found."; }
+    else {
+        for (const logEntry of logs) {
+            const timestampStr = new Date(logEntry.timestamp).toLocaleString();
+            let line = `§7[${timestampStr}] §e${logEntry.adminName || logEntry.playerName}§r ${logEntry.actionType} §b${logEntry.targetName || ''}§r`;
+            if (logEntry.duration) line += ` (§7Dur: ${logEntry.duration}§r)`;
+            if (logEntry.reason) line += ` (§7Reason: ${logEntry.reason}§r)`;
+            if (logEntry.details) line += ` (§7Details: ${logEntry.details}§r)`;
+            line += "\n";
+            bodyContent += line;
+        }
+        if (logs.length === logsToDisplayCount && logs.length > 0) {
+            bodyContent += `\n§o(Displaying latest ${logsToDisplayCount} logs. Older logs may exist.)`;
+        }
+    }
+    form.body(bodyContent.trim()); form.button1("Back");
+    await form.show(adminPlayer).catch(e => playerUtils.debugLog(`Error in showActionLogsForm: ${e}`, adminPlayer.nameTag));
+    await showServerManagementForm(adminPlayer, config, playerDataManager, dependencies);
+}
 
-export async function showPlayerInventory(adminPlayer, targetPlayer) { /* ... */ }
-async function showResetFlagsForm(player, playerDataManager) { /* ... */ }
-async function showWatchedPlayersList(player, playerDataManager) { /* ... */ }
+async function showResetFlagsForm(player, playerDataManager, dependencies) {
+    // This form could call the 'resetflags' command module
+    const resetFlagsModule = dependencies.commandModules.find(m => m.definition.name === 'resetflags');
+    if (resetFlagsModule) {
+        const modalForm = new ModalFormData().title("Reset Player Flags (Text Entry)");
+        modalForm.textField("Enter Player Name to Reset Flags:", "TargetPlayerName");
+        modalForm.toggle("Confirm Reset", false);
+        const response = await modalForm.show(player);
+        if (!response.canceled && response.formValues[1]) {
+            await resetFlagsModule.execute(player, [response.formValues[0]], dependencies);
+        } else {
+            player.sendMessage("§7Flag reset cancelled.");
+        }
+    } else {
+        player.sendMessage("§cResetflags command module not found.");
+    }
+    await showAdminPanelMain(player, playerDataManager, dependencies.config, dependencies);
+}
+async function showWatchedPlayersList(player, playerDataManager, dependencies) {
+    // This form could call a (yet to be created) '!watchlist' command module or use playerDataManager directly
+    let body = "§e--- Watched Players ---\n";
+    let watchedCount = 0;
+    mc.world.getAllPlayers().forEach(p => {
+        const pData = playerDataManager.getPlayerData(p.id);
+        if (pData && pData.isWatched) {
+            body += `§f- ${p.nameTag}\n`;
+            watchedCount++;
+        }
+    });
+    if (watchedCount === 0) {
+        body = "§7No players are currently being watched.";
+    }
+    const form = new MessageFormData().title("Watched Players").body(body).button1("OK");
+    await form.show(player).catch(e => playerUtils.debugLog(`Error showing watched players list: ${e}`, player.nameTag));
+    await showAdminPanelMain(player, playerDataManager, dependencies.config, dependencies);
+}

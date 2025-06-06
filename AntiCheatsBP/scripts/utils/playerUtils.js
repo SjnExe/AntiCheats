@@ -127,7 +127,7 @@ export function notifyAdmins(baseMessage, player, pData) {
     const notificationsOnTag = "ac_notifications_on";   // Tag to explicitly enable AC notifications
 
     for (const p of allPlayers) {
-        if (isAdmin(p)) {
+        if (isAdmin(p)) { // Check if the player 'p' is an admin
             const hasExplicitOn = p.hasTag(notificationsOnTag);
             const hasExplicitOff = p.hasTag(notificationsOffTag);
 
@@ -154,6 +154,7 @@ export function notifyAdmins(baseMessage, player, pData) {
     }
 }
 
+
 /**
  * Logs a message to the console if debug logging is enabled in the configuration.
  * Prefixes messages differently if `contextPlayerNameIfWatched` is provided, indicating a log specific to a watched player.
@@ -168,4 +169,47 @@ export function debugLog(message, contextPlayerNameIfWatched = null) {
             console.warn(`[AC Debug] ${message}`);
         }
     }
+}
+
+/**
+ * Helper function to find a player by name (case-insensitive).
+ * @param {string} playerName The name of the player to find.
+ * @returns {mc.Player | null} The player object if found, otherwise null.
+ */
+export function findPlayer(playerName) {
+    if (!playerName || typeof playerName !== 'string') return null;
+    const nameToFind = playerName.toLowerCase();
+    for (const p of mc.world.getAllPlayers()) {
+        if (p.nameTag.toLowerCase() === nameToFind) {
+            return p;
+        }
+    }
+    return null;
+}
+
+/**
+ * Helper function to parse duration string (e.g., "5m", "1h", "2d", "perm").
+ * @param {string} durationString The duration string to parse.
+ * @returns {number | null | Infinity} Duration in milliseconds, Infinity for permanent, or null for invalid format.
+ */
+export function parseDuration(durationString) {
+    if (!durationString) return null;
+    durationString = durationString.toLowerCase();
+    if (durationString === "perm" || durationString === "permanent") return Infinity;
+    const regex = /^(\d+)([smhd])$/;
+    const match = durationString.match(regex);
+    if (match) {
+        const value = parseInt(match[1]);
+        const unit = match[2];
+        switch (unit) {
+            case 's': return value * 1000; // seconds
+            case 'm': return value * 60 * 1000; // minutes
+            case 'h': return value * 60 * 60 * 1000; // hours
+            case 'd': return value * 24 * 60 * 60 * 1000; // days
+        }
+    } else if (/^\d+$/.test(durationString)) { // If only a number is provided, assume minutes
+        const value = parseInt(durationString);
+        if (!isNaN(value)) return value * 60 * 1000;
+    }
+    return null; // Invalid format
 }

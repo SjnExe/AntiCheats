@@ -1,7 +1,5 @@
 import * as mc from '@minecraft/server';
-import * as playerDataManager from '../../core/playerDataManager.js';
-import * as playerUtils from '../../utils/playerUtils.js';
-import * as config from '../../config.js';
+// Removed direct imports for playerDataManager, playerUtils, config
 
 /**
  * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -13,9 +11,13 @@ import * as config from '../../config.js';
  * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
  * @param {mc.Entity} targetEntity The entity that was just hurt by the player.
  * @param {object} config The configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
  */
-export function checkMultiTarget(player, pData, targetEntity, config) {
-    if (!config.enableMultiTargetCheck) return; // Renamed
+export async function checkMultiTarget(player, pData, targetEntity, config, playerUtils, playerDataManager, logManager, executeCheckAction) {
+    if (!config.enableMultiTargetCheck) return;
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const now = Date.now();
@@ -24,19 +26,30 @@ export function checkMultiTarget(player, pData, targetEntity, config) {
         pData.recentHits = [];
     }
 
+    // Ensure targetEntity and its id are valid before proceeding
+    if (!targetEntity || typeof targetEntity.id === 'undefined') {
+        if (playerUtils.debugLog && watchedPrefix) {
+            playerUtils.debugLog(`MultiTargetCheck: Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, watchedPrefix);
+        }
+        return; // Cannot process this hit without a valid target ID
+    }
+
     const newHit = {
-        entityId: targetEntity.id,
+        entityId: targetEntity.id, // Use targetEntity.id directly
         timestamp: now,
     };
     pData.recentHits.push(newHit);
 
-    pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= config.multiTargetWindowMs); // Renamed
+    // Filter hits to the current window
+    pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= config.multiTargetWindowMs);
 
-    if (pData.recentHits.length > config.multiTargetMaxHistory) { // Renamed
-        pData.recentHits = pData.recentHits.slice(pData.recentHits.length - config.multiTargetMaxHistory); // Renamed
+    // Trim history if it exceeds max size
+    if (pData.recentHits.length > config.multiTargetMaxHistory) {
+        pData.recentHits = pData.recentHits.slice(pData.recentHits.length - config.multiTargetMaxHistory);
     }
 
-    if (pData.recentHits.length < config.multiTargetThreshold) { // Renamed
+    // Not enough hits yet to trigger a check
+    if (pData.recentHits.length < config.multiTargetThreshold) {
         return;
     }
 
@@ -45,22 +58,26 @@ export function checkMultiTarget(player, pData, targetEntity, config) {
         distinctTargets.add(hit.entityId);
     }
 
-    if (pData.isWatched) {
+    if (pData.isWatched && playerUtils.debugLog) {
         playerUtils.debugLog(`MultiTargetCheck: Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, watchedPrefix);
     }
 
-    if (distinctTargets.size >= config.multiTargetThreshold) { // Renamed
-        playerDataManager.addFlag(
-            player,
-            "multiAura",
-            config.flagReasonMultiAura, // Renamed
-            `Hit ${distinctTargets.size} unique targets in ${config.multiTargetWindowMs}ms.` // Renamed
-        );
+    if (distinctTargets.size >= config.multiTargetThreshold) {
+        const violationDetails = {
+            targetsHit: distinctTargets.size,
+            windowSeconds: (config.multiTargetWindowMs / 1000).toFixed(1),
+            threshold: config.multiTargetThreshold,
+            // Example: include IDs of distinct targets for logging, truncated if too many
+            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', ')
+        };
+        const dependencies = { config, playerDataManager, playerUtils, logManager };
+        await executeCheckAction(player, "combat_multitarget_aura", violationDetails, dependencies);
 
-        if (pData.isWatched) {
-            playerUtils.debugLog(`Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${config.multiTargetWindowMs}ms. RecentHits: ${JSON.stringify(pData.recentHits.map(h=>h.entityId))}`, watchedPrefix); // Renamed
+        if (pData.isWatched && playerUtils.debugLog) {
+            playerUtils.debugLog(`Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${config.multiTargetWindowMs}ms. RecentHits: ${JSON.stringify(pData.recentHits.map(h=>h.entityId))}`, watchedPrefix);
         }
 
+        // Clear recent hits after flagging to prevent immediate re-flagging on the same set of hits
         pData.recentHits = [];
     }
 }

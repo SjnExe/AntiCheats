@@ -1,5 +1,19 @@
 # Completed Tasks
 
+## Refactoring: Standardized Actions for Combat & IllegalItem Checks
+**Date:** Current Session
+
+Continued the 'Standardize Check Actions' refactor. Migrated several combat checks (`cpsCheck.js`, `viewSnapCheck.js` for pitch/yaw/invalid, `multiTargetCheck.js`, `stateConflictCheck.js` for attack-while-sleeping) and the `illegalItemsCheck.js` (for use/place) to use the new `actionManager.executeCheckAction` system. Added corresponding action profiles for these new check types (e.g., 'combat_cps_high', 'combat_viewsnap_pitch', 'world_illegal_item_use') to `checkActionProfiles` in `config.js`.
+
+---
+
+## Features: Combat Log Detection
+**Date:** Current Session
+
+Implemented Combat Log Detection. The system tracks player PvP interactions using `lastCombatInteractionTime` in `playerData` (via `entityHurt` event). If a player leaves (`playerLeave` event) within `combatLogThresholdSeconds` (configurable) of their last combat, they are flagged for 'combat_log' (flag amount configurable via `combatLogFlagIncrement`), admins are notified (using `combatLogMessage`), and the event is logged (using `combatLogReason`). This feature is disabled by default (`enableCombatLogDetection = false` in `config.js`). Logic primarily handled in `eventHandlers.js`, with data managed by `playerDataManager.js` and configurations in `config.js`. `README.md` updated.
+
+---
+
 ## Implemented Owner and Rank System
 *(Date is a placeholder based on current interaction)*
 
@@ -653,3 +667,82 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Defaults to "N/A" if a specific piece of info is unavailable.
     *   The action is logged using `addLog` with `actionType: 'system_info'`.
     *   Handles cases for player not found or errors during info retrieval.
+
+## Documentation: README Overhaul and LICENSE Creation
+*(Date: Current Session)*
+
+A comprehensive review and update of project documentation was performed.
+
+*   **Main `README.md` Enhancements:**
+    *   Conducted a thorough review for clarity, conciseness, accuracy, and formatting.
+    *   Added a Table of Contents for improved navigation.
+    *   Integrated a new "Contributing" section with general guidelines and a link to `Dev/README.md`.
+    *   Systematically compacted content across all sections to make the README more direct and easier to digest, while retaining essential information. This included reformatting the Admin Text Commands into a table and summarizing detailed examples (like rank display formats).
+*   **LICENSE File:**
+    *   Created a new `LICENSE` file in the repository root.
+    *   Populated it with the standard MIT License text, using appropriate placeholders for the year and copyright holder ("The Project Contributors").
+*   **README License Section Update:**
+    *   Initially, a "License" section with placeholder text was added to `README.md`.
+    *   This section was subsequently removed from `README.md` (along with its ToC entry) in favor of the dedicated `LICENSE` file.
+
+These changes significantly improve the project's documentation, making it more accessible, informative, and professional.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Tools: `!help [command]` Implementation
+*(Date: Current Session)*
+
+Verified existing `!help` command functionality in `commandManager.js`. The command already supported listing available commands based on permission level and providing detailed help for specific commands (e.g., `!help <commandName>`). Ensured it was correctly documented in `README.md` for general users. No significant code changes were required as the feature was largely pre-existing.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Player Features: User Information UI (`!uinfo`)
+*(Date: Current Session)*
+
+Implemented the `!uinfo` command, which provides a user interface for players to view their own anti-cheat flag statistics, server rules, and helpful links/tips. This feature was developed as 'Public Info UI Development - Phase 1' from the todo list. The command uses ActionFormData for navigation and MessageFormData for displaying information, all handled within `commandManager.js`. Updated `README.md` to include this new command.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Features: Player Reporting System (`!report` & `!viewreports`)
+*(Date: Current Session)*
+
+Implemented a player reporting system. Players can use `!report <player> <reason>` to submit reports, which are stored persistently (capped at 100, FIFO) using `world.setDynamicProperty` via a new `reportManager.js` module. Admins can use `!viewreports` to list reports (optionally filtered by player name), view details of a specific report (using `ActionFormData` and `MessageFormData`), and clear all reports or a report by its ID (with `ModalFormData` confirmation). All functionality is integrated into `commandManager.js`. `README.md` was updated to document the new commands.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Refactoring: Modular Command System (`commandManager.js` Overhaul)
+*(Date: Current Session)*
+
+Completed a major refactoring of `commandManager.js`. All 26 commands were migrated to individual modules within a new `AntiCheatsBP/scripts/commands/` directory. `commandManager.js` now dynamically loads commands from `AntiCheatsBP/scripts/commands/commandRegistry.js` and dispatches execution to the respective modules. This change significantly improves code organization, maintainability, and scalability of the command system. Helper functions like `findPlayer` and `parseDuration` were centralized in `playerUtils.js`. `README.md` was also reviewed and updated for command consistency.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Panel: Quick Actions (Kick/Mute/Ban) in Player Inspection UI
+*(Date: Current Session)*
+
+Enhanced the Admin Panel's player inspection UI (`showPlayerActionsForm` in `uiManager.js`). Added a 'Ban Player' button and integrated its functionality. Refactored 'Kick Player' and 'Mute/Unmute Player' actions to consistently use their respective command modules (`kick.js`, `mute.js`, `ban.js`) by passing the `dependencies` object (including `commandModules`) through the UI call stack originating from `panel.js`. This allows the UI to leverage the centralized command logic for these actions, including input gathering via `ModalFormData` for reasons and durations.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Panel UI: Integrated Player Inventory View (InvSee)
+*(Date: Current Session)*
+
+Enhanced the Admin Panel's player inspection UI (`showPlayerActionsForm` in `uiManager.js`) by adding a 'View Inventory (InvSee)' button. This button's action calls the `execute` method of the `invsee.js` command module, allowing admins to view a target player's inventory directly from the UI. The `invsee.js` module displays the inventory in its own form, and the admin is returned to the player actions menu afterwards.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Documentation: Removed Text Commands Section from README.md
+*(Date: Current Session)*
+
+Removed the '### Text Commands' subsection and its table from the '## Admin Commands & UI' section in the root `README.md`. Updated the section to focus on the Admin UI Panel (`!panel`) and direct users to the in-game `!help` command for command details.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Panel UI: View Moderation Logs (Bans/Mutes)
+*(Date: Current Session)*
+
+Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]

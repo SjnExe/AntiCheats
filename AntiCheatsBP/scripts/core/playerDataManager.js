@@ -1,28 +1,7 @@
 import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 
-// PlayerAntiCheatData structure (for clarity, formal JSDoc/TS types would be in a types.js)
-// {
-//   playerNameTag: string,
-//   lastPosition: Vector3, previousPosition: Vector3,
-//   velocity: Vector3, previousVelocity: Vector3,
-//   consecutiveOffGroundTicks: number, fallDistance: number,
-//   lastOnGroundTick: number, lastOnGroundPosition: Vector3,
-//   consecutiveOnGroundSpeedingTicks: number, isTakingFallDamage: boolean,
-//   attackEvents: number[], lastAttackTime: number,
-//   blockBreakEvents: number[],
-//   flags: {
-//     totalFlags: number,
-//     fly: { count: number, lastDetectionTime: number },
-//     // ... other specific flags
-//   },
-//   lastFlagType: string, isWatched: boolean,
-//   lastPitch: number, lastYaw: number,         // NEW SESSION-ONLY
-//   lastAttackTick: number, recentHits: any[]  // NEW SESSION-ONLY
-// }
-
 const playerData = new Map();
-// const activeMutes = new Map(); // Removed: Mute info will be stored in pData
 
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
@@ -96,22 +75,21 @@ export async function prepareAndSavePlayerData(player) {
     if (!player) return;
     const pData = playerData.get(player.id);
     if (pData) {
-        const persistedPData = { // Only include fields meant for persistence
+        const persistedPData = {
             flags: pData.flags,
             isWatched: pData.isWatched,
             lastFlagType: pData.lastFlagType,
             playerNameTag: pData.playerNameTag,
-            // Persisted violation tracking fields
             attackEvents: pData.attackEvents,
             lastAttackTime: pData.lastAttackTime,
             blockBreakEvents: pData.blockBreakEvents,
-            consecutiveOffGroundTicks: pData.consecutiveOffGroundTicks, // May be reset on load if preferred
-            fallDistance: pData.fallDistance, // May be reset on load
-            consecutiveOnGroundSpeedingTicks: pData.consecutiveOnGroundSpeedingTicks, // May be reset on load
+            consecutiveOffGroundTicks: pData.consecutiveOffGroundTicks,
+            fallDistance: pData.fallDistance,
+            consecutiveOnGroundSpeedingTicks: pData.consecutiveOnGroundSpeedingTicks,
             muteInfo: pData.muteInfo,
             banInfo: pData.banInfo,
+            lastCombatInteractionTime: pData.lastCombatInteractionTime, // ADDED
         };
-        // lastPitch, lastYaw, lastAttackTick, recentHits are NOT saved as they are session-only.
         await savePlayerDataToDynamicProperties(player, persistedPData);
     } else {
         debugLog(`PDM:prepSave: No runtime pData for ${player.nameTag}.`, player.nameTag);
@@ -133,6 +111,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
         isTakingFallDamage: false,
         attackEvents: [],
         lastAttackTime: 0,
+        lastCombatInteractionTime: 0, // ADDED
         blockBreakEvents: [],
         recentMessages: [],
         flags: {
@@ -147,13 +126,11 @@ export function initializeDefaultPlayerData(player, currentTick) {
             illegalCharInChat: { count: 0, lastDetectionTime: 0 },
             longMessage: { count: 0, lastDetectionTime: 0 },
             spamRepeat: { count: 0, lastDetectionTime: 0 }
-            // New Killaura/Aimbot related flags will be added here by their checks if not pre-defined
         },
         lastFlagType: "",
         isWatched: false,
-        // New session-only fields
-        lastPitch: 0,
-        lastYaw: 0,
+        lastPitch: player.getRotation().x, // Initialize with current rotation
+        lastYaw: player.getRotation().y,   // Initialize with current rotation
         lastAttackTick: 0,
         recentHits: [],
         muteInfo: null,
@@ -166,51 +143,47 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         return playerData.get(player.id);
     }
 
-    let newPData = initializeDefaultPlayerData(player, currentTick); // Start with fresh defaults, including session-only
+    let newPData = initializeDefaultPlayerData(player, currentTick);
     const loadedData = await loadPlayerDataFromDynamicProperties(player);
 
     if (loadedData) {
         debugLog(`PDM:ensureInit: Loaded data for ${player.nameTag}. Merging.`, player.nameTag);
-        // Merge persisted fields from loadedData
-        newPData.flags = loadedData.flags || newPData.flags;
-        newPData.isWatched = typeof loadedData.isWatched === 'boolean' ? loadedData.isWatched : newPData.isWatched;
-        newPData.lastFlagType = loadedData.lastFlagType || newPData.lastFlagType;
-        newPData.playerNameTag = loadedData.playerNameTag || newPData.playerNameTag;
+        newPData = { ...newPData, ...loadedData }; // Merge, loadedData might overwrite some defaults if they were persisted
+        // Ensure flags object and totalFlags are valid after merge
+        newPData.flags = { ...initializeDefaultPlayerData(player, currentTick).flags, ...loadedData.flags };
+        if (typeof newPData.flags.totalFlags !== 'number') newPData.flags.totalFlags = 0;
 
-        newPData.attackEvents = loadedData.attackEvents || [];
-        newPData.lastAttackTime = loadedData.lastAttackTime || 0;
-        newPData.blockBreakEvents = loadedData.blockBreakEvents || [];
+        // Re-initialize session-only fields that should not be persisted
+        newPData.lastPosition = player.location;
+        newPData.previousPosition = player.location;
+        newPData.velocity = player.getVelocity();
+        newPData.previousVelocity = { x: 0, y: 0, z: 0 };
+        newPData.consecutiveOffGroundTicks = loadedData.consecutiveOffGroundTicks || 0; // Persisted, so load or default
+        newPData.fallDistance = loadedData.fallDistance || 0; // Persisted
+        newPData.lastOnGroundTick = currentTick; // Session specific
+        newPData.lastOnGroundPosition = player.location; // Session specific
+        newPData.consecutiveOnGroundSpeedingTicks = loadedData.consecutiveOnGroundSpeedingTicks || 0; // Persisted
+        newPData.isTakingFallDamage = false; // Session specific
+        newPData.lastPitch = player.getRotation().x; // Session specific
+        newPData.lastYaw = player.getRotation().y;   // Session specific
+        newPData.lastAttackTick = 0; // Session specific
+        newPData.recentHits = []; // Session specific
+        newPData.recentMessages = []; // Session specific
+        // lastCombatInteractionTime will be loaded if present in loadedData, otherwise defaults from initializeDefaultPlayerData
+        newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;
 
-        // For counters that might be persisted but should ideally be session-logic driven if starting fresh:
-        // If they are part of persistedPData, they will be loaded.
-        // If they are *not* part of persistedPData, they will keep their fresh default from initializeDefaultPlayerData.
-        // The current persistedPData includes these, so they will be loaded if present.
-        // If we wanted them to always reset per session, they'd be excluded from persistedPData.
-        newPData.consecutiveOffGroundTicks = loadedData.consecutiveOffGroundTicks || 0;
-        newPData.fallDistance = loadedData.fallDistance || 0;
-        newPData.consecutiveOnGroundSpeedingTicks = loadedData.consecutiveOnGroundSpeedingTicks || 0;
-        newPData.muteInfo = loadedData.muteInfo || null;
-        newPData.banInfo = loadedData.banInfo || null;
-
-        // Session-specific fields are already set to defaults by initializeDefaultPlayerData.
-        // No need to merge them from loadedData, as they should be fresh each session.
-        // If they were accidentally saved in an old version, they'll be overwritten by the fresh defaults.
     } else {
         debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Fresh init.`, player.nameTag);
     }
 
-    // Clear expired mutes on load
     if (newPData.muteInfo && newPData.muteInfo.unmuteTime !== Infinity && Date.now() >= newPData.muteInfo.unmuteTime) {
         debugLog(`PDM:ensureInit: Mute for ${newPData.playerNameTag || player.nameTag} expired on load. Clearing.`, newPData.isWatched ? (newPData.playerNameTag || player.nameTag) : null);
         newPData.muteInfo = null;
-        // No immediate save here, relies on subsequent saves or player leave.
     }
 
-    // Clear expired bans on load
     if (newPData.banInfo && newPData.banInfo.unbanTime !== Infinity && Date.now() >= newPData.banInfo.unbanTime) {
         debugLog(`PDM:ensureInit: Ban for ${newPData.playerNameTag || player.nameTag} expired on load. Clearing.`, newPData.isWatched ? (newPData.playerNameTag || player.nameTag) : null);
         newPData.banInfo = null;
-        // No immediate save here, relies on subsequent saves or player leave.
     }
 
     playerData.set(player.id, newPData);
@@ -232,11 +205,9 @@ export function cleanupActivePlayerData(activePlayers) {
 }
 
 export function updateTransientPlayerData(player, pData, currentTick) {
-    // Update pitch/yaw for rotation checks
-    const viewDirection = player.getViewDirection();
     const rotation = player.getRotation();
-    pData.lastPitch = rotation.x; // Pitch
-    pData.lastYaw = rotation.y;   // Yaw
+    pData.lastPitch = rotation.x;
+    pData.lastYaw = rotation.y;
 
     pData.previousVelocity = {...pData.velocity};
     pData.velocity = player.getVelocity();
@@ -266,7 +237,7 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     }
     pData.flags[flagType].count++;
     pData.flags[flagType].lastDetectionTime = Date.now();
-    pData.flags.totalFlags++;
+    pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1; // Ensure totalFlags is a number
     pData.lastFlagType = flagType;
 
     const fullReason = `${reasonMessage} ${detailsForNotify}`.trim();
@@ -277,15 +248,6 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     prepareAndSavePlayerData(player);
 }
 
-// --- Mute Management Functions ---
-
-/**
- * Adds or updates a mute for a player.
- * @param {mc.Player} player The player object to mute.
- * @param {number} durationMs The duration of the mute in milliseconds. Use Infinity for permanent.
- * @param {string} [reason] Optional reason for the mute.
- * @returns {boolean} True if mute was added/updated, false otherwise.
- */
 export function addMute(player, durationMs, reason) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addMute: Invalid arguments - player: ${player?.nameTag}, durationMs: ${durationMs}`, player?.nameTag);
@@ -296,38 +258,21 @@ export function addMute(player, durationMs, reason) {
         debugLog(`PDM:addMute: No pData for player ${player.nameTag}. Cannot mute.`, player.nameTag);
         return false;
     }
-
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
     const muteReason = reason || "Muted by admin.";
     pData.muteInfo = { unmuteTime, reason: muteReason };
     prepareAndSavePlayerData(player);
-
     let logMsg = `PDM:addMute: Player ${player.nameTag} muted. Reason: ${muteReason}.`;
-    if (durationMs === Infinity) {
-        logMsg += " Duration: Permanent";
-    } else {
-        logMsg += ` Unmute time: ${new Date(unmuteTime).toISOString()}`;
-    }
+    if (durationMs === Infinity) logMsg += " Duration: Permanent";
+    else logMsg += ` Unmute time: ${new Date(unmuteTime).toISOString()}`;
     debugLog(logMsg, pData.isWatched ? player.nameTag : null);
     return true;
 }
 
-/**
- * Removes a mute for a player.
- * @param {mc.Player} player The player object to unmute.
- * @returns {boolean} True if mute was removed, false if player was not muted.
- */
 export function removeMute(player) {
-    if (!player) {
-        debugLog(`PDM:removeMute: Invalid player object provided.`);
-        return false;
-    }
+    if (!player) { debugLog(`PDM:removeMute: Invalid player object provided.`); return false; }
     const pData = getPlayerData(player.id);
-    if (!pData) {
-        debugLog(`PDM:removeMute: No pData for player ${player.nameTag}. Cannot unmute.`, player.nameTag);
-        return false;
-    }
-
+    if (!pData) { debugLog(`PDM:removeMute: No pData for player ${player.nameTag}. Cannot unmute.`, player.nameTag); return false; }
     if (pData.muteInfo) {
         pData.muteInfo = null;
         prepareAndSavePlayerData(player);
@@ -338,51 +283,24 @@ export function removeMute(player) {
     return false;
 }
 
-/**
- * Retrieves mute information for a player, and removes it if expired.
- * @param {mc.Player} player The player object.
- * @returns {{unmuteTime: number, reason: string} | null} Mute object or null if not muted/expired.
- */
 export function getMuteInfo(player) {
-    if (!player) {
-        debugLog(`PDM:getMuteInfo: Invalid player object provided.`);
-        return null;
-    }
+    if (!player) { return null; }
     const pData = getPlayerData(player.id);
-    if (!pData || !pData.muteInfo) {
-        return null;
-    }
-
+    if (!pData || !pData.muteInfo) { return null; }
     const mute = pData.muteInfo;
-
     if (mute.unmuteTime !== Infinity && Date.now() >= mute.unmuteTime) {
-        pData.muteInfo = null; // Expired mute
+        pData.muteInfo = null;
         prepareAndSavePlayerData(player);
         debugLog(`PDM:getMuteInfo: Mute for player ${player.nameTag} expired and removed.`, pData.isWatched ? player.nameTag : null);
         return null;
     }
-    return mute; // Returns { unmuteTime, reason }
+    return mute;
 }
 
-/**
- * Checks if a player is currently muted (and handles expired mutes).
- * @param {mc.Player} player The player object to check.
- * @returns {boolean} True if the player is currently muted, false otherwise.
- */
 export function isMuted(player) {
     return getMuteInfo(player) !== null;
-// Removed getActiveMuteCount as it's no longer relevant with mutes stored in pData.
 }
 
-// --- Ban Management Functions ---
-
-/**
- * Adds or updates a ban for a player.
- * @param {mc.Player} player The player object to ban.
- * @param {number} durationMs The duration of the ban in milliseconds. Use Infinity for permanent.
- * @param {string} [reason] Optional reason for the ban.
- * @returns {boolean} True if ban was added/updated, false otherwise.
- */
 export function addBan(player, durationMs, reason) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addBan: Invalid arguments - player: ${player?.nameTag}, durationMs: ${durationMs}`, player?.nameTag);
@@ -393,41 +311,24 @@ export function addBan(player, durationMs, reason) {
         debugLog(`PDM:addBan: No pData for player ${player.nameTag}. Cannot ban.`, player.nameTag);
         return false;
     }
-
     const unbanTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
     const banReason = reason || "Banned by admin.";
     pData.banInfo = { unbanTime, reason: banReason };
-    prepareAndSavePlayerData(player); // Persist ban info immediately
-
+    prepareAndSavePlayerData(player);
     let logMsg = `PDM:addBan: Player ${player.nameTag} banned. Reason: ${banReason}.`;
-    if (durationMs === Infinity) {
-        logMsg += " Duration: Permanent";
-    } else {
-        logMsg += ` Unban time: ${new Date(unbanTime).toISOString()}`;
-    }
+    if (durationMs === Infinity) logMsg += " Duration: Permanent";
+    else logMsg += ` Unban time: ${new Date(unbanTime).toISOString()}`;
     debugLog(logMsg, pData.isWatched ? player.nameTag : null);
     return true;
 }
 
-/**
- * Removes a ban for a player.
- * @param {mc.Player} player The player object to unban.
- * @returns {boolean} True if ban was removed, false if player was not banned or data missing.
- */
 export function removeBan(player) {
-    if (!player) {
-        debugLog(`PDM:removeBan: Invalid player object provided.`);
-        return false;
-    }
+    if (!player) { debugLog(`PDM:removeBan: Invalid player object provided.`); return false; }
     const pData = getPlayerData(player.id);
-    if (!pData) {
-        debugLog(`PDM:removeBan: No pData for player ${player.nameTag}. Cannot unban.`, player.nameTag);
-        return false;
-    }
-
+    if (!pData) { debugLog(`PDM:removeBan: No pData for player ${player.nameTag}. Cannot unban.`, player.nameTag); return false; }
     if (pData.banInfo) {
         pData.banInfo = null;
-        prepareAndSavePlayerData(player); // Persist unban immediately
+        prepareAndSavePlayerData(player);
         debugLog(`PDM:removeBan: Player ${player.nameTag} unbanned.`, pData.isWatched ? player.nameTag : null);
         return true;
     }
@@ -435,41 +336,28 @@ export function removeBan(player) {
     return false;
 }
 
-/**
- * Retrieves ban information for a player, and removes it if expired.
- * @param {mc.Player} player The player object.
- * @returns {{unbanTime: number, reason: string} | null} Ban object or null if not banned/expired.
- */
 export function getBanInfo(player) {
-    if (!player) {
-        // debugLog(`PDM:getBanInfo: Invalid player object provided.`); // Can be noisy if called frequently
-        return null;
-    }
+    if (!player) { return null; }
     const pData = getPlayerData(player.id);
-    if (!pData || !pData.banInfo) {
-        return null;
-    }
-
+    if (!pData || !pData.banInfo) { return null; }
     const currentBanInfo = pData.banInfo;
-
     if (currentBanInfo.unbanTime !== Infinity && Date.now() >= currentBanInfo.unbanTime) {
-        pData.banInfo = null; // Expired ban
-        prepareAndSavePlayerData(player); // Persist the cleared ban
+        pData.banInfo = null;
+        prepareAndSavePlayerData(player);
         debugLog(`PDM:getBanInfo: Ban for player ${player.nameTag} expired and removed.`, pData.isWatched ? player.nameTag : null);
         return null;
     }
-    // Optional: log ban info retrieval for watched players
-    // if (pData.isWatched) {
-    //     debugLog(`PDM:getBanInfo: Retrieved ban info for ${player.nameTag}. Reason: ${currentBanInfo.reason}, UnbanTime: ${currentBanInfo.unbanTime === Infinity ? 'Permanent' : new Date(currentBanInfo.unbanTime).toISOString()}`, player.nameTag);
-    // }
-    return currentBanInfo; // Returns { unbanTime, reason }
+    return currentBanInfo;
 }
 
-/**
- * Checks if a player is currently banned (and handles expired bans).
- * @param {mc.Player} player The player object to check.
- * @returns {boolean} True if the player is currently banned, false otherwise.
- */
 export function isBanned(player) {
     return getBanInfo(player) !== null;
+}
+
+export function setPlayerData(playerId, data) {
+    if (!playerId || !data) {
+        debugLog("PDM:setPlayerData: Invalid playerId or data.", null);
+        return;
+    }
+    playerData.set(playerId, data);
 }
