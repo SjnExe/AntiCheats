@@ -390,9 +390,33 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             const subArgVanish = args[0] ? args[0].toLowerCase() : null;
             if (subArgVanish === "on") targetStateVanish = true; else if (subArgVanish === "off") targetStateVanish = false; else targetStateVanish = !currentStateVanish;
             if (targetStateVanish === true && !currentStateVanish) {
-                try { player.addTag(vanishedTag); player.addEffect("invisibility", 2000000, { amplifier: 0, showParticles: false }); player.sendMessage("§7You are now vanished. Your nametag will be handled by rankManager."); playerUtils.notifyAdmins(`${player.nameTag} has vanished.`, player, null); } catch (e) { player.sendMessage(`§cError applying vanish: ${e}`); playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`); }
+                try {
+                    player.addTag(vanishedTag);
+                    player.addEffect("invisibility", 2000000, { amplifier: 0, showParticles: false });
+                    player.sendMessage("§7You are now vanished. Your nametag will be handled by rankManager.");
+                    playerUtils.notifyAdmins(`${player.nameTag} has vanished.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'vanish_on',
+                        targetName: player.nameTag, // Action is on self
+                        details: `${player.nameTag} enabled vanish.`
+                    });
+                } catch (e) { player.sendMessage(`§cError applying vanish: ${e}`); playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`); }
             } else if (targetStateVanish === false && currentStateVanish) {
-                try { player.removeTag(vanishedTag); player.removeEffect("invisibility"); player.sendMessage("§7You are no longer vanished. Your nametag will be restored by rankManager shortly."); playerUtils.notifyAdmins(`${player.nameTag} is no longer vanished.`, player, null); } catch (e) { player.sendMessage(`§cError removing vanish: ${e}`); playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`); }
+                try {
+                    player.removeTag(vanishedTag);
+                    player.removeEffect("invisibility");
+                    player.sendMessage("§7You are no longer vanished. Your nametag will be restored by rankManager shortly.");
+                    playerUtils.notifyAdmins(`${player.nameTag} is no longer vanished.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'vanish_off',
+                        targetName: player.nameTag, // Action is on self
+                        details: `${player.nameTag} disabled vanish.`
+                    });
+                } catch (e) { player.sendMessage(`§cError removing vanish: ${e}`); playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`); }
             } else { player.sendMessage(targetStateVanish ? "§7You are already vanished." : "§7You are already visible."); }
             break;
         case "panel":

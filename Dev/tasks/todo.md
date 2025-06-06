@@ -53,7 +53,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
         *   `!copyinv <playername>`: Admin copies another player's inventory to their own.
-        *   `!vanish`: Toggles admin visibility (requires careful implementation, may involve effects, nametag changes, and potentially packet manipulation if API allows, otherwise limited).
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
         *   `!lagclear`: Attempt to clear ground items or other entities known to cause lag (requires careful targeting).
         *   `!systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
