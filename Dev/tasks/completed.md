@@ -653,3 +653,31 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Defaults to "N/A" if a specific piece of info is unavailable.
     *   The action is logged using `addLog` with `actionType: 'system_info'`.
     *   Handles cases for player not found or errors during info retrieval.
+
+## Documentation: README Overhaul and LICENSE Creation
+*(Date: Current Session)*
+
+A comprehensive review and update of project documentation was performed.
+
+*   **Main `README.md` Enhancements:**
+    *   Conducted a thorough review for clarity, conciseness, accuracy, and formatting.
+    *   Added a Table of Contents for improved navigation.
+    *   Integrated a new "Contributing" section with general guidelines and a link to `Dev/README.md`.
+    *   Systematically compacted content across all sections to make the README more direct and easier to digest, while retaining essential information. This included reformatting the Admin Text Commands into a table and summarizing detailed examples (like rank display formats).
+*   **LICENSE File:**
+    *   Created a new `LICENSE` file in the repository root.
+    *   Populated it with the standard MIT License text, using appropriate placeholders for the year and copyright holder ("The Project Contributors").
+*   **README License Section Update:**
+    *   Initially, a "License" section with placeholder text was added to `README.md`.
+    *   This section was subsequently removed from `README.md` (along with its ToC entry) in favor of the dedicated `LICENSE` file.
+
+These changes significantly improve the project's documentation, making it more accessible, informative, and professional.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Tools: `!help [command]` Implementation
+*(Date: Current Session)*
+
+Verified existing `!help` command functionality in `commandManager.js`. The command already supported listing available commands based on permission level and providing detailed help for specific commands (e.g., `!help <commandName>`). Ensured it was correctly documented in `README.md` for general users. No significant code changes were required as the feature was largely pre-existing.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]

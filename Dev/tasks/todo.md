@@ -54,7 +54,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **Enhanced Commands:**
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
         *   `!notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
-        *   `!help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
     *   **Reporting System:** (SafeGuard)
         *   `!report <player> [reason]`: Allows players to report others. Reports stored persistently for admin review.
         *   `!viewreports [playername|clearall]`: Admins can view reports, optionally filtered by player, or clear all reports.

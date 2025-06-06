@@ -1,9 +1,8 @@
 # Ongoing Tasks
+*(Date: Current Session)*
 
-As of 2025-06-05
+The `!help` command verification and documentation task is complete.
+No tasks currently ongoing.
 
-*   **Documentation:**
-    *   Update task files (`ongoing.md`, `completed.md`) to accurately reflect current work and completions. (In Progress)
-
-*The implementation of the `!systeminfo` command was completed on 2025-06-05 and its details moved to `completed.md`.*
-*Previous tasks, including `!copyinv` command, `!vanish` logging, `!clearchat` logging, `!invsee` implementation, Lag Clear via Admin Panel, `!warnings`/`!clearwarnings`/`!resetflags` commands, `!freeze` logging, `!kick` verification, and `todo.md` syntax updates, were also completed and documented.*
+---
+*Previous tasks, including the `!systeminfo` command, `!copyinv` command, `!vanish` logging, `!clearchat` logging, `!invsee` implementation, Lag Clear via Admin Panel, `!warnings`/`!clearwarnings`/`!resetflags` commands, `!freeze` logging, `!kick` verification, and `todo.md` syntax updates, were completed and documented in `completed.md`.*
