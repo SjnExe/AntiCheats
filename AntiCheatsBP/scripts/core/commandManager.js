@@ -3,6 +3,8 @@ import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
 import { addMute, removeMute, isMuted } from '../core/playerDataManager.js';
 import { addLog } from './logManager.js';
+import { MessageFormData, ModalFormData } from '@minecraft/server-ui'; // Added ModalFormData, kept MessageFormData
+import { ItemComponentTypes } from '@minecraft/server'; // Needed for invsee
 // Parameter 'config' will provide PREFIX, acVersion, commandAliases
 // Parameter 'playerUtils' will provide warnPlayer, notifyAdmins, debugLog (isAdmin is no longer directly used here)
 // Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData, addMute, removeMute, isMuted, addBan, removeBan etc.
@@ -39,7 +41,8 @@ const allCommands = [
     { name: "gmc", syntax: "!gmc [player]", description: "Sets Creative mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
     { name: "gms", syntax: "!gms [player]", description: "Sets Survival mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
     { name: "gma", syntax: "!gma [player]", description: "Sets Adventure mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
-    { name: "gmsp", syntax: "!gmsp [player]", description: "Sets Spectator mode for self or [player].", permissionLevel: permissionLevels.ADMIN }
+    { name: "gmsp", syntax: "!gmsp [player]", description: "Sets Spectator mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
+    { name: "copyinv", syntax: "!copyinv <playername>", description: "Copies another player's inventory to your own (overwrites your current inventory).", permissionLevel: permissionLevels.ADMIN }
 ];
 
 // Helper function to find a player by name (case-insensitive)
@@ -339,24 +342,82 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             let currentFreezeState = foundPlayerFreeze.hasTag(frozenTag); let targetFreezeState;
             if (subCommandFreeze === "on") targetFreezeState = true; else if (subCommandFreeze === "off") targetFreezeState = false; else targetFreezeState = !currentFreezeState;
             if (targetFreezeState === true && !currentFreezeState) {
-                try { foundPlayerFreeze.addTag(frozenTag); foundPlayerFreeze.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false }); foundPlayerFreeze.sendMessage("§cYou have been frozen by an administrator!"); player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is now frozen.`); playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was frozen by ${player.nameTag}.`, player, null); } catch (e) { player.sendMessage(`§cError freezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error freezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
+                try {
+                    foundPlayerFreeze.addTag(frozenTag);
+                    foundPlayerFreeze.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false });
+                    foundPlayerFreeze.sendMessage("§cYou have been frozen by an administrator!");
+                    player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is now frozen.`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was frozen by ${player.nameTag}.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'freeze',
+                        targetName: foundPlayerFreeze.nameTag,
+                        details: 'Player frozen'
+                    });
+                } catch (e) { player.sendMessage(`§cError freezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error freezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
             } else if (targetFreezeState === false && currentFreezeState) {
-                try { foundPlayerFreeze.removeTag(frozenTag); foundPlayerFreeze.removeEffect("slowness"); foundPlayerFreeze.sendMessage("§aYou have been unfrozen."); player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is no longer frozen.`); playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was unfrozen by ${player.nameTag}.`, player, null); } catch (e) { player.sendMessage(`§cError unfreezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error unfreezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
+                try {
+                    foundPlayerFreeze.removeTag(frozenTag);
+                    foundPlayerFreeze.removeEffect("slowness");
+                    foundPlayerFreeze.sendMessage("§aYou have been unfrozen.");
+                    player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is no longer frozen.`);
+                    playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was unfrozen by ${player.nameTag}.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'unfreeze',
+                        targetName: foundPlayerFreeze.nameTag,
+                        details: 'Player unfrozen'
+                    });
+                } catch (e) { player.sendMessage(`§cError unfreezing ${foundPlayerFreeze.nameTag}: ${e}`); playerUtils.debugLog(`Error unfreezing ${foundPlayerFreeze.nameTag} by ${player.nameTag}: ${e}`);}
             } else { player.sendMessage(targetFreezeState ? `§7Player ${foundPlayerFreeze.nameTag} is already frozen.` : `§7Player ${foundPlayerFreeze.nameTag} is already unfrozen.`);}
             break;
         case "clearchat":
             const linesToClear = 150;
             for (let i = 0; i < linesToClear; i++) { mc.world.sendMessage(""); }
-            player.sendMessage("§aChat has been cleared."); playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+            player.sendMessage("§aChat has been cleared.");
+            playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+            addLog({
+                timestamp: Date.now(),
+                adminName: player.nameTag,
+                actionType: 'clear_chat',
+                targetName: 'N/A', // Or 'Global'
+                details: `Chat cleared by ${player.nameTag}`
+            });
             break;
         case "vanish":
             const vanishedTag = "vanished"; let currentStateVanish = player.hasTag(vanishedTag); let targetStateVanish = currentStateVanish;
             const subArgVanish = args[0] ? args[0].toLowerCase() : null;
             if (subArgVanish === "on") targetStateVanish = true; else if (subArgVanish === "off") targetStateVanish = false; else targetStateVanish = !currentStateVanish;
             if (targetStateVanish === true && !currentStateVanish) {
-                try { player.addTag(vanishedTag); player.addEffect("invisibility", 2000000, { amplifier: 0, showParticles: false }); player.sendMessage("§7You are now vanished. Your nametag will be handled by rankManager."); playerUtils.notifyAdmins(`${player.nameTag} has vanished.`, player, null); } catch (e) { player.sendMessage(`§cError applying vanish: ${e}`); playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`); }
+                try {
+                    player.addTag(vanishedTag);
+                    player.addEffect("invisibility", 2000000, { amplifier: 0, showParticles: false });
+                    player.sendMessage("§7You are now vanished. Your nametag will be handled by rankManager.");
+                    playerUtils.notifyAdmins(`${player.nameTag} has vanished.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'vanish_on',
+                        targetName: player.nameTag, // Action is on self
+                        details: `${player.nameTag} enabled vanish.`
+                    });
+                } catch (e) { player.sendMessage(`§cError applying vanish: ${e}`); playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`); }
             } else if (targetStateVanish === false && currentStateVanish) {
-                try { player.removeTag(vanishedTag); player.removeEffect("invisibility"); player.sendMessage("§7You are no longer vanished. Your nametag will be restored by rankManager shortly."); playerUtils.notifyAdmins(`${player.nameTag} is no longer vanished.`, player, null); } catch (e) { player.sendMessage(`§cError removing vanish: ${e}`); playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`); }
+                try {
+                    player.removeTag(vanishedTag);
+                    player.removeEffect("invisibility");
+                    player.sendMessage("§7You are no longer vanished. Your nametag will be restored by rankManager shortly.");
+                    playerUtils.notifyAdmins(`${player.nameTag} is no longer vanished.`, player, null);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'vanish_off',
+                        targetName: player.nameTag, // Action is on self
+                        details: `${player.nameTag} disabled vanish.`
+                    });
+                } catch (e) { player.sendMessage(`§cError removing vanish: ${e}`); playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`); }
             } else { player.sendMessage(targetStateVanish ? "§7You are already vanished." : "§7You are already visible."); }
             break;
         case "panel":
@@ -541,6 +602,309 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "gmsp":
             await setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, playerUtils, addLog);
+            break;
+        case "copyinv":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}copyinv <playername>`);
+                return;
+            }
+            const targetPlayerNameCopyInv = args[0];
+            const targetPlayerCopyInv = findPlayer(targetPlayerNameCopyInv, playerUtils);
+
+            if (!targetPlayerCopyInv) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameCopyInv}" not found.`);
+                return;
+            }
+
+            if (targetPlayerCopyInv.id === player.id) {
+                player.sendMessage("§cYou cannot copy your own inventory onto yourself.");
+                return;
+            }
+
+            const targetInventoryComp = targetPlayerCopyInv.getComponent("minecraft:inventory");
+            const adminInventoryComp = player.getComponent("minecraft:inventory");
+
+            if (!targetInventoryComp || !targetInventoryComp.container) {
+                player.sendMessage(`§cCould not access inventory for ${targetPlayerCopyInv.nameTag}.`);
+                return;
+            }
+            if (!adminInventoryComp || !adminInventoryComp.container) {
+                player.sendMessage("§cCould not access your own inventory.");
+                return;
+            }
+
+            const confirmationForm = new ModalFormData();
+            confirmationForm.title("Confirm Inventory Copy");
+            confirmationForm.body(`This will §l§coverwrite YOUR current inventory§r with a copy of §e${targetPlayerCopyInv.nameTag}§r's inventory.\nThis action CANNOT be undone.\nAre you absolutely sure?`); // Using \n for line break in body
+            confirmationForm.toggle("Yes, I confirm I want to overwrite my inventory.", false);
+
+            confirmationForm.show(player).then(async (response) => {
+                if (response.canceled) {
+                    player.sendMessage("§7Inventory copy cancelled.");
+                    return;
+                }
+                if (!response.formValues[0]) { // Toggle not confirmed
+                    player.sendMessage("§7Inventory copy cancelled as confirmation was not given.");
+                    return;
+                }
+
+                try {
+                    const targetContainer = targetInventoryComp.container;
+                    const adminContainer = adminInventoryComp.container;
+
+                    // Clear admin's inventory first
+                    for (let i = 0; i < adminContainer.size; i++) {
+                        adminContainer.setItem(i);
+                    }
+                    playerUtils.debugLog(`Admin ${player.nameTag} cleared their own inventory before copying.`, player.nameTag);
+
+                    let itemsCopiedCount = 0;
+                    for (let i = 0; i < targetContainer.size; i++) {
+                        const itemStack = targetContainer.getItem(i);
+                        adminContainer.setItem(i, itemStack);
+                        if (itemStack) {
+                            itemsCopiedCount++;
+                        }
+                    }
+
+                    player.sendMessage(`§aSuccessfully copied ${targetPlayerCopyInv.nameTag}'s inventory (${itemsCopiedCount} items/stacks) to your own. Your previous inventory has been overwritten.`);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'copy_inventory',
+                        targetName: targetPlayerCopyInv.nameTag,
+                        details: `Copied ${targetPlayerCopyInv.nameTag}'s inventory to ${player.nameTag}. ${itemsCopiedCount} items/stacks moved.`
+                    });
+                    playerUtils.notifyAdmins(`${player.nameTag} copied ${targetPlayerCopyInv.nameTag}'s inventory to their own.`, player, null);
+
+                } catch (e) {
+                    player.sendMessage(`§cAn error occurred while copying the inventory: ${e}`);
+                    playerUtils.debugLog(`Error during !copyinv from ${targetPlayerCopyInv.nameTag} to ${player.nameTag}: ${e}`, player.nameTag);
+                }
+            }).catch(e => {
+                playerUtils.debugLog(`Error showing copyinv confirmation form: ${e}`, player.nameTag);
+                player.sendMessage("§cError displaying inventory copy confirmation form.");
+            });
+            break;
+        case "invsee":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}invsee <playername>`);
+                return;
+            }
+            const targetPlayerNameInvsee = args[0];
+            const foundPlayerInvsee = findPlayer(targetPlayerNameInvsee, playerUtils);
+
+            if (!foundPlayerInvsee) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameInvsee}" not found.`);
+                return;
+            }
+
+            const inventoryComponent = foundPlayerInvsee.getComponent("minecraft:inventory");
+            if (!inventoryComponent || !inventoryComponent.container) {
+                player.sendMessage(`§cCould not access inventory for ${foundPlayerInvsee.nameTag}.`);
+                return;
+            }
+
+            const container = inventoryComponent.container;
+            let inventoryDetails = `§lInventory of ${foundPlayerInvsee.nameTag}:§r\n`;
+            let itemCount = 0;
+
+            for (let i = 0; i < container.size; i++) {
+                const itemStack = container.getItem(i);
+                if (itemStack) {
+                    itemCount++;
+                    let itemInfo = `§eSlot ${i}:§r ${itemStack.typeId.replace("minecraft:", "")} x${itemStack.amount}`;
+                    if (itemStack.nameTag) {
+                        itemInfo += ` | Name: "${itemStack.nameTag}"`;
+                    }
+
+                    try {
+                        const durabilityComponent = itemStack.getComponent(ItemComponentTypes.Durability);
+                        if (durabilityComponent) {
+                            itemInfo += ` | Dur: ${durabilityComponent.maxDurability - durabilityComponent.damage}/${durabilityComponent.maxDurability}`;
+                        }
+                    } catch (e) { /* Component not present or other error */ }
+
+                    try {
+                        const lore = itemStack.getLore();
+                        if (lore && lore.length > 0) {
+                            itemInfo += ` | Lore: ["${lore.join('", "')}"]`;
+                        }
+                    } catch (e) { /* Error getting lore */ }
+
+                    try {
+                        const enchantableComponent = itemStack.getComponent(ItemComponentTypes.Enchantable);
+                        if (enchantableComponent) {
+                            const enchantments = enchantableComponent.getEnchantments();
+                            if (enchantments.length > 0) {
+                                const enchStrings = enchantments.map(ench => `${ench.type.id.replace("minecraft:", "")} ${ench.level}`);
+                                itemInfo += ` | Ench: [${enchStrings.join(", ")}]`;
+                            }
+                        }
+                    } catch (e) { /* Component not present or other error */ }
+
+                    inventoryDetails += itemInfo + "\n";
+                }
+            }
+
+            if (itemCount === 0) {
+                inventoryDetails += "Inventory is empty.\n";
+            }
+
+            addLog({
+                timestamp: Date.now(),
+                adminName: player.nameTag,
+                actionType: 'invsee',
+                targetName: foundPlayerInvsee.nameTag,
+                details: `Viewed inventory of ${foundPlayerInvsee.nameTag}`
+            });
+
+            const invForm = new MessageFormData();
+            invForm.title(`Inventory: ${foundPlayerInvsee.nameTag}`);
+            invForm.body(inventoryDetails);
+            invForm.button1("Close");
+
+            invForm.show(player).then(() => {
+                // Optional: playerUtils.debugLog(`Closed inventory view for ${foundPlayerInvsee.nameTag}`, player.nameTag);
+            }).catch(e => {
+                playerUtils.debugLog(`Error showing inventory form: ${e}`, player.nameTag);
+                player.sendMessage("§cError displaying inventory. Check logs.");
+            });
+
+            break;
+        case "warnings":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}warnings <playername>`);
+                return;
+            }
+            const targetPlayerNameWarnings = args[0];
+            const foundPlayerWarnings = findPlayer(targetPlayerNameWarnings, playerUtils);
+
+            if (!foundPlayerWarnings) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameWarnings}" not found.`);
+                return;
+            }
+
+            const pDataWarnings = playerDataManager.getPlayerData(foundPlayerWarnings.id);
+            if (pDataWarnings && pDataWarnings.flags) {
+                let warningDetails = `§e--- Warnings for ${foundPlayerWarnings.nameTag} ---\n`;
+                warningDetails += `§fTotal Flags: §c${pDataWarnings.flags.totalFlags}\n`;
+                warningDetails += `§fLast Flag Type: §7${pDataWarnings.lastFlagType || "None"}\n`;
+                warningDetails += `§eIndividual Flags:\n`;
+                let hasSpecificFlags = false;
+                for (const flagKey in pDataWarnings.flags) {
+                    if (flagKey !== "totalFlags" && typeof pDataWarnings.flags[flagKey] === 'object' && pDataWarnings.flags[flagKey] !== null && pDataWarnings.flags[flagKey].count > 0) {
+                        const flagData = pDataWarnings.flags[flagKey];
+                        const lastTime = flagData.lastDetectionTime && flagData.lastDetectionTime > 0 ? new Date(flagData.lastDetectionTime).toLocaleString() : 'N/A';
+                        warningDetails += `  §f- ${flagKey}: §c${flagData.count} §7(Last: ${lastTime})\n`;
+                        hasSpecificFlags = true;
+                    }
+                }
+                if (!hasSpecificFlags) {
+                    warningDetails += `  §7No specific flag types recorded with counts > 0.\n`;
+                }
+                player.sendMessage(warningDetails);
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'view_warnings',
+                    targetName: foundPlayerWarnings.nameTag,
+                    details: `Viewed warnings for ${foundPlayerWarnings.nameTag}`
+                });
+            } else {
+                player.sendMessage(`§cNo warning data found for ${foundPlayerWarnings.nameTag}.`);
+            }
+            break;
+        case "resetflags":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}resetflags <playername>`);
+                return;
+            }
+            const targetPlayerNameReset = args[0];
+            const targetPlayerReset = findPlayer(targetPlayerNameReset, playerUtils);
+
+            if (!targetPlayerReset) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameReset}" not found.`);
+                return;
+            }
+
+            const pDataReset = playerDataManager.getPlayerData(targetPlayerReset.id);
+            if (pDataReset) {
+                pDataReset.flags.totalFlags = 0;
+                pDataReset.lastFlagType = "";
+                for (const flagKey in pDataReset.flags) {
+                    if (typeof pDataReset.flags[flagKey] === 'object' && pDataReset.flags[flagKey] !== null) {
+                        pDataReset.flags[flagKey].count = 0;
+                        pDataReset.flags[flagKey].lastDetectionTime = 0;
+                    }
+                }
+                // Reset other specific violation trackers
+                if (pDataReset.hasOwnProperty('consecutiveOffGroundTicks')) pDataReset.consecutiveOffGroundTicks = 0;
+                if (pDataReset.hasOwnProperty('fallDistance')) pDataReset.fallDistance = 0;
+                if (pDataReset.hasOwnProperty('consecutiveOnGroundSpeedingTicks')) pDataReset.consecutiveOnGroundSpeedingTicks = 0;
+                if (pDataReset.hasOwnProperty('attackEvents')) pDataReset.attackEvents = [];
+                if (pDataReset.hasOwnProperty('blockBreakEvents')) pDataReset.blockBreakEvents = [];
+
+                playerDataManager.prepareAndSavePlayerData(targetPlayerReset);
+
+                player.sendMessage(`§aFlags reset for ${targetPlayerReset.nameTag}.`);
+                playerUtils.notifyAdmins(`Flags for ${targetPlayerReset.nameTag} were reset by ${player.nameTag}.`, player, pDataReset);
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'reset_flags',
+                    targetName: targetPlayerReset.nameTag,
+                    details: `Reset flags for ${targetPlayerReset.nameTag}`
+                });
+                playerUtils.debugLog(`Flags reset for ${targetPlayerReset.nameTag} by ${player.nameTag}.`, player.nameTag);
+            } else {
+                player.sendMessage(`§cCould not retrieve data for ${targetPlayerReset.nameTag}.`);
+            }
+            break;
+        case "clearwarnings":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}clearwarnings <playername>`);
+                return;
+            }
+            const targetPlayerNameClear = args[0];
+            const targetPlayerClear = findPlayer(targetPlayerNameClear, playerUtils);
+
+            if (!targetPlayerClear) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameClear}" not found.`);
+                return;
+            }
+
+            const pDataClear = playerDataManager.getPlayerData(targetPlayerClear.id);
+            if (pDataClear) {
+                pDataClear.flags.totalFlags = 0;
+                pDataClear.lastFlagType = "";
+                for (const flagKey in pDataClear.flags) {
+                    if (typeof pDataClear.flags[flagKey] === 'object' && pDataClear.flags[flagKey] !== null) {
+                        pDataClear.flags[flagKey].count = 0;
+                        pDataClear.flags[flagKey].lastDetectionTime = 0;
+                    }
+                }
+                if (pDataClear.hasOwnProperty('consecutiveOffGroundTicks')) pDataClear.consecutiveOffGroundTicks = 0;
+                if (pDataClear.hasOwnProperty('fallDistance')) pDataClear.fallDistance = 0;
+                if (pDataClear.hasOwnProperty('consecutiveOnGroundSpeedingTicks')) pDataClear.consecutiveOnGroundSpeedingTicks = 0;
+                if (pDataClear.hasOwnProperty('attackEvents')) pDataClear.attackEvents = [];
+                if (pDataClear.hasOwnProperty('blockBreakEvents')) pDataClear.blockBreakEvents = [];
+
+                playerDataManager.prepareAndSavePlayerData(targetPlayerClear);
+
+                player.sendMessage(`§aWarnings cleared for ${targetPlayerClear.nameTag}. (Flags reset)`);
+                playerUtils.notifyAdmins(`Warnings for ${targetPlayerClear.nameTag} were cleared by ${player.nameTag} (flags reset).`, player, pDataClear);
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'clear_warnings',
+                    targetName: targetPlayerClear.nameTag,
+                    details: `Cleared warnings for ${targetPlayerClear.nameTag} (flags reset)`
+                });
+                playerUtils.debugLog(`Warnings cleared for ${targetPlayerClear.nameTag} by ${player.nameTag}.`, player.nameTag);
+            } else {
+                player.sendMessage(`§cCould not retrieve data for ${targetPlayerClear.nameTag}.`);
+            }
             break;
         default:
             player.sendMessage(`§cUnexpected error processing command: ${config.prefix}${command}§r. Type ${config.prefix}help.`);
