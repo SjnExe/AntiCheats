@@ -3,7 +3,7 @@ import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
 import { addMute, removeMute, isMuted } from '../core/playerDataManager.js';
 import { addLog } from './logManager.js';
-import { MessageFormData } from '@minecraft/server-ui'; // Needed for invsee
+import { MessageFormData, ModalFormData } from '@minecraft/server-ui'; // Added ModalFormData, kept MessageFormData
 import { ItemComponentTypes } from '@minecraft/server'; // Needed for invsee
 // Parameter 'config' will provide PREFIX, acVersion, commandAliases
 // Parameter 'playerUtils' will provide warnPlayer, notifyAdmins, debugLog (isAdmin is no longer directly used here)
@@ -41,7 +41,8 @@ const allCommands = [
     { name: "gmc", syntax: "!gmc [player]", description: "Sets Creative mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
     { name: "gms", syntax: "!gms [player]", description: "Sets Survival mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
     { name: "gma", syntax: "!gma [player]", description: "Sets Adventure mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
-    { name: "gmsp", syntax: "!gmsp [player]", description: "Sets Spectator mode for self or [player].", permissionLevel: permissionLevels.ADMIN }
+    { name: "gmsp", syntax: "!gmsp [player]", description: "Sets Spectator mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
+    { name: "copyinv", syntax: "!copyinv <playername>", description: "Copies another player's inventory to your own (overwrites your current inventory).", permissionLevel: permissionLevels.ADMIN }
 ];
 
 // Helper function to find a player by name (case-insensitive)
@@ -601,6 +602,89 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "gmsp":
             await setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, playerUtils, addLog);
+            break;
+        case "copyinv":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}copyinv <playername>`);
+                return;
+            }
+            const targetPlayerNameCopyInv = args[0];
+            const targetPlayerCopyInv = findPlayer(targetPlayerNameCopyInv, playerUtils);
+
+            if (!targetPlayerCopyInv) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameCopyInv}" not found.`);
+                return;
+            }
+
+            if (targetPlayerCopyInv.id === player.id) {
+                player.sendMessage("§cYou cannot copy your own inventory onto yourself.");
+                return;
+            }
+
+            const targetInventoryComp = targetPlayerCopyInv.getComponent("minecraft:inventory");
+            const adminInventoryComp = player.getComponent("minecraft:inventory");
+
+            if (!targetInventoryComp || !targetInventoryComp.container) {
+                player.sendMessage(`§cCould not access inventory for ${targetPlayerCopyInv.nameTag}.`);
+                return;
+            }
+            if (!adminInventoryComp || !adminInventoryComp.container) {
+                player.sendMessage("§cCould not access your own inventory.");
+                return;
+            }
+
+            const confirmationForm = new ModalFormData();
+            confirmationForm.title("Confirm Inventory Copy");
+            confirmationForm.body(`This will §l§coverwrite YOUR current inventory§r with a copy of §e${targetPlayerCopyInv.nameTag}§r's inventory.\nThis action CANNOT be undone.\nAre you absolutely sure?`); // Using \n for line break in body
+            confirmationForm.toggle("Yes, I confirm I want to overwrite my inventory.", false);
+
+            confirmationForm.show(player).then(async (response) => {
+                if (response.canceled) {
+                    player.sendMessage("§7Inventory copy cancelled.");
+                    return;
+                }
+                if (!response.formValues[0]) { // Toggle not confirmed
+                    player.sendMessage("§7Inventory copy cancelled as confirmation was not given.");
+                    return;
+                }
+
+                try {
+                    const targetContainer = targetInventoryComp.container;
+                    const adminContainer = adminInventoryComp.container;
+
+                    // Clear admin's inventory first
+                    for (let i = 0; i < adminContainer.size; i++) {
+                        adminContainer.setItem(i);
+                    }
+                    playerUtils.debugLog(`Admin ${player.nameTag} cleared their own inventory before copying.`, player.nameTag);
+
+                    let itemsCopiedCount = 0;
+                    for (let i = 0; i < targetContainer.size; i++) {
+                        const itemStack = targetContainer.getItem(i);
+                        adminContainer.setItem(i, itemStack);
+                        if (itemStack) {
+                            itemsCopiedCount++;
+                        }
+                    }
+
+                    player.sendMessage(`§aSuccessfully copied ${targetPlayerCopyInv.nameTag}'s inventory (${itemsCopiedCount} items/stacks) to your own. Your previous inventory has been overwritten.`);
+                    addLog({
+                        timestamp: Date.now(),
+                        adminName: player.nameTag,
+                        actionType: 'copy_inventory',
+                        targetName: targetPlayerCopyInv.nameTag,
+                        details: `Copied ${targetPlayerCopyInv.nameTag}'s inventory to ${player.nameTag}. ${itemsCopiedCount} items/stacks moved.`
+                    });
+                    playerUtils.notifyAdmins(`${player.nameTag} copied ${targetPlayerCopyInv.nameTag}'s inventory to their own.`, player, null);
+
+                } catch (e) {
+                    player.sendMessage(`§cAn error occurred while copying the inventory: ${e}`);
+                    playerUtils.debugLog(`Error during !copyinv from ${targetPlayerCopyInv.nameTag} to ${player.nameTag}: ${e}`, player.nameTag);
+                }
+            }).catch(e => {
+                playerUtils.debugLog(`Error showing copyinv confirmation form: ${e}`, player.nameTag);
+                player.sendMessage("§cError displaying inventory copy confirmation form.");
+            });
             break;
         case "invsee":
             if (args.length < 1) {

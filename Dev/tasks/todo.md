@@ -52,7 +52,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!copyinv <playername>`: Admin copies another player's inventory to their own.
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
         *   `!systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
         *   `!notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
