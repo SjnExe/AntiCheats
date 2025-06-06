@@ -568,6 +568,140 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         case "gmsp":
             await setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, playerUtils, addLog);
             break;
+        case "warnings":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}warnings <playername>`);
+                return;
+            }
+            const targetPlayerNameWarnings = args[0];
+            const foundPlayerWarnings = findPlayer(targetPlayerNameWarnings, playerUtils);
+
+            if (!foundPlayerWarnings) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameWarnings}" not found.`);
+                return;
+            }
+
+            const pDataWarnings = playerDataManager.getPlayerData(foundPlayerWarnings.id);
+            if (pDataWarnings && pDataWarnings.flags) {
+                let warningDetails = `§e--- Warnings for ${foundPlayerWarnings.nameTag} ---\n`;
+                warningDetails += `§fTotal Flags: §c${pDataWarnings.flags.totalFlags}\n`;
+                warningDetails += `§fLast Flag Type: §7${pDataWarnings.lastFlagType || "None"}\n`;
+                warningDetails += `§eIndividual Flags:\n`;
+                let hasSpecificFlags = false;
+                for (const flagKey in pDataWarnings.flags) {
+                    if (flagKey !== "totalFlags" && typeof pDataWarnings.flags[flagKey] === 'object' && pDataWarnings.flags[flagKey] !== null && pDataWarnings.flags[flagKey].count > 0) {
+                        const flagData = pDataWarnings.flags[flagKey];
+                        const lastTime = flagData.lastDetectionTime && flagData.lastDetectionTime > 0 ? new Date(flagData.lastDetectionTime).toLocaleString() : 'N/A';
+                        warningDetails += `  §f- ${flagKey}: §c${flagData.count} §7(Last: ${lastTime})\n`;
+                        hasSpecificFlags = true;
+                    }
+                }
+                if (!hasSpecificFlags) {
+                    warningDetails += `  §7No specific flag types recorded with counts > 0.\n`;
+                }
+                player.sendMessage(warningDetails);
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'view_warnings',
+                    targetName: foundPlayerWarnings.nameTag,
+                    details: `Viewed warnings for ${foundPlayerWarnings.nameTag}`
+                });
+            } else {
+                player.sendMessage(`§cNo warning data found for ${foundPlayerWarnings.nameTag}.`);
+            }
+            break;
+        case "resetflags":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}resetflags <playername>`);
+                return;
+            }
+            const targetPlayerNameReset = args[0];
+            const targetPlayerReset = findPlayer(targetPlayerNameReset, playerUtils);
+
+            if (!targetPlayerReset) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameReset}" not found.`);
+                return;
+            }
+
+            const pDataReset = playerDataManager.getPlayerData(targetPlayerReset.id);
+            if (pDataReset) {
+                pDataReset.flags.totalFlags = 0;
+                pDataReset.lastFlagType = "";
+                for (const flagKey in pDataReset.flags) {
+                    if (typeof pDataReset.flags[flagKey] === 'object' && pDataReset.flags[flagKey] !== null) {
+                        pDataReset.flags[flagKey].count = 0;
+                        pDataReset.flags[flagKey].lastDetectionTime = 0;
+                    }
+                }
+                // Reset other specific violation trackers
+                if (pDataReset.hasOwnProperty('consecutiveOffGroundTicks')) pDataReset.consecutiveOffGroundTicks = 0;
+                if (pDataReset.hasOwnProperty('fallDistance')) pDataReset.fallDistance = 0;
+                if (pDataReset.hasOwnProperty('consecutiveOnGroundSpeedingTicks')) pDataReset.consecutiveOnGroundSpeedingTicks = 0;
+                if (pDataReset.hasOwnProperty('attackEvents')) pDataReset.attackEvents = [];
+                if (pDataReset.hasOwnProperty('blockBreakEvents')) pDataReset.blockBreakEvents = [];
+
+                playerDataManager.prepareAndSavePlayerData(targetPlayerReset);
+
+                player.sendMessage(`§aFlags reset for ${targetPlayerReset.nameTag}.`);
+                playerUtils.notifyAdmins(`Flags for ${targetPlayerReset.nameTag} were reset by ${player.nameTag}.`, player, pDataReset);
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'reset_flags',
+                    targetName: targetPlayerReset.nameTag,
+                    details: `Reset flags for ${targetPlayerReset.nameTag}`
+                });
+                playerUtils.debugLog(`Flags reset for ${targetPlayerReset.nameTag} by ${player.nameTag}.`, player.nameTag);
+            } else {
+                player.sendMessage(`§cCould not retrieve data for ${targetPlayerReset.nameTag}.`);
+            }
+            break;
+        case "clearwarnings":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}clearwarnings <playername>`);
+                return;
+            }
+            const targetPlayerNameClear = args[0];
+            const targetPlayerClear = findPlayer(targetPlayerNameClear, playerUtils);
+
+            if (!targetPlayerClear) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameClear}" not found.`);
+                return;
+            }
+
+            const pDataClear = playerDataManager.getPlayerData(targetPlayerClear.id);
+            if (pDataClear) {
+                pDataClear.flags.totalFlags = 0;
+                pDataClear.lastFlagType = "";
+                for (const flagKey in pDataClear.flags) {
+                    if (typeof pDataClear.flags[flagKey] === 'object' && pDataClear.flags[flagKey] !== null) {
+                        pDataClear.flags[flagKey].count = 0;
+                        pDataClear.flags[flagKey].lastDetectionTime = 0;
+                    }
+                }
+                if (pDataClear.hasOwnProperty('consecutiveOffGroundTicks')) pDataClear.consecutiveOffGroundTicks = 0;
+                if (pDataClear.hasOwnProperty('fallDistance')) pDataClear.fallDistance = 0;
+                if (pDataClear.hasOwnProperty('consecutiveOnGroundSpeedingTicks')) pDataClear.consecutiveOnGroundSpeedingTicks = 0;
+                if (pDataClear.hasOwnProperty('attackEvents')) pDataClear.attackEvents = [];
+                if (pDataClear.hasOwnProperty('blockBreakEvents')) pDataClear.blockBreakEvents = [];
+
+                playerDataManager.prepareAndSavePlayerData(targetPlayerClear);
+
+                player.sendMessage(`§aWarnings cleared for ${targetPlayerClear.nameTag}. (Flags reset)`);
+                playerUtils.notifyAdmins(`Warnings for ${targetPlayerClear.nameTag} were cleared by ${player.nameTag} (flags reset).`, player, pDataClear);
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'clear_warnings',
+                    targetName: targetPlayerClear.nameTag,
+                    details: `Cleared warnings for ${targetPlayerClear.nameTag} (flags reset)`
+                });
+                playerUtils.debugLog(`Warnings cleared for ${targetPlayerClear.nameTag} by ${player.nameTag}.`, player.nameTag);
+            } else {
+                player.sendMessage(`§cCould not retrieve data for ${targetPlayerClear.nameTag}.`);
+            }
+            break;
         default:
             player.sendMessage(`§cUnexpected error processing command: ${config.prefix}${command}§r. Type ${config.prefix}help.`);
     }

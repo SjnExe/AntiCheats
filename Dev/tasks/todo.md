@@ -52,7 +52,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!warnings <player>` (detailed warning list) & `!clearwarnings <playername>`: View a list of specific warnings/flags a player has received. Clear them. Needs persistent storage of detailed warnings if not just relying on aggregated flags.
         *   `!invsee <playername>`: Allow admin to view a read-only representation of another player's inventory (API dependent for accuracy).
         *   `!copyinv <playername>`: Admin copies another player's inventory to their own.
         *   `!clearchat`: Clears chat for all players by sending multiple empty messages.

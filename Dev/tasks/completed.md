@@ -593,3 +593,22 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Added `addLog` calls for both freeze and unfreeze actions.
     *   Log entries include timestamp, admin name, action type ('freeze'/'unfreeze'), target player name, and details.
     *   This ensures that administrative freeze/unfreeze actions are now properly logged for auditing.
+
+## Admin Commands Implementation (Completed on 2025-06-05)
+
+*   **`!warnings <player>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Displays a detailed list of the target player's flags, including total flags, last flag type, and individual flag counts with timestamps.
+    *   Handles cases for player/data not found.
+    *   Logs the action using `addLog` with `actionType: 'view_warnings'`.
+*   **`!resetflags <player>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js` (alongside `!clearwarnings` due to functional similarity).
+    *   Resets all flag counts (total and individual), clears the last flag type, and resets other violation-specific trackers (e.g., `consecutiveOffGroundTicks`).
+    *   Persists changes using `playerDataManager.prepareAndSavePlayerData()`.
+    *   Sends feedback to the admin and notifies other admins.
+    *   Logs the action using `addLog` with `actionType: 'reset_flags'`.
+*   **`!clearwarnings <player>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Functionally mirrors `!resetflags` in terms of resetting player flag data and violation trackers.
+    *   Provides specific "Warnings cleared" feedback messages.
+    *   Logs the action using `addLog` with `actionType: 'clear_warnings'`, distinguishing it from a direct `!resetflags` invocation.
