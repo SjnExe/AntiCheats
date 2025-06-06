@@ -164,6 +164,14 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastYaw: player.getRotation().y,   // Initialize with current rotation
         lastAttackTick: 0,
         recentHits: [],
+        isUsingConsumable: false,
+        isChargingBow: false,
+        isUsingShield: false,
+        lastItemUseTick: 0,
+        recentBlockPlacements: [],
+        lastPillarBaseY: 0,
+        consecutivePillarBlocks: 0,
+        lastPillarTick: 0,
         muteInfo: null,
         banInfo: null,
     };
@@ -206,6 +214,14 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         newPData.lastYaw = player.getRotation().y;   // Session specific
         newPData.lastAttackTick = 0; // Session specific
         newPData.recentHits = []; // Session specific
+        newPData.isUsingConsumable = false; // Session specific
+        newPData.isChargingBow = false; // Session specific
+        newPData.isUsingShield = false; // Session specific
+        newPData.lastItemUseTick = 0; // Session specific
+        newPData.recentBlockPlacements = []; // Session specific
+        newPData.lastPillarBaseY = 0; // Session specific
+        newPData.consecutivePillarBlocks = 0; // Session specific
+        newPData.lastPillarTick = 0; // Session specific
         newPData.recentMessages = []; // Session specific
         // lastCombatInteractionTime will be loaded if present in loadedData, otherwise defaults from initializeDefaultPlayerData
         newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;

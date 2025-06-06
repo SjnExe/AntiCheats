@@ -8,17 +8,7 @@ This list contains planned features, improvements, and areas for future investig
 ## Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
-        *   **View Snap / Invalid Rotation:** Detect changes in pitch/yaw exceeding thresholds (e.g., pitch > 60°/tick, yaw > 90°/tick) during or immediately after combat. Check for absolute invalid rotations (e.g., pitch > 90° or < -90°).
-        *   **Multi-Target Killaura:** Track recently attacked entities. Flag if >N (e.g., 3) distinct entities are attacked within a very short window (e.g., 1-2 seconds).
-        *   **State Conflicts:**
-            *   *Attacking while using an item:* Flag if an attack occurs while the player is in a state considered "using an item" (e.g., eating food, drawing a bow, using a shield) that should prevent attacks. Requires custom state tracking. (Scythe, SjnExe)
-            *   *Attacking while sleeping:* Flag if an attack occurs while `player.isSleeping` is true. (Scythe, SjnExe)
-            *   *Attacking while chest open:* (Low feasibility with current API) Investigate if any event or state reliably indicates an open container UI. (Scythe)
-        *   *"No Swing" detection:* (Needs further API feasibility check) Investigate if server-side damage events can be correlated with client-side swing animations/packets, though direct detection is likely difficult. (Scythe)
-
     *   **Scaffold/Tower Detection:** SjnExe parity goal.
-        *   **Tower-like Upward Building:** Detect rapid, continuous upward pillar building significantly faster than manual placement, especially if combined with unusual look angles.
         *   **Flat/Invalid Rotation While Building:** Detect if player is placing blocks (especially in complex patterns like scaffolding) while maintaining an unnaturally static or limited range of head rotation (e.g., always looking straight down or perfectly horizontal).
         *   **Placing Blocks Under Self While Looking Up:** Detect if player is placing blocks beneath their feet to pillar upwards while their pitch indicates they are looking upwards (away from the placement area).
         *   **Downward Scaffold:** Detect rapid placement of blocks downwards while airborne, especially if player maintains horizontal speed.

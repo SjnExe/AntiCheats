@@ -88,6 +88,22 @@
  * @property {number} lastYaw - Player's camera yaw (rotation.y) in the last tick (session-only).
  * @property {number} lastAttackTick - The game tick of the last attack action (session-only).
  * @property {any[]} recentHits - Array of recent hit targets or related data (session-only).
+ * @property {boolean} isUsingConsumable - True if the player is currently using a consumable item (e.g., food, potion). Session-only. */
+        isUsingConsumable: boolean;
+        /** @property {boolean} isChargingBow - True if the player is currently charging a bow. Session-only. */
+        isChargingBow: boolean;
+        /** @property {boolean} isUsingShield - True if the player is currently actively using a shield. Session-only. */
+        isUsingShield: boolean;
+        /** @property {number} lastItemUseTick - The game tick when the player last initiated an item use action relevant to state conflicts. Session-only. */
+        lastItemUseTick: number;
+        /** @property {Array<{x: number, y: number, z: number, pitch: number, yaw: number, tick: number}>} recentBlockPlacements - Records recent block placements by the player for scaffold/tower detection. Session-only. */
+        recentBlockPlacements: Array<{x: number, y: number, z: number, pitch: number, yaw: number, tick: number}>;
+        /** @property {number} lastPillarBaseY - Y-coordinate of the base of the current pillar being built. Session-only. */
+        lastPillarBaseY: number;
+        /** @property {number} consecutivePillarBlocks - Number of consecutive blocks placed in the current pillar. Session-only. */
+        consecutivePillarBlocks: number;
+        /** @property {number} lastPillarTick - Game tick of the last block placed in the current pillar. Session-only. */
+        lastPillarTick: number;
  * @property {{typeId: string, amplifier: number, duration: number}[]} activeEffects - Player's active potion effects.
  * @property {number} health - Player's current health.
  * @property {string} lastBrokenBlockType - Type ID of the last block broken by the player.

@@ -114,6 +114,27 @@ export const flagReasonMultiAura = "Multi-Target Aura";
 /** @type {string} Reason message for attacking while sleeping. */
 export const flagReasonAttackWhileSleeping = "Attack While Sleeping";
 
+/** @type {string[]} Item type IDs for consumables that should prevent attacking while being used. */
+export const attackBlockingConsumables = [
+    "minecraft:apple", "minecraft:golden_apple", "minecraft:enchanted_golden_apple",
+    "minecraft:mushroom_stew", "minecraft:rabbit_stew", "minecraft:beetroot_soup",
+    "minecraft:suspicious_stew", "minecraft:cooked_beef", "minecraft:cooked_porkchop",
+    "minecraft:cooked_mutton", "minecraft:cooked_chicken", "minecraft:cooked_rabbit",
+    "minecraft:cooked_salmon", "minecraft:cooked_cod", "minecraft:baked_potato",
+    "minecraft:bread", "minecraft:melon_slice", "minecraft:carrot", "minecraft:potato",
+    "minecraft:beetroot", "minecraft:dried_kelp", "minecraft:potion", "minecraft:honey_bottle"
+    // Add other foods/potions as necessary
+];
+
+/** @type {string[]} Item type IDs for bows that should prevent attacking while being charged. */
+export const attackBlockingBows = ["minecraft:bow", "minecraft:crossbow"];
+
+/** @type {string[]} Item type IDs for shields that should prevent attacking while being actively used (raised). */
+export const attackBlockingShields = ["minecraft:shield"];
+
+/** @type {number} Number of ticks the 'using item' state (like isUsingConsumable) should persist before being auto-cleared if no explicit stop event occurs. (20 ticks = 1 second) */
+export const itemUseStateClearTicks = 60; // Default to 3 seconds
+
 
 // --- World Checks ---
 
@@ -151,6 +172,18 @@ export const spamRepeatTimeWindowSeconds = 5;
 export const spamRepeatFlagPlayer = true;
 /** @type {boolean} If true, cancels the message that triggers the repeated spam detection. */
 export const spamRepeatCancelMessage = false;
+
+// --- Scaffold/Tower Detection ---
+/** @type {boolean} If true, the Scaffold/Tower (Tower-like upward building) check is active. */
+export const enableTowerCheck = true;
+/** @type {number} Maximum time in ticks between consecutive pillar blocks for it to be considered part of the same tower. */
+export const towerMaxTickGap = 10; // 0.5 seconds
+/** @type {number} Minimum number of consecutive upward blocks to trigger a tower flag. */
+export const towerMinHeight = 5;
+/** @type {number} Maximum pitch deviation (degrees) allowed when pillaring up. E.g., if pitch is > -30 (looking too far up/ahead). */
+export const towerMaxPitchWhilePillaring = -30; // Player should be looking down somewhat. Pitch < -30 means looking more upwards.
+/** @type {number} How many recent block placements to store for pattern analysis. */
+export const towerPlacementHistoryLength = 20;
 
 // --- X-Ray Detection ---
 /** @type {boolean} If true, enables notifications for mining valuable ores. */
@@ -410,6 +443,54 @@ export const checkActionProfiles = {
             includeViolationDetails: true
         }
     },
+    "combat_attack_while_consuming": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected player attacking while consuming an item.",
+            type: "combat_state_conflict_consuming" // Specific type
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemUsed}"
+        },
+        log: {
+            actionType: "detected_attack_while_consuming",
+            detailsPrefix: "Attack While Consuming Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_attack_while_bow_charging": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected player attacking while charging a bow.",
+            type: "combat_state_conflict_bow"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemUsed}"
+        },
+        log: {
+            actionType: "detected_attack_while_bow_charging",
+            detailsPrefix: "Attack While Charging Bow Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_attack_while_shielding": {
+        enabled: true,
+        flag: {
+            increment: 2, // Shielding might have edge cases, slightly lower increment initially
+            reason: "System detected player attacking while actively using a shield.",
+            type: "combat_state_conflict_shield"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemUsed}"
+        },
+        log: {
+            actionType: "detected_attack_while_shielding",
+            detailsPrefix: "Attack While Shielding Violation: ",
+            includeViolationDetails: true
+        }
+    },
     "world_illegal_item_use": {
         enabled: true,
         flag: {
@@ -443,6 +524,22 @@ export const checkActionProfiles = {
             detailsPrefix: "Illegal Item Placement Violation: ",
             includeViolationDetails: true
         }
+    },
+    "world_tower_build": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected suspicious tower-like building.",
+            type: "world_scaffold_tower"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)"
+        },
+        log: {
+            actionType: "detected_world_tower_build",
+            detailsPrefix: "Tower Building Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 
@@ -461,6 +558,11 @@ export let editableConfigValues = {
     enableReachCheck, enableCpsCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck,
+    // State Conflict Check Configs
+    attackBlockingConsumables,
+    attackBlockingBows,
+    attackBlockingShields,
+    itemUseStateClearTicks,
     maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus, minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold, flySustainedOffGroundTicksThreshold,
     flyHoverNearGroundThreshold, flyHoverVerticalSpeedThreshold, flyHoverOffGroundTicksThreshold,
@@ -474,6 +576,12 @@ export let editableConfigValues = {
     enableMaxMessageLengthCheck, maxMessageLength, flagOnMaxMessageLength, cancelOnMaxMessageLength,
     spamRepeatCheckEnabled, spamRepeatMessageCount, spamRepeatTimeWindowSeconds,
     spamRepeatFlagPlayer, spamRepeatCancelMessage,
+    // Scaffold/Tower Detection
+    enableTowerCheck,
+    towerMaxTickGap,
+    towerMinHeight,
+    towerMaxPitchWhilePillaring,
+    towerPlacementHistoryLength,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     // Combat Log Configs

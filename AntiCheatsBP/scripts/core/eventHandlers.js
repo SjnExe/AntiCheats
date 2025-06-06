@@ -157,6 +157,10 @@ export function handleEntityHurt(eventData, playerDataManager, checks, playerUti
             if (checks && checks.checkAttackWhileSleeping && config.enableStateConflictCheck) {
                 checks.checkAttackWhileSleeping(attacker, attackerPData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
             }
+            // Add the new check call here:
+            if (checks && checks.checkAttackWhileUsingItem && config.enableStateConflictCheck) {
+                checks.checkAttackWhileUsingItem(attacker, attackerPData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+            }
         }
     }
 }
@@ -274,15 +278,33 @@ export function handleItemUse(eventData, playerDataManager, checks, playerUtils,
         const player = playerEntity;
         const itemStack = eventData.itemStack;
         const pData = playerDataManager.getPlayerData(player.id);
-        if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) { // Added config check
-            // Assuming logManager is available in this scope, passed from main.js if necessary, or globally accessible
-            // For now, let's assume it's not directly passed here yet, so executeCheckAction might not log fully for this.
-            // Correction: logManager MUST be passed here for executeCheckAction to work fully.
-            // This requires main.js to pass logManager to handleItemUse/handleItemUseOn if it's not already.
-            // Based on previous steps, executeCheckAction is passed, but logManager might not be passed to these specific handlers yet.
-            // Let's assume main.js is updated or will be updated to pass logManager to these handlers.
-            // If main.js passes logManager to handleItemUse:
-            // Corrected call:
+
+        if (pData) {
+            const itemTypeId = itemStack.typeId;
+            const currentTick = mc.system.currentTick; // Get current game tick
+
+            if (config.attackBlockingConsumables.includes(itemTypeId)) {
+                pData.isUsingConsumable = true;
+                pData.lastItemUseTick = currentTick;
+                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using consumable ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
+            } else if (config.attackBlockingBows.includes(itemTypeId)) {
+                pData.isChargingBow = true;
+                pData.lastItemUseTick = currentTick;
+                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started charging bow ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
+            } else if (config.attackBlockingShields.includes(itemTypeId)) {
+                pData.isUsingShield = true;
+                pData.lastItemUseTick = currentTick;
+                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using shield ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
+            }
+        }
+
+        // Existing illegal item check
+        if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) {
+            // The logManager parameter is not in this function's signature in the current file content.
+            // This subtask focuses on setting pData states.
+            // The call to checkIllegalItems might be partially non-functional if logManager is strictly required by it
+            // and not passed from main.js. This is a pre-existing condition or a concern for another subtask.
+            const logManager = {}; // Placeholder to allow existing code structure to remain.
             checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
     }

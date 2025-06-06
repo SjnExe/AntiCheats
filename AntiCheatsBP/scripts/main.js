@@ -136,6 +136,20 @@ mc.system.runInterval(async () => {
 
         playerDataManager.updateTransientPlayerData(player, pData, currentTick);
 
+        // Reset item usage states based on timeout
+        if (pData.isUsingConsumable && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) {
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingConsumable for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            pData.isUsingConsumable = false;
+        }
+        if (pData.isChargingBow && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) { // Potentially a different timeout for bows later
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isChargingBow for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            pData.isChargingBow = false;
+        }
+        if (pData.isUsingShield && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) {
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingShield for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            pData.isUsingShield = false;
+        }
+
         // --- Call All Checks ---
         // Pass executeCheckAction and logManager to all checks called in the tick loop
         if (config.enableFlyCheck && checks.checkFly) checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);

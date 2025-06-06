@@ -27,6 +27,36 @@
 ---
 # Completed Tasks
 
+## 2023-10-27
+
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **View Snap / Invalid Rotation:** Detect changes in pitch/yaw exceeding thresholds (e.g., pitch > 60°/tick, yaw > 90°/tick) during or immediately after combat. Check for absolute invalid rotations (e.g., pitch > 90° or < -90°). *(Verified existing implementation in `viewSnapCheck.js` and configuration in `config.js`. No code changes required.)*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **Multi-Target Killaura:** Track recently attacked entities. Flag if >N (e.g., 3) distinct entities are attacked within a very short window (e.g., 1-2 seconds). *(Verified existing implementation in `multiTargetCheck.js` and configuration in `config.js`. No code changes required.)*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **State Conflicts:**
+        *   *Attacking while using an item:* Flag if an attack occurs while the player is in a state considered "using an item" (e.g., eating food, drawing a bow, using a shield) that should prevent attacks. Requires custom state tracking. (Scythe, SjnExe)
+            *Implemented by:
+                - Adding `isUsingConsumable`, `isChargingBow`, `isUsingShield`, `lastItemUseTick` to `PlayerAntiCheatData` in `types.js` and `playerDataManager.js` (including initialization and session reset).
+                - Defining `attackBlockingConsumables`, `attackBlockingBows`, `attackBlockingShields`, and `itemUseStateClearTicks` in `config.js` and adding them to `editableConfigValues`.
+                - Updating `handleItemUse` in `eventHandlers.js` to set these player states and `lastItemUseTick` based on item usage and the new config arrays.
+                - Adding `checkAttackWhileUsingItem` to `stateConflictCheck.js` to detect attacks during these states, and ensuring it's exported via the wildcard in `checks/index.js`.
+                - Integrating the `checkAttackWhileUsingItem` call into `handleEntityHurt` in `eventHandlers.js`.
+                - Adding new `checkActionProfiles` ("combat_attack_while_consuming", "combat_attack_while_bow_charging", "combat_attack_while_shielding") to `config.js`.
+                - Implementing logic in the main tick loop in `main.js` to auto-clear these states based on `itemUseStateClearTicks`.*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **State Conflicts:**
+        *   *Attacking while sleeping:* Flag if an attack occurs while `player.isSleeping` is true. (Scythe, SjnExe) *(Verified existing implementation in `stateConflictCheck.js`, `eventHandlers.js`, and `config.js`. No code changes required.)*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **State Conflicts:**
+        *   *Attacking while chest open:* (Low feasibility with current API) Investigate if any event or state reliably indicates an open container UI. (Scythe)
+            *Investigation Complete: Reviewed `@minecraft/server` API documentation (v2.1.0-beta as of 2025-05-07). No direct or reliable event/player property was found to determine if a player has a chest UI (or general container UI) open for the purpose of preventing an attack. Feasibility remains low with the current API. Relevant classes like `ScreenDisplay`, `PlayerCursorInventoryComponent`, `BlockInventoryComponent`, and events like `PlayerInteractWithBlockAfterEvent` were considered but do not offer a robust solution for this specific state detection in a preventative context.*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   *"No Swing" detection:* (Needs further API feasibility check) Investigate if server-side damage events can be correlated with client-side swing animations/packets, though direct detection is likely difficult. (Scythe)
+        *Investigation Complete: Reviewed `@minecraft/server` API documentation (v2.1.0-beta as of 2025-05-07). No direct server-side API was found to detect client-side swing animations independently of the resulting damage or interaction events. Correlating damage events with an *expected* but unconfirmed swing animation is unreliable for cheat detection with the current API. Feasibility remains low/very difficult.*
+
+---
+
 ## Refactoring: Standardized Actions for Combat & IllegalItem Checks
 **Date:** Current Session
 
