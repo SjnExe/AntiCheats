@@ -67,7 +67,6 @@ This list contains planned features, improvements, and areas for future investig
             -   **Nametag Display:** *(IMPLEMENTED: Rank above player name like `Owner\nPlayerName` with colors. Nametag modification via `player.nameTag` was successful.)*
             -   Permissions for AC commands could be tied to ranks. *(Still to do)*
             -   Requires persistent storage if not solely derived from config/tags at runtime. *(Still relevant; current implementation is runtime derived from config/tags)*
-        *   **Combat Log Detection & Punishment:** If a player leaves the game shortly after entering combat (e.g., being hit or hitting someone), flag them or apply a configurable punishment. (SafeGuard)
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
 *   **World Management & Protection:** SjnExe parity goal.

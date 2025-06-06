@@ -1,5 +1,12 @@
 # Completed Tasks
 
+## Features: Combat Log Detection
+**Date:** Current Session
+
+Implemented Combat Log Detection. The system tracks player PvP interactions using `lastCombatInteractionTime` in `playerData` (via `entityHurt` event). If a player leaves (`playerLeave` event) within `combatLogThresholdSeconds` (configurable) of their last combat, they are flagged for 'combat_log' (flag amount configurable via `combatLogFlagIncrement`), admins are notified (using `combatLogMessage`), and the event is logged (using `combatLogReason`). This feature is disabled by default (`enableCombatLogDetection = false` in `config.js`). Logic primarily handled in `eventHandlers.js`, with data managed by `playerDataManager.js` and configurations in `config.js`. `README.md` updated.
+
+---
+
 ## Implemented Owner and Rank System
 *(Date is a placeholder based on current interaction)*
 
@@ -730,5 +737,3 @@ Removed the '### Text Commands' subsection and its table from the '## Admin Comm
 Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
-
-[end of Dev/tasks/completed.md]

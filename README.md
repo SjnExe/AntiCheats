@@ -20,6 +20,7 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
     *   **Movement:** Fly (sustained & hover), Speed, NoFall.
     *   **Combat:** Reach, CPS (Clicks Per Second / AutoClicker).
     *   **World:** Nuker (rapid block breaking), Illegal Item usage/placement.
+    *   **Combat Log:** Flags players disconnecting shortly after PvP (disabled by default).
 *   **Admin Tools:** Text-based commands and a UI (``!panel`` or ``!ui``) for admin actions and management.
 *   **Configuration:** Adjust detection thresholds and features via ``AntiCheatsBP/scripts/config.js``.
 *   **Data Persistence:** Player flags and violation data are saved and persist across server restarts and player sessions.
