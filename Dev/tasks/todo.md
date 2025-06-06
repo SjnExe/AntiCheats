@@ -57,7 +57,7 @@ This list contains planned features, improvements, and areas for future investig
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
         *   Investigate: In-game config editor via UI (for `config.js` values).
-        *   Investigate: View Ban/Mute/Warning Logs in UI (requires persistent logging of these actions).
+        *   (Started) Admin Panel UI: View Ban/Mute Logs. (Warning logs are typically player flags, viewed differently).
         *   (Started) Integrate Player Inventory View (InvSee) into Admin Panel's player inspection UI.
     *   **System Features:** SjnExe parity goal.
         *   **Owner System:** Designate a single player (e.g., via `config.js` or first admin) as "Owner" with immutable admin rights and potentially exclusive commands. *(Core functionality implemented as part of Rank System via `ownerPlayerName` in `config.js`)*

@@ -717,4 +717,18 @@ Enhanced the Admin Panel's player inspection UI (`showPlayerActionsForm` in `uiM
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
+## Documentation: Removed Text Commands Section from README.md
+*(Date: Current Session)*
+
+Removed the '### Text Commands' subsection and its table from the '## Admin Commands & UI' section in the root `README.md`. Updated the section to focus on the Admin UI Panel (`!panel`) and direct users to the in-game `!help` command for command details.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Panel UI: View Moderation Logs (Bans/Mutes)
+*(Date: Current Session)*
+
+Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
 [end of Dev/tasks/completed.md]

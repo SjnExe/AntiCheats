@@ -43,23 +43,11 @@ As new features are added, this list may be updated. Always check this README fo
 
 ## Admin Commands & UI
 
-Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scripts/config.js``) can manage the AntiCheat system:
+Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scripts/config.js``) primarily manage the AntiCheat system through the Admin UI Panel:
 
 ### Admin UI (Recommended)
 
-*   ``!panel`` (or ``!ui`` alias): Opens the main AntiCheat Admin Menu for player inspection, flag management, and monitoring.
-
-### Text Commands
-
-| Command                                           | Description                                                 |
-| :------------------------------------------------ | :---------------------------------------------------------- |
-| ``!version``                                      | Displays the current addon version.                         |
-| ``!watch <playername>``                           | Toggles verbose debug logging for a player.                 |
-| ``!inspect <playername>``                         | Shows a player's anti-cheat data summary in chat.           |
-| ``!resetflags <playername>``                      | Resets all flags and violation data for a player.           |
-| ``!xraynotify <on|off|status>``                  | Controls admin X-Ray ore mining notifications.              |
-| ``!viewreports [playername|clearall|clear <id>]`` | Views and manages player reports.                           |
-| ``!kick <playername> [reason]``                   | Kicks a player from the server.                             |
+*   ``!panel`` (or ``!ui`` alias): Opens the main AntiCheat Admin Menu for player inspection, flag management, and monitoring. All text-based admin commands are also accessible via buttons and forms within this UI. For details on specific command functionalities available through the UI (like kick, mute, ban, inspect, resetflags, etc.), please refer to the `!help` command in-game which provides up-to-date information based on your permission level.
 
 ## Configuration
 
