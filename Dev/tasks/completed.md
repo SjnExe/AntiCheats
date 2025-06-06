@@ -639,10 +639,17 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Log entries include timestamp, admin name, action type ('clear_chat'), and details.
     *   This ensures that this global administrative action is logged for auditing.
 
-[end of Dev/tasks/completed.md]
+## Admin Command Implementation (Completed on 2025-06-05)
 
-[end of Dev/tasks/completed.md]
-
-[end of Dev/tasks/completed.md]
-
-[end of Dev/tasks/completed.md]
+*   **`!systeminfo <playername>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Allows an admin to view client system information for a target player.
+    *   Retrieves and displays:
+        *   Platform Type (e.g., Windows, Android) from `player.clientSystemInfo.platformType`.
+        *   Max Render Distance from `player.clientSystemInfo.maxRenderDistance`.
+        *   Memory Tier from `player.clientSystemInfo.memoryTier`.
+        *   Last Input Mode (e.g., MouseKeyboard, Touch) from `player.inputInfo.lastInputModeUsed`.
+        *   Graphics Mode (e.g., Fancy, Simple) from `player.graphicsMode`.
+    *   Defaults to "N/A" if a specific piece of info is unavailable.
+    *   The action is logged using `addLog` with `actionType: 'system_info'`.
+    *   Handles cases for player not found or errors during info retrieval.
