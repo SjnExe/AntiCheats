@@ -59,6 +59,7 @@ Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scr
 | ``!resetflags <playername>``  | Resets all flags and violation data for a player.           |
 | ``!xraynotify <on|off|status>`` | Controls admin X-Ray ore mining notifications.              |
 | ``!viewreports [playername|clearall|clear <id>]`` | Views and manages player reports.       |
+| ``!kick <playername> [reason]`` | Kicks a player from the server.                             |
 
 ## Configuration
 
@@ -92,9 +93,9 @@ Ranks are displayed with distinct prefixes and colors in chat messages and above
 
 These commands are available to all players.
 
-*   ``!help``: Shows a list of commands available to you based on your permissions.
+*   ``!help [command_name]``: Shows available commands or help for a specific command.
 *   ``!myflags``: Allows any player to check their own current flag status.
-*   ``!uinfo``: Shows your anti-cheat stats, server rules, and other helpful information in a UI.
+*   ``!uinfo``: Shows your anti-cheat stats, server rules, and help links in a UI.
 *   ``!report <playername> <reason...>``: Reports a player for admin review. Reason is required.
 
 ## Contributing
