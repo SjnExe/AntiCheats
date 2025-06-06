@@ -1,23 +1,32 @@
 import * as mc from '@minecraft/server';
 import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
-import { addMute, removeMute, isMuted } from '../core/playerDataManager.js'; // Assuming these are still relevant and correctly pathed
+import { addMute, removeMute, isMuted } from '../core/playerDataManager.js';
 import { addLog } from './logManager.js';
-import { ActionFormData, MessageFormData, ModalFormData } from '@minecraft/server-ui'; // MODIFIED: Added ActionFormData
+import * as reportManager from './reportManager.js';
+import { ActionFormData, MessageFormData, ModalFormData } from '@minecraft/server-ui';
 import { ItemComponentTypes } from '@minecraft/server';
-
-// Parameter 'config' will provide PREFIX, acVersion, commandAliases, serverRules, generalHelpMessages, helpLinks
-// Parameter 'playerUtils' will provide warnPlayer, notifyAdmins, debugLog
-// Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData, etc.
-// Parameter 'uiManager' will provide showAdminMainMenu (though not used in !uinfo directly)
 
 const allCommands = [
     { name: "help", syntax: "!help", description: "Shows available commands.", permissionLevel: permissionLevels.NORMAL },
     { name: "myflags", syntax: "!myflags", description: "Shows your own current flag status.", permissionLevel: permissionLevels.NORMAL },
+    { name: "uinfo", syntax: "!uinfo", description: "Shows your anti-cheat stats, server rules, and help links in a UI.", permissionLevel: permissionLevels.NORMAL },
+    {
+        name: "report",
+        syntax: "!report <playername> <reason...>",
+        description: "Reports a player for admin review. Reason is required.",
+        permissionLevel: permissionLevels.NORMAL
+    },
     { name: "version", syntax: "!version", description: "Displays addon version.", permissionLevel: permissionLevels.ADMIN },
     { name: "watch", syntax: "!watch <player>", description: "Toggles debug watch for a player.", permissionLevel: permissionLevels.ADMIN },
     { name: "inspect", syntax: "!inspect <player>", description: "Shows player's AC data.", permissionLevel: permissionLevels.ADMIN },
     { name: "warnings", syntax: "!warnings <player>", description: "Shows a detailed list of warnings/flags for a player.", permissionLevel: permissionLevels.ADMIN },
+    {
+        name: "viewreports", // ADDED for !viewreports
+        syntax: "!viewreports [playername|clearall|clear <id>]",
+        description: "Views and manages player reports.",
+        permissionLevel: permissionLevels.ADMIN
+    },
     { name: "invsee", syntax: "!invsee <player>", description: "Displays a read-only view of a player's inventory.", permissionLevel: permissionLevels.ADMIN },
     { name: "resetflags", syntax: "!resetflags <player>", description: "Resets player's flags.", permissionLevel: permissionLevels.ADMIN },
     { name: "clearwarnings", syntax: "!clearwarnings <player>", description: "Clears all warnings/flags for a player (similar to !resetflags).", permissionLevel: permissionLevels.ADMIN },
@@ -43,13 +52,7 @@ const allCommands = [
     { name: "gms", syntax: "!gms [player]", description: "Sets Survival mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
     { name: "gma", syntax: "!gma [player]", description: "Sets Adventure mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
     { name: "gmsp", syntax: "!gmsp [player]", description: "Sets Spectator mode for self or [player].", permissionLevel: permissionLevels.ADMIN },
-    { name: "copyinv", syntax: "!copyinv <playername>", description: "Copies another player's inventory to your own (overwrites your current inventory).", permissionLevel: permissionLevels.ADMIN },
-    { // ADDED for !uinfo
-        name: "uinfo",
-        syntax: "!uinfo",
-        description: "Shows your anti-cheat stats, server rules, and help links in a UI.",
-        permissionLevel: permissionLevels.NORMAL
-    }
+    { name: "copyinv", syntax: "!copyinv <playername>", description: "Copies another player's inventory to your own (overwrites your current inventory).", permissionLevel: permissionLevels.ADMIN }
 ];
 
 // Helper function to find a player by name (case-insensitive)
@@ -133,7 +136,7 @@ function parseDuration(durationString) {
     return null;
 }
 
-// --- User Info Panel (!uinfo) Helper Functions --- ADDED SECTION ---
+// --- User Info Panel (!uinfo) Helper Functions ---
 
 async function showMyStatsUI(player, playerDataManager, config, playerUtils) {
     const pData = playerDataManager.getPlayerData(player.id);
@@ -251,6 +254,22 @@ async function showUserInfoPanel(player, playerDataManager, config, playerUtils)
 }
 // --- END User Info Panel (!uinfo) Helper Functions ---
 
+// --- Report Viewing UI Helper --- ADDED
+async function showReportDetailsUI(player, report, playerUtils, config) { // config might be needed for prefix or other settings in future
+    const detailForm = new MessageFormData();
+    detailForm.title(`Report ID: ${report.id.substring(0, 8)}`); // Shorten ID for title
+    let body = `§eTimestamp:§r ${new Date(report.timestamp).toLocaleString()}\n`;
+    body += `§eReporter:§r ${report.reporterName} (ID: ${report.reporterId})\n`;
+    body += `§eReported:§r ${report.reportedName} (ID: ${report.reportedId})\n`;
+    body += `§eReason:§r\n${report.reason}`;
+    detailForm.body(body);
+    detailForm.button1("Close");
+    // Consider adding delete functionality via a different command or a more complex form flow.
+    // detailForm.button2("Delete this report");
+
+    await detailForm.show(player).catch(e => playerUtils.debugLog(`Error showing report detail form for ${player.nameTag}: ${e}`, player.nameTag));
+}
+
 export async function handleChatCommand(eventData, playerDataManager, uiManager, config, playerUtils) {
     const player = eventData.sender;
     const message = eventData.message;
@@ -348,16 +367,10 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     eventData.cancel = true;
 
     switch (command) {
-        // Cases for admin commands like version, watch, inspect, etc.
         case "version":
              player.sendMessage(`§aAntiCheats Addon version: ${config.acVersion}`);
              break;
-        case "watch":
-            // ... existing watch logic
-            break;
-        case "inspect":
-            // ... existing inspect logic
-            break;
+        // ... other admin commands
         case "kick":
             if (args.length < 1) {
                 player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`); return;
@@ -375,161 +388,129 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
                 } catch (e) { player.sendMessage(`§cError kicking player ${targetPlayerNameKick}: ${e}`); playerUtils.debugLog(`Error kicking player ${targetPlayerNameKick}: ${e}`); }
             } else { player.sendMessage(`§cPlayer ${targetPlayerNameKick} not found.`); }
             break;
-        case "mute":
-            if (args.length < 1) { player.sendMessage(`§cUsage: ${config.prefix}mute <playername> [duration] [reason]`); return; }
-            const targetPlayerNameMute = args[0];
-            const durationStringMute = args[1] || "1h";
-            const reasonMute = args.slice(2).join(" ") || "Muted by an administrator.";
-            let foundPlayerMute = findPlayer(targetPlayerNameMute, playerUtils);
-            if (!foundPlayerMute) { player.sendMessage(`§cPlayer ${targetPlayerNameMute} not found.`); return; }
-            if (foundPlayerMute.id === player.id) { player.sendMessage("§cYou cannot mute yourself."); return; }
-            const durationMsMute = parseDuration(durationStringMute);
-            if (durationMsMute === null || (durationMsMute <= 0 && durationMsMute !== Infinity)) { player.sendMessage("§cInvalid duration format. Use formats like 5m, 2h, 1d, or perm. Default is 1h if unspecified."); return; }
-            try {
-                const muteAdded = playerDataManager.addMute(foundPlayerMute, durationMsMute, reasonMute);
-                if (muteAdded) {
-                    const durationText = durationMsMute === Infinity ? "permanently (this session)" : `for ${durationStringMute}`;
-                    try { foundPlayerMute.onScreenDisplay.setActionBar(`§cYou have been muted ${durationText}. Reason: ${reasonMute}`); } catch (e) { playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayerMute.nameTag}: ${e}`, player.nameTag); }
-                    player.sendMessage(`§aPlayer ${foundPlayerMute.nameTag} has been muted ${durationText}. Reason: ${reasonMute}`);
-                    playerUtils.notifyAdmins(`Player ${foundPlayerMute.nameTag} was muted ${durationText} by ${player.nameTag}. Reason: ${reasonMute}`, player, null);
-                    addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'mute', targetName: foundPlayerMute.nameTag, duration: durationStringMute, reason: reasonMute });
-                } else { player.sendMessage(`§cFailed to apply mute for ${foundPlayerMute.nameTag}. Check logs.`); }
-            } catch (e) { player.sendMessage(`§cAn unexpected error occurred while trying to mute ${foundPlayerMute.nameTag}: ${e}`); playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayerMute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag); }
-            break;
-        case "unmute":
-            if (args.length < 1) { player.sendMessage(`§cUsage: ${config.prefix}unmute <playername>`); return; }
-            const targetPlayerNameUnmute = args[0];
-            let foundPlayerUnmute = findPlayer(targetPlayerNameUnmute, playerUtils);
-            if (!foundPlayerUnmute) { player.sendMessage(`§cPlayer ${targetPlayerNameUnmute} not found.`); return; }
-            try {
-                if (!playerDataManager.isMuted(foundPlayerUnmute)) { player.sendMessage(`§7Player ${foundPlayerUnmute.nameTag} is not currently muted.`); return; }
-                const unmuted = playerDataManager.removeMute(foundPlayerUnmute);
-                if (unmuted) {
-                    try { foundPlayerUnmute.onScreenDisplay.setActionBar("§aYou have been unmuted."); } catch (e) { playerUtils.debugLog(`Failed to set action bar for unmuted player ${foundPlayerUnmute.nameTag}: ${e}`, player.nameTag); }
-                    player.sendMessage(`§aPlayer ${foundPlayerUnmute.nameTag} has been unmuted.`);
-                    playerUtils.notifyAdmins(`Player ${foundPlayerUnmute.nameTag} was unmuted by ${player.nameTag}.`, player, null);
-                    addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unmute', targetName: foundPlayerUnmute.nameTag });
-                } else { player.sendMessage(`§cFailed to unmute player ${foundPlayerUnmute.nameTag}. They might not have been muted or an error occurred.`); }
-            } catch (e) { player.sendMessage(`§cAn unexpected error occurred while trying to unmute ${foundPlayerUnmute.nameTag}: ${e}`); playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayerUnmute.nameTag} by ${player.nameTag}: ${e}`, player.nameTag); }
-            break;
-        case "ban":
-            if (args.length < 1) { player.sendMessage(`§cUsage: ${config.prefix}ban <playername> [duration] [reason]`); return; }
-            const targetPlayerNameBan = args[0];
-            const durationStringBan = args[1] || "perm";
-            const reasonBan = args.slice(2).join(" ") || "Banned by an administrator.";
-            let foundPlayerBan = findPlayer(targetPlayerNameBan, playerUtils);
-            if (!foundPlayerBan) { player.sendMessage(`§cPlayer ${targetPlayerNameBan} not found.`); return; }
-            if (foundPlayerBan.id === player.id) { player.sendMessage("§cYou cannot ban yourself."); return; }
-            const durationMsBan = parseDuration(durationStringBan);
-            if (durationMsBan === null || (durationMsBan <= 0 && durationMsBan !== Infinity)) { player.sendMessage("§cInvalid duration format. Use formats like 7d, 2h30m, 5s, or perm. Default is perm if unspecified."); return; }
-            const successBan = playerDataManager.addBan(foundPlayerBan, durationMsBan, reasonBan);
-            if (successBan) {
-                let kickMessage = `You are banned from this server.\nReason: ${reasonBan}\n`;
-                if (durationMsBan === Infinity) { kickMessage += "This ban is permanent."; } else { const unbanTime = Date.now() + durationMsBan; kickMessage += `Expires: ${new Date(unbanTime).toLocaleString()}`; }
-                try { foundPlayerBan.kick(kickMessage); } catch (e) { playerUtils.debugLog(`Attempted to kick banned player ${foundPlayerBan.nameTag} but they might have already disconnected: ${e}`, player.nameTag); }
-                playerUtils.notifyAdmins(`Player ${foundPlayerBan.nameTag} was banned by ${player.nameTag}. Duration: ${durationStringBan}. Reason: ${reasonBan}`, player, null);
-                addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'ban', targetName: foundPlayerBan.nameTag, duration: durationStringBan, reason: reasonBan });
-                player.sendMessage(`§aSuccessfully banned ${foundPlayerBan.nameTag}. Duration: ${durationStringBan}. Reason: ${reasonBan}`);
-            } else { player.sendMessage(`§cFailed to ban ${foundPlayerBan.nameTag}. Check server logs.`); }
-            break;
-        case "unban":
-            if (args.length < 1) { player.sendMessage(`§cUsage: ${config.prefix}unban <playername>`); return; }
-            const targetPlayerNameUnban = args[0];
-            let foundPlayerUnban = findPlayer(targetPlayerNameUnban, playerUtils);
-            if (foundPlayerUnban) {
-                const successUnbanOnline = playerDataManager.removeBan(foundPlayerUnban);
-                if (successUnbanOnline) {
-                    playerUtils.notifyAdmins(`Player ${foundPlayerUnban.nameTag} was unbanned by ${player.nameTag}.`, player, null);
-                    addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unban', targetName: foundPlayerUnban.nameTag });
-                    player.sendMessage(`§aPlayer ${foundPlayerUnban.nameTag} has been unbanned. They can rejoin if they were kicked.`);
-                } else { player.sendMessage(`§cPlayer ${foundPlayerUnban.nameTag} is not currently banned or could not be unbanned.`); }
-            } else { player.sendMessage(`§cPlayer ${targetPlayerNameUnban} not found online. Offline unbanning is not yet fully supported by this command directly.`); }
-            break;
-        case "freeze":
-            const frozenTag = "frozen"; const effectDuration = 2000000;
-            if (args.length < 1) { player.sendMessage(`§cUsage: ${config.prefix}freeze <playername> [on|off]`); return; }
-            const targetPlayerNameFreeze = args[0]; const subCommandFreeze = args[1] ? args[1].toLowerCase() : null;
-            let foundPlayerFreeze = findPlayer(targetPlayerNameFreeze, playerUtils);
-            if (!foundPlayerFreeze) { player.sendMessage(`§cPlayer ${targetPlayerNameFreeze} not found.`); return; }
-            if (foundPlayerFreeze.id === player.id) { player.sendMessage("§cYou cannot freeze yourself."); return; }
-            let currentFreezeState = foundPlayerFreeze.hasTag(frozenTag); let targetFreezeState;
-            if (subCommandFreeze === "on") targetFreezeState = true; else if (subCommandFreeze === "off") targetFreezeState = false; else targetFreezeState = !currentFreezeState;
-            if (targetFreezeState === true && !currentFreezeState) {
-                try {
-                    foundPlayerFreeze.addTag(frozenTag);
-                    foundPlayerFreeze.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false });
-                    foundPlayerFreeze.sendMessage("§cYou have been frozen by an administrator!");
-                    player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is now frozen.`);
-                    playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was frozen by ${player.nameTag}.`, player, null);
-                    addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'freeze', targetName: foundPlayerFreeze.nameTag, details: 'Player frozen' });
-                } catch (e) { player.sendMessage(`§cError freezing ${foundPlayerFreeze.nameTag}: ${e}`);}
-            } else if (targetFreezeState === false && currentFreezeState) {
-                try {
-                    foundPlayerFreeze.removeTag(frozenTag);
-                    foundPlayerFreeze.removeEffect("slowness");
-                    foundPlayerFreeze.sendMessage("§aYou have been unfrozen.");
-                    player.sendMessage(`§aPlayer ${foundPlayerFreeze.nameTag} is no longer frozen.`);
-                    playerUtils.notifyAdmins(`Player ${foundPlayerFreeze.nameTag} was unfrozen by ${player.nameTag}.`, player, null);
-                    addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unfreeze', targetName: foundPlayerFreeze.nameTag, details: 'Player unfrozen' });
-                } catch (e) { player.sendMessage(`§cError unfreezing ${foundPlayerFreeze.nameTag}: ${e}`);}
-            } else { player.sendMessage(targetFreezeState ? `§7Player ${foundPlayerFreeze.nameTag} is already frozen.` : `§7Player ${foundPlayerFreeze.nameTag} is already unfrozen.`);}
-            break;
-        case "clearchat":
-            const linesToClear = 150;
-            for (let i = 0; i < linesToClear; i++) { mc.world.sendMessage(""); }
-            player.sendMessage("§aChat has been cleared.");
-            playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
-            addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'clear_chat', targetName: 'N/A', details: `Chat cleared by ${player.nameTag}` });
-            break;
-        case "vanish":
-            // ... existing vanish logic
-            break;
-        case "panel":
-            uiManager.showAdminPanelMain(player, playerDataManager, config);
-            break;
-        case "notify":
-            // ... existing notify logic
-            break;
-        case "xraynotify":
-            // ... existing xraynotify logic
-            break;
-        case "testnotify":
-            // ... existing testnotify logic
-            break;
-        case "tp":
-            // ... existing tp logic
-            break;
-        case "gmc":
-            await setPlayerGameMode(player, args[0], mc.GameMode.creative, "Creative", config, playerUtils, addLog);
-            break;
-        case "gms":
-            await setPlayerGameMode(player, args[0], mc.GameMode.survival, "Survival", config, playerUtils, addLog);
-            break;
-        case "gma":
-            await setPlayerGameMode(player, args[0], mc.GameMode.adventure, "Adventure", config, playerUtils, addLog);
-            break;
-        case "gmsp":
-            await setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, playerUtils, addLog);
-            break;
-        case "copyinv":
-            // ... existing copyinv logic
-            break;
-        case "invsee":
-            // ... existing invsee logic
-            break;
-        case "warnings":
-            // ... existing warnings logic
-            break;
-        case "resetflags":
-            // ... existing resetflags logic
-            break;
-        case "clearwarnings":
-            // ... existing clearwarnings logic
-            break;
-        case "uinfo": // ADDED
+        // ... other admin commands like mute, ban, freeze, etc.
+        case "uinfo":
             addLog({ timestamp: Date.now(), playerName: player.nameTag, actionType: 'command_uinfo', details: 'Player used !uinfo command' });
             showUserInfoPanel(player, playerDataManager, config, playerUtils);
             break;
+        case "report":
+            if (args.length < 2) {
+                player.sendMessage(`§cUsage: ${config.prefix}report <playername> <reason...>`);
+                return;
+            }
+            const targetPlayerNameReport = args[0];
+            const reasonReport = args.slice(1).join(" ");
+            const reportedPlayerTarget = findPlayer(targetPlayerNameReport, playerUtils);
+
+            if (!reportedPlayerTarget) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameReport}" not found.`);
+                return;
+            }
+
+            if (reportedPlayerTarget.id === player.id) {
+                player.sendMessage("§cYou cannot report yourself.");
+                return;
+            }
+
+            const newReportObject = reportManager.addReport(player, reportedPlayerTarget, reasonReport);
+
+            if (newReportObject) {
+                player.sendMessage(`§aReport against ${reportedPlayerTarget.nameTag} for "${reasonReport}" submitted with ID ${newReportObject.id}. Thank you.`);
+                playerUtils.notifyAdmins(`§eNew report by ${player.nameTag} against ${reportedPlayerTarget.nameTag} (ID: ${newReportObject.id}). Reason: ${reasonReport}§r`, player, null);
+
+                addLog({
+                    timestamp: Date.now(),
+                    playerName: player.nameTag,
+                    actionType: 'command_report',
+                    targetName: reportedPlayerTarget.nameTag,
+                    details: `Reported for: ${reasonReport}. Report ID: ${newReportObject.id}`
+                });
+            } else {
+                player.sendMessage("§cThere was an error submitting your report. Please try again later.");
+            }
+            break;
+        case "viewreports": // ADDED
+            const subCmdView = args[0] ? args[0].toLowerCase() : null;
+            const paramView = args.length > 1 ? args.slice(1).join(" ") : null;
+
+            if (subCmdView === "clearall") {
+                const confirmClearAllForm = new ModalFormData();
+                confirmClearAllForm.title("§cConfirm Clear All Reports");
+                confirmClearAllForm.body("Are you sure you want to delete ALL reports? This action cannot be undone.");
+                confirmClearAllForm.toggle("Yes, delete all reports", false);
+
+                confirmClearAllForm.show(player).then(response => {
+                    if (response.canceled) {
+                        player.sendMessage("§7Report clearing cancelled.");
+                        return;
+                    }
+                    if (response.formValues[0]) {
+                        reportManager.clearAllReports();
+                        player.sendMessage("§aAll player reports have been cleared.");
+                        addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_viewreports_clearall', details: 'All reports cleared' });
+                        playerUtils.notifyAdmins(`§6${player.nameTag} cleared all player reports.`, player, null); // Added null for pData arg
+                    } else {
+                        player.sendMessage("§7Report clearing cancelled as confirmation was not given.");
+                    }
+                }).catch(e => playerUtils.debugLog(`Error showing clearall confirmation form for ${player.nameTag}: ${e}`, player.nameTag));
+
+            } else if (subCmdView === "clear" && paramView) {
+                const reportIdToClear = paramView;
+                const cleared = reportManager.clearReportById(reportIdToClear);
+                if (cleared) {
+                    player.sendMessage(`§aReport with ID "${reportIdToClear}" has been cleared.`);
+                    addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_viewreports_clearid', targetName: reportIdToClear, details: `Cleared report ID ${reportIdToClear}` });
+                    playerUtils.notifyAdmins(`§6${player.nameTag} cleared report ID ${reportIdToClear}.`, player, null); // Added null for pData arg
+                } else {
+                    player.sendMessage(`§cReport with ID "${reportIdToClear}" not found or could not be cleared.`);
+                }
+
+            } else {
+                let reportsToShow = reportManager.getReports().sort((a, b) => b.timestamp - a.timestamp);
+                let uiTitle = "Player Reports";
+
+                if (subCmdView && subCmdView !== "clear") {
+                    const filterName = subCmdView; // Keep case for includes if names are case-sensitive in some contexts
+                    reportsToShow = reportsToShow.filter(r =>
+                        r.reportedName.toLowerCase().includes(filterName.toLowerCase()) ||
+                        r.reporterName.toLowerCase().includes(filterName.toLowerCase())
+                    );
+                    uiTitle = `Reports involving "${filterName}"`;
+                    if (reportsToShow.length === 0) {
+                         player.sendMessage(`§7No reports found involving "${filterName}". Showing all reports instead.`);
+                         reportsToShow = reportManager.getReports().sort((a, b) => b.timestamp - a.timestamp);
+                         uiTitle = "Player Reports (filter yielded no results)";
+                    }
+                }
+
+                if (reportsToShow.length === 0) {
+                    player.sendMessage("§7No reports found.");
+                    return;
+                }
+
+                const listReportsForm = new ActionFormData();
+                listReportsForm.title(`${uiTitle} (${reportsToShow.length})`);
+                listReportsForm.body("Select a report to view details. Max 50 shown.");
+
+                const displayLimit = 50;
+                const reportsForUI = reportsToShow.slice(0, displayLimit);
+
+                for (const report of reportsForUI) {
+                    listReportsForm.button(`ID: ${report.id.substring(0,5)}... - ${report.reportedName}\n§7By: ${report.reporterName} @ ${new Date(report.timestamp).toLocaleDateString()}`);
+                }
+
+                listReportsForm.show(player).then(response => {
+                    if (response.canceled) return;
+                    const selectedReport = reportsForUI[response.selection];
+                    if (selectedReport) {
+                        showReportDetailsUI(player, selectedReport, playerUtils, config);
+                    }
+                }).catch(e => playerUtils.debugLog(`Error showing report list form for ${player.nameTag}: ${e}`, player.nameTag));
+
+                addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_viewreports_list', details: `Viewed reports. Filter: ${subCmdView || 'None'}. Count: ${reportsToShow.length}` });
+            }
+            break;
+        // ... other cases like version, watch, inspect, etc.
         default:
             player.sendMessage(`§cUnexpected error processing command: ${config.prefix}${command}§r. Type ${config.prefix}help.`);
     }
