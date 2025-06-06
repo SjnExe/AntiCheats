@@ -8,6 +8,7 @@ import { permissionLevels } from './rankManager.js'; // Added
 // Import mute functions from playerDataManager for Mute/Unmute UI
 import { getMuteInfo, addMute, removeMute } from '../core/playerDataManager.js';
 import * as logManager from './logManager.js';
+import { editableConfigValues, updateConfigValue } from '../config.js'; // Added for editable config
 
 
 async function showInspectPlayerForm(player, playerDataManager) {
@@ -352,7 +353,8 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
     for (const p of onlinePlayers) {
         const targetPData = playerDataManager.getPlayerData(p.id);
         const buttonText = targetPData ? `${p.nameTag} (Flags: ${targetPData.flags.totalFlags})` : p.nameTag;
-        form.button(buttonText); playerMappings.push(p.id);
+        form.button(buttonText, "textures/ui/icon_steve"); // Added icon_steve
+        playerMappings.push(p.id);
     }
     try {
         const response = await form.show(adminPlayer);
@@ -381,7 +383,7 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
             form.button("Reset Flags (Text)", "textures/ui/refresh");
             form.button("List Watched Players", "textures/ui/magnifying_glass");
             form.button("Server Management", "textures/ui/icon_graph");
-            form.button("View Configuration", "textures/ui/gear");
+            form.button("View Configuration", "textures/ui/gear"); // This will become "Edit Configuration"
             response = await form.show(adminPlayer);
             if (response.canceled) { /* ... */ return; }
             switch (response.selection) {
@@ -390,7 +392,7 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config)
                 case 2: await showResetFlagsForm(adminPlayer, playerDataManager); break;
                 case 3: await showWatchedPlayersList(adminPlayer, playerDataManager); break;
                 case 4: await showServerManagementForm(adminPlayer, playerDataManager, config); break;
-                case 5: await showViewConfigForm(adminPlayer, config, playerDataManager); break;
+                case 5: await showEditConfigForm(adminPlayer, playerDataManager, config); break; // Updated Call
                 default: adminPlayer.sendMessage("§cInvalid selection from Admin Panel."); break;
             }
         } else {
@@ -438,23 +440,114 @@ async function showSystemInfo(adminPlayer, config, playerDataManager) {
         console.error(`[uiManager.showSystemInfo] Error:`, error, error.stack);
         adminPlayer.sendMessage("§cAn error occurred while displaying system information.");
     }
-    await showAdminPanelMain(adminPlayer, playerDataManager, config);
+    await showAdminPanelMain(adminPlayer, playerDataManager, config); // config is passed here, it's the original const config
 }
 
-async function showViewConfigForm(adminPlayer, config, playerDataManager) {
-    playerUtils.debugLog(`UI: showViewConfigForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const form = new MessageFormData();
-    form.title("View Configuration (Read-Only)");
-    const keysToShow = [ { key: 'adminTag', label: 'Admin Tag' }, { key: 'ownerPlayerName', label: 'Owner Player Name' }, { key: 'enableDebugLogging', label: 'Debug Logging Enabled' }, { key: 'prefix', label: 'Command Prefix' }, { key: 'acVersion', label: 'AntiCheat Version' }, { key: 'acGlobalNotificationsDefaultOn', label: 'Global Admin Notifications Default On' }, { key: 'enableReachCheck', label: 'Reach Check Enabled' }, { key: 'enableCpsCheck', label: 'CPS Check Enabled' }, { key: 'enableViewSnapCheck', label: 'View Snap Check Enabled' }, { key: 'enableMultiTargetCheck', label: 'Multi-Target Check Enabled' }, { key: 'enableStateConflictCheck', label: 'State Conflict Check Enabled' }, { key: 'enableFlyCheck', label: 'Fly Check Enabled' }, { key: 'enableSpeedCheck', label: 'Speed Check Enabled' }, { key: 'enableNofallCheck', label: 'NoFall Check Enabled' }, { key: 'enableNukerCheck', label: 'Nuker Check Enabled' }, { key: 'enableIllegalItemCheck', label: 'Illegal Item Check Enabled' }, { key: 'maxCpsThreshold', label: 'Max CPS Threshold' }, { key: 'reachDistanceSurvival', label: 'Reach Distance (Survival)' }, { key: 'reachDistanceCreative', label: 'Reach Distance (Creative)' }, { key: 'minFallDistanceForDamage', label: 'Min Fall Distance for Damage' }, { key: 'enableNewlineCheck', label: 'Newline Chat Check Enabled' }, { key: 'maxMessageLength', label: 'Max Chat Message Length' }, { key: 'spamRepeatCheckEnabled', label: 'Spam Repeat Check Enabled' }, { key: 'xrayDetectionNotifyOnOreMineEnabled', label: 'X-Ray Ore Notify Enabled' }, { key: 'xrayDetectionAdminNotifyByDefault', label: 'X-Ray Admin Notify Default On' } ];
-    let bodyContent = "§lKey Configuration Values:§r\n\n";
-    if (!config) { bodyContent = "§cConfiguration data is currently unavailable."; }
-    else { for (const item of keysToShow) { const key = item.key; const label = item.label; const value = config[key]; bodyContent += `§e${label}:§r ${typeof value === 'object' ? JSON.stringify(value) : value}\n`; } }
-    form.body(bodyContent); form.button1("Back");
-    try { await form.show(adminPlayer); } catch (error) {
-        playerUtils.debugLog(`Error in showViewConfigForm for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
-        console.error(`[uiManager.showViewConfigForm] Error:`, error, error.stack);
+// Renamed from showViewConfigForm and updated to use ModalFormData for editing
+async function showEditConfigForm(adminPlayer, playerDataManager, originalConfig) {
+    playerUtils.debugLog(`UI: showEditConfigForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const form = new ModalFormData();
+    form.title("Edit Configuration (Session Only)");
+
+    const orderedConfigKeys = []; // To keep track of the order of form elements
+
+    for (const key in editableConfigValues) {
+        if (Object.hasOwnProperty.call(editableConfigValues, key)) {
+            const value = editableConfigValues[key];
+            const type = typeof value;
+            orderedConfigKeys.push({ key: key, type: type });
+
+            if (type === 'boolean') {
+                form.toggle(`${key} (boolean):`, value);
+            } else if (type === 'string') {
+                form.textField(`${key} (string):`, String(value), String(value));
+            } else if (type === 'number') {
+                form.textField(`${key} (number):`, String(value), String(value));
+            }
+            // Complex types are not included in editableConfigValues
+        }
     }
-    await showAdminPanelMain(adminPlayer, playerDataManager, config);
+    // Add acVersion display from originalConfig as it's not in editableConfigValues
+    if (originalConfig && originalConfig.acVersion) {
+         form.dropdown("AC Version (Read-Only):", [originalConfig.acVersion], 0); // Using dropdown as a read-only text display
+    }
+
+
+    try {
+        const response = await form.show(adminPlayer);
+
+        if (response.canceled) {
+            playerUtils.debugLog(`Edit Config form canceled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            await showAdminPanelMain(adminPlayer, playerDataManager, originalConfig);
+            return;
+        }
+
+        const { formValues } = response;
+        let updateSummary = "§lConfiguration Update Results:§r\n";
+        let changesMade = 0;
+        let errorsEncountered = 0;
+
+        for (let i = 0; i < orderedConfigKeys.length; i++) {
+            const configEntry = orderedConfigKeys[i];
+            const key = configEntry.key;
+            const originalType = configEntry.type;
+            let newValue = formValues[i]; // This is the value from the form
+
+            if (originalType === 'number') {
+                const parsedNum = parseFloat(newValue);
+                if (isNaN(parsedNum)) {
+                    updateSummary += `§c- ${key}: Failed (Invalid number: "${newValue}")\n`;
+                    errorsEncountered++;
+                    continue;
+                }
+                newValue = parsedNum;
+            }
+            // Booleans from toggles are fine. Strings from textFields are fine.
+
+            if (editableConfigValues[key] === newValue) { // No change
+                // updateSummary += `§7- ${key}: No change (${newValue})\n`;
+                continue;
+            }
+
+            const success = updateConfigValue(key, newValue);
+            if (success) {
+                updateSummary += `§a- ${key}: Updated to ${newValue}\n`;
+                changesMade++;
+            } else {
+                // updateConfigValue logs details to console, provide a simpler message to player
+                updateSummary += `§c- ${key}: Failed to update (Type mismatch or invalid value. Check console for details.)\n`;
+                errorsEncountered++;
+            }
+        }
+
+        let finalMessage = "";
+        if (changesMade > 0 && errorsEncountered === 0) {
+            finalMessage = `§aSuccessfully updated ${changesMade} configuration value(s).\n${updateSummary}`;
+        } else if (changesMade > 0 && errorsEncountered > 0) {
+            finalMessage = `§ePartially updated configuration. ${changesMade} success(es), ${errorsEncountered} error(s).\n${updateSummary}`;
+        } else if (changesMade === 0 && errorsEncountered > 0) {
+            finalMessage = `§cConfiguration update failed. ${errorsEncountered} error(s).\n${updateSummary}`;
+        } else { // No changes, no errors
+            finalMessage = "§7No configuration values were changed.";
+        }
+
+        if (changesMade > 0) {
+             finalMessage += "\n§oSome changes may require a server reload or specific command to apply to all systems.";
+        }
+
+        const resultForm = new MessageFormData()
+            .title("Configuration Update Status")
+            .body(finalMessage)
+            .button1("OK");
+        await resultForm.show(adminPlayer);
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in showEditConfigForm for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.showEditConfigForm] Error:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred while processing the configuration form.");
+    }
+    // Pass originalConfig back as it's expected by showAdminPanelMain and other forms it might call
+    await showAdminPanelMain(adminPlayer, playerDataManager, originalConfig);
 }
 
 async function clearAllChat(adminPerformingAction) {
@@ -485,13 +578,70 @@ async function handleClearChatAction(adminPlayer, playerDataManager, config) {
     await showServerManagementForm(adminPlayer, playerDataManager, config);
 }
 
+async function handleLagClearAction(adminPlayer, config, playerDataManager) {
+    playerUtils.debugLog(`UI: handleLagClearAction requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const confirmForm = new ModalFormData();
+    confirmForm.title("Confirm Lag Clear (Items)");
+    confirmForm.content("This will remove ALL dropped item entities from standard dimensions (Overworld, Nether, End). This action cannot be undone. Are you sure?");
+    confirmForm.toggle("Confirm removal of all dropped items", false);
+
+    try {
+        const response = await confirmForm.show(adminPlayer);
+        if (response.canceled || !response.formValues[0]) {
+            adminPlayer.sendMessage("§7Lag clear cancelled.");
+            await showServerManagementForm(adminPlayer, playerDataManager, config);
+            return;
+        }
+
+        let itemCount = 0;
+        const dimensions = [mc.world.overworld, mc.world.nether, mc.world.theEnd];
+        const itemEntityType = 'minecraft:item';
+
+        for (const dimension of dimensions) {
+            try {
+                const itemEntities = dimension.getEntities({ type: itemEntityType });
+                for (const entity of itemEntities) {
+                    entity.kill(); // More reliable than despawn event
+                    itemCount++;
+                }
+            } catch (e) {
+                playerUtils.debugLog(`Error clearing items in dimension ${dimension.id}: ${e}`, adminPlayer.nameTag);
+                // Continue to other dimensions even if one fails
+            }
+        }
+
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: adminPlayer.nameTag,
+            actionType: 'lag_clear_items',
+            targetName: 'Global',
+            details: `Cleared ${itemCount} dropped item entities from standard dimensions.`
+        });
+
+        playerUtils.notifyAdmins(`Lag clear: ${adminPlayer.nameTag} removed ${itemCount} dropped item entities.`, adminPlayer, null);
+
+        const successForm = new MessageFormData();
+        successForm.title("Lag Clear Successful");
+        successForm.body(`Successfully removed ${itemCount} dropped item entities from Overworld, Nether, and End.`);
+        successForm.button1("OK");
+        await successForm.show(adminPlayer);
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in handleLagClearAction for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.handleLagClearAction] Error:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred during lag clear. Check console.");
+    }
+    await showServerManagementForm(adminPlayer, playerDataManager, config);
+}
+
+
 async function showServerManagementForm(adminPlayer, playerDataManager, config) {
     playerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData(); form.title("Server Management"); form.body("Select a server management action:");
     form.button("View System Info", "textures/ui/icon_graph");
     form.button("Clear Chat for All Players", "textures/ui/speech_bubble_glyph_color");
-    form.button("Lag Clear (TODO)", "textures/ui/icon_trash");  // This was changed in a previous subtask to call handleLagClearAction
-    form.button("View Action Logs", "textures/ui/book_writable"); // New button added here
+    form.button("Lag Clear (Items)", "textures/ui/icon_trash");  // Updated text
+    form.button("View Action Logs", "textures/ui/book_writable");
     form.button("Back to Admin Panel", "textures/ui/undo");
     try {
         const response = await form.show(adminPlayer);
@@ -499,9 +649,9 @@ async function showServerManagementForm(adminPlayer, playerDataManager, config) 
         switch (response.selection) {
             case 0: await showSystemInfo(adminPlayer, config, playerDataManager); break;
             case 1: await handleClearChatAction(adminPlayer, playerDataManager, config); break;
-            case 2: await handleLagClearAction(adminPlayer, config, playerDataManager); break;
-            case 3: await showActionLogsForm(adminPlayer, config, playerDataManager); break; // New action
-            case 4: await showAdminPanelMain(adminPlayer, playerDataManager, config); break; // Adjusted index
+            case 2: await handleLagClearAction(adminPlayer, config, playerDataManager); break; // Correctly calls new function
+            case 3: await showActionLogsForm(adminPlayer, config, playerDataManager); break;
+            case 4: await showAdminPanelMain(adminPlayer, playerDataManager, config); break;
             default: /* ... */ await showServerManagementForm(adminPlayer, playerDataManager, config); break;
         }
     } catch (error) { /* ... */ await showAdminPanelMain(adminPlayer, playerDataManager, config); }
