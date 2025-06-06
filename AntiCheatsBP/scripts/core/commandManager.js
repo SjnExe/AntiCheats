@@ -3,6 +3,8 @@ import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel } from '../utils/playerUtils.js';
 import { addMute, removeMute, isMuted } from '../core/playerDataManager.js';
 import { addLog } from './logManager.js';
+import { MessageFormData } from '@minecraft/server-ui'; // Needed for invsee
+import { ItemComponentTypes } from '@minecraft/server'; // Needed for invsee
 // Parameter 'config' will provide PREFIX, acVersion, commandAliases
 // Parameter 'playerUtils' will provide warnPlayer, notifyAdmins, debugLog (isAdmin is no longer directly used here)
 // Parameter 'playerDataManager' will provide getPlayerData, prepareAndSavePlayerData, addMute, removeMute, isMuted, addBan, removeBan etc.
@@ -567,6 +569,92 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             break;
         case "gmsp":
             await setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, playerUtils, addLog);
+            break;
+        case "invsee":
+            if (args.length < 1) {
+                player.sendMessage(`§cUsage: ${config.prefix}invsee <playername>`);
+                return;
+            }
+            const targetPlayerNameInvsee = args[0];
+            const foundPlayerInvsee = findPlayer(targetPlayerNameInvsee, playerUtils);
+
+            if (!foundPlayerInvsee) {
+                player.sendMessage(`§cPlayer "${targetPlayerNameInvsee}" not found.`);
+                return;
+            }
+
+            const inventoryComponent = foundPlayerInvsee.getComponent("minecraft:inventory");
+            if (!inventoryComponent || !inventoryComponent.container) {
+                player.sendMessage(`§cCould not access inventory for ${foundPlayerInvsee.nameTag}.`);
+                return;
+            }
+
+            const container = inventoryComponent.container;
+            let inventoryDetails = `§lInventory of ${foundPlayerInvsee.nameTag}:§r\n`;
+            let itemCount = 0;
+
+            for (let i = 0; i < container.size; i++) {
+                const itemStack = container.getItem(i);
+                if (itemStack) {
+                    itemCount++;
+                    let itemInfo = `§eSlot ${i}:§r ${itemStack.typeId.replace("minecraft:", "")} x${itemStack.amount}`;
+                    if (itemStack.nameTag) {
+                        itemInfo += ` | Name: "${itemStack.nameTag}"`;
+                    }
+
+                    try {
+                        const durabilityComponent = itemStack.getComponent(ItemComponentTypes.Durability);
+                        if (durabilityComponent) {
+                            itemInfo += ` | Dur: ${durabilityComponent.maxDurability - durabilityComponent.damage}/${durabilityComponent.maxDurability}`;
+                        }
+                    } catch (e) { /* Component not present or other error */ }
+
+                    try {
+                        const lore = itemStack.getLore();
+                        if (lore && lore.length > 0) {
+                            itemInfo += ` | Lore: ["${lore.join('", "')}"]`;
+                        }
+                    } catch (e) { /* Error getting lore */ }
+
+                    try {
+                        const enchantableComponent = itemStack.getComponent(ItemComponentTypes.Enchantable);
+                        if (enchantableComponent) {
+                            const enchantments = enchantableComponent.getEnchantments();
+                            if (enchantments.length > 0) {
+                                const enchStrings = enchantments.map(ench => `${ench.type.id.replace("minecraft:", "")} ${ench.level}`);
+                                itemInfo += ` | Ench: [${enchStrings.join(", ")}]`;
+                            }
+                        }
+                    } catch (e) { /* Component not present or other error */ }
+
+                    inventoryDetails += itemInfo + "\n";
+                }
+            }
+
+            if (itemCount === 0) {
+                inventoryDetails += "Inventory is empty.\n";
+            }
+
+            addLog({
+                timestamp: Date.now(),
+                adminName: player.nameTag,
+                actionType: 'invsee',
+                targetName: foundPlayerInvsee.nameTag,
+                details: `Viewed inventory of ${foundPlayerInvsee.nameTag}`
+            });
+
+            const invForm = new MessageFormData();
+            invForm.title(`Inventory: ${foundPlayerInvsee.nameTag}`);
+            invForm.body(inventoryDetails);
+            invForm.button1("Close");
+
+            invForm.show(player).then(() => {
+                // Optional: playerUtils.debugLog(`Closed inventory view for ${foundPlayerInvsee.nameTag}`, player.nameTag);
+            }).catch(e => {
+                playerUtils.debugLog(`Error showing inventory form: ${e}`, player.nameTag);
+                player.sendMessage("§cError displaying inventory. Check logs.");
+            });
+
             break;
         case "warnings":
             if (args.length < 1) {
