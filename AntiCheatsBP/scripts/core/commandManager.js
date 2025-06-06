@@ -375,7 +375,15 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         case "clearchat":
             const linesToClear = 150;
             for (let i = 0; i < linesToClear; i++) { mc.world.sendMessage(""); }
-            player.sendMessage("§aChat has been cleared."); playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+            player.sendMessage("§aChat has been cleared.");
+            playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+            addLog({
+                timestamp: Date.now(),
+                adminName: player.nameTag,
+                actionType: 'clear_chat',
+                targetName: 'N/A', // Or 'Global'
+                details: `Chat cleared by ${player.nameTag}`
+            });
             break;
         case "vanish":
             const vanishedTag = "vanished"; let currentStateVanish = player.hasTag(vanishedTag); let targetStateVanish = currentStateVanish;

@@ -630,3 +630,11 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Enhanced `AntiCheatsBP/scripts/core/uiManager.js` by adding icons to dynamically generated player buttons in the `showOnlinePlayersList` function. Used `"textures/ui/icon_steve"` for these player buttons.
     *   Verified that other main navigation buttons in `showAdminPanelMain`, `showPlayerActionsForm`, and `showServerManagementForm` already had appropriate icons.
     *   This improves the visual consistency and appeal of the admin panel.
+
+## Command Enhancement (Completed on 2025-06-05)
+
+*   **`!clearchat` Command Logging:**
+    *   Enhanced the existing `!clearchat` command in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Added an `addLog` call to record when the command is used.
+    *   Log entries include timestamp, admin name, action type ('clear_chat'), and details.
+    *   This ensures that this global administrative action is logged for auditing.
