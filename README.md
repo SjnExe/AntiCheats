@@ -51,15 +51,15 @@ Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scr
 
 ### Text Commands
 
-| Command                       | Description                                                 |
-| ----------------------------- | ----------------------------------------------------------- |
-| ``!version``                  | Displays the current addon version.                         |
-| ``!watch <playername>``       | Toggles verbose debug logging for a player.                 |
-| ``!inspect <playername>``     | Shows a player's anti-cheat data summary in chat.           |
-| ``!resetflags <playername>``  | Resets all flags and violation data for a player.           |
-| ``!xraynotify <on|off|status>`` | Controls admin X-Ray ore mining notifications.              |
-| ``!viewreports [playername|clearall|clear <id>]`` | Views and manages player reports.       |
-| ``!kick <playername> [reason]`` | Kicks a player from the server.                             |
+| Command                                           | Description                                                 |
+| :------------------------------------------------ | :---------------------------------------------------------- |
+| ``!version``                                      | Displays the current addon version.                         |
+| ``!watch <playername>``                           | Toggles verbose debug logging for a player.                 |
+| ``!inspect <playername>``                         | Shows a player's anti-cheat data summary in chat.           |
+| ``!resetflags <playername>``                      | Resets all flags and violation data for a player.           |
+| ``!xraynotify <on|off|status>``                  | Controls admin X-Ray ore mining notifications.              |
+| ``!viewreports [playername|clearall|clear <id>]`` | Views and manages player reports.                           |
+| ``!kick <playername> [reason]``                   | Kicks a player from the server.                             |
 
 ## Configuration
 

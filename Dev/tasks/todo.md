@@ -57,7 +57,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
         *   Investigate: In-game config editor via UI (for `config.js` values).
-        *   Add Ban/Mute/Kick/Warn direct actions to player lists or player inspection results within the UI.
         *   Investigate: View Ban/Mute/Warning Logs in UI (requires persistent logging of these actions).
         *   Investigate: Player inventory view (InvSee) within the UI.
     *   **System Features:** SjnExe parity goal.

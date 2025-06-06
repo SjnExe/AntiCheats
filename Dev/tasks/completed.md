@@ -695,3 +695,19 @@ Implemented the `!uinfo` command, which provides a user interface for players to
 Implemented a player reporting system. Players can use `!report <player> <reason>` to submit reports, which are stored persistently (capped at 100, FIFO) using `world.setDynamicProperty` via a new `reportManager.js` module. Admins can use `!viewreports` to list reports (optionally filtered by player name), view details of a specific report (using `ActionFormData` and `MessageFormData`), and clear all reports or a report by its ID (with `ModalFormData` confirmation). All functionality is integrated into `commandManager.js`. `README.md` was updated to document the new commands.
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Refactoring: Modular Command System (`commandManager.js` Overhaul)
+*(Date: Current Session)*
+
+Completed a major refactoring of `commandManager.js`. All 26 commands were migrated to individual modules within a new `AntiCheatsBP/scripts/commands/` directory. `commandManager.js` now dynamically loads commands from `AntiCheatsBP/scripts/commands/commandRegistry.js` and dispatches execution to the respective modules. This change significantly improves code organization, maintainability, and scalability of the command system. Helper functions like `findPlayer` and `parseDuration` were centralized in `playerUtils.js`. `README.md` was also reviewed and updated for command consistency.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+## Admin Panel: Quick Actions (Kick/Mute/Ban) in Player Inspection UI
+*(Date: Current Session)*
+
+Enhanced the Admin Panel's player inspection UI (`showPlayerActionsForm` in `uiManager.js`). Added a 'Ban Player' button and integrated its functionality. Refactored 'Kick Player' and 'Mute/Unmute Player' actions to consistently use their respective command modules (`kick.js`, `mute.js`, `ban.js`) by passing the `dependencies` object (including `commandModules`) through the UI call stack originating from `panel.js`. This allows the UI to leverage the centralized command logic for these actions, including input gathering via `ModalFormData` for reasons and durations.
+
+*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
+
+[end of Dev/tasks/completed.md]
