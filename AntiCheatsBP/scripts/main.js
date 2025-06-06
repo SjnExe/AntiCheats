@@ -15,6 +15,12 @@ playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 
 // --- Event Subscriptions ---
 
+/**
+ * Handles chat messages before they are sent.
+ * If a message starts with the command prefix, it's treated as a command.
+ * Otherwise, it's processed as a regular chat message.
+ * @param {mc.ChatSendBeforeEvent} eventData The chat send event data.
+ */
 mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     if (eventData.message.startsWith(config.prefix)) {
         // Pass necessary dependencies to handleChatCommand
@@ -33,15 +39,27 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     }
 });
 
+/**
+ * Handles player spawn events.
+ * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
+ */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
     eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config);
 });
 
+/**
+ * Handles player leave events.
+ * @param {mc.PlayerLeaveBeforeEvent} eventData The player leave event data.
+ */
 mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
     // Pass addLog from logManager to handlePlayerLeave for combat logging
     eventHandlers.handlePlayerLeave(eventData, playerDataManager, playerUtils, config, logManager.addLog);
 });
 
+/**
+ * Handles entity hurt events, primarily for combat-related checks.
+ * @param {mc.EntityHurtAfterEvent} eventData The entity hurt event data.
+ */
 // Existing entityHurt subscription for general combat checks and NoFall
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
     eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction);
@@ -53,21 +71,36 @@ mc.world.afterEvents.entityHurt.subscribe((eventData) => {
 // For now, direct call:
 eventHandlers.subscribeToCombatLogEvents(playerDataManager, config, playerUtils);
 
-
+/**
+ * Handles player break block events before they occur.
+ * @param {mc.PlayerBreakBlockBeforeEvent} eventData The event data.
+ */
 mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
     // Pass necessary dependencies if checkIllegalItems (called via handlePlayerBreakBlock indirectly) needs them
     // For now, assuming checkIllegalItems gets what it needs from the event or pData
     eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager);
 });
 
+/**
+ * Handles player break block events after they occur.
+ * @param {mc.PlayerBreakBlockAfterEvent} eventData The event data.
+ */
 mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
     eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils);
 });
 
+/**
+ * Handles item use events before they occur.
+ * @param {mc.ItemUseBeforeEvent} eventData The event data.
+ */
 mc.world.beforeEvents.itemUse.subscribe((eventData) => {
     eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
 });
 
+/**
+ * Handles player place block events before they occur.
+ * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
+ */
 mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     // Assuming handleItemUseOn is a typo and should be handlePlayerPlaceBlock or similar,
     // or that checkIllegalItems within it handles the eventData type correctly.
@@ -76,6 +109,18 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
 });
 
 let currentTick = 0;
+
+/**
+ * Main tick loop for the Anti-Cheat system.
+ * Runs every game tick (nominally 20 times per second).
+ * Responsibilities:
+ * - Increments currentTick.
+ * - Cleans up player data for players no longer online.
+ * - Ensures player data is initialized for all online players.
+ * - Updates transient player data (like position, velocity).
+ * - Executes various cheat checks (Fly, Speed, NoFall, CPS, Nuker, ViewSnap).
+ * - Manages fall distance accumulation and reset logic.
+ */
 mc.system.runInterval(async () => {
     currentTick++;
 

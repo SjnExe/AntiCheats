@@ -2,13 +2,22 @@
 import { permissionLevels } from '../core/rankManager.js';
 import { ModalFormData } from '@minecraft/server-ui'; // Specific UI import
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "copyinv",
     syntax: "!copyinv <playername>",
     description: "Copies another player's inventory to your own.",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the copyinv command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, addLog, findPlayer: depFindPlayer } = dependencies;
     // Use findPlayer from dependencies (which itself might be a local fallback in commandManager or from playerUtils)

@@ -2,6 +2,12 @@
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server'; // For dimension objects
 
+/**
+ * Parses a dimension string to its corresponding Dimension object.
+ * @param {string} dimStr The dimension string (e.g., "overworld", "nether", "end").
+ * @param {object} playerUtils Optional player utilities for debug logging.
+ * @returns {mc.Dimension | null} The Dimension object or null if invalid.
+ */
 // Ensure parseDimension is available, moved from commandManager or playerUtils
 function parseDimensionLocal(dimStr, playerUtils) {
     if (!dimStr || typeof dimStr !== 'string') return null;
@@ -15,13 +21,22 @@ function parseDimensionLocal(dimStr, playerUtils) {
     }
 }
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "tp",
     syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]",
     description: "Teleports players or self to coordinates/players.",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the tp (teleport) command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, addLog, findPlayer: depFindPlayer } = dependencies;
     // Use findPlayer from dependencies (which itself might be a local fallback in commandManager or from playerUtils)

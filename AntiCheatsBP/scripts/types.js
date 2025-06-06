@@ -1,4 +1,41 @@
 /**
+ * @typedef {object} CommandDefinition
+ * @property {string} name - The name of the command (used for execution and help).
+ * @property {string} syntax - How to use the command, e.g., "!command <required> [optional]".
+ * @property {string} description - A short description of what the command does.
+ * @property {number} permissionLevel - The permission level required to use this command (from rankManager.permissionLevels).
+ * @property {string[]} [aliases] - Optional array of alternative names for the command.
+ */
+
+/**
+ * @typedef {object} CommandDependencies
+ * @property {object} config - The system configuration object (from config.js).
+ * @property {object} playerUtils - Utility functions for player interactions.
+ * @property {function(import('@minecraft/server').Player, string, string, object, function): Promise<void>} [playerUtils.setPlayerGameMode] - Sets a player's gamemode.
+ * @property {function(string, import('@minecraft/server').Player, string | null): void} [playerUtils.notifyAdmins] - Notifies admin players.
+ * @property {function(string, string | null ): void} [playerUtils.debugLog] - Logs a debug message.
+ * @property {function(string, object): (import('@minecraft/server').Player | undefined)} [playerUtils.findPlayer] - Finds a player.
+ * @property {function(string): (number | null)} [playerUtils.parseDuration] - Parses a duration string.
+ * @property {object} [playerDataManager] - Manages player-specific anti-cheat data.
+ * @property {function(object): void} [addLog] - Function to add an entry to the admin action log (from logManager).
+ * @property {function(string, object): (import('@minecraft/server').Player | undefined)} [findPlayer] - Utility function to find a player (often a reference to playerUtils.findPlayer).
+ * @property {function(string): (number | null)} [parseDuration] - Utility function to parse duration strings (often a reference to playerUtils.parseDuration).
+ * @property {function(import('@minecraft/server').Player): number} [getPlayerPermissionLevel] - Function to get a player's permission level (from rankManager).
+ * @property {CommandDefinition[]} [allCommands] - Array of all command definitions, used by help command.
+ * @property {object} [uiManager] - Manages UI forms.
+ * @property {object} [commandModules] - Reference to all command modules for transitive command execution.
+ * @property {object} [logManager] - Manages logging.
+ * @property {object} [reportManager] - Manages player reports.
+ */
+
+/**
+ * Represents a command module.
+ * @typedef {object} CommandModule
+ * @property {CommandDefinition} definition - The command's definition.
+ * @property {function(import('@minecraft/server').Player, string[], CommandDependencies): Promise<void>} execute - The function to run when the command is called.
+ */
+
+/**
  * @typedef {object} Vector3
  * @property {number} x
  * @property {number} y
@@ -51,6 +88,11 @@
  * @property {number} lastYaw - Player's camera yaw (rotation.y) in the last tick (session-only).
  * @property {number} lastAttackTick - The game tick of the last attack action (session-only).
  * @property {any[]} recentHits - Array of recent hit targets or related data (session-only).
+ * @property {{typeId: string, amplifier: number, duration: number}[]} activeEffects - Player's active potion effects.
+ * @property {number} health - Player's current health.
+ * @property {string} lastBrokenBlockType - Type ID of the last block broken by the player.
+ * @property {{muteExpires?: number, muteReason?: string}} [muteInfo] - Information about player's mute status.
+ * @property {{banExpires?: number, banReason?: string}} [banInfo] - Information about player's ban status.
  */
 
 // This line is important to make this file a module and allow JSDoc types to be imported.

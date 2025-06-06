@@ -25,9 +25,9 @@ import { isOwner, isAdmin } from '../utils/playerUtils.js';
  * @enum {PermissionLevel}
  */
 export const permissionLevels = {
-    OWNER: 0,     // Highest privilege
-    ADMIN: 1,     // Intermediate privilege (e.g., server administrators)
-    NORMAL: 1024  // Standard user privilege, corresponds to MEMBER_RANK.
+    owner: 0,     // Highest privilege
+    admin: 1,     // Intermediate privilege (e.g., server administrators)
+    normal: 1024  // Standard user privilege, corresponds to MEMBER_RANK.
                   // Chosen to be a higher number to leave room for many potential
                   // intermediate ranks (e.g., Moderator, VIP, etc.) between ADMIN and NORMAL.
 };

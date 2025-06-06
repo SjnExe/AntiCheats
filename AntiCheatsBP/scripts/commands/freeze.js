@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/freeze.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "freeze",
     syntax: "!freeze <playername> [on|off]",
     description: "Freezes or unfreezes a player, preventing movement.",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the freeze command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, addLog, findPlayer } = dependencies;
     const frozenTag = "frozen";

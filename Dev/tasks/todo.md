@@ -76,7 +76,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Normal Player Panel Features (`!panel`):**
 
 ## Refactoring & Enhancements
-*   **Comprehensive Coding Style Review:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
 *   **Refactor `commandManager.js`**: Split commands into individual modules under a new `commands/` directory to improve organization and maintainability. `commandManager.js` will become a command loader and dispatcher.
 
 ## Low Priority / Ideas

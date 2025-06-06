@@ -43,7 +43,7 @@ export async function checkSpeed(player, pData, config, playerUtils, playerDataM
     }
 
     const dependencies = { config, playerDataManager, playerUtils, logManager };
-    let checkTypeKey = "speed_ground_example"; // Default, will adjust if air speed profile is needed
+    let checkTypeKey = "example_speed_ground"; // Default, will adjust if air speed profile is needed
     let violationType = "ground";
 
     if (player.isOnGround) {

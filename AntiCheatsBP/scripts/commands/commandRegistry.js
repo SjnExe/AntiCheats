@@ -26,6 +26,11 @@ import * as tpCmd from './tp.js';
 import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
 
+/**
+ * Array containing all registered command modules.
+ * Each module is expected to export a `definition` object and an `execute` function.
+ * @type {Array<import('../types.js').CommandModule>}
+ */
 export const commandModules = [
     versionCmd,
     myflagsCmd,
