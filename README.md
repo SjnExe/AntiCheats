@@ -13,7 +13,6 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 *   [Owner and Rank System](#owner-and-rank-system)
 *   [General Player Commands](#general-player-commands)
 *   [Contributing](#contributing)
-*   [License](#license)
 
 ## Features
 
@@ -21,10 +20,8 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
     *   **Movement:** Fly (sustained & hover), Speed, NoFall.
     *   **Combat:** Reach, CPS (Clicks Per Second / AutoClicker).
     *   **World:** Nuker (rapid block breaking), Illegal Item usage/placement.
-*   **Admin Tools:**
-    *   Text-based commands for quick actions (see "[Admin Commands & UI](#admin-commands--ui)" section).
-    *   A User Interface (``!panel`` or ``!ui`` alias) for easier management.
-*   **Configuration:** Many detection thresholds and feature toggles can be adjusted via ``AntiCheatsBP/scripts/config.js``.
+*   **Admin Tools:** Text-based commands and a UI (``!panel`` or ``!ui``) for admin actions and management.
+*   **Configuration:** Adjust detection thresholds and features via ``AntiCheatsBP/scripts/config.js``.
 *   **Data Persistence:** Player flags and violation data are saved and persist across server restarts and player sessions.
 *   **Player Flagging System:** Players accumulate flags for violations, with notifications to admins.
 
@@ -32,9 +29,9 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 
 To ensure this addon works correctly, you **must** enable the following experimental toggle(s) in your world settings:
 
-*   **Beta APIs:** This toggle enables the ``@minecraft/server`` and ``@minecraft/server-ui`` scripting modules, which are essential for the core functionality of this addon. Depending on your Minecraft version, this might also be named "Experimental Scripting Features" or similar.
+*   **Beta APIs:** This toggle enables the ``@minecraft/server`` and ``@minecraft/server-ui`` scripting modules, essential for core functionality (may be named "Experimental Scripting Features" on some versions).
 
-As new features are added, this list may be updated with additional required toggles. Always check this README for the latest requirements.
+As new features are added, this list may be updated. Always check this README for the latest requirements.
 
 ## Setup
 
@@ -46,26 +43,25 @@ As new features are added, this list may be updated with additional required tog
 
 ## Admin Commands & UI
 
-Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scripts/config.js``) can manage the AntiCheat system using the following:
+Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scripts/config.js``) can manage the AntiCheat system:
 
 ### Admin UI (Recommended)
 
-*   ``!panel`` (or ``!ui`` alias): Opens the main AntiCheat Admin Menu.
-    *   **Inspect Player Data**: View detailed anti-cheat stats for a player.
-    *   **Reset Player Flags**: Clear all flags and violation data for a player.
-    *   **List Watched Players**: See which players are currently being monitored with verbose logging.
+*   ``!panel`` (or ``!ui`` alias): Opens the main AntiCheat Admin Menu for player inspection, flag management, and monitoring.
 
 ### Text Commands
 
-*   ``!version``: Displays the current AntiCheat addon version.
-*   ``!watch <playername>``: Toggles verbose debug logging for the specified player. Useful for observing detection details.
-*   ``!inspect <playername>``: Shows a summary of a player's current anti-cheat data (flags, watched status, etc.) in chat.
-*   ``!resetflags <playername>``: Resets all flags and violation data for the specified player.
-*   ``!xraynotify <on|off|status>``: Allows admins to control their X-Ray ore mining notifications.
+| Command                       | Description                                                 |
+| ----------------------------- | ----------------------------------------------------------- |
+| ``!version``                  | Displays the current addon version.                         |
+| ``!watch <playername>``       | Toggles verbose debug logging for a player.                 |
+| ``!inspect <playername>``     | Shows a player's anti-cheat data summary in chat.           |
+| ``!resetflags <playername>``  | Resets all flags and violation data for a player.           |
+| ``!xraynotify <on|off|status>`` | Controls admin X-Ray ore mining notifications.              |
 
 ## Configuration
 
-The behavior of many checks can be fine-tuned by editing the ``AntiCheatsBP/scripts/config.js`` file. This includes:
+Fine-tune addon behavior by editing ``AntiCheatsBP/scripts/config.js``. Options include:
 *   Enabling or disabling specific cheat detections.
 *   Adjusting sensitivity thresholds for checks like speed, reach, CPS, etc.
 *   Changing the admin tag.
@@ -78,43 +74,18 @@ Note for contributors or those inspecting the source code: The version string di
 
 ## Owner and Rank System
 
-The addon features a simple rank system to visually distinguish players in chat and on their nametags. There are three ranks:
+The addon features a simple rank system to visually distinguish players. There are three ranks: Owner (highest), Admin, and Member (default).
 
-*   **Owner**: The highest rank, typically for the server owner.
-    *   **Configuration**: Set by defining the exact in-game name in the ``ownerPlayerName`` variable within ``AntiCheatsBP/scripts/config.js``.
-        *Example:*
-        ```javascript
-        export const ownerPlayerName = "YourExactPlayerName";
-        ```
-    *   **Important**: If ``ownerPlayerName`` is not set, is empty, or remains as the placeholder ``"PlayerNameHere"``, the Owner rank will not be assigned to anyone.
-*   **Admin**: For server administrators and moderators.
-    *   **Configuration**: Determined by players having a specific tag. This tag is defined by the ``adminTag`` variable in ``AntiCheatsBP/scripts/config.js`` (default is "admin").
-*   **Member**: The default rank for all other players.
+*   **Owner Rank Configuration**:
+    Set by defining the exact in-game name in the ``ownerPlayerName`` variable within ``AntiCheatsBP/scripts/config.js``.
+    *Example:*
+    ```javascript
+    export const ownerPlayerName = "YourExactPlayerName";
+    ```
+    *Important*: If ``ownerPlayerName`` is not set, is empty, or remains as the placeholder ``"PlayerNameHere"``, the Owner rank will not be assigned.
+*   **Admin Rank Configuration**: Determined by players having the ``adminTag`` (configurable in ``AntiCheatsBP/scripts/config.js``, default is "admin").
 
-**Display Format:**
-
-*   **Chat**: Messages are prefixed with the player's rank and name.
-    *   Owner: `§c[Owner] §fPlayerName§f: message_content` (Red prefix, white name and message)
-    *   Admin: `§b[Admin] §fPlayerName§f: message_content` (Aqua prefix, white name and message)
-    *   Member: `§7[Member] §fPlayerName§f: message_content` (Gray prefix, white name and message)
-*   **Nametags**: The rank is displayed above the player's name.
-    *   Owner:
-        ```
-        §cOwner§f
-        PlayerActualName
-        ```
-    *   Admin:
-        ```
-        §bAdmin§f
-        PlayerActualName
-        ```
-    *   Member:
-        ```
-        §7Member§f
-        PlayerActualName
-        ```
-
-To correctly configure the **Owner** rank, you **must** edit the ``ownerPlayerName`` in ``AntiCheatsBP/scripts/config.js`` to match the exact, case-sensitive in-game name of the project owner.
+Ranks are displayed with distinct prefixes and colors in chat messages and above player nametags (e.g., Owner in red, Admin in aqua, Member in gray). To correctly configure the **Owner** rank, you **must** edit the ``ownerPlayerName`` as described.
 
 ## General Player Commands
 
@@ -125,19 +96,13 @@ These commands are available to all players.
 
 ## Contributing
 
-We welcome contributions to improve and expand this addon! If you'd like to contribute, please follow these general guidelines:
+We welcome contributions! Please follow these general guidelines:
 
-1.  **Fork the repository.**
-2.  **Create a new branch** for your feature or bug fix (e.g., ``feature/your-feature-name`` or ``fix/issue-description``).
-3.  **Make your changes.**
-    *   Ensure your code adheres to the existing style found in the project.
-    *   Add JSDoc comments for new functions and complex logic.
-4.  **Add or update documentation** in the `README.md` or other relevant files if your changes affect usage, setup, or add new features.
-5.  **Test your changes thoroughly** in-game to ensure they work as expected and don't introduce new issues.
-6.  **Create a pull request** against the `main` branch of the original repository. Provide a clear description of your changes.
+1.  Fork the repository.
+2.  Create a new branch (e.g., ``feature/your-feature`` or ``fix/issue-description``).
+3.  Make your changes, adhering to existing code style and adding JSDoc comments.
+4.  Update documentation if your changes affect usage or add features.
+5.  Test your changes thoroughly.
+6.  Create a pull request against the `main` branch with a clear description.
 
-For more detailed development practices, information on our task management system, scripting language notes (currently plain JavaScript), and important workflow considerations (especially for AI-assisted development), please refer to the [Addon Development Resources in ``Dev/README.md``](Dev/README.md).
-
-## License
-
-This project is currently pending license information. Please check back later or contact the repository owner for details.
+For more detailed development practices, task management, and workflow considerations, refer to the [Addon Development Resources in ``Dev/README.md``](Dev/README.md).
