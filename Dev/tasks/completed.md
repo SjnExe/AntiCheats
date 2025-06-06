@@ -612,3 +612,14 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
     *   Functionally mirrors `!resetflags` in terms of resetting player flag data and violation trackers.
     *   Provides specific "Warnings cleared" feedback messages.
     *   Logs the action using `addLog` with `actionType: 'clear_warnings'`, distinguishing it from a direct `!resetflags` invocation.
+
+## Admin Command Implementation (Completed on 2025-06-05)
+
+*   **`!invsee <playername>` Command:**
+    *   Implemented in `AntiCheatsBP/scripts/core/commandManager.js`.
+    *   Allows an admin to view a read-only representation of a target player's main inventory (36 slots).
+    *   Accessed `EntityInventoryComponent` and its `container` to iterate through slots and `ItemStack` objects.
+    *   Displays item details: slot number, type ID, amount, custom name tag, lore, durability (from `ItemDurabilityComponent`), and enchantments (from `ItemEnchantableComponent` and `Enchantment` details).
+    *   Uses `MessageFormData` for UI display, presenting the inventory in a scrollable list.
+    *   Logs the action using `addLog` with `actionType: 'invsee'`.
+    *   Handles cases for player not found or inventory inaccessible.
