@@ -207,6 +207,115 @@ export const generalHelpMessages = [
 /** @type {string} The current version of the AntiCheat system. */
 export const acVersion = "v__VERSION_STRING__";
 
+// --- Check Action Profiles ---
+// Defines actions to be taken for specific cheat detections.
+// Used by actionManager.js
+//
+// Structure for each profile:
+// "check_type_string": {
+//   enabled: boolean, (Master switch for actions of this check type)
+//   flag: {
+//     increment: number, (How many times to call addFlag)
+//     reason: string, (Reason for the flag, can use {playerName}, {checkType}, {detailsString}, and {violationDetailKey})
+//     type: string (Optional: specific flag type for playerData, defaults to checkType if not provided)
+//   },
+//   notifyAdmins: {
+//     message: string (Message template, can use placeholders)
+//   },
+//   log: {
+//     actionType: string, (Optional: specific actionType for logManager, defaults to detected_{checkType})
+//     detailsPrefix: string, (Optional: prefix for the log details string)
+//     includeViolationDetails: boolean (Optional: defaults to true if not specified)
+//   }
+// }
+
+export const checkActionProfiles = {
+    "example_fly_hover": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected Fly (Hover).",
+            type: "fly"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}"
+        },
+        log: {
+            actionType: "detected_fly_hover",
+            detailsPrefix: "Fly (Hover Violation): ",
+            includeViolationDetails: true
+        }
+    },
+    "example_speed_ground": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected excessive ground speed.",
+            type: "speed"
+        },
+        notifyAdmins: {
+            // Example using specific keys from violationDetails if actionManager's formatActionMessage supports it
+            message: "§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})"
+        },
+        log: {
+            actionType: "detected_speed_ground",
+            detailsPrefix: "Speed (Ground Violation): ",
+            includeViolationDetails: true
+        }
+    },
+    "example_reach_attack": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected excessive reach during combat.",
+            type: "reach"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Reach. Distance: {actualDistance} (Max: {allowedDistance})"
+        },
+        log: {
+            actionType: "detected_reach_attack",
+            detailsPrefix: "Reach (Attack Violation): ",
+            includeViolationDetails: true
+        }
+    }
+    // NOTE: These are example keys ("example_fly_hover", etc.).
+    // Actual keys will be defined when refactoring specific checks.
+    // For now, these serve as structural examples.
+    "movement_nofall": {
+        enabled: true, // Default to true, can be overridden in user's config.js if they copy it
+        flag: {
+            increment: 3,
+            reason: "System detected suspicious fall damage negation (NoFall).",
+            type: "movement_violation" // General type for grouping flags
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}"
+        },
+        log: {
+            actionType: "detected_movement_nofall",
+            detailsPrefix: "NoFall Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_nuker": {
+        enabled: true,
+        flag: {
+            increment: 5,
+            reason: "System detected Nuker activity (rapid/wide-area block breaking).",
+            type: "world_violation"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}"
+        },
+        log: {
+            actionType: "detected_world_nuker",
+            detailsPrefix: "Nuker Violation: ",
+            includeViolationDetails: true
+        }
+    }
+};
+
 // --- Command Aliases ---
 /** @type {Object.<string, string>} Defines aliases for commands. */
 export const commandAliases = {

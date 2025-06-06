@@ -6,6 +6,7 @@ import * as commandManager from './core/commandManager.js';
 import * as uiManager from './core/uiManager.js';
 import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js'; // Ensure logManager is imported for addLog
+import { executeCheckAction } from './core/actionManager.js';
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
@@ -43,7 +44,7 @@ mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
 
 // Existing entityHurt subscription for general combat checks and NoFall
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick);
+    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction);
 });
 
 // New subscription specifically for Combat Log interaction tracking
@@ -64,14 +65,14 @@ mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
 });
 
 mc.world.beforeEvents.itemUse.subscribe((eventData) => {
-    eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config);
+    eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction);
 });
 
 mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     // Assuming handleItemUseOn is a typo and should be handlePlayerPlaceBlock or similar,
     // or that checkIllegalItems within it handles the eventData type correctly.
     // For now, keeping as is from previous state.
-    eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config);
+    eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction);
 });
 
 let currentTick = 0;
@@ -91,14 +92,15 @@ mc.system.runInterval(async () => {
         playerDataManager.updateTransientPlayerData(player, pData, currentTick);
 
         // --- Call All Checks ---
-        if (config.enableFlyCheck && checks.checkFly) checks.checkFly(player, pData, config, playerUtils, playerDataManager);
-        if (config.enableSpeedCheck && checks.checkSpeed) checks.checkSpeed(player, pData, config, playerUtils, playerDataManager);
-        if (config.enableNofallCheck && checks.checkNoFall) checks.checkNoFall(player, pData, config, playerUtils, playerDataManager);
-        if (config.enableCpsCheck && checks.checkCPS) checks.checkCPS(player, pData, config, playerUtils, playerDataManager);
-        if (config.enableNukerCheck && checks.checkNuker) checks.checkNuker(player, pData, config, playerUtils, playerDataManager);
+        // Pass executeCheckAction and logManager to all checks called in the tick loop
+        if (config.enableFlyCheck && checks.checkFly) checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableSpeedCheck && checks.checkSpeed) checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableNofallCheck && checks.checkNoFall) checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableCpsCheck && checks.checkCPS) checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableNukerCheck && checks.checkNuker) checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
 
         // ViewSnap check might need config and currentTick directly if not passed via dependencies object to all checks
-        if (config.enableViewSnapCheck && checks.checkViewSnap) checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager);
+        if (config.enableViewSnapCheck && checks.checkViewSnap) checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
 
         // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {

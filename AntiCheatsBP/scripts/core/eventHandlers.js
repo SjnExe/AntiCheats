@@ -99,7 +99,7 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     }
 }
 
-export function handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick) {
+export function handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction) {
     const { hurtEntity, cause, damagingEntity } = eventData;
 
     if (hurtEntity.typeId === 'minecraft:player' && cause.category === mc.EntityDamageCauseCategory.fall) {
@@ -128,16 +128,16 @@ export function handleEntityHurt(eventData, playerDataManager, checks, playerUti
                     if (worldPlayer) gameMode = worldPlayer.gameMode;
                  }
                 if (typeof gameMode !== 'undefined') {
-                    checks.checkReach(attacker, hurtEntity, gameMode, attackerPData, config, playerUtils, playerDataManager);
+                    checks.checkReach(attacker, hurtEntity, gameMode, attackerPData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
                 } else {
                     playerUtils.debugLog(`Could not determine game mode for attacker ${attacker.nameTag} to perform reach check.`, attackerPData.isWatched ? attacker.nameTag : null);
                 }
             }
             if (checks && checks.checkMultiTarget && config.enableMultiTargetCheck) {
-                checks.checkMultiTarget(attacker, attackerPData, hurtEntity, config, playerUtils, playerDataManager);
+                checks.checkMultiTarget(attacker, attackerPData, hurtEntity, config, playerUtils, playerDataManager, logManager, executeCheckAction);
             }
             if (checks && checks.checkAttackWhileSleeping && config.enableStateConflictCheck) {
-                checks.checkAttackWhileSleeping(attacker, attackerPData, config, playerUtils, playerDataManager);
+                checks.checkAttackWhileSleeping(attacker, attackerPData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
             }
         }
     }
@@ -220,26 +220,26 @@ export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
     }
 }
 
-export function handleItemUse(eventData, playerDataManager, checks, playerUtils, config) {
+export function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
         const player = playerEntity;
         const itemStack = eventData.itemStack;
         const pData = playerDataManager.getPlayerData(player.id);
         if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) { // Added config check
-            checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager);
+            checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, executeCheckAction);
         }
     }
 }
 
-export function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config) {
+export function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
         const player = playerEntity;
         const itemStack = eventData.itemStack;
         const pData = playerDataManager.getPlayerData(player.id);
         if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) { // Added config check
-            checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager);
+            checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, executeCheckAction);
         }
     }
 }
