@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/xraynotify.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "xraynotify",
     syntax: "!xraynotify <on|off|status>",
     description: "Manage X-Ray ore mining notifications for yourself.",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the xraynotify command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, addLog } = dependencies;
     const subCommand = args[0] ? args[0].toLowerCase() : "status";

@@ -66,6 +66,7 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
     playerDataManager.prepareAndSavePlayerData(player);
 }
 
+/** @todo Add JSDoc */
 export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config) {
     const player = eventData.player;
     if (!player) {
@@ -99,6 +100,7 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     }
 }
 
+/** @todo Add JSDoc */
 export function handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction) {
     const { hurtEntity, cause, damagingEntity } = eventData;
 
@@ -143,6 +145,7 @@ export function handleEntityHurt(eventData, playerDataManager, checks, playerUti
     }
 }
 
+/** @todo Add JSDoc */
 export function subscribeToCombatLogEvents(playerDataManager, config, playerUtils) {
     if (config.enableCombatLogDetection) {
         mc.world.afterEvents.entityHurt.subscribe(async (eventData) => {
@@ -183,6 +186,7 @@ export function subscribeToCombatLogEvents(playerDataManager, config, playerUtil
     }
 }
 
+/** @todo Add JSDoc */
 export function handlePlayerBreakBlock(eventData, playerDataManager, checks, config, playerUtils) {
     const player = eventData.player;
     const pData = playerDataManager.getPlayerData(player.id);
@@ -196,6 +200,7 @@ export function handlePlayerBreakBlock(eventData, playerDataManager, checks, con
     // }
 }
 
+/** @todo Add JSDoc */
 export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
     if (!config.xrayDetectionNotifyOnOreMineEnabled) {
         return;
@@ -220,6 +225,7 @@ export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
     }
 }
 
+/** @todo Add JSDoc */
 export function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
@@ -240,6 +246,7 @@ export function handleItemUse(eventData, playerDataManager, checks, playerUtils,
     }
 }
 
+/** @todo Add JSDoc */
 export function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
@@ -253,6 +260,7 @@ export function handleItemUseOn(eventData, playerDataManager, checks, playerUtil
     }
 }
 
+/** @todo Add JSDoc */
 export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
     const player = eventData.sender;
     if (!player) {

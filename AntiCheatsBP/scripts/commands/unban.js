@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/unban.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "unban",
     syntax: "!unban <playername>",
     description: "Unbans a player. Note: Player must be online for this version.",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the unban command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, addLog, findPlayer } = dependencies;
 

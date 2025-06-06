@@ -2,6 +2,11 @@
 import { permissionLevels } from '../core/rankManager.js';
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Specific UI imports
 
+/**
+ * Shows the player their anti-cheat statistics.
+ * @param {import('@minecraft/server').Player} player The player to show the stats to.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 // Helper UI functions (scoped within this module)
 async function showMyStatsUI(player, dependencies) {
     const { playerDataManager, config, playerUtils } = dependencies; // config is not used here, but kept for consistency if needed later
@@ -31,6 +36,11 @@ async function showMyStatsUI(player, dependencies) {
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showMyStatsUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
+/**
+ * Shows the server rules to the player.
+ * @param {import('@minecraft/server').Player} player The player to show the rules to.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 async function showServerRulesUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
     const rules = config.serverRules && config.serverRules.length > 0 ? config.serverRules.join("\n") : "No server rules configured.";
@@ -38,6 +48,11 @@ async function showServerRulesUI(player, dependencies) {
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showServerRulesUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
+/**
+ * Shows helpful links to the player.
+ * @param {import('@minecraft/server').Player} player The player to show the links to.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 async function showHelpLinksUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
     let linksBody = "§e--- Helpful Links ---\n"; // Added newline
@@ -50,6 +65,11 @@ async function showHelpLinksUI(player, dependencies) {
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showHelpLinksUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
+/**
+ * Shows general tips to the player.
+ * @param {import('@minecraft/server').Player} player The player to show the tips to.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 async function showGeneralTipsUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
     const tips = config.generalHelpMessages && config.generalHelpMessages.length > 0 ? config.generalHelpMessages.join("\n") : "No general tips configured.";
@@ -57,13 +77,22 @@ async function showGeneralTipsUI(player, dependencies) {
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showGeneralTipsUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "uinfo",
     syntax: "!uinfo",
     description: "Shows your anti-cheat stats, server rules, and help links in a UI.",
-    permissionLevel: permissionLevels.NORMAL
+    permissionLevel: permissionLevels.normal
 };
 
+/**
+ * Executes the uinfo command, showing a UI panel with various info for the player.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { addLog, playerUtils } = dependencies; // Added playerUtils here for debug logging
     const mainPanel = new ActionFormData()

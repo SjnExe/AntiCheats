@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/ban.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "ban",
     syntax: "!ban <playername> [duration] [reason]",
     description: "Bans a player for a specified duration (e.g., 7d, 2h, perm).",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the ban command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, addLog, findPlayer, parseDuration } = dependencies;
 
@@ -38,15 +47,15 @@ export async function execute(player, args, dependencies) {
     const targetPermissionLevel = dependencies.getPlayerPermissionLevel(foundPlayer);
     const issuerPermissionLevel = dependencies.getPlayerPermissionLevel(player);
 
-    if (targetPermissionLevel <= permissionLevels.ADMIN && issuerPermissionLevel > permissionLevels.OWNER) {
+    if (targetPermissionLevel <= permissionLevels.admin && issuerPermissionLevel > permissionLevels.owner) {
         player.sendMessage("§cYou do not have sufficient permission to ban this player.");
         return;
     }
-     if (targetPermissionLevel <= permissionLevels.OWNER && issuerPermissionLevel > permissionLevels.OWNER) { // Only owner can ban owner
+     if (targetPermissionLevel <= permissionLevels.owner && issuerPermissionLevel > permissionLevels.owner) { // Only owner can ban owner
         player.sendMessage("§cOwners cannot be banned by non-owners.");
         return;
     }
-    if (targetPermissionLevel === permissionLevels.OWNER && issuerPermissionLevel === permissionLevels.OWNER && player.id !== foundPlayer.id) {
+    if (targetPermissionLevel === permissionLevels.owner && issuerPermissionLevel === permissionLevels.owner && player.id !== foundPlayer.id) {
          player.sendMessage("§cOne Owner cannot ban another Owner directly through this command."); // Or implement specific owner-to-owner logic
          return;
     }

@@ -1,17 +1,19 @@
 import { world } from '@minecraft/server';
 
-const REPORTS_PROPERTY_ID = "anticheat:reports";
-const MAX_REPORTS = 100;
+const reportsPropertyId = "anticheat:reports";
+const maxReports = 100;
 
+/** @todo Add JSDoc */
 // Function to generate a somewhat unique report ID
 function generateReportId() {
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
 }
 
+/** @todo Add JSDoc */
 // Function to get all reports
 export function getReports() {
     try {
-        const reportsJson = world.getDynamicProperty(REPORTS_PROPERTY_ID);
+        const reportsJson = world.getDynamicProperty(reportsPropertyId);
         if (reportsJson && typeof reportsJson === 'string') {
             return JSON.parse(reportsJson);
         }
@@ -22,16 +24,18 @@ export function getReports() {
     }
 }
 
+/** @todo Add JSDoc */
 // Function to save all reports
 function saveReports(reportsArray) {
     try {
         const reportsJson = JSON.stringify(reportsArray);
-        world.setDynamicProperty(REPORTS_PROPERTY_ID, reportsJson);
+        world.setDynamicProperty(reportsPropertyId, reportsJson);
     } catch (error) {
         console.error(`[ReportManager] Error saving reports to dynamic property: ${error}`);
     }
 }
 
+/** @todo Add JSDoc */
 // Function to add a new report
 export function addReport(reporterPlayer, reportedPlayer, reason) {
     if (!reporterPlayer || !reportedPlayer || !reason) {
@@ -52,7 +56,7 @@ export function addReport(reporterPlayer, reportedPlayer, reason) {
     let reports = getReports();
     reports.push(newReport);
 
-    if (reports.length > MAX_REPORTS) {
+    if (reports.length > maxReports) {
         reports.shift(); // Remove the oldest report
     }
 
@@ -60,6 +64,7 @@ export function addReport(reporterPlayer, reportedPlayer, reason) {
     return newReport;
 }
 
+/** @todo Add JSDoc */
 // Function to clear all reports (will be used by !viewreports)
 export function clearAllReports() {
     saveReports([]);
@@ -67,6 +72,7 @@ export function clearAllReports() {
     return true;
 }
 
+/** @todo Add JSDoc */
 // Function to clear a specific report by ID (will be used by !viewreports)
 export function clearReportById(reportId) {
     let reports = getReports();

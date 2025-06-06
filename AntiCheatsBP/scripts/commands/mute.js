@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/mute.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "mute",
     syntax: "!mute <playername> [duration] [reason]",
     description: "Mutes a player for a specified duration (e.g., 5m, 1h, 1d, perm).",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the mute command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, addLog, findPlayer, parseDuration } = dependencies;
 

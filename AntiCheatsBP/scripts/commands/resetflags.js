@@ -1,14 +1,23 @@
 // AntiCheatsBP/scripts/commands/resetflags.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "resetflags",
     syntax: "!resetflags <playername>",
     description: "Resets a player's flags and violation data.",
     // Aliased by clearwarnings in config.js
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the resetflags command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, addLog, findPlayer } = dependencies;
 

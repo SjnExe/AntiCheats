@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/help.js
 import { permissionLevels } from '../core/rankManager.js'; // Assuming this path is correct from command's perspective
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "help",
     syntax: "!help [command_name]",
     description: "Shows available commands or help for a specific command.",
-    permissionLevel: permissionLevels.NORMAL
+    permissionLevel: permissionLevels.normal
 };
 
+/**
+ * Executes the help command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, getPlayerPermissionLevel, permissionLevels: permLevelsDep, allCommands: acAllCommands } = dependencies; // Renamed to avoid conflict with outer scope allCommands if any
     const userPermissionLevel = getPlayerPermissionLevel(player);

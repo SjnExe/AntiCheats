@@ -10,6 +10,10 @@ import { ItemComponentTypes } from '@minecraft/server';
 import { commandModules } from '../commands/commandRegistry.js';
 
 // Dynamically build allCommands from loaded modules
+/**
+ * Array containing all command definitions loaded from modules.
+ * @type {import('../types.js').CommandDefinition[]}
+ */
 let allCommands = [];
 if (commandModules && Array.isArray(commandModules)) {
     for (const cmdModule of commandModules) {
@@ -26,6 +30,14 @@ if (commandModules && Array.isArray(commandModules)) {
 
 // findPlayer and parseDuration are now imported from playerUtils.js
 
+/**
+ * Handles incoming chat messages to process potential commands.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat send event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} uiManager Manager for UI forms.
+ * @param {object} config The server configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ */
 export async function handleChatCommand(eventData, playerDataManager, uiManager, config, playerUtils) {
     const player = eventData.sender;
     const message = eventData.message;

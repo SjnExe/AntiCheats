@@ -2,13 +2,22 @@
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server'; // For world.getAllPlayers() if not using dependencies.findPlayer
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "kick",
     syntax: "!kick <playername> [reason]",
     description: "Kicks a player from the server.",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the kick command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, addLog, findPlayer } = dependencies; // findPlayer from dependencies
 

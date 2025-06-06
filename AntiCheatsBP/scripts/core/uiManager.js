@@ -7,7 +7,7 @@ import { permissionLevels } from './rankManager.js';
 import * as logManager from './logManager.js';
 import { editableConfigValues, updateConfigValue } from '../config.js';
 
-
+/** @todo Add JSDoc */
 async function showInspectPlayerForm(player, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: Inspect Player form requested by ${player.nameTag}`, player.nameTag);
     const modalForm = new ModalFormData();
@@ -39,22 +39,26 @@ async function showInspectPlayerForm(player, playerDataManager, dependencies) {
     // No automatic navigation back to main panel after this text-based inspect.
 }
 
+/** @todo Add JSDoc */
 async function showMyStats(player, playerDataManager, config, dependencies) {
     playerUtils.debugLog(`UI: showMyStats for ${player.nameTag}`, player.nameTag);
     player.sendMessage("§7Please use the `!uinfo` command and select 'My Anti-Cheat Stats'.");
     // No automatic navigation as this is typically a final action from a user-facing part of a menu
 }
 
+/** @todo Add JSDoc */
 async function showServerRules(player, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showServerRules for ${player.nameTag}`, player.nameTag);
     player.sendMessage("§7Please use `!uinfo` and select 'Server Rules'.");
 }
 
+/** @todo Add JSDoc */
 async function showHelpAndLinks(player, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
     player.sendMessage("§7Please use `!uinfo` and select 'Helpful Links' or 'General Tips'.");
 }
 
+/** @todo Add JSDoc */
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const { config, playerUtils: localPlayerUtils } = dependencies; // Removed addLog as it's in dependencies
@@ -156,6 +160,8 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager, dependencie
     // if (targetPlayer) { await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); }
     // else { ... await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); }
     // catch { ... await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies); }
+/** @todo Add JSDoc */
+async function showOnlinePlayersList(adminPlayer, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const onlinePlayers = mc.world.getAllPlayers();
     if (onlinePlayers.length === 0) {
@@ -196,7 +202,7 @@ export async function showAdminPanelMain(adminPlayer, playerDataManager, config,
     const form = new ActionFormData();
     const userPermLevel = getPlayerPermissionLevel(adminPlayer);
     try {
-        if (userPermLevel <= permissionLevels.ADMIN) {
+        if (userPermLevel <= permissionLevels.admin) {
             form.title("AC Admin Panel"); form.body("Select an admin action:");
             form.button("View Online Players", "textures/ui/icon_multiplayer");        // 0
             form.button("Inspect Player (Text)", "textures/ui/spyglass");             // 1

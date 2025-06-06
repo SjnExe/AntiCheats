@@ -1,8 +1,8 @@
 import * as mc from '@minecraft/server';
 import * as playerUtils from '../utils/playerUtils.js'; // For debugLog
 
-const LOG_DYNAMIC_PROPERTY_KEY = "anticheat:action_logs_v1";
-const MAX_LOG_ENTRIES = 200; // Max number of log entries to keep
+const logDynamicPropertyKey = "anticheat:action_logs_v1";
+const maxLogEntries = 200; // Max number of log entries to keep
 
 /**
  * @typedef {object} ActionLogEntry
@@ -20,7 +20,7 @@ const MAX_LOG_ENTRIES = 200; // Max number of log entries to keep
  */
 function getCurrentLogs() {
     try {
-        const rawLogs = mc.world.getDynamicProperty(LOG_DYNAMIC_PROPERTY_KEY);
+        const rawLogs = mc.world.getDynamicProperty(logDynamicPropertyKey);
         if (typeof rawLogs === 'string') {
             const parsedLogs = JSON.parse(rawLogs);
             if (Array.isArray(parsedLogs)) {
@@ -39,7 +39,7 @@ function getCurrentLogs() {
  */
 function saveLogs(logs) {
     try {
-        mc.world.setDynamicProperty(LOG_DYNAMIC_PROPERTY_KEY, JSON.stringify(logs));
+        mc.world.setDynamicProperty(logDynamicPropertyKey, JSON.stringify(logs));
     } catch (error) {
         playerUtils.debugLog(`LogManager: Error saving logs: ${error}`, "System");
     }
@@ -58,8 +58,8 @@ export function addLog(logEntry) {
     let logs = getCurrentLogs();
     logs.unshift(logEntry); // Add new log to the beginning for easy "latest" retrieval
 
-    if (logs.length > MAX_LOG_ENTRIES) {
-        logs = logs.slice(0, MAX_LOG_ENTRIES); // Keep only the newest N entries
+    if (logs.length > maxLogEntries) {
+        logs = logs.slice(0, maxLogEntries); // Keep only the newest N entries
     }
     saveLogs(logs);
     playerUtils.debugLog(`LogManager: Added log - ${logEntry.actionType} by ${logEntry.adminName} on ${logEntry.targetName}. Total logs: ${logs.length}`, "System");
@@ -68,7 +68,7 @@ export function addLog(logEntry) {
 /**
  * Retrieves logs, optionally the latest N entries.
  * Logs are returned newest first.
- * @param {number} [count] - Optional number of latest log entries to retrieve. If undefined, returns all (up to MAX_LOG_ENTRIES).
+ * @param {number} [count] - Optional number of latest log entries to retrieve. If undefined, returns all (up to maxLogEntries).
  * @returns {ActionLogEntry[]} An array of log entries.
  */
 export function getLogs(count) {
@@ -85,7 +85,7 @@ export function getLogs(count) {
  */
 export function clearAllLogs_DEV_ONLY() {
     try {
-        mc.world.setDynamicProperty(LOG_DYNAMIC_PROPERTY_KEY, JSON.stringify([]));
+        mc.world.setDynamicProperty(logDynamicPropertyKey, JSON.stringify([]));
         playerUtils.debugLog("LogManager: All action logs cleared (DEV_ONLY).", "System");
         return true;
     } catch (error) {

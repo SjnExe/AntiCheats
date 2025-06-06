@@ -3,14 +3,17 @@ import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 
 const playerData = new Map();
 
+/** @todo Add JSDoc */
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
 }
 
+/** @todo Add JSDoc */
 export function getAllPlayerDataValues() {
     return playerData.values();
 }
 
+/** @todo Add JSDoc */
 export async function savePlayerDataToDynamicProperties(player, pDataToSave) {
     if (!player || !pDataToSave) {
         debugLog("PDM:save: Invalid player or pDataToSave", player?.nameTag);
@@ -38,6 +41,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave) {
     }
 }
 
+/** @todo Add JSDoc */
 export async function loadPlayerDataFromDynamicProperties(player) {
     if (!player) {
         debugLog("PDM:load: Invalid player");
@@ -71,6 +75,7 @@ export async function loadPlayerDataFromDynamicProperties(player) {
     }
 }
 
+/** @todo Add JSDoc */
 export async function prepareAndSavePlayerData(player) {
     if (!player) return;
     const pData = playerData.get(player.id);
@@ -96,6 +101,7 @@ export async function prepareAndSavePlayerData(player) {
     }
 }
 
+/** @todo Add JSDoc */
 export function initializeDefaultPlayerData(player, currentTick) {
     return {
         playerNameTag: player.nameTag,
@@ -138,6 +144,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
     };
 }
 
+/** @todo Add JSDoc */
 export async function ensurePlayerDataInitialized(player, currentTick) {
     if (playerData.has(player.id)) {
         return playerData.get(player.id);
@@ -190,6 +197,7 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
     return newPData;
 }
 
+/** @todo Add JSDoc */
 export function cleanupActivePlayerData(activePlayers) {
     const activePlayerIds = new Set();
     for (const player of activePlayers) {
@@ -204,6 +212,7 @@ export function cleanupActivePlayerData(activePlayers) {
     }
 }
 
+/** @todo Add JSDoc */
 export function updateTransientPlayerData(player, pData, currentTick) {
     const rotation = player.getRotation();
     pData.lastPitch = rotation.x;
@@ -225,6 +234,7 @@ export function updateTransientPlayerData(player, pData, currentTick) {
     }
 }
 
+/** @todo Add JSDoc */
 export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") {
     const pData = getPlayerData(player.id);
     if (!pData) {
@@ -248,6 +258,7 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     prepareAndSavePlayerData(player);
 }
 
+/** @todo Add JSDoc */
 export function addMute(player, durationMs, reason) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addMute: Invalid arguments - player: ${player?.nameTag}, durationMs: ${durationMs}`, player?.nameTag);
@@ -269,6 +280,7 @@ export function addMute(player, durationMs, reason) {
     return true;
 }
 
+/** @todo Add JSDoc */
 export function removeMute(player) {
     if (!player) { debugLog(`PDM:removeMute: Invalid player object provided.`); return false; }
     const pData = getPlayerData(player.id);
@@ -283,6 +295,7 @@ export function removeMute(player) {
     return false;
 }
 
+/** @todo Add JSDoc */
 export function getMuteInfo(player) {
     if (!player) { return null; }
     const pData = getPlayerData(player.id);
@@ -297,10 +310,12 @@ export function getMuteInfo(player) {
     return mute;
 }
 
+/** @todo Add JSDoc */
 export function isMuted(player) {
     return getMuteInfo(player) !== null;
 }
 
+/** @todo Add JSDoc */
 export function addBan(player, durationMs, reason) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addBan: Invalid arguments - player: ${player?.nameTag}, durationMs: ${durationMs}`, player?.nameTag);
@@ -322,6 +337,7 @@ export function addBan(player, durationMs, reason) {
     return true;
 }
 
+/** @todo Add JSDoc */
 export function removeBan(player) {
     if (!player) { debugLog(`PDM:removeBan: Invalid player object provided.`); return false; }
     const pData = getPlayerData(player.id);
@@ -336,6 +352,7 @@ export function removeBan(player) {
     return false;
 }
 
+/** @todo Add JSDoc */
 export function getBanInfo(player) {
     if (!player) { return null; }
     const pData = getPlayerData(player.id);
@@ -350,10 +367,12 @@ export function getBanInfo(player) {
     return currentBanInfo;
 }
 
+/** @todo Add JSDoc */
 export function isBanned(player) {
     return getBanInfo(player) !== null;
 }
 
+/** @todo Add JSDoc */
 export function setPlayerData(playerId, data) {
     if (!playerId || !data) {
         debugLog("PDM:setPlayerData: Invalid playerId or data.", null);

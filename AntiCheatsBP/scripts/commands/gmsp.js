@@ -2,13 +2,22 @@
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "gmsp",
     syntax: "!gmsp [playername]",
     description: "Sets Spectator mode for self or [playername].",
-    permissionLevel: permissionLevels.ADMIN
+    permissionLevel: permissionLevels.admin
 };
 
+/**
+ * Executes the gmsp (gamemode spectator) command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, addLog } = dependencies;
 

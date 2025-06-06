@@ -1,13 +1,22 @@
 // AntiCheatsBP/scripts/commands/myflags.js
 import { permissionLevels } from '../core/rankManager.js';
 
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: "myflags",
     syntax: "!myflags",
     description: "Shows your own current flag status.",
-    permissionLevel: permissionLevels.NORMAL
+    permissionLevel: permissionLevels.normal
 };
 
+/**
+ * Executes the myflags command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 export async function execute(player, args, dependencies) {
     const { playerDataManager } = dependencies;
     const pDataSelf = playerDataManager.getPlayerData(player.id);
