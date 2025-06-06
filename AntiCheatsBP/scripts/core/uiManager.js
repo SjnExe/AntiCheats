@@ -353,7 +353,8 @@ async function showOnlinePlayersList(adminPlayer, playerDataManager) {
     for (const p of onlinePlayers) {
         const targetPData = playerDataManager.getPlayerData(p.id);
         const buttonText = targetPData ? `${p.nameTag} (Flags: ${targetPData.flags.totalFlags})` : p.nameTag;
-        form.button(buttonText); playerMappings.push(p.id);
+        form.button(buttonText, "textures/ui/icon_steve"); // Added icon_steve
+        playerMappings.push(p.id);
     }
     try {
         const response = await form.show(adminPlayer);
