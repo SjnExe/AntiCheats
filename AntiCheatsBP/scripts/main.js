@@ -93,8 +93,8 @@ mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
  * Handles item use events before they occur.
  * @param {mc.ItemUseBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.itemUse.subscribe((eventData) => {
-    eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
+mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
+    await eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction); // Added await
 });
 
 /**
@@ -106,6 +106,15 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     // or that checkIllegalItems within it handles the eventData type correctly.
     // For now, keeping as is from previous state.
     eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
+});
+
+/**
+ * Handles player place block events before they occur for AirPlace check.
+ * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
+ */
+mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
+    // currentTick from main.js scope is passed to the handler
+    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 /**

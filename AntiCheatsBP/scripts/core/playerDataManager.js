@@ -177,6 +177,8 @@ export function initializeDefaultPlayerData(player, currentTick) {
         consecutiveDownwardBlocks: 0,
         lastDownwardScaffoldTick: 0,
         lastDownwardScaffoldBlockLocation: null,
+        itemUseTimestamps: {},
+        recentPlaceTimestamps: [],
         muteInfo: null,
         banInfo: null,
     };
@@ -232,6 +234,8 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         newPData.consecutiveDownwardBlocks = 0; // Session specific
         newPData.lastDownwardScaffoldTick = 0; // Session specific
         newPData.lastDownwardScaffoldBlockLocation = null; // Session specific
+        newPData.itemUseTimestamps = {}; // Session specific
+        newPData.recentPlaceTimestamps = []; // Session specific
         newPData.recentMessages = []; // Session specific
         // lastCombatInteractionTime will be loaded if present in loadedData, otherwise defaults from initializeDefaultPlayerData
         newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;

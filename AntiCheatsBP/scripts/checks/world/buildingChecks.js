@@ -98,6 +98,151 @@ export async function checkTower(player, pData, block, config, playerUtils, play
 }
 
 /**
+ * Checks for overly fast block placement.
+ * @param {mc.Player} player The player instance.
+ * @param {import('../../core/playerDataManager.js').PlayerAntiCheatData} pData Player-specific anti-cheat data.
+ * @param {mc.Block} block The block that was just placed (optional, primarily for context, main logic uses timestamps).
+ * @param {object} config The configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick (optional, as Date.now() is used for timestamps).
+ */
+export async function checkFastPlace(player, pData, block, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick) {
+    if (!config.enableFastPlaceCheck) return;
+
+    const currentTime = Date.now();
+    if (!pData.recentPlaceTimestamps) { // Should have been initialized
+        pData.recentPlaceTimestamps = [];
+    }
+
+    pData.recentPlaceTimestamps.push(currentTime);
+
+    // Filter timestamps older than the time window
+    pData.recentPlaceTimestamps = pData.recentPlaceTimestamps.filter(
+        ts => (currentTime - ts) <= config.fastPlaceTimeWindowMs
+    );
+
+    if (pData.recentPlaceTimestamps.length > config.fastPlaceMaxBlocksInWindow) {
+        const dependencies = { config, playerDataManager, playerUtils, logManager };
+        const violationDetails = {
+            count: pData.recentPlaceTimestamps.length,
+            window: config.fastPlaceTimeWindowMs,
+            maxBlocks: config.fastPlaceMaxBlocksInWindow,
+            blockType: block?.typeId || "unknown" // block might be null if called from a context not having it
+        };
+        await executeCheckAction(player, "world_fast_place", violationDetails, dependencies);
+
+        const watchedPrefix = pData.isWatched ? player.nameTag : null;
+        if (pData.isWatched && playerUtils.debugLog) {
+            playerUtils.debugLog(\`FastPlace: Flagged \${player.nameTag}. Placed \${pData.recentPlaceTimestamps.length} blocks in \${config.fastPlaceTimeWindowMs}ms.\`, watchedPrefix);
+        }
+        // Optional: Clear timestamps after flagging to prevent immediate re-flags for a single burst.
+        // For now, let it decay naturally to catch sustained fast placement.
+        // pData.recentPlaceTimestamps = [];
+    }
+}
+
+/**
+ * Checks for blocks placed against air or liquid without proper support.
+ * This function is intended to be called from a PlayerPlaceBlockBeforeEvent or ItemUseOnBeforeEvent handler.
+ * @param {mc.Player} player The player instance.
+ * @param {import('../../core/playerDataManager.js').PlayerAntiCheatData} pData Player-specific anti-cheat data.
+ * @param {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} eventData The event data from block placement.
+ * @param {object} config The configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ */
+export async function checkAirPlace(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction) {
+    if (!config.enableAirPlaceCheck) return;
+
+    const itemStack = eventData.itemStack;
+    if (!itemStack) return; // Should always be present in these events
+
+    const placedBlockTypeId = itemStack.typeId;
+
+    if (!config.airPlaceSolidBlocks.includes(placedBlockTypeId)) {
+        // If the block being placed isn't in the list of blocks that require solid support, ignore.
+        return;
+    }
+
+    const dimension = player.dimension;
+    const targetFaceLocation = eventData.faceLocation;
+    const targetBlock = dimension.getBlock(targetFaceLocation);
+
+    if (!targetBlock) {
+        // This case should ideally not happen if faceLocation is valid.
+        if (playerUtils.debugLog) playerUtils.debugLog(\`AirPlace: Target block at \${targetFaceLocation.x},\${targetFaceLocation.y},\${targetFaceLocation.z} is undefined.\`, player.nameTag);
+        return;
+    }
+
+    if (targetBlock.isAir || targetBlock.isLiquid) {
+        const newBlockLocation = eventData.blockLocation; // This is where the new block *will be* placed.
+
+        const neighborOffsets = [
+            { x: 0, y: -1, z: 0 }, // Bottom
+            { x: 1, y: 0, z: 0 },  // East (+X)
+            { x: -1, y: 0, z: 0 }, // West (-X)
+            { x: 0, y: 0, z: 1 },  // South (+Z)
+            { x: 0, y: 0, z: -1 }  // North (-Z)
+        ];
+
+        let hasSolidSupport = false;
+        for (const offset of neighborOffsets) {
+            const neighborLoc = {
+                x: newBlockLocation.x + offset.x,
+                y: newBlockLocation.y + offset.y,
+                z: newBlockLocation.z + offset.z
+            };
+
+            // An important detail: we are checking neighbors of where the block *will be*.
+            // If a neighbor *is* the targetFaceLocation, and that targetFace is air/liquid,
+            // that specific neighbor check is essentially re-confirming we are placing against air/liquid.
+            // The critical part is that *other* neighbors must provide the support.
+            // However, the current logic is "is there ANY solid neighbor".
+            // A more accurate scaffold check for placing against air would be:
+            // "is the block *at targetFaceLocation* the only support, and is it air/liquid?"
+            // For now, the current logic checks if ANY adjacent block (including below) is solid.
+            // This might be too lenient for true "scaffolding against air".
+            // A strict scaffold check would ensure that the ONLY supporting block is the one being built off of,
+            // and if that supporting block is air/liquid, then it's a problem.
+
+            // Let's refine: the support must not be the targetFaceLocation itself if it's air/liquid.
+            // Or, more simply, if targetFace is air/liquid, at least one OTHER neighbor must be solid.
+            // The current loop structure already checks all neighbors. If one is solid, it's fine.
+
+            const neighborBlock = dimension.getBlock(neighborLoc);
+            if (neighborBlock && !neighborBlock.isAir && !neighborBlock.isLiquid) {
+                hasSolidSupport = true;
+                break;
+            }
+        }
+
+        if (!hasSolidSupport) {
+            const dependencies = { config, playerDataManager, playerUtils, logManager };
+            const violationDetails = {
+                blockType: placedBlockTypeId,
+                x: newBlockLocation.x,
+                y: newBlockLocation.y,
+                z: newBlockLocation.z,
+                targetFaceType: targetBlock.typeId // Could be "minecraft:air" or "minecraft:water" etc.
+            };
+            await executeCheckAction(player, "world_air_place", violationDetails, dependencies);
+
+            const watchedPrefix = pData.isWatched ? player.nameTag : null;
+            if (pData.isWatched && playerUtils.debugLog) {
+                playerUtils.debugLog(\`AirPlace: Flagged \${player.nameTag} for placing \${placedBlockTypeId} against \${targetBlock.typeId} at (\${newBlockLocation.x},\${newBlockLocation.y},\${newBlockLocation.z}) without solid adjacent support.\`, watchedPrefix);
+            }
+            // Consider if eventData.cancel = true; should be here based on config.
+            // For now, just detection.
+        }
+    }
+}
+
+/**
  * Checks for downward scaffolding behavior.
  * @param {mc.Player} player The player instance.
  * @param {import('../../core/playerDataManager.js').PlayerAntiCheatData} pData Player-specific anti-cheat data.

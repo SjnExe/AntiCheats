@@ -82,6 +82,33 @@
             - Creating `checkDownwardScaffold` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` to track downward block placements while airborne and check against speed/count thresholds.
             - Exporting the `checkDownwardScaffold` function via `checks/index.js`.
             - Integrating the call to `checkDownwardScaffold` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Placing Blocks onto Air/Liquid:** Detect block placements where the targeted block face is air or a liquid, without valid support, indicative of scaffold-like behavior.
+        *Implemented by:
+            - Adding configurations `enableAirPlaceCheck` and `airPlaceSolidBlocks` list to `config.js`, and including them in `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"world_air_place"` in `config.js`.
+            - Creating `checkAirPlace` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js`. This function checks if a block from `airPlaceSolidBlocks` is placed against air/liquid and if it lacks solid adjacent support (excluding the target face itself if it's air/liquid).
+            - Exporting the `checkAirPlace` function via `checks/index.js`.
+            - Creating `handlePlayerPlaceBlockBefore` in `eventHandlers.js`.
+            - Subscribing to `world.beforeEvents.playerPlaceBlock` in `main.js` to call `handlePlayerPlaceBlockBefore`, which in turn calls `checkAirPlace`.*
+*   **Timer/FastUse/FastPlace:** SjnExe parity goal.
+    *   **Timer (Game Speed):** Investigate methods to detect if overall game tick or player action processing speed is unnaturally altered. This is complex and may have limited server-side detectability. (Original todo)
+        *Investigation Complete: Direct detection of client-side game speed (Timer hack) is not feasible with the server-side Script API. The server processes actions based on its own tick rate. However, Timer abuse would manifest as an abnormally high rate of player actions (e.g., attacks, block placements, item uses) received and processed by the server in a short real-time period or within too few server ticks. This can be indirectly addressed by robust "FastUse," "FastPlace," and general "Action Rate" checks (like CPS). No separate "Timer (Game Speed)" check will be implemented; its effects will be caught by these more specific action rate detections.*
+*   **Timer/FastUse/FastPlace:** SjnExe parity goal.
+    *   **FastUse/FastPlace:** Monitor the time between consecutive uses of items (e.g., firing bows/crossbows, throwing pearls/snowballs, eating food) or placement of blocks. Flag if these actions occur faster than humanly possible or vanilla game limits allow. (Scythe, SjnExe)
+        *Implemented by:
+            - **Fast Item Use:**
+                - Added `itemUseTimestamps: Record<string, number>` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+                - Added `enableFastUseCheck` and `fastUseItemCooldowns: Object.<string, number>` to `config.js` (and to `editableConfigValues`).
+                - Created `checkFastUse` function in `AntiCheatsBP/scripts/checks/world/fastUseCheck.js` (exported via `checks/index.js`).
+                - Integrated `checkFastUse` into `handleItemUse` in `eventHandlers.js` (which now includes `logManager` and is `async`).
+                - Added `"action_fast_use"` profile to `checkActionProfiles` in `config.js`.
+            - **Fast Block Placement:**
+                - Added `recentPlaceTimestamps: number[]` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+                - Added `enableFastPlaceCheck`, `fastPlaceTimeWindowMs`, `fastPlaceMaxBlocksInWindow` to `config.js` (and to `editableConfigValues`).
+                - Created `checkFastPlace` function in `AntiCheatsBP/scripts/checks/world/buildingChecks.js` (exported via `checks/index.js`).
+                - Integrated `checkFastPlace` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`.
+                - Added `"world_fast_place"` profile to `checkActionProfiles` in `config.js`.*
 
 ---
 

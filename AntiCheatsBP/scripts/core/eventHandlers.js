@@ -272,40 +272,46 @@ export function handlePlayerBreakBlockAfter(eventData, config, playerUtils) {
  * @param {object} config The server configuration object.
  * @param {function} executeCheckAction Function to execute defined actions for a check.
  */
-export function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, executeCheckAction) {
+export async function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) { // Added logManager, made async
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
         const player = playerEntity;
         const itemStack = eventData.itemStack;
-        const pData = playerDataManager.getPlayerData(player.id);
+        // Ensure pData is initialized, especially as this is a 'before' event and main tick loop might not have run for this player yet.
+        const pData = await playerDataManager.ensurePlayerDataInitialized(player, mc.system.currentTick);
 
-        if (pData) {
-            const itemTypeId = itemStack.typeId;
-            const currentTick = mc.system.currentTick; // Get current game tick
-
-            if (config.attackBlockingConsumables.includes(itemTypeId)) {
-                pData.isUsingConsumable = true;
-                pData.lastItemUseTick = currentTick;
-                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using consumable ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
-            } else if (config.attackBlockingBows.includes(itemTypeId)) {
-                pData.isChargingBow = true;
-                pData.lastItemUseTick = currentTick;
-                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started charging bow ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
-            } else if (config.attackBlockingShields.includes(itemTypeId)) {
-                pData.isUsingShield = true;
-                pData.lastItemUseTick = currentTick;
-                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using shield ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
-            }
+        if (!pData) {
+            if (playerUtils.debugLog) playerUtils.debugLog(`FastUseCheck: No pData for ${player.nameTag} in handleItemUse.`, player.nameTag);
+            return;
         }
 
-        // Existing illegal item check
+        const itemTypeId = itemStack.typeId;
+        const currentTick = mc.system.currentTick; // Using mc.system.currentTick for consistency within this event handler
+
+        // Logic for setting isUsingConsumable, isChargingBow, isUsingShield (already implemented)
+        if (config.attackBlockingConsumables.includes(itemTypeId)) {
+            pData.isUsingConsumable = true;
+            pData.lastItemUseTick = currentTick;
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using consumable ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
+        } else if (config.attackBlockingBows.includes(itemTypeId)) {
+            pData.isChargingBow = true;
+            pData.lastItemUseTick = currentTick;
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started charging bow ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
+        } else if (config.attackBlockingShields.includes(itemTypeId)) {
+            pData.isUsingShield = true;
+            pData.lastItemUseTick = currentTick;
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using shield ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
+        }
+
+        // Call Fast Use Check
+        if (checks && checks.checkFastUse && config.enableFastUseCheck) {
+            await checks.checkFastUse(player, pData, itemStack, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        }
+
+        // Existing illegal item check (ensure it's also async if it wasn't already)
         if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) {
-            // The logManager parameter is not in this function's signature in the current file content.
-            // This subtask focuses on setting pData states.
-            // The call to checkIllegalItems might be partially non-functional if logManager is strictly required by it
-            // and not passed from main.js. This is a pre-existing condition or a concern for another subtask.
-            const logManager = {}; // Placeholder to allow existing code structure to remain.
-            checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+            // logManager is now correctly passed in the function signature
+            await checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
     }
 }
@@ -331,6 +337,34 @@ export function handleItemUseOn(eventData, playerDataManager, checks, playerUtil
             checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
     }
+}
+
+/**
+ * Handles player place block events before they occur, for checks like AirPlace.
+ * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick from main.js (optional for some checks in this handler).
+ */
+export async function handlePlayerPlaceBlockBefore(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick) {
+    const player = eventData.player;
+    const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
+    if (!pData) {
+        if (playerUtils.debugLog) playerUtils.debugLog(`AirPlaceCheck: No pData for ${player.nameTag} in handlePlayerPlaceBlockBefore.`, player.nameTag);
+        return;
+    }
+
+    // Call AirPlace Check
+    if (checks && checks.checkAirPlace && config.enableAirPlaceCheck) {
+        await checks.checkAirPlace(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        // If checkAirPlace sets eventData.cancel = true, the event will be cancelled.
+    }
+
+    // Potentially other 'before' checks related to block placement can be added here.
 }
 
 /**
@@ -368,6 +402,11 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
     // Call Downward Scaffold Check
     if (checks && checks.checkDownwardScaffold && config.enableDownwardScaffoldCheck) {
         await checks.checkDownwardScaffold(player, pData, block, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+    }
+
+    // Call Fast Place Check
+    if (checks && checks.checkFastPlace && config.enableFastPlaceCheck) {
+        await checks.checkFastPlace(player, pData, block, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
     }
 
     // Potentially other checks related to block placement can be added here.

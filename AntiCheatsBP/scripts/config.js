@@ -224,6 +224,33 @@ export const flatRotationPitchDownwardMax = -85.0;
             // Add more as needed
         ];
 
+// --- Fast Use/Place Checks ---
+/** @type {boolean} If true, the Fast Item Use check is active. */
+export const enableFastUseCheck = true;
+/**
+ * @type {Object.<string, number>} Defines minimum cooldown in milliseconds between uses for specific items.
+ * Example: { "minecraft:ender_pearl": 1000, "minecraft:snowball": 250 }
+ */
+export const fastUseItemCooldowns = {
+    "minecraft:ender_pearl": 1000, // 1 second vanilla cooldown
+    "minecraft:snowball": 150,    // Vanilla allows fairly rapid throws
+    "minecraft:egg": 150,
+    "minecraft:bow": 200,         // Min time to draw and fire a weak arrow.
+                                  // This is for *consecutive separate* bow uses, not charge time of one shot.
+    "minecraft:crossbow": 1250,   // Base reload time for crossbow
+    "minecraft:potion": 800,      // Approximate time to drink a potion
+    "minecraft:splash_potion": 500,
+    "minecraft:lingering_potion": 500,
+    "minecraft:chorus_fruit": 800, // Cooldown on chorus fruit teleport
+    "minecraft:shield": 500       // Cooldown for blocking after being hit or raising/lowering
+};
+        /** @type {boolean} If true, the Fast Block Place check is active. */
+        export const enableFastPlaceCheck = true;
+        /** @type {number} Time window in milliseconds for fast placement detection. */
+        export const fastPlaceTimeWindowMs = 1000; // 1 second
+        /** @type {number} Maximum number of blocks allowed to be placed within the time window. */
+        export const fastPlaceMaxBlocksInWindow = 10; // Max 10 blocks per second
+
 // --- X-Ray Detection ---
 /** @type {boolean} If true, enables notifications for mining valuable ores. */
 export const xrayDetectionNotifyOnOreMineEnabled = true;
@@ -628,6 +655,38 @@ export const checkActionProfiles = {
             detailsPrefix: "Air Placement Violation: ",
             includeViolationDetails: true
         }
+    },
+    "action_fast_use": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected item being used too quickly: {itemType}.",
+            type: "action_fast_use"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldown}ms, Actual: {actualTime}ms"
+        },
+        log: {
+            actionType: "detected_fast_use",
+            detailsPrefix: "Fast Use Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_fast_place": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected blocks being placed too quickly.",
+            type: "world_fast_place"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {window}ms (Max: {maxBlocks})"
+        },
+        log: {
+            actionType: "detected_world_fast_place",
+            detailsPrefix: "Fast Place Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 
@@ -684,6 +743,12 @@ export let editableConfigValues = {
     downwardScaffoldMinHorizontalSpeed,
     enableAirPlaceCheck,
     airPlaceSolidBlocks,
+    // Fast Use/Place Checks
+    enableFastUseCheck,
+    fastUseItemCooldowns,
+    enableFastPlaceCheck,
+    fastPlaceTimeWindowMs,
+    fastPlaceMaxBlocksInWindow,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     // Combat Log Configs

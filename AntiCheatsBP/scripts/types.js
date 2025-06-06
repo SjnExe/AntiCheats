@@ -114,6 +114,10 @@
         lastDownwardScaffoldTick: number;
         /** @property {{x: number, y: number, z: number} | null} lastDownwardScaffoldBlockLocation - Location of the last block placed in a downward scaffold sequence. Session-only. */
         lastDownwardScaffoldBlockLocation: {x: number, y: number, z: number} | null;
+        /** @property {Record<string, number>} itemUseTimestamps - Stores the last use timestamp for specific items, for FastUse detection. Key: itemTypeId, Value: timestamp. Session-only. */
+        itemUseTimestamps: Record<string, number>;
+        /** @property {number[]} recentPlaceTimestamps - Stores timestamps of recent block placements for FastPlace detection. Session-only. */
+        recentPlaceTimestamps: number[];
  * @property {{typeId: string, amplifier: number, duration: number}[]} activeEffects - Player's active potion effects.
  * @property {number} health - Player's current health.
  * @property {string} lastBrokenBlockType - Type ID of the last block broken by the player.

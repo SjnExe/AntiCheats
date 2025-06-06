@@ -8,12 +8,7 @@ This list contains planned features, improvements, and areas for future investig
 ## Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   **Timer/FastUse/FastPlace:** SjnExe parity goal.
-        *   **Timer (Game Speed):** Investigate methods to detect if overall game tick or player action processing speed is unnaturally altered. This is complex and may have limited server-side detectability. (Original todo)
-        *   **FastUse/FastPlace:** Monitor the time between consecutive uses of items (e.g., firing bows/crossbows, throwing pearls/snowballs, eating food) or placement of blocks. Flag if these actions occur faster than humanly possible or vanilla game limits allow. (Scythe, SjnExe)
-
     *   **Movement - Advanced:** SjnExe parity goal.
-        *   **Invalid Y Velocity / High Velocity:** Monitor `player.getVelocity().y`. Flag if vertical velocity exceeds thresholds not achievable through normal means (e.g., super-jump without effects, excessive upward dash). (SafeGuard, SjnExe 'High Velocity')
         *   **NoSlow:** Detect if player maintains normal walking/sprinting speed while performing actions that should slow them down (e.g., using a bow, eating, sneaking over certain blocks if applicable). Requires tracking player speed against their current action state. (Scythe, SjnExe)
         *   **InvalidSprint:** Detect sprinting under conditions where it should be impossible (e.g., while movement is impaired by blindness, while actively sneaking, while riding an entity that doesn't permit player sprinting). (Scythe)
 
