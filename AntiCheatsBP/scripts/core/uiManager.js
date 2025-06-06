@@ -578,13 +578,70 @@ async function handleClearChatAction(adminPlayer, playerDataManager, config) {
     await showServerManagementForm(adminPlayer, playerDataManager, config);
 }
 
+async function handleLagClearAction(adminPlayer, config, playerDataManager) {
+    playerUtils.debugLog(`UI: handleLagClearAction requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const confirmForm = new ModalFormData();
+    confirmForm.title("Confirm Lag Clear (Items)");
+    confirmForm.content("This will remove ALL dropped item entities from standard dimensions (Overworld, Nether, End). This action cannot be undone. Are you sure?");
+    confirmForm.toggle("Confirm removal of all dropped items", false);
+
+    try {
+        const response = await confirmForm.show(adminPlayer);
+        if (response.canceled || !response.formValues[0]) {
+            adminPlayer.sendMessage("§7Lag clear cancelled.");
+            await showServerManagementForm(adminPlayer, playerDataManager, config);
+            return;
+        }
+
+        let itemCount = 0;
+        const dimensions = [mc.world.overworld, mc.world.nether, mc.world.theEnd];
+        const itemEntityType = 'minecraft:item';
+
+        for (const dimension of dimensions) {
+            try {
+                const itemEntities = dimension.getEntities({ type: itemEntityType });
+                for (const entity of itemEntities) {
+                    entity.kill(); // More reliable than despawn event
+                    itemCount++;
+                }
+            } catch (e) {
+                playerUtils.debugLog(`Error clearing items in dimension ${dimension.id}: ${e}`, adminPlayer.nameTag);
+                // Continue to other dimensions even if one fails
+            }
+        }
+
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: adminPlayer.nameTag,
+            actionType: 'lag_clear_items',
+            targetName: 'Global',
+            details: `Cleared ${itemCount} dropped item entities from standard dimensions.`
+        });
+
+        playerUtils.notifyAdmins(`Lag clear: ${adminPlayer.nameTag} removed ${itemCount} dropped item entities.`, adminPlayer, null);
+
+        const successForm = new MessageFormData();
+        successForm.title("Lag Clear Successful");
+        successForm.body(`Successfully removed ${itemCount} dropped item entities from Overworld, Nether, and End.`);
+        successForm.button1("OK");
+        await successForm.show(adminPlayer);
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in handleLagClearAction for ${adminPlayer.nameTag}: ${error}`, adminPlayer.nameTag);
+        console.error(`[uiManager.handleLagClearAction] Error:`, error, error.stack);
+        adminPlayer.sendMessage("§cAn error occurred during lag clear. Check console.");
+    }
+    await showServerManagementForm(adminPlayer, playerDataManager, config);
+}
+
+
 async function showServerManagementForm(adminPlayer, playerDataManager, config) {
     playerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData(); form.title("Server Management"); form.body("Select a server management action:");
     form.button("View System Info", "textures/ui/icon_graph");
     form.button("Clear Chat for All Players", "textures/ui/speech_bubble_glyph_color");
-    form.button("Lag Clear (TODO)", "textures/ui/icon_trash");  // This was changed in a previous subtask to call handleLagClearAction
-    form.button("View Action Logs", "textures/ui/book_writable"); // New button added here
+    form.button("Lag Clear (Items)", "textures/ui/icon_trash");  // Updated text
+    form.button("View Action Logs", "textures/ui/book_writable");
     form.button("Back to Admin Panel", "textures/ui/undo");
     try {
         const response = await form.show(adminPlayer);
@@ -592,9 +649,9 @@ async function showServerManagementForm(adminPlayer, playerDataManager, config) 
         switch (response.selection) {
             case 0: await showSystemInfo(adminPlayer, config, playerDataManager); break;
             case 1: await handleClearChatAction(adminPlayer, playerDataManager, config); break;
-            case 2: await handleLagClearAction(adminPlayer, config, playerDataManager); break;
-            case 3: await showActionLogsForm(adminPlayer, config, playerDataManager); break; // New action
-            case 4: await showAdminPanelMain(adminPlayer, playerDataManager, config); break; // Adjusted index
+            case 2: await handleLagClearAction(adminPlayer, config, playerDataManager); break; // Correctly calls new function
+            case 3: await showActionLogsForm(adminPlayer, config, playerDataManager); break;
+            case 4: await showAdminPanelMain(adminPlayer, playerDataManager, config); break;
             default: /* ... */ await showServerManagementForm(adminPlayer, playerDataManager, config); break;
         }
     } catch (error) { /* ... */ await showAdminPanelMain(adminPlayer, playerDataManager, config); }

@@ -54,7 +54,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **Enhanced Commands:**
         *   `!copyinv <playername>`: Admin copies another player's inventory to their own.
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
-        *   `!lagclear`: Attempt to clear ground items or other entities known to cause lag (requires careful targeting).
         *   `!systeminfo <playername>`: Display client details if the API provides access (e.g., device, ping - often limited).
         *   `!notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
         *   `!help [command]`: Display a list of available AC commands and their usage. (Scythe/SafeGuard)
