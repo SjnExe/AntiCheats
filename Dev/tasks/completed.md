@@ -54,6 +54,34 @@
 *   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
     *   *"No Swing" detection:* (Needs further API feasibility check) Investigate if server-side damage events can be correlated with client-side swing animations/packets, though direct detection is likely difficult. (Scythe)
         *Investigation Complete: Reviewed `@minecraft/server` API documentation (v2.1.0-beta as of 2025-05-07). No direct server-side API was found to detect client-side swing animations independently of the resulting damage or interaction events. Correlating damage events with an *expected* but unconfirmed swing animation is unreliable for cheat detection with the current API. Feasibility remains low/very difficult.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Tower-like Upward Building:** Detect rapid, continuous upward pillar building significantly faster than manual placement, especially if combined with unusual look angles.
+        *Implemented by:
+            - Adding `recentBlockPlacements`, `lastPillarBaseY`, `consecutivePillarBlocks`, `lastPillarTick`, `currentPillarX`, `currentPillarZ` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+            - Adding configurations: `enableTowerCheck`, `towerMaxTickGap`, `towerMinHeight`, `towerMaxPitchWhilePillaring`, `towerPlacementHistoryLength` and a `checkActionProfiles` entry for "world_tower_build" (`config.js`).
+            - Creating `checkTower` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` to track pillar formation and check for height and player pitch.
+            - Exporting `checkTower` via `checks/index.js`.
+            - Creating `handlePlayerPlaceBlockAfter` in `eventHandlers.js` and subscribing to `world.afterEvents.playerPlaceBlock` in `main.js` to call `checkTower`.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Flat/Invalid Rotation While Building:** Detect if player is placing blocks (especially in complex patterns like scaffolding) while maintaining an unnaturally static or limited range of head rotation (e.g., always looking straight down or perfectly horizontal).
+        *Implemented by:
+            - Adding configurations to `config.js` for enabling the check (`enableFlatRotationCheck`), consecutive blocks to analyze (`flatRotationConsecutiveBlocks`), variance thresholds for pitch/yaw (`flatRotationMaxPitchVariance`, `flatRotationMaxYawVariance`), and specific pitch ranges for flat horizontal/downward building (`flatRotationPitchHorizontalMin/Max`, `flatRotationPitchDownwardMin/Max`). Added these to `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"world_flat_rotation_building"` in `config.js`.
+            - Creating `checkFlatRotationBuilding` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` that analyzes `pData.recentBlockPlacements` (populated by `checkTower` during block placement) for static pitch/yaw or pitch within defined flat ranges.
+            - Exporting the `checkFlatRotationBuilding` function via `checks/index.js`.
+            - Integrating the call to `checkFlatRotationBuilding` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`, called after `checkTower`.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Placing Blocks Under Self While Looking Up:** Detect if player is placing blocks beneath their feet to pillar upwards while their pitch indicates they are looking upwards (away from the placement area).
+        *(Verified: This scenario is already covered by the `checkTower` function in `towerCheck.js`. The existing pitch check (`pitch > config.towerMaxPitchWhilePillaring`) correctly flags players looking too far upwards while pillaring.)*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Downward Scaffold:** Detect rapid placement of blocks downwards while airborne, especially if player maintains horizontal speed.
+        *Implemented by:
+            - Adding `consecutiveDownwardBlocks`, `lastDownwardScaffoldTick`, `lastDownwardScaffoldBlockLocation` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+            - Adding configurations to `config.js` for enabling the check (`enableDownwardScaffoldCheck`), min blocks (`downwardScaffoldMinBlocks`), max tick gap (`downwardScaffoldMaxTickGap`), and min horizontal speed (`downwardScaffoldMinHorizontalSpeed`). Added these to `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"world_downward_scaffold"` in `config.js`.
+            - Creating `checkDownwardScaffold` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` to track downward block placements while airborne and check against speed/count thresholds.
+            - Exporting the `checkDownwardScaffold` function via `checks/index.js`.
+            - Integrating the call to `checkDownwardScaffold` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`.*
 
 ---
 

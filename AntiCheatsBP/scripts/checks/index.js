@@ -13,3 +13,4 @@ export * from './combat/stateConflictCheck.js';
 // World Checks
 export * from './world/nukerCheck.js';
 export * from './world/illegalItemCheck.js';
+export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold } from './world/towerCheck.js';

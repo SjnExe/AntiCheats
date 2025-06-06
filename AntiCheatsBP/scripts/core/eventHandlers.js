@@ -334,6 +334,46 @@ export function handleItemUseOn(eventData, playerDataManager, checks, playerUtil
 }
 
 /**
+ * Handles player place block events after they occur.
+ * @param {mc.PlayerPlaceBlockAfterEvent} eventData The event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick from main.js.
+ */
+export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick) {
+    const player = eventData.player;
+    // ensurePlayerDataInitialized is async, so ensure it's awaited
+    const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
+    if (!pData) {
+        if (playerUtils.debugLog) playerUtils.debugLog(`TowerCheck: No pData for ${player.nameTag} in handlePlayerPlaceBlockAfter.`, player.nameTag);
+        return;
+    }
+
+    const block = eventData.block; // Get the placed block
+
+    // Call Tower Check
+    if (checks && checks.checkTower && config.enableTowerCheck) {
+        await checks.checkTower(player, pData, block, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+    }
+
+    // Call Flat Rotation Building Check
+    if (checks && checks.checkFlatRotationBuilding && config.enableFlatRotationCheck) {
+        await checks.checkFlatRotationBuilding(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+    }
+
+    // Call Downward Scaffold Check
+    if (checks && checks.checkDownwardScaffold && config.enableDownwardScaffoldCheck) {
+        await checks.checkDownwardScaffold(player, pData, block, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+    }
+
+    // Potentially other checks related to block placement can be added here.
+}
+
+/**
  * Handles chat messages before they are sent to apply rank prefixes and perform chat-based checks.
  * @param {mc.ChatSendBeforeEvent} eventData The chat send event data.
  * @param {object} playerDataManager Manager for player data.

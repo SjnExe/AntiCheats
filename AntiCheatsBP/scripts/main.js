@@ -108,6 +108,15 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
 });
 
+/**
+ * Handles player place block events after they occur for Tower check.
+ * @param {mc.PlayerPlaceBlockAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
+    // currentTick from main.js scope is passed to the handler
+    await eventHandlers.handlePlayerPlaceBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+});
+
 let currentTick = 0;
 
 /**

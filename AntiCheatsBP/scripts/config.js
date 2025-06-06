@@ -184,6 +184,45 @@ export const towerMinHeight = 5;
 export const towerMaxPitchWhilePillaring = -30; // Player should be looking down somewhat. Pitch < -30 means looking more upwards.
 /** @type {number} How many recent block placements to store for pattern analysis. */
 export const towerPlacementHistoryLength = 20;
+/** @type {boolean} If true, the Flat/Invalid Rotation While Building check is active. */
+export const enableFlatRotationCheck = true;
+/** @type {number} Number of consecutive block placements to analyze for static or flat rotation. */
+export const flatRotationConsecutiveBlocks = 4;
+/** @type {number} Maximum degrees of variance allowed for pitch over consecutive placements to be considered 'static'. */
+export const flatRotationMaxPitchVariance = 2.0;
+/** @type {number} Maximum degrees of variance allowed for yaw over consecutive placements to be considered 'static'. */
+export const flatRotationMaxYawVariance = 2.0;
+// Define specific pitch ranges considered "flat" or indicative of cheating while building
+/** @type {number} Minimum pitch for 'flat horizontal' building detection (e.g., looking straight ahead). */
+export const flatRotationPitchHorizontalMin = -5.0;
+/** @type {number} Maximum pitch for 'flat horizontal' building detection. */
+export const flatRotationPitchHorizontalMax = 5.0;
+/** @type {number} Minimum pitch for 'flat downward' building detection (e.g., looking straight down). */
+export const flatRotationPitchDownwardMin = -90.0;
+/** @type {number} Maximum pitch for 'flat downward' building detection. */
+export const flatRotationPitchDownwardMax = -85.0;
+        /** @type {boolean} If true, the Downward Scaffold check is active. */
+        export const enableDownwardScaffoldCheck = true;
+        /** @type {number} Minimum number of consecutive downward blocks while airborne to trigger. */
+        export const downwardScaffoldMinBlocks = 3;
+        /** @type {number} Maximum time in ticks between consecutive downward scaffold blocks. */
+        export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
+        /** @type {number} Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding to flag. Vanilla players usually stop or slow down significantly. */
+        export const downwardScaffoldMinHorizontalSpeed = 3.0; // Approx crouch-walking speed
+        /** @type {boolean} If true, the Placing Blocks onto Air/Liquid check is active. */
+        export const enableAirPlaceCheck = true;
+        /**
+         * @type {string[]} List of block type IDs that are considered 'solid' and require support.
+         * Placing these against air/liquid without other solid adjacent support will be flagged.
+         */
+        export const airPlaceSolidBlocks = [
+            "minecraft:cobblestone", "minecraft:stone", "minecraft:dirt", "minecraft:grass_block",
+            "minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks",
+            "minecraft:jungle_planks", "minecraft:acacia_planks", "minecraft:dark_oak_planks",
+            "minecraft:crimson_planks", "minecraft:warped_planks", "minecraft:sand", "minecraft:gravel",
+            "minecraft:obsidian", "minecraft:netherrack", "minecraft:end_stone"
+            // Add more as needed
+        ];
 
 // --- X-Ray Detection ---
 /** @type {boolean} If true, enables notifications for mining valuable ores. */
@@ -540,6 +579,55 @@ export const checkActionProfiles = {
             detailsPrefix: "Tower Building Violation: ",
             includeViolationDetails: true
         }
+    },
+    "world_flat_rotation_building": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected unnatural (flat or static) head rotation while building.",
+            type: "world_scaffold_rotation"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Variance: {pitchVariance}, Yaw Variance: {yawVariance}, Details: {details}"
+            // {details} could be "Static Pitch", "Static Yaw", "Flat Horizontal Pitch", "Flat Downward Pitch"
+        },
+        log: {
+            actionType: "detected_world_flat_rotation_building",
+            detailsPrefix: "Flat/Static Rotation Building Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_downward_scaffold": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected suspicious downward scaffolding while airborne.",
+            type: "world_scaffold_downward"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {hSpeed}bps (MinSpeed: {minHSpeed}bps)"
+        },
+        log: {
+            actionType: "detected_world_downward_scaffold",
+            detailsPrefix: "Downward Scaffold Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_air_place": {
+        enabled: true,
+        flag: {
+            increment: 1, // Can be noisy if not tuned well
+            reason: "System detected block placed against air/liquid without solid support.",
+            type: "world_scaffold_airplace"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting air/liquid."
+        },
+        log: {
+            actionType: "detected_world_air_place",
+            detailsPrefix: "Air Placement Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 
@@ -582,6 +670,20 @@ export let editableConfigValues = {
     towerMinHeight,
     towerMaxPitchWhilePillaring,
     towerPlacementHistoryLength,
+    enableFlatRotationCheck,
+    flatRotationConsecutiveBlocks,
+    flatRotationMaxPitchVariance,
+    flatRotationMaxYawVariance,
+    flatRotationPitchHorizontalMin,
+    flatRotationPitchHorizontalMax,
+    flatRotationPitchDownwardMin,
+    flatRotationPitchDownwardMax,
+    enableDownwardScaffoldCheck,
+    downwardScaffoldMinBlocks,
+    downwardScaffoldMaxTickGap,
+    downwardScaffoldMinHorizontalSpeed,
+    enableAirPlaceCheck,
+    airPlaceSolidBlocks,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     // Combat Log Configs
