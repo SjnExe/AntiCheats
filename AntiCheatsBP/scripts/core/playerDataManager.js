@@ -156,10 +156,12 @@ export function initializeDefaultPlayerData(player, currentTick) {
             illegalItem: { count: 0, lastDetectionTime: 0 },
             illegalCharInChat: { count: 0, lastDetectionTime: 0 },
             longMessage: { count: 0, lastDetectionTime: 0 },
-            spamRepeat: { count: 0, lastDetectionTime: 0 }
+            spamRepeat: { count: 0, lastDetectionTime: 0 },
+            chat_spam_fast: { count: 0, lastDetectionTime: 0 },
         },
         lastFlagType: "",
         isWatched: false,
+        lastChatMessageTimestamp: 0,
         lastPitch: player.getRotation().x, // Initialize with current rotation
         lastYaw: player.getRotation().y,   // Initialize with current rotation
         lastAttackTick: 0,

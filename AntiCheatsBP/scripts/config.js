@@ -39,6 +39,8 @@ export const enableNofallCheck = true;
 export const enableNukerCheck = true;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
 export const enableIllegalItemCheck = true;
+/** @type {boolean} If true, the Self-Hurt Detection check is active. */
+export const enableSelfHurtCheck = true; // Detects suspicious self-inflicted damage
 
 
 // --- Movement Checks ---
@@ -215,6 +217,13 @@ export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_bl
 export const bannedItemsUse = [];
 
 // --- Chat Checks ---
+/** @type {boolean} If true, the Fast Message Spam check is active. */
+export const enableFastMessageSpamCheck = true;
+/** @type {number} Time in milliseconds between messages to be considered spam. */
+export const fastMessageSpamThresholdMs = 500; // 2 messages within 0.5s = spam.
+/** @type {string} The action profile name to use for fast message spam. */
+export const fastMessageSpamActionProfileName = "chat_spam_fast_message";
+
 /** @type {boolean} If true, checks for newline/carriage return characters in chat messages. */
 export const enableNewlineCheck = true;
 /** @type {boolean} If true, sending a message with newlines/carriage returns will flag the player. */
@@ -883,6 +892,23 @@ export const checkActionProfiles = {
             detailsPrefix: "InventoryMod Violation: ",
             includeViolationDetails: true
         }
+    },
+    "chat_spam_fast_message": {
+        enabled: true,
+        flag: {
+            type: "chat_spam_fast", // This will be the key in pData.flags
+            increment: 1,
+            reason: "Sent messages too quickly ({timeSinceLastMsgMs}ms apart)"
+        },
+        log: {
+            actionType: "detected_fast_message_spam",
+            detailsPrefix: "Msg: '{messageContent}'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ",
+            includeViolationDetails: false // Set to false if detailsPrefix is comprehensive
+        },
+        notifyAdmins: {
+            message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
+        },
+        cancelMessage: true // If true, the spammy message will be cancelled
     }
 };
 
@@ -919,6 +945,7 @@ export let editableConfigValues = {
     antiGMCSwitchToGameMode,
     antiGMCAutoSwitch,
     enableInventoryModCheck,
+    enableSelfHurtCheck, // Added enableSelfHurtCheck
     // Movement Check Configs (including NoSlow)
     enableNoSlowCheck,
     noSlowMaxSpeedEating,
@@ -944,6 +971,10 @@ export let editableConfigValues = {
     enableMaxMessageLengthCheck, maxMessageLength, flagOnMaxMessageLength, cancelOnMaxMessageLength,
     spamRepeatCheckEnabled, spamRepeatMessageCount, spamRepeatTimeWindowSeconds,
     spamRepeatFlagPlayer, spamRepeatCancelMessage,
+    // Fast Message Spam Check
+    enableFastMessageSpamCheck,
+    fastMessageSpamThresholdMs,
+    fastMessageSpamActionProfileName,
     // Scaffold/Tower Detection
     enableTowerCheck,
     towerMaxTickGap,

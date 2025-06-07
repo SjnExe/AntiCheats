@@ -1,6 +1,7 @@
 import * as mc from '@minecraft/server';
 import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
 import { getExpectedBreakTicks } from '../utils/index.js'; // For InstaBreak Speed Check
+import { checkMessageRate } from '../checks/index.js'; // Or directly from '../checks/chat/messageRateCheck.js'
 // config will be passed to functions that need it, or specific values destructured from it.
 
 /**
@@ -123,14 +124,22 @@ export function handleEntityHurt(eventData, playerDataManager, checks, playerUti
 
     // Updated to handle general player damage for lastTookDamageTick
     if (hurtEntity.typeId === 'minecraft:player') {
-        const pData = playerDataManager.getPlayerData(hurtEntity.id);
+        const player = hurtEntity; // Cast or use hurtEntity directly as player
+        const pData = playerDataManager.getPlayerData(player.id);
         if (pData) {
             pData.lastTookDamageTick = currentTick; // Update lastTookDamageTick
             if (cause.category === mc.EntityDamageCauseCategory.fall) {
                 pData.isTakingFallDamage = true;
-                playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took fall damage (${eventData.damage}). LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+                playerUtils.debugLog(`Player ${pData.playerNameTag || player.nameTag} took fall damage (${eventData.damage}). LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || player.nameTag) : null);
             } else {
-                playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took damage. Type: ${cause.category}. LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+                playerUtils.debugLog(`Player ${pData.playerNameTag || player.nameTag} took damage. Type: ${cause.category}. LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || player.nameTag) : null);
+            }
+
+            // Self-Hurt Check
+            if (checks && checks.checkSelfHurt && config.enableSelfHurtCheck) {
+                // The `cause` in handleEntityHurt is eventData.cause (which is EntityDamageSource)
+                // The `damagingEntity` in handleEntityHurt is eventData.damagingEntity
+                await checks.checkSelfHurt(player, eventData.cause, eventData.damagingEntity, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
             }
         }
     }
@@ -545,21 +554,63 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
  * @param {object} playerDataManager Manager for player data.
  * @param {object} config The server configuration object.
  * @param {object} playerUtils Utility functions for players.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick.
  */
-export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
+export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick) { // Added checks, logManager, executeCheckAction, currentTick
     const player = eventData.sender;
     if (!player) {
         console.warn("[AntiCheat] handleBeforeChatSend: eventData.sender is undefined.");
         return;
     }
-    if (playerDataManager.isMuted(player)) { /* ... (existing mute logic) ... */ return; }
+
+    const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick); // Ensure pData is initialized
+    if (!pData) {
+        console.warn(`[AntiCheat] handleBeforeChatSend: Could not get/initialize pData for ${player.nameTag}.`);
+        eventData.cancel = true; // Cancel if no pData, as something is wrong
+        return;
+    }
+
+    if (playerDataManager.isMuted(player)) {
+        playerUtils.warnPlayer(player, "You are currently muted and cannot send messages.");
+        eventData.cancel = true;
+        return;
+    }
+
+    // === Begin Fast Message Spam Check ===
+    if (checks && checks.checkMessageRate && config.enableFastMessageSpamCheck) {
+        const cancelDueToSpam = await checks.checkMessageRate(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (cancelDueToSpam) {
+            eventData.cancel = true;
+            // Message is cancelled by the check's configuration, warning/flagging is handled by executeCheckAction
+            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled due to MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
+            // DO NOT update pData.lastChatMessageTimestamp here, checkMessageRate does it.
+            return; // Message is cancelled, stop further processing in this handler.
+        }
+    }
+    // === End Fast Message Spam Check ===
+
     const originalMessage = eventData.message;
-    const rankDisplay = getPlayerRankDisplay(player);
+    const rankDisplay = getPlayerRankDisplay(player); // Assuming getPlayerRankDisplay is available
     const formattedMessage = `${rankDisplay.chatPrefix}${player.name}§f: ${originalMessage}`;
-    const pData = playerDataManager.getPlayerData(player.id);
-    if (config.enableNewlineCheck) { /* ... (existing newline check) ... */ }
-    if (config.enableMaxMessageLengthCheck) { /* ... (existing length check) ... */ }
-    if (config.spamRepeatCheckEnabled && pData) { /* ... (existing spam check) ... */ }
-    eventData.cancel = true;
-    for (const p of mc.world.getAllPlayers()) { p.sendMessage(formattedMessage); }
+
+    // Existing checks (ensure pData is passed if they need it)
+    // Example: if (config.enableNewlineCheck && checkNewline(player, originalMessage, pData, ...)) { eventData.cancel = true; return; }
+    // Example: if (config.enableMaxMessageLengthCheck && checkMaxMsgLen(player, originalMessage, pData, ...)) { eventData.cancel = true; return; }
+    // Example: if (config.spamRepeatCheckEnabled && pData && checkSpamRepeat(player, originalMessage, pData, ...)) { eventData.cancel = true; return; }
+
+    eventData.cancel = true; // Original behavior: cancel and re-broadcast
+    for (const p of mc.world.getAllPlayers()) {
+        p.sendMessage(formattedMessage);
+    }
+
+    // Update pData for other chat checks that might rely on message history AFTER successful send
+    if (pData.recentMessages) { // Example: If you have a recentMessages array for other spam checks
+        pData.recentMessages.push({ content: originalMessage, timestamp: Date.now() });
+        if (pData.recentMessages.length > (config.spamRepeatHistoryLength || 10)) {
+            pData.recentMessages.shift();
+        }
+    }
 }
