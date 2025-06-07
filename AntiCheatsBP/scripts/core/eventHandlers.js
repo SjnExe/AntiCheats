@@ -123,14 +123,22 @@ export function handleEntityHurt(eventData, playerDataManager, checks, playerUti
 
     // Updated to handle general player damage for lastTookDamageTick
     if (hurtEntity.typeId === 'minecraft:player') {
-        const pData = playerDataManager.getPlayerData(hurtEntity.id);
+        const player = hurtEntity; // Cast or use hurtEntity directly as player
+        const pData = playerDataManager.getPlayerData(player.id);
         if (pData) {
             pData.lastTookDamageTick = currentTick; // Update lastTookDamageTick
             if (cause.category === mc.EntityDamageCauseCategory.fall) {
                 pData.isTakingFallDamage = true;
-                playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took fall damage (${eventData.damage}). LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+                playerUtils.debugLog(`Player ${pData.playerNameTag || player.nameTag} took fall damage (${eventData.damage}). LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || player.nameTag) : null);
             } else {
-                playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took damage. Type: ${cause.category}. LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+                playerUtils.debugLog(`Player ${pData.playerNameTag || player.nameTag} took damage. Type: ${cause.category}. LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || player.nameTag) : null);
+            }
+
+            // Self-Hurt Check
+            if (checks && checks.checkSelfHurt && config.enableSelfHurtCheck) {
+                // The `cause` in handleEntityHurt is eventData.cause (which is EntityDamageSource)
+                // The `damagingEntity` in handleEntityHurt is eventData.damagingEntity
+                await checks.checkSelfHurt(player, eventData.cause, eventData.damagingEntity, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
             }
         }
     }
