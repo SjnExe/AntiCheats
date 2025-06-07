@@ -10,8 +10,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
         *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
-        *   **Messages Too Close Together (Spam):** Track time between messages from a player. Flag if messages are sent faster than a reasonable typing/command speed. (SafeGuard)
-        *   **Message Too Many Words (Spam/Flood):** Check word count of messages. Flag if excessively high. (SafeGuard)
         *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
@@ -40,7 +38,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Normal Player Panel Features (`!panel`):**
 
 ## Refactoring & Enhancements
-*   **Refactor `commandManager.js`**: Split commands into individual modules under a new `commands/` directory to improve organization and maintainability. `commandManager.js` will become a command loader and dispatcher.
 
 ## Low Priority / Ideas
 
@@ -60,7 +57,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Admin Command Usage Logging:** Log when an admin uses an `!` command (especially AC related), what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
-*   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
 ## Public Info UI (`!ui`) Development

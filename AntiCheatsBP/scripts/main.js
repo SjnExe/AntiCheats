@@ -35,7 +35,7 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         );
     } else {
         // Call the general chat handler for non-command messages
-        eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config, playerUtils);
+        await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, mc.system.currentTick);
     }
 });
 

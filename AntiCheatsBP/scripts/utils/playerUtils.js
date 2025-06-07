@@ -37,13 +37,9 @@ export function getPlayerPermissionLevel(player) {
         return permissionLevels.normal; // Or DEFAULT, depending on desired strictness
     }
 
-    if (isOwner(player.nameTag)) {
-        return permissionLevels.owner;
-    } else if (isAdmin(player)) {
-        return permissionLevels.admin;
-    } else {
-        return permissionLevels.normal;
-    }
+    return isOwner(player.nameTag) ? permissionLevels.owner :
+           isAdmin(player) ? permissionLevels.admin :
+           permissionLevels.normal;
 }
 
 /**
@@ -73,7 +69,7 @@ export async function executeLagClear(adminPerformingAction) {
                     clearedItemsCount++;
                     countInDimension++;
                 } catch (killError) {
-                    const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`;
+                    const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`; // Ensured template literal
                     errorMessages.push(errMsg);
                     debugLog(errMsg, adminPerformingAction?.nameTag);
                 }
@@ -81,7 +77,7 @@ export async function executeLagClear(adminPerformingAction) {
             debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag);
 
         } catch (dimError) {
-            const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
+            const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`; // Ensured template literal
             errorMessages.push(errMsg);
             debugLog(errMsg, adminPerformingAction?.nameTag);
         }
@@ -131,15 +127,7 @@ export function notifyAdmins(baseMessage, player, pData) {
             const hasExplicitOn = p.hasTag(notificationsOnTag);
             const hasExplicitOff = p.hasTag(notificationsOffTag);
 
-            let shouldReceiveMessage = false;
-            if (hasExplicitOn) {
-                shouldReceiveMessage = true;
-            } else if (hasExplicitOff) {
-                shouldReceiveMessage = false;
-            } else {
-                // If no explicit preference, use the server default from config
-                shouldReceiveMessage = acGlobalNotificationsDefaultOn;
-            }
+            const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && acGlobalNotificationsDefaultOn);
 
             if (shouldReceiveMessage) {
                 try {
@@ -163,11 +151,8 @@ export function notifyAdmins(baseMessage, player, pData) {
  */
 export function debugLog(message, contextPlayerNameIfWatched = null) {
     if (enableDebugLogging) {
-        if (contextPlayerNameIfWatched) {
-            console.warn(`[AC Watch - ${contextPlayerNameIfWatched}] ${message}`);
-        } else {
-            console.warn(`[AC Debug] ${message}`);
-        }
+        const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
+        console.warn(`${prefix} ${message}`);
     }
 }
 
@@ -179,12 +164,7 @@ export function debugLog(message, contextPlayerNameIfWatched = null) {
 export function findPlayer(playerName) {
     if (!playerName || typeof playerName !== 'string') return null;
     const nameToFind = playerName.toLowerCase();
-    for (const p of mc.world.getAllPlayers()) {
-        if (p.nameTag.toLowerCase() === nameToFind) {
-            return p;
-        }
-    }
-    return null;
+    return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
 
 /**

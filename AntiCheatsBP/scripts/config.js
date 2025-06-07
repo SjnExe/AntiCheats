@@ -217,6 +217,20 @@ export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_bl
 export const bannedItemsUse = [];
 
 // --- Chat Checks ---
+/** @type {boolean} If true, the Fast Message Spam check is active. */
+export const enableFastMessageSpamCheck = true;
+/** @type {number} Time in milliseconds between messages to be considered spam. */
+export const fastMessageSpamThresholdMs = 500; // 2 messages within 0.5s = spam.
+/** @type {string} The action profile name to use for fast message spam. */
+export const fastMessageSpamActionProfileName = "chat_spam_fast_message";
+
+/** @type {boolean} If true, the Max Words Spam check is active. */
+export const enableMaxWordsSpamCheck = true;
+/** @type {number} Maximum allowed words in a single message. */
+export const maxWordsSpamThreshold = 50;
+/** @type {string} The action profile name to use for max words spam. */
+export const maxWordsSpamActionProfileName = "chat_spam_max_words";
+
 /** @type {boolean} If true, checks for newline/carriage return characters in chat messages. */
 export const enableNewlineCheck = true;
 /** @type {boolean} If true, sending a message with newlines/carriage returns will flag the player. */
@@ -334,7 +348,7 @@ export const xrayDetectionAdminNotifyByDefault = true;
 
 // --- Combat Log Detection ---
 /** @type {boolean} If true, enables detection of players leaving shortly after combat. */
-export const enableCombatLogDetection = false; // MODIFIED
+export const enableCombatLogDetection = false;
 /** @type {number} Time in seconds after last combat interaction to consider a disconnect as combat logging. */
 export const combatLogThresholdSeconds = 15;
 /** @type {number} Number of flags to add when combat logging is detected. */
@@ -885,6 +899,40 @@ export const checkActionProfiles = {
             detailsPrefix: "InventoryMod Violation: ",
             includeViolationDetails: true
         }
+    },
+    "chat_spam_fast_message": {
+        enabled: true,
+        flag: {
+            type: "chat_spam_fast", // This will be the key in pData.flags
+            increment: 1,
+            reason: "Sent messages too quickly ({timeSinceLastMsgMs}ms apart)"
+        },
+        log: {
+            actionType: "detected_fast_message_spam",
+            detailsPrefix: "Msg: '{messageContent}'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ",
+            includeViolationDetails: false // Set to false if detailsPrefix is comprehensive
+        },
+        notifyAdmins: {
+            message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
+        },
+        cancelMessage: true // If true, the spammy message will be cancelled
+    },
+    "chat_spam_max_words": {
+        enabled: true,
+        flag: {
+            type: "chat_spam_max_words", // Key in pData.flags
+            increment: 1,
+            reason: "Message too long ({wordCount} words, max: {maxWords})"
+        },
+        log: {
+            actionType: "detected_max_words_spam",
+            detailsPrefix: "Words: {wordCount}, Max: {maxWords}. Msg (truncated): '{messageContent}'. ",
+            includeViolationDetails: false
+        },
+        notifyAdmins: {
+            message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
+        },
+        cancelMessage: true // If true, the spammy message will be cancelled
     }
 };
 
@@ -947,6 +995,14 @@ export let editableConfigValues = {
     enableMaxMessageLengthCheck, maxMessageLength, flagOnMaxMessageLength, cancelOnMaxMessageLength,
     spamRepeatCheckEnabled, spamRepeatMessageCount, spamRepeatTimeWindowSeconds,
     spamRepeatFlagPlayer, spamRepeatCancelMessage,
+    // Fast Message Spam Check
+    enableFastMessageSpamCheck,
+    fastMessageSpamThresholdMs,
+    fastMessageSpamActionProfileName,
+    // Max Words Spam Check
+    enableMaxWordsSpamCheck,
+    maxWordsSpamThreshold,
+    maxWordsSpamActionProfileName,
     // Scaffold/Tower Detection
     enableTowerCheck,
     towerMaxTickGap,

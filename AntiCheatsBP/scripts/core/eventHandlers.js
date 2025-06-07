@@ -1,6 +1,7 @@
 import * as mc from '@minecraft/server';
 import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
 import { getExpectedBreakTicks } from '../utils/index.js'; // For InstaBreak Speed Check
+import { checkMessageRate, checkMessageWordCount } from '../checks/index.js'; // Or direct paths
 // config will be passed to functions that need it, or specific values destructured from it.
 
 /**
@@ -553,21 +554,75 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
  * @param {object} playerDataManager Manager for player data.
  * @param {object} config The server configuration object.
  * @param {object} playerUtils Utility functions for players.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick.
  */
-export function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils) {
+export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick) { // Added checks, logManager, executeCheckAction, currentTick
     const player = eventData.sender;
     if (!player) {
         console.warn("[AntiCheat] handleBeforeChatSend: eventData.sender is undefined.");
         return;
     }
-    if (playerDataManager.isMuted(player)) { /* ... (existing mute logic) ... */ return; }
+
+    const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick); // Ensure pData is initialized
+    if (!pData) {
+        console.warn(`[AntiCheat] handleBeforeChatSend: Could not get/initialize pData for ${player.nameTag}.`);
+        eventData.cancel = true; // Cancel if no pData, as something is wrong
+        return;
+    }
+
+    if (playerDataManager.isMuted(player)) {
+        playerUtils.warnPlayer(player, "You are currently muted and cannot send messages.");
+        eventData.cancel = true;
+        return;
+    }
+
+    // === Begin Fast Message Spam Check ===
+    if (checks && checks.checkMessageRate && config.enableFastMessageSpamCheck) {
+        const cancelDueToSpam = await checks.checkMessageRate(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (cancelDueToSpam) {
+            eventData.cancel = true;
+            // Message is cancelled by the check's configuration, warning/flagging is handled by executeCheckAction
+            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled due to MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
+            // DO NOT update pData.lastChatMessageTimestamp here, checkMessageRate does it.
+            return; // Message is cancelled, stop further processing in this handler.
+        }
+    }
+    // === End Fast Message Spam Check ===
+
+    // === Begin Max Words Spam Check ===
+    if (checks && checks.checkMessageWordCount && config.enableMaxWordsSpamCheck) {
+        // Pass eventData which contains the original message
+        const cancelDueToWordCount = await checks.checkMessageWordCount(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (cancelDueToWordCount) {
+            eventData.cancel = true;
+            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled due to MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
+            return; // Message is cancelled, stop further processing.
+        }
+    }
+    // === End Max Words Spam Check ===
+
     const originalMessage = eventData.message;
-    const rankDisplay = getPlayerRankDisplay(player);
+    const rankDisplay = getPlayerRankDisplay(player); // Assuming getPlayerRankDisplay is available
     const formattedMessage = `${rankDisplay.chatPrefix}${player.name}§f: ${originalMessage}`;
-    const pData = playerDataManager.getPlayerData(player.id);
-    if (config.enableNewlineCheck) { /* ... (existing newline check) ... */ }
-    if (config.enableMaxMessageLengthCheck) { /* ... (existing length check) ... */ }
-    if (config.spamRepeatCheckEnabled && pData) { /* ... (existing spam check) ... */ }
-    eventData.cancel = true;
-    for (const p of mc.world.getAllPlayers()) { p.sendMessage(formattedMessage); }
+
+    // Existing checks (ensure pData is passed if they need it)
+    // Example: if (config.enableNewlineCheck && checkNewline(player, originalMessage, pData, ...)) { eventData.cancel = true; return; }
+    // Example: if (config.enableMaxMessageLengthCheck && checkMaxMsgLen(player, originalMessage, pData, ...)) { eventData.cancel = true; return; }
+    // Example: if (config.spamRepeatCheckEnabled && pData && checkSpamRepeat(player, originalMessage, pData, ...)) { eventData.cancel = true; return; }
+
+    eventData.cancel = true; // Original behavior: cancel and re-broadcast
+    for (const p of mc.world.getAllPlayers()) {
+        p.sendMessage(formattedMessage);
+    }
+
+    // Update pData for other chat checks that might rely on message history AFTER successful send
+    if (pData.recentMessages) { // Example: If you have a recentMessages array for other spam checks
+        pData.recentMessages.push({ content: originalMessage, timestamp: Date.now() });
+        if (pData.recentMessages.length > (config.spamRepeatHistoryLength || 10)) {
+            pData.recentMessages.shift();
+        }
+    }
 }
