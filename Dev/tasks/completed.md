@@ -1002,3 +1002,8 @@ Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Pan
 *   **Aggressive Code Reduction Review - Phase 1: `playerUtils.js`**:
     *   **Objective:** Review `AntiCheatsBP/scripts/utils/playerUtils.js` for code reduction.
     *   **Outcome:** Successfully refactored several functions (`getPlayerPermissionLevel`, `notifyAdmins`, `debugLog`, `findPlayer`) using more concise JavaScript idioms like ternary operators, `Array.prototype.find()`, and boolean short-circuiting. This resulted in an estimated 12-14 Lines of Code reduction while preserving functionality and performance. Usage of template literals in `executeLagClear` was also confirmed.
+---
+*(Date: Current Session)*
+*   **Aggressive Code Reduction Review - Phase 2: `itemUtils.js`**:
+    *   **Objective:** Review `AntiCheatsBP/scripts/utils/itemUtils.js` for code reduction.
+    *   **Outcome:** Analysis concluded that significant LoC reduction without simplifying the underlying game mechanic models (which would affect accuracy for checks like InstaBreak) or externalizing data was not feasible. The file's length is primarily due to necessary data constants and the complexity of the mechanics it emulates. No code changes were made to `itemUtils.js`.
