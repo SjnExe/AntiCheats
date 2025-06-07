@@ -1,6 +1,7 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Fake Leave/Join Command (`!fakeleave`):** Implemented `!fakeleave` for admins to simulate leaving and rejoining the game. It combines invisibility (vanish) with fake leave/join broadcast messages. (Originally in Low Priority / Ideas).
 *   **`!notify <on|off|toggle>`:** Allows admins to toggle their own command/system notifications. (Originally in Medium Priority Admin Tools).
 
 ---

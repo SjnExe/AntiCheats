@@ -10,6 +10,7 @@ import * as myflagsCmd from './myflags.js';
 import * as testnotifyCmd from './testnotify.js';
 import * as kickCmd from './kick.js';
 import * as clearchatCmd from './clearchat.js';
+import * as fakeleaveCmd from './fakeleave.js'; // Added import
 import * as inspectCmd from './inspect.js';
 import * as warningsCmd from './warnings.js';
 import * as resetflagsCmd from './resetflags.js'; // Handles resetflags (and clearwarnings via alias)
@@ -64,5 +65,6 @@ export const commandModules = [
     tpCmd,
     copyinvCmd,
     uinfoCmd,
+    fakeleaveCmd, // Added command module
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");
