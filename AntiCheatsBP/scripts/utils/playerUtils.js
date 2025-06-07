@@ -26,27 +26,30 @@ export function isOwner(playerName) {
 }
 
 /**
- * Determines the permission level of a given player.
+ * Determines the permission level of a given player (e.g., normal, admin, owner).
  * @param {mc.Player} player The player instance to check.
  * @returns {permissionLevels} The permission level of the player.
+ *                             Defaults to `permissionLevels.normal` if player object is invalid.
  */
 export function getPlayerPermissionLevel(player) {
     if (!(player instanceof mc.Player)) {
         console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
         // Fallback to the lowest permission level if player object is not valid.
-        return permissionLevels.normal; // Or DEFAULT, depending on desired strictness
+        return permissionLevels.normal;
     }
 
     return isOwner(player.nameTag) ? permissionLevels.owner :
-           isAdmin(player) ? permissionLevels.admin :
-           permissionLevels.normal;
+        isAdmin(player) ? permissionLevels.admin :
+            permissionLevels.normal;
 }
 
 /**
- * Clears all dropped item entities across all standard dimensions.
+ * Clears all dropped item entities across standard dimensions (Overworld, Nether, End).
+ * Useful for reducing server lag.
  * @param {mc.Player} [adminPerformingAction] Optional: The admin player who initiated the action, for logging context.
  * @returns {Promise<{clearedItemsCount: number, dimensionsProcessed: number, error: string | null}>}
- *          An object containing the count of cleared items, dimensions processed, and any error messages.
+ *          An object containing the count of cleared items, the number of dimensions processed,
+ *          and any error messages encountered (null if no errors).
  */
 export async function executeLagClear(adminPerformingAction) {
     let clearedItemsCount = 0;
@@ -69,7 +72,7 @@ export async function executeLagClear(adminPerformingAction) {
                     clearedItemsCount++;
                     countInDimension++;
                 } catch (killError) {
-                    const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`; // Ensured template literal
+                    const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`;
                     errorMessages.push(errMsg);
                     debugLog(errMsg, adminPerformingAction?.nameTag);
                 }
@@ -77,7 +80,7 @@ export async function executeLagClear(adminPerformingAction) {
             debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag);
 
         } catch (dimError) {
-            const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`; // Ensured template literal
+            const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
             errorMessages.push(errMsg);
             debugLog(errMsg, adminPerformingAction?.nameTag);
         }
@@ -93,6 +96,7 @@ export async function executeLagClear(adminPerformingAction) {
 
 /**
  * Sends a formatted warning message directly to a specific player.
+ * The message is prefixed with "[AntiCheat] Warning: " and colored red.
  * @param {mc.Player} player The player instance to warn.
  * @param {string} reason The reason for the warning, which will be displayed to the player.
  */
@@ -102,10 +106,13 @@ export function warnPlayer(player, reason) {
 
 /**
  * Notifies all online admins with a formatted message.
+ * Admin notification delivery respects individual admin preferences (via tags like "ac_notifications_off")
+ * and the global default setting `acGlobalNotificationsDefaultOn`.
  * Optionally includes context about a specific player and their flag data if provided.
  * @param {string} baseMessage The core message to send.
  * @param {mc.Player} [player] Optional: The player related to this notification.
- * @param {object} [pData] Optional: The player-specific data, typically containing a `flags` object and `lastFlagType`.
+ * @param {object} [pData] Optional: The player-specific data, typically from playerDataManager,
+ *                         expected to have `flags.totalFlags` and `lastFlagType` if player context is relevant.
  */
 export function notifyAdmins(baseMessage, player, pData) {
     let fullMessage = `§7[AC Notify] ${baseMessage}§r`;
@@ -113,27 +120,27 @@ export function notifyAdmins(baseMessage, player, pData) {
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
         const flagType = pData.lastFlagType || "N/A";
         const specificFlagCount = pData.flags[flagType] ? pData.flags[flagType].count : 0;
-        fullMessage += ` §c(Player: ${player.nameTag}, Total Flags: ${pData.flags.totalFlags}, ${flagType}: ${specificFlagCount})§r`;
+        fullMessage += ` §c(Player: ${player.nameTag}, Total Flags: ${pData.flags.totalFlags}, Last: ${flagType} [${specificFlagCount}])§r`;
     } else if (player) {
         fullMessage += ` §c(Player: ${player.nameTag})§r`;
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    const notificationsOffTag = "ac_notifications_off"; // Tag to explicitly disable AC notifications
-    const notificationsOnTag = "ac_notifications_on";   // Tag to explicitly enable AC notifications
+    const notificationsOffTag = "ac_notifications_off";
+    const notificationsOnTag = "ac_notifications_on";
 
     for (const p of allPlayers) {
-        if (isAdmin(p)) { // Check if the player 'p' is an admin
+        if (isAdmin(p)) {
             const hasExplicitOn = p.hasTag(notificationsOnTag);
             const hasExplicitOff = p.hasTag(notificationsOffTag);
 
+            // Determine if the admin should receive the message based on tags and global default
             const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && acGlobalNotificationsDefaultOn);
 
             if (shouldReceiveMessage) {
                 try {
                     p.sendMessage(fullMessage);
                 } catch (e) {
-                    // Log error if sending message fails for a specific admin
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
                     debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag);
                 }
@@ -144,52 +151,61 @@ export function notifyAdmins(baseMessage, player, pData) {
 
 
 /**
- * Logs a message to the console if debug logging is enabled in the configuration.
- * Prefixes messages differently if `contextPlayerNameIfWatched` is provided, indicating a log specific to a watched player.
+ * Logs a message to the console if debug logging (`enableDebugLogging` in config) is enabled.
+ * Prefixes messages with "[AC Debug]" or "[AC Watch - PlayerName]" if `contextPlayerNameIfWatched` is provided.
  * @param {string} message The message to log.
  * @param {string} [contextPlayerNameIfWatched=null] Optional: The nameTag of a player being watched.
+ *                                                  If provided, the log prefix changes to indicate context.
  */
 export function debugLog(message, contextPlayerNameIfWatched = null) {
     if (enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
-        console.warn(`${prefix} ${message}`);
+        console.warn(`${prefix} ${message}`); // console.warn is often used for better visibility in Bedrock consoles
     }
 }
 
 /**
- * Helper function to find a player by name (case-insensitive).
- * @param {string} playerName The name of the player to find.
- * @returns {mc.Player | null} The player object if found, otherwise null.
+ * Finds an online player by their nameTag (case-insensitive).
+ * @param {string} playerName The nameTag of the player to find.
+ * @returns {mc.Player | null} The player object if found online, otherwise null.
+ *                             Returns null if playerName is invalid.
  */
 export function findPlayer(playerName) {
     if (!playerName || typeof playerName !== 'string') return null;
     const nameToFind = playerName.toLowerCase();
+    // world.getAllPlayers() is preferable to world.getPlayers() if available and suitable,
+    // as getPlayers() often requires EntityQueryOptions.
+    // Assuming getAllPlayers() is the modern standard.
     return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
 
 /**
- * Helper function to parse duration string (e.g., "5m", "1h", "2d", "perm").
+ * Parses a duration string (e.g., "5m", "1h", "2d", "perm") into milliseconds.
+ * If only a number is provided, it's assumed to be in minutes.
  * @param {string} durationString The duration string to parse.
- * @returns {number | null | Infinity} Duration in milliseconds, Infinity for permanent, or null for invalid format.
+ * @returns {number | null | Infinity} Duration in milliseconds, `Infinity` for "perm" or "permanent",
+ *                                     or `null` if the format is invalid.
  */
 export function parseDuration(durationString) {
-    if (!durationString) return null;
-    durationString = durationString.toLowerCase();
-    if (durationString === "perm" || durationString === "permanent") return Infinity;
+    if (!durationString || typeof durationString !== 'string') return null; // Added type check
+    const lowerDurationString = durationString.toLowerCase(); // Use a new var for lowercase
+    if (lowerDurationString === "perm" || lowerDurationString === "permanent") return Infinity;
+
     const regex = /^(\d+)([smhd])$/;
-    const match = durationString.match(regex);
+    const match = lowerDurationString.match(regex);
+
     if (match) {
         const value = parseInt(match[1]);
         const unit = match[2];
         switch (unit) {
-            case 's': return value * 1000; // seconds
-            case 'm': return value * 60 * 1000; // minutes
-            case 'h': return value * 60 * 60 * 1000; // hours
-            case 'd': return value * 24 * 60 * 60 * 1000; // days
+            case 's': return value * 1000;
+            case 'm': return value * 60 * 1000;
+            case 'h': return value * 60 * 60 * 1000;
+            case 'd': return value * 24 * 60 * 60 * 1000;
         }
-    } else if (/^\d+$/.test(durationString)) { // If only a number is provided, assume minutes
-        const value = parseInt(durationString);
-        if (!isNaN(value)) return value * 60 * 1000;
+    } else if (/^\d+$/.test(lowerDurationString)) { // If only a number
+        const value = parseInt(lowerDurationString);
+        if (!isNaN(value)) return value * 60 * 1000; // Assume minutes
     }
     return null; // Invalid format
 }
