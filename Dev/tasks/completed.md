@@ -27,6 +27,221 @@
 ---
 # Completed Tasks
 
+## 2023-10-27
+
+*   **Movement - Advanced:** SjnExe parity goal.
+    *   **Invalid Y Velocity / High Velocity:** Monitor `player.getVelocity().y`. Flag if vertical velocity exceeds thresholds not achievable through normal means (e.g., super-jump without effects, excessive upward dash). (SafeGuard, SjnExe 'High Velocity')
+        *Implemented by:
+            - Adding `pData` fields: `lastJumpBoostLevel`, `lastSlowFallingTicks`, `lastLevitationTicks`, `lastTookDamageTick`, `lastUsedElytraTick`. (Note: `lastUsedRiptideTick`, `lastOnSlimeBlockTick` were part of initial planning but deferred).
+            - Adding `config.js` settings: `enableHighYVelocityCheck`, `maxYVelocityPositive`, `jumpBoostYVelocityBonus`, `yVelocityGraceTicks`. (These were pre-existing from `types.js` and previous config setup but are utilized by this check).
+            - Adding `checkActionProfiles` entry for `"movement_high_y_velocity"` (This was pre-existing as part of `types.js` and config setup but is now actively used).
+            - Updating `pData` fields for effects (Jump Boost, Slow Falling, Levitation) and elytra usage (`lastUsedElytraTick`) within `AntiCheatsBP/scripts/checks/movement/flyCheck.js`.
+            - Updating `pData.lastTookDamageTick` in `AntiCheatsBP/scripts/core/eventHandlers.js` (`handleEntityHurt`).
+            - Integrating the core high Y-velocity detection logic into `flyCheck.js`. This logic considers grace conditions (damage, elytra, climbing, slow falling) and adjusts maximum allowed Y velocity based on Jump Boost.
+            - Deferred Riptide and Slime block grace conditions for future enhancement.*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **View Snap / Invalid Rotation:** Detect changes in pitch/yaw exceeding thresholds (e.g., pitch > 60°/tick, yaw > 90°/tick) during or immediately after combat. Check for absolute invalid rotations (e.g., pitch > 90° or < -90°). *(Verified existing implementation in `viewSnapCheck.js` and configuration in `config.js`. No code changes required.)*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **Multi-Target Killaura:** Track recently attacked entities. Flag if >N (e.g., 3) distinct entities are attacked within a very short window (e.g., 1-2 seconds). *(Verified existing implementation in `multiTargetCheck.js` and configuration in `config.js`. No code changes required.)*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **State Conflicts:**
+        *   *Attacking while using an item:* Flag if an attack occurs while the player is in a state considered "using an item" (e.g., eating food, drawing a bow, using a shield) that should prevent attacks. Requires custom state tracking. (Scythe, SjnExe)
+            *Implemented by:
+                - Adding `isUsingConsumable`, `isChargingBow`, `isUsingShield`, `lastItemUseTick` to `PlayerAntiCheatData` in `types.js` and `playerDataManager.js` (including initialization and session reset).
+                - Defining `attackBlockingConsumables`, `attackBlockingBows`, `attackBlockingShields`, and `itemUseStateClearTicks` in `config.js` and adding them to `editableConfigValues`.
+                - Updating `handleItemUse` in `eventHandlers.js` to set these player states and `lastItemUseTick` based on item usage and the new config arrays.
+                - Adding `checkAttackWhileUsingItem` to `stateConflictCheck.js` to detect attacks during these states, and ensuring it's exported via the wildcard in `checks/index.js`.
+                - Integrating the `checkAttackWhileUsingItem` call into `handleEntityHurt` in `eventHandlers.js`.
+                - Adding new `checkActionProfiles` ("combat_attack_while_consuming", "combat_attack_while_bow_charging", "combat_attack_while_shielding") to `config.js`.
+                - Implementing logic in the main tick loop in `main.js` to auto-clear these states based on `itemUseStateClearTicks`.*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **State Conflicts:**
+        *   *Attacking while sleeping:* Flag if an attack occurs while `player.isSleeping` is true. (Scythe, SjnExe) *(Verified existing implementation in `stateConflictCheck.js`, `eventHandlers.js`, and `config.js`. No code changes required.)*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   **State Conflicts:**
+        *   *Attacking while chest open:* (Low feasibility with current API) Investigate if any event or state reliably indicates an open container UI. (Scythe)
+            *Investigation Complete: Reviewed `@minecraft/server` API documentation (v2.1.0-beta as of 2025-05-07). No direct or reliable event/player property was found to determine if a player has a chest UI (or general container UI) open for the purpose of preventing an attack. Feasibility remains low with the current API. Relevant classes like `ScreenDisplay`, `PlayerCursorInventoryComponent`, `BlockInventoryComponent`, and events like `PlayerInteractWithBlockAfterEvent` were considered but do not offer a robust solution for this specific state detection in a preventative context.*
+*   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
+    *   *"No Swing" detection:* (Needs further API feasibility check) Investigate if server-side damage events can be correlated with client-side swing animations/packets, though direct detection is likely difficult. (Scythe)
+        *Investigation Complete: Reviewed `@minecraft/server` API documentation (v2.1.0-beta as of 2025-05-07). No direct server-side API was found to detect client-side swing animations independently of the resulting damage or interaction events. Correlating damage events with an *expected* but unconfirmed swing animation is unreliable for cheat detection with the current API. Feasibility remains low/very difficult.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Tower-like Upward Building:** Detect rapid, continuous upward pillar building significantly faster than manual placement, especially if combined with unusual look angles.
+        *Implemented by:
+            - Adding `recentBlockPlacements`, `lastPillarBaseY`, `consecutivePillarBlocks`, `lastPillarTick`, `currentPillarX`, `currentPillarZ` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+            - Adding configurations: `enableTowerCheck`, `towerMaxTickGap`, `towerMinHeight`, `towerMaxPitchWhilePillaring`, `towerPlacementHistoryLength` and a `checkActionProfiles` entry for "world_tower_build" (`config.js`).
+            - Creating `checkTower` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` to track pillar formation and check for height and player pitch.
+            - Exporting `checkTower` via `checks/index.js`.
+            - Creating `handlePlayerPlaceBlockAfter` in `eventHandlers.js` and subscribing to `world.afterEvents.playerPlaceBlock` in `main.js` to call `checkTower`.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Flat/Invalid Rotation While Building:** Detect if player is placing blocks (especially in complex patterns like scaffolding) while maintaining an unnaturally static or limited range of head rotation (e.g., always looking straight down or perfectly horizontal).
+        *Implemented by:
+            - Adding configurations to `config.js` for enabling the check (`enableFlatRotationCheck`), consecutive blocks to analyze (`flatRotationConsecutiveBlocks`), variance thresholds for pitch/yaw (`flatRotationMaxPitchVariance`, `flatRotationMaxYawVariance`), and specific pitch ranges for flat horizontal/downward building (`flatRotationPitchHorizontalMin/Max`, `flatRotationPitchDownwardMin/Max`). Added these to `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"world_flat_rotation_building"` in `config.js`.
+            - Creating `checkFlatRotationBuilding` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` that analyzes `pData.recentBlockPlacements` (populated by `checkTower` during block placement) for static pitch/yaw or pitch within defined flat ranges.
+            - Exporting the `checkFlatRotationBuilding` function via `checks/index.js`.
+            - Integrating the call to `checkFlatRotationBuilding` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`, called after `checkTower`.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Placing Blocks Under Self While Looking Up:** Detect if player is placing blocks beneath their feet to pillar upwards while their pitch indicates they are looking upwards (away from the placement area).
+        *(Verified: This scenario is already covered by the `checkTower` function in `towerCheck.js`. The existing pitch check (`pitch > config.towerMaxPitchWhilePillaring`) correctly flags players looking too far upwards while pillaring.)*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Downward Scaffold:** Detect rapid placement of blocks downwards while airborne, especially if player maintains horizontal speed.
+        *Implemented by:
+            - Adding `consecutiveDownwardBlocks`, `lastDownwardScaffoldTick`, `lastDownwardScaffoldBlockLocation` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+            - Adding configurations to `config.js` for enabling the check (`enableDownwardScaffoldCheck`), min blocks (`downwardScaffoldMinBlocks`), max tick gap (`downwardScaffoldMaxTickGap`), and min horizontal speed (`downwardScaffoldMinHorizontalSpeed`). Added these to `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"world_downward_scaffold"` in `config.js`.
+            - Creating `checkDownwardScaffold` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js` to track downward block placements while airborne and check against speed/count thresholds.
+            - Exporting the `checkDownwardScaffold` function via `checks/index.js`.
+            - Integrating the call to `checkDownwardScaffold` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`.*
+*   **Scaffold/Tower Detection:** SjnExe parity goal.
+    *   **Placing Blocks onto Air/Liquid:** Detect block placements where the targeted block face is air or a liquid, without valid support, indicative of scaffold-like behavior.
+        *Implemented by:
+            - Adding configurations `enableAirPlaceCheck` and `airPlaceSolidBlocks` list to `config.js`, and including them in `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"world_air_place"` in `config.js`.
+            - Creating `checkAirPlace` function in `AntiCheatsBP/scripts/checks/world/towerCheck.js`. This function checks if a block from `airPlaceSolidBlocks` is placed against air/liquid and if it lacks solid adjacent support (excluding the target face itself if it's air/liquid).
+            - Exporting the `checkAirPlace` function via `checks/index.js`.
+            - Creating `handlePlayerPlaceBlockBefore` in `eventHandlers.js`.
+            - Subscribing to `world.beforeEvents.playerPlaceBlock` in `main.js` to call `handlePlayerPlaceBlockBefore`, which in turn calls `checkAirPlace`.*
+*   **Timer/FastUse/FastPlace:** SjnExe parity goal.
+    *   **Timer (Game Speed):** Investigate methods to detect if overall game tick or player action processing speed is unnaturally altered. This is complex and may have limited server-side detectability. (Original todo)
+        *Investigation Complete: Direct detection of client-side game speed (Timer hack) is not feasible with the server-side Script API. The server processes actions based on its own tick rate. However, Timer abuse would manifest as an abnormally high rate of player actions (e.g., attacks, block placements, item uses) received and processed by the server in a short real-time period or within too few server ticks. This can be indirectly addressed by robust "FastUse," "FastPlace," and general "Action Rate" checks (like CPS). No separate "Timer (Game Speed)" check will be implemented; its effects will be caught by these more specific action rate detections.*
+*   **Timer/FastUse/FastPlace:** SjnExe parity goal.
+    *   **FastUse/FastPlace:** Monitor the time between consecutive uses of items (e.g., firing bows/crossbows, throwing pearls/snowballs, eating food) or placement of blocks. Flag if these actions occur faster than humanly possible or vanilla game limits allow. (Scythe, SjnExe)
+        *Implemented by:
+            - **Fast Item Use:**
+                - Added `itemUseTimestamps: Record<string, number>` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+                - Added `enableFastUseCheck` and `fastUseItemCooldowns: Object.<string, number>` to `config.js` (and to `editableConfigValues`).
+                - Created `checkFastUse` function in `AntiCheatsBP/scripts/checks/world/fastUseCheck.js` (exported via `checks/index.js`).
+                - Integrated `checkFastUse` into `handleItemUse` in `eventHandlers.js` (which now includes `logManager` and is `async`).
+                - Added `"action_fast_use"` profile to `checkActionProfiles` in `config.js`.
+            - **Fast Block Placement:**
+                - Added `recentPlaceTimestamps: number[]` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`).
+                - Added `enableFastPlaceCheck`, `fastPlaceTimeWindowMs`, `fastPlaceMaxBlocksInWindow` to `config.js` (and to `editableConfigValues`).
+                - Created `checkFastPlace` function in `AntiCheatsBP/scripts/checks/world/buildingChecks.js` (exported via `checks/index.js`).
+                - Integrated `checkFastPlace` into `handlePlayerPlaceBlockAfter` in `eventHandlers.js`.
+                - Added `"world_fast_place"` profile to `checkActionProfiles` in `config.js`.*
+
+---
+
+## 2023-10-28
+
+*   **Movement - Advanced:** SjnExe parity goal.
+    *   **NoSlow:** Detect if player maintains normal walking/sprinting speed while performing actions that should slow them down (e.g., using a bow, eating, sneaking over certain blocks if applicable). Requires tracking player speed against their current action state. (Scythe, SjnExe)
+        *Implemented by:
+            - Adding configurations to `config.js` for enabling the check (`enableNoSlowCheck`) and max speed thresholds for actions like eating (`noSlowMaxSpeedEating`), charging bow (`noSlowMaxSpeedChargingBow`), using shield (`noSlowMaxSpeedUsingShield`), and sneaking (`noSlowMaxSpeedSneaking`).
+            - Adding these new configurations to `editableConfigValues` in `config.js`.
+            - Adding a `checkActionProfiles` entry for `"movement_noslow"` in `config.js`.
+            - Creating the `checkNoSlow` function in `AntiCheatsBP/scripts/checks/movement/noSlowCheck.js`. This function:
+                - Calculates current horizontal speed.
+                - Checks `pData` states (`isUsingConsumable`, `isChargingBow`, `isUsingShield`) and `player.isSneaking` to identify the current action.
+                - Compares speed against the action-specific threshold from `config.js`.
+                - Includes a basic tolerance if the player has a Speed effect.
+                - Calls `executeCheckAction` if speed exceeds the threshold.
+            - Exporting `checkNoSlow` from `AntiCheatsBP/scripts/checks/index.js`.
+            - Integrating the call to `checkNoSlow` (with `await`) into the main tick loop in `AntiCheatsBP/scripts/main.js` for each player, ensuring other async checks in the loop are also `await`ed for consistency.*
+
+---
+
+## 2023-10-29
+
+*   **Movement - Advanced:** SjnExe parity goal.
+    *   **InvalidSprint:** Detect sprinting under conditions where it should be impossible (e.g., while movement is impaired by blindness, while actively sneaking, while riding an entity that doesn't permit player sprinting). (Scythe)
+        *Implemented by:
+            - Adding `lastBlindnessTicks` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`) for session-only tracking of the blindness effect.
+            - Adding `enableInvalidSprintCheck` to `config.js` and `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"movement_invalid_sprint"` in `config.js`.
+            - Creating `checkInvalidSprint` function in `AntiCheatsBP/scripts/checks/movement/invalidSprintCheck.js`. This function updates `pData.lastBlindnessTicks` based on player effects. It then checks if `player.isSprinting` while also being blind (`pData.lastBlindnessTicks > 0`), sneaking (`player.isSneaking`), or riding an entity (`player.isRiding`).
+            - Exporting `checkInvalidSprint` from `AntiCheatsBP/scripts/checks/index.js`.
+            - Integrating the call to `checkInvalidSprint` (with `await`) into the main tick loop in `AntiCheatsBP/scripts/main.js` for each player.
+            - Ensured `currentTick` is passed to `checkFly` and `checkSpeed` in `main.js` for consistency during the previous subtask.*
+
+---
+
+## 2023-10-30
+
+*   **World Interaction - Advanced:** SjnExe parity goal.
+    *   **AutoTool:** Monitor `player.selectedSlot` changes in conjunction with block break events. Detect if player's selected slot almost instantaneously switches to the optimal tool for breaking a block type just before the break occurs, and then potentially switches back. (Scythe)
+        *Implemented by:
+            - Adding `pData` fields to `types.js` and `playerDataManager.js`: `previousSelectedSlotIndex`, `lastSelectedSlotChangeTick`, `isAttemptingBlockBreak`, `breakingBlockTypeId`, `breakingBlockLocation`, `slotAtBreakAttemptStart`, `breakAttemptTick`, `switchedToOptimalToolForBreak`, `optimalToolSlotForLastBreak`, `lastBreakCompleteTick`, `blockBrokenWithOptimalTypeId`, `optimalToolTypeIdForLastBreak`.
+            - Updating `playerDataManager.updateTransientPlayerData` to track `selectedSlotIndex` changes and update `lastSelectedSlotChangeTick` and `previousSelectedSlotIndex`.
+            - Adding `config.js` settings: `enableAutoToolCheck`, `autoToolSwitchToOptimalWindowTicks`, `autoToolSwitchBackWindowTicks`.
+            - Adding a `checkActionProfiles` entry for `"world_autotool"` in `config.js`.
+            - Creating `utils/itemUtils.js` with (simplified placeholder) `getBlockBreakingSpeed` and `getOptimalToolForBlock` helper functions, and placeholder data for block/tool properties. This file also includes expanded block/tool data from a subsequent subtask. Exported these utilities via `utils/index.js`.
+            - Modifying `eventHandlers.js`:
+                - Renamed `handlePlayerBreakBlock` to `handlePlayerBreakBlockBeforeEvent` and updated its signature and logic to set `pData` fields like `isAttemptingBlockBreak`, `breakingBlockTypeId`, `breakingBlockLocation`, `slotAtBreakAttemptStart`, `breakAttemptTick`.
+                - Updated `handlePlayerBreakBlockAfter` signature and logic to set `pData` fields like `lastBreakCompleteTick`, `blockBrokenWithOptimalTypeId`, and `optimalToolTypeIdForLastBreak` if a switch to an optimal tool was detected.
+            - Updating `main.js` event subscriptions for `playerBreakBlock.before` and `playerBreakBlock.after` to use the modified handlers with all necessary parameters.
+            - Creating `checkAutoTool` function in `AntiCheatsBP/scripts/checks/world/autoToolCheck.js`. This function performs tick-based detection of "switch-to-optimal" tool patterns around block breaks and "switch-back" patterns after a break, using the `pData` flags set by event handlers and the `itemUtils` helpers. It also includes logic for state cleanup.
+            - Updating `violationDetails` in `checkAutoTool` to use the more specific `pData` fields for logging.
+            - Exporting `checkAutoTool` via `checks/index.js`.
+            - Integrating the call to `checkAutoTool` (with `await` and `player.dimension`) into the main tick loop in `main.js`.*
+
+---
+
+## 2023-10-31
+
+*   **World Interaction - Advanced:** SjnExe parity goal.
+    *   **InstaBreak:** Detect breaking of blocks that are typically unbreakable (e.g., bedrock, barriers, command blocks by non-ops) or blocks broken significantly faster than possible even with enchantments/effects. (Scythe)
+        *Implemented by:
+            - **Unbreakable Block Detection:**
+                - Added `pData` fields to `types.js` and `playerDataManager.js` for break timing and tool used: `breakStartTimeMs`, `breakStartTickGameTime`, `expectedBreakDurationTicks`, `toolUsedForBreakAttempt`.
+                - Added `config.js` settings: `enableInstaBreakUnbreakableCheck`, `instaBreakUnbreakableBlocks` list.
+                - Created `checkBreakUnbreakable` function in `AntiCheatsBP/scripts/checks/world/instaBreakCheck.js`. This function checks if the target block is in `instaBreakUnbreakableBlocks` and if the player is not in creative mode; if so, it cancels the `PlayerBreakBlockBeforeEvent` and flags the player.
+                - Added `"world_instabreak_unbreakable"` `checkActionProfiles` entry in `config.js`.
+                - Integrated the call to `checkBreakUnbreakable` into `handlePlayerBreakBlockBeforeEvent` in `eventHandlers.js`, ensuring it runs first and can cancel the event.
+            - **Break Speed Detection:**
+                - Added `config.js` settings: `enableInstaBreakSpeedCheck`, `instaBreakTimeToleranceTicks`.
+                - Created `checkBreakSpeed` function (initially placeholder, then with core logic) in `instaBreakCheck.js`.
+                - Added `"world_instabreak_speed"` `checkActionProfiles` entry in `config.js`.
+                - Refined `getExpectedBreakTicks` in `AntiCheatsBP/scripts/utils/itemUtils.js` to provide a more (though still simplified) vanilla-like calculation of expected block break duration in ticks. This included renaming `getBlockBreakingSpeed` to `calculateRelativeBlockBreakingPower` and correcting the application of Efficiency and Mining Fatigue effects in `getExpectedBreakTicks`.
+                - In `handlePlayerBreakBlockBeforeEvent` (in `eventHandlers.js`), added logic to calculate and store `pData.expectedBreakDurationTicks` (using the refined `getExpectedBreakTicks`) and `pData.toolUsedForBreakAttempt` when a block break starts.
+                - Implemented the core logic in `checkBreakSpeed` to be called from `handlePlayerBreakBlockAfterEvent`. This logic compares the actual break duration (`currentTick - pData.breakStartTickGameTime`) with `pData.expectedBreakDurationTicks` and flags if the actual time is less than the expected time minus `config.instaBreakTimeToleranceTicks`.
+                - Integrated the call to `checkBreakSpeed` into `handlePlayerBreakBlockAfterEvent` in `eventHandlers.js`.
+            - Exported both `checkBreakUnbreakable` and `checkBreakSpeed` from `checks/index.js`.*
+
+---
+
+## 2023-11-01
+
+*   **Player Behavior - Advanced:** SjnExe parity goal.
+    *   **Anti-Gamemode Creative (Anti-GMC):** If a player is unexpectedly in Creative mode (not an admin or by legitimate means), flag and potentially switch them back to Survival. Notify admins. (SafeGuard, SjnExe)
+        *Implemented by:
+            - Adding `config.js` settings: `enableAntiGMCCheck`, `antiGMCSwitchToGameMode`, `antiGMCAutoSwitch`.
+            - Adding these new settings to `editableConfigValues` in `config.js`.
+            - Adding a `checkActionProfiles` entry for `"player_antigmc"` in `config.js`.
+            - Verifying that `types.js` and `playerDataManager.js` did not require immediate new fields for core detection.
+            - Creating `checkAntiGMC` function in `AntiCheatsBP/scripts/checks/world/antiGMCCheck.js` (placed in `/world` for now, noted for potential refactor to `/player`). This function checks `player.gameMode`, uses `getPlayerPermissionLevel` (from `playerUtils.js` which uses `rankManager.js`'s `permissionLevels`) to determine if the player is exempt. If not exempt and in creative mode, it flags and optionally switches gamemode based on config.
+            - Ensuring `getPlayerPermissionLevel` (from `playerUtils.js`) and `permissionLevels` (from `rankManager.js`) are correctly exported and used.
+            - Exporting `checkAntiGMC` via `checks/index.js`.
+            - Integrating the call to `checkAntiGMC` (with `await`) into the main tick loop in `main.js`.*
+*   **Player Behavior - Advanced:** SjnExe parity goal.
+    *   **Namespoof:** Check `player.nameTag` for excessive length, use of disallowed characters (e.g., non-ASCII, control characters beyond typical gameplay names), or rapid changes. (Scythe, SjnExe)
+        *   *Note: Concern raised about potential false positives for console players (e.g., due to spaces, specific character sets, or typical console Gamertag lengths). Ensure implementation is flexible or provides configuration to handle this when developing this feature.*
+        *Implemented by:
+            - Adding `lastKnownNameTag` and `lastNameTagChangeTick` to `PlayerAntiCheatData` in `types.js` and `playerDataManager.js`.
+            - Adding `config.js` settings: `enableNameSpoofCheck`, `nameSpoofMaxLength`, `nameSpoofDisallowedCharsRegex`, `nameSpoofMinChangeIntervalTicks`.
+            - Adding these new settings to `editableConfigValues` in `config.js`.
+            - Adding a `checkActionProfiles` entry for `"player_namespoof"` in `config.js`.
+            - Creating `checkNameSpoof` function in `AntiCheatsBP/scripts/checks/world/nameSpoofCheck.js` (placed in `/world` for now). This function checks nameTag length, for disallowed characters using the regex, and for rapid changes against `config.nameSpoofMinChangeIntervalTicks`. It updates `pData.lastKnownNameTag` and `pData.lastNameTagChangeTick` on change.
+            - Exporting `checkNameSpoof` via `checks/index.js`.
+            - Integrating the call to `checkNameSpoof` (with `await`) into the main tick loop in `main.js`.*
+
+---
+
+## 2023-11-02
+
+*   **Player Behavior - Advanced:** SjnExe parity goal.
+    *   **InventoryMods (Hotbar Switch):** Detect if items are moved or used from the hotbar in ways that are impossible manually, e.g., switching active slot and using an item in the same tick, or moving items in inventory while performing other actions that should lock inventory. (Scythe - may require careful API event correlation)
+        *Implemented by:
+            - Adding `enableInventoryModCheck` to `config.js` and `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for "player_inventory_mod" in `config.js`.
+            - Verifying existing `pData` fields (`lastSelectedSlotChangeTick`, `isUsingConsumable`, `isChargingBow`) were sufficient for initial checks.
+            - Creating `AntiCheatsBP/scripts/checks/player/inventoryModCheck.js` with two functions:
+                - `checkSwitchAndUseInSameTick`: Called from `handleItemUse` (which handles `ItemUseBeforeEvent`). Detects if `pData.lastSelectedSlotChangeTick` is the same as `currentTick` during item use.
+                - `checkInventoryMoveWhileActionLocked`: Called from a new `handleInventoryItemChange` (for `PlayerInventoryItemChangeAfterEvent`). Detects item moves if `pData.isUsingConsumable` or `pData.isChargingBow` is true.
+            - Exporting these functions via `checks/index.js` (from the new `checks/player/` directory).
+            - Integrating `checkSwitchAndUseInSameTick` into `handleItemUse` in `eventHandlers.js` (ensuring `currentTick` is passed).
+            - Creating `handleInventoryItemChange` in `eventHandlers.js` and subscribing to `world.afterEvents.playerInventoryItemChange` in `main.js` to call it, passing necessary dependencies including `currentTick`.*
+
 ## Refactoring: Standardized Actions for Combat & IllegalItem Checks
 **Date:** Current Session
 

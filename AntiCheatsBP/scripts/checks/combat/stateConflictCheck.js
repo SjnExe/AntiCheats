@@ -37,5 +37,52 @@ export async function checkAttackWhileSleeping(player, pData, config, playerUtil
     }
 }
 
-// Future state conflict checks (e.g., attack while using item) could be added here.
-// export function checkAttackWhileUsingItem(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction) { ... }
+/**
+ * Checks if the player is attacking while in a state that should prevent it (e.g., using an item, charging a bow, using a shield).
+ * @param {mc.Player} player The player instance to check.
+ * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
+ * @param {object} config The configuration object.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ */
+export async function checkAttackWhileUsingItem(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction) {
+    if (!config.enableStateConflictCheck) return;
+    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    const dependencies = { config, playerDataManager, playerUtils, logManager };
+
+    if (pData.isUsingConsumable) {
+        const violationDetails = {
+            state: "isUsingConsumable",
+            itemUsed: "consumable",
+            // Consider adding itemStack.typeId if readily available or stored in pData from item use event
+        };
+        await executeCheckAction(player, "combat_attack_while_consuming", violationDetails, dependencies);
+        if (pData.isWatched && playerUtils.debugLog) {
+            playerUtils.debugLog(`StateConflict: Flagged ${player.nameTag} for Attack While Consuming.`, watchedPrefix);
+        }
+    }
+
+    if (pData.isChargingBow) {
+        const violationDetails = {
+            state: "isChargingBow",
+            itemUsed: "bow",
+        };
+        await executeCheckAction(player, "combat_attack_while_bow_charging", violationDetails, dependencies);
+        if (pData.isWatched && playerUtils.debugLog) {
+            playerUtils.debugLog(`StateConflict: Flagged ${player.nameTag} for Attack While Charging Bow.`, watchedPrefix);
+        }
+    }
+
+    if (pData.isUsingShield) {
+        const violationDetails = {
+            state: "isUsingShield",
+            itemUsed: "shield",
+        };
+        await executeCheckAction(player, "combat_attack_while_shielding", violationDetails, dependencies);
+        if (pData.isWatched && playerUtils.debugLog) {
+            playerUtils.debugLog(`StateConflict: Flagged ${player.nameTag} for Attack While Shielding.`, watchedPrefix);
+        }
+    }
+}

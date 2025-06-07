@@ -68,6 +68,20 @@ export const speedToleranceBuffer = 0.5;
 /** @type {number} Number of consecutive ticks a player must exceed max horizontal speed on ground to be flagged. */
 export const speedGroundConsecutiveTicksThreshold = 5;
 
+/** @type {boolean} If true, the NoSlow check is active. */
+export const enableNoSlowCheck = true;
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating/drinking. Vanilla is very slow. */
+export const noSlowMaxSpeedEating = 1.0; // Slightly above 0 to allow minor adjustments
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla is very slow. */
+export const noSlowMaxSpeedChargingBow = 1.0;
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield (if this slows). Vanilla walk: ~4.3, Sneak: ~1.3. Shield doesn't slow walk/sprint. */
+export const noSlowMaxSpeedUsingShield = 4.4; // Set slightly above normal walk, as shield itself doesn't slow. This might catch if combined with other speed hacks.
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while sneaking. Vanilla is ~1.31 B/s. */
+export const noSlowMaxSpeedSneaking = 1.5; // Slightly above vanilla sneak speed
+
+/** @type {boolean} If true, the Invalid Sprint check is active. */
+export const enableInvalidSprintCheck = true;
+
 
 // --- Combat Checks ---
 
@@ -114,8 +128,82 @@ export const flagReasonMultiAura = "Multi-Target Aura";
 /** @type {string} Reason message for attacking while sleeping. */
 export const flagReasonAttackWhileSleeping = "Attack While Sleeping";
 
+/** @type {string[]} Item type IDs for consumables that should prevent attacking while being used. */
+export const attackBlockingConsumables = [
+    "minecraft:apple", "minecraft:golden_apple", "minecraft:enchanted_golden_apple",
+    "minecraft:mushroom_stew", "minecraft:rabbit_stew", "minecraft:beetroot_soup",
+    "minecraft:suspicious_stew", "minecraft:cooked_beef", "minecraft:cooked_porkchop",
+    "minecraft:cooked_mutton", "minecraft:cooked_chicken", "minecraft:cooked_rabbit",
+    "minecraft:cooked_salmon", "minecraft:cooked_cod", "minecraft:baked_potato",
+    "minecraft:bread", "minecraft:melon_slice", "minecraft:carrot", "minecraft:potato",
+    "minecraft:beetroot", "minecraft:dried_kelp", "minecraft:potion", "minecraft:honey_bottle"
+    // Add other foods/potions as necessary
+];
+
+/** @type {string[]} Item type IDs for bows that should prevent attacking while being charged. */
+export const attackBlockingBows = ["minecraft:bow", "minecraft:crossbow"];
+
+/** @type {string[]} Item type IDs for shields that should prevent attacking while being actively used (raised). */
+export const attackBlockingShields = ["minecraft:shield"];
+
+/** @type {number} Number of ticks the 'using item' state (like isUsingConsumable) should persist before being auto-cleared if no explicit stop event occurs. (20 ticks = 1 second) */
+export const itemUseStateClearTicks = 60; // Default to 3 seconds
+
 
 // --- World Checks ---
+
+// --- AutoTool Check ---
+/** @type {boolean} If true, the AutoTool check is active. */
+export const enableAutoToolCheck = true;
+/** @type {number} Max ticks between starting to break a block and switching to an optimal tool to be considered suspicious. */
+export const autoToolSwitchToOptimalWindowTicks = 2; // e.g., switch must happen almost immediately
+/** @type {number} Max ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool. */
+export const autoToolSwitchBackWindowTicks = 5;
+
+// --- InstaBreak Check ---
+/** @type {boolean} If true, the check for breaking unbreakable blocks is active. */
+export const enableInstaBreakUnbreakableCheck = true;
+/** @type {string[]} List of block type IDs considered normally unbreakable by non-operators. */
+export const instaBreakUnbreakableBlocks = [
+    "minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
+    "minecraft:repeating_command_block", "minecraft:chain_command_block",
+    "minecraft:structure_block", "minecraft:structure_void", "minecraft:jigsaw",
+    "minecraft:light_block", "minecraft:end_portal_frame", "minecraft:end_gateway"
+];
+/** @type {boolean} If true, the check for breaking blocks too fast is active. */
+export const enableInstaBreakSpeedCheck = true;
+/** @type {number} Tolerance in ticks for block breaking speed. (e.g., 1-2 ticks). ActualTime < ExpectedTime - Tolerance -> Flag. */
+export const instaBreakTimeToleranceTicks = 2;
+
+// --- Player Behavior Checks ---
+/** @type {boolean} If true, the NameSpoof check is active. */
+export const enableNameSpoofCheck = true;
+/** @type {number} Maximum allowed length for a player's nameTag. */
+export const nameSpoofMaxLength = 48; // Generous to account for rank prefixes + long names
+/**
+ * @type {string} Regex pattern for disallowed characters in nameTags.
+ * Default aims to allow common characters, color codes, and spaces, but block most control/uncommon symbols.
+ * Example: "[^\w\s§\-\[\]().#@!']" - disallows anything NOT (word chars, space, §, -, [, ], (, ), ., #, @, !, ')
+ * Another option: "[^\x20-\x7E§]" - allows only printable ASCII (space to ~) and §. This is more restrictive.
+ * Current choice: lenient, disallows common problematic chars like newlines, excessive symbols.
+ */
+export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]"; // Disallow newlines, tabs, control chars, some extended ASCII
+/** @type {number} Minimum interval in ticks between allowed nameTag changes. */
+export const nameSpoofMinChangeIntervalTicks = 200; // 10 seconds
+
+/** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check is active. */
+export const enableAntiGMCCheck = true;
+/**
+ * @type {string} The gamemode to switch players to if unauthorized creative mode is detected and auto-switch is enabled.
+ * Valid values: "survival", "adventure", "spectator". Default: "survival".
+ */
+export const antiGMCSwitchToGameMode = "survival";
+/** @type {boolean} If true, automatically switch player's gamemode if unauthorized creative is detected. */
+export const antiGMCAutoSwitch = true;
+
+/** @type {boolean} If true, the InventoryMods (Hotbar Switch) checks are active. */
+export const enableInventoryModCheck = true;
+
 
 /** @type {number} Max blocks broken in `nukerCheckIntervalMs` for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
@@ -151,6 +239,84 @@ export const spamRepeatTimeWindowSeconds = 5;
 export const spamRepeatFlagPlayer = true;
 /** @type {boolean} If true, cancels the message that triggers the repeated spam detection. */
 export const spamRepeatCancelMessage = false;
+
+// --- Scaffold/Tower Detection ---
+/** @type {boolean} If true, the Scaffold/Tower (Tower-like upward building) check is active. */
+export const enableTowerCheck = true;
+/** @type {number} Maximum time in ticks between consecutive pillar blocks for it to be considered part of the same tower. */
+export const towerMaxTickGap = 10; // 0.5 seconds
+/** @type {number} Minimum number of consecutive upward blocks to trigger a tower flag. */
+export const towerMinHeight = 5;
+/** @type {number} Maximum pitch deviation (degrees) allowed when pillaring up. E.g., if pitch is > -30 (looking too far up/ahead). */
+export const towerMaxPitchWhilePillaring = -30; // Player should be looking down somewhat. Pitch < -30 means looking more upwards.
+/** @type {number} How many recent block placements to store for pattern analysis. */
+export const towerPlacementHistoryLength = 20;
+/** @type {boolean} If true, the Flat/Invalid Rotation While Building check is active. */
+export const enableFlatRotationCheck = true;
+/** @type {number} Number of consecutive block placements to analyze for static or flat rotation. */
+export const flatRotationConsecutiveBlocks = 4;
+/** @type {number} Maximum degrees of variance allowed for pitch over consecutive placements to be considered 'static'. */
+export const flatRotationMaxPitchVariance = 2.0;
+/** @type {number} Maximum degrees of variance allowed for yaw over consecutive placements to be considered 'static'. */
+export const flatRotationMaxYawVariance = 2.0;
+// Define specific pitch ranges considered "flat" or indicative of cheating while building
+/** @type {number} Minimum pitch for 'flat horizontal' building detection (e.g., looking straight ahead). */
+export const flatRotationPitchHorizontalMin = -5.0;
+/** @type {number} Maximum pitch for 'flat horizontal' building detection. */
+export const flatRotationPitchHorizontalMax = 5.0;
+/** @type {number} Minimum pitch for 'flat downward' building detection (e.g., looking straight down). */
+export const flatRotationPitchDownwardMin = -90.0;
+/** @type {number} Maximum pitch for 'flat downward' building detection. */
+export const flatRotationPitchDownwardMax = -85.0;
+        /** @type {boolean} If true, the Downward Scaffold check is active. */
+        export const enableDownwardScaffoldCheck = true;
+        /** @type {number} Minimum number of consecutive downward blocks while airborne to trigger. */
+        export const downwardScaffoldMinBlocks = 3;
+        /** @type {number} Maximum time in ticks between consecutive downward scaffold blocks. */
+        export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
+        /** @type {number} Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding to flag. Vanilla players usually stop or slow down significantly. */
+        export const downwardScaffoldMinHorizontalSpeed = 3.0; // Approx crouch-walking speed
+        /** @type {boolean} If true, the Placing Blocks onto Air/Liquid check is active. */
+        export const enableAirPlaceCheck = true;
+        /**
+         * @type {string[]} List of block type IDs that are considered 'solid' and require support.
+         * Placing these against air/liquid without other solid adjacent support will be flagged.
+         */
+        export const airPlaceSolidBlocks = [
+            "minecraft:cobblestone", "minecraft:stone", "minecraft:dirt", "minecraft:grass_block",
+            "minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks",
+            "minecraft:jungle_planks", "minecraft:acacia_planks", "minecraft:dark_oak_planks",
+            "minecraft:crimson_planks", "minecraft:warped_planks", "minecraft:sand", "minecraft:gravel",
+            "minecraft:obsidian", "minecraft:netherrack", "minecraft:end_stone"
+            // Add more as needed
+        ];
+
+// --- Fast Use/Place Checks ---
+/** @type {boolean} If true, the Fast Item Use check is active. */
+export const enableFastUseCheck = true;
+/**
+ * @type {Object.<string, number>} Defines minimum cooldown in milliseconds between uses for specific items.
+ * Example: { "minecraft:ender_pearl": 1000, "minecraft:snowball": 250 }
+ */
+export const fastUseItemCooldowns = {
+    "minecraft:ender_pearl": 1000, // 1 second vanilla cooldown
+    "minecraft:snowball": 150,    // Vanilla allows fairly rapid throws
+    "minecraft:egg": 150,
+    "minecraft:bow": 200,         // Min time to draw and fire a weak arrow.
+                                  // This is for *consecutive separate* bow uses, not charge time of one shot.
+    "minecraft:crossbow": 1250,   // Base reload time for crossbow
+    "minecraft:potion": 800,      // Approximate time to drink a potion
+    "minecraft:splash_potion": 500,
+    "minecraft:lingering_potion": 500,
+    "minecraft:chorus_fruit": 800, // Cooldown on chorus fruit teleport
+    "minecraft:shield": 500       // Cooldown for blocking after being hit or raising/lowering
+};
+        /** @type {boolean} If true, the Fast Block Place check is active. */
+        export const enableFastPlaceCheck = true;
+        /** @type {number} Time window in milliseconds for fast placement detection. */
+        export const fastPlaceTimeWindowMs = 1000; // 1 second
+        /** @type {number} Maximum number of blocks allowed to be placed within the time window. */
+        export const fastPlaceMaxBlocksInWindow = 10; // Max 10 blocks per second
 
 // --- X-Ray Detection ---
 /** @type {boolean} If true, enables notifications for mining valuable ores. */
@@ -410,6 +576,54 @@ export const checkActionProfiles = {
             includeViolationDetails: true
         }
     },
+    "combat_attack_while_consuming": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected player attacking while consuming an item.",
+            type: "combat_state_conflict_consuming" // Specific type
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemUsed}"
+        },
+        log: {
+            actionType: "detected_attack_while_consuming",
+            detailsPrefix: "Attack While Consuming Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_attack_while_bow_charging": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected player attacking while charging a bow.",
+            type: "combat_state_conflict_bow"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemUsed}"
+        },
+        log: {
+            actionType: "detected_attack_while_bow_charging",
+            detailsPrefix: "Attack While Charging Bow Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "combat_attack_while_shielding": {
+        enabled: true,
+        flag: {
+            increment: 2, // Shielding might have edge cases, slightly lower increment initially
+            reason: "System detected player attacking while actively using a shield.",
+            type: "combat_state_conflict_shield"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemUsed}"
+        },
+        log: {
+            actionType: "detected_attack_while_shielding",
+            detailsPrefix: "Attack While Shielding Violation: ",
+            includeViolationDetails: true
+        }
+    },
     "world_illegal_item_use": {
         enabled: true,
         flag: {
@@ -443,6 +657,232 @@ export const checkActionProfiles = {
             detailsPrefix: "Illegal Item Placement Violation: ",
             includeViolationDetails: true
         }
+    },
+    "world_tower_build": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected suspicious tower-like building.",
+            type: "world_scaffold_tower"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)"
+        },
+        log: {
+            actionType: "detected_world_tower_build",
+            detailsPrefix: "Tower Building Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_flat_rotation_building": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected unnatural (flat or static) head rotation while building.",
+            type: "world_scaffold_rotation"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Variance: {pitchVariance}, Yaw Variance: {yawVariance}, Details: {details}"
+            // {details} could be "Static Pitch", "Static Yaw", "Flat Horizontal Pitch", "Flat Downward Pitch"
+        },
+        log: {
+            actionType: "detected_world_flat_rotation_building",
+            detailsPrefix: "Flat/Static Rotation Building Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_downward_scaffold": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected suspicious downward scaffolding while airborne.",
+            type: "world_scaffold_downward"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {hSpeed}bps (MinSpeed: {minHSpeed}bps)"
+        },
+        log: {
+            actionType: "detected_world_downward_scaffold",
+            detailsPrefix: "Downward Scaffold Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_air_place": {
+        enabled: true,
+        flag: {
+            increment: 1, // Can be noisy if not tuned well
+            reason: "System detected block placed against air/liquid without solid support.",
+            type: "world_scaffold_airplace"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting air/liquid."
+        },
+        log: {
+            actionType: "detected_world_air_place",
+            detailsPrefix: "Air Placement Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "action_fast_use": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected item being used too quickly: {itemType}.",
+            type: "action_fast_use"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldown}ms, Actual: {actualTime}ms"
+        },
+        log: {
+            actionType: "detected_fast_use",
+            detailsPrefix: "Fast Use Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_fast_place": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "System detected blocks being placed too quickly.",
+            type: "world_fast_place"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {window}ms (Max: {maxBlocks})"
+        },
+        log: {
+            actionType: "detected_world_fast_place",
+            detailsPrefix: "Fast Place Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "movement_noslow": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).",
+            type: "movement_noslow"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxSpeed}bps)"
+        },
+        log: {
+            actionType: "detected_movement_noslow",
+            detailsPrefix: "NoSlow Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "movement_invalid_sprint": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected sprinting under invalid conditions (e.g., blind, sneaking, riding).",
+            type: "movement_invalid_sprint"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}"
+        },
+        log: {
+            actionType: "detected_movement_invalid_sprint",
+            detailsPrefix: "Invalid Sprint Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_autotool": {
+        enabled: true,
+        flag: {
+            increment: 2, // AutoTool is a fairly obvious cheat
+            reason: "System detected suspicious tool switching before/after breaking a block (AutoTool).",
+            type: "world_autotool"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolType}, Switched: {switchPattern}"
+            // {switchPattern} could be "ToOptimalThenBack" or "ToOptimal"
+        },
+        log: {
+            actionType: "detected_world_autotool",
+            detailsPrefix: "AutoTool Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_instabreak_unbreakable": {
+        enabled: true,
+        flag: {
+            increment: 10, // High severity
+            reason: "Attempted to break an unbreakable block: {blockType}.",
+            type: "world_instabreak_unbreakable"
+        },
+        notifyAdmins: {
+            message: "§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled."
+        },
+        log: {
+            actionType: "detected_instabreak_unbreakable",
+            detailsPrefix: "InstaBreak (Unbreakable) Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_instabreak_speed": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected block broken significantly faster than possible: {blockType}.",
+            type: "world_instabreak_speed"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t"
+        },
+        log: {
+            actionType: "detected_instabreak_speed",
+            detailsPrefix: "InstaBreak (Speed) Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "player_namespoof": {
+        enabled: true,
+        flag: {
+            increment: 5, // Namespoofing can be quite disruptive
+            reason: "System detected an invalid or suspicious player nameTag ({reasonDetail}).",
+            type: "player_namespoof"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: '{nameTag}'"
+        },
+        log: {
+            actionType: "detected_player_namespoof",
+            detailsPrefix: "NameSpoof Violation: ",
+            includeViolationDetails: true // Will include nameTag and reasonDetail
+        }
+    },
+    "player_antigmc": {
+        enabled: true,
+        flag: {
+            increment: 10, // High severity for unauthorized creative
+            reason: "System detected unauthorized Creative Mode.",
+            type: "player_antigmc"
+        },
+        notifyAdmins: {
+            message: "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}"
+        },
+        log: {
+            actionType: "detected_player_antigmc",
+            detailsPrefix: "Anti-GMC Violation: ",
+            includeViolationDetails: true // Will include player name, gamemode, autoSwitch status
+        }
+    },
+    "player_inventory_mod": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected suspicious inventory/hotbar manipulation ({reasonDetail}).",
+            type: "player_inventory_mod"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for InventoryMod. Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}"
+        },
+        log: {
+            actionType: "detected_player_inventory_mod",
+            detailsPrefix: "InventoryMod Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 
@@ -461,6 +901,36 @@ export let editableConfigValues = {
     enableReachCheck, enableCpsCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck,
+    // AutoTool Check Configs
+    enableAutoToolCheck,
+    autoToolSwitchToOptimalWindowTicks,
+    autoToolSwitchBackWindowTicks,
+    // InstaBreak Check Configs
+    enableInstaBreakUnbreakableCheck,
+    instaBreakUnbreakableBlocks,
+    enableInstaBreakSpeedCheck,
+    instaBreakTimeToleranceTicks,
+    // Player Behavior Check Configs
+    enableNameSpoofCheck,
+    nameSpoofMaxLength,
+    nameSpoofDisallowedCharsRegex,
+    nameSpoofMinChangeIntervalTicks,
+    enableAntiGMCCheck,
+    antiGMCSwitchToGameMode,
+    antiGMCAutoSwitch,
+    enableInventoryModCheck,
+    // Movement Check Configs (including NoSlow)
+    enableNoSlowCheck,
+    noSlowMaxSpeedEating,
+    noSlowMaxSpeedChargingBow,
+    noSlowMaxSpeedUsingShield,
+    noSlowMaxSpeedSneaking,
+    enableInvalidSprintCheck,
+    // State Conflict Check Configs
+    attackBlockingConsumables,
+    attackBlockingBows,
+    attackBlockingShields,
+    itemUseStateClearTicks,
     maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus, minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold, flySustainedOffGroundTicksThreshold,
     flyHoverNearGroundThreshold, flyHoverVerticalSpeedThreshold, flyHoverOffGroundTicksThreshold,
@@ -474,6 +944,32 @@ export let editableConfigValues = {
     enableMaxMessageLengthCheck, maxMessageLength, flagOnMaxMessageLength, cancelOnMaxMessageLength,
     spamRepeatCheckEnabled, spamRepeatMessageCount, spamRepeatTimeWindowSeconds,
     spamRepeatFlagPlayer, spamRepeatCancelMessage,
+    // Scaffold/Tower Detection
+    enableTowerCheck,
+    towerMaxTickGap,
+    towerMinHeight,
+    towerMaxPitchWhilePillaring,
+    towerPlacementHistoryLength,
+    enableFlatRotationCheck,
+    flatRotationConsecutiveBlocks,
+    flatRotationMaxPitchVariance,
+    flatRotationMaxYawVariance,
+    flatRotationPitchHorizontalMin,
+    flatRotationPitchHorizontalMax,
+    flatRotationPitchDownwardMin,
+    flatRotationPitchDownwardMax,
+    enableDownwardScaffoldCheck,
+    downwardScaffoldMinBlocks,
+    downwardScaffoldMaxTickGap,
+    downwardScaffoldMinHorizontalSpeed,
+    enableAirPlaceCheck,
+    airPlaceSolidBlocks,
+    // Fast Use/Place Checks
+    enableFastUseCheck,
+    fastUseItemCooldowns,
+    enableFastPlaceCheck,
+    fastPlaceTimeWindowMs,
+    fastPlaceMaxBlocksInWindow,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     // Combat Log Configs

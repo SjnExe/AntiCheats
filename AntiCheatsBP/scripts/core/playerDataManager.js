@@ -164,6 +164,47 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastYaw: player.getRotation().y,   // Initialize with current rotation
         lastAttackTick: 0,
         recentHits: [],
+        isUsingConsumable: false,
+        isChargingBow: false,
+        isUsingShield: false,
+        lastItemUseTick: 0,
+        recentBlockPlacements: [],
+        lastPillarBaseY: 0,
+        consecutivePillarBlocks: 0,
+        lastPillarTick: 0,
+        currentPillarX: null,
+        currentPillarZ: null,
+        consecutiveDownwardBlocks: 0,
+        lastDownwardScaffoldTick: 0,
+        lastDownwardScaffoldBlockLocation: null,
+        itemUseTimestamps: {},
+        recentPlaceTimestamps: [],
+        lastJumpBoostLevel: 0,
+        lastSlowFallingTicks: 0,
+        lastLevitationTicks: 0,
+        lastTookDamageTick: 0,
+        lastUsedElytraTick: 0,
+        lastUsedRiptideTick: 0,
+        lastOnSlimeBlockTick: 0,
+        lastBlindnessTicks: 0,
+        previousSelectedSlotIndex: 0, // Default to slot 0
+        lastSelectedSlotChangeTick: 0,
+        isAttemptingBlockBreak: false,
+        breakingBlockTypeId: null,
+        slotAtBreakAttemptStart: 0,
+        breakAttemptTick: 0,
+        switchedToOptimalToolForBreak: false,
+        optimalToolSlotForLastBreak: null,
+        lastBreakCompleteTick: 0,
+        breakingBlockLocation: null,
+        blockBrokenWithOptimalTypeId: null,
+        optimalToolTypeIdForLastBreak: null,
+        breakStartTimeMs: 0,
+        breakStartTickGameTime: 0,
+        expectedBreakDurationTicks: 0,
+        toolUsedForBreakAttempt: null,
+        lastKnownNameTag: player.nameTag,
+        lastNameTagChangeTick: 0,
         muteInfo: null,
         banInfo: null,
     };
@@ -206,6 +247,47 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         newPData.lastYaw = player.getRotation().y;   // Session specific
         newPData.lastAttackTick = 0; // Session specific
         newPData.recentHits = []; // Session specific
+        newPData.isUsingConsumable = false; // Session specific
+        newPData.isChargingBow = false; // Session specific
+        newPData.isUsingShield = false; // Session specific
+        newPData.lastItemUseTick = 0; // Session specific
+        newPData.recentBlockPlacements = []; // Session specific
+        newPData.lastPillarBaseY = 0; // Session specific
+        newPData.consecutivePillarBlocks = 0; // Session specific
+        newPData.lastPillarTick = 0; // Session specific
+        newPData.currentPillarX = null; // Session specific
+        newPData.currentPillarZ = null; // Session specific
+        newPData.consecutiveDownwardBlocks = 0; // Session specific
+        newPData.lastDownwardScaffoldTick = 0; // Session specific
+        newPData.lastDownwardScaffoldBlockLocation = null; // Session specific
+        newPData.itemUseTimestamps = {}; // Session specific
+        newPData.recentPlaceTimestamps = []; // Session specific
+        newPData.lastJumpBoostLevel = 0; // Session specific
+        newPData.lastSlowFallingTicks = 0; // Session specific
+        newPData.lastLevitationTicks = 0; // Session specific
+        newPData.lastTookDamageTick = 0; // Session specific
+        newPData.lastUsedElytraTick = 0; // Session specific
+        newPData.lastUsedRiptideTick = 0; // Session specific
+        newPData.lastOnSlimeBlockTick = 0; // Session specific
+        newPData.lastBlindnessTicks = 0; // Session specific
+        newPData.previousSelectedSlotIndex = player.selectedSlotIndex; // Initialize with current slot
+        newPData.lastSelectedSlotChangeTick = 0;
+        newPData.isAttemptingBlockBreak = false;
+        newPData.breakingBlockTypeId = null;
+        newPData.slotAtBreakAttemptStart = 0;
+        newPData.breakAttemptTick = 0;
+        newPData.switchedToOptimalToolForBreak = false;
+        newPData.optimalToolSlotForLastBreak = null;
+        newPData.lastBreakCompleteTick = 0;
+        newPData.breakingBlockLocation = null; // Session specific
+        newPData.blockBrokenWithOptimalTypeId = null; // Session specific
+        newPData.optimalToolTypeIdForLastBreak = null; // Session specific
+        newPData.breakStartTimeMs = 0; // Session specific
+        newPData.breakStartTickGameTime = 0; // Session specific
+        newPData.expectedBreakDurationTicks = 0; // Session specific
+        newPData.toolUsedForBreakAttempt = null; // Session specific
+        newPData.lastKnownNameTag = player.nameTag; // Session specific
+        newPData.lastNameTagChangeTick = currentTick; // Session specific, init to current to avoid false positive on join
         newPData.recentMessages = []; // Session specific
         // lastCombatInteractionTime will be loaded if present in loadedData, otherwise defaults from initializeDefaultPlayerData
         newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;
@@ -272,6 +354,12 @@ export function updateTransientPlayerData(player, pData, currentTick) {
         pData.lastOnGroundPosition = player.location;
     } else {
         pData.consecutiveOffGroundTicks++;
+    }
+
+    // Track selected slot changes
+    if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
+        pData.lastSelectedSlotChangeTick = currentTick;
+        pData.previousSelectedSlotIndex = player.selectedSlotIndex;
     }
 }
 

@@ -75,26 +75,28 @@ eventHandlers.subscribeToCombatLogEvents(playerDataManager, config, playerUtils)
  * Handles player break block events before they occur.
  * @param {mc.PlayerBreakBlockBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
+mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
     // Pass necessary dependencies if checkIllegalItems (called via handlePlayerBreakBlock indirectly) needs them
     // For now, assuming checkIllegalItems gets what it needs from the event or pData
-    eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager);
+    // eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager); // Old call
+    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 /**
  * Handles player break block events after they occur.
  * @param {mc.PlayerBreakBlockAfterEvent} eventData The event data.
  */
-mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
-    eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils);
+mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => { // Made async
+    // eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils); // Old call
+    await eventHandlers.handlePlayerBreakBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 /**
  * Handles item use events before they occur.
  * @param {mc.ItemUseBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.itemUse.subscribe((eventData) => {
-    eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
+mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
+    await eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick); // Added currentTick
 });
 
 /**
@@ -106,6 +108,32 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
     // or that checkIllegalItems within it handles the eventData type correctly.
     // For now, keeping as is from previous state.
     eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
+});
+
+/**
+ * Handles player place block events before they occur for AirPlace check.
+ * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
+ */
+mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
+    // currentTick from main.js scope is passed to the handler
+    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+});
+
+/**
+ * Handles player place block events after they occur for Tower check.
+ * @param {mc.PlayerPlaceBlockAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
+    // currentTick from main.js scope is passed to the handler
+    await eventHandlers.handlePlayerPlaceBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+});
+
+/**
+ * Handles player inventory item changes after they occur.
+ * @param {mc.PlayerInventoryItemChangeAfterEvent} eventData
+ */
+mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
+    await eventHandlers.handleInventoryItemChange(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 let currentTick = 0;
@@ -136,16 +164,55 @@ mc.system.runInterval(async () => {
 
         playerDataManager.updateTransientPlayerData(player, pData, currentTick);
 
+        // Reset item usage states based on timeout
+        if (pData.isUsingConsumable && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) {
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingConsumable for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            pData.isUsingConsumable = false;
+        }
+        if (pData.isChargingBow && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) { // Potentially a different timeout for bows later
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isChargingBow for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            pData.isChargingBow = false;
+        }
+        if (pData.isUsingShield && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) {
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingShield for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            pData.isUsingShield = false;
+        }
+
         // --- Call All Checks ---
         // Pass executeCheckAction and logManager to all checks called in the tick loop
-        if (config.enableFlyCheck && checks.checkFly) checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableSpeedCheck && checks.checkSpeed) checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableNofallCheck && checks.checkNoFall) checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableCpsCheck && checks.checkCPS) checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableNukerCheck && checks.checkNuker) checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (config.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (config.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableCpsCheck && checks.checkCPS) await checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
 
         // ViewSnap check might need config and currentTick directly if not passed via dependencies object to all checks
-        if (config.enableViewSnapCheck && checks.checkViewSnap) checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
+
+        // Call NoSlow Check
+        if (config.enableNoSlowCheck && checks.checkNoSlow) {
+            await checks.checkNoSlow(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Call InvalidSprint Check
+        if (config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
+            await checks.checkInvalidSprint(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Call AutoTool Check
+        if (config.enableAutoToolCheck && checks.checkAutoTool) {
+            await checks.checkAutoTool(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick, player.dimension);
+        }
+
+        // Call NameSpoof Check
+        if (config.enableNameSpoofCheck && checks.checkNameSpoof) {
+            await checks.checkNameSpoof(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Call Anti-GMC Check
+        if (config.enableAntiGMCCheck && checks.checkAntiGMC) {
+            await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
 
         // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {
