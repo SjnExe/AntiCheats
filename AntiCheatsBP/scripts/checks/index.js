@@ -25,3 +25,7 @@ export { checkAntiGMC } from './world/antiGMCCheck.js';   // To be consistent wi
 // Player Behavior Checks (New Category)
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';
 export { checkSelfHurt } from './player/selfHurtCheck.js';
+
+// Chat Checks
+export { checkMessageRate } from './chat/messageRateCheck.js';
+export { checkMessageWordCount } from './chat/messageWordCountCheck.js';
