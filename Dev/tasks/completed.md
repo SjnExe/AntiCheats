@@ -994,3 +994,6 @@ Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Pan
 ---
 *(Date: Current Session)*
 *   **Message Too Many Words (Spam/Flood):** Check word count of messages. Flag if excessively high. (SafeGuard) - Implemented `checkMessageWordCount` and integrated into `handleBeforeChatSend`. `main.js` was also updated to support new `handleBeforeChatSend` signature.
+---
+*(Date: Current Session)*
+*   **Refactor `commandManager.js`**: Split commands into individual modules under a new `commands/` directory to improve organization and maintainability. `commandManager.js` will become a command loader and dispatcher. - Task verified as already completed; `commandManager.js` currently loads commands from modules listed in `commands/commandRegistry.js`.

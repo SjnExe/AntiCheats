@@ -38,7 +38,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Normal Player Panel Features (`!panel`):**
 
 ## Refactoring & Enhancements
-*   **Refactor `commandManager.js`**: Split commands into individual modules under a new `commands/` directory to improve organization and maintainability. `commandManager.js` will become a command loader and dispatcher.
 
 ## Low Priority / Ideas
 
