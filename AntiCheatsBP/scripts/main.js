@@ -75,18 +75,20 @@ eventHandlers.subscribeToCombatLogEvents(playerDataManager, config, playerUtils)
  * Handles player break block events before they occur.
  * @param {mc.PlayerBreakBlockBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => {
+mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
     // Pass necessary dependencies if checkIllegalItems (called via handlePlayerBreakBlock indirectly) needs them
     // For now, assuming checkIllegalItems gets what it needs from the event or pData
-    eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager);
+    // eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager); // Old call
+    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 /**
  * Handles player break block events after they occur.
  * @param {mc.PlayerBreakBlockAfterEvent} eventData The event data.
  */
-mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => {
-    eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils);
+mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => { // Made async
+    // eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils); // Old call
+    await eventHandlers.handlePlayerBreakBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 /**
@@ -187,6 +189,16 @@ mc.system.runInterval(async () => {
         // Call InvalidSprint Check
         if (config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
             await checks.checkInvalidSprint(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Call AutoTool Check
+        if (config.enableAutoToolCheck && checks.checkAutoTool) {
+            await checks.checkAutoTool(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick, player.dimension);
+        }
+
+        // Call NameSpoof Check
+        if (config.enableNameSpoofCheck && checks.checkNameSpoof) {
+            await checks.checkNameSpoof(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
         // Fall distance accumulation and isTakingFallDamage reset

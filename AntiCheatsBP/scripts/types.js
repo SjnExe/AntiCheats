@@ -154,6 +154,26 @@
         optimalToolSlotForLastBreak: number | null;
         /** @property {number} lastBreakCompleteTick - Game tick when a block break was completed (after potentially switching to optimal). Session-only. */
         lastBreakCompleteTick: number;
+        /** @property {{x: number, y: number, z: number} | null} breakingBlockLocation - Location of the block for the current break attempt. Session-only. */
+        breakingBlockLocation: {x: number, y: number, z: number} | null;
+        /** @property {string | null} blockBrokenWithOptimalTypeId - Type ID of the block broken when optimalToolSlotForLastBreak was set. Session-only. */
+        blockBrokenWithOptimalTypeId: string | null;
+        /** @property {string | null} optimalToolTypeIdForLastBreak - Type ID of the tool in optimalToolSlotForLastBreak. Session-only. */
+        optimalToolTypeIdForLastBreak: string | null;
+        // InstaBreak specific fields
+        /** @property {number} breakStartTimeMs - Timestamp (Date.now()) when the current block break attempt started. Session-only. */
+        breakStartTimeMs: number;
+        /** @property {number} breakStartTickGameTime - Game tick when the current block break attempt started. Session-only. */
+        breakStartTickGameTime: number;
+        /** @property {number} expectedBreakDurationTicks - Calculated minimum ticks required to break the current block. Session-only. */
+        expectedBreakDurationTicks: number;
+        /** @property {string | null} toolUsedForBreakAttempt - Type ID of the item used when break attempt started. Session-only. */
+        toolUsedForBreakAttempt: string | null;
+        // Namespoof specific fields
+        /** @property {string} lastKnownNameTag - The player's nameTag recorded in the previous tick/check. Session-only. */
+        lastKnownNameTag: string;
+        /** @property {number} lastNameTagChangeTick - Game tick when the player's nameTag last changed. Session-only. */
+        lastNameTagChangeTick: number;
  * @property {{typeId: string, amplifier: number, duration: number}[]} activeEffects - Player's active potion effects.
  * @property {number} health - Player's current health.
  * @property {string} lastBrokenBlockType - Type ID of the last block broken by the player.

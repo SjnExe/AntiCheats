@@ -154,6 +154,50 @@
             - Integrating the call to `checkInvalidSprint` (with `await`) into the main tick loop in `AntiCheatsBP/scripts/main.js` for each player.
             - Ensured `currentTick` is passed to `checkFly` and `checkSpeed` in `main.js` for consistency during the previous subtask.*
 
+---
+
+## 2023-10-30
+
+*   **World Interaction - Advanced:** SjnExe parity goal.
+    *   **AutoTool:** Monitor `player.selectedSlot` changes in conjunction with block break events. Detect if player's selected slot almost instantaneously switches to the optimal tool for breaking a block type just before the break occurs, and then potentially switches back. (Scythe)
+        *Implemented by:
+            - Adding `pData` fields to `types.js` and `playerDataManager.js`: `previousSelectedSlotIndex`, `lastSelectedSlotChangeTick`, `isAttemptingBlockBreak`, `breakingBlockTypeId`, `breakingBlockLocation`, `slotAtBreakAttemptStart`, `breakAttemptTick`, `switchedToOptimalToolForBreak`, `optimalToolSlotForLastBreak`, `lastBreakCompleteTick`, `blockBrokenWithOptimalTypeId`, `optimalToolTypeIdForLastBreak`.
+            - Updating `playerDataManager.updateTransientPlayerData` to track `selectedSlotIndex` changes and update `lastSelectedSlotChangeTick` and `previousSelectedSlotIndex`.
+            - Adding `config.js` settings: `enableAutoToolCheck`, `autoToolSwitchToOptimalWindowTicks`, `autoToolSwitchBackWindowTicks`.
+            - Adding a `checkActionProfiles` entry for `"world_autotool"` in `config.js`.
+            - Creating `utils/itemUtils.js` with (simplified placeholder) `getBlockBreakingSpeed` and `getOptimalToolForBlock` helper functions, and placeholder data for block/tool properties. This file also includes expanded block/tool data from a subsequent subtask. Exported these utilities via `utils/index.js`.
+            - Modifying `eventHandlers.js`:
+                - Renamed `handlePlayerBreakBlock` to `handlePlayerBreakBlockBeforeEvent` and updated its signature and logic to set `pData` fields like `isAttemptingBlockBreak`, `breakingBlockTypeId`, `breakingBlockLocation`, `slotAtBreakAttemptStart`, `breakAttemptTick`.
+                - Updated `handlePlayerBreakBlockAfter` signature and logic to set `pData` fields like `lastBreakCompleteTick`, `blockBrokenWithOptimalTypeId`, and `optimalToolTypeIdForLastBreak` if a switch to an optimal tool was detected.
+            - Updating `main.js` event subscriptions for `playerBreakBlock.before` and `playerBreakBlock.after` to use the modified handlers with all necessary parameters.
+            - Creating `checkAutoTool` function in `AntiCheatsBP/scripts/checks/world/autoToolCheck.js`. This function performs tick-based detection of "switch-to-optimal" tool patterns around block breaks and "switch-back" patterns after a break, using the `pData` flags set by event handlers and the `itemUtils` helpers. It also includes logic for state cleanup.
+            - Updating `violationDetails` in `checkAutoTool` to use the more specific `pData` fields for logging.
+            - Exporting `checkAutoTool` via `checks/index.js`.
+            - Integrating the call to `checkAutoTool` (with `await` and `player.dimension`) into the main tick loop in `main.js`.*
+
+---
+
+## 2023-10-31
+
+*   **World Interaction - Advanced:** SjnExe parity goal.
+    *   **InstaBreak:** Detect breaking of blocks that are typically unbreakable (e.g., bedrock, barriers, command blocks by non-ops) or blocks broken significantly faster than possible even with enchantments/effects. (Scythe)
+        *Implemented by:
+            - **Unbreakable Block Detection:**
+                - Added `pData` fields to `types.js` and `playerDataManager.js` for break timing and tool used: `breakStartTimeMs`, `breakStartTickGameTime`, `expectedBreakDurationTicks`, `toolUsedForBreakAttempt`.
+                - Added `config.js` settings: `enableInstaBreakUnbreakableCheck`, `instaBreakUnbreakableBlocks` list.
+                - Created `checkBreakUnbreakable` function in `AntiCheatsBP/scripts/checks/world/instaBreakCheck.js`. This function checks if the target block is in `instaBreakUnbreakableBlocks` and if the player is not in creative mode; if so, it cancels the `PlayerBreakBlockBeforeEvent` and flags the player.
+                - Added `"world_instabreak_unbreakable"` `checkActionProfiles` entry in `config.js`.
+                - Integrated the call to `checkBreakUnbreakable` into `handlePlayerBreakBlockBeforeEvent` in `eventHandlers.js`, ensuring it runs first and can cancel the event.
+            - **Break Speed Detection:**
+                - Added `config.js` settings: `enableInstaBreakSpeedCheck`, `instaBreakTimeToleranceTicks`.
+                - Created `checkBreakSpeed` function (initially placeholder, then with core logic) in `instaBreakCheck.js`.
+                - Added `"world_instabreak_speed"` `checkActionProfiles` entry in `config.js`.
+                - Refined `getExpectedBreakTicks` in `AntiCheatsBP/scripts/utils/itemUtils.js` to provide a more (though still simplified) vanilla-like calculation of expected block break duration in ticks. This included renaming `getBlockBreakingSpeed` to `calculateRelativeBlockBreakingPower` and correcting the application of Efficiency and Mining Fatigue effects in `getExpectedBreakTicks`.
+                - In `handlePlayerBreakBlockBeforeEvent` (in `eventHandlers.js`), added logic to calculate and store `pData.expectedBreakDurationTicks` (using the refined `getExpectedBreakTicks`) and `pData.toolUsedForBreakAttempt` when a block break starts.
+                - Implemented the core logic in `checkBreakSpeed` to be called from `handlePlayerBreakBlockAfterEvent`. This logic compares the actual break duration (`currentTick - pData.breakStartTickGameTime`) with `pData.expectedBreakDurationTicks` and flags if the actual time is less than the expected time minus `config.instaBreakTimeToleranceTicks`.
+                - Integrated the call to `checkBreakSpeed` into `handlePlayerBreakBlockAfterEvent` in `eventHandlers.js`.
+            - Exported both `checkBreakUnbreakable` and `checkBreakSpeed` from `checks/index.js`.*
+
 ## Refactoring: Standardized Actions for Combat & IllegalItem Checks
 **Date:** Current Session
 

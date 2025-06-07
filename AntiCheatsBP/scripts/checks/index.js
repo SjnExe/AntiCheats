@@ -17,3 +17,6 @@ export * from './world/nukerCheck.js';
 export * from './world/illegalItemCheck.js';
 export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirPlace, checkFastPlace } from './world/buildingChecks.js';
 export { checkFastUse } from './world/fastUseCheck.js';
+export { checkAutoTool } from './world/autoToolCheck.js';
+export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
+export { checkNameSpoof } from './world/nameSpoofCheck.js';

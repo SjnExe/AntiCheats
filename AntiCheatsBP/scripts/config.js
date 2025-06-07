@@ -160,6 +160,38 @@ export const autoToolSwitchToOptimalWindowTicks = 2; // e.g., switch must happen
 /** @type {number} Max ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool. */
 export const autoToolSwitchBackWindowTicks = 5;
 
+// --- InstaBreak Check ---
+/** @type {boolean} If true, the check for breaking unbreakable blocks is active. */
+export const enableInstaBreakUnbreakableCheck = true;
+/** @type {string[]} List of block type IDs considered normally unbreakable by non-operators. */
+export const instaBreakUnbreakableBlocks = [
+    "minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
+    "minecraft:repeating_command_block", "minecraft:chain_command_block",
+    "minecraft:structure_block", "minecraft:structure_void", "minecraft:jigsaw",
+    "minecraft:light_block", "minecraft:end_portal_frame", "minecraft:end_gateway"
+];
+/** @type {boolean} If true, the check for breaking blocks too fast is active. */
+export const enableInstaBreakSpeedCheck = true;
+/** @type {number} Tolerance in ticks for block breaking speed. (e.g., 1-2 ticks). ActualTime < ExpectedTime - Tolerance -> Flag. */
+export const instaBreakTimeToleranceTicks = 2;
+
+// --- Player Behavior Checks ---
+/** @type {boolean} If true, the NameSpoof check is active. */
+export const enableNameSpoofCheck = true;
+/** @type {number} Maximum allowed length for a player's nameTag. */
+export const nameSpoofMaxLength = 48; // Generous to account for rank prefixes + long names
+/**
+ * @type {string} Regex pattern for disallowed characters in nameTags.
+ * Default aims to allow common characters, color codes, and spaces, but block most control/uncommon symbols.
+ * Example: "[^\w\s§\-\[\]().#@!']" - disallows anything NOT (word chars, space, §, -, [, ], (, ), ., #, @, !, ')
+ * Another option: "[^\x20-\x7E§]" - allows only printable ASCII (space to ~) and §. This is more restrictive.
+ * Current choice: lenient, disallows common problematic chars like newlines, excessive symbols.
+ */
+export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]"; // Disallow newlines, tabs, control chars, some extended ASCII
+/** @type {number} Minimum interval in ticks between allowed nameTag changes. */
+export const nameSpoofMinChangeIntervalTicks = 200; // 10 seconds
+
+
 /** @type {number} Max blocks broken in `nukerCheckIntervalMs` for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
 /** @type {number} Time window in milliseconds for Nuker check. */
@@ -758,6 +790,54 @@ export const checkActionProfiles = {
             detailsPrefix: "AutoTool Violation: ",
             includeViolationDetails: true
         }
+    },
+    "world_instabreak_unbreakable": {
+        enabled: true,
+        flag: {
+            increment: 10, // High severity
+            reason: "Attempted to break an unbreakable block: {blockType}.",
+            type: "world_instabreak_unbreakable"
+        },
+        notifyAdmins: {
+            message: "§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled."
+        },
+        log: {
+            actionType: "detected_instabreak_unbreakable",
+            detailsPrefix: "InstaBreak (Unbreakable) Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_instabreak_speed": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected block broken significantly faster than possible: {blockType}.",
+            type: "world_instabreak_speed"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t"
+        },
+        log: {
+            actionType: "detected_instabreak_speed",
+            detailsPrefix: "InstaBreak (Speed) Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "player_namespoof": {
+        enabled: true,
+        flag: {
+            increment: 5, // Namespoofing can be quite disruptive
+            reason: "System detected an invalid or suspicious player nameTag ({reasonDetail}).",
+            type: "player_namespoof"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: '{nameTag}'"
+        },
+        log: {
+            actionType: "detected_player_namespoof",
+            detailsPrefix: "NameSpoof Violation: ",
+            includeViolationDetails: true // Will include nameTag and reasonDetail
+        }
     }
 };
 
@@ -780,6 +860,16 @@ export let editableConfigValues = {
     enableAutoToolCheck,
     autoToolSwitchToOptimalWindowTicks,
     autoToolSwitchBackWindowTicks,
+    // InstaBreak Check Configs
+    enableInstaBreakUnbreakableCheck,
+    instaBreakUnbreakableBlocks,
+    enableInstaBreakSpeedCheck,
+    instaBreakTimeToleranceTicks,
+    // Player Behavior Check Configs
+    enableNameSpoofCheck,
+    nameSpoofMaxLength,
+    nameSpoofDisallowedCharsRegex,
+    nameSpoofMinChangeIntervalTicks,
     // Movement Check Configs (including NoSlow)
     enableNoSlowCheck,
     noSlowMaxSpeedEating,

@@ -196,6 +196,15 @@ export function initializeDefaultPlayerData(player, currentTick) {
         switchedToOptimalToolForBreak: false,
         optimalToolSlotForLastBreak: null,
         lastBreakCompleteTick: 0,
+        breakingBlockLocation: null,
+        blockBrokenWithOptimalTypeId: null,
+        optimalToolTypeIdForLastBreak: null,
+        breakStartTimeMs: 0,
+        breakStartTickGameTime: 0,
+        expectedBreakDurationTicks: 0,
+        toolUsedForBreakAttempt: null,
+        lastKnownNameTag: player.nameTag,
+        lastNameTagChangeTick: 0,
         muteInfo: null,
         banInfo: null,
     };
@@ -270,6 +279,15 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         newPData.switchedToOptimalToolForBreak = false;
         newPData.optimalToolSlotForLastBreak = null;
         newPData.lastBreakCompleteTick = 0;
+        newPData.breakingBlockLocation = null; // Session specific
+        newPData.blockBrokenWithOptimalTypeId = null; // Session specific
+        newPData.optimalToolTypeIdForLastBreak = null; // Session specific
+        newPData.breakStartTimeMs = 0; // Session specific
+        newPData.breakStartTickGameTime = 0; // Session specific
+        newPData.expectedBreakDurationTicks = 0; // Session specific
+        newPData.toolUsedForBreakAttempt = null; // Session specific
+        newPData.lastKnownNameTag = player.nameTag; // Session specific
+        newPData.lastNameTagChangeTick = currentTick; // Session specific, init to current to avoid false positive on join
         newPData.recentMessages = []; // Session specific
         // lastCombatInteractionTime will be loaded if present in loadedData, otherwise defaults from initializeDefaultPlayerData
         newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;
