@@ -93,7 +93,7 @@ export async function checkFly(player, pData, config, playerUtils, playerDataMan
 
     // This specific levitation check might be redundant if High Y Velocity handles levitation grace,
     // but keeping it for now as it's specific to upward movement with levitation.
-    const levitationEffect = effects.find(effect => effect.typeId === "levitation"); // Re-fetch or use pData.lastLevitationTicks
+    // const levitationEffect = effects.find(effect => effect.typeId === "levitation"); // Re-fetch or use pData.lastLevitationTicks - REMOVED
     if (pData.lastLevitationTicks > 0 && pData.velocity.y > 0) { // Use pData.lastLevitationTicks
         if (playerUtils.debugLog) playerUtils.debugLog(`FlyCheck: ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix);
         return;
