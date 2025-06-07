@@ -1007,3 +1007,13 @@ Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Pan
 *   **Aggressive Code Reduction Review - Phase 2: `itemUtils.js`**:
     *   **Objective:** Review `AntiCheatsBP/scripts/utils/itemUtils.js` for code reduction.
     *   **Outcome:** Analysis concluded that significant LoC reduction without simplifying the underlying game mechanic models (which would affect accuracy for checks like InstaBreak) or externalizing data was not feasible. The file's length is primarily due to necessary data constants and the complexity of the mechanics it emulates. No code changes were made to `itemUtils.js`.
+---
+*(Date: Current Session)*
+*   **Optimization and Code Efficiency Review - Phase 3: `playerDataManager.js`**:
+    *   **Primary Objective:** Review `AntiCheatsBP/scripts/core/playerDataManager.js` for runtime performance optimization opportunities.
+    *   **Outcome:** Successfully refactored `playerDataManager.js` to implement a deferred data saving mechanism.
+        *   Added `isDirtyForSave` flag to player data.
+        *   Modified `addFlag`, `addMute`, `removeMute`, `getMuteInfo` (on expiry), `addBan`, `removeBan`, `getBanInfo` (on expiry) to set the `isDirtyForSave` flag instead of saving immediately.
+        *   Created `PERSISTED_PLAYER_DATA_KEYS` constant for maintainable selection of data for persistence in `prepareAndSavePlayerData`.
+        *   Added new exported function `saveDirtyPlayerData(player)` to save data only if dirty and then reset the flag.
+    *   **Note:** This change significantly reduces frequent disk I/O. Integration of `saveDirtyPlayerData` calls into `main.js` (periodic save) and `eventHandlers.js` (on player leave) is required as a next step to fully enable the new save strategy.

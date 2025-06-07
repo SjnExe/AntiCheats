@@ -3,6 +3,15 @@ import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 
 const playerData = new Map();
 
+const PERSISTED_PLAYER_DATA_KEYS = [
+    "flags", "isWatched", "lastFlagType", "playerNameTag",
+    "attackEvents", "lastAttackTime", "blockBreakEvents",
+    "consecutiveOffGroundTicks", "fallDistance",
+    "consecutiveOnGroundSpeedingTicks", "muteInfo", "banInfo",
+    "lastCombatInteractionTime"
+    // Ensure this list matches exactly what was in the original persistedPData object
+];
+
 /**
  * Retrieves the anti-cheat data for a specific player by their ID.
  * @param {string} playerId - The ID of the player.
@@ -100,21 +109,12 @@ export async function prepareAndSavePlayerData(player) {
     if (!player) return;
     const pData = playerData.get(player.id);
     if (pData) {
-        const persistedPData = {
-            flags: pData.flags,
-            isWatched: pData.isWatched,
-            lastFlagType: pData.lastFlagType,
-            playerNameTag: pData.playerNameTag,
-            attackEvents: pData.attackEvents,
-            lastAttackTime: pData.lastAttackTime,
-            blockBreakEvents: pData.blockBreakEvents,
-            consecutiveOffGroundTicks: pData.consecutiveOffGroundTicks,
-            fallDistance: pData.fallDistance,
-            consecutiveOnGroundSpeedingTicks: pData.consecutiveOnGroundSpeedingTicks,
-            muteInfo: pData.muteInfo,
-            banInfo: pData.banInfo,
-            lastCombatInteractionTime: pData.lastCombatInteractionTime, // ADDED
-        };
+        const persistedPData = {};
+        for (const key of PERSISTED_PLAYER_DATA_KEYS) {
+            if (Object.prototype.hasOwnProperty.call(pData, key)) { // Safer hasOwnProperty check
+                persistedPData[key] = pData[key];
+            }
+        }
         await savePlayerDataToDynamicProperties(player, persistedPData);
     } else {
         debugLog(`PDM:prepSave: No runtime pData for ${player.nameTag}.`, player.nameTag);
@@ -210,6 +210,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastNameTagChangeTick: 0,
         muteInfo: null,
         banInfo: null,
+        isDirtyForSave: false,
     };
 }
 
@@ -234,6 +235,7 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         // Ensure flags object and totalFlags are valid after merge
         newPData.flags = { ...initializeDefaultPlayerData(player, currentTick).flags, ...loadedData.flags };
         if (typeof newPData.flags.totalFlags !== 'number') newPData.flags.totalFlags = 0;
+        newPData.isDirtyForSave = false;
 
         // Re-initialize session-only fields that should not be persisted
         newPData.lastPosition = player.location;
@@ -395,7 +397,7 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${detailsForNotify}`, player, pData);
     debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: ${fullReason}. Total: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
 
-    prepareAndSavePlayerData(player);
+    if (pData) pData.isDirtyForSave = true;
 }
 
 /**
@@ -418,7 +420,7 @@ export function addMute(player, durationMs, reason) {
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
     const muteReason = reason || "Muted by admin.";
     pData.muteInfo = { unmuteTime, reason: muteReason };
-    prepareAndSavePlayerData(player);
+    pData.isDirtyForSave = true;
     let logMsg = `PDM:addMute: Player ${player.nameTag} muted. Reason: ${muteReason}.`;
     if (durationMs === Infinity) logMsg += " Duration: Permanent";
     else logMsg += ` Unmute time: ${new Date(unmuteTime).toISOString()}`;
@@ -437,7 +439,7 @@ export function removeMute(player) {
     if (!pData) { debugLog(`PDM:removeMute: No pData for player ${player.nameTag}. Cannot unmute.`, player.nameTag); return false; }
     if (pData.muteInfo) {
         pData.muteInfo = null;
-        prepareAndSavePlayerData(player);
+        pData.isDirtyForSave = true;
         debugLog(`PDM:removeMute: Player ${player.nameTag} unmuted.`, pData.isWatched ? player.nameTag : null);
         return true;
     }
@@ -457,7 +459,7 @@ export function getMuteInfo(player) {
     const mute = pData.muteInfo;
     if (mute.unmuteTime !== Infinity && Date.now() >= mute.unmuteTime) {
         pData.muteInfo = null;
-        prepareAndSavePlayerData(player);
+        pData.isDirtyForSave = true;
         debugLog(`PDM:getMuteInfo: Mute for player ${player.nameTag} expired and removed.`, pData.isWatched ? player.nameTag : null);
         return null;
     }
@@ -493,7 +495,7 @@ export function addBan(player, durationMs, reason) {
     const unbanTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
     const banReason = reason || "Banned by admin.";
     pData.banInfo = { unbanTime, reason: banReason };
-    prepareAndSavePlayerData(player);
+    pData.isDirtyForSave = true;
     let logMsg = `PDM:addBan: Player ${player.nameTag} banned. Reason: ${banReason}.`;
     if (durationMs === Infinity) logMsg += " Duration: Permanent";
     else logMsg += ` Unban time: ${new Date(unbanTime).toISOString()}`;
@@ -512,7 +514,7 @@ export function removeBan(player) {
     if (!pData) { debugLog(`PDM:removeBan: No pData for player ${player.nameTag}. Cannot unban.`, player.nameTag); return false; }
     if (pData.banInfo) {
         pData.banInfo = null;
-        prepareAndSavePlayerData(player);
+        pData.isDirtyForSave = true;
         debugLog(`PDM:removeBan: Player ${player.nameTag} unbanned.`, pData.isWatched ? player.nameTag : null);
         return true;
     }
@@ -532,7 +534,7 @@ export function getBanInfo(player) {
     const currentBanInfo = pData.banInfo;
     if (currentBanInfo.unbanTime !== Infinity && Date.now() >= currentBanInfo.unbanTime) {
         pData.banInfo = null;
-        prepareAndSavePlayerData(player);
+        pData.isDirtyForSave = true;
         debugLog(`PDM:getBanInfo: Ban for player ${player.nameTag} expired and removed.`, pData.isWatched ? player.nameTag : null);
         return null;
     }
@@ -561,4 +563,24 @@ export function setPlayerData(playerId, data) {
         return;
     }
     playerData.set(playerId, data);
+}
+
+/**
+ * Saves player data to dynamic properties if it has been marked as dirty.
+ * Resets the dirty flag after saving.
+ * @param {mc.Player} player The player whose data might need saving.
+ * @returns {Promise<boolean>} True if data was saved, false otherwise or if not dirty.
+ */
+export async function saveDirtyPlayerData(player) {
+    if (!player) return false;
+    const pData = playerData.get(player.id);
+    if (pData && pData.isDirtyForSave) {
+        // Using existing debugLog for consistency, assuming it's available.
+        // Add a more specific context if desired, e.g., by passing a custom player name string
+        debugLog(`PDM:saveDirty: Saving dirty data for ${player.nameTag}`, pData.isWatched ? player.nameTag : null);
+        await prepareAndSavePlayerData(player);
+        pData.isDirtyForSave = false;
+        return true;
+    }
+    return false;
 }
