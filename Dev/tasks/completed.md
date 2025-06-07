@@ -27,7 +27,6 @@
 ---
 # Completed Tasks
 
-## 2023-10-27
 
 *   **Movement - Advanced:** SjnExe parity goal.
     *   **Invalid Y Velocity / High Velocity:** Monitor `player.getVelocity().y`. Flag if vertical velocity exceeds thresholds not achievable through normal means (e.g., super-jump without effects, excessive upward dash). (SafeGuard, SjnExe 'High Velocity')
@@ -122,7 +121,6 @@
 
 ---
 
-## 2023-10-28
 
 *   **Movement - Advanced:** SjnExe parity goal.
     *   **NoSlow:** Detect if player maintains normal walking/sprinting speed while performing actions that should slow them down (e.g., using a bow, eating, sneaking over certain blocks if applicable). Requires tracking player speed against their current action state. (Scythe, SjnExe)
@@ -141,7 +139,6 @@
 
 ---
 
-## 2023-10-29
 
 *   **Movement - Advanced:** SjnExe parity goal.
     *   **InvalidSprint:** Detect sprinting under conditions where it should be impossible (e.g., while movement is impaired by blindness, while actively sneaking, while riding an entity that doesn't permit player sprinting). (Scythe)
@@ -156,7 +153,6 @@
 
 ---
 
-## 2023-10-30
 
 *   **World Interaction - Advanced:** SjnExe parity goal.
     *   **AutoTool:** Monitor `player.selectedSlot` changes in conjunction with block break events. Detect if player's selected slot almost instantaneously switches to the optimal tool for breaking a block type just before the break occurs, and then potentially switches back. (Scythe)
@@ -177,7 +173,6 @@
 
 ---
 
-## 2023-10-31
 
 *   **World Interaction - Advanced:** SjnExe parity goal.
     *   **InstaBreak:** Detect breaking of blocks that are typically unbreakable (e.g., bedrock, barriers, command blocks by non-ops) or blocks broken significantly faster than possible even with enchantments/effects. (Scythe)
@@ -200,7 +195,6 @@
 
 ---
 
-## 2023-11-01
 
 *   **Player Behavior - Advanced:** SjnExe parity goal.
     *   **Anti-Gamemode Creative (Anti-GMC):** If a player is unexpectedly in Creative mode (not an admin or by legitimate means), flag and potentially switch them back to Survival. Notify admins. (SafeGuard, SjnExe)
@@ -227,7 +221,6 @@
 
 ---
 
-## 2023-11-02
 
 *   **Player Behavior - Advanced:** SjnExe parity goal.
     *   **InventoryMods (Hotbar Switch):** Detect if items are moved or used from the hotbar in ways that are impossible manually, e.g., switching active slot and using an item in the same tick, or moving items in inventory while performing other actions that should lock inventory. (Scythe - may require careful API event correlation)
@@ -293,7 +286,7 @@ Added a visual rank system (Owner, Admin, Member) that affects chat and nametags
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Standardize Naming Convention in `config.js` (Submitted: 2024-07-26)
+## Standardize Naming Convention in `config.js` (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 - **Chosen Convention:** `camelCase` for all exported variables from `AntiCheatsBP/scripts/config.js` (e.g., `exampleConfigVariable`, `maxAllowedSpeed`).
@@ -309,7 +302,7 @@ Added a visual rank system (Owner, Admin, Member) that affects chat and nametags
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Created and Named Coding Style Guide (Submitted: 2024-07-25)
+## Created and Named Coding Style Guide (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Created a new documentation file, now named `Dev/CodingStyle.md`, to outline coding style conventions for the project. This includes naming conventions for variables (camelCase for config exports, general variables, functions; PascalCase for classes), JSDoc usage, and general formatting. The file was initially named `Dev/CODING_STYLE.md` and subsequently renamed to `Dev/CodingStyle.md`.
@@ -322,7 +315,7 @@ Created a new documentation file, now named `Dev/CodingStyle.md`, to outline cod
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Implemented Initial Killaura/Aimbot Checks (v1) (Submitted: 2024-07-25)
+## Implemented Initial Killaura/Aimbot Checks (v1) (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Implemented the first set of Killaura/Aimbot related detection modules based on prior investigation. These checks provide foundational capabilities for identifying suspicious combat behaviors.
@@ -354,7 +347,7 @@ Implemented the first set of Killaura/Aimbot related detection modules based on 
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Elaborated on To-Do List Feature Details (Submitted: 2024-07-25)
+## Elaborated on To-Do List Feature Details (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Expanded the descriptions of tasks within `Dev/tasks/todo.md` to provide more specific details and requirements for future feature implementations. This elaboration was based on prior research and a draft of desired functionalities, including inspirations from other anti-cheat systems (Scythe, SjnExe, SafeGuard).
@@ -370,7 +363,7 @@ Expanded the descriptions of tasks within `Dev/tasks/todo.md` to provide more sp
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Populated To-Do List with New Features (Submitted: 2024-07-25)
+## Populated To-Do List with New Features (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 The `Dev/tasks/todo.md` file was significantly updated by incorporating a comprehensive list of new feature ideas and desired enhancements, largely inspired by functionalities found in other community anti-cheat systems like Scythe, SjnExe, and SafeGuard.
@@ -386,7 +379,7 @@ The `Dev/tasks/todo.md` file was significantly updated by incorporating a compre
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Refactor: Reorganized Script File Structure (Submitted: 2024-07-25)
+## Refactor: Reorganized Script File Structure (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Completed a major reorganization of the `AntiCheatsBP/scripts/` directory to improve modularity, maintainability, and clarity of the codebase.
@@ -414,7 +407,7 @@ This reorganization significantly enhances the project's structure, making it ea
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Killaura/Aimbot Detection Investigation (Submitted: 2024-07-25)
+## Killaura/Aimbot Detection Investigation (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Conducted an investigation into methods for detecting Killaura and Aimbot cheats using the `@minecraft/server` API. This involved reviewing existing community projects, researching common detection techniques, analyzing API capabilities, and outlining potential detection logic.
@@ -432,7 +425,7 @@ Conducted an investigation into methods for detecting Killaura and Aimbot cheats
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Updated Root README.md (Submitted: 2024-07-25)
+## Updated Root README.md (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 The main project `README.md` was significantly updated to reflect the current state of the Anti-Cheats Addon, including recent feature additions and providing a more comprehensive guide for users and administrators.
@@ -448,7 +441,7 @@ The main project `README.md` was significantly updated to reflect the current st
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Implemented Basic Admin UI (Submitted: 2024-07-25)
+## Implemented Basic Admin UI (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Implemented a basic Admin User Interface (UI) accessible via the `!ac ui` command. This UI provides administrators with interactive forms for common anti-cheat management tasks.
@@ -477,7 +470,7 @@ Implemented a basic Admin User Interface (UI) accessible via the `!ac ui` comman
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Implemented Player Data Persistence (Submitted: 2024-07-25)
+## Implemented Player Data Persistence (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Implemented a system for persisting key player anti-cheat data (`pData`) across sessions (server restarts, player rejoin/leave). This ensures that player flags, watched status, and relevant violation tracking information are maintained.
@@ -513,7 +506,7 @@ Implemented a system for persisting key player anti-cheat data (`pData`) across 
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Player Data Persistence Investigation (Submitted: 2024-07-25)
+## Player Data Persistence Investigation (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Conducted an investigation into methods for persisting player anti-cheat data (`pData`) to survive server restarts and player rejoins. The research focused on using Scoreboard Objectives and Entity Dynamic Properties available via the `@minecraft/server` API.
@@ -528,7 +521,7 @@ Conducted an investigation into methods for persisting player anti-cheat data (`
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Specify Target Minecraft Version (Submitted: 2024-07-25)
+## Specify Target Minecraft Version (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Clarified the target Minecraft Bedrock version for the addon across relevant project files to ensure consistency in development and usage.
@@ -540,7 +533,7 @@ Clarified the target Minecraft Bedrock version for the addon across relevant pro
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Admin Command Implementation (`!ac inspect`, `!ac resetflags`) (Submitted: 2024-07-25)
+## Admin Command Implementation (`!ac inspect`, `!ac resetflags`) (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Added two new administrative commands to `AntiCheatsBP/scripts/main.js` to enhance server management capabilities:
@@ -558,7 +551,7 @@ Added two new administrative commands to `AntiCheatsBP/scripts/main.js` to enhan
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Manifest API Versioning Update (Submitted: 2024-07-25)
+## Manifest API Versioning Update (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 Reviewed and initially updated the versions of `@minecraft/server` and related modules in `AntiCheatsBP/manifest.json` to align with the project's `min_engine_version` of `[1, 21, 0]` and utilize recent beta releases for the `1.21.90` engine preview.
@@ -578,7 +571,7 @@ Reviewed and initially updated the versions of `@minecraft/server` and related m
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Configuration Review & Expansion (Submitted: 2024-07-25)
+## Configuration Review & Expansion (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 This task involved a comprehensive review and expansion of the `AntiCheatsBP/scripts/config.js` file to improve the configurability and maintainability of the cheat detection system.
@@ -589,7 +582,7 @@ This task involved a comprehensive review and expansion of the `AntiCheatsBP/scr
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Refine `debugLog` Calls (Submitted: 2024-07-25)
+## Refine `debugLog` Calls (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 This task involved reviewing all `debugLog` calls across the primary check functions (`combatChecks.js`, `movementChecks.js`, `worldChecks.js`, `main.js`, `playerUtils.js`) to ensure they adhered to the `debugLog(message, contextPlayerNameIfWatched)` signature.
@@ -600,7 +593,7 @@ This task involved reviewing all `debugLog` calls across the primary check funct
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Folder Renaming and Path Updates (Submitted: 2024-07-25)
+## Folder Renaming and Path Updates (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 This task involved renaming the core Behavior Pack (`BP/`) and Resource Pack (`RP/`) folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively. All references to these paths within the project's configuration and documentation files were updated accordingly.
@@ -616,7 +609,7 @@ This task involved renaming the core Behavior Pack (`BP/`) and Resource Pack (`R
 
 *Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
 
-## Anti-Cheat Feature Implementation (Submitted: 2024-07-24)
+## Anti-Cheat Feature Implementation (Submitted)
 *(Date is a placeholder based on current interaction)*
 
 This major update introduced a comprehensive suite of anti-cheat features, improved admin tooling, and foundational code enhancements.
@@ -735,7 +728,7 @@ As of 2024-07-27
 *   Implement "Server Rules" view for normal players in `!panel`. (Completed)
 *   Implement "Help & Links" view for normal players in `!panel`. (Completed)
 
-## Implement Persistent Mute System (Task Completion Date: 2024-07-28)
+## Implement Persistent Mute System (Task Completion Date)
 
 **Original Task Description:**
 `!ac mute <player> [duration] [reason]` & `!ac unmute <player>`: Implement a persistent mute system. Mutes should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (Inspired by SjnExe, SafeGuard)
@@ -757,10 +750,10 @@ As of 2024-07-27
 
 *User testing required to fully verify persistence across server restarts and player sessions.*
 
-## Implement Persistent Ban System (Task Completion Date: 2024-07-29)
+## Implement Persistent Ban System (Task Completion Date)
 
 **Original Task Description:**
-`!ac ban <player> [reason] [duration]` & `!ac unban <player>`: Implement a ban management system. Bans should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (SjnExe, SafeGuard)
+`!ac ban <player> [reason] [duration]` & `!ac unmute <player>`: Implement a ban management system. Bans should be persistent (e.g., stored in a world dynamic property or separate file if platform allows). Duration format (e.g., "1d", "2h30m", "perm"). (SjnExe, SafeGuard)
 
 **Summary of Implementation:**
 *   **Modified `playerDataManager.js`:**
@@ -784,7 +777,7 @@ As of 2024-07-27
 *UI integration for ban/unban in the admin panel is deferred for a future task.*
 
 ## Admin Panel UI (`!panel`) Development (Phase 4 Completed)
-*(Task Completion Date: 2024-07-29)*
+*(Task Completion Date)*
 
 *   **Phase 4: Server Management Actions (New Section in Panel) (Completed):**
     *   A new "Server Management" section was added to the main Admin Panel (`!panel`).
@@ -792,7 +785,7 @@ As of 2024-07-27
     *   "Clear Chat" button: Implemented a button that allows admins to clear chat for all players after a confirmation prompt. (Completed)
     *   "Lag Clear" button: Implemented a button that allows admins to remove all dropped item entities from all standard dimensions (Overworld, Nether, End) after a confirmation prompt. Reports the number of items cleared. (Completed)
 
-## Persistent Admin Action Logging & UI Viewer (Task Completion Date: 2024-07-31)
+## Persistent Admin Action Logging & UI Viewer (Task Completion Date)
 
 **Original Task Description (from ongoing.md, merged from todo.md):**
 Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Log actions with details (admin, target, reason, duration, timestamp) and create a UI to view these logs.
@@ -988,3 +981,39 @@ Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Pan
 ---
 *(Date: Current Session)*
 *   **Self-Hurt Detection:** Detect if a player takes damage without a clear external source (e.g., another entity, fall, fire). Requires careful context analysis to avoid false positives from suffocation, void, etc. (Scythe 'BadPackets') - Implemented basic check for direct self-attack (`entityAttack` where player is a damaging entity to self).
+---
+*(Date: Current Session)*
+*   **Messages Too Close Together (Spam):** Track time between messages from a player. Flag if messages are sent faster than a reasonable typing/command speed. (SafeGuard) - Implemented `checkMessageRate` and integrated into `handleBeforeChatSend`. Note: The `handleBeforeChatSend` signature in `main.js` needs to be updated to pass new arguments (checks, logManager, executeCheckAction, currentTick).
+---
+*(Date: Current Session)*
+*   **Message Too Many Words (Spam/Flood):** Check word count of messages. Flag if excessively high. (SafeGuard) - Implemented `checkMessageWordCount` and integrated into `handleBeforeChatSend`. `main.js` was also updated to support new `handleBeforeChatSend` signature.
+---
+*(Date: Current Session)*
+*   **Refactor `commandManager.js`**: Split commands into individual modules under a new `commands/` directory to improve organization and maintainability. `commandManager.js` will become a command loader and dispatcher. - Task verified as already completed; `commandManager.js` currently loads commands from modules listed in `commands/commandRegistry.js`.
+---
+*(Date: Current Session)*
+*   **Performance Optimization:** (from original todo) Profile existing checks under load and optimize if necessary.
+    *   Reviewed `flyCheck.js` and `speedCheck.js`.
+    *   Implemented minor optimization in `flyCheck.js`: removed a redundant lookup for the levitation effect.
+    *   No immediate low-risk optimizations found for `speedCheck.js`.
+    *   **Suggestion for Future Consideration**: Centralize `player.getEffects()` calls (e.g., in `main.js` per tick) and store results in `pData` to reduce potentially expensive native API calls if performance issues arise. This would be a more significant refactor.
+---
+*(Date: Current Session)*
+*   **Aggressive Code Reduction Review - Phase 1: `playerUtils.js`**:
+    *   **Objective:** Review `AntiCheatsBP/scripts/utils/playerUtils.js` for code reduction.
+    *   **Outcome:** Successfully refactored several functions (`getPlayerPermissionLevel`, `notifyAdmins`, `debugLog`, `findPlayer`) using more concise JavaScript idioms like ternary operators, `Array.prototype.find()`, and boolean short-circuiting. This resulted in an estimated 12-14 Lines of Code reduction while preserving functionality and performance. Usage of template literals in `executeLagClear` was also confirmed.
+---
+*(Date: Current Session)*
+*   **Aggressive Code Reduction Review - Phase 2: `itemUtils.js`**:
+    *   **Objective:** Review `AntiCheatsBP/scripts/utils/itemUtils.js` for code reduction.
+    *   **Outcome:** Analysis concluded that significant LoC reduction without simplifying the underlying game mechanic models (which would affect accuracy for checks like InstaBreak) or externalizing data was not feasible. The file's length is primarily due to necessary data constants and the complexity of the mechanics it emulates. No code changes were made to `itemUtils.js`.
+---
+*(Date: Current Session)*
+*   **Optimization and Code Efficiency Review - Phase 3: `playerDataManager.js`**:
+    *   **Primary Objective:** Review `AntiCheatsBP/scripts/core/playerDataManager.js` for runtime performance optimization opportunities.
+    *   **Outcome:** Successfully refactored `playerDataManager.js` to implement a deferred data saving mechanism.
+        *   Added `isDirtyForSave` flag to player data.
+        *   Modified `addFlag`, `addMute`, `removeMute`, `getMuteInfo` (on expiry), `addBan`, `removeBan`, `getBanInfo` (on expiry) to set the `isDirtyForSave` flag instead of saving immediately.
+        *   Created `PERSISTED_PLAYER_DATA_KEYS` constant for maintainable selection of data for persistence in `prepareAndSavePlayerData`.
+        *   Added new exported function `saveDirtyPlayerData(player)` to save data only if dirty and then reset the flag.
+    *   **Note:** This change significantly reduces frequent disk I/O. Integration of `saveDirtyPlayerData` calls into `main.js` (periodic save) and `eventHandlers.js` (on player leave) is required as a next step to fully enable the new save strategy.
