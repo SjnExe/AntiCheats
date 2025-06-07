@@ -32,7 +32,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **World Management & Protection:** SjnExe parity goal.
     *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
-    *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
 
 *   **Normal Player Panel Features (`!panel`):**
 

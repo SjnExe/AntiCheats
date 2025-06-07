@@ -1,6 +1,12 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Dimension Locks Feature:**
+    *   Implemented `!netherlock <on|off|status>` and `!endlock <on|off|status>` commands for admins to control access to the Nether and End dimensions.
+    *   Lock states are stored persistently using world dynamic properties via a new `worldStateUtils.js` utility.
+    *   Enforcement mechanism uses the `PlayerDimensionChangeAfterEvent` to teleport non-exempt players back from locked dimensions, providing them with a notification.
+    *   Admins (or users with `permissionLevels.admin` or lower) can bypass these locks.
+    *   (Task was previously in Medium Priority under World Management).
 *   **Admin Panel - Player Actions Enhancement:** Added several new actions to the Player Actions form in the Admin Panel:
     *   **Clear Inventory:** Allows admins to clear a target player's main inventory (with confirmation).
     *   **Teleport to Player:** Allows admin to teleport themselves to the target player.
