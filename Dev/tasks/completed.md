@@ -997,3 +997,8 @@ Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Pan
     *   Implemented minor optimization in `flyCheck.js`: removed a redundant lookup for the levitation effect.
     *   No immediate low-risk optimizations found for `speedCheck.js`.
     *   **Suggestion for Future Consideration**: Centralize `player.getEffects()` calls (e.g., in `main.js` per tick) and store results in `pData` to reduce potentially expensive native API calls if performance issues arise. This would be a more significant refactor.
+---
+*(Date: Current Session)*
+*   **Aggressive Code Reduction Review - Phase 1: `playerUtils.js`**:
+    *   **Objective:** Review `AntiCheatsBP/scripts/utils/playerUtils.js` for code reduction.
+    *   **Outcome:** Successfully refactored several functions (`getPlayerPermissionLevel`, `notifyAdmins`, `debugLog`, `findPlayer`) using more concise JavaScript idioms like ternary operators, `Array.prototype.find()`, and boolean short-circuiting. This resulted in an estimated 12-14 Lines of Code reduction while preserving functionality and performance. Usage of template literals in `executeLagClear` was also confirmed.
