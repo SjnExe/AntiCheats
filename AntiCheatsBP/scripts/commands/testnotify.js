@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/testnotify.js
+ * Defines the !testnotify command for owners to send a test admin notification.
+ * Useful for verifying that the admin notification system is working correctly.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/testnotify.js
 import { permissionLevels } from '../core/rankManager.js';
 
@@ -8,7 +14,7 @@ export const definition = {
     name: "testnotify",
     syntax: "!testnotify",
     description: "Sends a test admin notification.",
-    permissionLevel: permissionLevels.owner
+    permissionLevel: permissionLevels.owner // Restricted to owner for system testing
 };
 
 /**

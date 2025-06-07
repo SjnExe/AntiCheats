@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/kick.js
+ * Defines the !kick command for administrators to remove a player from the server.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/kick.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server'; // For world.getAllPlayers() if not using dependencies.findPlayer

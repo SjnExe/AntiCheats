@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/help.js
+ * Defines the !help command, which provides players with a list of available commands
+ * or detailed information about a specific command based on their permission level.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/help.js
 import { permissionLevels } from '../core/rankManager.js'; // Assuming this path is correct from command's perspective
 
@@ -8,17 +14,17 @@ export const definition = {
     name: "help",
     syntax: "!help [command_name]",
     description: "Shows available commands or help for a specific command.",
-    permissionLevel: permissionLevels.normal
+    permissionLevel: permissionLevels.normal // Accessible by all players
 };
 
 /**
  * Executes the help command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include `allCommands` list.
  */
 export async function execute(player, args, dependencies) {
-    const { config, getPlayerPermissionLevel, permissionLevels: permLevelsDep, allCommands: acAllCommands } = dependencies; // Renamed to avoid conflict with outer scope allCommands if any
+    const { config, getPlayerPermissionLevel, permissionLevels: permLevelsDep, allCommands: acAllCommands } = dependencies;
     const userPermissionLevel = getPlayerPermissionLevel(player);
 
     if (args[0]) {
@@ -35,11 +41,12 @@ export async function execute(player, args, dependencies) {
 
         if (foundCmdDef) {
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
-                const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1); // Get args part of syntax
+                const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
                 let permLevelName = "Unknown";
-                for (const key in permLevelsDep) { // Correctly iterate permissionLevels from dependencies
+                // Find the name of the permission level
+                for (const key in permLevelsDep) {
                     if (permLevelsDep[key] === foundCmdDef.permissionLevel) {
-                        permLevelName = key;
+                        permLevelName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize
                         break;
                     }
                 }

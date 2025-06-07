@@ -229,6 +229,24 @@ mc.system.runInterval(async () => {
             pData.isTakingFallDamage = false;
         }
     }
+
+    // Deferred player data saving
+    if (currentTick % 600 === 0) {
+        for (const player of allPlayers) {
+            const pData = playerDataManager.getPlayerData(player.id); // Assuming getPlayerData takes playerId
+            if (pData && pData.isDirtyForSave) {
+                try {
+                    await playerDataManager.saveDirtyPlayerData(player); // Assuming saveDirtyPlayerData takes player object
+                    if (playerUtils.debugLog && pData.isWatched) {
+                        playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, player.nameTag);
+                    }
+                } catch (error) {
+                    console.error(`Error during deferred save for ${player.nameTag}: ${error}`);
+                    logManager.addLog('error', `DeferredSaveFail: ${player.nameTag}, ${error}`);
+                }
+            }
+        }
+    }
 }, 1);
 
 playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tick loop are active.", "System");

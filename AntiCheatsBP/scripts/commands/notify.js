@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/notify.js
+ * Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/notify.js
 import { permissionLevels } from '../core/rankManager.js';
 

@@ -1,3 +1,10 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/index.js
+ * Barrel file for exporting all individual cheat detection modules.
+ * This allows other parts of the system to import all checks from a single source.
+ * @version 1.0.0
+ */
+
 // Movement Checks
 export * from './movement/flyCheck.js';
 export * from './movement/speedCheck.js';
@@ -19,10 +26,10 @@ export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirP
 export { checkFastUse } from './world/fastUseCheck.js';
 export { checkAutoTool } from './world/autoToolCheck.js';
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
-export { checkNameSpoof } from './world/nameSpoofCheck.js'; // Note: NameSpoof and AntiGMC were placed in /world previously
-export { checkAntiGMC } from './world/antiGMCCheck.js';   // To be consistent with that decision for now.
+export { checkNameSpoof } from './world/nameSpoofCheck.js';
+export { checkAntiGMC } from './world/antiGMCCheck.js';
 
-// Player Behavior Checks (New Category)
+// Player Behavior Checks
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';
 export { checkSelfHurt } from './player/selfHurtCheck.js';
 

@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/gma.js
+ * Defines the !gma command for administrators to set a player's gamemode to Adventure.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/gma.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';

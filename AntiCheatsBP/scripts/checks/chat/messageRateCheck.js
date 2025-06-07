@@ -1,33 +1,55 @@
-// AntiCheatsBP/scripts/checks/chat/messageRateCheck.js
+/**
+ * @file AntiCheatsBP/scripts/checks/chat/messageRateCheck.js
+ * Implements a check to detect players sending chat messages too frequently (spamming).
+ * @version 1.0.1
+ */
+
 import * as mc from '@minecraft/server';
 
 /**
- * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
 
 /**
  * Checks if a player is sending messages too frequently.
- * @param {mc.Player} player The player sending the message.
- * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
- * @param {mc.ChatSendBeforeEvent} eventData The chat event data (used for potential cancellation).
- * @param {object} config The server configuration object.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
- * @param {number} currentTick The current game tick.
- * @returns {boolean} Returns true if the message should be cancelled, false otherwise.
+ * If a violation is detected, configured actions (flagging, logging, message cancellation) are executed.
+ * @param {mc.Player} player - The player sending the message.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastChatMessageTimestamp`.
+ * @param {mc.ChatSendBeforeEvent} eventData - The chat event data, used for message content and cancellation.
+ * @param {Config} config - The server configuration object, containing thresholds and check toggles.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {number} currentTick - The current game tick (not directly used in this check but part of standard signature).
+ * @returns {Promise<boolean>} A promise that resolves to `true` if the message should be cancelled due to spam, `false` otherwise.
  */
-export async function checkMessageRate(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick) {
+export async function checkMessageRate(
+    player,
+    pData,
+    eventData,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick // currentTick is not used here but kept for consistent check signature
+) {
     if (!config.enableFastMessageSpamCheck) {
-        return false; // Message should not be cancelled by this check if disabled
+        return false; // Check is disabled, so message should not be cancelled by it.
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
-    const threshold = config.fastMessageSpamThresholdMs || 500; // Default to 500ms
-    const actionProfileName = config.fastMessageSpamActionProfileName || "chat_spam_fast_message";
-    const actionProfile = config.checkActionProfiles ? config.checkActionProfiles[actionProfileName] : null;
+    // Use nullish coalescing for robust default values, in case config values could be 0 or false.
+    const threshold = config.fastMessageSpamThresholdMs ?? 500;
+    const actionProfileName = config.fastMessageSpamActionProfileName ?? "chat_spam_fast_message";
+    const actionProfile = config.checkActionProfiles?.[actionProfileName];
 
     let shouldCancel = false;
 
@@ -35,24 +57,29 @@ export async function checkMessageRate(player, pData, eventData, config, playerU
         const timeSinceLastMsgMs = currentTime - pData.lastChatMessageTimestamp;
 
         if (timeSinceLastMsgMs < threshold) {
-            if (playerUtils.debugLog) {
+            if (playerUtils.debugLog) { // Ensure debugLog exists before calling
                 playerUtils.debugLog(`MessageRateCheck: ${player.nameTag} sent message too fast. Diff: ${timeSinceLastMsgMs}ms, Threshold: ${threshold}ms`, watchedPrefix);
             }
 
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
-                messageContent: eventData.message // Include message content for context
+                messageContent: eventData.message // Include message content for context in logs/notifications
             };
+            // Construct dependencies for executeCheckAction consistently
             const dependencies = { config, playerDataManager, playerUtils, logManager };
             await executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
-            if (actionProfile && actionProfile.cancelMessage) {
+            // Check if the action profile specifies message cancellation
+            if (actionProfile?.cancelMessage) {
                 shouldCancel = true;
             }
         }
     }
 
+    // Always update the timestamp to the current message's time
     pData.lastChatMessageTimestamp = currentTime;
+    pData.isDirtyForSave = true; // Mark data as dirty because lastChatMessageTimestamp changed
+
     return shouldCancel;
 }

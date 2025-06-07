@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/commandRegistry.js
+ * Central registry for all command modules. This file imports all individual command
+ * files and exports them as an array to be used by the commandManager.
+ * @version 1.0.1
+ */
 // AntiCheatsBP/scripts/commands/commandRegistry.js
 import * as versionCmd from './version.js';
 import * as myflagsCmd from './myflags.js';

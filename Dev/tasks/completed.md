@@ -1,3 +1,65 @@
+# Completed Tasks Documentation
+
+---
+## Integration: Deferred Player Data Saving
+*(Completed During This Session Cycle)*
+*   **Objective:** Implement the triggering mechanism for deferred player data saving.
+*   **Actions Taken:**
+    *   **`AntiCheatsBP/scripts/main.js` Modified:**
+        *   Imported `saveDirtyPlayerData` from `playerDataManager.js`.
+        *   In the main tick loop (`system.runInterval`), added logic to run every 600 ticks (`currentTick % 600 === 0`).
+        *   Inside this periodic block, iterated through `world.getAllPlayers()`.
+        *   For each player, fetched their `pData` using `playerDataManager.getPlayerData(player.id)`.
+        *   If `pData && pData.isDirtyForSave` was true, called `await playerDataManager.saveDirtyPlayerData(player)`.
+        *   Included error handling and debug logging for the save operation.
+    *   **`AntiCheatsBP/scripts/core/eventHandlers.js` Modified:**
+        *   Ensured `saveDirtyPlayerData` was available via the `playerDataManager` object passed as a parameter.
+        *   In the `handlePlayerLeave` function, added a call to `await playerDataManager.saveDirtyPlayerData(eventData.player)` *before* the existing `playerDataManager.prepareAndSavePlayerData(eventData.player)` call. This ensures any pending changes for a leaving player are saved using the dirty flag mechanism.
+        *   Added error handling and debug logging for this save operation.
+*   **Outcome:** Player data is now saved periodically in the main tick loop if marked dirty, and critically, any pending dirty data is saved when a player leaves. This optimizes I/O operations by batching saves or saving only when necessary.
+
+---
+## Comprehensive Optimization, Code Efficiency, and Style Review
+*(Completed During This Session Cycle)*
+*   **Overall Objective:** Review all project JavaScript files to improve runtime performance, reduce Lines of Code (LoC) where appropriate without sacrificing performance/clarity, and ensure strict adherence to the coding style defined in `Dev/CodingStyle.md`.
+*   **Scope of Review:** All `.js` files within `AntiCheatsBP/scripts/`, including `config.js`, `main.js`, all files in `core/`, `utils/`, and all check files within `checks/` (and its subdirectories).
+
+*   **Key Changes & Achievements:**
+    *   **Styling Consistency (All Files):**
+        *   **Indentation:** Standardized to 4 spaces across all reviewed script files.
+        *   **JSDoc Comments:** Added or significantly improved JSDoc for all functions and exported constants. This included `@file` comments, detailed parameter descriptions (often using `@typedef` imports from a conceptual `types.js` for complex objects like `Config`, `PlayerAntiCheatData`, `PlayerUtils`, etc.), return types, and clear explanations of function purposes and reliance on `pData` state where applicable.
+        *   **Naming Conventions:** Verified and enforced `camelCase` for functions, variables, and parameters. Corrected internal constants (not from `config.js`) to `camelCase` (e.g., in `logManager.js`, `reportManager.js`, `itemUtils.js`). `PascalCase` was used for JSDoc `@typedef`s.
+        *   **Formatting:** Ensured consistent spacing, use of modern JavaScript features (nullish coalescing `??`, optional chaining `?.`), and overall code readability.
+    *   **Performance Optimizations:**
+        *   **`logManager.js` & `reportManager.js`**: Implemented a crucial in-memory caching strategy. Data is primarily written to/read from an in-memory array, with a dirty flag managing less frequent persistence to dynamic properties. This significantly reduces I/O bottlenecks.
+        *   **`commandManager.js`**: Optimized command lookup from O(N) array searches to O(1) `Map` lookups for both command definitions and execution functions.
+        *   **Movement Checks (`flyCheck.js`, `noFallCheck.js`, `noSlowCheck.js`, `invalidSprintCheck.js`)**: Refactored to rely on effect states (e.g., `pData.hasLevitation`, `pData.speedAmplifier`) being pre-populated in `PlayerAntiCheatData` (assumed to be updated by `updateTransientPlayerData`). This avoids repeated, potentially costly `player.getEffects().find()` calls within these frequently executed checks.
+        *   **General Efficiency**: Reviewed all checks and core logic for early exits, efficient data access patterns, and minimal use of expensive operations in frequently run code paths.
+    *   **Robustness & Clarity:**
+        *   Added null checks for critical objects like `pData` at the beginning of check functions.
+        *   Used nullish coalescing (`??`) for config defaults to make checks more resilient to missing configurations.
+        *   Employed optional chaining (`?.`) for safer access to potentially undefined properties or methods (especially `playerUtils.debugLog`).
+        *   Improved `violationDetails` objects to be more informative and consistent (e.g., stringifying numerical/boolean values).
+        *   Ensured `pData.isDirtyForSave = true` was set appropriately whenever fields intended for persistence were modified.
+        *   Refined logic in various UI forms (`uiManager.js`) and event handlers (`eventHandlers.js`) for better flow, error handling, and clarity.
+    *   **Specific File Highlights (beyond general styling/JSDoc):**
+        *   **`config.js`**: Ensured all exported variables were `camelCase` (already done in a prior task but verified). Improved JSDoc for configuration variables and structure.
+        *   **`main.js`**: Reviewed and confirmed its role as an orchestrator is efficient. Deferred saving integration completed.
+        *   **`core/eventHandlers.js`**: Made several handlers correctly `async`. Improved argument passing and data handling for checks.
+        *   **`core/uiManager.js`**: Streamlined UI navigation, improved command execution calls from UI, enhanced form clarity.
+        *   **`utils/itemUtils.js`**: Renamed internal data maps to `camelCase`.
+        *   **`checks/*`**: All check files received detailed attention to their specific logic, ensuring they are as efficient and robust as possible within their current algorithmic design. Noted areas where action profile names are hardcoded for future configuration.
+
+*   **Outcome:** The reviewed codebase is now more performant, significantly more robust, easier to maintain, and strictly adheres to the defined coding style. Performance-critical areas like logging, reporting, command dispatch, and high-frequency checks have been notably optimized.
+
+---
+## General Project Review (Completed for this Session Cycle)
+*   **Coding Style Adherence:** All script files reviewed and modified during this session cycle (`config.js`, `main.js`, `core/`, `utils/`, `checks/`) now adhere to the guidelines in `Dev/CodingStyle.md`.
+*   **Task File Management:** `Dev/tasks/ongoing.md` and `Dev/tasks/completed.md` have been updated to accurately reflect all work performed and completed during this session cycle.
+
+---
+*(Existing content of completed.md starts below)*
+
 ## Comprehensive Coding Style Review
 - **Objective:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
 - **Process & Status:**

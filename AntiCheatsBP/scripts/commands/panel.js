@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/panel.js
+ * Defines the !panel command, which serves as the entry point to the main AntiCheat Admin UI Panel.
+ * Also aliased as !ui.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/panel.js
 import { permissionLevels } from '../core/rankManager.js'; // Ensure this path is correct
 
@@ -8,7 +14,7 @@ export const definition = {
     name: "panel",
     syntax: "!panel",
     description: "Opens the AntiCheat Admin Panel UI.",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin // Default to admin, UI itself might show different things based on actual perm level.
 };
 
 /**

@@ -39,19 +39,19 @@ export const enableNofallCheck = true;
 export const enableNukerCheck = true;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
 export const enableIllegalItemCheck = true;
-/** @type {boolean} If true, the Self-Hurt Detection check is active. */
-export const enableSelfHurtCheck = true; // Detects suspicious self-inflicted damage
+/** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
+export const enableSelfHurtCheck = true;
 
 
 // --- Movement Checks ---
 
-/** @type {number} Maximum vertical speed (intended interpretation: blocks per second, but actual check logic may vary). */
+/** @type {number} Maximum vertical speed (positive for upward, negative for downward) in blocks per second. Used by Fly check. */
 export const maxVerticalSpeed = 10;
-/** @type {number} Maximum horizontal speed (intended interpretation: blocks per second). Default sprint speed is ~5.6 blocks/sec. */
+/** @type {number} Maximum horizontal speed in blocks per second. Default vanilla sprint speed is ~5.6 blocks/sec. */
 export const maxHorizontalSpeed = 15;
-/** @type {number} Flat bonus to maximum horizontal speed (blocks/sec) per level of the Speed effect. */
+/** @type {number} Flat bonus to maximum horizontal speed (blocks/sec) added per level of the Speed effect. */
 export const speedEffectBonus = 2.0;
-/** @type {number} Minimum fall distance in blocks that is expected to cause fall damage. */
+/** @type {number} Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check. */
 export const minFallDistanceForDamage = 3.5;
 /** @type {number} Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection. */
 export const flySustainedVerticalSpeedThreshold = 0.5;
@@ -63,74 +63,77 @@ export const flyHoverNearGroundThreshold = 3;
 export const flyHoverVerticalSpeedThreshold = 0.08;
 /** @type {number} Number of consecutive off-ground ticks, while meeting hover conditions, to trigger a hover flag. */
 export const flyHoverOffGroundTicksThreshold = 20;
-/** @type {number} Maximum fall distance accumulated while hovering. */
+/** @type {number} Maximum fall distance accumulated while hovering that will not be reset, to differentiate from actual falls. */
 export const flyHoverMaxFallDistanceThreshold = 1.0;
-/** @type {number} A tolerance buffer added to the maximum horizontal speed. */
+/** @type {number} A tolerance buffer in blocks per second added to the maximum horizontal speed calculation. */
 export const speedToleranceBuffer = 0.5;
-/** @type {number} Number of consecutive ticks a player must exceed max horizontal speed on ground to be flagged. */
+/** @type {number} Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged by Speed check. */
 export const speedGroundConsecutiveTicksThreshold = 5;
 
-/** @type {boolean} If true, the NoSlow check is active. */
+/** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass) is active. */
 export const enableNoSlowCheck = true;
-/** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating/drinking. Vanilla is very slow. */
-export const noSlowMaxSpeedEating = 1.0; // Slightly above 0 to allow minor adjustments
-/** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla is very slow. */
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed. */
+export const noSlowMaxSpeedEating = 1.0;
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla movement is significantly slowed. */
 export const noSlowMaxSpeedChargingBow = 1.0;
-/** @type {number} Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield (if this slows). Vanilla walk: ~4.3, Sneak: ~1.3. Shield doesn't slow walk/sprint. */
-export const noSlowMaxSpeedUsingShield = 4.4; // Set slightly above normal walk, as shield itself doesn't slow. This might catch if combined with other speed hacks.
-/** @type {number} Maximum horizontal speed (blocks/sec) allowed while sneaking. Vanilla is ~1.31 B/s. */
-export const noSlowMaxSpeedSneaking = 1.5; // Slightly above vanilla sneak speed
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield. Vanilla walking speed is ~4.3 BPS; shield does not slow normal walking/sprinting. This value helps catch hacks if combined with other speed modifiers. */
+export const noSlowMaxSpeedUsingShield = 4.4;
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while sneaking. Vanilla sneaking speed is ~1.31 BPS. */
+export const noSlowMaxSpeedSneaking = 1.5;
 
-/** @type {boolean} If true, the Invalid Sprint check is active. */
+/** @type {boolean} If true, the Invalid Sprint check (detecting sprinting under disallowed conditions) is active. */
 export const enableInvalidSprintCheck = true;
 
 
 // --- Combat Checks ---
 
-/** @type {number} Maximum clicks per second (CPS) threshold. */
+/** @type {number} Maximum clicks per second (CPS) threshold before flagging. */
 export const maxCpsThreshold = 20;
-/** @type {number} Maximum reach distance in blocks for Survival/Adventure mode. */
+/** @type {number} Maximum reach distance in blocks for Survival/Adventure mode players. */
 export const reachDistanceSurvival = 4.5;
-/** @type {number} Maximum reach distance in blocks for Creative mode. */
+/** @type {number} Maximum reach distance in blocks for Creative mode players. */
 export const reachDistanceCreative = 6.0;
-/** @type {number} A small buffer added to maximum reach distance. */
+/** @type {number} A small buffer in blocks added to maximum reach distance calculations to reduce false positives. */
 export const reachBuffer = 0.5;
-/** @type {number} Time window in milliseconds for calculating CPS. */
+/** @type {number} Time window in milliseconds over which CPS is calculated. */
 export const cpsCalculationWindowMs = 1000;
 
 // --- View Snap / Invalid Pitch (Aimbot/Killaura components) ---
-/** @type {number} Max degrees pitch can change in one tick after an attack. */
+/** @type {number} Maximum degrees the player's pitch (up/down view angle) can change in a single game tick immediately after an attack. */
 export const maxPitchSnapPerTick = 75;
-/** @type {number} Max degrees yaw can change in one tick after an attack. */
+/** @type {number} Maximum degrees the player's yaw (left/right view angle) can change in a single game tick immediately after an attack. */
 export const maxYawSnapPerTick = 100;
-/** @type {number} Ticks after an attack to monitor for view snaps. */
+/** @type {number} Number of game ticks after an attack during which view snaps (pitch/yaw changes) are monitored. */
 export const viewSnapWindowTicks = 10;
-/** @type {number} Minimum pitch considered invalid. */
+/** @type {number} Minimum pitch value (degrees) considered invalid (e.g., looking impossibly far down). Vanilla range is -90 to 90. */
 export const invalidPitchThresholdMin = -90.5;
-/** @type {number} Maximum pitch considered invalid. */
+/** @type {number} Maximum pitch value (degrees) considered invalid (e.g., looking impossibly far up). Vanilla range is -90 to 90. */
 export const invalidPitchThresholdMax = 90.5;
-/** @type {string} Reason message for invalid pitch flags. */
+/** @type {string} Reason message for flagging due to invalid pitch. */
 export const flagReasonInvalidPitch = "Invalid Pitch";
-/** @type {string} Reason message for view snap flags. */
+/** @type {string} Reason message for flagging due to view snaps. */
 export const flagReasonViewSnap = "View Snap";
-/** @type {number} Flag increment value for view snap related flags. */
+/** @type {number} Increment value for flags related to view snap or invalid pitch. */
 export const flagIncrementViewSnap = 1;
 
 // --- Multi-Target Killaura ---
-/** @type {number} Time window in milliseconds for multi-target detection. */
+/** @type {number} Time window in milliseconds for detecting attacks on multiple distinct targets. */
 export const multiTargetWindowMs = 1000;
-/** @type {number} Number of distinct entities hit within the window to trigger a flag. */
+/** @type {number} Number of distinct entities that must be hit within the `multiTargetWindowMs` to trigger a multi-target flag. */
 export const multiTargetThreshold = 3;
-/** @type {number} Maximum number of recent hit records to store per player. */
+/** @type {number} Maximum number of recent hit target records to store per player for multi-target analysis. */
 export const multiTargetMaxHistory = 10;
-/** @type {string} Reason message for multi-target aura flags. */
+/** @type {string} Reason message for flagging due to multi-target aura. */
 export const flagReasonMultiAura = "Multi-Target Aura";
 
 // --- State Conflict Checks (Killaura components) ---
-/** @type {string} Reason message for attacking while sleeping. */
+/** @type {string} Reason message for flagging due to attacking while sleeping. */
 export const flagReasonAttackWhileSleeping = "Attack While Sleeping";
 
-/** @type {string[]} Item type IDs for consumables that should prevent attacking while being used. */
+/**
+ * @type {string[]} Item type IDs for consumables (food, potions) that should prevent attacking while being actively used.
+ * This helps detect cheats that allow attacking while eating/drinking.
+ */
 export const attackBlockingConsumables = [
     "minecraft:apple", "minecraft:golden_apple", "minecraft:enchanted_golden_apple",
     "minecraft:mushroom_stew", "minecraft:rabbit_stew", "minecraft:beetroot_soup",
@@ -139,143 +142,145 @@ export const attackBlockingConsumables = [
     "minecraft:cooked_salmon", "minecraft:cooked_cod", "minecraft:baked_potato",
     "minecraft:bread", "minecraft:melon_slice", "minecraft:carrot", "minecraft:potato",
     "minecraft:beetroot", "minecraft:dried_kelp", "minecraft:potion", "minecraft:honey_bottle"
-    // Add other foods/potions as necessary
 ];
 
-/** @type {string[]} Item type IDs for bows that should prevent attacking while being charged. */
+/**
+ * @type {string[]} Item type IDs for bows that should prevent attacking (other than firing the bow itself) while being charged.
+ * This helps detect cheats that allow simultaneous melee attacks while drawing a bow.
+ */
 export const attackBlockingBows = ["minecraft:bow", "minecraft:crossbow"];
 
-/** @type {string[]} Item type IDs for shields that should prevent attacking while being actively used (raised). */
+/**
+ * @type {string[]} Item type IDs for shields that should prevent attacking while being actively used (raised).
+ * This helps detect cheats that allow attacking while simultaneously blocking with a shield.
+ */
 export const attackBlockingShields = ["minecraft:shield"];
 
-/** @type {number} Number of ticks the 'using item' state (like isUsingConsumable) should persist before being auto-cleared if no explicit stop event occurs. (20 ticks = 1 second) */
+/** @type {number} Number of ticks an 'item use' state (e.g., `isUsingConsumable`) persists before auto-clearing if no explicit stop event. (20 ticks = 1 second). */
 export const itemUseStateClearTicks = 60; // Default to 3 seconds
 
 
 // --- World Checks ---
 
 // --- AutoTool Check ---
-/** @type {boolean} If true, the AutoTool check is active. */
+/** @type {boolean} If true, the AutoTool check (detecting unnaturally fast tool switching for optimal block breaking) is active. */
 export const enableAutoToolCheck = true;
-/** @type {number} Max ticks between starting to break a block and switching to an optimal tool to be considered suspicious. */
-export const autoToolSwitchToOptimalWindowTicks = 2; // e.g., switch must happen almost immediately
-/** @type {number} Max ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool. */
+/** @type {number} Maximum ticks between starting to break a block and switching to an optimal tool to be considered suspicious by AutoTool check. */
+export const autoToolSwitchToOptimalWindowTicks = 2;
+/** @type {number} Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check. */
 export const autoToolSwitchBackWindowTicks = 5;
 
 // --- InstaBreak Check ---
-/** @type {boolean} If true, the check for breaking unbreakable blocks is active. */
+/** @type {boolean} If true, the check for breaking normally unbreakable blocks (like Bedrock) is active. */
 export const enableInstaBreakUnbreakableCheck = true;
-/** @type {string[]} List of block type IDs considered normally unbreakable by non-operators. */
+/** @type {string[]} List of block type IDs considered normally unbreakable by non-Operator players. */
 export const instaBreakUnbreakableBlocks = [
     "minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
     "minecraft:repeating_command_block", "minecraft:chain_command_block",
     "minecraft:structure_block", "minecraft:structure_void", "minecraft:jigsaw",
     "minecraft:light_block", "minecraft:end_portal_frame", "minecraft:end_gateway"
 ];
-/** @type {boolean} If true, the check for breaking blocks too fast is active. */
+/** @type {boolean} If true, the check for breaking blocks significantly faster than vanilla capabilities is active. */
 export const enableInstaBreakSpeedCheck = true;
-/** @type {number} Tolerance in ticks for block breaking speed. (e.g., 1-2 ticks). ActualTime < ExpectedTime - Tolerance -> Flag. */
+/** @type {number} Tolerance in game ticks for block breaking speed. Actual break time must be less than (ExpectedTime - Tolerance) to flag. */
 export const instaBreakTimeToleranceTicks = 2;
 
 // --- Player Behavior Checks ---
-/** @type {boolean} If true, the NameSpoof check is active. */
+/** @type {boolean} If true, the NameSpoof check (detecting invalid or rapidly changing player names) is active. */
 export const enableNameSpoofCheck = true;
-/** @type {number} Maximum allowed length for a player's nameTag. */
-export const nameSpoofMaxLength = 48; // Generous to account for rank prefixes + long names
+/** @type {number} Maximum allowed length for a player's nameTag. Used by NameSpoof check. */
+export const nameSpoofMaxLength = 48;
 /**
- * @type {string} Regex pattern for disallowed characters in nameTags.
- * Default aims to allow common characters, color codes, and spaces, but block most control/uncommon symbols.
- * Example: "[^\w\s§\-\[\]().#@!']" - disallows anything NOT (word chars, space, §, -, [, ], (, ), ., #, @, !, ')
- * Another option: "[^\x20-\x7E§]" - allows only printable ASCII (space to ~) and §. This is more restrictive.
- * Current choice: lenient, disallows common problematic chars like newlines, excessive symbols.
+ * @type {string} Regular expression pattern for disallowed characters in player nameTags.
+ * Aims to block control characters, newlines, and other potentially problematic symbols.
  */
-export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]"; // Disallow newlines, tabs, control chars, some extended ASCII
-/** @type {number} Minimum interval in ticks between allowed nameTag changes. */
-export const nameSpoofMinChangeIntervalTicks = 200; // 10 seconds
+export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]";
+/** @type {number} Minimum interval in game ticks between allowed player nameTag changes. Used by NameSpoof check. (200 ticks = 10 seconds) */
+export const nameSpoofMinChangeIntervalTicks = 200;
 
-/** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check is active. */
+/** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check (detecting unauthorized Creative mode usage) is active. */
 export const enableAntiGMCCheck = true;
 /**
- * @type {string} The gamemode to switch players to if unauthorized creative mode is detected and auto-switch is enabled.
+ * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGMCAutoSwitch` is true.
  * Valid values: "survival", "adventure", "spectator". Default: "survival".
  */
 export const antiGMCSwitchToGameMode = "survival";
-/** @type {boolean} If true, automatically switch player's gamemode if unauthorized creative is detected. */
+/** @type {boolean} If true, automatically switch a player's gamemode to `antiGMCSwitchToGameMode` if unauthorized Creative mode is detected. */
 export const antiGMCAutoSwitch = true;
 
-/** @type {boolean} If true, the InventoryMods (Hotbar Switch) checks are active. */
+/** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
 export const enableInventoryModCheck = true;
 
 
-/** @type {number} Max blocks broken in `nukerCheckIntervalMs` for Nuker. */
+/** @type {number} Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
-/** @type {number} Time window in milliseconds for Nuker check. */
+/** @type {number} Time window in milliseconds for the Nuker check to count broken blocks. */
 export const nukerCheckIntervalMs = 200;
-/** @type {string[]} Array of item type IDs banned from being placed. */
+/** @type {string[]} Array of item type IDs banned from being placed by players. */
 export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_block"];
-/** @type {string[]} Array of item type IDs banned from being used. */
+/** @type {string[]} Array of item type IDs banned from being used by players. */
 export const bannedItemsUse = [];
 
 // --- Chat Checks ---
 /** @type {boolean} If true, the Fast Message Spam check is active. */
 export const enableFastMessageSpamCheck = true;
-/** @type {number} Time in milliseconds between messages to be considered spam. */
-export const fastMessageSpamThresholdMs = 500; // 2 messages within 0.5s = spam.
-/** @type {string} The action profile name to use for fast message spam. */
+/** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
+export const fastMessageSpamThresholdMs = 500;
+/** @type {string} The action profile name (from `checkActionProfiles`) to use for fast message spam violations. */
 export const fastMessageSpamActionProfileName = "chat_spam_fast_message";
 
-/** @type {boolean} If true, the Max Words Spam check is active. */
+/** @type {boolean} If true, the Max Words Spam check (preventing overly long messages) is active. */
 export const enableMaxWordsSpamCheck = true;
-/** @type {number} Maximum allowed words in a single message. */
+/** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
-/** @type {string} The action profile name to use for max words spam. */
+/** @type {string} The action profile name (from `checkActionProfiles`) to use for max words spam violations. */
 export const maxWordsSpamActionProfileName = "chat_spam_max_words";
 
-/** @type {boolean} If true, checks for newline/carriage return characters in chat messages. */
+/** @type {boolean} If true, checks for newline or carriage return characters in chat messages. */
 export const enableNewlineCheck = true;
-/** @type {boolean} If true, sending a message with newlines/carriage returns will flag the player. */
+/** @type {boolean} If true, sending a message containing newlines/carriage returns will flag the player. */
 export const flagOnNewline = true;
 /** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
 export const cancelMessageOnNewline = true;
-/** @type {boolean} If true, checks if chat messages exceed the maximum configured length. */
+/** @type {boolean} If true, checks if chat messages exceed the `maxMessageLength`. */
 export const enableMaxMessageLengthCheck = true;
-/** @type {number} Maximum allowed character length for a chat message. */
+/** @type {number} Maximum allowed character length for a single chat message. */
 export const maxMessageLength = 256;
-/** @type {boolean} If true, sending a message exceeding max length will flag the player. */
+/** @type {boolean} If true, sending a message exceeding `maxMessageLength` will flag the player. */
 export const flagOnMaxMessageLength = true;
-/** @type {boolean} If true, messages exceeding max length will be cancelled. */
+/** @type {boolean} If true, messages exceeding `maxMessageLength` will be cancelled. */
 export const cancelOnMaxMessageLength = true;
-/** @type {boolean} If true, checks for players sending the same/similar messages repeatedly. */
+/** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
 export const spamRepeatCheckEnabled = true;
-/** @type {number} Number of identical/similar messages within the time window to trigger a spam flag. */
+/** @type {number} Number of identical or similar messages within `spamRepeatTimeWindowSeconds` to trigger a spam flag. */
 export const spamRepeatMessageCount = 3;
 /** @type {number} Time window in seconds to monitor for repeated messages. */
 export const spamRepeatTimeWindowSeconds = 5;
 /** @type {boolean} If true, flags the player for repeated message spam. */
 export const spamRepeatFlagPlayer = true;
-/** @type {boolean} If true, cancels the message that triggers the repeated spam detection. */
+/** @type {boolean} If true, cancels the message that triggers repeated spam detection. */
 export const spamRepeatCancelMessage = false;
 
 // --- Scaffold/Tower Detection ---
-/** @type {boolean} If true, the Scaffold/Tower (Tower-like upward building) check is active. */
+/** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
 export const enableTowerCheck = true;
-/** @type {number} Maximum time in ticks between consecutive pillar blocks for it to be considered part of the same tower. */
+/** @type {number} Maximum time in game ticks between consecutive upward pillar blocks for them to be considered part of the same tower structure. */
 export const towerMaxTickGap = 10; // 0.5 seconds
-/** @type {number} Minimum number of consecutive upward blocks to trigger a tower flag. */
+/** @type {number} Minimum number of consecutive upward blocks placed to trigger a tower flag. */
 export const towerMinHeight = 5;
-/** @type {number} Maximum pitch deviation (degrees) allowed when pillaring up. E.g., if pitch is > -30 (looking too far up/ahead). */
-export const towerMaxPitchWhilePillaring = -30; // Player should be looking down somewhat. Pitch < -30 means looking more upwards.
-/** @type {number} How many recent block placements to store for pattern analysis. */
+/** @type {number} Maximum pitch deviation (degrees) allowed while pillaring up. Player's pitch must be less than this (e.g., looking further down than -30 degrees). */
+export const towerMaxPitchWhilePillaring = -30;
+/** @type {number} How many recent block placements to store for pattern analysis in tower/scaffold checks. */
 export const towerPlacementHistoryLength = 20;
-/** @type {boolean} If true, the Flat/Invalid Rotation While Building check is active. */
+
+/** @type {boolean} If true, the Flat/Invalid Rotation While Building check (detecting unnatural head movements during placement) is active. */
 export const enableFlatRotationCheck = true;
-/** @type {number} Number of consecutive block placements to analyze for static or flat rotation. */
+/** @type {number} Number of consecutive block placements to analyze for static or flat rotation patterns. */
 export const flatRotationConsecutiveBlocks = 4;
-/** @type {number} Maximum degrees of variance allowed for pitch over consecutive placements to be considered 'static'. */
+/** @type {number} Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks` to be considered 'static'. */
 export const flatRotationMaxPitchVariance = 2.0;
-/** @type {number} Maximum degrees of variance allowed for yaw over consecutive placements to be considered 'static'. */
+/** @type {number} Maximum degrees of variance allowed for yaw over `flatRotationConsecutiveBlocks` to be considered 'static'. */
 export const flatRotationMaxYawVariance = 2.0;
-// Define specific pitch ranges considered "flat" or indicative of cheating while building
 /** @type {number} Minimum pitch for 'flat horizontal' building detection (e.g., looking straight ahead). */
 export const flatRotationPitchHorizontalMin = -5.0;
 /** @type {number} Maximum pitch for 'flat horizontal' building detection. */
@@ -284,131 +289,137 @@ export const flatRotationPitchHorizontalMax = 5.0;
 export const flatRotationPitchDownwardMin = -90.0;
 /** @type {number} Maximum pitch for 'flat downward' building detection. */
 export const flatRotationPitchDownwardMax = -85.0;
-        /** @type {boolean} If true, the Downward Scaffold check is active. */
-        export const enableDownwardScaffoldCheck = true;
-        /** @type {number} Minimum number of consecutive downward blocks while airborne to trigger. */
-        export const downwardScaffoldMinBlocks = 3;
-        /** @type {number} Maximum time in ticks between consecutive downward scaffold blocks. */
-        export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
-        /** @type {number} Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding to flag. Vanilla players usually stop or slow down significantly. */
-        export const downwardScaffoldMinHorizontalSpeed = 3.0; // Approx crouch-walking speed
-        /** @type {boolean} If true, the Placing Blocks onto Air/Liquid check is active. */
-        export const enableAirPlaceCheck = true;
-        /**
-         * @type {string[]} List of block type IDs that are considered 'solid' and require support.
-         * Placing these against air/liquid without other solid adjacent support will be flagged.
-         */
-        export const airPlaceSolidBlocks = [
-            "minecraft:cobblestone", "minecraft:stone", "minecraft:dirt", "minecraft:grass_block",
-            "minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks",
-            "minecraft:jungle_planks", "minecraft:acacia_planks", "minecraft:dark_oak_planks",
-            "minecraft:crimson_planks", "minecraft:warped_planks", "minecraft:sand", "minecraft:gravel",
-            "minecraft:obsidian", "minecraft:netherrack", "minecraft:end_stone"
-            // Add more as needed
-        ];
+
+/** @type {boolean} If true, the Downward Scaffold check (detecting rapid downward block placement while airborne) is active. */
+export const enableDownwardScaffoldCheck = true;
+/** @type {number} Minimum number of consecutive downward blocks placed while airborne to trigger a downward scaffold flag. */
+export const downwardScaffoldMinBlocks = 3;
+/** @type {number} Maximum time in game ticks between consecutive downward scaffold blocks. */
+export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
+/** @type {number} Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding to be flagged. Vanilla players usually slow significantly. */
+export const downwardScaffoldMinHorizontalSpeed = 3.0;
+
+/** @type {boolean} If true, the check for Placing Blocks onto Air/Liquid without adjacent support is active. */
+export const enableAirPlaceCheck = true;
+/**
+ * @type {string[]} List of block type IDs that are considered 'solid' and typically require support.
+ * Placing these against air or liquid without other solid adjacent support may be flagged.
+ */
+export const airPlaceSolidBlocks = [
+    "minecraft:cobblestone", "minecraft:stone", "minecraft:dirt", "minecraft:grass_block",
+    "minecraft:oak_planks", "minecraft:spruce_planks", "minecraft:birch_planks",
+    "minecraft:jungle_planks", "minecraft:acacia_planks", "minecraft:dark_oak_planks",
+    "minecraft:crimson_planks", "minecraft:warped_planks", "minecraft:sand", "minecraft:gravel",
+    "minecraft:obsidian", "minecraft:netherrack", "minecraft:end_stone"
+];
 
 // --- Fast Use/Place Checks ---
-/** @type {boolean} If true, the Fast Item Use check is active. */
+/** @type {boolean} If true, the Fast Item Use check (detecting usage faster than vanilla cooldowns) is active. */
 export const enableFastUseCheck = true;
 /**
  * @type {Object.<string, number>} Defines minimum cooldown in milliseconds between uses for specific items.
- * Example: { "minecraft:ender_pearl": 1000, "minecraft:snowball": 250 }
+ * Keys are item type IDs (e.g., "minecraft:ender_pearl"), values are cooldown times.
  */
 export const fastUseItemCooldowns = {
-    "minecraft:ender_pearl": 1000, // 1 second vanilla cooldown
-    "minecraft:snowball": 150,    // Vanilla allows fairly rapid throws
+    "minecraft:ender_pearl": 1000,
+    "minecraft:snowball": 150,
     "minecraft:egg": 150,
-    "minecraft:bow": 200,         // Min time to draw and fire a weak arrow.
-                                  // This is for *consecutive separate* bow uses, not charge time of one shot.
-    "minecraft:crossbow": 1250,   // Base reload time for crossbow
-    "minecraft:potion": 800,      // Approximate time to drink a potion
+    "minecraft:bow": 200, // Min time for consecutive separate bow uses, not charge time.
+    "minecraft:crossbow": 1250,
+    "minecraft:potion": 800,
     "minecraft:splash_potion": 500,
     "minecraft:lingering_potion": 500,
-    "minecraft:chorus_fruit": 800, // Cooldown on chorus fruit teleport
-    "minecraft:shield": 500       // Cooldown for blocking after being hit or raising/lowering
+    "minecraft:chorus_fruit": 800,
+    "minecraft:shield": 500 // Cooldown for re-raising shield after being hit or lowered.
 };
-        /** @type {boolean} If true, the Fast Block Place check is active. */
-        export const enableFastPlaceCheck = true;
-        /** @type {number} Time window in milliseconds for fast placement detection. */
-        export const fastPlaceTimeWindowMs = 1000; // 1 second
-        /** @type {number} Maximum number of blocks allowed to be placed within the time window. */
-        export const fastPlaceMaxBlocksInWindow = 10; // Max 10 blocks per second
+
+/** @type {boolean} If true, the Fast Block Place check is active. */
+export const enableFastPlaceCheck = true;
+/** @type {number} Time window in milliseconds for fast block placement detection. */
+export const fastPlaceTimeWindowMs = 1000; // 1 second
+/** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
+export const fastPlaceMaxBlocksInWindow = 10;
 
 // --- X-Ray Detection ---
-/** @type {boolean} If true, enables notifications for mining valuable ores. */
+/** @type {boolean} If true, enables admin notifications for mining of valuable ores (as defined in `xrayDetectionMonitoredOres`). */
 export const xrayDetectionNotifyOnOreMineEnabled = true;
-/** @type {string[]} List of block type IDs to monitor for mining notifications. */
+/** @type {string[]} List of block type IDs to monitor for X-Ray mining notifications. */
 export const xrayDetectionMonitoredOres = [
     "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore",
     "minecraft:ancient_debris", "minecraft:emerald_ore",
     "minecraft:deepslate_emerald_ore"
 ];
-/** @type {boolean} If true, admins will receive X-Ray mining notifications by default. */
+/** @type {boolean} If true, admins (users with `adminTag`) will receive X-Ray mining notifications by default, unless they explicitly disable them. */
 export const xrayDetectionAdminNotifyByDefault = true;
 
 // --- Combat Log Detection ---
-/** @type {boolean} If true, enables detection of players leaving shortly after combat. */
-export const enableCombatLogDetection = false;
-/** @type {number} Time in seconds after last combat interaction to consider a disconnect as combat logging. */
+/** @type {boolean} If true, enables detection of players leaving the game shortly after engaging in combat. */
+export const enableCombatLogDetection = false; // Defaulted to false as it can have false positives.
+/** @type {number} Time in seconds after the last combat interaction. If a player disconnects within this period, it's considered combat logging. */
 export const combatLogThresholdSeconds = 15;
-/** @type {number} Number of flags to add when combat logging is detected. */
+/** @type {number} Number of flags to add to a player's record when combat logging is detected. */
 export const combatLogFlagIncrement = 1;
 /** @type {string} Default reason message for combat log flags. */
 export const combatLogReason = "Disconnected shortly after combat.";
-/** @type {string} Template for admin notification message for combat logging. Placeholders: {playerName}, {timeSinceCombat}, {incrementAmount} */
+/**
+ * @type {string} Template for admin notification message for combat logging.
+ * Placeholders: {playerName}, {timeSinceCombat}, {incrementAmount}.
+ */
 export const combatLogMessage = "§cCombat Log: {playerName} disconnected {timeSinceCombat}s after combat. Flagged +{incrementAmount}.";
 
 
-/** @type {boolean} If true, admins receive all AC notifications by default. */
+/** @type {boolean} If true, admins receive all AntiCheat notifications by default, unless individually overridden by specific check settings or admin preferences. */
 export const acGlobalNotificationsDefaultOn = true;
 
 // --- UI Display Texts ---
-/** @type {string[]} Defines the server rules to be displayed in the UI. */
+/** @type {string[]} Defines the server rules to be displayed in the UI (e.g., via !rules command). */
 export const serverRules = [
-  "1. Be respectful to all players and staff.",
-  "2. No cheating, exploiting, or unfair advantages.",
-  "3. No griefing or stealing.",
-  "4. Do not spam chat or use excessive caps.",
-  "5. PVP is only allowed in designated areas or if agreed upon."
+    "1. Be respectful to all players and staff.",
+    "2. No cheating, exploiting, or unfair advantages.",
+    "3. No griefing or stealing.",
+    "4. Do not spam chat or use excessive caps.",
+    "5. PVP is only allowed in designated areas or if agreed upon."
 ];
-/** @type {{title: string, url: string}[]} Defines links to be displayed in the Help & Links UI. */
+/** @type {{title: string, url: string}[]} Defines links to be displayed in the Help & Links UI section. */
 export const helpLinks = [
-  { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
-  { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
-  { title: "Report a Player", url: "https://yourwebsite.com/report" }
+    { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
+    { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
+    { title: "Report a Player", url: "https://yourwebsite.com/report" }
 ];
-/** @type {string[]} General help messages or tips to display in the UI. */
+/** @type {string[]} General help messages or tips to display in the UI (e.g., in a general info panel). */
 export const generalHelpMessages = [
-  "Welcome to the server! We hope you have a great time.",
-  "For a list of commands, type !help in chat.",
-  "If you suspect a player of cheating, please use the report link or contact staff.",
-  "Please be familiar with our server rules, available via !uinfo."
+    "Welcome to the server! We hope you have a great time.",
+    "For a list of commands, type !help in chat.",
+    "If you suspect a player of cheating, please use the report link or contact staff.",
+    "Please be familiar with our server rules, available via !uinfo."
 ];
 
 // --- System ---
-/** @type {string} The current version of the AntiCheat system. */
+/** @type {string} The current version of the AntiCheat system. (This might be updated by a build process). */
 export const acVersion = "v__VERSION_STRING__";
 
 // --- Check Action Profiles ---
 // Defines actions to be taken for specific cheat detections.
-// Used by actionManager.js
+// Used by actionManager.js.
 //
 // Structure for each profile:
-// "check_type_string": {
-//   enabled: boolean, (Master switch for actions of this check type)
+// "profile_key_string": { // Typically 'checkCategory_checkName' or similar unique identifier
+//   enabled: boolean,           // Master switch for actions of this profile
 //   flag: {
-//     increment: number, (How many times to call addFlag)
-//     reason: string, (Reason for the flag, can use {playerName}, {checkType}, {detailsString}, and {violationDetailKey})
-//     type: string (Optional: specific flag type for playerData, defaults to checkType if not provided)
+//     increment: number,        // How many times to call addFlag
+//     reason: string,           // Reason for the flag. Placeholders: {playerName}, {checkType}, {detailsString}, {violationDetailKey}
+//     type?: string             // Optional: specific flag type for playerData (e.g., "fly", "speed"). Defaults to profile_key_string if not provided.
 //   },
 //   notifyAdmins: {
-//     message: string (Message template, can use placeholders)
+//     message: string           // Message template for admin notifications. Uses same placeholders.
 //   },
 //   log: {
-//     actionType: string, (Optional: specific actionType for logManager, defaults to detected_{checkType})
-//     detailsPrefix: string, (Optional: prefix for the log details string)
-//     includeViolationDetails: boolean (Optional: defaults to true if not specified)
-//   }
+//     actionType?: string,      // Optional: specific actionType for logManager. Defaults to 'detected_profile_key_string'.
+//     detailsPrefix?: string,   // Optional: prefix for the log details string.
+//     includeViolationDetails?: boolean // Optional: if false, {detailsString} might not be fully populated in logs/notifications. Defaults to true.
+//   },
+//   cancelMessage?: boolean     // Optional (for chat checks): if true, cancels the offending chat message.
+//   // Future actions like 'kickPlayer', 'banPlayer', 'runCommand' could be added here.
 // }
 
 export const checkActionProfiles = {
@@ -424,8 +435,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_fly_hover",
-            detailsPrefix: "Fly (Hover Violation): ",
-            includeViolationDetails: true
+            detailsPrefix: "Fly (Hover Violation): "
         }
     },
     "example_speed_ground": {
@@ -436,13 +446,11 @@ export const checkActionProfiles = {
             type: "speed"
         },
         notifyAdmins: {
-            // Example using specific keys from violationDetails if actionManager's formatActionMessage supports it
             message: "§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})"
         },
         log: {
             actionType: "detected_speed_ground",
-            detailsPrefix: "Speed (Ground Violation): ",
-            includeViolationDetails: true
+            detailsPrefix: "Speed (Ground Violation): "
         }
     },
     "example_reach_attack": {
@@ -457,27 +465,22 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_reach_attack",
-            detailsPrefix: "Reach (Attack Violation): ",
-            includeViolationDetails: true
+            detailsPrefix: "Reach (Attack Violation): "
         }
-    }
-    // NOTE: These are example keys ("example_fly_hover", etc.).
-    // Actual keys will be defined when refactoring specific checks.
-    // For now, these serve as structural examples.
+    },
     "movement_nofall": {
-        enabled: true, // Default to true, can be overridden in user's config.js if they copy it
+        enabled: true,
         flag: {
             increment: 3,
             reason: "System detected suspicious fall damage negation (NoFall).",
-            type: "movement_violation" // General type for grouping flags
+            type: "movement_violation"
         },
         notifyAdmins: {
             message: "§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}"
         },
         log: {
             actionType: "detected_movement_nofall",
-            detailsPrefix: "NoFall Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "NoFall Violation: "
         }
     },
     "world_nuker": {
@@ -492,8 +495,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_world_nuker",
-            detailsPrefix: "Nuker Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Nuker Violation: "
         }
     },
     "combat_cps_high": {
@@ -508,8 +510,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_combat_cps_high",
-            detailsPrefix: "High CPS Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "High CPS Violation: "
         }
     },
     "combat_viewsnap_pitch": {
@@ -524,8 +525,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_viewsnap_pitch",
-            detailsPrefix: "Pitch Snap Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Pitch Snap Violation: "
         }
     },
     "combat_viewsnap_yaw": {
@@ -540,8 +540,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_viewsnap_yaw",
-            detailsPrefix: "Yaw Snap Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Yaw Snap Violation: "
         }
     },
     "combat_invalid_pitch": {
@@ -556,8 +555,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_invalid_pitch",
-            detailsPrefix: "Invalid Pitch Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Invalid Pitch Violation: "
         }
     },
     "combat_multitarget_aura": {
@@ -572,14 +570,13 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_multitarget_aura",
-            detailsPrefix: "Multi-Target Aura Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Multi-Target Aura Violation: "
         }
     },
     "combat_attack_while_sleeping": {
         enabled: true,
         flag: {
-            increment: 5, // Higher severity as it's a very clear violation
+            increment: 5,
             reason: "System detected player attacking while sleeping.",
             type: "combat_state_conflict"
         },
@@ -588,8 +585,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_attack_while_sleeping",
-            detailsPrefix: "Attack While Sleeping Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Attack While Sleeping Violation: "
         }
     },
     "combat_attack_while_consuming": {
@@ -597,15 +593,14 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: "System detected player attacking while consuming an item.",
-            type: "combat_state_conflict_consuming" // Specific type
+            type: "combat_state_conflict_consuming"
         },
         notifyAdmins: {
             message: "§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemUsed}"
         },
         log: {
             actionType: "detected_attack_while_consuming",
-            detailsPrefix: "Attack While Consuming Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Attack While Consuming Violation: "
         }
     },
     "combat_attack_while_bow_charging": {
@@ -620,14 +615,13 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_attack_while_bow_charging",
-            detailsPrefix: "Attack While Charging Bow Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Attack While Charging Bow Violation: "
         }
     },
     "combat_attack_while_shielding": {
         enabled: true,
         flag: {
-            increment: 2, // Shielding might have edge cases, slightly lower increment initially
+            increment: 2,
             reason: "System detected player attacking while actively using a shield.",
             type: "combat_state_conflict_shield"
         },
@@ -636,8 +630,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_attack_while_shielding",
-            detailsPrefix: "Attack While Shielding Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Attack While Shielding Violation: "
         }
     },
     "world_illegal_item_use": {
@@ -652,11 +645,8 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_illegal_item_use",
-            detailsPrefix: "Illegal Item Use Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Illegal Item Use Violation: "
         }
-        // Consider adding a 'messagePlayer' action here if direct feedback beyond flag reason is needed
-        // Or rely on the flag reason being displayed to the player by addFlag.
     },
     "world_illegal_item_place": {
         enabled: true,
@@ -670,8 +660,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_illegal_item_place",
-            detailsPrefix: "Illegal Item Placement Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Illegal Item Placement Violation: "
         }
     },
     "world_tower_build": {
@@ -686,8 +675,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_world_tower_build",
-            detailsPrefix: "Tower Building Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Tower Building Violation: "
         }
     },
     "world_flat_rotation_building": {
@@ -699,12 +687,10 @@ export const checkActionProfiles = {
         },
         notifyAdmins: {
             message: "§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Variance: {pitchVariance}, Yaw Variance: {yawVariance}, Details: {details}"
-            // {details} could be "Static Pitch", "Static Yaw", "Flat Horizontal Pitch", "Flat Downward Pitch"
         },
         log: {
             actionType: "detected_world_flat_rotation_building",
-            detailsPrefix: "Flat/Static Rotation Building Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Flat/Static Rotation Building Violation: "
         }
     },
     "world_downward_scaffold": {
@@ -719,14 +705,13 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_world_downward_scaffold",
-            detailsPrefix: "Downward Scaffold Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Downward Scaffold Violation: "
         }
     },
     "world_air_place": {
         enabled: true,
         flag: {
-            increment: 1, // Can be noisy if not tuned well
+            increment: 1,
             reason: "System detected block placed against air/liquid without solid support.",
             type: "world_scaffold_airplace"
         },
@@ -735,8 +720,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_world_air_place",
-            detailsPrefix: "Air Placement Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Air Placement Violation: "
         }
     },
     "action_fast_use": {
@@ -751,8 +735,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_fast_use",
-            detailsPrefix: "Fast Use Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Fast Use Violation: "
         }
     },
     "world_fast_place": {
@@ -767,8 +750,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_world_fast_place",
-            detailsPrefix: "Fast Place Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Fast Place Violation: "
         }
     },
     "movement_noslow": {
@@ -783,8 +765,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_movement_noslow",
-            detailsPrefix: "NoSlow Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "NoSlow Violation: "
         }
     },
     "movement_invalid_sprint": {
@@ -799,31 +780,28 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_movement_invalid_sprint",
-            detailsPrefix: "Invalid Sprint Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "Invalid Sprint Violation: "
         }
     },
     "world_autotool": {
         enabled: true,
         flag: {
-            increment: 2, // AutoTool is a fairly obvious cheat
+            increment: 2,
             reason: "System detected suspicious tool switching before/after breaking a block (AutoTool).",
             type: "world_autotool"
         },
         notifyAdmins: {
             message: "§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolType}, Switched: {switchPattern}"
-            // {switchPattern} could be "ToOptimalThenBack" or "ToOptimal"
         },
         log: {
             actionType: "detected_world_autotool",
-            detailsPrefix: "AutoTool Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "AutoTool Violation: "
         }
     },
     "world_instabreak_unbreakable": {
         enabled: true,
         flag: {
-            increment: 10, // High severity
+            increment: 10,
             reason: "Attempted to break an unbreakable block: {blockType}.",
             type: "world_instabreak_unbreakable"
         },
@@ -832,8 +810,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_instabreak_unbreakable",
-            detailsPrefix: "InstaBreak (Unbreakable) Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "InstaBreak (Unbreakable) Violation: "
         }
     },
     "world_instabreak_speed": {
@@ -848,14 +825,13 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_instabreak_speed",
-            detailsPrefix: "InstaBreak (Speed) Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "InstaBreak (Speed) Violation: "
         }
     },
     "player_namespoof": {
         enabled: true,
         flag: {
-            increment: 5, // Namespoofing can be quite disruptive
+            increment: 5,
             reason: "System detected an invalid or suspicious player nameTag ({reasonDetail}).",
             type: "player_namespoof"
         },
@@ -864,14 +840,13 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_player_namespoof",
-            detailsPrefix: "NameSpoof Violation: ",
-            includeViolationDetails: true // Will include nameTag and reasonDetail
+            detailsPrefix: "NameSpoof Violation: "
         }
     },
     "player_antigmc": {
         enabled: true,
         flag: {
-            increment: 10, // High severity for unauthorized creative
+            increment: 10,
             reason: "System detected unauthorized Creative Mode.",
             type: "player_antigmc"
         },
@@ -880,8 +855,7 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_player_antigmc",
-            detailsPrefix: "Anti-GMC Violation: ",
-            includeViolationDetails: true // Will include player name, gamemode, autoSwitch status
+            detailsPrefix: "Anti-GMC Violation: "
         }
     },
     "player_inventory_mod": {
@@ -896,31 +870,30 @@ export const checkActionProfiles = {
         },
         log: {
             actionType: "detected_player_inventory_mod",
-            detailsPrefix: "InventoryMod Violation: ",
-            includeViolationDetails: true
+            detailsPrefix: "InventoryMod Violation: "
         }
     },
     "chat_spam_fast_message": {
         enabled: true,
         flag: {
-            type: "chat_spam_fast", // This will be the key in pData.flags
+            type: "chat_spam_fast",
             increment: 1,
             reason: "Sent messages too quickly ({timeSinceLastMsgMs}ms apart)"
         },
         log: {
             actionType: "detected_fast_message_spam",
             detailsPrefix: "Msg: '{messageContent}'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ",
-            includeViolationDetails: false // Set to false if detailsPrefix is comprehensive
+            includeViolationDetails: false
         },
         notifyAdmins: {
             message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
         },
-        cancelMessage: true // If true, the spammy message will be cancelled
+        cancelMessage: true
     },
     "chat_spam_max_words": {
         enabled: true,
         flag: {
-            type: "chat_spam_max_words", // Key in pData.flags
+            type: "chat_spam_max_words",
             increment: 1,
             reason: "Message too long ({wordCount} words, max: {maxWords})"
         },
@@ -932,12 +905,16 @@ export const checkActionProfiles = {
         notifyAdmins: {
             message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
         },
-        cancelMessage: true // If true, the spammy message will be cancelled
+        cancelMessage: true
     }
 };
 
 // --- Command Aliases ---
-/** @type {Object.<string, string>} Defines aliases for commands. */
+/**
+ * @type {Object.<string, string>} Defines aliases for commands.
+ * Keys are the alias, values are the full command name.
+ * Example: { "v": "version", "i": "inspect" }
+ */
 export const commandAliases = {
     "v": "version", "w": "watch", "i": "inspect", "rf": "resetflags",
     "xn": "xraynotify", "mf": "myflags", "notifications": "notify",
@@ -945,22 +922,24 @@ export const commandAliases = {
 };
 
 // --- Editable Configuration ---
-// This object will hold the current values of configurations that can be edited at runtime.
+/**
+ * @type {object}
+ * Holds the current, potentially runtime-modified, values of configurations.
+ * This object is initialized with values from the exported constants at startup.
+ * Use `updateConfigValue(key, newValue)` to modify these values safely.
+ */
 export let editableConfigValues = {
     adminTag, ownerPlayerName, enableDebugLogging, prefix,
     enableReachCheck, enableCpsCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck,
-    // AutoTool Check Configs
     enableAutoToolCheck,
     autoToolSwitchToOptimalWindowTicks,
     autoToolSwitchBackWindowTicks,
-    // InstaBreak Check Configs
     enableInstaBreakUnbreakableCheck,
-    instaBreakUnbreakableBlocks,
+    instaBreakUnbreakableBlocks, // Note: Arrays are mutable; care should be taken if modifying directly vs. reassigning.
     enableInstaBreakSpeedCheck,
     instaBreakTimeToleranceTicks,
-    // Player Behavior Check Configs
     enableNameSpoofCheck,
     nameSpoofMaxLength,
     nameSpoofDisallowedCharsRegex,
@@ -969,18 +948,16 @@ export let editableConfigValues = {
     antiGMCSwitchToGameMode,
     antiGMCAutoSwitch,
     enableInventoryModCheck,
-    enableSelfHurtCheck, // Added enableSelfHurtCheck
-    // Movement Check Configs (including NoSlow)
+    enableSelfHurtCheck,
     enableNoSlowCheck,
     noSlowMaxSpeedEating,
     noSlowMaxSpeedChargingBow,
     noSlowMaxSpeedUsingShield,
     noSlowMaxSpeedSneaking,
     enableInvalidSprintCheck,
-    // State Conflict Check Configs
-    attackBlockingConsumables,
-    attackBlockingBows,
-    attackBlockingShields,
+    attackBlockingConsumables, // Note: Arrays are mutable.
+    attackBlockingBows,       // Note: Arrays are mutable.
+    attackBlockingShields,    // Note: Arrays are mutable.
     itemUseStateClearTicks,
     maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus, minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold, flySustainedOffGroundTicksThreshold,
@@ -995,15 +972,12 @@ export let editableConfigValues = {
     enableMaxMessageLengthCheck, maxMessageLength, flagOnMaxMessageLength, cancelOnMaxMessageLength,
     spamRepeatCheckEnabled, spamRepeatMessageCount, spamRepeatTimeWindowSeconds,
     spamRepeatFlagPlayer, spamRepeatCancelMessage,
-    // Fast Message Spam Check
     enableFastMessageSpamCheck,
     fastMessageSpamThresholdMs,
     fastMessageSpamActionProfileName,
-    // Max Words Spam Check
     enableMaxWordsSpamCheck,
     maxWordsSpamThreshold,
     maxWordsSpamActionProfileName,
-    // Scaffold/Tower Detection
     enableTowerCheck,
     towerMaxTickGap,
     towerMinHeight,
@@ -1022,17 +996,15 @@ export let editableConfigValues = {
     downwardScaffoldMaxTickGap,
     downwardScaffoldMinHorizontalSpeed,
     enableAirPlaceCheck,
-    airPlaceSolidBlocks,
-    // Fast Use/Place Checks
+    airPlaceSolidBlocks, // Note: Arrays are mutable.
     enableFastUseCheck,
-    fastUseItemCooldowns,
+    fastUseItemCooldowns, // Note: Object is mutable.
     enableFastPlaceCheck,
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
-    // Combat Log Configs
-    enableCombatLogDetection, // This will correctly reflect the new 'false' default
+    enableCombatLogDetection,
     combatLogThresholdSeconds,
     combatLogFlagIncrement,
     combatLogReason,
@@ -1040,37 +1012,53 @@ export let editableConfigValues = {
 };
 
 /**
- * Updates a configuration value in memory.
- * @param {string} key The configuration key to update.
- * @param {boolean|string|number} newValue The new value for the configuration.
- * @returns {boolean} True if the update was successful, false otherwise.
+ * Updates a configuration value in the `editableConfigValues` object in memory.
+ * This function performs type checking and coercion for numbers from strings.
+ *
+ * @param {string} key The configuration key (property name in `editableConfigValues`) to update.
+ * @param {boolean|string|number|string[]} newValue The new value for the configuration. Note that for array types, this replaces the entire array.
+ * @returns {boolean} True if the update was successful and the value changed, false otherwise (e.g., key not found, type mismatch, or new value is same as old).
  */
 export function updateConfigValue(key, newValue) {
     if (!editableConfigValues.hasOwnProperty(key)) {
         console.warn(`[ConfigManager] Attempted to update non-existent config key: ${key}`);
         return false;
     }
-    const originalValue = editableConfigValues[key];
-    const originalType = typeof originalValue;
-    const newType = typeof newValue;
 
-    if (originalType !== newType) {
-        if (originalType === 'number' && newType === 'string') {
-            const parsedValue = Number(newValue);
-            if (!isNaN(parsedValue)) {
-                editableConfigValues[key] = parsedValue;
-                if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from ${originalValue} to ${parsedValue} (type coerced from string)`);
-                return true;
-            } else {
-                console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${newType} (unparsable string for number). Update rejected.`);
-                return false;
-            }
-        } else {
-            console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${newType}. Update rejected.`);
+    const oldValue = editableConfigValues[key];
+    const originalType = typeof oldValue;
+    let coercedNewValue = newValue;
+
+    if (originalType === 'number' && typeof newValue === 'string') {
+        const parsedNum = Number(newValue);
+        if (isNaN(parsedNum)) {
+            console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected number, got unparsable string "${newValue}". Update rejected.`);
             return false;
         }
+        coercedNewValue = parsedNum;
+    } else if (originalType === 'boolean' && typeof newValue === 'string') {
+        if (newValue.toLowerCase() === 'true') {
+            coercedNewValue = true;
+        } else if (newValue.toLowerCase() === 'false') {
+            coercedNewValue = false;
+        } else {
+            console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected boolean, got unparsable string "${newValue}" for boolean. Update rejected.`);
+            return false;
+        }
+    } else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
+        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${typeof coercedNewValue}. Update rejected.`);
+        return false;
     }
-    editableConfigValues[key] = newValue;
-    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from ${originalValue} to ${newValue}`);
+
+    // For arrays and objects, a simple comparison checks reference, not content.
+    // For this application, if new and old value are "equal" by strict comparison, consider it unchanged.
+    // Deep equality check for objects/arrays could be added if needed but adds complexity.
+    if (oldValue === coercedNewValue) {
+        if (enableDebugLogging) console.log(`[ConfigManager] No change for ${key}, value is already ${coercedNewValue}`);
+        return false; // Value is the same, not technically an "update"
+    }
+
+    editableConfigValues[key] = coercedNewValue;
+    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${oldValue}" to "${coercedNewValue}"`);
     return true;
 }

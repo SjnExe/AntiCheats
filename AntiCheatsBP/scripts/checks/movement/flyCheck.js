@@ -1,153 +1,196 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/movement/flyCheck.js
+ * Implements checks for various forms of fly-related hacks, including sustained vertical movement,
+ * hovering, and excessively high vertical velocity.
+ * Relies on player state (effects, gliding status) being updated in `pData` by other systems
+ * (e.g., `updateTransientPlayerData` for effects, event handlers for gliding).
+ * @version 1.0.2
+ */
+
 import * as mc from '@minecraft/server';
-// Removed: import { addFlag } from '../../core/playerDataManager.js';
-// Removed: import { debugLog } from '../../utils/playerUtils.js';
-// Config values are accessed via the config object passed as a parameter.
 
 /**
- * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
 
 /**
- * Checks for fly-related hacks by analyzing player's vertical movement and airborne state.
- * @param {mc.Player} player The player instance to check.
- * @param {PlayerAntiCheatData} pData Player-specific data.
- * @param {object} config The server configuration object.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * Checks for fly-related hacks by analyzing player's vertical movement, airborne state,
+ * and active effects (expected to be pre-processed into `pData`).
+ *
+ * @description
+ * This function performs several checks:
+ * 1.  **High Y-Velocity Check**: Detects if player's upward velocity exceeds limits, considering jump boost but not normal ascent from jumping.
+ * 2.  **Sustained Upward Movement**: Detects prolonged upward flight not attributable to game mechanics like levitation or climbing.
+ * 3.  **Hover Detection**: Detects players remaining airborne at a relatively stable height without valid reasons.
+ *
+ * It bypasses checks if the player is legitimately flying (Creative/Spectator mode) or gliding with elytra.
+ * Assumes `pData` contains fields like `jumpBoostAmplifier`, `hasSlowFalling`, `hasLevitation`,
+ * `lastUsedElytraTick`, `lastTookDamageTick`, which should be updated by `updateTransientPlayerData` or relevant event handlers.
+ *
+ * @param {mc.Player} player - The player instance to check.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {Config} config - The server configuration object.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {number} currentTick - The current game tick.
+ * @returns {Promise<void>}
  */
-export async function checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction) {
-    if (!config.enableFlyCheck && !config.enableHighYVelocityCheck) return; // Adjusted to also consider high Y velocity check
+export async function checkFly(
+    player,
+    pData,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick
+) {
+    // Primary guard: if neither major check type is enabled, or pData is missing, exit.
+    if ((!config.enableFlyCheck && !config.enableHighYVelocityCheck) || !pData) {
+        return;
+    }
+
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-
-    // Update effect-related pData fields at the start of checkFly
-    const effects = player.getEffects();
-    const jumpBoost = effects.find(e => e.typeId === "jump_boost");
-    pData.lastJumpBoostLevel = jumpBoost ? jumpBoost.amplifier : 0;
-
-    const slowFalling = effects.find(e => e.typeId === "slow_falling");
-    pData.lastSlowFallingTicks = slowFalling ? slowFalling.duration : 0; // duration is remaining ticks
-
-    const levitation = effects.find(e => e.typeId === "levitation");
-    pData.lastLevitationTicks = levitation ? levitation.duration : 0;
-    // pData.lastTookDamageTick is updated in handleEntityHurt
-    // pData.lastUsedRiptideTick (deferred)
-    // pData.lastOnSlimeBlockTick (deferred)
-
-    if (player.isGliding) {
-        pData.lastUsedElytraTick = pData.currentTick; // Assuming pData.currentTick is updated in main loop
-        if (!config.enableFlyCheck) return; // If only high Y velocity is on, and player is gliding, fly check part is done.
-        if (playerUtils.debugLog) playerUtils.debugLog(`FlyCheck: ${player.nameTag} legitimately gliding. lastUsedElytraTick updated.`, watchedPrefix);
-        return; // Standard fly checks are bypassed if gliding
-    }
-
-    if (player.isFlying) {
-        if (!config.enableFlyCheck) return; // If only high Y velocity is on, and player is flying, fly check part is done.
-        if (playerUtils.debugLog) playerUtils.debugLog(`FlyCheck: ${player.nameTag} legitimately flying.`, watchedPrefix);
-        return; // Standard fly checks are bypassed if flying (creative/spectator)
-    }
-
     const dependencies = { config, playerDataManager, playerUtils, logManager };
 
-    // High Y-Velocity Check (New)
-    if (config.enableHighYVelocityCheck && !player.isFlying && !player.isGliding && pData.lastLevitationTicks <= 0) {
+    // Update elytra state in pData if player is gliding
+    if (player.isGliding) {
+        pData.lastUsedElytraTick = currentTick;
+        pData.isDirtyForSave = true; // Mark dirty as a pData field changed
+        playerUtils.debugLog?.(`FlyCheck: ${player.nameTag} is gliding. lastUsedElytraTick updated. Standard fly checks bypassed.`, watchedPrefix);
+        return; // Bypass other fly/hover checks if gliding
+    }
+
+    // Bypass checks if player is in a game mode that allows flight, or has known flight-like effects active.
+    if (player.isFlying) { // Creative or Spectator mode flight
+        playerUtils.debugLog?.(`FlyCheck: ${player.nameTag} is legitimately flying (Creative/Spectator). Standard fly checks bypassed.`, watchedPrefix);
+        return;
+    }
+
+    // --- High Y-Velocity Check ---
+    // This check should run if enabled, regardless of the main enableFlyCheck for hover/sustained.
+    if (config.enableHighYVelocityCheck && !pData.hasLevitation) { // Don't run if levitating, as that's a specific upward force
         const currentYVelocity = pData.velocity.y;
+        const jumpBoostBonus = (pData.jumpBoostAmplifier ?? 0) * (config.jumpBoostYVelocityBonus ?? 0.0); // Use pData.jumpBoostAmplifier
+        const effectiveMaxYVelocity = (config.maxYVelocityPositive ?? 2.0) + jumpBoostBonus;
 
-        let effectiveMaxYVelocity = config.maxYVelocityPositive + (pData.lastJumpBoostLevel * config.jumpBoostYVelocityBonus);
-
-        const tickSinceLastDamage = pData.currentTick - pData.lastTookDamageTick;
-        const tickSinceLastElytra = pData.currentTick - pData.lastUsedElytraTick;
-        // const tickSinceLastRiptide = pData.currentTick - pData.lastUsedRiptideTick; // Deferred
-        // const tickSinceLastSlime = pData.currentTick - pData.lastOnSlimeBlockTick;   // Deferred
+        // Grace conditions evaluation
+        const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
+        const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
+        // Add other grace conditions like Riptide, Slime Block if those pData fields are implemented:
+        // const ticksSinceLastRiptide = currentTick - (pData.lastUsedRiptideTick ?? -Infinity);
+        // const ticksSinceLastSlime = currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity);
 
         let underGraceCondition = false;
-        if (tickSinceLastDamage <= config.yVelocityGraceTicks && pData.lastTookDamageTick > 0) underGraceCondition = true;
-        if (tickSinceLastElytra <= config.yVelocityGraceTicks && pData.lastUsedElytraTick > 0) underGraceCondition = true;
-        // if (tickSinceLastRiptide <= config.yVelocityGraceTicks && pData.lastUsedRiptideTick > 0) underGraceCondition = true; // Deferred
-        // if (tickSinceLastSlime <= config.yVelocityGraceTicks && pData.lastOnSlimeBlockTick > 0) underGraceCondition = true;   // Deferred
+        const graceTicks = config.yVelocityGraceTicks ?? 10; // Default grace period
+
+        if (ticksSinceLastDamage <= graceTicks) underGraceCondition = true;
+        if (ticksSinceLastElytra <= graceTicks) underGraceCondition = true;
+        // if (ticksSinceLastRiptide <= graceTicks) underGraceCondition = true;
+        // if (ticksSinceLastSlime <= graceTicks) underGraceCondition = true;
         if (player.isClimbing) underGraceCondition = true;
-        if (pData.lastSlowFallingTicks > 0 && currentYVelocity < 0) underGraceCondition = true;
+        // If slow falling is active and player is moving down, Y velocity check is not reliable for upward bursts.
+        if (pData.hasSlowFalling && currentYVelocity < 0) underGraceCondition = true;
+
 
         if (currentYVelocity > effectiveMaxYVelocity && !underGraceCondition) {
             const violationDetails = {
                 yVelocity: currentYVelocity.toFixed(3),
                 effectiveMaxYVelocity: effectiveMaxYVelocity.toFixed(3),
-                jumpBoostLevel: pData.lastJumpBoostLevel,
+                jumpBoostLevel: pData.jumpBoostAmplifier ?? 0,
                 onGround: player.isOnGround,
-                lastTookDamageTick: pData.lastTookDamageTick,
-                lastUsedElytraTick: pData.lastUsedElytraTick,
-                lastLevitationTicks: pData.lastLevitationTicks,
-                lastSlowFallingTicks: pData.lastSlowFallingTicks,
-                isClimbing: player.isClimbing
+                gracePeriodActive: underGraceCondition.toString(),
+                ticksSinceDamage: ticksSinceLastDamage > graceTicks ? "N/A" : ticksSinceLastDamage.toString(),
+                ticksSinceElytra: ticksSinceLastElytra > graceTicks ? "N/A" : ticksSinceLastElytra.toString(),
+                isClimbing: player.isClimbing.toString(),
+                hasSlowFalling: pData.hasSlowFalling?.toString() ?? "false",
+                hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
+            // Action profile name: config.highYVelocityActionProfileName ?? "movement_high_y_velocity"
             await executeCheckAction(player, "movement_high_y_velocity", violationDetails, dependencies);
-            if (pData.isWatched && playerUtils.debugLog) {
-                playerUtils.debugLog(`HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix);
-            }
+            playerUtils.debugLog?.(`HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix);
         }
     }
 
-    // Existing Fly Checks (ensure this only runs if enableFlyCheck is true)
-    if (!config.enableFlyCheck) return;
-
-    // This specific levitation check might be redundant if High Y Velocity handles levitation grace,
-    // but keeping it for now as it's specific to upward movement with levitation.
-    // const levitationEffect = effects.find(effect => effect.typeId === "levitation"); // Re-fetch or use pData.lastLevitationTicks - REMOVED
-    if (pData.lastLevitationTicks > 0 && pData.velocity.y > 0) { // Use pData.lastLevitationTicks
-        if (playerUtils.debugLog) playerUtils.debugLog(`FlyCheck: ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix);
+    // --- Traditional Fly/Hover Checks (Sustained Upward Movement & Hover) ---
+    // These checks only run if enableFlyCheck is true.
+    if (!config.enableFlyCheck) {
         return;
     }
 
-    const verticalSpeed = pData.velocity.y;
-    if (pData.isWatched && playerUtils.debugLog) {
-        playerUtils.debugLog(`FlyCheck: Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, watchedPrefix);
+    // If player has Levitation and is moving upwards, it's considered legitimate for fly/hover.
+    if (pData.hasLevitation && pData.velocity.y > 0) {
+        playerUtils.debugLog?.(`FlyCheck: ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix);
+        return;
+    }
+    // If player has Slow Falling and is moving downwards, it's legitimate for hover-like behavior.
+    if (pData.hasSlowFalling && pData.velocity.y < 0) {
+        playerUtils.debugLog?.(`FlyCheck: ${player.nameTag} allowing slow descent due to Slow Falling. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix);
+        // This might still allow hover detection if vertical speed is very close to 0 for too long.
+        // The hover check's fallDistance condition can help differentiate.
     }
 
-    // Sustained Upward Movement
-    // For sustained, we might need a different checkType key if its actions are different.
-    // For now, using "example_fly_hover" but ideally this would be "fly_sustained_example" or similar.
-    // Ensure levitation isn't causing this
-    if (!player.isOnGround && verticalSpeed > config.flySustainedVerticalSpeedThreshold && !player.isClimbing && pData.lastLevitationTicks <= 0) {
-        if (pData.consecutiveOffGroundTicks > config.flySustainedOffGroundTicksThreshold) {
+
+    const verticalSpeed = pData.velocity.y;
+    playerUtils.debugLog?.(`FlyCheck: Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, watchedPrefix);
+
+    // 1. Sustained Upward Movement (not climbing, not levitating)
+    const sustainedThreshold = config.flySustainedVerticalSpeedThreshold ?? 0.5;
+    const sustainedTicks = config.flySustainedOffGroundTicksThreshold ?? 10;
+
+    if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation) {
+        if (pData.consecutiveOffGroundTicks > sustainedTicks) {
             const violationDetails = {
                 type: "sustained_vertical",
                 verticalSpeed: verticalSpeed.toFixed(2),
-                offGroundTicks: pData.consecutiveOffGroundTicks,
-                isClimbing: player.isClimbing,
-                isInWater: player.isInWater,
-                lastLevitationTicks: pData.lastLevitationTicks
+                offGroundTicks: pData.consecutiveOffGroundTicks.toString(),
+                isClimbing: player.isClimbing.toString(),
+                isInWater: player.isInWater.toString(), // isInWater is a native boolean property
+                hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            // Using "example_fly_hover" for now, but ideally, this might be a distinct profile like "fly_sustained_example"
-            await executeCheckAction(player, "example_fly_hover", violationDetails, dependencies);
+            // Action profile name: config.flySustainedActionProfileName ?? "movement_fly_sustained"
+            await executeCheckAction(player, "example_fly_hover", violationDetails, dependencies); // TODO: Use distinct action profile
         }
     }
 
-    // Hover Detection
-    // Ensure levitation isn't causing this
+    // 2. Hover Detection (minimal vertical speed, off-ground, low fall distance, not climbing, not in water, not levitating)
+    const hoverVSpeedThreshold = config.flyHoverVerticalSpeedThreshold ?? 0.08;
+    const hoverOffGroundTicks = config.flyHoverOffGroundTicksThreshold ?? 20;
+    const hoverMaxFallDist = config.flyHoverMaxFallDistanceThreshold ?? 1.0;
+    const hoverMinHeight = config.flyHoverNearGroundThreshold ?? 3.0;
+
     if (!player.isOnGround &&
-        Math.abs(verticalSpeed) < config.flyHoverVerticalSpeedThreshold &&
-        pData.consecutiveOffGroundTicks > config.flyHoverOffGroundTicksThreshold &&
-        pData.fallDistance < config.flyHoverMaxFallDistanceThreshold &&
+        Math.abs(verticalSpeed) < hoverVSpeedThreshold &&
+        pData.consecutiveOffGroundTicks > hoverOffGroundTicks &&
+        pData.fallDistance < hoverMaxFallDist &&
         !player.isClimbing &&
-        !player.isInWater &&
-        pData.lastLevitationTicks <= 0
+        !player.isInWater && // Player is not in water (or use isSwimming if more specific)
+        !pData.hasLevitation
     ) {
         const playerLoc = player.location;
-        const heightAboveLastGround = playerLoc.y - (pData.lastOnGroundPosition ? pData.lastOnGroundPosition.y : playerLoc.y);
+        // Ensure lastOnGroundPosition is valid before calculating height
+        const heightAboveLastGround = pData.lastOnGroundPosition ? (playerLoc.y - pData.lastOnGroundPosition.y) : hoverMinHeight + 1; // Assume high if no ground pos
 
-        if (heightAboveLastGround > config.flyHoverNearGroundThreshold) {
+        if (heightAboveLastGround > hoverMinHeight) {
             const violationDetails = {
                 type: "hover",
                 verticalSpeed: verticalSpeed.toFixed(2),
-                offGroundTicks: pData.consecutiveOffGroundTicks,
+                offGroundTicks: pData.consecutiveOffGroundTicks.toString(),
                 fallDistance: pData.fallDistance.toFixed(2),
                 heightAboveLastGround: heightAboveLastGround.toFixed(2),
-                isClimbing: player.isClimbing,
-                isInWater: player.isInWater,
-                lastLevitationTicks: pData.lastLevitationTicks
+                isClimbing: player.isClimbing.toString(),
+                isInWater: player.isInWater.toString(),
+                hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            await executeCheckAction(player, "example_fly_hover", violationDetails, dependencies);
+            // Action profile name: config.flyHoverActionProfileName ?? "movement_fly_hover"
+            await executeCheckAction(player, "example_fly_hover", violationDetails, dependencies); // TODO: Use distinct action profile
         }
     }
 }
