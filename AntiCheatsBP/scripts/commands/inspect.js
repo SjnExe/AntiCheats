@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/inspect.js
+ * Defines the !inspect command for administrators to view a player's AntiCheat data.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/inspect.js
 import { permissionLevels } from '../core/rankManager.js';
 
@@ -54,7 +59,7 @@ export async function execute(player, args, dependencies) {
             ? playerDataManager.getMuteInfo(targetPlayer)
             : null;
         if (muteInfo) {
-             message += `§fMuted: §cYes (Expires: ${muteInfo.muteExpires === Infinity ? 'Permanent' : new Date(muteInfo.muteExpires).toLocaleString()}, Reason: ${muteInfo.muteReason})\n`;
+             message += `§fMuted: §cYes (Expires: ${muteInfo.unmuteTime === Infinity ? 'Permanent' : new Date(muteInfo.unmuteTime).toLocaleString()}, Reason: ${muteInfo.reason})\n`;
         } else {
              message += `§fMuted: §aNo\n`;
         }
@@ -63,7 +68,7 @@ export async function execute(player, args, dependencies) {
             ? playerDataManager.getBanInfo(targetPlayer)
             : null;
         if (banInfo) {
-            message += `§fBanned: §cYes (Expires: ${banInfo.banExpires === Infinity ? 'Permanent' : new Date(banInfo.banExpires).toLocaleString()}, Reason: ${banInfo.banReason})\n`;
+            message += `§fBanned: §cYes (Expires: ${banInfo.unbanTime === Infinity ? 'Permanent' : new Date(banInfo.unbanTime).toLocaleString()}, Reason: ${banInfo.reason})\n`;
         } else {
             message += `§fBanned: §aNo\n`;
         }

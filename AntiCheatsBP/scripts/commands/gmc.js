@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/gmc.js
+ * Defines the !gmc command for administrators to set a player's gamemode to Creative.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/gmc.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';

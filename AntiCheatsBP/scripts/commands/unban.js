@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/unban.js
+ * Defines the !unban command for administrators to remove a ban from a player.
+ * Note: Current version primarily supports unbanning players who are online.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/unban.js
 import { permissionLevels } from '../core/rankManager.js';
 

@@ -1,3 +1,10 @@
+/**
+ * @file AntiCheatsBP/scripts/core/reportManager.js
+ * Manages player-submitted reports. Reports are stored in a world dynamic property
+ * with an in-memory cache for performance. This includes adding reports, retrieving them,
+ * and clearing reports.
+ * @version 1.0.1
+ */
 import { world } from '@minecraft/server';
 import * as playerUtils from '../utils/playerUtils.js'; // For console logging consistency if needed
 

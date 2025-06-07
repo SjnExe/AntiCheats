@@ -1,71 +1,112 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/world/nameSpoofCheck.js
+ * Implements a check to detect player name spoofing attempts, including names that are too long,
+ * contain disallowed characters, or are changed too rapidly.
+ * Relies on `pData` fields like `lastKnownNameTag` and `lastNameTagChangeTick`.
+ * @version 1.0.1
+ */
 import * as mc from '@minecraft/server';
 
 /**
- * Checks player's nameTag for spoofing attempts (length, disallowed characters, rapid changes).
- * @param {mc.Player} player The player instance.
- * @param {import('../../core/playerDataManager.js').PlayerAntiCheatData} pData Player-specific anti-cheat data.
- * @param {object} config The configuration object.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
- * @param {number} currentTick The current game tick.
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
-export async function checkNameSpoof(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick) {
-    if (!config.enableNameSpoofCheck) return;
+
+/**
+ * Checks player's nameTag for spoofing attempts (length, disallowed characters, rapid changes).
+ * Updates `pData.lastKnownNameTag` and `pData.lastNameTagChangeTick` if a name change is detected.
+ *
+ * @param {mc.Player} player - The player instance.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {Config} config - The server configuration object.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {number} currentTick - The current game tick.
+ * @returns {Promise<void>}
+ */
+export async function checkNameSpoof(
+    player,
+    pData,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick
+) {
+    if (!config.enableNameSpoofCheck || !pData) { // Added null check for pData
+        return;
+    }
 
     const currentNameTag = player.nameTag;
-    const watchedPrefix = pData.isWatched ? player.name : null; // Use actual player.name for watched prefix if nameTag is spoofed
+    // For watched prefix, use actual player.name as nameTag might be the spoofed one
+    const watchedPrefix = pData.isWatched ? player.name : null;
     const dependencies = { config, playerDataManager, playerUtils, logManager };
 
     let flaggedReason = null;
-    let previousNameTagForLog = pData.lastKnownNameTag; // Capture before potential update
+    let previousNameTagForLog = pData.lastKnownNameTag; // Capture before potential update if change occurs
 
     // 1. Length Check
-    if (currentNameTag.length > config.nameSpoofMaxLength) {
-        flaggedReason = `Length limit exceeded (\${currentNameTag.length}/\${config.nameSpoofMaxLength})`;
+    const maxLength = config.nameSpoofMaxLength ?? 48;
+    if (currentNameTag.length > maxLength) {
+        flaggedReason = `NameTag length limit exceeded (${currentNameTag.length}/${maxLength})`;
     }
 
     // 2. Disallowed Characters Check (only if not already flagged for length)
     if (!flaggedReason && config.nameSpoofDisallowedCharsRegex) {
         try {
+            // 'u' flag for Unicode property escapes, if supported and needed by regex.
+            // For basic char sets, it might not be strictly necessary but is good practice for broader compatibility.
             const regex = new RegExp(config.nameSpoofDisallowedCharsRegex, "u");
             if (regex.test(currentNameTag)) {
                 const matchedChars = currentNameTag.match(regex);
-                flaggedReason = `Disallowed character(s) found (e.g., '\${matchedChars ? matchedChars[0] : 'N/A'}')`;
+                flaggedReason = `NameTag contains disallowed character(s) (e.g., '${matchedChars ? matchedChars[0] : 'N/A'}')`;
             }
         } catch (e) {
-            if (playerUtils.debugLog) playerUtils.debugLog(\`NameSpoofCheck: Error compiling regex '\${config.nameSpoofDisallowedCharsRegex}': \${e.message}\`, watchedPrefix);
+            playerUtils.debugLog?.(`NameSpoofCheck: Error compiling regex "${config.nameSpoofDisallowedCharsRegex}": ${e.message}`, watchedPrefix);
+            // Potentially add a system log here if regex compilation fails, as it's a config issue.
         }
     }
 
-    // 3. Rapid Change Check
-    // This check happens *before* updating lastKnownNameTag for the current tick if no other flag has occurred yet.
-    // If a length/char flag occurred, we still note the change for the next cycle's rapid check.
+    // 3. Rapid Change Check & pData Update
+    // This logic runs regardless of prior flags to ensure pData is always updated on a name change.
+    // The flagging for rapid change only happens if no other reason (length/char) already triggered.
     if (currentNameTag !== pData.lastKnownNameTag) {
-        if (!flaggedReason && // Only flag for rapid change if no other reason yet
-            pData.lastNameTagChangeTick !== 0 && // Don't flag on first ever name change seen for the session
-            (currentTick - pData.lastNameTagChangeTick) < config.nameSpoofMinChangeIntervalTicks) {
-            flaggedReason = `Name changed too rapidly (within \${currentTick - pData.lastNameTagChangeTick}t, min \${config.nameSpoofMinChangeIntervalTicks}t)`;
+        const minInterval = config.nameSpoofMinChangeIntervalTicks ?? 200; // Default to 10 seconds
+        // Don't flag on first ever name seen for the session (when lastNameTagChangeTick is 0 or undefined)
+        // or if it's the initial pData setup (lastKnownNameTag might be different from current if loaded).
+        if (!flaggedReason &&
+            (pData.lastNameTagChangeTick ?? 0) !== 0 &&
+            (currentTick - (pData.lastNameTagChangeTick ?? 0)) < minInterval) {
+            flaggedReason = `NameTag changed too rapidly (within ${currentTick - (pData.lastNameTagChangeTick ?? 0)} ticks, min is ${minInterval}t)`;
         }
-        // Update pData because a change occurred, regardless of flagging.
+
+        // Update pData because a name change occurred, regardless of flagging for rapid change.
         pData.lastKnownNameTag = currentNameTag;
         pData.lastNameTagChangeTick = currentTick;
+        pData.isDirtyForSave = true; // Mark dirty as name history changed
     }
 
 
     if (flaggedReason) {
         const violationDetails = {
             reasonDetail: flaggedReason,
-            nameTag: currentNameTag,
-            previousNameTag: (flaggedReason && flaggedReason.startsWith("Name changed too rapidly")) ? previousNameTagForLog : "N/A (not a rapid change issue or first change)",
-            currentActualName: player.name
+            currentNameTagDisplay: currentNameTag, // The potentially spoofed nameTag
+            previousNameTagRecorded: (flaggedReason.includes("changed too rapidly")) ? previousNameTagForLog : "N/A",
+            actualPlayerName: player.name, // Log the underlying player name for admin reference
+            maxLengthConfig: maxLength.toString(),
+            disallowedCharRegexConfig: config.nameSpoofDisallowedCharsRegex ?? "N/A",
+            minChangeIntervalConfig: (config.nameSpoofMinChangeIntervalTicks ?? 0).toString()
         };
-
+        // Action profile name: config.nameSpoofActionProfileName ?? "player_namespoof"
         await executeCheckAction(player, "player_namespoof", violationDetails, dependencies);
 
-        if (pData.isWatched && playerUtils.debugLog) {
-            playerUtils.debugLog(\`NameSpoof: Flagged \${player.name} (\${currentNameTag}) for \${flaggedReason}\`, watchedPrefix);
-        }
+        playerUtils.debugLog?.(`NameSpoof: Flagged ${player.name} (current nameTag: "${currentNameTag}") for ${flaggedReason}`, watchedPrefix);
     }
 }

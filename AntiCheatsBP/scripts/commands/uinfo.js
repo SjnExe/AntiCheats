@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/uinfo.js
+ * Defines the !uinfo command, providing a user interface for players to view their
+ * AntiCheat statistics, server rules, and other helpful information.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/uinfo.js
 import { permissionLevels } from '../core/rankManager.js';
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Specific UI imports

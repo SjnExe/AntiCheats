@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/clearchat.js
+ * Defines the !clearchat command for administrators to clear the global chat.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/clearchat.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server'; // For world.sendMessage

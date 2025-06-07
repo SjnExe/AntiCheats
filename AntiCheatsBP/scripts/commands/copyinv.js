@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/copyinv.js
+ * Defines the !copyinv command for administrators to copy another player's inventory.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/copyinv.js
 import { permissionLevels } from '../core/rankManager.js';
 import { ModalFormData } from '@minecraft/server-ui'; // Specific UI import

@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/resetflags.js
+ * Defines the !resetflags command for administrators to clear a player's accumulated AntiCheat flags
+ * and associated violation tracking data. Also aliased by !clearwarnings.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/resetflags.js
 import { permissionLevels } from '../core/rankManager.js';
 
@@ -50,14 +56,24 @@ export async function execute(player, args, dependencies) {
         pData.lastFlagType = "";
 
         // Reset other specific violation trackers if they exist
+        // These should align with fields in PlayerAntiCheatData that are session-based counters or lists for checks
         if (pData.hasOwnProperty('consecutiveOffGroundTicks')) pData.consecutiveOffGroundTicks = 0;
         if (pData.hasOwnProperty('fallDistance')) pData.fallDistance = 0;
         if (pData.hasOwnProperty('consecutiveOnGroundSpeedingTicks')) pData.consecutiveOnGroundSpeedingTicks = 0;
-        if (pData.hasOwnProperty('attackEvents')) pData.attackEvents = [];
-        if (pData.hasOwnProperty('blockBreakEvents')) pData.blockBreakEvents = [];
-        // Add any other specific fields that need clearing
+        if (pData.hasOwnProperty('attackEvents')) pData.attackEvents = []; // For CPS
+        if (pData.hasOwnProperty('blockBreakEvents')) pData.blockBreakEvents = []; // For Nuker
+        if (pData.hasOwnProperty('recentHits')) pData.recentHits = []; // For MultiTarget
+        if (pData.hasOwnProperty('recentPlaceTimestamps')) pData.recentPlaceTimestamps = []; // For FastPlace
+        // Reset AutoTool/InstaBreak transient states
+        pData.isAttemptingBlockBreak = false; pData.switchedToOptimalToolForBreak = false;
+        pData.optimalToolSlotForLastBreak = null; pData.lastBreakCompleteTick = 0;
+        pData.breakStartTimeMs = 0; pData.breakStartTickGameTime = 0; pData.expectedBreakDurationTicks = 0;
+        // Reset Tower/Scaffold states
+        pData.consecutivePillarBlocks = 0; pData.lastPillarTick = 0; pData.currentPillarX = null; pData.currentPillarZ = null;
+        pData.consecutiveDownwardBlocks = 0; pData.lastDownwardScaffoldTick = 0; pData.lastDownwardScaffoldBlockLocation = null;
 
-        playerDataManager.prepareAndSavePlayerData(targetPlayer); // Save changes
+        pData.isDirtyForSave = true; // Mark data as dirty
+        playerDataManager.prepareAndSavePlayerData(targetPlayer); // Save changes immediately after reset
 
         player.sendMessage(`§aFlags and violation data reset for ${targetPlayer.nameTag}.`);
         if (playerUtils.notifyAdmins) {

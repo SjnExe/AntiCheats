@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/gms.js
+ * Defines the !gms command for administrators to set a player's gamemode to Survival.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/gms.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';

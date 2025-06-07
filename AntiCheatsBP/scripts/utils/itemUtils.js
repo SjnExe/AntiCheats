@@ -1,3 +1,10 @@
+/**
+ * @file AntiCheatsBP/scripts/utils/itemUtils.js
+ * Provides utility functions related to items, blocks, and their interactions,
+ * primarily for calculating block breaking speeds and determining optimal tools.
+ * Includes simplified models for game mechanics like block hardness and tool effectiveness.
+ * @version 1.0.1
+ */
 import * as mc from '@minecraft/server';
 
 /**

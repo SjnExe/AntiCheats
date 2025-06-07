@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/tp.js
+ * Defines the !tp (teleport) command for administrators, allowing teleportation of players
+ * to other players or to specific coordinates, potentially across dimensions.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/tp.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server'; // For dimension objects
@@ -5,7 +11,7 @@ import * as mc from '@minecraft/server'; // For dimension objects
 /**
  * Parses a dimension string to its corresponding Dimension object.
  * @param {string} dimStr The dimension string (e.g., "overworld", "nether", "end").
- * @param {object} playerUtils Optional player utilities for debug logging.
+ * @param {import('../types.js').PlayerUtils | undefined} playerUtils Optional player utilities for debug logging.
  * @returns {mc.Dimension | null} The Dimension object or null if invalid.
  */
 // Ensure parseDimension is available, moved from commandManager or playerUtils
@@ -16,7 +22,7 @@ function parseDimensionLocal(dimStr, playerUtils) {
         case "nether": return mc.world.nether;
         case "end": return mc.world.theEnd;
         default:
-            if (playerUtils && playerUtils.debugLog) playerUtils.debugLog(`parseDimensionLocal: Invalid dimension string "${dimStr}".`);
+            playerUtils?.debugLog?.(`parseDimensionLocal: Invalid dimension string "${dimStr}".`);
             return null;
     }
 }
@@ -101,7 +107,7 @@ export async function execute(player, args, dependencies) {
 
     if (!playerToMove || !destinationLocation || !targetDimension) {
         player.sendMessage(`§cInvalid command syntax or arguments. Use ${config.prefix}help tp.`);
-        if (playerUtils.debugLog) playerUtils.debugLog(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag);
+        playerUtils.debugLog?.(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag);
         return;
     }
 
@@ -126,6 +132,6 @@ export async function execute(player, args, dependencies) {
         }
     } catch (e) {
         player.sendMessage(`§cTeleportation failed: ${e.message || e}`);
-        if (playerUtils.debugLog) playerUtils.debugLog(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag);
+        playerUtils.debugLog?.(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag);
     }
 }

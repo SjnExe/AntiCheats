@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/invsee.js
+ * Defines the !invsee command for administrators to view a player's inventory.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/invsee.js
 import { permissionLevels } from '../core/rankManager.js';
 import { MessageFormData } from '@minecraft/server-ui';

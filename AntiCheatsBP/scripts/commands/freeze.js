@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/freeze.js
+ * Defines the !freeze command for administrators to immobilize or release players.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/freeze.js
 import { permissionLevels } from '../core/rankManager.js';
 
@@ -20,7 +25,7 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, addLog, findPlayer } = dependencies;
     const frozenTag = "frozen";
-    const effectDuration = 2000000;
+    const effectDuration = 2000000; // A very long duration for "permanent" effect until removed
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${config.prefix}freeze <playername> [on|off]`);
@@ -49,12 +54,14 @@ export async function execute(player, args, dependencies) {
     } else if (subCommand === "off") {
         targetFreezeState = false;
     } else {
-        targetFreezeState = !currentFreezeState; // Toggle
+        targetFreezeState = !currentFreezeState; // Toggle if no valid "on" or "off" argument
     }
 
     if (targetFreezeState === true && !currentFreezeState) {
         try {
             foundPlayer.addTag(frozenTag);
+            // Apply extreme slowness to effectively immobilize.
+            // Note: Players might still be able to jump very slowly or use items depending on game mechanics.
             foundPlayer.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false });
             foundPlayer.sendMessage("§cYou have been frozen by an administrator!");
             player.sendMessage(`§aPlayer ${foundPlayer.nameTag} is now frozen.`);
@@ -71,7 +78,7 @@ export async function execute(player, args, dependencies) {
     } else if (targetFreezeState === false && currentFreezeState) {
         try {
             foundPlayer.removeTag(frozenTag);
-            foundPlayer.removeEffect("slowness");
+            foundPlayer.removeEffect("slowness"); // Remove the specific slowness effect
             foundPlayer.sendMessage("§aYou have been unfrozen.");
             player.sendMessage(`§aPlayer ${foundPlayer.nameTag} is no longer frozen.`);
             if (playerUtils.notifyAdmins) {

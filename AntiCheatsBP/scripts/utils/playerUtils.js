@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/utils/playerUtils.js
+ * Provides utility functions for common player-related operations such as permission checks,
+ * debug logging, admin notifications, player searching, and duration parsing.
+ * @version 1.0.1
+ */
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
 import { adminTag, enableDebugLogging, ownerPlayerName, acGlobalNotificationsDefaultOn } from '../config';

@@ -1,3 +1,10 @@
+/**
+ * @file AntiCheatsBP/scripts/core/playerDataManager.js
+ * Manages all player-specific data used by the AntiCheat system. This includes runtime data (pData),
+ * persistence via dynamic properties, and helper functions for data manipulation like adding flags,
+ * mutes, and bans.
+ * @version 1.1.0
+ */
 import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 
@@ -649,3 +656,5 @@ export async function saveDirtyPlayerData(player) {
     }
     return false; // Not dirty, or no pData
 }
+
+[end of AntiCheatsBP/scripts/core/playerDataManager.js]

@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/ban.js
+ * Defines the !ban command for administrators to ban players.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/ban.js
 import { permissionLevels } from '../core/rankManager.js';
 

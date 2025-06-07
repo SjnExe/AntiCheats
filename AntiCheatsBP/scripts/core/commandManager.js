@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/core/commandManager.js
+ * Manages the registration, parsing, and execution of chat-based commands for the AntiCheat system.
+ * It dynamically loads command modules and handles permission checking and alias resolution.
+ * @version 1.1.0
+ */
 import * as mc from '@minecraft/server';
 import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel, findPlayer, parseDuration } from '../utils/playerUtils.js';

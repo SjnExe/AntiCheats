@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/unmute.js
+ * Defines the !unmute command for administrators to allow a previously muted player to chat again.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/unmute.js
 import { permissionLevels } from '../core/rankManager.js';
 

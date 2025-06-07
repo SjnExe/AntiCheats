@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/mute.js
+ * Defines the !mute command for administrators to prevent a player from sending chat messages.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/mute.js
 import { permissionLevels } from '../core/rankManager.js';
 

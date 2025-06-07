@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/core/eventHandlers.js
+ * Centralized handlers for various Minecraft Server API events. These handlers typically
+ * gather necessary data and then delegate to specific check functions or managers.
+ * @version 1.0.1
+ */
 import * as mc from '@minecraft/server';
 import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
 import { getExpectedBreakTicks } from '../utils/index.js'; // For InstaBreak Speed Check
@@ -111,7 +117,7 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
  * @param {mc.EntityHurtAfterEvent} eventData - The entity hurt event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
  * @param {number} currentTick - The current game tick from the main tick loop.
  * @param {import('./logManager.js')} logManager - Manager for logging.
@@ -332,7 +338,7 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
  * @param {mc.ItemUseBeforeEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
@@ -380,7 +386,7 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
  * @param {mc.ItemUseOnBeforeEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
@@ -407,7 +413,7 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
  * @param {mc.PlayerInventoryItemChangeAfterEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
@@ -430,7 +436,7 @@ export async function handleInventoryItemChange(eventData, playerDataManager, ch
  * @param {mc.PlayerPlaceBlockBeforeEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
@@ -454,7 +460,7 @@ export async function handlePlayerPlaceBlockBefore(eventData, playerDataManager,
  * @param {mc.PlayerPlaceBlockAfterEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
@@ -482,7 +488,7 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
  * @param {mc.ChatSendBeforeEvent} eventData - The chat send event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
  * @param {Object<string, function>} checks - Object containing various check functions.
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
@@ -539,3 +545,5 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
     }
     pData.isDirtyForSave = true;
 }
+
+[end of AntiCheatsBP/scripts/core/eventHandlers.js]

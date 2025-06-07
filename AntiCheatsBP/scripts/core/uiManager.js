@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/core/uiManager.js
+ * Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
+ * actions and player information within the AntiCheat system.
+ * @version 1.0.1
+ */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 import * as playerUtils from '../utils/playerUtils.js'; // Direct import for general utils
@@ -679,3 +685,5 @@ async function showWatchedPlayersList(adminPlayer, playerDataManager, dependenci
     // This form is informational, so it naturally leads back to the main admin panel.
     await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
 }
+
+[end of AntiCheatsBP/scripts/core/uiManager.js]

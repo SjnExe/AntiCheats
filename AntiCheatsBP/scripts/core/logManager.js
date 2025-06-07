@@ -1,3 +1,10 @@
+/**
+ * @file AntiCheatsBP/scripts/core/logManager.js
+ * Manages the storage and retrieval of action logs, such as administrative commands (ban, mute, kick)
+ * and significant system events. Logs are persisted using world dynamic properties with an
+ * in-memory cache for performance.
+ * @version 1.0.1
+ */
 import * as mc from '@minecraft/server';
 import * as playerUtils from '../utils/playerUtils.js'; // For debugLog
 

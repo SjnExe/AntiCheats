@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/gmsp.js
+ * Defines the !gmsp command for administrators to set a player's gamemode to Spectator.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/gmsp.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
