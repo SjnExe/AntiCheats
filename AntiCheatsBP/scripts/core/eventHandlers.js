@@ -5,8 +5,8 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
-import { getExpectedBreakTicks } from '../utils/index.js'; // For InstaBreak Speed Check
+import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js'; // Added isNetherLocked, isEndLocked
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
 
@@ -572,6 +572,64 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         pData.recentMessages.shift();
     }
     pData.isDirtyForSave = true;
+}
+
+
+/**
+ * Handles actions after a player changes dimension, specifically for Dimension Lock enforcement.
+ * If a non-admin player enters a locked dimension (Nether or End), they are teleported back.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The event data.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions.
+ * @param {import('../config.js').editableConfigValues} config - The server configuration.
+ */
+export async function handlePlayerDimensionChangeAfter(eventData, playerUtils, config) {
+    const { player, fromDimension, toDimension, fromLocation } = eventData;
+
+    if (!player || !fromDimension || !toDimension || !fromLocation) {
+        playerUtils.debugLog("DimensionLock: Invalid eventData in handlePlayerDimensionChangeAfter.", null);
+        return;
+    }
+
+    // Using permissionLevels.admin directly as config.dimensionLockAdminBypassLevel might not exist yet.
+    // It's assumed playerUtils.getPlayerPermissionLevel is available and correct.
+    const playerPermLevel = playerUtils.getPlayerPermissionLevel ? playerUtils.getPlayerPermissionLevel(player) : permissionLevels.member;
+
+    if (playerPermLevel <= permissionLevels.admin) {
+        playerUtils.debugLog(`DimensionLock: Player ${player.nameTag} has bypass permission (Level: ${playerPermLevel}). Allowing dimension change.`, player.nameTag);
+        return; // Admin/Owner bypass
+    }
+
+    let dimensionIsLocked = false;
+    let lockedDimensionName = "";
+
+    if (toDimension.id === "minecraft:the_nether" && isNetherLocked()) {
+        dimensionIsLocked = true;
+        lockedDimensionName = "The Nether";
+    } else if (toDimension.id === "minecraft:the_end" && isEndLocked()) {
+        dimensionIsLocked = true;
+        lockedDimensionName = "The End";
+    }
+
+    if (dimensionIsLocked) {
+        try {
+            // Ensure fromLocation and fromDimension are valid before teleporting
+            if (fromLocation && fromDimension) {
+                player.teleport(fromLocation, { dimension: fromDimension });
+                playerUtils.warnPlayer(player, `Access to ${lockedDimensionName} is currently restricted by an administrator.`);
+                playerUtils.debugLog(`DimensionLock: Teleported ${player.nameTag} back from ${lockedDimensionName} (locked).`, player.nameTag);
+
+                const adminMessage = `§7[DimensionLock] Player ${player.nameTag} attempted to enter ${lockedDimensionName} (locked) and was teleported back.`;
+                if (playerUtils.notifyAdmins) playerUtils.notifyAdmins(adminMessage, player, null);
+
+            } else {
+                 playerUtils.debugLog(`DimensionLock: Cannot teleport ${player.nameTag}, fromLocation or fromDimension is invalid.`, player.nameTag);
+                 console.error(`DimensionLock: Invalid teleport parameters for ${player.nameTag}: fromLocation or fromDimension undefined.`);
+            }
+        } catch (e) {
+            playerUtils.debugLog(`DimensionLock: Error teleporting ${player.nameTag} back from ${lockedDimensionName}: ${e}`, player.nameTag);
+            console.error(`DimensionLock: Teleportation error for ${player.nameTag}: ${e.stack || e}`);
+        }
+    }
 }
 
 [end of AntiCheatsBP/scripts/core/eventHandlers.js]

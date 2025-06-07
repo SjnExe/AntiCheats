@@ -136,6 +136,14 @@ mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
     await eventHandlers.handleInventoryItemChange(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
+/**
+ * Handles player dimension change events after they occur.
+ * @param {mc.PlayerDimensionChangeAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
+    eventHandlers.handlePlayerDimensionChangeAfter(eventData, playerUtils, config);
+});
+
 let currentTick = 0;
 
 /**
