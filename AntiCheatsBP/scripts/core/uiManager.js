@@ -139,10 +139,10 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
     form.button(freezeButtonText, freezeButtonIcon);                           // Index 5 (Shifted)
     form.button(muteButtonText, muteButtonIcon);                               // Index 6 (Shifted)
     form.button("Ban Player", "textures/ui/icon_resource_pack");               // Index 7 (Shifted)
-    form.button("Reset Player Flags", "textures/ui/refresh");                  // Index 8 (Shifted)
-    form.button("Clear Inventory", "textures/ui/icon_trash");                  // Index 9 (Shifted)
-    form.button("Clear Ender Chest", "textures/ui/ender_chest");             // Index 10 (Shifted)
-    form.button("Back to Player List", "textures/ui/undo");                    // Index 11 (Shifted)
+    form.button("Reset Player Flags", "textures/ui/refresh");                  // Index 8
+    form.button("Clear Inventory", "textures/ui/icon_trash");                  // Index 9
+    // Removed "Clear Ender Chest" button formerly at Index 10
+    form.button("Back to Player List", "textures/ui/undo");                    // Index 10 (Shifted from 11)
 
     try {
         const response = await form.show(adminPlayer);
@@ -283,32 +283,8 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                 }
                 // Stay on player actions form
                 break;
-            case 10: // Clear Ender Chest (Shifted Index from 9)
-                {
-                    const confirmForm = new ModalFormData()
-                        .title("Confirm Clear Ender Chest")
-                        .body(`Are you sure you want to clear ${targetPlayer.nameTag}'s Ender Chest? This action cannot be undone.`)
-                        .toggle("Yes, clear Ender Chest.", false);
-                    const confirmResponse = await confirmForm.show(adminPlayer);
-
-                    if (confirmResponse.canceled || !confirmResponse.formValues[0]) {
-                        adminPlayer.sendMessage("§7Clear Ender Chest action cancelled.");
-                    } else {
-                        // Inform about API limitation
-                        adminPlayer.sendMessage("§cError: Clearing another player's Ender Chest is not currently supported by the Script API.");
-                        if (dependencies.addLog) {
-                            dependencies.addLog({
-                                adminName: adminPlayer.nameTag,
-                                actionType: 'attempt_clear_ender_chest',
-                                targetName: targetPlayer.nameTag,
-                                details: `Admin attempted to clear Ender Chest for ${targetPlayer.nameTag}, but feature is not supported by API.`
-                            });
-                        }
-                    }
-                }
-                // Stay on player actions form after this
-                break;
-            case 11: // Back to Player List (Shifted Index from 10)
+            // Case 10 for "Clear Ender Chest" has been removed.
+            case 10: // Back to Player List (Shifted Index from 11)
                 shouldReturnToPlayerList = true;
                 shouldReturnToPlayerActions = false;
                 break;

@@ -3,7 +3,6 @@
 ## Recently Completed
 *   **Admin Panel - Player Actions Enhancement:** Added several new actions to the Player Actions form in the Admin Panel:
     *   **Clear Inventory:** Allows admins to clear a target player's main inventory (with confirmation).
-    *   **Clear Ender Chest:** Button added; currently informs admin that direct Ender Chest clearing is not supported by the Script API.
     *   **Teleport to Player:** Allows admin to teleport themselves to the target player.
     *   **Teleport Player Here:** Allows admin to teleport the target player to the admin's current location.
     *   These features enhance admin utility for player management within the UI.
