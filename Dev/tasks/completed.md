@@ -1,12 +1,18 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
-*   **`!vanish` Command Enhancement (Notify Mode & Action Bar):**
+*   **`!vanish` Command - Comprehensive Admin Invisibility Suite:**
     *   Refined `!vanish` to use `!vanish [silent|notify]` syntax (defaults to `silent`, always toggles state).
-    *   In 'notify' mode, broadcasts fake "left game" / "joined game" messages.
-    *   Displays persistent "You are now vanished" status on the player's action bar, cleared upon unvanishing.
-    *   Chat messages confirm the unvanish action.
-    *   This incorporates and supersedes the functionality previously planned for a separate `!fakeleave` command or simpler `!vanish` broadcast mode. (Task originally in Low Priority / Ideas).
+    *   When activated, provides the following effects and abilities:
+        *   Invisibility (effect, no particles)
+        *   Night Vision (effect, no particles)
+        *   Damage Immunity (Resistance V effect, no particles)
+        *   Fire Immunity (Fire Resistance effect, no particles, prevents visual burning)
+        *   Item Pickup Prevention (`player.canPickupItems = false`)
+    *   In 'notify' mode, also broadcasts fake "left game" / "joined game" server messages.
+    *   Displays a persistent "You are now vanished" status on the player's action bar, which is cleared upon unvanishing.
+    *   Chat messages are still used to confirm the unvanish action directly to the admin.
+    *   This set of features incorporates and supersedes the functionality previously planned for a separate `!fakeleave` command. (Task originally in Low Priority / Ideas, significantly enhanced).
 *   **`!notify <on|off|toggle>`:** Allows admins to toggle their own command/system notifications. (Originally in Medium Priority Admin Tools).
 
 ---

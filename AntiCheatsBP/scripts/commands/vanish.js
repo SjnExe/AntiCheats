@@ -11,13 +11,14 @@ const effectDuration = 2000000; // Changed to camelCase
  */
 export const definition = {
     name: "vanish",
-    syntax: "!vanish [silent|notify]", // Updated syntax
-    description: "Toggles admin visibility. Optional mode 'silent' (default) or 'notify' (broadcasts fake leave/join messages).", // Updated description
+    syntax: "!vanish [silent|notify]",
+    description: "Toggles admin visibility (invisibility, night vision, damage immunity) and disables item pickup. Optional mode 'silent' (default) or 'notify' (broadcasts fake leave/join messages).", // Updated description
     permissionLevel: permissionLevels.admin
 };
 
 /**
- * Executes the vanish command, toggling visibility with optional notification mode.
+ * Executes the vanish command, toggling visibility (invisibility, night vision, damage immunity)
+ * and item pickup ability with optional notification mode.
  * Uses the action bar for persistent status display to the command user.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments, where args[0] can be 'silent' or 'notify'.
@@ -37,8 +38,11 @@ export async function execute(player, args, dependencies) {
 
     if (targetStateIsOn) { // Activate vanish
         try {
-            player.addTag(vanishedTag); // Updated usage
-            player.addEffect("invisibility", effectDuration, { amplifier: 0, showParticles: false }); // Updated usage
+            player.addTag(vanishedTag);
+            player.addEffect("invisibility", effectDuration, { amplifier: 0, showParticles: false });
+            player.addEffect("night_vision", effectDuration, { amplifier: 0, showParticles: false });
+            player.addEffect("resistance", effectDuration, { amplifier: 4, showParticles: false }); // Added damage immunity
+            player.canPickupItems = false; // Disable item pickup
             // Nametag hiding is assumed to be handled by a system reacting to vanishedTag or invisibility.
 
             if (mode === 'notify') {
@@ -61,10 +65,14 @@ export async function execute(player, args, dependencies) {
     } else { // Deactivate vanish
         try {
             player.onScreenDisplay.setActionBar(""); // Clear persistent action bar message
-            const wasNotifyMode = player.hasTag(vanishModeNotifyTag); // Updated usage
+            const wasNotifyMode = player.hasTag(vanishModeNotifyTag);
 
-            player.removeTag(vanishedTag); // Updated usage
+            player.canPickupItems = true; // Restore item pickup
+            player.canPickupItems = true; // Restore item pickup
+            player.removeTag(vanishedTag);
             player.removeEffect("invisibility");
+            player.removeEffect("night_vision");
+            player.removeEffect("resistance"); // Removed damage immunity
             // Nametag restoration assumed to be handled by a system reacting to vanishedTag removal or invisibility expiry.
 
             if (wasNotifyMode) {
