@@ -275,6 +275,9 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, playerDataMan
 
 /**
  * Handles actions after a player breaks a block. Updates AutoTool state and triggers X-Ray notifications.
+ * X-Ray notifications for Diamond Ore (Overworld, Y 14 to -63) and Ancient Debris (Nether, Y 8 to 119)
+ * are filtered by dimension and Y-levels if enabled. Notification message includes dimension and uses
+ * standardized block names (e.g., "Diamond Ore" for both variants).
  * @param {mc.PlayerBreakBlockAfterEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
@@ -316,20 +319,45 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
 
     const brokenBlockId = brokenBlockPermutation.type.id;
     if (config.xrayDetectionMonitoredOres.includes(brokenBlockId)) {
-        const location = block.location;
-        const prettyBlockName = brokenBlockId.replace("minecraft:", "");
-        const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(location.y)}, ${Math.floor(location.z)}§7.`;
-        playerUtils.debugLog(message, null); // Log for server console
+        // X-Ray Alert Logic: Filter for specific ores, dimensions, and Y-levels.
+        const dimensionId = player.dimension.id;
+        const blockY = block.location.y;
+        let sendNotification = false;
+        let prettyBlockName = brokenBlockId.replace("minecraft:", "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()); // Default pretty name
 
-        mc.world.getAllPlayers().forEach(adminPlayer => {
-            if (playerUtils.isAdmin(adminPlayer)) { // Use playerUtils.isAdmin
-                const wantsNotifications = adminPlayer.hasTag("xray_notify_on");
-                const explicitlyDisabled = adminPlayer.hasTag("xray_notify_off");
-                if (wantsNotifications || (config.xrayDetectionAdminNotifyByDefault && !explicitlyDisabled)) {
-                    adminPlayer.sendMessage(message);
-                }
+        if (brokenBlockId === "minecraft:diamond_ore" || brokenBlockId === "minecraft:deepslate_diamond_ore") {
+            prettyBlockName = "Diamond Ore"; // Standardize name for both diamond ore variants
+            // Diamond Ore: Overworld, Y <= 14 && Y >= -63
+            if (dimensionId === "minecraft:overworld" && blockY <= 14 && blockY >= -63) {
+                sendNotification = true;
             }
-        });
+        } else if (brokenBlockId === "minecraft:ancient_debris") {
+            prettyBlockName = "Ancient Debris"; // Standardize name
+            // Ancient Debris: Nether, Y >= 8 && Y <= 119
+            if (dimensionId === "minecraft:nether" && blockY >= 8 && blockY <= 119) {
+                sendNotification = true;
+            }
+        } else {
+            // For other ores that might be in xrayDetectionMonitoredOres (currently none by default configuration).
+            // This block maintains previous broader alerting behavior if other ores are added back to the monitored list without specific filters.
+            sendNotification = true;
+        }
+
+        if (sendNotification) {
+            const location = block.location;
+            const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(blockY)}, ${Math.floor(location.z)}§7 in ${dimensionId.replace("minecraft:","")}.`;
+            playerUtils.debugLog(message, null); // Log for server console
+
+            mc.world.getAllPlayers().forEach(adminPlayer => {
+                if (playerUtils.isAdmin(adminPlayer)) {
+                    const wantsNotifications = adminPlayer.hasTag("xray_notify_on");
+                    const explicitlyDisabled = adminPlayer.hasTag("xray_notify_off");
+                    if (wantsNotifications || (config.xrayDetectionAdminNotifyByDefault && !explicitlyDisabled)) {
+                        adminPlayer.sendMessage(message);
+                    }
+                }
+            });
+        }
     }
 }
 

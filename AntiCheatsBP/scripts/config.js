@@ -346,8 +346,7 @@ export const xrayDetectionNotifyOnOreMineEnabled = true;
 /** @type {string[]} List of block type IDs to monitor for X-Ray mining notifications. */
 export const xrayDetectionMonitoredOres = [
     "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore",
-    "minecraft:ancient_debris", "minecraft:emerald_ore",
-    "minecraft:deepslate_emerald_ore"
+    "minecraft:ancient_debris"
 ];
 /** @type {boolean} If true, admins (users with `adminTag`) will receive X-Ray mining notifications by default, unless they explicitly disable them. */
 export const xrayDetectionAdminNotifyByDefault = true;
@@ -1002,7 +1001,9 @@ export let editableConfigValues = {
     enableFastPlaceCheck,
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
-    xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
+    xrayDetectionNotifyOnOreMineEnabled,
+    xrayDetectionMonitoredOres: ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"], // Updated default
+    xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     enableCombatLogDetection,
     combatLogThresholdSeconds,
