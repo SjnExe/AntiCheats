@@ -19,4 +19,8 @@ export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirP
 export { checkFastUse } from './world/fastUseCheck.js';
 export { checkAutoTool } from './world/autoToolCheck.js';
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
-export { checkNameSpoof } from './world/nameSpoofCheck.js';
+export { checkNameSpoof } from './world/nameSpoofCheck.js'; // Note: NameSpoof and AntiGMC were placed in /world previously
+export { checkAntiGMC } from './world/antiGMCCheck.js';   // To be consistent with that decision for now.
+
+// Player Behavior Checks (New Category)
+export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';

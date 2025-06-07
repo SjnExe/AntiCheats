@@ -96,7 +96,7 @@ mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => { // Made a
  * @param {mc.ItemUseBeforeEvent} eventData The event data.
  */
 mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
-    await eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction); // Added await
+    await eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick); // Added currentTick
 });
 
 /**
@@ -126,6 +126,14 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
 mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
     // currentTick from main.js scope is passed to the handler
     await eventHandlers.handlePlayerPlaceBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+});
+
+/**
+ * Handles player inventory item changes after they occur.
+ * @param {mc.PlayerInventoryItemChangeAfterEvent} eventData
+ */
+mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
+    await eventHandlers.handleInventoryItemChange(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
 let currentTick = 0;
@@ -199,6 +207,11 @@ mc.system.runInterval(async () => {
         // Call NameSpoof Check
         if (config.enableNameSpoofCheck && checks.checkNameSpoof) {
             await checks.checkNameSpoof(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Call Anti-GMC Check
+        if (config.enableAntiGMCCheck && checks.checkAntiGMC) {
+            await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
         // Fall distance accumulation and isTakingFallDamage reset

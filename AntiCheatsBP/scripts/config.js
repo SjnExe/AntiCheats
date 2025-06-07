@@ -191,6 +191,19 @@ export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]"; // Di
 /** @type {number} Minimum interval in ticks between allowed nameTag changes. */
 export const nameSpoofMinChangeIntervalTicks = 200; // 10 seconds
 
+/** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check is active. */
+export const enableAntiGMCCheck = true;
+/**
+ * @type {string} The gamemode to switch players to if unauthorized creative mode is detected and auto-switch is enabled.
+ * Valid values: "survival", "adventure", "spectator". Default: "survival".
+ */
+export const antiGMCSwitchToGameMode = "survival";
+/** @type {boolean} If true, automatically switch player's gamemode if unauthorized creative is detected. */
+export const antiGMCAutoSwitch = true;
+
+/** @type {boolean} If true, the InventoryMods (Hotbar Switch) checks are active. */
+export const enableInventoryModCheck = true;
+
 
 /** @type {number} Max blocks broken in `nukerCheckIntervalMs` for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
@@ -838,6 +851,38 @@ export const checkActionProfiles = {
             detailsPrefix: "NameSpoof Violation: ",
             includeViolationDetails: true // Will include nameTag and reasonDetail
         }
+    },
+    "player_antigmc": {
+        enabled: true,
+        flag: {
+            increment: 10, // High severity for unauthorized creative
+            reason: "System detected unauthorized Creative Mode.",
+            type: "player_antigmc"
+        },
+        notifyAdmins: {
+            message: "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}"
+        },
+        log: {
+            actionType: "detected_player_antigmc",
+            detailsPrefix: "Anti-GMC Violation: ",
+            includeViolationDetails: true // Will include player name, gamemode, autoSwitch status
+        }
+    },
+    "player_inventory_mod": {
+        enabled: true,
+        flag: {
+            increment: 3,
+            reason: "System detected suspicious inventory/hotbar manipulation ({reasonDetail}).",
+            type: "player_inventory_mod"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for InventoryMod. Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}"
+        },
+        log: {
+            actionType: "detected_player_inventory_mod",
+            detailsPrefix: "InventoryMod Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 
@@ -870,6 +915,10 @@ export let editableConfigValues = {
     nameSpoofMaxLength,
     nameSpoofDisallowedCharsRegex,
     nameSpoofMinChangeIntervalTicks,
+    enableAntiGMCCheck,
+    antiGMCSwitchToGameMode,
+    antiGMCAutoSwitch,
+    enableInventoryModCheck,
     // Movement Check Configs (including NoSlow)
     enableNoSlowCheck,
     noSlowMaxSpeedEating,

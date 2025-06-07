@@ -366,36 +366,44 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
  * @param {object} checks Object containing various check functions.
  * @param {object} playerUtils Utility functions for players.
  * @param {object} config The server configuration object.
+ * @param {object} logManager Manager for logging.
  * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick.
  */
-export async function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) { // Added logManager, made async
+export async function handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick) {
     const playerEntity = eventData.source;
     if (playerEntity && playerEntity.typeId === 'minecraft:player') {
         const player = playerEntity;
         const itemStack = eventData.itemStack;
-        // Ensure pData is initialized, especially as this is a 'before' event and main tick loop might not have run for this player yet.
-        const pData = await playerDataManager.ensurePlayerDataInitialized(player, mc.system.currentTick);
+        // Ensure pData is initialized, especially as this is a 'before' event. CurrentTick is now passed from main.js.
+        const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
 
         if (!pData) {
-            if (playerUtils.debugLog) playerUtils.debugLog(`FastUseCheck: No pData for ${player.nameTag} in handleItemUse.`, player.nameTag);
+            if (playerUtils.debugLog) playerUtils.debugLog(`InventoryMod/FastUse: No pData for ${player.nameTag} in handleItemUse.`, player.nameTag);
             return;
         }
 
+        // Call InventoryMod - Switch & Use Same Tick Check (Needs to be called early)
+        if (checks && checks.checkSwitchAndUseInSameTick && config.enableInventoryModCheck) {
+            await checks.checkSwitchAndUseInSameTick(player, pData, itemStack, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+            // This check doesn't cancel eventData, it only flags.
+        }
+
         const itemTypeId = itemStack.typeId;
-        const currentTick = mc.system.currentTick; // Using mc.system.currentTick for consistency within this event handler
+        // const tickForStateUpdate = currentTick; // Use the passed currentTick for consistency
 
         // Logic for setting isUsingConsumable, isChargingBow, isUsingShield (already implemented)
         if (config.attackBlockingConsumables.includes(itemTypeId)) {
             pData.isUsingConsumable = true;
-            pData.lastItemUseTick = currentTick;
+            pData.lastItemUseTick = currentTick; // Use passed currentTick
             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using consumable ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
         } else if (config.attackBlockingBows.includes(itemTypeId)) {
             pData.isChargingBow = true;
-            pData.lastItemUseTick = currentTick;
+            pData.lastItemUseTick = currentTick; // Use passed currentTick
             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started charging bow ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
         } else if (config.attackBlockingShields.includes(itemTypeId)) {
             pData.isUsingShield = true;
-            pData.lastItemUseTick = currentTick;
+            pData.lastItemUseTick = currentTick; // Use passed currentTick
             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: ${player.nameTag} started using shield ${itemTypeId}. Tick: ${currentTick}`, player.nameTag);
         }
 
@@ -406,7 +414,6 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
 
         // Existing illegal item check (ensure it's also async if it wasn't already)
         if (checks && checks.checkIllegalItems && config.enableIllegalItemCheck) {
-            // logManager is now correctly passed in the function signature
             await checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
     }
@@ -432,6 +439,30 @@ export function handleItemUseOn(eventData, playerDataManager, checks, playerUtil
             // Corrected call:
             checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         }
+    }
+}
+
+/**
+ * Handles player inventory item changes to check for modifications during locked actions.
+ * @param {mc.PlayerInventoryItemChangeAfterEvent} eventData The event data.
+ * @param {object} playerDataManager Manager for player data.
+ * @param {object} checks Object containing various check functions.
+ * @param {object} playerUtils Utility functions for players.
+ * @param {object} config The server configuration object.
+ * @param {object} logManager Manager for logging.
+ * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * @param {number} currentTick The current game tick.
+ */
+export async function handleInventoryItemChange(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick) {
+    const playerEntity = eventData.source; // In PlayerInventoryItemChangeAfterEvent, player is eventData.source
+    if (!playerEntity || playerEntity.typeId !== 'minecraft:player') return;
+    const player = playerEntity; // Cast to mc.Player
+
+    const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
+    if (!pData) return;
+
+    if (checks && checks.checkInventoryMoveWhileActionLocked && config.enableInventoryModCheck) {
+        await checks.checkInventoryMoveWhileActionLocked(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
     }
 }
 

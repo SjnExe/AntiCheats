@@ -198,6 +198,50 @@
                 - Integrated the call to `checkBreakSpeed` into `handlePlayerBreakBlockAfterEvent` in `eventHandlers.js`.
             - Exported both `checkBreakUnbreakable` and `checkBreakSpeed` from `checks/index.js`.*
 
+---
+
+## 2023-11-01
+
+*   **Player Behavior - Advanced:** SjnExe parity goal.
+    *   **Anti-Gamemode Creative (Anti-GMC):** If a player is unexpectedly in Creative mode (not an admin or by legitimate means), flag and potentially switch them back to Survival. Notify admins. (SafeGuard, SjnExe)
+        *Implemented by:
+            - Adding `config.js` settings: `enableAntiGMCCheck`, `antiGMCSwitchToGameMode`, `antiGMCAutoSwitch`.
+            - Adding these new settings to `editableConfigValues` in `config.js`.
+            - Adding a `checkActionProfiles` entry for `"player_antigmc"` in `config.js`.
+            - Verifying that `types.js` and `playerDataManager.js` did not require immediate new fields for core detection.
+            - Creating `checkAntiGMC` function in `AntiCheatsBP/scripts/checks/world/antiGMCCheck.js` (placed in `/world` for now, noted for potential refactor to `/player`). This function checks `player.gameMode`, uses `getPlayerPermissionLevel` (from `playerUtils.js` which uses `rankManager.js`'s `permissionLevels`) to determine if the player is exempt. If not exempt and in creative mode, it flags and optionally switches gamemode based on config.
+            - Ensuring `getPlayerPermissionLevel` (from `playerUtils.js`) and `permissionLevels` (from `rankManager.js`) are correctly exported and used.
+            - Exporting `checkAntiGMC` via `checks/index.js`.
+            - Integrating the call to `checkAntiGMC` (with `await`) into the main tick loop in `main.js`.*
+*   **Player Behavior - Advanced:** SjnExe parity goal.
+    *   **Namespoof:** Check `player.nameTag` for excessive length, use of disallowed characters (e.g., non-ASCII, control characters beyond typical gameplay names), or rapid changes. (Scythe, SjnExe)
+        *   *Note: Concern raised about potential false positives for console players (e.g., due to spaces, specific character sets, or typical console Gamertag lengths). Ensure implementation is flexible or provides configuration to handle this when developing this feature.*
+        *Implemented by:
+            - Adding `lastKnownNameTag` and `lastNameTagChangeTick` to `PlayerAntiCheatData` in `types.js` and `playerDataManager.js`.
+            - Adding `config.js` settings: `enableNameSpoofCheck`, `nameSpoofMaxLength`, `nameSpoofDisallowedCharsRegex`, `nameSpoofMinChangeIntervalTicks`.
+            - Adding these new settings to `editableConfigValues` in `config.js`.
+            - Adding a `checkActionProfiles` entry for `"player_namespoof"` in `config.js`.
+            - Creating `checkNameSpoof` function in `AntiCheatsBP/scripts/checks/world/nameSpoofCheck.js` (placed in `/world` for now). This function checks nameTag length, for disallowed characters using the regex, and for rapid changes against `config.nameSpoofMinChangeIntervalTicks`. It updates `pData.lastKnownNameTag` and `pData.lastNameTagChangeTick` on change.
+            - Exporting `checkNameSpoof` via `checks/index.js`.
+            - Integrating the call to `checkNameSpoof` (with `await`) into the main tick loop in `main.js`.*
+
+---
+
+## 2023-11-02
+
+*   **Player Behavior - Advanced:** SjnExe parity goal.
+    *   **InventoryMods (Hotbar Switch):** Detect if items are moved or used from the hotbar in ways that are impossible manually, e.g., switching active slot and using an item in the same tick, or moving items in inventory while performing other actions that should lock inventory. (Scythe - may require careful API event correlation)
+        *Implemented by:
+            - Adding `enableInventoryModCheck` to `config.js` and `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for "player_inventory_mod" in `config.js`.
+            - Verifying existing `pData` fields (`lastSelectedSlotChangeTick`, `isUsingConsumable`, `isChargingBow`) were sufficient for initial checks.
+            - Creating `AntiCheatsBP/scripts/checks/player/inventoryModCheck.js` with two functions:
+                - `checkSwitchAndUseInSameTick`: Called from `handleItemUse` (which handles `ItemUseBeforeEvent`). Detects if `pData.lastSelectedSlotChangeTick` is the same as `currentTick` during item use.
+                - `checkInventoryMoveWhileActionLocked`: Called from a new `handleInventoryItemChange` (for `PlayerInventoryItemChangeAfterEvent`). Detects item moves if `pData.isUsingConsumable` or `pData.isChargingBow` is true.
+            - Exporting these functions via `checks/index.js` (from the new `checks/player/` directory).
+            - Integrating `checkSwitchAndUseInSameTick` into `handleItemUse` in `eventHandlers.js` (ensuring `currentTick` is passed).
+            - Creating `handleInventoryItemChange` in `eventHandlers.js` and subscribing to `world.afterEvents.playerInventoryItemChange` in `main.js` to call it, passing necessary dependencies including `currentTick`.*
+
 ## Refactoring: Standardized Actions for Combat & IllegalItem Checks
 **Date:** Current Session
 
