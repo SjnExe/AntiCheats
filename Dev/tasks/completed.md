@@ -463,7 +463,7 @@ Implemented a basic Admin User Interface (UI) accessible via the `!ac ui` comman
             *   Includes input validation and error handling for player/data not found.
         2.  **Reset Player Flags:**
             *   Uses a `ModalFormData` to prompt for a player's name and a confirmation toggle.
-            *   If confirmed, resets the target player's flags and relevant violation data (e.g., `consecutiveOffGroundTicks`, `attackEvents`).
+            *   If confirmed, resets the target player's flags and relevant violation data (e.g., `consecutiveOffGroundTicks`, `attackEvents`, `lastFlagType`, `playerNameTag`, `attackEvents`, `lastAttackTime`, `blockBreakEvents`, `consecutiveOffGroundTicks`, `fallDistance`, `consecutiveOnGroundSpeedingTicks`).
             *   Persists the changes using `prepareAndSavePlayerData`.
             *   Displays a success/error message to the admin using `MessageFormData`.
             *   Notifies other admins of the action.
@@ -985,23 +985,6 @@ Removed the '### Text Commands' subsection and its table from the '## Admin Comm
 
 Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
 
-*Associated Commit SHA (if available/relevant for tracking):* [Insert Commit SHA Here if known]
-
-[end of Dev/tasks/completed.md]
-
-[start of Dev/tasks/ongoing.md]
-# Ongoing Tasks
-*(Date: Current Session)*
-
-## Comprehensive Coding Style Review
-- **Objective:** Review all project script files (especially those not recently modified) for adherence to `Dev/CodingStyle.md` naming conventions (camelCase for variables, constants, functions; PascalCase for classes) and other style guidelines.
-- **Process & Status:**
-  - (Completed) Identified files needing review.
-  - (Completed) Performed style review and applied changes (naming conventions, JSDocs placeholders, filled JSDocs for key files like eventHandlers.js, playerDataManager.js, reportManager.js, and uiManager.js).
-  - (Completed) Documented changes implicitly via code updates.
-(Completed)
-
 ---
-*Previous tasks, including "Refactor: Standardize Check Actions & Configurable Punishments", "Admin Panel UI: View Ban/Mute Logs", "Admin Panel UI: Integrate InvSee", "Admin Panel UI: Quick Actions (Player Inspection)", the "Refactor `commandManager.js`" (modular command system), Reporting System (`!report`, `!viewreports`), `!uinfo` UI implementation, `!help` command verification, `!systeminfo` command, `!copyinv` command, `!vanish` logging, `!clearchat` logging, `!invsee` implementation, Lag Clear via Admin Panel, `!warnings`/`!clearwarnings`/`!resetflags` commands, `!freeze` logging, `!kick` verification, and `todo.md` syntax updates, were completed and documented in `completed.md`.*
-
-[end of Dev/tasks/ongoing.md]
+*(Date: Current Session)*
+*   **Self-Hurt Detection:** Detect if a player takes damage without a clear external source (e.g., another entity, fall, fire). Requires careful context analysis to avoid false positives from suffocation, void, etc. (Scythe 'BadPackets') - Implemented basic check for direct self-attack (`entityAttack` where player is a damaging entity to self).

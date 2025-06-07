@@ -39,6 +39,8 @@ export const enableNofallCheck = true;
 export const enableNukerCheck = true;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
 export const enableIllegalItemCheck = true;
+/** @type {boolean} If true, the Self-Hurt Detection check is active. */
+export const enableSelfHurtCheck = true; // Detects suspicious self-inflicted damage
 
 
 // --- Movement Checks ---
@@ -919,6 +921,7 @@ export let editableConfigValues = {
     antiGMCSwitchToGameMode,
     antiGMCAutoSwitch,
     enableInventoryModCheck,
+    enableSelfHurtCheck, // Added enableSelfHurtCheck
     // Movement Check Configs (including NoSlow)
     enableNoSlowCheck,
     noSlowMaxSpeedEating,
