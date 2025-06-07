@@ -2,9 +2,9 @@
 import { world } from "@minecraft/server";
 import { permissionLevels } from '../core/rankManager.js';
 
-const VANISHED_TAG = "vanished";
-const VANISH_MODE_NOTIFY_TAG = "vanish_mode_notify"; // Renamed from VANISH_MODE_BROADCAST_TAG
-const EFFECT_DURATION = 2000000; // Approx 23 days, effectively infinite for a session
+const vanishedTag = "vanished"; // Changed to camelCase
+const vanishModeNotifyTag = "vanish_mode_notify"; // Changed to camelCase
+const effectDuration = 2000000; // Changed to camelCase
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -32,17 +32,17 @@ export async function execute(player, args, dependencies) {
         mode = 'silent'; // Default to silent if arg is invalid
     }
 
-    const isCurrentlyVanished = player.hasTag(VANISHED_TAG);
+    const isCurrentlyVanished = player.hasTag(vanishedTag); // Updated usage
     const targetStateIsOn = !isCurrentlyVanished; // Always toggle
 
     if (targetStateIsOn) { // Activate vanish
         try {
-            player.addTag(VANISHED_TAG);
-            player.addEffect("invisibility", EFFECT_DURATION, { amplifier: 0, showParticles: false });
-            // Nametag hiding is assumed to be handled by a system reacting to VANISHED_TAG or invisibility.
+            player.addTag(vanishedTag); // Updated usage
+            player.addEffect("invisibility", effectDuration, { amplifier: 0, showParticles: false }); // Updated usage
+            // Nametag hiding is assumed to be handled by a system reacting to vanishedTag or invisibility.
 
             if (mode === 'notify') {
-                player.addTag(VANISH_MODE_NOTIFY_TAG);
+                player.addTag(vanishModeNotifyTag); // Updated usage
                 world.sendMessage(`§e${player.nameTag} left the game.`);
                 player.onScreenDisplay.setActionBar("§7You are now vanished (notify mode)."); // Changed to action bar
                 if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_on_notify', details: `${player.nameTag} enabled vanish (notify).` });
@@ -61,17 +61,17 @@ export async function execute(player, args, dependencies) {
     } else { // Deactivate vanish
         try {
             player.onScreenDisplay.setActionBar(""); // Clear persistent action bar message
-            const wasNotifyMode = player.hasTag(VANISH_MODE_NOTIFY_TAG); // Check before removing tags
+            const wasNotifyMode = player.hasTag(vanishModeNotifyTag); // Updated usage
 
-            player.removeTag(VANISHED_TAG);
+            player.removeTag(vanishedTag); // Updated usage
             player.removeEffect("invisibility");
-            // Nametag restoration assumed to be handled by a system reacting to VANISHED_TAG removal or invisibility expiry.
+            // Nametag restoration assumed to be handled by a system reacting to vanishedTag removal or invisibility expiry.
 
             if (wasNotifyMode) {
                 world.sendMessage(`§e${player.nameTag} joined the game.`);
                 player.sendMessage("§7You are no longer vanished (notify mode).");
                 if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_off_notify', details: `${player.nameTag} disabled vanish (notify).` });
-                player.removeTag(VANISH_MODE_NOTIFY_TAG); // Clean up the notify mode tag
+                player.removeTag(vanishModeNotifyTag); // Updated usage
             } else { // Was silent mode
                 player.sendMessage("§7You are no longer vanished.");
                 if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_off_silent', details: `${player.nameTag} disabled vanish (silent).` });
