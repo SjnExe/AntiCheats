@@ -1,7 +1,12 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
-*   **Fake Leave/Join Command (`!fakeleave`):** Implemented `!fakeleave` for admins to simulate leaving and rejoining the game. It combines invisibility (vanish) with fake leave/join broadcast messages. (Originally in Low Priority / Ideas).
+*   **`!vanish` Command Enhancement (Notify Mode & Action Bar):**
+    *   Refined `!vanish` to use `!vanish [silent|notify]` syntax (defaults to `silent`, always toggles state).
+    *   In 'notify' mode, broadcasts fake "left game" / "joined game" messages.
+    *   Displays persistent "You are now vanished" status on the player's action bar, cleared upon unvanishing.
+    *   Chat messages confirm the unvanish action.
+    *   This incorporates and supersedes the functionality previously planned for a separate `!fakeleave` command or simpler `!vanish` broadcast mode. (Task originally in Low Priority / Ideas).
 *   **`!notify <on|off|toggle>`:** Allows admins to toggle their own command/system notifications. (Originally in Medium Priority Admin Tools).
 
 ---
