@@ -1,23 +1,51 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/combat/viewSnapCheck.js
+ * Implements checks for invalid player view pitch and rapid view snaps (aimbot-like behavior)
+ * that can occur shortly after a player performs an attack.
+ * @version 1.0.1
+ */
+
 import * as mc from '@minecraft/server';
-// Removed direct imports for playerDataManager, playerUtils, config as they are now passed as parameters.
 
 /**
- * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
 
 /**
- * Checks for invalid pitch and rapid view snaps after an attack.
- * @param {mc.Player} player The player instance to check.
- * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
- * @param {object} config The configuration object.
- * @param {number} currentTick The current game tick.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * Checks for invalid pitch (looking too far up or down) and for excessively rapid
+ * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
+ * Player's last pitch and yaw are updated in `updateTransientPlayerData` in `main.js`.
+ * Player's last attack tick is updated in `handleEntityHurt` in `eventHandlers.js`.
+ *
+ * @param {mc.Player} player - The player instance to check.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastAttackTick`, `lastPitch`, `lastYaw`.
+ * @param {Config} config - The server configuration object with thresholds like `invalidPitchThresholdMin/Max`,
+ *                          `maxPitchSnapPerTick`, `maxYawSnapPerTick`, and `viewSnapWindowTicks`.
+ * @param {number} currentTick - The current game tick.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @returns {Promise<void>}
  */
-export async function checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction) {
-    if (!config.enableViewSnapCheck) return;
+export async function checkViewSnap(
+    player,
+    pData,
+    config,
+    currentTick,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction
+) {
+    if (!config.enableViewSnapCheck || !pData) { // Added null check for pData
+        return;
+    }
 
     const currentRotation = player.getRotation();
     const currentPitch = currentRotation.x;
@@ -25,63 +53,63 @@ export async function checkViewSnap(player, pData, config, currentTick, playerUt
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const dependencies = { config, playerDataManager, playerUtils, logManager };
 
-    // Check for invalid absolute pitch
-    if (currentPitch < config.invalidPitchThresholdMin || currentPitch > config.invalidPitchThresholdMax) {
+    // 1. Check for invalid absolute pitch (looking straight up/down beyond vanilla limits)
+    const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
+    const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
+
+    if (currentPitch < invalidPitchMin || currentPitch > invalidPitchMax) {
         const violationDetails = {
             pitch: currentPitch.toFixed(2),
-            minLimit: config.invalidPitchThresholdMin,
-            maxLimit: config.invalidPitchThresholdMax
+            minLimit: invalidPitchMin.toFixed(2),
+            maxLimit: invalidPitchMax.toFixed(2)
         };
+        // Action profile name should ideally be from config: config.invalidPitchActionProfileName ?? "combat_invalid_pitch"
         await executeCheckAction(player, "combat_invalid_pitch", violationDetails, dependencies);
-        // Note: Original logic might allow this and view snap to flag in the same execution.
-        // Depending on profile settings (e.g., if invalid_pitch includes high flag increment),
-        // this might be okay, or might need adjustment if only one view-related flag per tick is desired.
     }
 
-    // Check for view snaps after an attack
-    if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < config.viewSnapWindowTicks)) {
+    // 2. Check for view snaps (rapid rotation changes) after an attack
+    // pData.lastAttackTick is set in handleEntityHurt when the player is the attacker.
+    const viewSnapWindow = config.viewSnapWindowTicks ?? 10; // Default to 10 ticks
+    if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < viewSnapWindow)) {
         const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
         let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
 
-        if (deltaYaw > 180) { // Normalize yaw difference
+        // Normalize yaw difference (e.g., turning from 350 to 10 degrees is 20 deg, not 340)
+        if (deltaYaw > 180) {
             deltaYaw = 360 - deltaYaw;
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
-        // Calculate time in MS if pData.lastAttackTime (Date.now() at attack) is available
-        // For now, using ticks as per original details. If lastAttackTime (ms) was stored in pData, it would be better.
-        const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms if 1 tick = 50ms
+        const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms (assuming 20 TPS)
 
-        if (deltaPitch > config.maxPitchSnapPerTick) {
+        const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
+        if (deltaPitch > maxPitchSnap) {
             const violationDetails = {
                 type: "pitch",
                 change: deltaPitch.toFixed(2),
-                limit: config.maxPitchSnapPerTick,
-                ticksSinceAttack: ticksSinceLastAttack,
-                postAttackTimeMs: postAttackTimeMs
+                limit: maxPitchSnap.toFixed(2),
+                ticksSinceAttack: ticksSinceLastAttack.toString(),
+                postAttackTimeMs: postAttackTimeMs.toString()
             };
+            // Action profile name: config.pitchSnapActionProfileName ?? "combat_viewsnap_pitch"
             await executeCheckAction(player, "combat_viewsnap_pitch", violationDetails, dependencies);
-            if (pData.isWatched && playerUtils.debugLog) {
-                playerUtils.debugLog(`ViewSnap (Pitch) detected for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
-            }
+            playerUtils.debugLog?.(`ViewSnap (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
         }
 
-        // Using 'else if' here might be too restrictive if both can occur, but often one axis is more extreme.
-        // If separate flags for both are desired even if one is less extreme, remove 'else'.
-        // For now, allowing both to flag independently if thresholds are met.
-        if (deltaYaw > config.maxYawSnapPerTick) {
+        const maxYawSnap = config.maxYawSnapPerTick ?? 100;
+        if (deltaYaw > maxYawSnap) {
             const violationDetails = {
                 type: "yaw",
                 change: deltaYaw.toFixed(2),
-                limit: config.maxYawSnapPerTick,
-                ticksSinceAttack: ticksSinceLastAttack,
-                postAttackTimeMs: postAttackTimeMs
+                limit: maxYawSnap.toFixed(2),
+                ticksSinceAttack: ticksSinceLastAttack.toString(),
+                postAttackTimeMs: postAttackTimeMs.toString()
             };
+            // Action profile name: config.yawSnapActionProfileName ?? "combat_viewsnap_yaw"
             await executeCheckAction(player, "combat_viewsnap_yaw", violationDetails, dependencies);
-            if (pData.isWatched && playerUtils.debugLog) {
-                playerUtils.debugLog(`ViewSnap (Yaw) detected for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
-            }
+            playerUtils.debugLog?.(`ViewSnap (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
         }
     }
-    // pData.lastPitch and pData.lastYaw are updated in main.js's updateTransientPlayerData
+    // Note: pData.lastPitch and pData.lastYaw are updated externally in main.js's updateTransientPlayerData.
+    // No need to mark pData as dirty here unless this check itself modifies persisted fields.
 }

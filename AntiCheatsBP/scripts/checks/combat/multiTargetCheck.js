@@ -1,55 +1,91 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/combat/multiTargetCheck.js
+ * Implements a check to detect Killaura-like behavior where a player rapidly hits multiple distinct targets.
+ * @version 1.0.1
+ */
+
 import * as mc from '@minecraft/server';
-// Removed direct imports for playerDataManager, playerUtils, config
 
 /**
- * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
 
 /**
- * Checks for Multi-Target Killaura by analyzing recent hit patterns.
- * @param {mc.Player} player The attacking player.
- * @param {PlayerAntiCheatData} pData Player-specific anti-cheat data.
- * @param {mc.Entity} targetEntity The entity that was just hurt by the player.
- * @param {object} config The configuration object.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * Checks for Multi-Target Killaura by analyzing recent hit entity patterns.
+ * It tracks entities hit by the player within a configured time window and flags
+ * if the number of distinct entities exceeds a threshold.
+ * @param {mc.Player} player - The attacking player.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `recentHits`.
+ * @param {mc.Entity} targetEntity - The entity that was just hurt by the player.
+ * @param {Config} config - The server configuration object, with settings like `enableMultiTargetCheck`,
+ *                          `multiTargetWindowMs`, `multiTargetMaxHistory`, `multiTargetThreshold`.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {number} currentTick - The current game tick (not directly used in this check's core logic but available).
+ * @returns {Promise<void>}
  */
-export async function checkMultiTarget(player, pData, targetEntity, config, playerUtils, playerDataManager, logManager, executeCheckAction) {
-    if (!config.enableMultiTargetCheck) return;
+export async function checkMultiTarget(
+    player,
+    pData,
+    targetEntity,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick // Not directly used by this check's logic itself
+) {
+    if (!config.enableMultiTargetCheck || !pData) { // Added null check for pData
+        return;
+    }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const now = Date.now();
 
-    if (!pData.recentHits) {
-        pData.recentHits = [];
+    // Ensure targetEntity and its id are valid before proceeding.
+    // targetEntity.id can be a number (e.g., for players on some Bedrock versions) or string.
+    // We need a consistent identifier. Entity.id is typically a string in newer @minecraft/server.
+    if (!targetEntity || typeof targetEntity.id === 'undefined') {
+        playerUtils.debugLog?.(`MultiTargetCheck: Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, watchedPrefix);
+        return;
     }
 
-    // Ensure targetEntity and its id are valid before proceeding
-    if (!targetEntity || typeof targetEntity.id === 'undefined') {
-        if (playerUtils.debugLog && watchedPrefix) {
-            playerUtils.debugLog(`MultiTargetCheck: Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, watchedPrefix);
-        }
-        return; // Cannot process this hit without a valid target ID
-    }
+    pData.recentHits = pData.recentHits || []; // Initialize if undefined
 
     const newHit = {
-        entityId: targetEntity.id, // Use targetEntity.id directly
+        entityId: String(targetEntity.id), // Ensure entityId is stored as a string for consistent Set behavior
         timestamp: now,
     };
     pData.recentHits.push(newHit);
+    pData.isDirtyForSave = true; // Array has been modified
 
-    // Filter hits to the current window
-    pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= config.multiTargetWindowMs);
+    const windowMs = config.multiTargetWindowMs ?? 1000; // Default 1s window
+    const maxHistory = config.multiTargetMaxHistory ?? 20; // Default max 20 hits history
 
-    // Trim history if it exceeds max size
-    if (pData.recentHits.length > config.multiTargetMaxHistory) {
-        pData.recentHits = pData.recentHits.slice(pData.recentHits.length - config.multiTargetMaxHistory);
+    // Filter hits to the current window first
+    const originalCountBeforeTimeFilter = pData.recentHits.length;
+    pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= windowMs);
+    if (pData.recentHits.length !== originalCountBeforeTimeFilter) {
+        pData.isDirtyForSave = true;
     }
 
-    // Not enough hits yet to trigger a check
-    if (pData.recentHits.length < config.multiTargetThreshold) {
+    // Then, trim history if it still exceeds max size after time filtering
+    if (pData.recentHits.length > maxHistory) {
+        pData.recentHits = pData.recentHits.slice(pData.recentHits.length - maxHistory);
+        pData.isDirtyForSave = true; // Array was modified
+    }
+
+    const threshold = config.multiTargetThreshold ?? 3; // Default 3 distinct targets
+
+    // Not enough hits yet to trigger a check (after filtering)
+    if (pData.recentHits.length < threshold) {
         return;
     }
 
@@ -58,26 +94,24 @@ export async function checkMultiTarget(player, pData, targetEntity, config, play
         distinctTargets.add(hit.entityId);
     }
 
-    if (pData.isWatched && playerUtils.debugLog) {
-        playerUtils.debugLog(`MultiTargetCheck: Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, watchedPrefix);
-    }
+    playerUtils.debugLog?.(`MultiTargetCheck: Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, watchedPrefix);
 
-    if (distinctTargets.size >= config.multiTargetThreshold) {
+    if (distinctTargets.size >= threshold) {
         const violationDetails = {
-            targetsHit: distinctTargets.size,
-            windowSeconds: (config.multiTargetWindowMs / 1000).toFixed(1),
-            threshold: config.multiTargetThreshold,
-            // Example: include IDs of distinct targets for logging, truncated if too many
-            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', ')
+            targetsHit: distinctTargets.size.toString(),
+            windowSeconds: (windowMs / 1000).toFixed(1),
+            threshold: threshold.toString(),
+            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', ') // Sample of involved entity IDs
         };
         const dependencies = { config, playerDataManager, playerUtils, logManager };
+        // Action profile name: config.multiTargetActionProfileName ?? "combat_multitarget_aura"
         await executeCheckAction(player, "combat_multitarget_aura", violationDetails, dependencies);
 
-        if (pData.isWatched && playerUtils.debugLog) {
-            playerUtils.debugLog(`Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${config.multiTargetWindowMs}ms. RecentHits: ${JSON.stringify(pData.recentHits.map(h=>h.entityId))}`, watchedPrefix);
-        }
+        playerUtils.debugLog?.(`Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix);
 
-        // Clear recent hits after flagging to prevent immediate re-flagging on the same set of hits
+        // Clear recent hits after flagging to prevent immediate re-flagging on the exact same set of hits.
+        // This acts as a sort of local cooldown for this specific detection pattern.
         pData.recentHits = [];
+        pData.isDirtyForSave = true;
     }
 }

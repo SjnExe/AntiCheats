@@ -1,75 +1,113 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/movement/noSlowCheck.js
+ * Implements a check to detect if a player is moving faster than allowed while performing actions
+ * that should typically slow them down (e.g., eating, sneaking, charging a bow).
+ * Relies on player state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`) and
+ * assumes `pData.speedAmplifier` is updated by `updateTransientPlayerData`.
+ * @version 1.0.1
+ */
+
 import * as mc from '@minecraft/server';
 
 /**
- * Checks if player is moving faster than allowed for actions that should slow them down.
- * @param {mc.Player} player The player instance.
- * @param {import('../../core/playerDataManager.js').PlayerAntiCheatData} pData Player-specific anti-cheat data.
- * @param {object} config The configuration object.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
- * @param {number} currentTick The current game tick.
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
-export async function checkNoSlow(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick) {
-    if (!config.enableNoSlowCheck) return;
 
-    const velocity = player.getVelocity(); // Current, real-time velocity
-    const horizontalSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20; // Blocks per second
-
-    let action = null;
-    let maxAllowedSpeed = Infinity;
-
-    if (pData.isUsingConsumable) {
-        action = "Eating/Drinking";
-        maxAllowedSpeed = config.noSlowMaxSpeedEating;
-    } else if (pData.isChargingBow) {
-        action = "Charging Bow";
-        maxAllowedSpeed = config.noSlowMaxSpeedChargingBow;
-    } else if (pData.isUsingShield) {
-        // Vanilla shield usage (raised) doesn't slow movement unless blocking specific damage types or if custom logic implies it.
-        // The config value noSlowMaxSpeedUsingShield might be set to normal walking speed.
-        // This check is more for "not being slowed by other means while shield is up".
-        // If speed > normal walking speed while shield is up, it might be an issue if other conditions are met.
-        // For now, this check is simple: if isUsingShield and speed > configured threshold.
-        action = "Using Shield";
-        maxAllowedSpeed = config.noSlowMaxSpeedUsingShield;
-    } else if (player.isSneaking) {
-        action = "Sneaking";
-        maxAllowedSpeed = config.noSlowMaxSpeedSneaking;
+/**
+ * Checks if a player is moving faster than allowed for actions that should slow them down
+ * (e.g., eating, sneaking, using a bow, using a shield).
+ *
+ * @param {mc.Player} player - The player instance to check.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data. Expected to contain
+ *                                     state flags like `isUsingConsumable`, `isChargingBow`, `isUsingShield`,
+ *                                     and `speedAmplifier` (from Speed effect).
+ * @param {Config} config - The server configuration object, with `enableNoSlowCheck` and speed thresholds
+ *                          like `noSlowMaxSpeedEating`, `noSlowMaxSpeedChargingBow`, etc.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {number} currentTick - The current game tick (not directly used in this check's core logic).
+ * @returns {Promise<void>}
+ */
+export async function checkNoSlow(
+    player,
+    pData,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick // Not directly used by this check's core logic
+) {
+    if (!config.enableNoSlowCheck || !pData) { // Added null check for pData
+        return;
     }
 
-    if (action && horizontalSpeed > maxAllowedSpeed) {
-        // Consider active speed effects. If player has Speed effect, this check might need adjustment or careful thresholding.
-        // For now, assuming thresholds are absolute maximums during these actions.
-        // A more advanced version could calculate expected slowed speed based on base speed + effects, then compare.
-        const effects = player.getEffects();
-        const speedEffect = effects.find(e => e.typeId === "speed");
-        let effectiveMaxSpeed = maxAllowedSpeed;
+    // This velocity is real-time from the player object, not from pData, which is correct for current speed.
+    const velocity = player.getVelocity();
+    const horizontalSpeed = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20; // Blocks per second
 
-        // A simple way to somewhat account for speed effect: allow a small fixed tolerance if speed effect is active.
-        // This is a basic approach; true NoSlow detection often needs to factor in the exact speed reduction percentage.
-        if (speedEffect) {
-            effectiveMaxSpeed += 0.5; // Allow a small buffer if Speed effect is active.
-                                     // This isn't a perfect model of how NoSlow interacts with Speed but a starting point.
+    let slowingAction = null; // Renamed from 'action' to 'slowingAction' for clarity
+    let maxAllowedBaseSpeed = Infinity;
+
+    if (pData.isUsingConsumable) {
+        slowingAction = "Eating/Drinking";
+        maxAllowedBaseSpeed = config.noSlowMaxSpeedEating ?? 1.0;
+    } else if (pData.isChargingBow) {
+        slowingAction = "Charging Bow";
+        maxAllowedBaseSpeed = config.noSlowMaxSpeedChargingBow ?? 1.0;
+    } else if (pData.isUsingShield) {
+        slowingAction = "Using Shield";
+        maxAllowedBaseSpeed = config.noSlowMaxSpeedUsingShield ?? 4.4; // Vanilla walk speed as a default example
+    } else if (player.isSneaking) {
+        slowingAction = "Sneaking";
+        maxAllowedBaseSpeed = config.noSlowMaxSpeedSneaking ?? 1.5;
+    }
+
+    if (slowingAction && horizontalSpeed > maxAllowedBaseSpeed) {
+        let effectiveMaxAllowedSpeed = maxAllowedBaseSpeed;
+        const speedAmplifier = pData.speedAmplifier ?? -1; // Get speed effect level from pData
+
+        // Crude adjustment for Speed effect: Vanilla NoSlow still applies, but players might try to bypass it
+        // while Speed is active. This allows a slightly higher threshold if Speed is active.
+        // A more accurate model would involve base player speed, effect modifiers, and then slowing percentages.
+        // This is a simpler heuristic. Configured thresholds should be set with Speed effect in mind
+        // or this adjustment should be more nuanced / configurable.
+        if (speedAmplifier >= 0) { // If Speed effect is active (amplifier 0 for Speed I)
+            // Example: Add a small fixed buffer or a percentage of the speed boost.
+            // This is highly dependent on how `noSlowMaxSpeed...` values are configured.
+            // If they are absolute maximums, this buffer might not be needed or should be small.
+            // If they are "expected vanilla slowed speeds", then Speed effect should allow exceeding them.
+            // For now, let's assume the configured values are strict maximums during the action,
+            // and we add a small, configurable tolerance if Speed is active.
+            effectiveMaxAllowedSpeed += (config.noSlowSpeedEffectTolerance ?? 0.5);
         }
 
-        if (horizontalSpeed > effectiveMaxSpeed) {
+        if (horizontalSpeed > effectiveMaxAllowedSpeed) {
             const dependencies = { config, playerDataManager, playerUtils, logManager };
             const violationDetails = {
-                action: action,
+                action: slowingAction,
                 speed: horizontalSpeed.toFixed(2),
-                maxSpeed: effectiveMaxSpeed.toFixed(2), // Report the speed limit that was exceeded
-                baseMaxSpeed: maxAllowedSpeed.toFixed(2),
-                hasSpeedEffect: !!speedEffect,
-                speedEffectLevel: speedEffect ? speedEffect.amplifier : 0
+                maxAllowedSpeed: effectiveMaxAllowedSpeed.toFixed(2), // The actual limit that was exceeded
+                baseMaxSpeedForAction: maxAllowedBaseSpeed.toFixed(2), // The configured limit for the action itself
+                hasSpeedEffect: (speedAmplifier >= 0).toString(),
+                speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : "0" // Show level 1 for amplifier 0
             };
+            // Action profile name: config.noSlowActionProfileName ?? "movement_noslow"
             await executeCheckAction(player, "movement_noslow", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            if (pData.isWatched && playerUtils.debugLog) {
-                playerUtils.debugLog(\`NoSlow: Flagged \${player.nameTag}. Action: \${action}, Speed: \${horizontalSpeed.toFixed(2)}bps, Max: \${effectiveMaxSpeed.toFixed(2)}bps\`, watchedPrefix);
-            }
+            playerUtils.debugLog?.(
+                `NoSlow: Flagged ${player.nameTag}. Action: ${slowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
+                watchedPrefix
+            );
         }
     }
+    // This check reads pData states but doesn't modify them. No isDirtyForSave needed.
 }

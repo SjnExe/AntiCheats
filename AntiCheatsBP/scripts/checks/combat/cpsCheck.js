@@ -1,59 +1,91 @@
+/**
+ * @file AntiCheatsBP/scripts/checks/combat/cpsCheck.js
+ * Checks for abnormally high Clicks Per Second (CPS) or attack rates.
+ * @version 1.0.1
+ */
+
 import * as mc from '@minecraft/server';
-// Removed direct imports: addFlag, debugLog, config values.
 
 /**
- * @typedef {import('../../core/playerDataManager.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
+ * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
+ * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
+ * @typedef {import('../../types.js').LogManager} LogManager
+ * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
 
 /**
- * Checks if a player is clicking/attacking at an abnormally high rate (CPS - Clicks Per Second).
- * @param {mc.Player} player The player instance to check.
- * @param {PlayerAntiCheatData} pData Player-specific data.
- * @param {object} config The server configuration object.
- * @param {object} playerUtils Utility functions for players.
- * @param {object} playerDataManager Manager for player data.
- * @param {object} logManager Manager for logging.
- * @param {function} executeCheckAction Function to execute defined actions for a check.
+ * Checks if a player is clicking or attacking at an abnormally high rate (CPS).
+ * This function analyzes attack event timestamps stored in `pData.attackEvents`.
+ * @param {mc.Player} player - The player instance to check.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `attackEvents`.
+ * @param {Config} config - The server configuration object, with `enableCpsCheck`, `cpsCalculationWindowMs`, `maxCpsThreshold`.
+ * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} playerDataManager - Manager for player data.
+ * @param {LogManager} logManager - Manager for logging.
+ * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {number} currentTick - The current game tick (not directly used in this check's core logic but available).
+ * @returns {Promise<void>}
  */
-export async function checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction) {
-    if (!config.enableCpsCheck) return;
-    const watchedPrefix = pData?.isWatched ? player.nameTag : null;
-
-    if (!pData || !pData.attackEvents) {
-        // if (playerUtils.debugLog && watchedPrefix) playerUtils.debugLog(`CPSCheck: No attackEvents for ${player.nameTag}.`, watchedPrefix);
+export async function checkCPS(
+    player,
+    pData,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick // Not directly used by CPS logic but part of standard signature
+) {
+    if (!config.enableCpsCheck) {
         return;
     }
 
-    const now = Date.now();
-    const windowStartTime = now - config.cpsCalculationWindowMs;
-
-    // Filter attack events to the current calculation window
-    pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= windowStartTime);
-
-    // Calculate CPS based on events within the window.
-    // Note: If cpsCalculationWindowMs is 1000ms, this is direct CPS.
-    // If it's different, this count is "events in X ms".
-    // The original logic implies this is the value to compare against maxCpsThreshold.
-    const eventsInWindow = pData.attackEvents.length;
-    // For a true CPS value if window is not 1s: const actualCPS = eventsInWindow / (config.cpsCalculationWindowMs / 1000);
-
-    if (pData.isWatched && eventsInWindow > 0 && playerUtils.debugLog) {
-        playerUtils.debugLog(`CPSCheck: Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${config.cpsCalculationWindowMs}`, watchedPrefix);
+    // Ensure pData and attackEvents array exist. Attack events are added in handleEntityHurt.
+    if (!pData || !Array.isArray(pData.attackEvents)) {
+        // This might happen if pData is not fully initialized or if attackEvents is missing.
+        // playerUtils.debugLog?.(`CPSCheck: Missing pData or attackEvents for ${player.nameTag}.`, pData?.isWatched ? player.nameTag : null);
+        return;
     }
 
-    if (eventsInWindow > config.maxCpsThreshold) {
+    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    const now = Date.now();
+    const calculationWindowMs = config.cpsCalculationWindowMs ?? 1000; // Default to 1 second window
+    const windowStartTime = now - calculationWindowMs;
+
+    // Filter attack events to keep only those within the current calculation window.
+    // This also prunes old events from the array.
+    const originalEventCount = pData.attackEvents.length;
+    pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= windowStartTime);
+
+    // If the array was modified by the filter, mark pData as dirty.
+    if (pData.attackEvents.length !== originalEventCount) {
+        pData.isDirtyForSave = true;
+    }
+
+    const eventsInWindow = pData.attackEvents.length;
+
+    if (pData.isWatched && eventsInWindow > 0 && playerUtils.debugLog) {
+        playerUtils.debugLog(`CPSCheck: Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix);
+    }
+
+    const maxThreshold = config.maxCpsThreshold ?? 20; // Default to 20 CPS max
+
+    if (eventsInWindow > maxThreshold) {
         const violationDetails = {
-            cpsCount: eventsInWindow, // This is "events in window"
-            windowSeconds: (config.cpsCalculationWindowMs / 1000).toFixed(1),
-            threshold: config.maxCpsThreshold,
-            // Optional: include a sample of event timings for detailed logs if needed
-            // eventTimingsMsAgo: pData.attackEvents.map(ts => now - ts).slice(0, 5).join(', ') // Example: first 5
+            cpsCount: eventsInWindow.toString(), // Actual number of clicks/attacks in the defined window
+            windowSeconds: (calculationWindowMs / 1000).toFixed(1),
+            threshold: maxThreshold.toString(),
+            // Example of more detailed info, if needed for deeper analysis (can make logs verbose)
+            // eventTimingsMsAgo: pData.attackEvents.map(ts => now - ts).slice(0, 10).join(',') // Last 10 event timings relative to now
         };
+
         const dependencies = { config, playerDataManager, playerUtils, logManager };
         await executeCheckAction(player, "combat_cps_high", violationDetails, dependencies);
 
-        // Optional: Clear attackEvents after flagging to prevent re-flagging on the exact same set,
-        // or let them naturally phase out by the time window.
-        // pData.attackEvents = [];
+        // Optional: Consider clearing pData.attackEvents here if repeated flagging for the same burst is an issue.
+        // However, letting them naturally expire from the window by the filter is often preferred for continuous monitoring.
+        // If cleared: pData.attackEvents = []; pData.isDirtyForSave = true;
     }
 }
