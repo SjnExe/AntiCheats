@@ -348,7 +348,7 @@ export const xrayDetectionAdminNotifyByDefault = true;
 
 // --- Combat Log Detection ---
 /** @type {boolean} If true, enables detection of players leaving shortly after combat. */
-export const enableCombatLogDetection = false; // MODIFIED
+export const enableCombatLogDetection = false;
 /** @type {number} Time in seconds after last combat interaction to consider a disconnect as combat logging. */
 export const combatLogThresholdSeconds = 15;
 /** @type {number} Number of flags to add when combat logging is detected. */
