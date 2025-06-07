@@ -29,6 +29,16 @@
 
 ## 2023-10-27
 
+*   **Movement - Advanced:** SjnExe parity goal.
+    *   **Invalid Y Velocity / High Velocity:** Monitor `player.getVelocity().y`. Flag if vertical velocity exceeds thresholds not achievable through normal means (e.g., super-jump without effects, excessive upward dash). (SafeGuard, SjnExe 'High Velocity')
+        *Implemented by:
+            - Adding `pData` fields: `lastJumpBoostLevel`, `lastSlowFallingTicks`, `lastLevitationTicks`, `lastTookDamageTick`, `lastUsedElytraTick`. (Note: `lastUsedRiptideTick`, `lastOnSlimeBlockTick` were part of initial planning but deferred).
+            - Adding `config.js` settings: `enableHighYVelocityCheck`, `maxYVelocityPositive`, `jumpBoostYVelocityBonus`, `yVelocityGraceTicks`. (These were pre-existing from `types.js` and previous config setup but are utilized by this check).
+            - Adding `checkActionProfiles` entry for `"movement_high_y_velocity"` (This was pre-existing as part of `types.js` and config setup but is now actively used).
+            - Updating `pData` fields for effects (Jump Boost, Slow Falling, Levitation) and elytra usage (`lastUsedElytraTick`) within `AntiCheatsBP/scripts/checks/movement/flyCheck.js`.
+            - Updating `pData.lastTookDamageTick` in `AntiCheatsBP/scripts/core/eventHandlers.js` (`handleEntityHurt`).
+            - Integrating the core high Y-velocity detection logic into `flyCheck.js`. This logic considers grace conditions (damage, elytra, climbing, slow falling) and adjusts maximum allowed Y velocity based on Jump Boost.
+            - Deferred Riptide and Slime block grace conditions for future enhancement.*
 *   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
     *   **View Snap / Invalid Rotation:** Detect changes in pitch/yaw exceeding thresholds (e.g., pitch > 60°/tick, yaw > 90°/tick) during or immediately after combat. Check for absolute invalid rotations (e.g., pitch > 90° or < -90°). *(Verified existing implementation in `viewSnapCheck.js` and configuration in `config.js`. No code changes required.)*
 *   **Implement Killaura/Aimbot detection** (based on investigation in `Dev/Killaura_Aimbot_Investigation.md`). SjnExe parity goal.
@@ -111,6 +121,38 @@
                 - Added `"world_fast_place"` profile to `checkActionProfiles` in `config.js`.*
 
 ---
+
+## 2023-10-28
+
+*   **Movement - Advanced:** SjnExe parity goal.
+    *   **NoSlow:** Detect if player maintains normal walking/sprinting speed while performing actions that should slow them down (e.g., using a bow, eating, sneaking over certain blocks if applicable). Requires tracking player speed against their current action state. (Scythe, SjnExe)
+        *Implemented by:
+            - Adding configurations to `config.js` for enabling the check (`enableNoSlowCheck`) and max speed thresholds for actions like eating (`noSlowMaxSpeedEating`), charging bow (`noSlowMaxSpeedChargingBow`), using shield (`noSlowMaxSpeedUsingShield`), and sneaking (`noSlowMaxSpeedSneaking`).
+            - Adding these new configurations to `editableConfigValues` in `config.js`.
+            - Adding a `checkActionProfiles` entry for `"movement_noslow"` in `config.js`.
+            - Creating the `checkNoSlow` function in `AntiCheatsBP/scripts/checks/movement/noSlowCheck.js`. This function:
+                - Calculates current horizontal speed.
+                - Checks `pData` states (`isUsingConsumable`, `isChargingBow`, `isUsingShield`) and `player.isSneaking` to identify the current action.
+                - Compares speed against the action-specific threshold from `config.js`.
+                - Includes a basic tolerance if the player has a Speed effect.
+                - Calls `executeCheckAction` if speed exceeds the threshold.
+            - Exporting `checkNoSlow` from `AntiCheatsBP/scripts/checks/index.js`.
+            - Integrating the call to `checkNoSlow` (with `await`) into the main tick loop in `AntiCheatsBP/scripts/main.js` for each player, ensuring other async checks in the loop are also `await`ed for consistency.*
+
+---
+
+## 2023-10-29
+
+*   **Movement - Advanced:** SjnExe parity goal.
+    *   **InvalidSprint:** Detect sprinting under conditions where it should be impossible (e.g., while movement is impaired by blindness, while actively sneaking, while riding an entity that doesn't permit player sprinting). (Scythe)
+        *Implemented by:
+            - Adding `lastBlindnessTicks` to `PlayerAntiCheatData` (`types.js`, `playerDataManager.js`) for session-only tracking of the blindness effect.
+            - Adding `enableInvalidSprintCheck` to `config.js` and `editableConfigValues`.
+            - Adding a `checkActionProfiles` entry for `"movement_invalid_sprint"` in `config.js`.
+            - Creating `checkInvalidSprint` function in `AntiCheatsBP/scripts/checks/movement/invalidSprintCheck.js`. This function updates `pData.lastBlindnessTicks` based on player effects. It then checks if `player.isSprinting` while also being blind (`pData.lastBlindnessTicks > 0`), sneaking (`player.isSneaking`), or riding an entity (`player.isRiding`).
+            - Exporting `checkInvalidSprint` from `AntiCheatsBP/scripts/checks/index.js`.
+            - Integrating the call to `checkInvalidSprint` (with `await`) into the main tick loop in `AntiCheatsBP/scripts/main.js` for each player.
+            - Ensured `currentTick` is passed to `checkFly` and `checkSpeed` in `main.js` for consistency during the previous subtask.*
 
 ## Refactoring: Standardized Actions for Combat & IllegalItem Checks
 **Date:** Current Session

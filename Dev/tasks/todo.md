@@ -8,12 +8,7 @@ This list contains planned features, improvements, and areas for future investig
 ## Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   **Movement - Advanced:** SjnExe parity goal.
-        *   **NoSlow:** Detect if player maintains normal walking/sprinting speed while performing actions that should slow them down (e.g., using a bow, eating, sneaking over certain blocks if applicable). Requires tracking player speed against their current action state. (Scythe, SjnExe)
-        *   **InvalidSprint:** Detect sprinting under conditions where it should be impossible (e.g., while movement is impaired by blindness, while actively sneaking, while riding an entity that doesn't permit player sprinting). (Scythe)
-
     *   **World Interaction - Advanced:** SjnExe parity goal.
-        *   **AutoTool:** Monitor `player.selectedSlot` changes in conjunction with block break events. Detect if player's selected slot almost instantaneously switches to the optimal tool for breaking a block type just before the break occurs, and then potentially switches back. (Scythe)
         *   **InstaBreak:** Detect breaking of blocks that are typically unbreakable (e.g., bedrock, barriers, command blocks by non-ops) or blocks broken significantly faster than possible even with enchantments/effects. (Scythe)
 
     *   **Player Behavior - Advanced:** SjnExe parity goal.

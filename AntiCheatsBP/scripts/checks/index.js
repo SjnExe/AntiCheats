@@ -2,6 +2,8 @@
 export * from './movement/flyCheck.js';
 export * from './movement/speedCheck.js';
 export * from './movement/noFallCheck.js';
+export { checkNoSlow } from './movement/noSlowCheck.js';
+export { checkInvalidSprint } from './movement/invalidSprintCheck.js';
 
 // Combat Checks
 export * from './combat/reachCheck.js';

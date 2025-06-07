@@ -170,14 +170,24 @@ mc.system.runInterval(async () => {
 
         // --- Call All Checks ---
         // Pass executeCheckAction and logManager to all checks called in the tick loop
-        if (config.enableFlyCheck && checks.checkFly) checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableSpeedCheck && checks.checkSpeed) checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableNofallCheck && checks.checkNoFall) checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableCpsCheck && checks.checkCPS) checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableNukerCheck && checks.checkNuker) checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (config.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (config.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableCpsCheck && checks.checkCPS) await checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
 
         // ViewSnap check might need config and currentTick directly if not passed via dependencies object to all checks
-        if (config.enableViewSnapCheck && checks.checkViewSnap) checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
+
+        // Call NoSlow Check
+        if (config.enableNoSlowCheck && checks.checkNoSlow) {
+            await checks.checkNoSlow(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Call InvalidSprint Check
+        if (config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
+            await checks.checkInvalidSprint(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
 
         // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {

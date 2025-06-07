@@ -118,6 +118,42 @@
         itemUseTimestamps: Record<string, number>;
         /** @property {number[]} recentPlaceTimestamps - Stores timestamps of recent block placements for FastPlace detection. Session-only. */
         recentPlaceTimestamps: number[];
+        /** @property {number} lastJumpBoostLevel - Last known Jump Boost effect level on the player. Session-only. */
+        lastJumpBoostLevel: number;
+        /** @property {number} lastSlowFallingTicks - Remaining ticks of Slow Falling effect. Session-only. */
+        lastSlowFallingTicks: number;
+        /** @property {number} lastLevitationTicks - Remaining ticks of Levitation effect. Session-only. */
+        lastLevitationTicks: number;
+        /** @property {number} lastTookDamageTick - Game tick when player last took damage (for knockback grace). Session-only. */
+        lastTookDamageTick: number;
+        /** @property {number} lastUsedElytraTick - Game tick when player last used elytra. Session-only. */
+        lastUsedElytraTick: number;
+        /** @property {number} lastUsedRiptideTick - Game tick when player last used riptide trident. Session-only. */
+        lastUsedRiptideTick: number;
+        /** @property {number} lastOnSlimeBlockTick - Game tick when player was last on a slime block. Session-only. */
+        lastOnSlimeBlockTick: number;
+        /** @property {number} lastBlindnessTicks - Remaining ticks of Blindness effect. Session-only. */
+        lastBlindnessTicks: number;
+        /** @property {number} previousSelectedSlotIndex - The player's selected hotbar slot in the previous tick. Session-only. */
+        previousSelectedSlotIndex: number;
+        /** @property {number} lastSelectedSlotChangeTick - Game tick when the selected slot last changed. Session-only. */
+        lastSelectedSlotChangeTick: number;
+
+        // AutoTool specific fields
+        /** @property {boolean} isAttemptingBlockBreak - True if a PlayerBreakBlockBeforeEvent was recently caught. Session-only. */
+        isAttemptingBlockBreak: boolean;
+        /** @property {string | null} breakingBlockTypeId - Type ID of the block for the current break attempt. Session-only. */
+        breakingBlockTypeId: string | null;
+        /** @property {number} slotAtBreakAttemptStart - Selected slot when PlayerBreakBlockBeforeEvent fired. Session-only. */
+        slotAtBreakAttemptStart: number;
+        /** @property {number} breakAttemptTick - Game tick of the PlayerBreakBlockBeforeEvent. Session-only. */
+        breakAttemptTick: number;
+        /** @property {boolean} switchedToOptimalToolForBreak - Flag indicating player switched to an optimal tool just before/during break. Session-only. */
+        switchedToOptimalToolForBreak: boolean;
+        /** @property {number | null} optimalToolSlotForLastBreak - Slot index of the tool used for the last confirmed break if a switch occurred. Session-only. */
+        optimalToolSlotForLastBreak: number | null;
+        /** @property {number} lastBreakCompleteTick - Game tick when a block break was completed (after potentially switching to optimal). Session-only. */
+        lastBreakCompleteTick: number;
  * @property {{typeId: string, amplifier: number, duration: number}[]} activeEffects - Player's active potion effects.
  * @property {number} health - Player's current health.
  * @property {string} lastBrokenBlockType - Type ID of the last block broken by the player.

@@ -68,6 +68,20 @@ export const speedToleranceBuffer = 0.5;
 /** @type {number} Number of consecutive ticks a player must exceed max horizontal speed on ground to be flagged. */
 export const speedGroundConsecutiveTicksThreshold = 5;
 
+/** @type {boolean} If true, the NoSlow check is active. */
+export const enableNoSlowCheck = true;
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating/drinking. Vanilla is very slow. */
+export const noSlowMaxSpeedEating = 1.0; // Slightly above 0 to allow minor adjustments
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla is very slow. */
+export const noSlowMaxSpeedChargingBow = 1.0;
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield (if this slows). Vanilla walk: ~4.3, Sneak: ~1.3. Shield doesn't slow walk/sprint. */
+export const noSlowMaxSpeedUsingShield = 4.4; // Set slightly above normal walk, as shield itself doesn't slow. This might catch if combined with other speed hacks.
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while sneaking. Vanilla is ~1.31 B/s. */
+export const noSlowMaxSpeedSneaking = 1.5; // Slightly above vanilla sneak speed
+
+/** @type {boolean} If true, the Invalid Sprint check is active. */
+export const enableInvalidSprintCheck = true;
+
 
 // --- Combat Checks ---
 
@@ -137,6 +151,14 @@ export const itemUseStateClearTicks = 60; // Default to 3 seconds
 
 
 // --- World Checks ---
+
+// --- AutoTool Check ---
+/** @type {boolean} If true, the AutoTool check is active. */
+export const enableAutoToolCheck = true;
+/** @type {number} Max ticks between starting to break a block and switching to an optimal tool to be considered suspicious. */
+export const autoToolSwitchToOptimalWindowTicks = 2; // e.g., switch must happen almost immediately
+/** @type {number} Max ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool. */
+export const autoToolSwitchBackWindowTicks = 5;
 
 /** @type {number} Max blocks broken in `nukerCheckIntervalMs` for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
@@ -687,6 +709,55 @@ export const checkActionProfiles = {
             detailsPrefix: "Fast Place Violation: ",
             includeViolationDetails: true
         }
+    },
+    "movement_noslow": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).",
+            type: "movement_noslow"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxSpeed}bps)"
+        },
+        log: {
+            actionType: "detected_movement_noslow",
+            detailsPrefix: "NoSlow Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "movement_invalid_sprint": {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: "System detected sprinting under invalid conditions (e.g., blind, sneaking, riding).",
+            type: "movement_invalid_sprint"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}"
+        },
+        log: {
+            actionType: "detected_movement_invalid_sprint",
+            detailsPrefix: "Invalid Sprint Violation: ",
+            includeViolationDetails: true
+        }
+    },
+    "world_autotool": {
+        enabled: true,
+        flag: {
+            increment: 2, // AutoTool is a fairly obvious cheat
+            reason: "System detected suspicious tool switching before/after breaking a block (AutoTool).",
+            type: "world_autotool"
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolType}, Switched: {switchPattern}"
+            // {switchPattern} could be "ToOptimalThenBack" or "ToOptimal"
+        },
+        log: {
+            actionType: "detected_world_autotool",
+            detailsPrefix: "AutoTool Violation: ",
+            includeViolationDetails: true
+        }
     }
 };
 
@@ -705,6 +776,17 @@ export let editableConfigValues = {
     enableReachCheck, enableCpsCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck,
+    // AutoTool Check Configs
+    enableAutoToolCheck,
+    autoToolSwitchToOptimalWindowTicks,
+    autoToolSwitchBackWindowTicks,
+    // Movement Check Configs (including NoSlow)
+    enableNoSlowCheck,
+    noSlowMaxSpeedEating,
+    noSlowMaxSpeedChargingBow,
+    noSlowMaxSpeedUsingShield,
+    noSlowMaxSpeedSneaking,
+    enableInvalidSprintCheck,
     // State Conflict Check Configs
     attackBlockingConsumables,
     attackBlockingBows,

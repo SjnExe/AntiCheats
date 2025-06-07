@@ -120,11 +120,17 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
 export function handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction) {
     const { hurtEntity, cause, damagingEntity } = eventData;
 
-    if (hurtEntity.typeId === 'minecraft:player' && cause.category === mc.EntityDamageCauseCategory.fall) {
+    // Updated to handle general player damage for lastTookDamageTick
+    if (hurtEntity.typeId === 'minecraft:player') {
         const pData = playerDataManager.getPlayerData(hurtEntity.id);
         if (pData) {
-            pData.isTakingFallDamage = true;
-            playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took fall damage (${eventData.damage}).`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+            pData.lastTookDamageTick = currentTick; // Update lastTookDamageTick
+            if (cause.category === mc.EntityDamageCauseCategory.fall) {
+                pData.isTakingFallDamage = true;
+                playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took fall damage (${eventData.damage}). LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+            } else {
+                playerUtils.debugLog(`Player ${pData.playerNameTag || hurtEntity.nameTag} took damage. Type: ${cause.category}. LastTookDamageTick updated.`, pData.isWatched ? (pData.playerNameTag || hurtEntity.nameTag) : null);
+            }
         }
     }
 
