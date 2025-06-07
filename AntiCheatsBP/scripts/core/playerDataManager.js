@@ -158,6 +158,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
             longMessage: { count: 0, lastDetectionTime: 0 },
             spamRepeat: { count: 0, lastDetectionTime: 0 },
             chat_spam_fast: { count: 0, lastDetectionTime: 0 },
+            chat_spam_max_words: { count: 0, lastDetectionTime: 0 },
         },
         lastFlagType: "",
         isWatched: false,

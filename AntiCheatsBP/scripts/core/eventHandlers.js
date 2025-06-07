@@ -1,7 +1,7 @@
 import * as mc from '@minecraft/server';
 import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
 import { getExpectedBreakTicks } from '../utils/index.js'; // For InstaBreak Speed Check
-import { checkMessageRate } from '../checks/index.js'; // Or directly from '../checks/chat/messageRateCheck.js'
+import { checkMessageRate, checkMessageWordCount } from '../checks/index.js'; // Or direct paths
 // config will be passed to functions that need it, or specific values destructured from it.
 
 /**
@@ -591,6 +591,18 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         }
     }
     // === End Fast Message Spam Check ===
+
+    // === Begin Max Words Spam Check ===
+    if (checks && checks.checkMessageWordCount && config.enableMaxWordsSpamCheck) {
+        // Pass eventData which contains the original message
+        const cancelDueToWordCount = await checks.checkMessageWordCount(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (cancelDueToWordCount) {
+            eventData.cancel = true;
+            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled due to MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
+            return; // Message is cancelled, stop further processing.
+        }
+    }
+    // === End Max Words Spam Check ===
 
     const originalMessage = eventData.message;
     const rankDisplay = getPlayerRankDisplay(player); // Assuming getPlayerRankDisplay is available

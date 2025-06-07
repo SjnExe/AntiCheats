@@ -991,3 +991,6 @@ Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Pan
 ---
 *(Date: Current Session)*
 *   **Messages Too Close Together (Spam):** Track time between messages from a player. Flag if messages are sent faster than a reasonable typing/command speed. (SafeGuard) - Implemented `checkMessageRate` and integrated into `handleBeforeChatSend`. Note: The `handleBeforeChatSend` signature in `main.js` needs to be updated to pass new arguments (checks, logManager, executeCheckAction, currentTick).
+---
+*(Date: Current Session)*
+*   **Message Too Many Words (Spam/Flood):** Check word count of messages. Flag if excessively high. (SafeGuard) - Implemented `checkMessageWordCount` and integrated into `handleBeforeChatSend`. `main.js` was also updated to support new `handleBeforeChatSend` signature.

@@ -28,3 +28,4 @@ export { checkSelfHurt } from './player/selfHurtCheck.js';
 
 // Chat Checks
 export { checkMessageRate } from './chat/messageRateCheck.js';
+export { checkMessageWordCount } from './chat/messageWordCountCheck.js';

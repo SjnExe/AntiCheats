@@ -224,6 +224,13 @@ export const fastMessageSpamThresholdMs = 500; // 2 messages within 0.5s = spam.
 /** @type {string} The action profile name to use for fast message spam. */
 export const fastMessageSpamActionProfileName = "chat_spam_fast_message";
 
+/** @type {boolean} If true, the Max Words Spam check is active. */
+export const enableMaxWordsSpamCheck = true;
+/** @type {number} Maximum allowed words in a single message. */
+export const maxWordsSpamThreshold = 50;
+/** @type {string} The action profile name to use for max words spam. */
+export const maxWordsSpamActionProfileName = "chat_spam_max_words";
+
 /** @type {boolean} If true, checks for newline/carriage return characters in chat messages. */
 export const enableNewlineCheck = true;
 /** @type {boolean} If true, sending a message with newlines/carriage returns will flag the player. */
@@ -909,6 +916,23 @@ export const checkActionProfiles = {
             message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
         },
         cancelMessage: true // If true, the spammy message will be cancelled
+    },
+    "chat_spam_max_words": {
+        enabled: true,
+        flag: {
+            type: "chat_spam_max_words", // Key in pData.flags
+            increment: 1,
+            reason: "Message too long ({wordCount} words, max: {maxWords})"
+        },
+        log: {
+            actionType: "detected_max_words_spam",
+            detailsPrefix: "Words: {wordCount}, Max: {maxWords}. Msg (truncated): '{messageContent}'. ",
+            includeViolationDetails: false
+        },
+        notifyAdmins: {
+            message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
+        },
+        cancelMessage: true // If true, the spammy message will be cancelled
     }
 };
 
@@ -975,6 +999,10 @@ export let editableConfigValues = {
     enableFastMessageSpamCheck,
     fastMessageSpamThresholdMs,
     fastMessageSpamActionProfileName,
+    // Max Words Spam Check
+    enableMaxWordsSpamCheck,
+    maxWordsSpamThreshold,
+    maxWordsSpamActionProfileName,
     // Scaffold/Tower Detection
     enableTowerCheck,
     towerMaxTickGap,
