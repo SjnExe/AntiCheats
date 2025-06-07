@@ -1,5 +1,8 @@
 # Completed Tasks Documentation
 
+## Recently Completed
+*   **`!notify <on|off|toggle>`:** Allows admins to toggle their own command/system notifications. (Originally in Medium Priority Admin Tools).
+
 ---
 ## Integration: Deferred Player Data Saving
 *(Completed During This Session Cycle)*
