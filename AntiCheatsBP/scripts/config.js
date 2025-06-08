@@ -512,6 +512,24 @@ export const blockSpamMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobble
 /** @type {string} Action to take for detected block spam. Valid: "warn", "logOnly". */
 export const blockSpamAction = "warn";
 
+/** @type {boolean} If true, the Entity Spam Anti-Grief system is active. */
+export const enableEntitySpamAntiGrief = false;
+
+/** @type {boolean} If true, players in Creative mode bypass the entity spam check. */
+export const entitySpamBypassInCreative = true;
+
+/** @type {number} Time window in milliseconds to count entity spawns for spam detection by a player. */
+export const entitySpamTimeWindowMs = 2000;
+
+/** @type {number} Maximum monitored entities a player can spawn in the time window before flagging. */
+export const entitySpamMaxSpawnsInWindow = 5;
+
+/** @type {string[]} List of entity type IDs to specifically monitor for spam. If empty, this check might be too broad or not trigger. */
+export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart"];
+
+/** @type {string} Action to take for detected entity spam. Valid: "kill", "warn", "logOnly". */
+export const entitySpamAction = "kill";
+
 
 // --- UI Display Texts ---
 /**
@@ -1156,6 +1174,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_blockspam_detected",
             detailsPrefix: "AntiGrief BlockSpam: "
         }
+    },
+    "world_antigrief_entityspam": {
+        enabled: true, // Effectively controlled by enableEntitySpamAntiGrief
+        flag: {
+            increment: 1,
+            reason: "Player suspected of entity spamming.",
+            type: "antigrief_entityspam"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_entityspam_detected",
+            detailsPrefix: "AntiGrief EntitySpam: "
+        }
     }
 };
 
@@ -1307,6 +1340,13 @@ export let editableConfigValues = {
     blockSpamMaxBlocksInWindow,
     blockSpamMonitoredBlockTypes,
     blockSpamAction,
+    // AntiGrief Entity Spam Configs
+    enableEntitySpamAntiGrief,
+    entitySpamBypassInCreative,
+    entitySpamTimeWindowMs,
+    entitySpamMaxSpawnsInWindow,
+    entitySpamMonitoredEntityTypes,
+    entitySpamAction,
 };
 
 /**
