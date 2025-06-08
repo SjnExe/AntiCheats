@@ -164,11 +164,72 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
 });
 
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
+// Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
     if (config.enableTpaSystem) { // Only run if TPA system is enabled
         tpaManager.clearExpiredRequests();
+
+        // Process TPA warm-ups
+        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+        for (const request of requestsInWarmup) {
+            if (Date.now() >= request.warmupExpiryTimestamp) {
+                tpaManager.executeTeleport(request.requestId);
+            }
+        }
     }
-}, 20);
+}, 20); // Run this check every 20 ticks (1 second)
+
+/**
+ * Handles entity hurt events, for TPA warm-up cancellation.
+ * @param {mc.EntityHurtBeforeEvent} eventData The entity hurt event data.
+ */
+mc.world.beforeEvents.entityHurt.subscribe(eventData => {
+    if (!config.enableTpaSystem) return;
+
+    const { hurtEntity, damageSource } = eventData;
+    // Ensure hurtEntity is a Player. For some reason, instanceof Player doesn't work directly with Player objects from events in some contexts.
+    // Using a try-catch or checking for a unique player property like 'nameTag' or 'id' is safer.
+    let playerNameTag;
+    try {
+        playerNameTag = hurtEntity.nameTag; // This will throw if hurtEntity is not a Player-like object
+        if (typeof playerNameTag !== 'string') return; // Not a player
+    } catch (e) {
+        return; // Not a player if nameTag access fails
+    }
+
+
+    // Iterate all active requests that are in warmup
+    // tpaManager.findRequestsForPlayer might be too broad if it gets all requests ever,
+    // better to use getRequestsInWarmup and then filter by player.
+    const requestsInWarmup = tpaManager.getRequestsInWarmup();
+    const playerActiveWarmupRequests = requestsInWarmup.filter(
+        req => req.requesterName === playerNameTag || req.targetName === playerNameTag
+    );
+
+    for (const request of playerActiveWarmupRequests) {
+        // No need to check request.status here as getRequestsInWarmup should only return 'pending_teleport_warmup'
+        // but double-checking won't hurt if getRequestsInWarmup changes.
+        if (request.status === 'pending_teleport_warmup') {
+            let playerIsTeleporting = false;
+            if (request.requestType === 'tpa' && request.requesterName === playerNameTag) {
+                playerIsTeleporting = true;
+            } else if (request.requestType === 'tpahere' && request.targetName === playerNameTag) {
+                playerIsTeleporting = true;
+            }
+
+            if (playerIsTeleporting) {
+                const damageCause = damageSource?.cause || 'unknown'; // Get cause if available
+                const reasonMsgPlayer = `§cTeleport cancelled: You took damage (cause: ${damageCause}).`;
+                const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
+
+                tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog);
+                // eventData.cancel = true; // Usually, do NOT cancel the damage itself.
+                break; // Stop checking further requests for this player for this damage event
+            }
+        }
+    }
+});
+
 
 let currentTick = 0;
 

@@ -71,34 +71,21 @@ async function tpacceptCommandExecute(player, args, dependencies) {
         return;
     }
 
-    // The tpaManager.acceptRequest function will handle the teleportation and request removal.
-    // It should also ideally handle notifying the involved players.
-    // For now, we assume it's a placeholder that might return success/failure or handle notifications.
-    // The current stub for tpaManager.acceptRequest does console.log and removeRequest.
+    // The tpaManager.acceptRequest function now initiates warm-up and handles notifications.
+    // It returns true if warm-up was initiated, false otherwise.
 
-    // Attempt to accept the request via tpaManager
-    tpaManager.acceptRequest(requestToAccept.requestId);
+    const warmUpInitiated = tpaManager.acceptRequest(requestToAccept.requestId);
 
-    // Send feedback based on the assumption that tpaManager.acceptRequest will perform actions.
-    // If tpaManager.acceptRequest were to return a status, we could use that.
-    // Since it's a stub, direct feedback is provided here.
-    player.sendMessage(`§aTPA request from "${requestToAccept.requesterName}" accepted. Teleportation should occur shortly.`);
-
-    const requesterPlayer = world.getAllPlayers().find(p => p.name === requestToAccept.requesterName);
-    if (requesterPlayer) {
-        // Inform the requester their request was accepted.
-        system.run(() => {
-            try {
-                requesterPlayer.onScreenDisplay.setActionBar(`§aYour TPA request to "${acceptingPlayerName}" was accepted!`);
-            } catch (e) {
-                // playerUtils?.debugLog could be used here
-                console.warn(`[TPAcceptCommand] Failed to set action bar for requester ${requesterPlayer.nameTag}: ${e}`);
-            }
-        });
-         requesterPlayer.sendMessage(`§aYour TPA request to "${acceptingPlayerName}" was accepted!`);
+    if (warmUpInitiated) {
+        // The tpaManager.acceptRequest now handles detailed player notifications.
+        // This command can send a simpler confirmation to the player who typed !tpaccept.
+        player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.tpaTeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
+    } else {
+        // This might happen if the request was already cancelled, expired, or the player went offline.
+        // tpaManager.acceptRequest would have logged details.
+        player.sendMessage(`§cCould not accept TPA request from "${requestToAccept.requesterName}". It might have expired or been cancelled.`);
     }
-
-    // The request is removed within tpaManager.acceptRequest in the current stub.
+    // No need to manually notify the other player here, tpaManager.acceptRequest does it.
 }
 
 export const definition = tpacceptCommandDefinition;

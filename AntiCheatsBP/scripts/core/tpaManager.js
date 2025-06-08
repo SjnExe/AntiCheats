@@ -85,8 +85,10 @@ export function addRequest(requester, target, type) {
         targetLocation: target.location,
         targetDimensionId: target.dimension.id,
         requestType: type,
+        status: 'pending_acceptance', // Added status
         creationTimestamp: now, // Use 'now'
         expiryTimestamp: now + (config.tpaRequestTimeoutSeconds * 1000),
+        warmupExpiryTimestamp: 0, // Initialize, will be set on accept
     };
     activeRequests.set(requestId, request);
 
@@ -156,11 +158,9 @@ export function removeRequest(requestId) {
 }
 
 /**
- * Processes the acceptance of a TPA request.
- * This function handles the teleportation of players based on the request type
- * and notifies both parties.
+ * Initiates the warm-up phase for an accepted TPA request.
  * @param {string} requestId - The ID of the request to accept.
- * @returns {boolean} True if the request was successfully processed and teleportation occurred/attempted, false otherwise.
+ * @returns {boolean} True if the warm-up was successfully initiated, false otherwise.
  */
 export function acceptRequest(requestId) {
     const request = activeRequests.get(requestId);
@@ -169,62 +169,114 @@ export function acceptRequest(requestId) {
         return false;
     }
 
+    if (request.status !== 'pending_acceptance') {
+        console.warn(`[TPAManager] Attempted to accept request ${requestId} which is not in 'pending_acceptance' state (current: ${request.status})`);
+        return false;
+    }
+
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
 
-    if (!requesterPlayer) {
-        if (targetPlayer) {
-            targetPlayer.sendMessage(`§c${request.requesterName} is no longer online. TPA request cancelled.`);
+    if (!requesterPlayer || !targetPlayer) {
+        const offlinePlayerName = !requesterPlayer ? request.requesterName : request.targetName;
+        const onlinePlayer = !requesterPlayer ? targetPlayer : requesterPlayer;
+        if (onlinePlayer) {
+            onlinePlayer.sendMessage(`§c${offlinePlayerName} is no longer online. TPA request cancelled.`);
         }
-        console.log(`[TPAManager] Requester ${request.requesterName} not found for request ${requestId}.`);
-        removeRequest(requestId);
+        console.log(`[TPAManager] Player ${offlinePlayerName} not found for accepted request ${requestId}. Cancelling.`);
+        request.status = 'cancelled';
+        removeRequest(requestId); // Clean up
         return false;
     }
-    if (!targetPlayer) {
-        if (requesterPlayer) { // Check if requesterPlayer is valid before sending message
-            requesterPlayer.sendMessage(`§c${request.targetName} is no longer online. TPA request cancelled.`);
+
+    request.status = 'pending_teleport_warmup';
+    request.warmupExpiryTimestamp = Date.now() + (config.tpaTeleportWarmupSeconds * 1000);
+    activeRequests.set(requestId, request); // Update the request in the map
+
+    const warmupMessage = `§eTeleporting in ${config.tpaTeleportWarmupSeconds} seconds. Do not move or take damage.`;
+    let requesterMessage = `§aYour TPA request to "${targetPlayer.nameTag}" has been accepted. ${warmupMessage}`;
+    let targetMessage = `§a"${requesterPlayer.nameTag}" accepted your TPA request. ${warmupMessage}`;
+
+    if (request.requestType === 'tpa') { // Requester teleports
+        requesterPlayer.sendMessage(requesterMessage);
+        targetPlayer.sendMessage(`§aYou accepted the TPA request from "${requesterPlayer.nameTag}". They will teleport in ${config.tpaTeleportWarmupSeconds}s.`);
+    } else { // Target teleports
+        targetPlayer.sendMessage(targetMessage);
+        requesterPlayer.sendMessage(`§a"${targetPlayer.nameTag}" accepted your TPA Here request. They will teleport in ${config.tpaTeleportWarmupSeconds}s.`);
+    }
+
+    console.log(`[TPAManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`);
+    return true;
+}
+
+
+/**
+ * Executes the actual teleportation for a request that has completed its warm-up.
+ * @param {string} requestId - The ID of the request to execute.
+ */
+export function executeTeleport(requestId) {
+    const request = activeRequests.get(requestId);
+
+    if (!request) {
+        // console.warn(`[TPAManager] ExecuteTeleport: Request ${requestId} not found. Might have been cancelled or already processed.`);
+        return;
+    }
+
+    if (request.status !== 'pending_teleport_warmup') {
+        console.warn(`[TPAManager] ExecuteTeleport: Request ${requestId} is not in 'pending_teleport_warmup' state (current: ${request.status}). Aborting teleport.`);
+        // If it was already completed/cancelled but somehow not removed, remove it now.
+        if (request.status === 'completed' || request.status === 'cancelled') {
+            removeRequest(requestId);
         }
-        console.log(`[TPAManager] Target ${request.targetName} not found for request ${requestId}.`);
+        return;
+    }
+
+    const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
+    const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
+
+    if (!requesterPlayer || !targetPlayer) {
+        const offlinePlayerName = !requesterPlayer ? request.requesterName : request.targetName;
+        const onlinePlayer = !requesterPlayer ? targetPlayer : requesterPlayer;
+        const message = `§cTeleport cancelled: ${offlinePlayerName} logged off.`;
+        if (onlinePlayer) {
+            onlinePlayer.sendMessage(message);
+        }
+        console.log(`[TPAManager] ExecuteTeleport: Player ${offlinePlayerName} not found for request ${requestId}. ${message}`);
+        request.status = 'cancelled';
         removeRequest(requestId);
-        return false;
+        return;
     }
 
     try {
         let teleportSuccessful = false;
         if (request.requestType === 'tpa') {
-            // Ensure dimension objects are valid before teleporting
             const targetDimension = world.getDimension(request.targetDimensionId);
-            if (!targetDimension) {
-                 console.error(`[TPAManager] Invalid target dimension ID: ${request.targetDimensionId} for request ${requestId}`);
-                 throw new Error(`Invalid target dimension ID: ${request.targetDimensionId}`);
-            }
+            if (!targetDimension) throw new Error(`Invalid target dimension ID: ${request.targetDimensionId}`);
             requesterPlayer.teleport(request.targetLocation, { dimension: targetDimension });
-            requesterPlayer.sendMessage("§aTeleported successfully to " + targetPlayer.nameTag); // Use nameTag for display
+            requesterPlayer.sendMessage("§aTeleported successfully to " + targetPlayer.nameTag);
             targetPlayer.sendMessage("§a" + requesterPlayer.nameTag + " has teleported to you.");
             teleportSuccessful = true;
         } else if (request.requestType === 'tpahere') {
             const requesterDimension = world.getDimension(request.requesterDimensionId);
-            if (!requesterDimension) {
-                console.error(`[TPAManager] Invalid requester dimension ID: ${request.requesterDimensionId} for request ${requestId}`);
-                throw new Error(`Invalid requester dimension ID: ${request.requesterDimensionId}`);
-            }
+            if (!requesterDimension) throw new Error(`Invalid requester dimension ID: ${request.requesterDimensionId}`);
             targetPlayer.teleport(request.requesterLocation, { dimension: requesterDimension });
             targetPlayer.sendMessage("§aTeleported successfully to " + requesterPlayer.nameTag);
             requesterPlayer.sendMessage("§a" + targetPlayer.nameTag + " has teleported to you.");
             teleportSuccessful = true;
         } else {
-            console.error(`[TPAManager] Unknown request type: ${request.requestType} for request ${requestId}`);
-            // No teleportation, but still remove the invalid request
+            console.error(`[TPAManager] ExecuteTeleport: Unknown request type: ${request.requestType} for request ${requestId}`);
         }
 
         if (teleportSuccessful) {
-            console.log(`[TPAManager] Request ${requestId} processed successfully. Type: ${request.requestType}`);
+            request.status = 'completed';
+            console.log(`[TPAManager] ExecuteTeleport: Request ${requestId} processed successfully. Type: ${request.requestType}`);
+        } else {
+            request.status = 'cancelled'; // Or some error status
+            console.error(`[TPAManager] ExecuteTeleport: Failed due to unknown request type for ${requestId}.`);
         }
-        removeRequest(requestId); // Remove after processing (successful or invalid type)
-        return teleportSuccessful; // True if teleport happened, false if invalid type or error
     } catch (e) {
-        console.error(`[TPAManager] Error during teleport for request ${requestId}: ${e.stack || e}`);
-        // Attempt to notify players if possible, as they are confirmed to be online at this point.
+        request.status = 'cancelled'; // Mark as cancelled on error
+        console.error(`[TPAManager] ExecuteTeleport: Error during teleport for request ${requestId}: ${e.stack || e}`);
         try {
             if (requesterPlayer && requesterPlayer.isValid()) {
                  requesterPlayer.sendMessage("§cAn error occurred during teleportation. Please try again.");
@@ -233,30 +285,83 @@ export function acceptRequest(requestId) {
                  targetPlayer.sendMessage("§cAn error occurred during a TPA teleportation involving " + (requesterPlayer ? requesterPlayer.nameTag : request.requesterName) + ".");
             }
         } catch (notifyError) {
-            console.warn(`[TPAManager] Failed to notify players after teleport error: ${notifyError.stack || notifyError}`);
+            console.warn(`[TPAManager] ExecuteTeleport: Failed to notify players after teleport error: ${notifyError.stack || notifyError}`);
         }
-        removeRequest(requestId); // Still remove request on error to prevent reprocessing
-        return false;
+    } finally {
+        removeRequest(requestId); // Always remove after attempting teleport (success, failure, or error)
     }
 }
 
+
 /**
- * Processes the declining of a TPA request. (Placeholder)
+ * Cancels an active TPA request, typically during warm-up if a condition is violated.
+ * @param {string} requestId - The ID of the TPA request to cancel.
+ * @param {string} reasonMessagePlayer - The message to send to players explaining the cancellation.
+ * @param {string} reasonMessageLog - The message to log for the console.
+ */
+export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog) {
+    const request = activeRequests.get(requestId);
+    if (!request || request.status === 'cancelled' || request.status === 'completed') {
+        return; // Already handled or non-existent
+    }
+
+    request.status = 'cancelled';
+
+    const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
+    const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
+
+    if (requesterPlayer) {
+        requesterPlayer.sendMessage(reasonMessagePlayer);
+    }
+    if (targetPlayer) {
+        targetPlayer.sendMessage(reasonMessagePlayer);
+    }
+
+    console.log(`[TPAManager] Teleport for request ${requestId} cancelled: ${reasonMessageLog}`);
+    removeRequest(requestId); // Clean up
+}
+
+
+/**
+ * Processes the declining of a TPA request.
  * @param {string} requestId - The ID of the request to decline.
  */
 export function declineRequest(requestId) {
     const request = activeRequests.get(requestId);
     if (!request) {
-        // Might not be an issue if already expired and auto-removed
-        // console.warn(`[TPAManager] Attempted to decline non-existent request ${requestId}`);
         return;
     }
-    console.log(`[TPAManager] Request ${requestId} declined.`);
+
+    // Notify players
+    const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
+    const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
+
+    if (request.status === 'pending_acceptance') {
+        if (requesterPlayer) {
+            requesterPlayer.sendMessage(`§c"${targetPlayer ? targetPlayer.nameTag : request.targetName}" declined your TPA request.`);
+        }
+        if (targetPlayer) {
+            targetPlayer.sendMessage(`§cYou declined the TPA request from "${requesterPlayer ? requesterPlayer.nameTag : request.requesterName}".`);
+        }
+        console.log(`[TPAManager] Request ${requestId} declined by target.`);
+    } else {
+        // If it's past pending_acceptance (e.g. during warmup, though typically cancelTeleport would be used)
+        if (requesterPlayer) {
+            requesterPlayer.sendMessage(`§cTPA request involving "${targetPlayer ? targetPlayer.nameTag : request.targetName}" was cancelled.`);
+        }
+        if (targetPlayer) {
+            targetPlayer.sendMessage(`§cTPA request involving "${requesterPlayer ? requesterPlayer.nameTag : request.requesterName}" was cancelled.`);
+        }
+         console.log(`[TPAManager] Request ${requestId} cancelled (was in state: ${request.status}).`);
+    }
+
+    request.status = 'cancelled';
     removeRequest(requestId);
 }
 
 /**
  * Clears all expired TPA requests from the activeRequests map.
+ * This primarily targets requests in 'pending_acceptance'. Warmup expiry is handled by the main tick loop.
  * Notifies relevant players if they are online when a request expires.
  * This function is intended to be called periodically (e.g., every second) from the main tick loop.
  */
@@ -266,16 +371,19 @@ export function clearExpiredRequests() {
     // Iterate over a copy of keys or manage iteration carefully if modifying map during iteration
     const requestIdsToExpire = [];
     for (const request of activeRequests.values()) {
-        if (now >= request.expiryTimestamp) {
+        // Only expire requests that are still pending acceptance and whose initial expiry time has passed.
+        // Warmup expiry is handled separately by the tick loop in main.js checking request.warmupExpiryTimestamp.
+        if (request.status === 'pending_acceptance' && now >= request.expiryTimestamp) {
             requestIdsToExpire.push(request.requestId);
         }
     }
 
     for (const requestId of requestIdsToExpire) {
-        const request = activeRequests.get(requestId); // Get it again to ensure it wasn't processed by another async op
-        if (!request) continue; // Already processed or removed
+        const request = activeRequests.get(requestId);
+        if (!request || request.status !== 'pending_acceptance') continue; // Check status again, might have changed
 
-        console.log(`[TPAManager] Request ${request.requestId} between ${request.requesterName} and ${request.targetName} expired.`);
+        request.status = 'cancelled'; // Mark as cancelled due to expiry
+        console.log(`[TPAManager] Request ${request.requestId} between ${request.requesterName} and ${request.targetName} expired while pending acceptance.`);
 
         const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
         const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
@@ -287,14 +395,11 @@ export function clearExpiredRequests() {
             targetPlayer.sendMessage(`§cThe TPA request from "${request.requesterName}" has expired.`);
         }
 
-        removeRequest(request.requestId); // removeRequest already logs its action
+        removeRequest(request.requestId);
         clearedCount++;
     }
 
-    if (clearedCount > 0) {
-        // Individual removals are logged by removeRequest, so this summary might be verbose.
-        // console.log(`[TPAManager] Cleared ${clearedCount} expired TPA requests.`);
-    }
+    // No need for summary log if individual removals are logged sufficiently.
 }
 
 /**
@@ -323,6 +428,22 @@ export function setPlayerTpaStatus(playerName, accepts) {
     };
     playerTpaStatuses.set(playerName, status);
     console.log(`[TPAManager] Player ${playerName} TPA status set to: ${accepts}`);
+}
+
+
+/**
+ * Retrieves all requests currently in the 'pending_teleport_warmup' state.
+ * Used by the main tick loop to check for warmup completion or cancellation.
+ * @returns {TpaRequest[]} An array of requests in warmup.
+ */
+export function getRequestsInWarmup() {
+    const warmupRequests = [];
+    for (const request of activeRequests.values()) {
+        if (request.status === 'pending_teleport_warmup') {
+            warmupRequests.push(request);
+        }
+    }
+    return warmupRequests;
 }
 
 // TODO: Consider adding a function to be called from main.js on world load to initialize anything if needed.

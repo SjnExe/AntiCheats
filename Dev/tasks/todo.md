@@ -56,6 +56,7 @@ This list contains planned features, improvements, and areas for future investig
 - **Phase 5: Integration & Finalization (Help, Testing)** (Pending)
 - **Phase 6: Enhancements**
   - Implement cooldown for sending TPA requests (`!tpa`, `!tpahere`) (COMPLETED).
+  - Implement TPA teleport warm-up with damage cancellation (COMPLETED).
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

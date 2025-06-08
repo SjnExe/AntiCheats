@@ -410,6 +410,9 @@ export const tpaRequestTimeoutSeconds = 60;
  */
 export const tpaRequestCooldownSeconds = 10;
 
+/** @type {number} Duration in seconds a player must wait (warm-up) before teleportation occurs after a TPA request is accepted. Taking damage during warm-up cancels the teleport. */
+export const tpaTeleportWarmupSeconds = 10;
+
 // --- UI Display Texts ---
 /**
  * @type {string}
@@ -1081,7 +1084,8 @@ export let editableConfigValues = {
     generalHelpMessages,
     enableTpaSystem,
     tpaRequestTimeoutSeconds,
-    tpaRequestCooldownSeconds, // Added
+    tpaRequestCooldownSeconds,
+    tpaTeleportWarmupSeconds,
 };
 
 /**

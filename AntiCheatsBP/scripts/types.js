@@ -240,6 +240,8 @@
  *                                            'tpahere' = requester wants the target to teleport to them.
  * @property {number} creationTimestamp - The server time (e.g., from Date.now()) when the request was created.
  * @property {number} expiryTimestamp - The server time when the request will automatically expire.
+ * @property {('pending_acceptance'|'pending_teleport_warmup'|'teleporting'|'cancelled'|'completed')} [status='pending_acceptance'] - The current lifecycle status of the TPA request.
+ * @property {number} [warmupExpiryTimestamp] - Timestamp for when the teleport warm-up phase ends. Only applicable if status is 'pending_teleport_warmup'.
  */
 
 /**

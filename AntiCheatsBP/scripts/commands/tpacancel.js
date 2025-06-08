@@ -41,42 +41,24 @@ async function tpacancelCommandExecute(player, args, dependencies) {
 
     const commandUserName = player.name; // The one cancelling/declining
     const specificPlayerName = args[0];
-    let declinedCount = 0;
-    let cancelledCount = 0;
+    let cancelledRequestCount = 0;
 
     if (specificPlayerName) {
         const request = tpaManager.findRequest(commandUserName, specificPlayerName);
 
-        if (request && Date.now() < request.expiryTimestamp) {
-            const otherPlayerNameInRequest = request.requesterName === commandUserName ? request.targetName : request.requesterName;
-            const otherPlayer = world.getAllPlayers().find(p => p.name === otherPlayerNameInRequest);
+        if (request && (request.status === 'pending_acceptance' || request.status === 'pending_teleport_warmup')) {
+            const otherPlayerName = request.requesterName === commandUserName ? request.targetName : request.requesterName;
+            const reasonMsgPlayer = `§eTPA request involving "${otherPlayerName}" was cancelled by ${player.nameTag}.`;
+            const reasonLog = `Request ${request.requestId} between ${request.requesterName} and ${request.targetName} cancelled by ${commandUserName}. Status was: ${request.status}.`;
 
-            // tpaManager.declineRequest will also remove the request from activeRequests
-            tpaManager.declineRequest(request.requestId);
+            // tpaManager.cancelTeleport handles notifications and removal.
+            // We use cancelTeleport for both declining pending_acceptance and cancelling pending_teleport_warmup for unified handling.
+            tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonLog);
 
-            if (request.requesterName === commandUserName) { // User cancelled their outgoing request
-                player.sendMessage(`§aYour TPA request to "${otherPlayerNameInRequest}" has been cancelled.`);
-                if (otherPlayer) {
-                    system.run(() => { // Ensure action bar is set in a separate tick
-                        try {
-                            otherPlayer.onScreenDisplay.setActionBar(`§e${commandUserName} cancelled their TPA request to you.`);
-                        } catch (e) { console.warn(`[TPACancelCommand] Failed to set action bar for ${otherPlayerNameInRequest}: ${e}`); }
-                    });
-                }
-                cancelledCount++;
-            } else { // User (target of the request) declined an incoming request
-                player.sendMessage(`§aYou have declined the TPA request from "${otherPlayerNameInRequest}".`);
-                if (otherPlayer) {
-                     system.run(() => {
-                        try {
-                            otherPlayer.onScreenDisplay.setActionBar(`§cYour TPA request to "${commandUserName}" was declined.`);
-                        } catch (e) { console.warn(`[TPACancelCommand] Failed to set action bar for ${otherPlayerNameInRequest}: ${e}`); }
-                    });
-                }
-                declinedCount++;
-            }
+            player.sendMessage(`§aSuccessfully cancelled/declined TPA request involving "${otherPlayerName}".`);
+            cancelledRequestCount++;
         } else {
-            player.sendMessage(`§cNo active TPA request found with "${specificPlayerName}".`);
+            player.sendMessage(`§cNo active or pending TPA request found with "${specificPlayerName}" that can be cancelled.`);
             return;
         }
     } else {
@@ -88,38 +70,23 @@ async function tpacancelCommandExecute(player, args, dependencies) {
         }
 
         for (const req of allPlayerRequests) {
-            if (Date.now() >= req.expiryTimestamp) continue; // Skip already expired
+            // Only cancel requests that are pending acceptance or in warmup.
+            if (req.status === 'pending_acceptance' || req.status === 'pending_teleport_warmup') {
+                const otherPlayerName = req.requesterName === commandUserName ? req.targetName : req.requesterName;
+                const reasonMsgPlayer = `§eTPA request involving "${otherPlayerName}" was cancelled by ${player.nameTag}.`;
+                const reasonLog = `Request ${req.requestId} between ${req.requesterName} and ${req.targetName} cancelled by ${commandUserName}. Status was: ${req.status}.`;
 
-            const otherPlayerNameInRequest = req.requesterName === commandUserName ? req.targetName : req.requesterName;
-            const otherPlayer = world.getAllPlayers().find(p => p.name === otherPlayerNameInRequest);
-
-            tpaManager.declineRequest(req.requestId); // This also removes it
-
-            if (req.requesterName === commandUserName) { // User cancelled their outgoing request
-                if (otherPlayer) {
-                     system.run(() => {
-                        try {
-                            otherPlayer.onScreenDisplay.setActionBar(`§e${commandUserName} cancelled their TPA request to you.`);
-                        } catch (e) { console.warn(`[TPACancelCommand] Failed to set action bar for ${otherPlayerNameInRequest}: ${e}`); }
-                    });
-                }
-                cancelledCount++;
-            } else { // User declined an incoming request
-                if (otherPlayer) {
-                    system.run(() => {
-                        try {
-                            otherPlayer.onScreenDisplay.setActionBar(`§cYour TPA request to "${commandUserName}" was declined.`);
-                        } catch (e) { console.warn(`[TPACancelCommand] Failed to set action bar for ${otherPlayerNameInRequest}: ${e}`); }
-                    });
-                }
-                declinedCount++;
+                tpaManager.cancelTeleport(req.requestId, reasonMsgPlayer, reasonLog);
+                cancelledRequestCount++;
             }
         }
 
         let summaryMessage = "§a";
-        if (cancelledCount > 0) summaryMessage += `Cancelled ${cancelledCount} outgoing TPA request(s). `;
-        if (declinedCount > 0) summaryMessage += `Declined ${declinedCount} incoming TPA request(s).`;
-        if (cancelledCount === 0 && declinedCount === 0) summaryMessage = "§cNo active requests were found to cancel/decline (some may have expired).";
+        if (cancelledRequestCount > 0) {
+            summaryMessage += `Cancelled/declined ${cancelledRequestCount} TPA request(s).`;
+        } else {
+            summaryMessage = "§cNo active requests were found in a state that could be cancelled/declined.";
+        }
 
         player.sendMessage(summaryMessage.trim());
     }

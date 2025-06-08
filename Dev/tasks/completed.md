@@ -1,6 +1,19 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **TPA System Enhancement: Teleport Warm-up & Damage Cancellation:**
+  - Added `tpaTeleportWarmupSeconds` to `config.js` (default 10s).
+  - Updated `TpaRequest` in `types.js` with `status` and `warmupExpiryTimestamp` properties.
+  - Modified `tpaManager.js`:
+    - `acceptRequest` now initiates a warm-up period, setting request status to `pending_teleport_warmup` and `warmupExpiryTimestamp`.
+    - Added `executeTeleport(requestId)` to handle teleportation post-warm-up.
+    - Added `cancelTeleport(requestId, reasonMessagePlayer, reasonLog)` to handle cancellations (e.g., due to damage).
+    - Updated `addRequest`, `declineRequest`, and `clearExpiredRequests` to align with new status system.
+    - Added `getRequestsInWarmup()` helper.
+  - Modified `main.js`:
+    - System tick now checks for and executes teleports for requests whose warm-up has expired (`tpaManager.executeTeleport`).
+    - Added `world.beforeEvents.entityHurt` listener to call `tpaManager.cancelTeleport` if a player in TPA warm-up takes damage.
+  - Updated `tpaccept.js` and `tpacancel.js` to correctly interact with the new warm-up states and manager functions.
 - **TPA System Enhancement: Request Cooldown:** Implemented a cooldown (`tpaRequestCooldownSeconds`, default 10s) between sending `!tpa` or `!tpahere` requests. Players are notified if they try to send requests too quickly. This involved updates to `config.js` (verified existing), `tpaManager.js` (cooldown logic and last request timestamp tracking), and command files `tpa.js` and `tpahere.js` (to handle cooldown notifications).
 - **TPA System - Phase 3: Responding to Requests:** Implemented `!tpaccept` (to accept specific or latest incoming TPA requests) and `!tpacancel` (to cancel outgoing or decline incoming TPA requests, specific or all). Both commands provide feedback to relevant players and are registered.
 - **TPA System - Phase 1: Core Setup & Configuration:** Updated `config.js` with TPA enable/timeout settings (`enableTpaSystem`, `tpaRequestTimeoutSeconds`), defined `TpaRequest` and `PlayerTpaStatus` JSDoc typedefs in `types.js`, and created the initial structure for `AntiCheatsBP/scripts/core/tpaManager.js` including data storage (in-memory Maps for active requests and player TPA statuses) and stubs for core functions like `addRequest`, `findRequest`, `acceptRequest`, `declineRequest`, `getPlayerTpaStatus`, `setPlayerTpaStatus`.
