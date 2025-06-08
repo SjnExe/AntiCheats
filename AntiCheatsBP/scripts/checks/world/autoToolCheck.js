@@ -125,8 +125,8 @@ export async function checkAutoTool(
                 breakCompleteTick: (pData.lastBreakCompleteTick ?? 'N/A').toString(),
                 switchBackTick: currentTick.toString()
             };
-            // Action profile name: config.autoToolActionProfileName ?? "world_autotool"
-            await executeCheckAction(player, "world_autotool", violationDetails, dependencies);
+            const autoToolActionProfile = config.autoToolActionProfileName ?? "world_autotool";
+            await executeCheckAction(player, autoToolActionProfile, violationDetails, dependencies);
             playerUtils.debugLog?.(`AutoTool: Flagged ${player.nameTag} for switching back after optimal tool use. From: ${previousOptimalSlot}, To: ${currentSlotIndex}`, watchedPrefix);
 
             // Reset state after flagging

@@ -7,7 +7,7 @@
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 import * as playerUtils from '../utils/playerUtils.js'; // Direct import for general utils
-import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // Specific import
+// Specific import getPlayerPermissionLevel removed, use playerUtils.getPlayerPermissionLevel
 import { permissionLevels } from './rankManager.js';
 import * as logManager from './logManager.js'; // Direct import for logManager
 // editableConfigValues and updateConfigValue are not directly used here, but might be by functions called via dependencies.
@@ -375,7 +375,7 @@ showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependen
 showAdminPanelMain = async function (adminPlayer, playerDataManager, config, dependencies) {
     playerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
     const form = new ActionFormData();
-    const userPermLevel = getPlayerPermissionLevel(adminPlayer);
+    const userPermLevel = playerUtils.getPlayerPermissionLevel(adminPlayer); // Use playerUtils.
 
     try {
         if (userPermLevel > permissionLevels.admin) { // Use configured permission levels
@@ -658,6 +658,7 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
  * @param {mc.Player} adminPlayer - The admin player viewing the logs.
  * @param {import('../config.js').editableConfigValues} config - The system configuration.
  * @param {import('./playerDataManager.js')} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
  * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
  */
 async function showActionLogsForm(adminPlayer, config, playerDataManager, dependencies) {

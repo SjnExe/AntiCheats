@@ -26,7 +26,7 @@ This list contains planned features, improvements, and areas for future investig
             -   **Ranks & Criteria:** *(IMPLEMENTED: Owner, Admin, Member defined; Owner via `ownerPlayerName` in `config.js`, Admin via `adminTag`)*
             -   **Chat Display:** *(IMPLEMENTED: Rank prefix like `[Owner] PlayerName: message` with colors)*
             -   **Nametag Display:** *(IMPLEMENTED: Rank above player name like `Owner\nPlayerName` with colors. Nametag modification via `player.nameTag` was successful.)*
-            -   Permissions for AC commands could be tied to ranks. *(Still to do)*
+            -   Permissions for AC commands could be tied to ranks. (VERIFIED - System already correctly ties command permissions to Owner/Admin/Normal ranks via `playerUtils.getPlayerPermissionLevel` and `commandManager.js` logic).
             -   Requires persistent storage if not solely derived from config/tags at runtime. *(Still relevant; current implementation is runtime derived from config/tags)*
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
@@ -35,7 +35,19 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Normal Player Panel Features (`!panel`):**
 
+*   **Improved Banned Player Join Message:** (COMPLETED)
+    - When a banned player attempts to join, display a detailed message:
+      - Standard message: "You are banned from this server. Contact an admin to appeal."
+      - If `config.discordLink` is set and not empty, append: "Discord: [discordLinkValue]".
+      - Display who issued the ban (e.g., "Banned by: [AdminName]").
+      - Display the reason for the ban.
+      - (Future consideration: If ban was by AutoMod, state "Banned by: AutoMod").
+    - This requires storing ban details (banner, reason) more persistently or making them accessible at join time.
+
 ## Refactoring & Enhancements
+
+## UI/UX Enhancements
+- Refactor `!help` command with categorized sections for better readability (COMPLETED).
 
 ## Low Priority / Ideas
 
@@ -45,14 +57,20 @@ This list contains planned features, improvements, and areas for future investig
     *   Death Effects: Investigate and implement cosmetic effects on player death.
     *   Chat Formatting (potentially linked to the Rank System).
 *   **Logging Enhancements:** SjnExe parity goal.
-    *   **Admin Command Usage Logging:** Log when an admin uses an `!` command (especially AC related), what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
-## Public Info UI (`!ui`) Development
-*   **Phase 2: Server Info & Links:**
-    *   Section for server rules (brief).
-    *   Links to Discord/website (configurable).
+## TPA System Implementation (COMPLETED)
+- **Phase 1: Core Setup & Configuration** (COMPLETED)
+- **Phase 2: Basic Request Commands (`!tpa`, `!tpahere`)** (COMPLETED)
+- **Phase 3: Responding to Requests (`!tpaccept`, `!tpacancel`)** (COMPLETED)
+- **Phase 4: Status & System Mechanics (`!tpastatus`, Expiry)** (COMPLETED)
+- **Phase 5: Integration & Finalization (Help, Testing)** (COMPLETED)
+  - Update `!help` command for TPA features (COMPLETED)
+  - Thoroughly test all TPA functionalities (COMPLETED)
+- **Phase 6: Enhancements (Cooldown, Warm-up)** (COMPLETED)
+  - Implement cooldown for sending TPA requests (COMPLETED)
+  - Implement TPA teleport warm-up with damage cancellation (COMPLETED)
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

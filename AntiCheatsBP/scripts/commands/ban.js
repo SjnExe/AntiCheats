@@ -72,11 +72,13 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Assuming addBan is on playerDataManager and handles persistence
-    const banAdded = playerDataManager.addBan(foundPlayer, durationMs, reason);
+    // Pass player.nameTag as the 'bannedBy' argument
+    const banAdded = playerDataManager.addBan(foundPlayer, durationMs, reason, player.nameTag);
 
     if (banAdded) {
-        let kickMessage = `§cYou have been banned from this server.\n§rReason: ${reason}\n`;
+        const banInfo = playerDataManager.getBanInfo(foundPlayer); // Fetch the full ban info to get all details
+        let kickMessage = `§cYou have been banned from this server.\n§rReason: ${banInfo ? banInfo.reason : reason}\n`;
+        kickMessage += `§cBanned by: ${banInfo ? banInfo.bannedBy : player.nameTag}\n`;
         if (durationMs === Infinity) {
             kickMessage += "§cThis ban is permanent.";
         } else {

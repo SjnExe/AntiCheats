@@ -199,14 +199,14 @@ export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]";
 export const nameSpoofMinChangeIntervalTicks = 200;
 
 /** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check (detecting unauthorized Creative mode usage) is active. */
-export const enableAntiGMCCheck = true;
+export const enableAntiGmcCheck = true;
 /**
- * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGMCAutoSwitch` is true.
+ * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGmcAutoSwitch` is true.
  * Valid values: "survival", "adventure", "spectator". Default: "survival".
  */
-export const antiGMCSwitchToGameMode = "survival";
-/** @type {boolean} If true, automatically switch a player's gamemode to `antiGMCSwitchToGameMode` if unauthorized Creative mode is detected. */
-export const antiGMCAutoSwitch = true;
+export const antiGmcSwitchToGameMode = "survival";
+/** @type {boolean} If true, automatically switch a player's gamemode to `antiGmcSwitchToGameMode` if unauthorized Creative mode is detected. */
+export const antiGmcAutoSwitch = true;
 
 /** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
 export const enableInventoryModCheck = true;
@@ -345,8 +345,7 @@ export const fastPlaceMaxBlocksInWindow = 10;
 export const xrayDetectionNotifyOnOreMineEnabled = true;
 /** @type {string[]} List of block type IDs to monitor for X-Ray mining notifications. */
 export const xrayDetectionMonitoredOres = [
-    "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore",
-    "minecraft:ancient_debris"
+    "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"
 ];
 /** @type {boolean} If true, admins (users with `adminTag`) will receive X-Ray mining notifications by default, unless they explicitly disable them. */
 export const xrayDetectionAdminNotifyByDefault = true;
@@ -391,16 +390,53 @@ export const enableDeathCoordsMessage = true;
  */
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
+// --- TPA System Settings ---
+/**
+ * @type {boolean}
+ * Enable or disable the player TPA (teleport request) system.
+ * If false, TPA commands will not be usable.
+ */
+export const enableTpaSystem = false;
+
+/**
+ * @type {number}
+ * How long (in seconds) a TPA request remains valid before automatically declining.
+ */
+export const tpaRequestTimeoutSeconds = 60;
+
+/**
+ * @type {number}
+ * Cooldown in seconds a player must wait after sending a TPA/TPAHere request before sending another.
+ */
+export const tpaRequestCooldownSeconds = 10;
+
+/** @type {number} Duration in seconds a player must wait (warm-up) before teleportation occurs after a TPA request is accepted. Taking damage during warm-up cancels the teleport. */
+export const tpaTeleportWarmupSeconds = 10;
+
 // --- UI Display Texts ---
-/** @type {string[]} Defines the server rules to be displayed in the UI (e.g., via !rules command). */
-export const serverRules = [
-    "1. Be respectful to all players and staff.",
-    "2. No cheating, exploiting, or unfair advantages.",
-    "3. No griefing or stealing.",
-    "4. Do not spam chat or use excessive caps.",
-    "5. PVP is only allowed in designated areas or if agreed upon."
-];
-/** @type {{title: string, url: string}[]} Defines links to be displayed in the Help & Links UI section. */
+/**
+ * @type {string}
+ * Defines the server rules to be displayed in the UI (e.g., via !uinfo command).
+ * Use newline characters `\n` for line breaks.
+ * This is a single string to allow easier editing via in-game commands if such a feature is added.
+ */
+export const serverRules = "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.";
+
+/**
+ * @type {string}
+ * Defines the Discord server invite link. Displayed in the UI.
+ * Example: "https://discord.gg/YourInviteCode"
+ */
+export const discordLink = "https://discord.gg/example";
+
+/**
+ * @type {string}
+ * Defines the server's website or forum link. Displayed in the UI.
+ * Example: "https://yourserver.com"
+ */
+export const websiteLink = "https://example.com";
+
+/** @type {{title: string, url: string}[]} Defines additional links to be displayed in the Help & Links UI section. */
 export const helpLinks = [
     { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
@@ -415,7 +451,11 @@ export const generalHelpMessages = [
 ];
 
 // --- System ---
-/** @type {string} The current version of the AntiCheat system. (This might be updated by a build process). */
+/**
+ * @type {string}
+ * The current version of the AntiCheat system.
+ * (This might be updated by a build process or during packaging).
+ */
 export const acVersion = "v__VERSION_STRING__";
 
 // --- Check Action Profiles ---
@@ -931,8 +971,9 @@ export const checkActionProfiles = {
 
 // --- Command Aliases ---
 /**
- * @type {Object.<string, string>} Defines aliases for commands.
- * Keys are the alias, values are the full command name.
+ * @type {Object.<string, string>}
+ * Defines aliases for commands. Keys are the alias, values are the full command name.
+ * This allows for shorter command inputs.
  * Example: { "v": "version", "i": "inspect" }
  */
 export const commandAliases = {
@@ -957,16 +998,16 @@ export let editableConfigValues = {
     autoToolSwitchToOptimalWindowTicks,
     autoToolSwitchBackWindowTicks,
     enableInstaBreakUnbreakableCheck,
-    instaBreakUnbreakableBlocks, // Note: Arrays are mutable; care should be taken if modifying directly vs. reassigning.
+    instaBreakUnbreakableBlocks,
     enableInstaBreakSpeedCheck,
     instaBreakTimeToleranceTicks,
     enableNameSpoofCheck,
     nameSpoofMaxLength,
     nameSpoofDisallowedCharsRegex,
     nameSpoofMinChangeIntervalTicks,
-    enableAntiGMCCheck,
-    antiGMCSwitchToGameMode,
-    antiGMCAutoSwitch,
+    enableAntiGmcCheck,
+    antiGmcSwitchToGameMode,
+    antiGmcAutoSwitch,
     enableInventoryModCheck,
     enableSelfHurtCheck,
     enableNoSlowCheck,
@@ -975,9 +1016,9 @@ export let editableConfigValues = {
     noSlowMaxSpeedUsingShield,
     noSlowMaxSpeedSneaking,
     enableInvalidSprintCheck,
-    attackBlockingConsumables, // Note: Arrays are mutable.
-    attackBlockingBows,       // Note: Arrays are mutable.
-    attackBlockingShields,    // Note: Arrays are mutable.
+    attackBlockingConsumables,
+    attackBlockingBows,
+    attackBlockingShields,
     itemUseStateClearTicks,
     maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus, minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold, flySustainedOffGroundTicksThreshold,
@@ -1016,14 +1057,14 @@ export let editableConfigValues = {
     downwardScaffoldMaxTickGap,
     downwardScaffoldMinHorizontalSpeed,
     enableAirPlaceCheck,
-    airPlaceSolidBlocks, // Note: Arrays are mutable.
+    airPlaceSolidBlocks,
     enableFastUseCheck,
-    fastUseItemCooldowns, // Note: Object is mutable.
+    fastUseItemCooldowns,
     enableFastPlaceCheck,
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
     xrayDetectionNotifyOnOreMineEnabled,
-    xrayDetectionMonitoredOres: ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"], // Updated default
+    xrayDetectionMonitoredOres,
     xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     enableCombatLogDetection,
@@ -1036,6 +1077,15 @@ export let editableConfigValues = {
     notifyAdminOnNewPlayerJoin,
     enableDeathCoordsMessage,
     deathCoordsMessage,
+    serverRules,
+    discordLink,
+    websiteLink,
+    helpLinks,
+    generalHelpMessages,
+    enableTpaSystem,
+    tpaRequestTimeoutSeconds,
+    tpaRequestCooldownSeconds,
+    tpaTeleportWarmupSeconds,
 };
 
 /**
@@ -1089,3 +1139,5 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${oldValue}" to "${coercedNewValue}"`);
     return true;
 }
+
+[end of AntiCheatsBP/scripts/config.js]

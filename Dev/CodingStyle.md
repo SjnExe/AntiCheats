@@ -20,6 +20,12 @@ This document outlines coding style conventions to be followed for this project 
 ### Constants (outside of `config.js` exports)
 *   For any constants defined within files (not intended for external configuration via `config.js`), also use **`camelCase`** (e.g., `const maxRetries = 3;`). Avoid using `UPPER_SNAKE_CASE` to maintain consistency. If a value is truly global and fixed, it should ideally still be exposed via `config.js` using `camelCase`.
 
+### Acronyms in Code (Variables/Functions):
+*   Acronyms within JavaScript variable and function names should generally be preserved in their original uppercase form if they represent specific, well-known abbreviations. For example, 'GMC' (for Game Mode Creative), 'GMS' (Game Mode Survival), 'GMSP' (Game Mode Spectator), 'GMA' (Game Mode Adventure) should be written as `enableAntiGMCCheck`, `playerGMSStatus`, etc., rather than `enableAntiGmcCheck` or `playerGmsStatus`. This enhances readability and aligns with common project-specific terminology. When in doubt, prefer uppercase for established project acronyms.
+
+### Command Naming:
+*   User-facing commands (e.g., those typed in chat like `!gmc`, `!help`) should remain in their existing lowercase format. The uppercase acronym convention described for JavaScript variables and functions does not apply to these command identifiers.
+
 ## JSDoc
 *   Use JSDoc comments for all functions, especially exported ones, detailing their purpose, parameters, and return values.
 *   Use JSDoc typedefs for complex object structures (e.g., `PlayerAntiCheatData`) and consider placing these in a central `types.js` file in the future to avoid circular dependencies.

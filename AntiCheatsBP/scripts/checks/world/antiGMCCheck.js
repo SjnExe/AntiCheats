@@ -33,7 +33,7 @@ import { permissionLevels } from '../../core/rankManager.js';
  * @param {number} currentTick - The current game tick (not directly used in this check's core logic).
  * @returns {Promise<void>}
  */
-export async function checkAntiGMC(
+export async function checkAntiGmc(
     player,
     pData,
     config,
@@ -48,7 +48,7 @@ export async function checkAntiGMC(
     }
 
     if (player.gameMode === mc.GameMode.creative) {
-        const playerPermLevel = getPlayerPermissionLevel(player); // Uses rankManager via playerUtils
+        const playerPermLevel = getPlayerPermissionLevel(player); // Function using rankManager
 
         let isExempt = false;
         // Owners and Admins are exempt from Anti-GMC checks.
@@ -95,8 +95,8 @@ export async function checkAntiGMC(
                 autoSwitched: autoSwitchedGameMode.toString(), // Stringify boolean for details
                 permissionLevel: playerPermLevel.toString()   // Stringify number for details
             };
-            // Action profile name: config.antiGMCActionProfileName ?? "player_antigmc"
-            await executeCheckAction(player, "player_antigmc", violationDetails, dependencies);
+            const actionProfileName = config.antiGmcActionProfileName ?? "player_antigmc"; // Matches function name style
+            await executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
             if (pData.isWatched && playerUtils.debugLog) {
                 if (!autoSwitchedGameMode && config.antiGMCAutoSwitch) {

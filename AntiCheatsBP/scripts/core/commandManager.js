@@ -52,6 +52,7 @@ if (commandModules && Array.isArray(commandModules)) {
 /**
  * Handles incoming chat messages to process potential commands.
  * It parses the message, checks for command validity and permissions, and then executes the command.
+ * Also logs admin command usage to the console.
  * @param {mc.ChatSendBeforeEvent} eventData - The chat send event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data operations.
  * @param {import('./uiManager.js')} uiManager - Manager for UI forms.
@@ -99,6 +100,13 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     }
 
     eventData.cancel = true; // Command is being handled, cancel original chat message
+
+    // Log admin command usage
+    if (userPermissionLevel <= permissionLevels.admin) {
+        const timestamp = new Date().toISOString();
+        // 'message' from eventData contains the raw command string including prefix.
+        console.warn(`[AdminCommandLog] ${timestamp} - Player: ${player.name} - Command: ${message}`);
+    }
 
     const dependencies = {
         mc, // Minecraft server module

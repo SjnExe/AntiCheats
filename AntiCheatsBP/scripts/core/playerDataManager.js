@@ -538,25 +538,35 @@ export function isMuted(player) {
  * @param {mc.Player} player - The player to ban.
  * @param {number | Infinity} durationMs - The duration of the ban in milliseconds. Use `Infinity` for a permanent ban.
  * @param {string} reason - The reason for the ban.
+ * @param {string} bannedBy - The nameTag of the admin issuing the ban.
  * @returns {boolean} True if the ban was successfully applied, false otherwise.
  */
-export function addBan(player, durationMs, reason) {
-    if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
-        debugLog(`PDM:addBan: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag);
+export function addBan(player, durationMs, reason, bannedBy) {
+    if (!player || typeof durationMs !== 'number' || durationMs <= 0 || typeof bannedBy !== 'string') {
+        debugLog(`PDM:addBan: Invalid arguments. Player: ${player?.nameTag}, Duration: ${durationMs}, BannedBy: ${bannedBy}`, player?.nameTag);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        debugLog(`PDM:addBan: No pData found for player ${player.nameTag}. Cannot apply ban.`, player.nameTag);
+        debugLog(`PDM:addBan: No pData for ${player.nameTag}. Cannot apply ban.`, player.nameTag);
         return false;
     }
 
-    const unbanTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
+    const currentTime = Date.now();
+    const unbanTime = (durationMs === Infinity) ? Infinity : currentTime + durationMs;
     const banReason = reason || "Banned by admin.";
-    pData.banInfo = { unbanTime, reason: banReason };
+
+    pData.banInfo = {
+        xuid: player.id, // Assuming player.id is the XUID
+        playerName: player.nameTag,
+        banTime: currentTime,
+        unbanTime,
+        reason: banReason,
+        bannedBy: bannedBy
+    };
     pData.isDirtyForSave = true;
 
-    let logMsg = `PDM:addBan: Player ${player.nameTag} banned. Reason: "${banReason}".`;
+    let logMsg = `PDM:addBan: Player ${player.nameTag} (XUID: ${player.id}) banned by ${bannedBy}. Reason: "${banReason}".`;
     if (durationMs === Infinity) {
         logMsg += " Duration: Permanent.";
     } else {

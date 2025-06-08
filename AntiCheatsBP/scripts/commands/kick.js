@@ -5,7 +5,6 @@
  */
 // AntiCheatsBP/scripts/commands/kick.js
 import { permissionLevels } from '../core/rankManager.js';
-import * as mc from '@minecraft/server'; // For world.getAllPlayers() if not using dependencies.findPlayer
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -41,10 +40,12 @@ export async function execute(player, args, dependencies) {
             return;
         }
         try {
-            foundPlayer.kick(reason);
-            player.sendMessage(`§aPlayer ${foundPlayer.nameTag} has been kicked. Reason: ${reason}`);
+            const originalReason = reason; // Keep the original reason for logging and admin messages
+            const kickMessage = `Kicked by: ${player.nameTag}\nReason: ${originalReason}\n§eCheck server rules with ${config.prefix}rules`;
+            foundPlayer.kick(kickMessage);
+            player.sendMessage(`§aPlayer ${foundPlayer.nameTag} has been kicked. Reason: ${originalReason}`);
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(`Player ${foundPlayer.nameTag} was kicked by ${player.nameTag}. Reason: ${reason}`, player, null);
+                playerUtils.notifyAdmins(`Player ${foundPlayer.nameTag} was kicked by ${player.nameTag}. Reason: ${originalReason}`, player, null);
             }
             if (addLog) {
                 addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: reason });

@@ -49,7 +49,7 @@ async function showMyStatsUI(player, dependencies) {
  */
 async function showServerRulesUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
-    const rules = config.serverRules && config.serverRules.length > 0 ? config.serverRules.join("\n") : "No server rules configured.";
+    const rules = (config.serverRules && config.serverRules.trim() !== "") ? config.serverRules : "No server rules configured.";
     const form = new MessageFormData().title("Server Rules").body(rules).button1("Close");
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showServerRulesUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
@@ -61,13 +61,36 @@ async function showServerRulesUI(player, dependencies) {
  */
 async function showHelpLinksUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
-    let linksBody = "§e--- Helpful Links ---\n"; // Added newline
-    if (config.helpLinks && config.helpLinks.length > 0) {
-        config.helpLinks.forEach(link => linksBody += `§f${link.title}: §7${link.url}\n`); // Added newline
-    } else {
-        linksBody += "No helpful links configured.";
+    let linksBody = "§e--- Helpful Links ---\n";
+    let hasContent = false;
+
+    if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
+        linksBody += `§fDiscord: §7${config.discordLink}\n`;
+        hasContent = true;
     }
-    const form = new MessageFormData().title("Helpful Links").body(linksBody.trim()).button1("Close"); // trim() body
+    if (config.websiteLink && config.websiteLink.trim() !== "" && config.websiteLink !== "https://example.com") {
+        linksBody += `§fWebsite: §7${config.websiteLink}\n`;
+        hasContent = true;
+    }
+
+    // Display other links from helpLinks array, potentially filtering out duplicates if necessary
+    // For this phase, we will list them all, but a more sophisticated approach might be needed
+    // if discordLink/websiteLink are often duplicated in helpLinks.
+    if (config.helpLinks && config.helpLinks.length > 0) {
+        if (hasContent) { // If discord/website links were added, add a separator for other links
+            linksBody += "\n§e--- Other Links ---\n";
+        }
+        config.helpLinks.forEach(link => {
+            linksBody += `§f${link.title}: §7${link.url}\n`;
+            hasContent = true;
+        });
+    }
+
+    if (!hasContent) {
+        linksBody = "No helpful links are currently configured."; // Reset body if nothing was added
+    }
+
+    const form = new MessageFormData().title("Helpful Links").body(linksBody.trim()).button1("Close");
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showHelpLinksUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 

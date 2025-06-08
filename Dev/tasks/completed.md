@@ -1,6 +1,27 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **Enhanced Ban & Kick Messages:**
+    - Updated ban data structures (`types.js` - `PlayerBanInfo`, `playerDataManager.js`) to store `bannedBy` (admin name), `banTime`, `playerName`, and `xuid` along with reason and expiry.
+    - `!ban` command (`ban.js`) now records the admin who issued the ban.
+    - Improved join handling for banned players (`main.js` - `playerJoin` event): Join is cancelled, and detailed ban info (banned by, reason, expiry, Discord link) is logged to console and notified to admins.
+    - `!kick` command's (`kick.js`) message to the kicked player now includes who kicked them, the original reason, and a prompt to check server rules via `!rules`.
+- **Refactor `!help` Command:** Improved readability by grouping commands into categories (General, TPA, Moderation, Administrative, Owner). TPA commands are shown conditionally based on `config.enableTpaSystem`. The `!panel` command description was updated to reflect its multi-mode nature.
+- **Integrate Command Permissions with Rank System (Verification):** Verified that the existing system in `playerUtils.getPlayerPermissionLevel` (which uses `rankManager.js`) and `commandManager.js` correctly checks command `permissionLevel` against player's rank (Owner, Admin, Normal/Member) before executing commands. No code changes were required beyond documentation updates.
+- **TPA System (Complete Implementation):**
+  - Phase 1 (Core Setup & Configuration): Established foundational settings, TPA request/status types, and `tpaManager.js` structure.
+  - Phase 2 (Basic Request Commands): Implemented `!tpa` and `!tpahere` commands with core logic.
+  - Phase 3 (Responding to Requests): Implemented `!tpaccept` and `!tpacancel` commands.
+  - Phase 4 (Status & System Mechanics): Implemented `!tpastatus` command for toggling TPA availability, and automatic request expiry logic.
+  - Enhancements:
+    - Request Cooldown: Added a configurable cooldown (`tpaRequestCooldownSeconds`) between sending TPA requests.
+    - Teleport Warm-up & Damage Cancellation: Implemented a configurable warm-up period (`tpaTeleportWarmupSeconds`) before teleportation, with cancellation if the teleporting player takes damage. This involved updates to `config.js`, `types.js` (TpaRequest status), `tpaManager.js` (new functions like `executeTeleport`, `cancelTeleport`, status updates), `main.js` (tick processing for warm-up, damage listener), and relevant command files (`tpaccept.js`, `tpacancel.js`).
+  - Phase 5 (Integration & Finalization):
+    - Updated `!help` command to conditionally show TPA commands based on `config.enableTpaSystem`.
+    - Conducted logical review and (simulated) testing of all TPA functionalities.
+- **Created `!rules` command:** Developed a dedicated command (`!rules` and alias `!rule`) that displays server rules (from `config.serverRules`) to players using a MessageForm. Accessible to all permission levels.
+*   **Public Info UI (`!ui`) Development - Phase 2: Server Info & Links:** Added configurable server rules (as a single string), Discord link, and website link to the `!uinfo` panel. Updated `config.js` with new variables (`serverRules`, `discordLink`, `websiteLink`) and modified `uinfo.js` to display this information in the 'Server Rules' and 'Helpful Links' sections respectively.
+*   **Admin Command Usage Logging:** Implemented logging to the console for commands executed by admin-level users, including timestamp, player name (actual account name), and the full raw command string as typed by the admin. This log appears with an `[AdminCommandLog]` prefix.
 *   **Welcomer Message for New Players:**
     *   Implemented a feature to send a configurable welcome message to players upon their initial join (`initialSpawn`).
     *   The message template (`{playerName}` placeholder) and feature toggle (`enableWelcomerMessage`) are configurable in `config.js`.
@@ -553,7 +574,7 @@ Implemented a basic Admin User Interface (UI) accessible via the `!ac ui` comman
             *   If confirmed, resets the target player's flags and relevant violation data (e.g., `consecutiveOffGroundTicks`, `attackEvents`, `lastFlagType`, `playerNameTag`, `attackEvents`, `lastAttackTime`, `blockBreakEvents`, `consecutiveOffGroundTicks`, `fallDistance`, `consecutiveOnGroundSpeedingTicks`).
             *   Persists the changes using `prepareAndSavePlayerData`.
             *   Displays a success/error message to the admin using `MessageFormData`.
-            *   Notifies other admins of the action.
+            *   Notifies other online admins of the action.
         3.  **List Watched Players:**
             *   Uses a `MessageFormData` to display a list of all players currently marked as `isWatched: true`.
             *   Shows a message if no players are currently being watched.
@@ -690,7 +711,7 @@ This task involved reviewing all `debugLog` calls across the primary check funct
 ## Folder Renaming and Path Updates (Submitted)
 *(Date is a placeholder based on current interaction)*
 
-This task involved renaming the core Behavior Pack (`BP/`) and Resource Pack (`RP/`) folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively. All references to these paths within the project's configuration and documentation files were updated accordingly.
+This task involved renaming the core Behavior Pack (`BP/`) and `Resource Pack (`RP/`) folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively. All references to these paths within the project's configuration and documentation files were updated accordingly.
 
 *   **Task:** Rename `BP/` and `RP/` folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively, and update all references.
     *   **Status:** Completed

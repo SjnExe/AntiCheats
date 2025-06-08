@@ -13,6 +13,7 @@ import * as clearchatCmd from './clearchat.js';
 import * as inspectCmd from './inspect.js';
 import * as warningsCmd from './warnings.js';
 import * as resetflagsCmd from './resetflags.js'; // Handles resetflags (and clearwarnings via alias)
+import * as rulesCmd from './rules.js';
 import * as vanishCmd from './vanish.js';
 import * as freezeCmd from './freeze.js';
 import * as muteCmd from './mute.js';
@@ -28,6 +29,11 @@ import * as invseeCmd from './invsee.js';
 import * as panelCmd from './panel.js';
 import * as notifyCmd from './notify.js';
 import * as xraynotifyCmd from './xraynotify.js';
+import * as tpaCmd from './tpa.js';
+import * as tpacceptCmd from './tpaccept.js';
+import * as tpacancelCmd from './tpacancel.js';
+import * as tpahereCmd from './tpahere.js';
+import * as tpastatusCmd from './tpastatus.js';
 import * as tpCmd from './tp.js';
 import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
@@ -68,5 +74,11 @@ export const commandModules = [
     uinfoCmd,
     netherlockCmd,
     endlockCmd,
+    rulesCmd,
+    tpaCmd,
+    tpahereCmd,
+    tpacceptCmd,
+    tpacancelCmd,
+    tpastatusCmd,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");

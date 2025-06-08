@@ -79,8 +79,8 @@ export async function checkNuker(
             // lastBrokenBlockType: pData.lastBrokenBlockType ?? "N/A" // This field is not standard in pData yet
         };
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        // Action profile name: config.nukerActionProfileName ?? "world_nuker"
-        await executeCheckAction(player, "world_nuker", violationDetails, dependencies);
+        const nukerActionProfile = config.nukerActionProfileName ?? "world_nuker";
+        await executeCheckAction(player, nukerActionProfile, violationDetails, dependencies);
 
         // Reset events after flagging to prevent immediate re-flagging on the same set of breaks
         // and to act as a form of cooldown for this specific detection.

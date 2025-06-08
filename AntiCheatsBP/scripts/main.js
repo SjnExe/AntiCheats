@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/main.js
+ * Main entry point for the AntiCheat system. Initializes modules, subscribes to events,
+ * and runs the main tick loop for processing checks and player data.
+ * @version 1.1.0
+ */
 import * as mc from '@minecraft/server';
 import * as config from './config.js';
 import * as playerUtils from './utils/playerUtils.js';
@@ -6,6 +12,7 @@ import * as commandManager from './core/commandManager.js';
 import * as uiManager from './core/uiManager.js';
 import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js'; // Ensure logManager is imported for addLog
+import * as tpaManager from './core/tpaManager.js';
 import { executeCheckAction } from './core/actionManager.js';
 
 // Import all checks from the barrel file
@@ -36,6 +43,53 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     } else {
         // Call the general chat handler for non-command messages
         await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, mc.system.currentTick);
+    }
+});
+
+/**
+ * Handles player join events before they fully join the world.
+ * Used for checks like active bans.
+ * @param {mc.PlayerJoinBeforeEvent} eventData
+ */
+mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
+    const player = eventData.player; // Player object is directly available on eventData for playerJoin
+    // Ensure player data is loaded or initialized early, especially for ban checks.
+    // ensurePlayerDataInitialized might be too late if it relies on player being fully in world for some ops.
+    // For bans, we might need a more direct check if getBanInfo can work with just player.id or nameTag.
+    // Assuming getBanInfo can work with the player object from this event.
+
+    // It's crucial to initialize or at least load minimal data for ban checks *before* player fully spawns.
+    // Let's try to initialize player data here. This might need careful handling if player is not fully "valid" yet for all ops.
+    await playerDataManager.ensurePlayerDataInitialized(player, currentTick); // Use currentTick from global scope
+
+    if (playerDataManager.isBanned(player)) {
+        eventData.cancel = true; // Prevent the player from joining
+
+        const banInfo = playerDataManager.getBanInfo(player);
+        let detailedKickMessage = `§cYou are banned from this server.\n`;
+
+        if (banInfo) {
+            detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || "Unknown"}\n`;
+            detailedKickMessage += `§fReason: §e${banInfo.reason || "No reason provided."}\n`;
+            detailedKickMessage += `§fExpires: §e${banInfo.unbanTime === Infinity ? "Permanent" : new Date(banInfo.unbanTime).toLocaleString()}\n`;
+        } else {
+            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`; // Fallback
+        }
+
+        if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
+            detailedKickMessage += `§fDiscord: §b${config.discordLink}`;
+        }
+
+        // Log the detailed ban info to console/admin chat
+        const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Ban details: By ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}, Expires: ${banInfo?.unbanTime === Infinity ? "Permanent" : new Date(banInfo?.unbanTime).toLocaleString()}`;
+        console.warn(logMessage);
+        if (playerUtils.notifyAdmins) { // Check if notifyAdmins is available
+            playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. Banned by: ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}`, null);
+        }
+
+        // As discussed, player.kick() might not work here to display a custom message.
+        // The eventData.cancel = true; will prevent join. The game shows a generic message.
+        // The detailed message is logged for admins.
     }
 });
 
@@ -104,9 +158,11 @@ mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
  * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
  */
 mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
-    // Assuming handleItemUseOn is a typo and should be handlePlayerPlaceBlock or similar,
-    // or that checkIllegalItems within it handles the eventData type correctly.
-    // For now, keeping as is from previous state.
+    // TODO: Review this subscription. handleItemUseOn is typically for ItemUseOnBeforeEvent.
+    // PlayerPlaceBlockBeforeEvent is passed here. This might lead to issues if handleItemUseOn
+    // or its downstream checks (like checkIllegalItems for "place") expect properties unique to ItemUseOnBeforeEvent
+    // that are not present or different in PlayerPlaceBlockBeforeEvent (e.g., faceLocation object vs. faceLocationX/Y/Z).
+    // For now, keeping as is from previous state, but needs verification.
     eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
 });
 
@@ -153,6 +209,74 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
     // Pass logManager.addLog for logging within handlePlayerDeath
     eventHandlers.handlePlayerDeath(eventData, playerDataManager, playerUtils, config, logManager.addLog);
 });
+
+// Periodically clear expired TPA requests (e.g., every second = 20 ticks)
+// Also process TPA warmups in this interval or a similar one.
+mc.system.runInterval(() => {
+    if (config.enableTpaSystem) { // Only run if TPA system is enabled
+        tpaManager.clearExpiredRequests();
+
+        // Process TPA warm-ups
+        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+        for (const request of requestsInWarmup) {
+            if (Date.now() >= request.warmupExpiryTimestamp) {
+                tpaManager.executeTeleport(request.requestId);
+            }
+        }
+    }
+}, 20); // Run this check every 20 ticks (1 second)
+
+/**
+ * Handles entity hurt events, for TPA warm-up cancellation.
+ * @param {mc.EntityHurtBeforeEvent} eventData The entity hurt event data.
+ */
+mc.world.beforeEvents.entityHurt.subscribe(eventData => {
+    if (!config.enableTpaSystem) return;
+
+    const { hurtEntity, damageSource } = eventData;
+    // Ensure hurtEntity is a Player. For some reason, instanceof Player doesn't work directly with Player objects from events in some contexts.
+    // Using a try-catch or checking for a unique player property like 'nameTag' or 'id' is safer.
+    let playerNameTag;
+    try {
+        playerNameTag = hurtEntity.nameTag; // This will throw if hurtEntity is not a Player-like object
+        if (typeof playerNameTag !== 'string') return; // Not a player
+    } catch (e) {
+        return; // Not a player if nameTag access fails
+    }
+
+
+    // Iterate all active requests that are in warmup
+    // tpaManager.findRequestsForPlayer might be too broad if it gets all requests ever,
+    // better to use getRequestsInWarmup and then filter by player.
+    const requestsInWarmup = tpaManager.getRequestsInWarmup();
+    const playerActiveWarmupRequests = requestsInWarmup.filter(
+        req => req.requesterName === playerNameTag || req.targetName === playerNameTag
+    );
+
+    for (const request of playerActiveWarmupRequests) {
+        // No need to check request.status here as getRequestsInWarmup should only return 'pending_teleport_warmup'
+        // but double-checking won't hurt if getRequestsInWarmup changes.
+        if (request.status === 'pending_teleport_warmup') {
+            let playerIsTeleporting = false;
+            if (request.requestType === 'tpa' && request.requesterName === playerNameTag) {
+                playerIsTeleporting = true;
+            } else if (request.requestType === 'tpahere' && request.targetName === playerNameTag) {
+                playerIsTeleporting = true;
+            }
+
+            if (playerIsTeleporting) {
+                const damageCause = damageSource?.cause || 'unknown'; // Get cause if available
+                const reasonMsgPlayer = `§cTeleport cancelled: You took damage (cause: ${damageCause}).`;
+                const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
+
+                tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog);
+                // eventData.cancel = true; // Usually, do NOT cancel the damage itself.
+                break; // Stop checking further requests for this player for this damage event
+            }
+        }
+    }
+});
+
 
 let currentTick = 0;
 

@@ -1,6 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/core/actionManager.js
  * Manages the execution of actions (flagging, logging, notifying) based on cheat detection profiles.
+ * @version 1.0.0
  */
 
 /**
