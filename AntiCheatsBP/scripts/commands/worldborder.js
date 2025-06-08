@@ -124,15 +124,36 @@ async function handleSetCommand(player, args, playerUtils, logManager, config, d
         centerX: centerX,
         centerZ: centerZ,
         halfSize: halfSize,
-        enabled: true // Default to enabled when set
-        // dimensionId is added by saveBorderSettings
+                enabled: true, // Default to enabled when set
+                // Initialize damage properties based on inputs or defaults
+                enableDamage: args.length > 5 ? (args[5].toLowerCase() === 'true' || args[5] === 'on') : config.worldBorderDefaultEnableDamage,
     };
 
-    if (saveBorderSettings(dimensionId, settings)) {
-        const successMsg = `§aWorld border set for ${dimensionId}: square, center (${centerX},${centerZ}), size ${halfSize*2}x${halfSize*2}.`;
+            if (settings.enableDamage) {
+                settings.damageAmount = args.length > 6 && !isNaN(parseFloat(args[6])) ? parseFloat(args[6]) : config.worldBorderDefaultDamageAmount;
+                settings.damageIntervalTicks = args.length > 7 && !isNaN(parseInt(args[7])) ? parseInt(args[7]) : config.worldBorderDefaultDamageIntervalTicks;
+                settings.teleportAfterNumDamageEvents = args.length > 8 && !isNaN(parseInt(args[8])) ? parseInt(args[8]) : config.worldBorderTeleportAfterNumDamageEvents;
+            } else {
+                // If damage is not enabled, we can either not store them, or store them with defaults/nulls
+                // Storing with defaults might be better if user toggles damage on later without re-setting values
+                settings.damageAmount = config.worldBorderDefaultDamageAmount;
+                settings.damageIntervalTicks = config.worldBorderDefaultDamageIntervalTicks;
+                settings.teleportAfterNumDamageEvents = config.worldBorderTeleportAfterNumDamageEvents;
+            }
+
+            // dimensionId is added by saveBorderSettings internally from the parameter
+            const { dimensionId: dimId, ...settingsToPersist } = settings; // Exclude dimensionId for saving if it's part of settings
+
+            if (saveBorderSettings(dimensionId, settingsToPersist)) {
+                let successMsg = `§aWorld border set for ${dimensionId}: square, center (${centerX},${centerZ}), size ${halfSize*2}x${halfSize*2}.`;
+                if (settings.enableDamage) {
+                    successMsg += ` Damage: ON (Amount: ${settings.damageAmount}, Interval: ${settings.damageIntervalTicks}t, Teleport After: ${settings.teleportAfterNumDamageEvents} events).`;
+                } else {
+                    successMsg += ` Damage: OFF.`;
+                }
         playerUtils.notifyPlayer(player, successMsg);
         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(settings) });
+                    logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(fullSettings) }); // Log full settings
         } else {
             playerUtils.debugLog("LogManager or addLog not available for worldborder_set.", null);
         }
@@ -158,6 +179,16 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
         playerUtils.notifyPlayer(player, `  Center: (${settings.centerX}, ${settings.centerZ})`);
         playerUtils.notifyPlayer(player, `  Half Size: ${settings.halfSize} (Full Size: ${settings.halfSize * 2})`);
         playerUtils.notifyPlayer(player, `  Bounds: X[${settings.centerX - settings.halfSize} to ${settings.centerX + settings.halfSize}], Z[${settings.centerZ - settings.halfSize} to ${settings.centerZ + settings.halfSize}]`);
+                if (typeof settings.enableDamage !== 'undefined') { // Check if damage settings exist
+                    playerUtils.notifyPlayer(player, `  Damage Enabled: ${settings.enableDamage}`);
+                    if (settings.enableDamage) {
+                        playerUtils.notifyPlayer(player, `    Damage Amount: ${settings.damageAmount ?? config.worldBorderDefaultDamageAmount}`);
+                        playerUtils.notifyPlayer(player, `    Damage Interval: ${settings.damageIntervalTicks ?? config.worldBorderDefaultDamageIntervalTicks} ticks`);
+                        playerUtils.notifyPlayer(player, `    Teleport After: ${settings.teleportAfterNumDamageEvents ?? config.worldBorderTeleportAfterNumDamageEvents} damage events`);
+                    }
+                } else {
+                    playerUtils.notifyPlayer(player, `  Damage Settings: Not specified (Defaults will apply if enabled via toggle).`);
+                }
     } else {
         playerUtils.notifyPlayer(player, `§eNo world border configured for ${dimensionId}.`);
     }
@@ -197,14 +228,23 @@ async function handleToggleCommand(player, args, playerUtils, logManager, config
 
     currentSettings.enabled = newState;
 
-    // saveBorderSettings expects the settings object without dimensionId, as it adds it itself.
-    const { dimensionId: _, ...settingsToSave } = currentSettings;
+            // saveBorderSettings expects the settings object without dimensionId if it's passed as a separate arg.
+            // Our saveBorderSettings(dimensionId, settingsToSave) adds dimensionId internally.
+            // So, we pass the full currentSettings (which includes dimensionId) but it will be overwritten by the explicit param.
+            // More accurately, we should pass the part of settings that doesn't include the dimensionId IF saveBorderSettings expects that.
+            // Our current saveBorderSettings takes (dimensionId, settingsObject), and adds dimensionId to settingsObject.
+            // So, ensure settingsToSave for saveBorderSettings doesn't nest dimensionId if it's already a top-level key.
+            const { dimensionId: dimIdToExclude, ...settingsObjectForSaving } = currentSettings;
 
-    if (saveBorderSettings(dimensionId, settingsToSave)) {
+
+            if (saveBorderSettings(dimensionId, settingsObjectForSaving)) {
         const successMsg = `§aWorld border for ${dimensionId} turned ${state}.`;
         playerUtils.notifyPlayer(player, successMsg);
+                // Log the full settings object to see what's stored, or just the toggle action.
+                // For consistency, log the resulting state including all parameters.
+                const finalSettingsForLog = getBorderSettings(dimensionId); // Get what was actually saved with defaults.
         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_toggle', targetName: dimensionId, details: `Set to ${state}` });
+                    logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_toggle', targetName: dimensionId, details: `Set to ${state}. Full settings: ${JSON.stringify(finalSettingsForLog)}` });
         } else {
             playerUtils.debugLog("LogManager or addLog not available for worldborder_toggle.", null);
         }

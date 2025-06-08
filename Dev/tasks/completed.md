@@ -1,6 +1,18 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **World Border Enhancement: Damage-Based Enforcement**
+    *   Added damage-based enforcement as a configurable option for world borders.
+    *   New per-dimension settings (stored in `worldBorderManager`): `enableDamage`, `damageAmount`, `damageIntervalTicks`, `teleportAfterNumDamageEvents`.
+    *   Global default configurations for these settings added to `config.js`.
+    *   The `!worldborder set` command updated to configure these damage parameters, and `!worldborder get` displays them.
+    *   Modified `main.js` enforcement logic: If damage is enabled, players outside the border receive periodic damage (`player.applyDamage`). Teleportation occurs if damage is disabled or after a configurable number of damage applications.
+    *   New `pData` fields `ticksOutsideBorder` and `borderDamageApplications` track player state relative to the border.
+*   **World Border Enhancement: Visual Indicators (Particles)**
+    *   Implemented player-specific particle visuals for world borders.
+    *   Added global configurations to `config.js`: `worldBorderEnableVisuals`, `worldBorderParticleName`, `worldBorderVisualRange`, `worldBorderParticleDensity`, `worldBorderParticleWallHeight`, `worldBorderParticleSegmentLength`, `worldBorderVisualUpdateIntervalTicks`.
+    *   Logic in `main.js` tick loop: If enabled, players near a border edge are shown a particle wall segment (using `player.spawnParticle`) along that edge. Visuals are throttled for performance.
+    *   A helper function `spawnParticleLine` was added to `main.js` to handle rendering of particle segments.
 *   **Advanced Cheat Detections: Sending Messages During Invalid States - Combat State**
     *   Implemented a check to prevent players from sending chat messages shortly after being in combat.
     *   Added configurations: `enableChatDuringCombatCheck` (boolean) and `chatDuringCombatCooldownSeconds` (number).

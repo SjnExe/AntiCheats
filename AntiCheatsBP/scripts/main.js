@@ -377,6 +377,18 @@ mc.system.runInterval(async () => {
             continue;
         }
 
+        // Initialize World Border Visuals pData field if it doesn't exist
+        pData.lastBorderVisualTick = pData.lastBorderVisualTick || 0;
+
+        // Initialize World Border pData fields if they don't exist (moved up for clarity)
+        pData.ticksOutsideBorder = pData.ticksOutsideBorder || 0;
+        pData.borderDamageApplications = pData.borderDamageApplications || 0;
+
+        if (!pData) { // This check is redundant now due to the earlier one, but kept for safety if code moves
+            if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData somehow became null for ${player.nameTag} before transient update.`, player.nameTag);
+            continue;
+        }
+
         playerDataManager.updateTransientPlayerData(player, pData, currentTick);
 
         // Reset item usage states based on timeout
@@ -455,22 +467,24 @@ mc.system.runInterval(async () => {
 
         // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {
-            if (pData.velocity.y < -0.07 && pData.previousPosition) {
-                const deltaY = pData.previousPosition.y - pData.lastPosition.y;
+            if (pData.velocity.y < -0.07 && pData.previousPosition) { // Ensure previousPosition exists
+                const deltaY = pData.previousPosition.y - pData.lastPosition.y; // Ensure lastPosition exists
                 if (deltaY > 0) {
                     pData.fallDistance += deltaY;
                 }
             }
-        } else {
-            if (!pData.isTakingFallDamage) {
+        } else { // Player is on ground
+            if (!pData.isTakingFallDamage) { // Only reset fallDistance if not currently processing fall damage
                  pData.fallDistance = 0;
             }
-            pData.isTakingFallDamage = false;
+            pData.isTakingFallDamage = false; // Reset this flag once player is on ground
         }
 
         // World Border Enforcement
-        if (config.enableWorldBorderSystem) {
-            const borderSettings = getBorderSettings(player.dimension.id);
+        // borderSettings variable will be declared here for potential use in Visuals section too
+        let borderSettings = null;
+        if (config.enableWorldBorderSystem) { // config here is config.editableConfigValues from the tick loop scope
+            borderSettings = getBorderSettings(player.dimension.id);
 
             if (borderSettings && borderSettings.enabled) {
                 const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
@@ -484,31 +498,175 @@ mc.system.runInterval(async () => {
                     const minZ = centerZ - halfSize;
                     const maxZ = centerZ + halfSize;
 
-                    let outside = false;
-                    let targetX = loc.x;
-                    let targetZ = loc.z;
+                    let isPlayerOutside = false;
+                    if (loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ) {
+                        isPlayerOutside = true;
+                    }
 
-                    if (loc.x < minX) { targetX = minX + 0.5; outside = true; }
-                    else if (loc.x > maxX) { targetX = maxX - 0.5; outside = true; }
+                    if (isPlayerOutside) {
+                        pData.ticksOutsideBorder++; // Increment each tick player is outside
 
-                    if (loc.z < minZ) { targetZ = minZ + 0.5; outside = true; }
-                    else if (loc.z > maxZ) { targetZ = maxZ - 0.5; outside = true; }
+                        const enableDamage = borderSettings.enableDamage ?? config.worldBorderDefaultEnableDamage;
+                        const damageAmount = borderSettings.damageAmount ?? config.worldBorderDefaultDamageAmount;
+                        const damageIntervalTicks = borderSettings.damageIntervalTicks ?? config.worldBorderDefaultDamageIntervalTicks;
+                        const teleportAfterNumDamageEvents = borderSettings.teleportAfterNumDamageEvents ?? config.worldBorderTeleportAfterNumDamageEvents;
 
-                    if (outside) {
-                        try {
-                            player.teleport({ x: targetX, y: loc.y, z: targetZ }, { dimension: player.dimension });
-                            if (config.worldBorderWarningMessage) {
-                                playerUtils.warnPlayer(player, config.worldBorderWarningMessage);
-                            }
-                            if (playerUtils.debugLog && pData?.isWatched) {
-                                playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} back into border for dimension ${player.dimension.id}. Original: (${loc.x.toFixed(1)},${loc.z.toFixed(1)}), Target: (${targetX.toFixed(1)},${targetZ.toFixed(1)})`, player.nameTag);
-                            }
-                        } catch (e) {
-                            console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
-                            if (playerUtils.debugLog) {
-                                 playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
+                        let performTeleport = true;
+
+                        if (enableDamage && damageIntervalTicks > 0 && damageAmount > 0) {
+                            performTeleport = false;
+
+                            if (pData.ticksOutsideBorder % damageIntervalTicks === 0) {
+                                try {
+                                    player.applyDamage(damageAmount, { cause: mc.EntityDamageCause.worldBorder });
+                                    pData.borderDamageApplications++;
+                                    pData.isDirtyForSave = true;
+
+                                    if (playerUtils.debugLog && pData.isWatched) {
+                                        playerUtils.debugLog(`WorldBorder: Applied ${damageAmount} damage to ${player.nameTag}. Total applications: ${pData.borderDamageApplications}`, player.nameTag);
+                                    }
+
+                                    if (pData.borderDamageApplications >= teleportAfterNumDamageEvents) {
+                                        performTeleport = true;
+                                        if (playerUtils.debugLog && pData.isWatched) {
+                                            playerUtils.debugLog(`WorldBorder: ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag);
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn(`[WorldBorder] Failed to apply damage to player ${player.nameTag}: ${e}`);
+                                }
                             }
                         }
+
+                        if (performTeleport) {
+                            let targetX = loc.x;
+                            let targetZ = loc.z;
+                            if (loc.x < minX) { targetX = minX + 0.5; }
+                            else if (loc.x > maxX) { targetX = maxX - 0.5; }
+                            if (loc.z < minZ) { targetZ = minZ + 0.5; }
+                            else if (loc.z > maxZ) { targetZ = maxZ - 0.5; }
+
+                            try {
+                                player.teleport({ x: targetX, y: loc.y, z: targetZ }, { dimension: player.dimension });
+                                if (config.worldBorderWarningMessage) {
+                                    playerUtils.warnPlayer(player, config.worldBorderWarningMessage);
+                                }
+                                if (playerUtils.debugLog && pData.isWatched) {
+                                    playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} back. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
+                                }
+                                pData.ticksOutsideBorder = 0;
+                                pData.borderDamageApplications = 0;
+                                pData.isDirtyForSave = true;
+                            } catch (e) {
+                                console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
+                                 if (playerUtils.debugLog) {
+                                     playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
+                                 }
+                            }
+                        }
+
+                    } else {
+                        if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                             if (playerUtils.debugLog && pData.isWatched) {
+                                playerUtils.debugLog(`WorldBorder: Player ${player.nameTag} re-entered border. Resetting counters.`, player.nameTag);
+                            }
+                            pData.ticksOutsideBorder = 0;
+                            pData.borderDamageApplications = 0;
+                            pData.isDirtyForSave = true;
+                        }
+                    }
+                } else {
+                    if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                        pData.ticksOutsideBorder = 0;
+                        pData.borderDamageApplications = 0;
+                        pData.isDirtyForSave = true;
+                    }
+                }
+            } else {
+                 if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                    pData.ticksOutsideBorder = 0;
+                    pData.borderDamageApplications = 0;
+                    pData.isDirtyForSave = true;
+                }
+            }
+        } else {
+            if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                pData.ticksOutsideBorder = 0;
+                pData.borderDamageApplications = 0;
+                pData.isDirtyForSave = true;
+            }
+        }
+
+        // World Border Visuals
+        if (config.enableWorldBorderSystem && config.worldBorderEnableVisuals) {
+            // Use borderSettings if already fetched by enforcement, otherwise fetch it.
+            const currentBorderSettings = borderSettings || getBorderSettings(player.dimension.id);
+
+            if (currentBorderSettings && currentBorderSettings.enabled) {
+                if (currentTick - (pData.lastBorderVisualTick || 0) >= config.worldBorderVisualUpdateIntervalTicks) {
+                    pData.lastBorderVisualTick = currentTick;
+                    // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
+
+                    const playerLoc = player.location;
+                    const { centerX, centerZ, halfSize } = currentBorderSettings;
+                    const particleName = config.worldBorderParticleName;
+                    const visualRange = config.worldBorderVisualRange;
+                    const density = Math.max(0.1, config.worldBorderParticleDensity); // Ensure density is not zero or negative
+                    const wallHeight = config.worldBorderParticleWallHeight;
+                    const segmentLength = config.worldBorderParticleSegmentLength;
+
+                    const minX = centerX - halfSize;
+                    const maxX = centerX + halfSize;
+                    const minZ = centerZ - halfSize;
+                    const maxZ = centerZ + halfSize;
+
+                    const yBase = Math.floor(playerLoc.y); // Particles around player's feet/eye level
+
+                    // Helper function to spawn a segment of particles
+                    const spawnParticleLine = (isXPlane, fixedCoord, startDynamic, endDynamic, playerCoordDynamic) => {
+                        const lengthToRender = Math.min(segmentLength, Math.abs(endDynamic - startDynamic));
+                        // Calculate segment based on player's dynamic coordinate and segmentLength
+                        let actualSegmentStart = playerCoordDynamic - lengthToRender / 2;
+                        let actualSegmentEnd = playerCoordDynamic + lengthToRender / 2;
+
+                        // Clamp segment to actual border boundaries
+                        actualSegmentStart = Math.max(startDynamic, actualSegmentStart);
+                        actualSegmentEnd = Math.min(endDynamic, actualSegmentEnd);
+
+                        // Ensure start is less than end after clamping, otherwise, no particles to spawn for this segment
+                        if (actualSegmentStart >= actualSegmentEnd) return;
+
+                        for (let dyn = actualSegmentStart; dyn <= actualSegmentEnd; dyn += (1 / density)) {
+                            for (let h = 0; h < wallHeight; h++) {
+                                try {
+                                    const loc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
+                                    player.dimension.spawnParticle(particleName, loc); // Use player.dimension.spawnParticle
+                                } catch (e) {
+                                    // Optional: Log particle spawn errors if debug mode is on
+                                    // if (playerUtils.debugLog && pData.isWatched) {
+                                    //     playerUtils.debugLog(`Particle spawn error for ${player.nameTag}: ${e}`, player.nameTag);
+                                    // }
+                                    // Silently ignore to prevent spam, common if particle name is invalid or player is in unloaded chunk area for particles
+                                }
+                            }
+                        }
+                    };
+
+                    // Plane X_MIN
+                    if (Math.abs(playerLoc.x - minX) < visualRange) {
+                        spawnParticleLine(true, minX, minZ, maxZ, playerLoc.z);
+                    }
+                    // Plane X_MAX
+                    if (Math.abs(playerLoc.x - maxX) < visualRange) {
+                        spawnParticleLine(true, maxX, minZ, maxZ, playerLoc.z);
+                    }
+                    // Plane Z_MIN
+                    if (Math.abs(playerLoc.z - minZ) < visualRange) {
+                        spawnParticleLine(false, minZ, minX, maxX, playerLoc.x);
+                    }
+                    // Plane Z_MAX
+                    if (Math.abs(playerLoc.z - maxZ) < visualRange) {
+                        spawnParticleLine(false, maxZ, minX, maxX, playerLoc.x);
                     }
                 }
             }
@@ -516,7 +674,7 @@ mc.system.runInterval(async () => {
     }
 
     // Deferred player data saving
-    if (currentTick % 600 === 0) {
+    if (currentTick % 600 === 0) { // Approx every 30 seconds (600 ticks / 20 ticks_per_second)
         for (const player of allPlayers) {
             const pData = playerDataManager.getPlayerData(player.id); // Assuming getPlayerData takes playerId
             if (pData && pData.isDirtyForSave) {

@@ -6,11 +6,14 @@ Entity spamming involves players rapidly spawning or placing multiple entities t
 
 ## 2. Scope of Player-Attributed Spam Control
 
-This strategy primarily focuses on entity spam that can be directly attributed to a player's actions, particularly through:
-*   **Direct Item Use (Spawn Eggs):** Using spawn egg items. Controlled via `world.beforeEvents.itemUse` and `world.beforeEvents.itemUseOn` to prevent the spawn.
-*   **Direct Item Placement (Placeable Entities):** Placing items that directly become entities (e.g., boats, armor stands, item frames, end crystals). Also controlled via `world.beforeEvents.itemUseOn` to prevent placement.
+This strategy primarily focuses on entity spam that can be directly attributed to a player's actions. The **primary controls** are for:
 
-**Key Entity Types for Direct Player Control Monitoring (via `itemUse`/`itemUseOn`):**
+*   **Direct Item Use (Spawn Eggs):** Using spawn egg items. These are best controlled preventatively via `world.beforeEvents.itemUse` and `world.beforeEvents.itemUseOn`.
+*   **Direct Item Placement (Placeable Item-Entities):** Placing items that directly become entities (e.g., boats, armor stands, item frames, end crystals). These are also best controlled preventatively via `world.beforeEvents.itemUseOn`.
+
+Utilizing `beforeEvents` for these scenarios allows for the **prevention** of the entity spawn/placement if it's deemed spam, which is more effective than reactive measures for these specific cases.
+
+**Key Entity Types for Direct Player Control Monitoring (primarily via `itemUse`/`itemUseOn` for prevention):**
 *   `minecraft:boat`
 *   `minecraft:minecart` (and variants like `minecraft:chest_minecart`, `minecraft:hopper_minecart`)
 *   `minecraft:armor_stand`
@@ -18,13 +21,13 @@ This strategy primarily focuses on entity spam that can be directly attributed t
 *   `minecraft:end_crystal`
 *   Spawn eggs for any monitored entity (e.g., `minecraft:pig_spawn_egg` if `minecraft:pig` is in a monitored list for other reasons, or specific spawn eggs themselves).
 
-This document also discusses strategies for player-constructed entities (like Golems) and challenges with dispenser-based spam.
+This document also discusses strategies for player-constructed entities (like Golems, which require a different attribution approach) and challenges with dispenser-based spam.
 
-## 3. Detection Strategy for Directly Placed/Spawned Entities: Rate-Based Prevention
+## 3. Detection Strategy for Entities Covered by `itemUse` and `itemUseOn`: Rate-Based Prevention
 
-The initial strategy will focus on detecting rapid spawning of specific entity types by a player. This will use the `world.afterEvents.entitySpawn` event.
+The initial strategy for entities spawned via direct item use (spawn eggs) or item placement (boats, armor stands) focuses on detecting rapid attempts by a player and preventing them using `beforeEvents`.
 
-### 3.1. Key Detection Factors:
+### 3.1. Key Detection Factors (for `itemUse`/`itemUseOn` based prevention):
 
 *   **Spawn Rate:** The number of monitored entities spawned by a player within a specific time window.
 *   **Entity Types:** Focusing on entities commonly used for spamming.
@@ -41,67 +44,46 @@ The initial strategy will focus on detecting rapid spawning of specific entity t
     *   `"kill"`: Kills the entity that triggered the threshold.
     *   `"warn"`: Warns the player and notifies admins.
     *   `"logOnly"`: Only logs the detection and notifies admins.
-    *   *(Note: "kill" is the most direct action for an `afterEvent` like `entitySpawn` when a threshold is breached by the latest spawn).*
+    *   *(Note: For `beforeEvents`, "kill" in the config is interpreted as "cancel the event" to prevent the item use/entity placement).*
 
-### 3.3. Implementation Logic (within `handleEntitySpawnEvent_AntiGrief` or a new dedicated handler):
+### 3.3. Implementation Logic (primarily within `handleItemUse` and `handleItemUseOn` event handlers):
 
 1.  Check `enableEntitySpamAntiGrief`. If disabled, return.
-2.  The `entitySpawn` event provides `event.entity`. The `event.cause` (e.g., `EntitySpawnCause.Spawned`) is important, but the direct *player* source isn't always available.
-    *   **Challenge:** Attributing spawns directly to a player. If an item is used (e.g., boat item places a boat entity), the player might be inferable if the spawn event is handled immediately after an item use event that *was* player-caused. However, for spawn eggs or other mechanisms, this is harder.
-    *   **Initial Approach:** For entities spawned not directly from a player interaction (e.g. breeding, world gen), this check should not apply. Focus on player-caused spawns. This might require correlating with `itemUseOn` or other player action events if `entitySpawn` itself lacks player context.
-    *   **If player context is available (e.g. from a recent interaction):**
-        1.  Check `entitySpamBypassInCreative`. If true and player is in Creative, return.
-        2.  Maintain a list of recent entity spawn timestamps for the player, specific to monitored types (`pData.recentEntitySpamTimestamps[entityType]`).
-        3.  When a monitored entity type is spawned by a player:
-            *   Add current timestamp to the respective list for that entity type for that player.
-        4.  Filter timestamps older than `entitySpamTimeWindowMs`.
-        5.  If the count of timestamps for that entity type exceeds `entitySpamMaxSpawnsInWindow`:
-            *   Trigger `actionManager.executeCheckAction("world_antigrief_entityspam", player, violationDetails, dependencies)`.
-            *   `violationDetails` should include count, window, entity type, etc.
-            *   If `entitySpamAction` is `"kill"`, attempt `event.entity.kill()`.
-            *   Clear the timestamps for that entity type for that player to prevent immediate re-flagging.
+2.  The event data (`eventData` from `itemUse` or `itemUseOn`) provides `eventData.source` (the player) and `eventData.itemStack` (the item being used).
+3.  Identify the entity type:
+    *   For spawn eggs: Derive `entityTypeId` from `itemStack.typeId` (e.g., `minecraft:pig_spawn_egg` -> `minecraft:pig`).
+    *   For placeable item-entities: The `itemStack.typeId` itself might represent the entity (e.g., `minecraft:boat`, `minecraft:armor_stand`). A mapping might be needed if item ID and entity ID differ (e.g. `minecart` item for `minecart` entity).
+4.  If the identified `entityTypeId` is in `config.entitySpamMonitoredEntityTypes`:
+    1.  Check `entitySpamBypassInCreative`. If true and player is in Creative, return.
+    2.  Access `pData.recentEntitySpawnAttempts[entityType]` (a list of timestamps for *attempted* spawns/placements).
+    3.  Add current timestamp to this list for the player and entity type.
+    4.  Filter timestamps older than `entitySpamTimeWindowMs`.
+    5.  If the count of timestamps exceeds `entitySpamMaxSpawnsInWindow`:
+        *   Trigger `actionManager.executeCheckAction("world_antigrief_entityspam", player, violationDetails, dependencies)`.
+        *   `violationDetails` should include count, window, entity type, item used.
+        *   If `config.entitySpamAction` is effectively "prevent" (e.g., "kill" in config, interpreted as cancel for beforeEvents):
+            *   Set `eventData.cancel = true`.
+            *   Notify the player.
+        *   Clear the timestamps for that entity type for that player to prevent immediate re-flagging on the next attempt.
+    6.  If not spam, the item use proceeds normally. The actual entity spawn will be handled by the game.
 
-### 3.4 Identifying the Spawning Player:
-This is the trickiest part for `entitySpawn`.
-*   **For placeable items (boats, armor stands, item frames, minecarts):** The `itemUseOn` event (or potentially `playerPlaceBlock` if these items place a "block" version first that then spawns the entity) is likely player-caused. We might need to:
-    1.  In `itemUseOn`, if a player uses an item that spawns one of the monitored entities (e.g., places a boat item), record `pData.lastPlacedMonitoredEntityType = 'minecraft:boat'` and `pData.lastPlacedMonitoredEntityTick = currentTick`.
-    2.  In `entitySpawn`, if a monitored entity spawns, check if any player is nearby and has `pData.lastPlacedMonitoredEntityType` matching the spawned entity, and if `currentTick - pData.lastPlacedMonitoredEntityTick` is very small (e.g., 0-1 ticks). This is an inference.
-*   **For spawn eggs:** `itemUseOn` (if used on a block) or `itemUse` (if used in air) would be the trigger. The player is known. The `entitySpawn` event would follow.
-*   **Simplification for initial step:** The check might initially only work well for spawns that can be reasonably attributed to a player through recent actions.
+This `beforeEvent`-based approach is the most reliable for attributing and preventing spam from direct item usage, as player context is clear and the action can be cancelled.
 
-### 3.5. Specific Strategy for Spawn Egg & Direct Entity Placement Spam
+*(The following sections discuss scenarios where `beforeEvent` prevention is not directly applicable, and reactive measures or more complex attribution logic are needed.)*
 
-Items like spawn eggs, boats, armor stands, etc., provide a direct way for players to create entities and can be a source of spam if not rate-limited. The most reliable approach for these is to act preventatively using `world.beforeEvents.itemUse` (for using in air/on entity, mainly spawn eggs) and `world.beforeEvents.itemUseOn` (for using on a block, covering both spawn eggs and direct entity placements like boats).
+## 4. Player-Constructed Entities (e.g., Golems, Withers constructed by players)
 
-**Event Handling:**
-
-1.  **Target Events:** `itemUse` and `itemUseOn`.
-2.  **Item Check:** In these handlers, check if `eventData.itemStack.typeId` matches the pattern of a spawn egg (e.g., ends with `_spawn_egg`).
-3.  **Entity Type Derivation:**
-    *   If a spawn egg is detected, derive the corresponding `entityTypeId` by removing the `_spawn_egg` suffix from the item's `typeId`. For example, `minecraft:pig_spawn_egg` becomes `minecraft:pig`.
-    *   This derived `entityTypeId` is then checked against `config.entitySpamMonitoredEntityTypes`.
-4.  **Spam Check Execution:**
-    *   If the derived entity type is monitored, call the existing `checkEntitySpam` function, passing the `player` (from `eventData.source`), the derived `entityTypeId`, and other necessary dependencies.
-5.  **Action (Prevention):**
-    *   Since `itemUse` and `itemUseOn` are `beforeEvents`, if `checkEntitySpam` returns `true` (indicating spam is detected) and `config.entitySpamAction` is `"kill"` (which is interpreted as "prevent item use" in this context):
-        *   Set `eventData.cancel = true`. This will prevent the spawn egg from being consumed and the entity from being spawned.
-        *   The player should be notified that their action was prevented due to rapid item use/entity spawning.
-    *   If `config.entity_spam_action` is `"warn"` or `"logOnly"`, the event is not cancelled, and `checkEntitySpam` handles the logging/notifications as usual.
-
-This approach leverages cancellable `beforeEvents` for more effective control over entity spam originating from directly player-controlled item uses, with reliable player attribution.
-
-## 4. Player-Constructed Entities (e.g., Golems, Withers)
-
-Entities like Snow Golems, Iron Golems, and Withers can be constructed by players placing blocks in specific patterns. These are not spawned via `itemUse` events but rather result from block placement sequences.
+Entities like Snow Golems, Iron Golems, and Withers can be constructed by players placing blocks in specific patterns. These are not spawned via `itemUse` events (and thus cannot be easily prevented using the `beforeEvent` strategy above) but rather result from block placement sequences that cause the game to spawn the entity.
 
 ### 4.1. Detection Idea:
 
 1.  **Player Places Key Block:** The player places the final "key" block that would complete a constructable entity (e.g., a pumpkin for Snow/Iron Golems, or a Wither skull for a Wither).
 2.  **`handlePlayerPlaceBlockAfter` Event:** This event handler detects the placement of such key blocks.
-3.  **Structure Verification:** Upon placement of a key block, the handler checks the surrounding blocks to verify if a valid structure for the corresponding constructable entity has just been completed.
+3.  **Structure Verification:** Upon placement of a key block, the handler checks the surrounding blocks to verify if a valid structure for the corresponding constructable entity has *just* been completed by this placement.
 4.  **Flag Player Data:** If a valid structure is confirmed, a flag is set on the player's data (`pData`), for example:
-    `pData.expectingConstructedEntity = { type: "minecraft:snow_golem", location: ApproximateLocation, tick: currentTick }`.
-    *   `ApproximateLocation` should be sufficient to identify the spawn area (e.g., the location of the key block).
+    `pData.expectingConstructedEntity = { type: "minecraft:snow_golem", location: ApproximateLocation, dimension: player.dimension, tick: currentTick }`.
+    *   `ApproximateLocation` should be sufficient to identify the spawn area (e.g., the location of the key block or the center of the structure).
+    *   `dimension` is crucial for multi-world environments.
     *   `currentTick` helps in matching the entity spawn event timely.
 
 ### 4.2. Attribution in `entitySpawn`:
@@ -111,10 +93,11 @@ Entities like Snow Golems, Iron Golems, and Withers can be constructed by player
 3.  **Check Player Flags:** The handler iterates through online players' `pData` looking for the `expectingConstructedEntity` flag.
 4.  **Attribute if Match:** If a player has this flag, and the newly spawned entity's:
     *   Type matches `pData.expectingConstructedEntity.type`.
-    *   Location is consistent with `pData.expectingConstructedEntity.location` (e.g., within a small radius).
-    *   Spawn tick is very close to `pData.expectingConstructedEntity.tick` (e.g., within 1-2 ticks).
+    *   Location is consistent with `pData.expectingConstructedEntity.location` (e.g., within a small radius, typically 2-3 blocks for Golems).
+    *   Dimension matches `pData.expectingConstructedEntity.dimension`.
+    *   Spawn tick is very close to `pData.expectingConstructedEntity.tick` (e.g., within 1-5 ticks, allowing for slight server processing delays).
     ...then the spawn is attributed to that player.
-5.  **Call Spam Check:** `checkEntitySpam(player, entityType, ...)` is then called for the attributed player and the spawned entity type.
+5.  **Call Spam Check:** `checkEntitySpam(player, entity.typeId, ...)` is then called for the attributed player and the spawned entity type.
 6.  **Clear Flag:** The `pData.expectingConstructedEntity` flag should be cleared after a short duration or successful attribution to prevent incorrect future attributions.
 
 ### 4.3. Action:
@@ -128,21 +111,20 @@ This method provides a way to attribute these world-generated entities back to a
 
 Dispensers can be used to deploy entities like boats, armor stands, or even spawn eggs if they contain them.
 
-*   **Challenge:** Attributing entities spawned by dispensers directly to the player who powered the dispenser is difficult with current Bedrock Scripting APIs. The `entitySpawn` event for a dispenser-deployed entity does not carry direct information about the player who triggered the Redstone signal.
-*   **Current Approach:** Player-attributed rate-limiting (as described in Section 3 and 4) will generally *not* apply to dispenser-originated spawns.
-*   **Reactive Killing Concerns:** A global reactive killing of all dispenser-spawned monitored entities (e.g., if `config.entitySpamAction === "kill"`, killing any boat spawned by a dispenser) is considered too disruptive. Many legitimate Redstone contraptions rely on dispensers for various functions, and such a broad action would break them.
-*   **Future Mitigation:** Future density-based checks (see Section 8) might offer partial mitigation for area saturation caused by dispensers, but this would be an area check, not player-specific spam prevention.
+*   **Challenge for Player-Attributed Rate-Limiting:** Attributing entities spawned by dispensers directly to the player who powered the dispenser is a known challenge. The `entitySpawn` event from a dispenser-created entity does not directly link back to the player who initiated the Redstone signal.
+*   **Global Reactive Killing is Problematic:** Attempting to control this by simply killing all dispenser-spawned monitored entities (if `config.entitySpamAction === "kill"`) would be highly disruptive to legitimate Redstone contraptions (e.g., boat/minecart launchers, item droppers that use entities temporarily). This is not the current approach for player-specific spam.
+*   **Future Mitigation Idea:** Future density-based checks (see Section 7) might offer partial mitigation for extreme area saturation caused by dispensers (e.g., a dispenser rapidly filling a small area with hundreds of boats). This would be an area-based control, not player-attributed rate-limiting.
 
-## 6. Non-Monitored Player Spawns
+## 6. Other Non-Monitored Player-Driven Spawns
 
-Other player-driven entity spawn mechanisms exist that are not the primary focus of this anti-grief spam feature:
+Other player-driven entity spawn mechanisms exist that are not the primary focus of this *anti-grief entity spam* feature, partly because they are harder to abuse for spam or have legitimate uses that are hard to distinguish from spam without more complex heuristics:
 
-*   **Animal Breeding:** Players breeding animals.
-*   **/summon Command:** If a player has permissions to use `/summon` and is the explicit source/cause.
+*   **Animal Breeding:** Players breeding animals. While many entities can be created, the process is usually slower and more involved than typical spam tactics.
+*   **/summon Command:** If a player has permissions to use `/summon` and is the explicit source/cause of the entity. This is typically an administrative action or part of creative building/map making.
 
-These could theoretically be integrated into a rate-limiting system if they become significant abuse vectors. However, for the initial implementation, the focus remains on direct item placements/uses and player-constructed entities which are more common in griefing scenarios.
+These mechanisms could theoretically be integrated into a rate-limiting system if specific abuse vectors emerge that warrant it, but they are not the current focus for the controls designed against rapid, disruptive entity spamming.
 
-## 7. Future Considerations (Deferred):
+## 7. Future Considerations (Deferred for player-attributed spam, some relate to area denial):
 
 *   **Density-Based Checks:** Detecting too many monitored entities of a certain type within a given area, regardless of spawn rate (e.g., >X boats in a Y-block radius). This could help with dispenser spam indirectly.
 *   **More Sophisticated Player Attribution:** Exploring further ways to link spawned entities back to the specific player who caused their spawn, especially for indirect mechanisms if APIs evolve.

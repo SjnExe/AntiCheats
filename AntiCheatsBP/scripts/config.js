@@ -564,6 +564,38 @@ export const enableInvalidRenderDistanceCheck = true;
 /** @type {number} Maximum allowed client-reported render distance in chunks. */
 export const maxAllowedClientRenderDistance = 64;
 
+// --- World Border System --- (Already existing section, adding more to it)
+/** @type {boolean} Master switch for the entire World Border feature. */
+export const enableWorldBorderSystem = false; // This was from previous subtask, ensure it's here
+
+/** @type {string} Message sent to players when they are teleported back by the world border. */
+export const worldBorderWarningMessage = "§cYou have reached the world border!"; // This was from previous subtask
+
+/** @type {boolean} Default for enabling damage when a new border is set or damage is toggled on. */
+export const worldBorderDefaultEnableDamage = false;
+/** @type {number} Default damage amount per interval when border damage is enabled. */
+export const worldBorderDefaultDamageAmount = 0.5; // Half a heart
+/** @type {number} Default interval in ticks for applying border damage. (20 ticks = 1 second) */
+export const worldBorderDefaultDamageIntervalTicks = 20;
+/** @type {number} Default number of damage events after which player is teleported if still outside and damage is enabled. */
+export const worldBorderTeleportAfterNumDamageEvents = 30; // e.g., 30 damage applications (30 seconds if interval is 20 ticks)
+
+/** @type {boolean} Enables visual particle effects for the world border. */
+export const worldBorderEnableVisuals = false;
+/** @type {string} The particle name to use for the border visuals. E.g., "minecraft:end_rod", "minecraft:totem_particle". */
+export const worldBorderParticleName = "minecraft:end_rod";
+/** @type {number} How close (in blocks) a player must be to a border edge to see the visual effect. */
+export const worldBorderVisualRange = 24;
+/** @type {number} Density of particles along the border edge (particles per block). Higher is denser. */
+export const worldBorderParticleDensity = 1;
+/** @type {number} Height of the particle wall in blocks. */
+export const worldBorderParticleWallHeight = 4;
+/** @type {number} Length of the particle wall segment to render in front of/around the player. */
+export const worldBorderParticleSegmentLength = 32;
+/** @type {number} Interval in ticks for how often to update border visuals per player. */
+export const worldBorderVisualUpdateIntervalTicks = 10; // 0.5 seconds
+
+
 // --- Chat Behavior Checks ---
 /** @type {boolean} If true, the Chat During Combat check is active. */
 export const enableChatDuringCombatCheck = true;
@@ -1477,6 +1509,20 @@ export let editableConfigValues = {
     // Client Behavior Checks
     enableInvalidRenderDistanceCheck,
     maxAllowedClientRenderDistance,
+    // World Border System
+    enableWorldBorderSystem,
+    worldBorderWarningMessage,
+    worldBorderDefaultEnableDamage,
+    worldBorderDefaultDamageAmount,
+    worldBorderDefaultDamageIntervalTicks,
+    worldBorderTeleportAfterNumDamageEvents,
+    worldBorderEnableVisuals,
+    worldBorderParticleName,
+    worldBorderVisualRange,
+    worldBorderParticleDensity,
+    worldBorderParticleWallHeight,
+    worldBorderParticleSegmentLength,
+    worldBorderVisualUpdateIntervalTicks,
     // Chat Behavior Checks
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
