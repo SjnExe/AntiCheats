@@ -33,3 +33,41 @@ This document outlines coding style conventions to be followed for this project 
 ## General Formatting
 *   Follow existing code formatting for indentation (e.g., 4 spaces), spacing, and brace style.
 *   Aim for clarity and readability in code structure.
+
+## Debugging and Logging
+### General Principles
+- **Purpose:** Logging is crucial for diagnosing issues, understanding behavior, and aiding development. Strive to make logs clear, concise, and informative.
+- **Performance:** Debug logging should have minimal to no impact on runtime performance when disabled. Expensive operations to gather data for logs (e.g., complex calculations, iterating large arrays, frequent `JSON.stringify` of large objects) MUST be conditional, typically enclosed within an `if (enableDebugLogging || (pData && pData.isWatched))` block or similar logic that checks if logging for that context is active.
+
+### Using `debugLog`
+- **Primary Tool:** The primary utility for debug logging is `debugLog(message, contextPlayerNameIfWatched)` located in `utils/playerUtils.js`.
+- **Output Destination:** `debugLog` uses `console.warn()`, which directs output to the server console and Minecraft's Content Log GUI. It should NOT be used for messages intended for player chat. For admin notifications, use `notifyAdmins()`. For direct warnings to players, use `warnPlayer()`.
+- **Conditional Logging:** The `debugLog` function itself will only output if `enableDebugLogging` is true in `config.js`.
+- **Contextual Information:**
+    - Always provide sufficient context in your log messages. Include relevant variable values, state indicators, function names, or event types.
+    - For player-specific actions or checks, use the `contextPlayerNameIfWatched` parameter. If this parameter is provided, `debugLog` will use a prefix like `[AC Watch - PlayerName]` which helps in filtering and focusing on specific player activity.
+    - Example: `debugLog(\`Player ${player.nameTag} failed fly check. Vertical speed: ${currentSpeedY}\`, player.nameTag);`
+- **Strategic Placement:**
+    - Log entry and exit points for complex functions or event handlers, especially if they are critical paths.
+    - Log key decisions, state changes, or the results of important calculations.
+    - When a check or action is denied or fails, log the reason and the values that led to the failure.
+- **Clarity over Brevity (when active):** When debugging is active, more information is generally better, as long as it's well-structured. Don't be afraid to log multiple related variables if it helps paint a full picture.
+
+### Example of Performance-Conscious Logging
+
+```javascript
+// In a function that processes player data (pData)
+if (enableDebugLogging || (pData && pData.isWatched)) {
+    // Expensive data gathering only happens if logging is active for this context
+    const detailedStatus = someComplexFunctionToGetStringStatus(pData);
+    const relevantEvents = pData.eventHistory.filter(event => event.type === 'critical').map(event => event.id);
+
+    debugLog(`Processing player ${pData.playerName}. Status: ${detailedStatus}. Critical Event IDs: ${JSON.stringify(relevantEvents)}.`, pData.playerName);
+}
+
+// Or, if the debugLog call is already inside a conditional block checking for isWatched:
+// (Inside a function where pData is available and isWatched has been checked)
+// const someValue = potentiallyExpensiveCalculation();
+// debugLog(`Some check for ${pData.playerName}: value is ${someValue}`, pData.playerName);
+// Consider if potentiallyExpensiveCalculation() itself needs to be conditional if it's very heavy.
+```
