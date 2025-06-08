@@ -39,6 +39,7 @@ import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
 import * as netherlockCmd from './netherlock.js';
 import * as endlockCmd from './endlock.js';
+import * as worldborderCmd from './worldborder.js';
 
 /**
  * Array containing all registered command modules.
@@ -80,5 +81,6 @@ export const commandModules = [
     tpacceptCmd,
     tpacancelCmd,
     tpastatusCmd,
+    worldborderCmd,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");
