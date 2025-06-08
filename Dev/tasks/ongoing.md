@@ -14,7 +14,7 @@ This section tracks the progress of implementing recommended `debugLog` enhancem
 **Target Files/Modules:**
 - [x] `AntiCheatsBP/scripts/core/playerDataManager.js`
 - [x] `AntiCheatsBP/scripts/core/eventHandlers.js` (Part 1)
-- [ ] `AntiCheatsBP/scripts/core/eventHandlers.js` (Part 2)
+- [x] `AntiCheatsBP/scripts/core/eventHandlers.js` (Part 2)
 - [ ] `AntiCheatsBP/scripts/core/commandManager.js`
 - [ ] `AntiCheatsBP/scripts/checks/movement/flyCheck.js`
 - [ ] `AntiCheatsBP/scripts/checks/combat/reachCheck.js`

@@ -350,6 +350,10 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, playerDataMan
     const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
     if (!pData) return;
 
+    if (pData && pData.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`PlayerBreakBlockBefore: ${player.nameTag} trying to break ${block.typeId} at ${JSON.stringify(block.location)} with ${itemStack?.typeId || 'hand'}. Tick: ${currentTick}`, player.nameTag);
+    }
+
     if (checks.checkBreakUnbreakable && config.enableInstaBreakUnbreakableCheck) {
         await checks.checkBreakUnbreakable(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         if (eventData.cancel) {
@@ -401,6 +405,10 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
     const { player, block, brokenBlockPermutation } = eventData;
     const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
     if (!pData) return;
+
+    if (pData && pData.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`PlayerBreakBlockAfter: ${player.nameTag} broke ${brokenBlockPermutation.type.id} at ${JSON.stringify(block.location)}. Tick: ${currentTick}`, player.nameTag);
+    }
 
     if (pData.isAttemptingBlockBreak &&
         pData.breakingBlockLocation &&
@@ -456,6 +464,10 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
         if (sendNotification) {
             const location = block.location;
             const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(blockY)}, ${Math.floor(location.z)}§7 in ${dimensionId.replace("minecraft:","")}.`;
+
+            if (pData && pData.isWatched && playerUtils.debugLog) {
+                playerUtils.debugLog(`X-Ray notification triggered for ${player.nameTag} mining ${brokenBlockId}. Player is watched. Message: "${message}"`, player.nameTag);
+            }
             playerUtils.debugLog(message, null); // Log for server console
 
             mc.world.getAllPlayers().forEach(adminPlayer => {
@@ -490,6 +502,10 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
     if (!pData) {
         if (playerUtils.debugLog) playerUtils.debugLog(`InventoryMod/FastUse: No pData for ${player.nameTag} in handleItemUse.`, player.nameTag);
         return;
+    }
+
+    if (pData && pData.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`ItemUse: ${player.nameTag} using item ${itemStack.typeId} (Amount: ${itemStack.amount}). Tick: ${currentTick}`, player.nameTag);
     }
 
     if (checks.checkSwitchAndUseInSameTick && config.enableInventoryModCheck) {
@@ -649,6 +665,10 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
     if (playerDataManager.isMuted(player)) {
         playerUtils.warnPlayer(player, "You are currently muted and cannot send messages.");
         eventData.cancel = true;
+        if (pData && pData.isWatched && playerUtils.debugLog) {
+            const muteInfo = playerDataManager.getMuteInfo(player); // Fetch muteInfo for logging
+            playerUtils.debugLog(`Chat canceled for ${player.nameTag} due to active mute. Reason: ${muteInfo?.reason || 'N/A'}`, player.nameTag);
+        }
         return;
     }
 
@@ -667,6 +687,11 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
             if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
+    }
+
+    // Log if message passed checks before formatting and sending
+    if (pData && pData.isWatched && !eventData.cancel && playerUtils.debugLog) {
+        playerUtils.debugLog(`Chat message from ${player.nameTag} passed checks, proceeding to format/broadcast. Original: "${originalMessage}"`, player.nameTag);
     }
 
     const rankDisplay = getPlayerRankDisplay(player);
