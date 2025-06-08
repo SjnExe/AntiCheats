@@ -128,19 +128,68 @@ export function removeRequest(requestId) {
 }
 
 /**
- * Processes the acceptance of a TPA request. (Placeholder)
+ * Processes the acceptance of a TPA request.
+ * This function handles the teleportation of players based on the request type
+ * and notifies both parties.
  * @param {string} requestId - The ID of the request to accept.
+ * @returns {boolean} True if the request was successfully processed and teleportation occurred/attempted, false otherwise.
  */
 export function acceptRequest(requestId) {
     const request = activeRequests.get(requestId);
     if (!request) {
         console.warn(`[TPAManager] Attempted to accept non-existent request ${requestId}`);
-        return;
+        return false;
     }
-    // TODO: Implement teleportation logic based on request.requestType
-    // TODO: Ensure players are still online/valid before teleporting.
-    console.log(`[TPAManager] Request ${requestId} accepted (teleport logic placeholder).`);
-    removeRequest(requestId); // Remove after processing
+
+    const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
+    const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
+
+    if (!requesterPlayer) {
+        if (targetPlayer) {
+            targetPlayer.sendMessage(`§c${request.requesterName} is no longer online. TPA request cancelled.`);
+        }
+        console.log(`[TPAManager] Requester ${request.requesterName} not found for request ${requestId}.`);
+        removeRequest(requestId);
+        return false;
+    }
+    if (!targetPlayer) {
+        requesterPlayer.sendMessage(`§c${request.targetName} is no longer online. TPA request cancelled.`);
+        console.log(`[TPAManager] Target ${request.targetName} not found for request ${requestId}.`);
+        removeRequest(requestId);
+        return false;
+    }
+
+    try {
+        if (request.requestType === 'tpa') {
+            requesterPlayer.teleport(request.targetLocation, { dimension: world.getDimension(request.targetDimensionId) });
+            requesterPlayer.sendMessage("§aTeleported successfully to " + targetPlayer.nameTag); // Use nameTag for display
+            targetPlayer.sendMessage("§a" + requesterPlayer.nameTag + " has teleported to you.");
+        } else if (request.requestType === 'tpahere') {
+            targetPlayer.teleport(request.requesterLocation, { dimension: world.getDimension(request.requesterDimensionId) });
+            targetPlayer.sendMessage("§aTeleported successfully to " + requesterPlayer.nameTag);
+            requesterPlayer.sendMessage("§a" + targetPlayer.nameTag + " has teleported to you.");
+        } else {
+            console.error(`[TPAManager] Unknown request type: ${request.requestType} for request ${requestId}`);
+            removeRequest(requestId); // Clean up invalid request type
+            return false;
+        }
+        console.log(`[TPAManager] Request ${requestId} processed successfully. Type: ${request.requestType}`);
+        removeRequest(requestId); // Remove after successful processing
+        return true;
+    } catch (e) {
+        console.error(`[TPAManager] Error during teleport for request ${requestId}: ${e.stack || e}`);
+        // Attempt to notify players if possible, as they are confirmed to be online at this point.
+        try {
+            requesterPlayer.sendMessage("§cAn error occurred during teleportation. Please try again.");
+            if (targetPlayer && targetPlayer.isValid()) { // Check if targetPlayer is still valid before sending message
+                 targetPlayer.sendMessage("§cAn error occurred during a TPA teleportation involving " + requesterPlayer.nameTag + ".");
+            }
+        } catch (notifyError) {
+            console.warn(`[TPAManager] Failed to notify players after teleport error: ${notifyError.stack || notifyError}`);
+        }
+        removeRequest(requestId); // Still remove request on error to prevent reprocessing
+        return false;
+    }
 }
 
 /**

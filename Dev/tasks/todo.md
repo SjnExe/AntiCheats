@@ -51,7 +51,7 @@ This list contains planned features, improvements, and areas for future investig
 ## TPA System Implementation
 - **Phase 4: Status & System Mechanics (`!tpastatus`, Expiry)**
   - Implement `!tpastatus` command (COMPLETED)
-  - Implement Teleport Logic in `tpaManager.js` (Pending)
+  - Implement Teleport Logic in `tpaManager.js` (COMPLETED)
   - Implement Automatic Request Expiry (Pending)
 - **Phase 5: Integration & Finalization (Help, Testing)** (Pending)
 
