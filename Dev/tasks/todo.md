@@ -35,7 +35,7 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Normal Player Panel Features (`!panel`):**
 
-*   **Improved Banned Player Join Message:**
+*   **Improved Banned Player Join Message:** (COMPLETED)
     - When a banned player attempts to join, display a detailed message:
       - Standard message: "You are banned from this server. Contact an admin to appeal."
       - If `config.discordLink` is set and not empty, append: "Discord: [discordLinkValue]".

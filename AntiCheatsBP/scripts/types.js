@@ -177,9 +177,13 @@
  */
 
 /**
- * @typedef {object} PlayerBanInfo
- * @property {number | Infinity} unbanTime - Timestamp when ban expires, or Infinity for permanent.
+ * @typedef {object} PlayerBanInfo Represents the details of a player's ban.
+ * @property {string} [xuid] - The XUID of the banned player (if available, for offline scenarios).
+ * @property {string} [playerName] - The name of the banned player (for logging/display).
+ * @property {number} banTime - Timestamp (Date.now()) when the ban was issued.
+ * @property {number | Infinity} unbanTime - Timestamp when mute expires, or Infinity for permanent.
  * @property {string} reason - Reason for the ban.
+ * @property {string} bannedBy - The nameTag of the admin or system component (e.g., "AutoMod") that issued the ban.
  */
 
 /**

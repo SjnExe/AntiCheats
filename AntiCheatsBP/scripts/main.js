@@ -47,6 +47,53 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
 });
 
 /**
+ * Handles player join events before they fully join the world.
+ * Used for checks like active bans.
+ * @param {mc.PlayerJoinBeforeEvent} eventData
+ */
+mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
+    const player = eventData.player; // Player object is directly available on eventData for playerJoin
+    // Ensure player data is loaded or initialized early, especially for ban checks.
+    // ensurePlayerDataInitialized might be too late if it relies on player being fully in world for some ops.
+    // For bans, we might need a more direct check if getBanInfo can work with just player.id or nameTag.
+    // Assuming getBanInfo can work with the player object from this event.
+
+    // It's crucial to initialize or at least load minimal data for ban checks *before* player fully spawns.
+    // Let's try to initialize player data here. This might need careful handling if player is not fully "valid" yet for all ops.
+    await playerDataManager.ensurePlayerDataInitialized(player, currentTick); // Use currentTick from global scope
+
+    if (playerDataManager.isBanned(player)) {
+        eventData.cancel = true; // Prevent the player from joining
+
+        const banInfo = playerDataManager.getBanInfo(player);
+        let detailedKickMessage = `§cYou are banned from this server.\n`;
+
+        if (banInfo) {
+            detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || "Unknown"}\n`;
+            detailedKickMessage += `§fReason: §e${banInfo.reason || "No reason provided."}\n`;
+            detailedKickMessage += `§fExpires: §e${banInfo.unbanTime === Infinity ? "Permanent" : new Date(banInfo.unbanTime).toLocaleString()}\n`;
+        } else {
+            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`; // Fallback
+        }
+
+        if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
+            detailedKickMessage += `§fDiscord: §b${config.discordLink}`;
+        }
+
+        // Log the detailed ban info to console/admin chat
+        const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Ban details: By ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}, Expires: ${banInfo?.unbanTime === Infinity ? "Permanent" : new Date(banInfo?.unbanTime).toLocaleString()}`;
+        console.warn(logMessage);
+        if (playerUtils.notifyAdmins) { // Check if notifyAdmins is available
+            playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. Banned by: ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}`, null);
+        }
+
+        // As discussed, player.kick() might not work here to display a custom message.
+        // The eventData.cancel = true; will prevent join. The game shows a generic message.
+        // The detailed message is logged for admins.
+    }
+});
+
+/**
  * Handles player spawn events.
  * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
  */

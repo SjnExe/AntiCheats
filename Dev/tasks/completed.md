@@ -1,6 +1,11 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **Enhanced Ban & Kick Messages:**
+    - Updated ban data structures (`types.js` - `PlayerBanInfo`, `playerDataManager.js`) to store `bannedBy` (admin name), `banTime`, `playerName`, and `xuid` along with reason and expiry.
+    - `!ban` command (`ban.js`) now records the admin who issued the ban.
+    - Improved join handling for banned players (`main.js` - `playerJoin` event): Join is cancelled, and detailed ban info (banned by, reason, expiry, Discord link) is logged to console and notified to admins.
+    - `!kick` command's (`kick.js`) message to the kicked player now includes who kicked them, the original reason, and a prompt to check server rules via `!rules`.
 - **Refactor `!help` Command:** Improved readability by grouping commands into categories (General, TPA, Moderation, Administrative, Owner). TPA commands are shown conditionally based on `config.enableTpaSystem`. The `!panel` command description was updated to reflect its multi-mode nature.
 - **TPA System (Complete Implementation):**
   - Phase 1 (Core Setup & Configuration): Established foundational settings, TPA request/status types, and `tpaManager.js` structure.
