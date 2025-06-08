@@ -401,7 +401,7 @@ export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dime
 
 // --- Death Effects ---
 /** @type {boolean} If true, cosmetic effects are shown when a player dies. */
-export const enableDeathEffects = true;
+export const enableDeathEffects = false;
 /**
  * @type {object} Defines the default cosmetic effect shown when a player dies.
  * @property {string} soundId - The sound ID to play on player death (e.g., "ambient.weather.lightning.impact").
