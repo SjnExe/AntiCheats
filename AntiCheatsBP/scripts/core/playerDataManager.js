@@ -456,12 +456,29 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     pData.flags[flagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
     pData.lastFlagType = flagType;
+
+    if (typeof detailsForNotify === 'object' && detailsForNotify !== null && detailsForNotify.itemTypeId) {
+        if (!pData.lastViolationDetailsMap) {
+            pData.lastViolationDetailsMap = {};
+        }
+        pData.lastViolationDetailsMap[flagType] = {
+            itemTypeId: detailsForNotify.itemTypeId,
+            quantityFound: detailsForNotify.quantityFound || 0,
+            timestamp: Date.now()
+        };
+        debugLog(`PDM:addFlag: Stored violation details for ${flagType} on ${player.nameTag}: ${JSON.stringify(pData.lastViolationDetailsMap[flagType])}`, player.nameTag);
+    }
+
     pData.isDirtyForSave = true;
 
-    const fullReason = `${reasonMessage} ${detailsForNotify}`.trim();
-    warnPlayer(player, reasonMessage); // Assumes warnPlayer is available from playerUtils
-    notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${detailsForNotify}`, player, pData); // Assumes notifyAdmins is available
-    debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${fullReason}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
+    const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null)
+                         ? (detailsForNotify.originalDetailsForNotify || `Item: ${detailsForNotify.itemTypeId}`)
+                         : detailsForNotify;
+    const fullReason = `${reasonMessage} ${notifyString}`.trim(); // Use notifyString for fullReason as well if it's the intended detail
+
+    warnPlayer(player, reasonMessage);
+    notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${notifyString}`, player, pData);
+    debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${reasonMessage} ${notifyString}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
 
     // Prepare dependencies for AutoModManager
     const automodDependencies = {

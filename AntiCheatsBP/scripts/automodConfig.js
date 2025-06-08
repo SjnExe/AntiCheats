@@ -48,19 +48,32 @@ export const automodRules = {
       "parameters": { "reasonKey": "automod.nuker.warn1" }
     }
   ],
-  "reach_combat": [ // Example, ensure checkType string matches an actual one
+  "reach_combat": [
     { "flagThreshold": 5, "actionType": "WARN", "parameters": { "reasonKey": "automod.reach.warn1" } },
     { "flagThreshold": 10, "actionType": "TEMP_BAN", "parameters": { "duration": "2h", "reasonKey": "automod.reach.tempban1" } },
     { "flagThreshold": 15, "actionType": "PERM_BAN", "parameters": { "reasonKey": "automod.reach.permban1" } }
   ],
-  "chat_spam_fast": [ // Example
+  "chat_spam_fast": [
     { "flagThreshold": 3, "actionType": "WARN", "parameters": { "reasonKey": "automod.chatspam.warn" } },
     { "flagThreshold": 5, "actionType": "MUTE", "parameters": { "duration": "15m", "reasonKey": "automod.chatspam.mute" } }
   ],
-  "fly_severe_long": [ // Example for a more severe/persistent version of fly
+  "fly_severe_long": [
     { "flagThreshold": 1, "actionType": "FREEZE", "parameters": { "reasonKey": "automod.flysevere.freeze" } },
-    { "flagThreshold": 1, "actionType": "WARN", "parameters": { "reasonKey": "automod.flysevere.warn" }, "resetFlagsAfterAction": false }, // Freeze and Warn
-    { "flagThreshold": 3, "actionType": "KICK", "parameters": { "reasonKey": "automod.flysevere.kick" } } // If they somehow get 3 flags while frozen
+    { "flagThreshold": 1, "actionType": "WARN", "parameters": { "reasonKey": "automod.flysevere.warn" }, "resetFlagsAfterAction": false },
+    { "flagThreshold": 3, "actionType": "KICK", "parameters": { "reasonKey": "automod.flysevere.kick" } }
+  ],
+  "illegal_item_possession": [
+    {
+      "flagThreshold": 1,
+      "actionType": "REMOVE_ILLEGAL_ITEM",
+      "parameters": { "reasonKey": "automod.illegalitem.removed_generic" },
+      "resetFlagsAfterAction": true
+    },
+    {
+      "flagThreshold": 2,
+      "actionType": "WARN",
+      "parameters": { "reasonKey": "automod.illegalitem.warn_repeat" }
+    }
   ]
   // Add more check types and their rules here as needed
 };
@@ -81,6 +94,8 @@ export const automodActionMessages = {
   "automod.chatspam.mute": "Automated Mute: You have been muted for 15 minutes due to chat spam.",
   "automod.flysevere.freeze": "Automated Action: You have been frozen due to highly suspicious movement.",
   "automod.flysevere.warn": "Automated Warning: Severe flight-like activity detected. You are frozen. An admin will investigate.",
-  "automod.flysevere.kick": "Automated Kick: Persistent severe rule violations after being frozen."
+  "automod.flysevere.kick": "Automated Kick: Persistent severe rule violations after being frozen.",
+  "automod.illegalitem.removed_generic": "AutoMod: Detected illegal item(s) removed from your inventory.",
+  "automod.illegalitem.warn_repeat": "AutoMod Warning: Illegal items have been detected in your possession multiple times. Please adhere to server rules."
   // Add more messages as rules are defined
 };
