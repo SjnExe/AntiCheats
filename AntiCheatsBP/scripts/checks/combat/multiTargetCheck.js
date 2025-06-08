@@ -57,17 +57,17 @@ export async function checkMultiTarget(
         return;
     }
 
-    pData.recentHits = pData.recentHits || []; // Initialize if undefined
+    pData.recentHits = pData.recentHits || [];
 
     const newHit = {
         entityId: String(targetEntity.id), // Ensure entityId is stored as a string for consistent Set behavior
         timestamp: now,
     };
     pData.recentHits.push(newHit);
-    pData.isDirtyForSave = true; // Array has been modified
+    pData.isDirtyForSave = true;
 
-    const windowMs = config.multiTargetWindowMs ?? 1000; // Default 1s window
-    const maxHistory = config.multiTargetMaxHistory ?? 20; // Default max 20 hits history
+    const windowMs = config.multiTargetWindowMs ?? 1000;
+    const maxHistory = config.multiTargetMaxHistory ?? 20;
 
     // Filter hits to the current window first
     const originalCountBeforeTimeFilter = pData.recentHits.length;
@@ -79,10 +79,10 @@ export async function checkMultiTarget(
     // Then, trim history if it still exceeds max size after time filtering
     if (pData.recentHits.length > maxHistory) {
         pData.recentHits = pData.recentHits.slice(pData.recentHits.length - maxHistory);
-        pData.isDirtyForSave = true; // Array was modified
+        pData.isDirtyForSave = true;
     }
 
-    const threshold = config.multiTargetThreshold ?? 3; // Default 3 distinct targets
+    const threshold = config.multiTargetThreshold ?? 3;
 
     // Not enough hits yet to trigger a check (after filtering)
     if (pData.recentHits.length < threshold) {
@@ -104,7 +104,6 @@ export async function checkMultiTarget(
             targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', ') // Sample of involved entity IDs
         };
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        // Action profile name: config.multiTargetActionProfileName ?? "combat_multitarget_aura"
         await executeCheckAction(player, "combat_multitarget_aura", violationDetails, dependencies);
 
         playerUtils.debugLog?.(`Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix);

@@ -63,13 +63,12 @@ export async function checkViewSnap(
             minLimit: invalidPitchMin.toFixed(2),
             maxLimit: invalidPitchMax.toFixed(2)
         };
-        // Action profile name should ideally be from config: config.invalidPitchActionProfileName ?? "combat_invalid_pitch"
         await executeCheckAction(player, "combat_invalid_pitch", violationDetails, dependencies);
     }
 
     // 2. Check for view snaps (rapid rotation changes) after an attack
     // pData.lastAttackTick is set in handleEntityHurt when the player is the attacker.
-    const viewSnapWindow = config.viewSnapWindowTicks ?? 10; // Default to 10 ticks
+    const viewSnapWindow = config.viewSnapWindowTicks ?? 10;
     if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < viewSnapWindow)) {
         const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
         let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
@@ -91,7 +90,6 @@ export async function checkViewSnap(
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
-            // Action profile name: config.pitchSnapActionProfileName ?? "combat_viewsnap_pitch"
             await executeCheckAction(player, "combat_viewsnap_pitch", violationDetails, dependencies);
             playerUtils.debugLog?.(`ViewSnap (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
         }
@@ -105,7 +103,6 @@ export async function checkViewSnap(
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
-            // Action profile name: config.yawSnapActionProfileName ?? "combat_viewsnap_yaw"
             await executeCheckAction(player, "combat_viewsnap_yaw", violationDetails, dependencies);
             playerUtils.debugLog?.(`ViewSnap (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
         }

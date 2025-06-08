@@ -60,7 +60,6 @@ export async function checkSwitchAndUseInSameTick(
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
             currentTick: currentTick.toString()
         };
-        // Action profile name: config.inventoryModActionProfileName ?? "player_inventory_mod" (using a general one for now)
         await executeCheckAction(player, "player_inventory_mod", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
@@ -124,7 +123,6 @@ export async function checkInventoryMoveWhileActionLocked(
             actionInProgress: lockingAction,
             changeType: eventData.change // e.g., "Added", "Removed", "ModifiedAmount"
         };
-        // Action profile name: config.inventoryModActionProfileName ?? "player_inventory_mod"
         await executeCheckAction(player, "player_inventory_mod", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;

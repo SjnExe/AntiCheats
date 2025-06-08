@@ -67,13 +67,6 @@ export async function checkInvalidSprint(
             invalidCondition = "Riding Entity";
             conditionDetails = "Player is riding an entity";
         }
-        // Future: Add check for hunger level if player.getComponent('minecraft:hunger') is accessible
-        // and sprint requires > X hunger. This would also benefit from pData caching.
-        // Example:
-        // if ((pData.hungerLevel ?? 20) <= (config.sprintMinHunger ?? 6)) {
-        //     invalidCondition = "Low Hunger";
-        //     conditionDetails = `Hunger: ${pData.hungerLevel}, Min: ${config.sprintMinHunger ?? 6}`;
-        // }
 
 
         if (invalidCondition) {
@@ -85,9 +78,7 @@ export async function checkInvalidSprint(
                 isSneaking: player.isSneaking.toString(),
                 isRiding: player.isRiding.toString(),
                 blindnessTicks: (pData.blindnessTicks ?? 0).toString()
-                // hungerLevel: (pData.hungerLevel ?? 'N/A').toString() // If hunger check added
             };
-            // Action profile name: config.invalidSprintActionProfileName ?? "movement_invalid_sprint"
             await executeCheckAction(player, "movement_invalid_sprint", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;

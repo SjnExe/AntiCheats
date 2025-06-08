@@ -45,13 +45,12 @@ export async function checkCPS(
     // Ensure pData and attackEvents array exist. Attack events are added in handleEntityHurt.
     if (!pData || !Array.isArray(pData.attackEvents)) {
         // This might happen if pData is not fully initialized or if attackEvents is missing.
-        // playerUtils.debugLog?.(`CPSCheck: Missing pData or attackEvents for ${player.nameTag}.`, pData?.isWatched ? player.nameTag : null);
         return;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const now = Date.now();
-    const calculationWindowMs = config.cpsCalculationWindowMs ?? 1000; // Default to 1 second window
+    const calculationWindowMs = config.cpsCalculationWindowMs ?? 1000;
     const windowStartTime = now - calculationWindowMs;
 
     // Filter attack events to keep only those within the current calculation window.
@@ -70,22 +69,16 @@ export async function checkCPS(
         playerUtils.debugLog(`CPSCheck: Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix);
     }
 
-    const maxThreshold = config.maxCpsThreshold ?? 20; // Default to 20 CPS max
+    const maxThreshold = config.maxCpsThreshold ?? 20;
 
     if (eventsInWindow > maxThreshold) {
         const violationDetails = {
             cpsCount: eventsInWindow.toString(), // Actual number of clicks/attacks in the defined window
             windowSeconds: (calculationWindowMs / 1000).toFixed(1),
             threshold: maxThreshold.toString(),
-            // Example of more detailed info, if needed for deeper analysis (can make logs verbose)
-            // eventTimingsMsAgo: pData.attackEvents.map(ts => now - ts).slice(0, 10).join(',') // Last 10 event timings relative to now
         };
 
         const dependencies = { config, playerDataManager, playerUtils, logManager };
         await executeCheckAction(player, "combat_cps_high", violationDetails, dependencies);
-
-        // Optional: Consider clearing pData.attackEvents here if repeated flagging for the same burst is an issue.
-        // However, letting them naturally expire from the window by the filter is often preferred for continuous monitoring.
-        // If cleared: pData.attackEvents = []; pData.isDirtyForSave = true;
     }
 }

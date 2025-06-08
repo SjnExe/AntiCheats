@@ -55,8 +55,8 @@ export async function checkAutoTool(
     if (!config.enableAutoToolCheck || !pData) { return; }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-    const switchToOptimalWindow = config.autoToolSwitchToOptimalWindowTicks ?? 2; // Default 2 ticks
-    const switchBackWindow = config.autoToolSwitchBackWindowTicks ?? 5; // Default 5 ticks
+    const switchToOptimalWindow = config.autoToolSwitchToOptimalWindowTicks ?? 2;
+    const switchBackWindow = config.autoToolSwitchBackWindowTicks ?? 5;
 
     // Part 1: Detect switch to optimal tool just before/at the start of break
     if (pData.isAttemptingBlockBreak &&

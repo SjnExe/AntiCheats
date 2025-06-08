@@ -63,7 +63,7 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
     await playerDataManager.ensurePlayerDataInitialized(player, currentTick); // Use currentTick from global scope
 
     if (playerDataManager.isBanned(player)) {
-        eventData.cancel = true; // Prevent the player from joining
+        eventData.cancel = true;
 
         const banInfo = playerDataManager.getBanInfo(player);
         let detailedKickMessage = `§cYou are banned from this server.\n`;
@@ -132,7 +132,6 @@ eventHandlers.subscribeToCombatLogEvents(playerDataManager, config, playerUtils)
 mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
     // Pass necessary dependencies if checkIllegalItems (called via handlePlayerBreakBlock indirectly) needs them
     // For now, assuming checkIllegalItems gets what it needs from the event or pData
-    // eventHandlers.handlePlayerBreakBlock(eventData, playerDataManager); // Old call
     await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
@@ -141,7 +140,6 @@ mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
  * @param {mc.PlayerBreakBlockAfterEvent} eventData The event data.
  */
 mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => { // Made async
-    // eventHandlers.handlePlayerBreakBlockAfter(eventData, config, playerUtils); // Old call
     await eventHandlers.handlePlayerBreakBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
 });
 
@@ -213,7 +211,7 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
 // Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
-    if (config.enableTpaSystem) { // Only run if TPA system is enabled
+    if (config.enableTpaSystem) {
         tpaManager.clearExpiredRequests();
 
         // Process TPA warm-ups
@@ -239,9 +237,9 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
     let playerNameTag;
     try {
         playerNameTag = hurtEntity.nameTag; // This will throw if hurtEntity is not a Player-like object
-        if (typeof playerNameTag !== 'string') return; // Not a player
+        if (typeof playerNameTag !== 'string') return;
     } catch (e) {
-        return; // Not a player if nameTag access fails
+        return;
     }
 
 
@@ -265,7 +263,7 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
             }
 
             if (playerIsTeleporting) {
-                const damageCause = damageSource?.cause || 'unknown'; // Get cause if available
+                const damageCause = damageSource?.cause || 'unknown';
                 const reasonMsgPlayer = `§cTeleport cancelled: You took damage (cause: ${damageCause}).`;
                 const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
 
@@ -331,32 +329,26 @@ mc.system.runInterval(async () => {
         // ViewSnap check might need config and currentTick directly if not passed via dependencies object to all checks
         if (config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
 
-        // Call NoSlow Check
         if (config.enableNoSlowCheck && checks.checkNoSlow) {
             await checks.checkNoSlow(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        // Call InvalidSprint Check
         if (config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
             await checks.checkInvalidSprint(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        // Call AutoTool Check
         if (config.enableAutoToolCheck && checks.checkAutoTool) {
             await checks.checkAutoTool(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick, player.dimension);
         }
 
-        // Call NameSpoof Check
         if (config.enableNameSpoofCheck && checks.checkNameSpoof) {
             await checks.checkNameSpoof(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        // Call Anti-GMC Check
         if (config.enableAntiGMCCheck && checks.checkAntiGMC) {
             await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        // Call NetherRoof Check
         // Construct dependencies specifically for checkNetherRoof as its signature expects a 'dependencies' object
         const netherRoofDependencies = {
             config: config,

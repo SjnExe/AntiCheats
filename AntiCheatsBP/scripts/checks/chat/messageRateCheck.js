@@ -70,16 +70,14 @@ export async function checkMessageRate(
             const dependencies = { config, playerDataManager, playerUtils, logManager };
             await executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
-            // Check if the action profile specifies message cancellation
             if (actionProfile?.cancelMessage) {
                 shouldCancel = true;
             }
         }
     }
 
-    // Always update the timestamp to the current message's time
     pData.lastChatMessageTimestamp = currentTime;
-    pData.isDirtyForSave = true; // Mark data as dirty because lastChatMessageTimestamp changed
+    pData.isDirtyForSave = true;
 
     return shouldCancel;
 }

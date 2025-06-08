@@ -4,7 +4,6 @@
  * @version 1.0.0
  */
 import * as mc from '@minecraft/server';
-// import { getPlayerDimensionId } from '../../utils/dimensionUtils.js'; // Assuming a utility like this exists or will be created
 
 /**
  * Checks if a player is on top of the Nether roof.
@@ -21,8 +20,6 @@ export function checkNetherRoof(player, pData, dependencies) {
     }
 
     // It's more robust to use the actual dimension ID string directly.
-    // const playerDimension = getPlayerDimensionId(player); // Using utility
-    // const netherDimensionId = "minecraft:nether";
     // For direct comparison without a utility:
     if (player.dimension.id !== "minecraft:nether") {
          return;

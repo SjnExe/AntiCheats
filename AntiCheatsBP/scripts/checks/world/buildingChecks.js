@@ -61,7 +61,7 @@ export async function checkTower(
     if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? 20)) {
         pData.recentBlockPlacements.shift();
     }
-    pData.isDirtyForSave = true; // recentBlockPlacements modified
+    pData.isDirtyForSave = true;
 
     // Tower check logic
     const towerMaxGap = config.towerMaxTickGap ?? 10;
@@ -94,10 +94,10 @@ export async function checkTower(
             pData.currentPillarZ = null;
         }
     }
-    pData.isDirtyForSave = true; // Pillar state fields modified
+    pData.isDirtyForSave = true;
 
     const minHeight = config.towerMinHeight ?? 5;
-    const maxPitch = config.towerMaxPitchWhilePillaring ?? -30; // E.g. pitch > -30 (looking less down)
+    const maxPitch = config.towerMaxPitchWhilePillaring ?? -30;
 
     if ((pData.consecutivePillarBlocks ?? 0) >= minHeight && pitch > maxPitch) {
         const dependencies = { config, playerDataManager, playerUtils, logManager };
@@ -109,7 +109,6 @@ export async function checkTower(
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString()
         };
-        // Action profile name: config.towerActionProfileName ?? "world_tower_build"
         await executeCheckAction(player, "world_tower_build", violationDetails, dependencies);
         playerUtils.debugLog?.(`TowerCheck: Flagged ${player.nameTag} for tower height ${pData.consecutivePillarBlocks} with pitch ${pitch.toFixed(1)} (Threshold: >${maxPitch}).`, watchedPrefix);
 
@@ -173,13 +172,10 @@ export async function checkFastPlace(
             maxBlocks: maxBlocks.toString(),
             blockType: block?.typeId ?? "unknown"
         };
-        // Action profile name: config.fastPlaceActionProfileName ?? "world_fast_place"
         await executeCheckAction(player, "world_fast_place", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog?.(`FastPlace: Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, watchedPrefix);
-        // Optional: Clear timestamps after flagging to require a new burst for re-flagging.
-        // pData.recentPlaceTimestamps = []; pData.isDirtyForSave = true;
     }
 }
 
@@ -265,7 +261,6 @@ export async function checkAirPlace(
                 z: blockLocation.z.toString(),
                 targetFaceType: targetBlock.typeId // e.g., "minecraft:air"
             };
-             // Action profile name: config.airPlaceActionProfileName ?? "world_air_place"
             await executeCheckAction(player, "world_air_place", violationDetails, dependencies);
             // eventData.cancel = true; // Consider cancelling based on action profile.
 
@@ -333,10 +328,10 @@ export async function checkDownwardScaffold(
     }
     pData.lastDownwardScaffoldTick = currentTick;
     pData.lastDownwardScaffoldBlockLocation = { x: blockLocation.x, y: blockLocation.y, z: blockLocation.z };
-    pData.isDirtyForSave = true; // State related to downward scaffold changed
+    pData.isDirtyForSave = true;
 
     const minBlocks = config.downwardScaffoldMinBlocks ?? 3;
-    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? 3.0; // BPS
+    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? 3.0;
 
     if ((pData.consecutiveDownwardBlocks ?? 0) >= minBlocks && horizontalSpeedBPS >= minHSpeed) {
         const dependencies = { config, playerDataManager, playerUtils, logManager };
@@ -348,7 +343,6 @@ export async function checkDownwardScaffold(
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString()
         };
-        // Action profile name: config.downwardScaffoldActionProfileName ?? "world_downward_scaffold"
         await executeCheckAction(player, "world_downward_scaffold", violationDetails, dependencies);
         playerUtils.debugLog?.(`DownwardScaffold: Flagged ${player.nameTag}. Blocks: ${pData.consecutiveDownwardBlocks}, Speed: ${horizontalSpeedBPS.toFixed(2)} BPS`, watchedPrefix);
 
@@ -400,7 +394,7 @@ export async function checkFlatRotationBuilding(
 
     const horizontalMin = config.flatRotationPitchHorizontalMin ?? -5.0;
     const horizontalMax = config.flatRotationPitchHorizontalMax ?? 5.0;
-    const downwardMin = config.flatRotationPitchDownwardMin ?? -90.0; // Typically 85-90 for straight down
+    const downwardMin = config.flatRotationPitchDownwardMin ?? -90.0;
     const downwardMax = config.flatRotationPitchDownwardMax ?? -85.0;
 
     for (const placement of relevantPlacements) {
@@ -463,7 +457,6 @@ export async function checkFlatRotationBuilding(
             minPitchObserved: minObservedPitch.toFixed(1),
             maxPitchObserved: maxObservedPitch.toFixed(1)
         };
-        // Action profile name: config.flatRotationActionProfileName ?? "world_flat_rotation_building"
         await executeCheckAction(player, "world_flat_rotation_building", violationDetails, dependencies);
         playerUtils.debugLog?.(`FlatRotationCheck: Flagged ${player.nameTag} for ${detectionReason}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix);
     }

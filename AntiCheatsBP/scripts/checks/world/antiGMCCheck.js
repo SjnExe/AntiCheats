@@ -95,7 +95,7 @@ export async function checkAntiGmc(
                 autoSwitched: autoSwitchedGameMode.toString(), // Stringify boolean for details
                 permissionLevel: playerPermLevel.toString()   // Stringify number for details
             };
-            const actionProfileName = config.antiGmcActionProfileName ?? "player_antigmc"; // Matches function name style
+            const actionProfileName = config.antiGmcActionProfileName ?? "player_antigmc";
             await executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
             if (pData.isWatched && playerUtils.debugLog) {
