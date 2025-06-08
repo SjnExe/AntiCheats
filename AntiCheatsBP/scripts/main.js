@@ -152,16 +152,22 @@ mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
 });
 
 /**
- * Handles player place block events before they occur.
- * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
+ * Handles item use on block events before they occur, for AntiGrief (Fire) and IllegalItem checks.
+ * @param {mc.ItemUseOnBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
-    // TODO: Review this subscription. handleItemUseOn is typically for ItemUseOnBeforeEvent.
-    // PlayerPlaceBlockBeforeEvent is passed here. This might lead to issues if handleItemUseOn
-    // or its downstream checks (like checkIllegalItems for "place") expect properties unique to ItemUseOnBeforeEvent
-    // that are not present or different in PlayerPlaceBlockBeforeEvent (e.g., faceLocation object vs. faceLocationX/Y/Z).
-    // For now, keeping as is from previous state, but needs verification.
-    eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
+mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => { // Changed to itemUseOn and made async
+    const eventDependencies = {
+        config: config.editableConfigValues, // Pass runtime editable config
+        playerUtils: playerUtils,
+        logManager: logManager,
+        actionManager: { executeCheckAction },
+        playerDataManager: playerDataManager, // Added for consistency if executeCheckAction needs it via dependencies
+        checks: checks // Pass checks object if handleItemUseOn calls other checks directly
+    };
+    // Original parameters are still passed for now, but handleItemUseOn should ideally use the 'dependencies' object.
+    // The signature of handleItemUseOn was: (eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, dependencies)
+    // We will call it with the new consolidated dependencies object.
+    await eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config.editableConfigValues, logManager, executeCheckAction, eventDependencies);
 });
 
 /**
@@ -171,6 +177,18 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
 mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
     // currentTick from main.js scope is passed to the handler
     await eventHandlers.handlePlayerPlaceBlockBefore(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+
+    // Call AntiGrief TNT check
+    const antiGriefDependencies = {
+        config: config.editableConfigValues, // Pass the editable config values
+        playerUtils: playerUtils,
+        logManager: logManager,
+        actionManager: { executeCheckAction } // Pass the executeCheckAction function
+        // playerDataManager is not explicitly listed as a direct dependency for handlePlayerPlaceBlockBeforeEvent_AntiGrief
+        // but executeCheckAction might need it via its own 'dependencies' argument.
+        // The 'dependencies' object passed to executeCheckAction from within AntiGrief handler will include playerDataManager.
+    };
+    await eventHandlers.handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, antiGriefDependencies);
 });
 
 /**
@@ -212,6 +230,21 @@ mc.world.afterEvents.entityDie.subscribe(async (eventData) => {
     // Assuming 'config' here refers to the imported 'config.js' module,
     // and editableConfigValues holds the runtime values.
     await eventHandlers.handleEntityDieForDeathEffects(eventData, config.editableConfigValues);
+});
+
+/**
+ * Handles entity spawn events, for AntiGrief checks (e.g., Wither control).
+ * @param {mc.EntitySpawnAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
+    const antiGriefDependencies = {
+        config: config.editableConfigValues,
+        playerUtils: playerUtils,
+        logManager: logManager,
+        actionManager: { executeCheckAction },
+        playerDataManager: playerDataManager // ensure playerDataManager is available if needed by executeCheckAction's internals
+    };
+    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, antiGriefDependencies);
 });
 
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)

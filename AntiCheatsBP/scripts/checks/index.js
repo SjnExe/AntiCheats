@@ -23,12 +23,13 @@ export * from './combat/stateConflictCheck.js';
 // World Checks
 export * from './world/nukerCheck.js';
 export * from './world/illegalItemCheck.js';
-export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirPlace, checkFastPlace } from './world/buildingChecks.js';
+export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirPlace, checkFastPlace, checkBlockSpam, checkBlockSpamDensity } from './world/buildingChecks.js';
 export { checkFastUse } from './world/fastUseCheck.js';
 export { checkAutoTool } from './world/autoToolCheck.js';
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
 export { checkNameSpoof } from './world/nameSpoofCheck.js';
 export { checkAntiGMC } from './world/antiGMCCheck.js';
+export * from './world/entityChecks.js'; // Exporting checkEntitySpam
 
 // Player Behavior Checks
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';

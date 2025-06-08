@@ -5,8 +5,11 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
+// ItemStack is part of mc, no need for separate import unless it's a custom class
 import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
-import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js'; // Added isNetherLocked, isEndLocked
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked, playerUtils as PlayerUtilsImport } from '../utils/index.js'; // Added isNetherLocked, isEndLocked, playerUtils
+import { editableConfigValues as ConfigValuesImport } from '../config.js'; // For AntiGrief
+
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
 
@@ -236,6 +239,173 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
+    }
+}
+
+/**
+ * Handles entity spawn events, specifically for Wither Anti-Grief.
+ * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData - The event data.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Dependencies needed by the handler.
+ * @returns {Promise<void>}
+ */
+export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) {
+    const { config, playerUtils, logManager, actionManager } = dependencies;
+
+    // Ensure config is the editableConfigValues object
+    const currentConfig = config || ConfigValuesImport;
+    const actualPlayerUtils = playerUtils || PlayerUtilsImport; // Fallback if not in dependencies
+
+    if (!currentConfig.enableWitherAntiGrief) {
+        return;
+    }
+
+    if (eventData.entity?.typeId === "minecraft:wither") {
+        const witherEntity = eventData.entity;
+        let actionTaken = currentConfig.witherSpawnAction;
+        let playerNameOrContext = "Unknown/Environment"; // Default context
+
+        // Known Limitation: EntitySpawnAfterEvent does not directly provide the spawning player.
+        // If allowAdminWitherSpawn is true, we cannot reliably exempt admin-spawned Withers here
+        // without a more complex player activity tracking system leading up to the spawn.
+        // Thus, if enableWitherAntiGrief is true, the action applies to ALL Wither spawns
+        // unless allowAdminWitherSpawn is false (which also makes it apply to all).
+        // For now, the check for allowAdminWitherSpawn is implicitly handled by the fact that
+        // we can't identify the spawner. If a mechanism is added later to identify the spawner,
+        // then an exemption for admins could be added here.
+
+        actualPlayerUtils.debugLog(`AntiGrief: Wither spawned (ID: ${witherEntity.id}). Config action: ${actionTaken}. allowAdminWitherSpawn is ${currentConfig.allowAdminWitherSpawn} (currently not usable for exemption in this event).`, null);
+
+        const violationDetails = {
+            playerNameOrContext: playerNameOrContext,
+            checkType: "AntiGrief Wither",
+            entityId: witherEntity.id,
+            entityLocation: { x: witherEntity.location.x, y: witherEntity.location.y, z: witherEntity.location.z }, // Store location object
+            actionTaken: actionTaken, // Initial action
+            detailsString: `A Wither (ID: ${witherEntity.id}) was spawned at ${witherEntity.location.x.toFixed(1)},${witherEntity.location.y.toFixed(1)},${witherEntity.location.z.toFixed(1)}. Configured action: ${actionTaken}.`
+        };
+
+        try {
+            if (actionTaken === "kill" || actionTaken === "prevent") {
+                if (witherEntity.isValid()) { // Check if entity is still valid before trying to kill
+                    witherEntity.kill();
+                    violationDetails.detailsString = `A Wither (ID: ${witherEntity.id}) was spawned and killed by AntiGrief at ${violationDetails.entityLocation.x.toFixed(1)},${violationDetails.entityLocation.y.toFixed(1)},${violationDetails.entityLocation.z.toFixed(1)}.`;
+                    violationDetails.actionTaken = actionTaken === "prevent" ? "prevent (executed as kill)" : "kill (executed)";
+                    actualPlayerUtils.debugLog(`AntiGrief: Wither (ID: ${witherEntity.id}) killed. Action: ${violationDetails.actionTaken}`, null);
+                } else {
+                    violationDetails.detailsString = `A Wither (ID: ${witherEntity.id}) was spawned but was invalid before kill action could be taken. Original action: ${actionTaken}.`;
+                    violationDetails.actionTaken = actionTaken + " (entity invalid)";
+                    actualPlayerUtils.debugLog(`AntiGrief: Wither (ID: ${witherEntity.id}) was invalid before kill. Action: ${actionTaken}`, null);
+                }
+            } else if (actionTaken === "logOnly") {
+                // Details string already set
+                 actualPlayerUtils.debugLog(`AntiGrief: Wither (ID: ${witherEntity.id}) spawn logged. Action: logOnly`, null);
+            } else {
+                actualPlayerUtils.debugLog(`AntiGrief: Unknown witherSpawnAction: ${actionTaken} for Wither (ID: ${witherEntity.id}). Defaulting to logOnly.`, null);
+                violationDetails.detailsString = `A Wither (ID: ${witherEntity.id}) was spawned. Unknown action '${actionTaken}' configured, defaulted to logOnly.`;
+                violationDetails.actionTaken = "logOnly (unknown config)";
+            }
+        } catch (error) {
+            actualPlayerUtils.debugLog(`AntiGrief: Error during Wither action '${actionTaken}': ${error}`, null);
+            violationDetails.detailsString += ` Error during action: ${error.message}.`;
+            violationDetails.actionTaken = actionTaken + " (error)";
+        }
+
+        // Log and notify for all actions (flagging might be too aggressive for environmental spawns)
+        // Passing null for player as spawner is unknown.
+        // The checkActionProfile for 'world_antigrief_wither_spawn' should be configured for logging/notification but perhaps not aggressive flagging by default.
+        if (actionManager && typeof actionManager.executeCheckAction === 'function') {
+            await actionManager.executeCheckAction("world_antigrief_wither_spawn", null, violationDetails, dependencies);
+        } else {
+            actualPlayerUtils.debugLog("AntiGrief: actionManager or executeCheckAction is not available for Wither check.", null);
+            if (logManager && typeof logManager.addLog === 'function') {
+                 logManager.addLog({
+                    adminName: "SYSTEM (AntiGrief)",
+                    actionType: "antigrief_wither_spawn_fallback",
+                    targetName: playerNameOrContext, // "Unknown/Environment"
+                    details: violationDetails.detailsString
+                });
+            }
+        }
+    }
+}
+
+/**
+ * Handles logic before a player places a block, specifically for AntiGrief (TNT control).
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The event data.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Dependencies needed by the handler.
+ * @returns {Promise<void>}
+ */
+export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
+    const { config, playerUtils, logManager, actionManager } = dependencies;
+
+    // Ensure config is the editableConfigValues object from config.js
+    // If dependencies.config is already the correct one, this check might be redundant
+    // but good for safety if the structure of 'dependencies' can vary.
+    const currentConfig = config || ConfigValuesImport;
+
+
+    if (!currentConfig.enableTntAntiGrief) {
+        return;
+    }
+
+    // eventData.itemStack should be of type ItemStack.
+    // eventData.block refers to the block being placed against.
+    // The location where TNT would be placed is eventData.block.location offset by face, or eventData.blockFace if using PlayerPlaceBlockAfterEvent
+    // For PlayerPlaceBlockBeforeEvent, eventData.block.location is where it *would* be placed.
+    // Let's assume eventData.block.location is the intended placement spot for simplicity here.
+
+    if (eventData.itemStack?.typeId === "minecraft:tnt") {
+        const actualPlayerUtils = playerUtils || PlayerUtilsImport; // Use imported if not in dependencies
+        const playerPermission = actualPlayerUtils.getPlayerPermissionLevel(eventData.player);
+
+        if (currentConfig.allowAdminTntPlacement && playerPermission <= permissionLevels.admin) {
+            // actualPlayerUtils.debugLog(`AntiGrief: Admin ${eventData.player.nameTag} allowed to place TNT.`, eventData.player.nameTag);
+            return; // Allow placement for admins/owners
+        }
+
+        // Unauthorized TNT placement
+        const actionTaken = currentConfig.tntPlacementAction;
+        const placementLocation = eventData.block.location; // Location where the TNT would be placed
+
+        const violationDetails = {
+            playerName: eventData.player.nameTag,
+            checkType: "AntiGrief TNT",
+            x: placementLocation.x,
+            y: placementLocation.y,
+            z: placementLocation.z,
+            actionTaken: actionTaken,
+            detailsString: `Player ${eventData.player.nameTag} tried to place TNT at ${placementLocation.x.toFixed(1)},${placementLocation.y.toFixed(1)},${placementLocation.z.toFixed(1)}. Action: ${actionTaken}`
+        };
+
+        if (actionManager && typeof actionManager.executeCheckAction === 'function') {
+             await actionManager.executeCheckAction("world_antigrief_tnt_place", eventData.player, violationDetails, dependencies);
+        } else {
+            actualPlayerUtils.debugLog("AntiGrief: actionManager or executeCheckAction is not available for TNT check.", eventData.player.nameTag);
+            if (logManager && typeof logManager.addLog === 'function') {
+                 logManager.addLog({
+                    adminName: "SYSTEM (AntiGrief)",
+                    actionType: "antigrief_tnt_placement_fallback",
+                    targetName: eventData.player.nameTag,
+                    details: violationDetails.detailsString
+                });
+            }
+        }
+
+        switch (actionTaken) {
+            case "remove":
+                eventData.cancel = true;
+                eventData.player.sendMessage("§c[AntiGrief] TNT placement is restricted here.");
+                break;
+            case "warn":
+                eventData.player.sendMessage("§e[AntiGrief] Warning: TNT placement is monitored.");
+                break;
+            case "logOnly":
+                // Logging and admin notification handled by actionManager
+                break;
+            default:
+                actualPlayerUtils.debugLog(`AntiGrief: Unknown tntPlacementAction '${actionTaken}' for ${eventData.player.nameTag}. Defaulting to logOnly.`, eventData.player.nameTag);
+                break;
+        }
     }
 }
 
@@ -671,6 +841,112 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
     if (checks.checkIllegalItems && config.enableIllegalItemCheck) {
         await checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
     }
+    if (eventData.cancel) return; // If cancelled by illegal item check or others above
+
+    // Anti-Grief Entity Spam Logic for Spawn Eggs (ItemUse event)
+    // The 'dependencies' object is not typically passed to handleItemUse in main.js in the same way as handleItemUseOn.
+    // We rely on parameters passed directly to handleItemUse, and direct imports if necessary.
+    // 'config' parameter here is the main config, so ConfigValuesImport (config.editableConfigValues) is used for runtime values.
+    // 'checks' parameter contains the checkEntitySpam function.
+    // 'currentTick' is passed as a parameter.
+
+    const itemTypeIdForSpawnEgg = itemStack.typeId;
+    let derivedEntityTypeFromSpawnEgg = null;
+
+    if (ConfigValuesImport.enableEntitySpamAntiGrief && itemTypeIdForSpawnEgg.endsWith("_spawn_egg")) {
+        // Derive entity type: "minecraft:pig_spawn_egg" -> "minecraft:pig"
+        let entityName = itemTypeIdForSpawnEgg.substring(0, itemTypeIdForSpawnEgg.length - "_spawn_egg".length);
+        if (entityName.startsWith("minecraft:")) { // Ensure it's not double-namespaced if item ID was already full
+            entityName = entityName.substring("minecraft:".length);
+        }
+        const potentialFullEntityId = "minecraft:" + entityName;
+
+        if (ConfigValuesImport.entitySpamMonitoredEntityTypes && ConfigValuesImport.entitySpamMonitoredEntityTypes.includes(potentialFullEntityId)) {
+            derivedEntityTypeFromSpawnEgg = potentialFullEntityId;
+        }
+    }
+
+    if (derivedEntityTypeFromSpawnEgg && checks?.checkEntitySpam) {
+        if (pData) { // pData should have been initialized at the start of handleItemUse
+            const spamDetected = await checks.checkEntitySpam(
+                player,
+                derivedEntityTypeFromSpawnEgg,
+                ConfigValuesImport, // Pass the runtime editable config
+                pData,
+                playerUtils,
+                playerDataManager,
+                logManager,
+                executeCheckAction, // This is the function itself
+                currentTick
+            );
+
+            if (spamDetected) {
+                if (ConfigValuesImport.entitySpamAction === "kill") { // "kill" here means prevent item use
+                    eventData.cancel = true;
+                    player.sendMessage("§c[AntiGrief] You are using spawn eggs too quickly!");
+                    playerUtils.debugLog?.(`EntitySpam (ItemUse): Prevented spawn egg use for ${player.nameTag} (entity: ${derivedEntityTypeFromSpawnEgg}) due to spam detection.`, pData.isWatched ? player.nameTag : null);
+                } else if (ConfigValuesImport.entitySpamAction === "warn") {
+                    player.sendMessage("§e[AntiGrief] Warning: Using spawn eggs too quickly is monitored.");
+                    // Admin notification is handled by checkEntitySpam via actionManager
+                }
+                // For "logOnly", no direct player message; actionManager handles logs/notifications.
+            }
+        } else {
+            playerUtils.debugLog?.(`EntitySpam (ItemUse): pData not available for ${player.nameTag}, skipping check for ${itemTypeIdForSpawnEgg}.`, null);
+        }
+    }
+    if (eventData.cancel) return;
+
+    // Anti-Grief Entity Spam Logic for Spawn Eggs (ItemUse event)
+    // Dependencies are passed differently to handleItemUse in main.js, so we need to access them directly or ensure they are passed.
+    // For this integration, we assume 'config', 'playerUtils', 'playerDataManager', 'logManager', 'checks.checkEntitySpam',
+    // 'executeCheckAction', and 'currentTick' are available via the parameters or broader scope if main.js is updated.
+    // Let's assume 'dependencies' is NOT passed to handleItemUse, so we use direct params and imported values.
+
+    const itemTypeIdForSpawnEgg = itemStack.typeId;
+    let derivedEntityTypeFromSpawnEgg = null;
+
+    if (ConfigValuesImport.enableEntitySpamAntiGrief && itemTypeIdForSpawnEgg.endsWith("_spawn_egg")) {
+        const entityName = itemTypeIdForSpawnEgg.substring("minecraft:".length, itemTypeIdForSpawnEgg.length - "_spawn_egg".length);
+        // Fallback for older spawn eggs that might not have "minecraft:" prefix if itemTypeId is just "pig_spawn_egg"
+        // However, itemStack.typeId from vanilla should always include the namespace.
+        // const entityName = itemTypeIdForSpawnEgg.startsWith("minecraft:") ? itemTypeIdForSpawnEgg.substring("minecraft:".length, itemTypeIdForSpawnEgg.length - "_spawn_egg".length) : itemTypeIdForSpawnEgg.substring(0, itemTypeIdForSpawnEgg.length - "_spawn_egg".length);
+
+        const potentialFullEntityId = "minecraft:" + entityName; // Assuming all vanilla spawn eggs produce entities in minecraft namespace
+
+        if (ConfigValuesImport.entitySpamMonitoredEntityTypes && ConfigValuesImport.entitySpamMonitoredEntityTypes.includes(potentialFullEntityId)) {
+            derivedEntityTypeFromSpawnEgg = potentialFullEntityId;
+        }
+    }
+
+    if (derivedEntityTypeFromSpawnEgg && checks?.checkEntitySpam) {
+        // pData should already be initialized and available from the start of handleItemUse.
+        if (pData) {
+            const spamDetected = await checks.checkEntitySpam(
+                player,
+                derivedEntityTypeFromSpawnEgg,
+                ConfigValuesImport, // Use imported config values
+                pData,
+                playerUtils,    // Direct parameter
+                playerDataManager, // Direct parameter
+                logManager,     // Direct parameter
+                executeCheckAction, // Direct parameter
+                currentTick     // Direct parameter
+            );
+
+            if (spamDetected) {
+                if (ConfigValuesImport.entitySpamAction === "kill") { // Prevent item use
+                    eventData.cancel = true;
+                    player.sendMessage("§c[AntiGrief] You are using spawn eggs too quickly!");
+                    playerUtils.debugLog?.(`EntitySpam (ItemUse): Prevented spawn egg use for ${player.nameTag} due to spam detection of ${derivedEntityTypeFromSpawnEgg}`, player.nameTag);
+                } else if (ConfigValuesImport.entitySpamAction === "warn") {
+                    player.sendMessage("§e[AntiGrief] Warning: Using spawn eggs too quickly is monitored.");
+                }
+            }
+        } else {
+            playerUtils.debugLog?.(`EntitySpam (ItemUse): pData not available for ${player.nameTag}, skipping check.`, player.nameTag);
+        }
+    }
 }
 
 /**
@@ -683,20 +959,227 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
  */
-export async function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) {
+export async function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, dependencies) { // Added dependencies
     // currentTick is not available here without passing it from main.js through the event subscription.
     // If ensurePlayerDataInitialized is needed, this handler's signature in main.js needs currentTick.
+    // For AntiGrief, we'll use dependencies passed from main.js
+
     const { source: player, itemStack } = eventData;
     if (player?.typeId !== 'minecraft:player') return;
 
-    // Using getPlayerData and checking for null, as currentTick isn't available for ensurePlayerDataInitialized.
-    // Checks using this pData must be robust against potentially missing fields if it's not fully initialized.
-    const pData = playerDataManager.getPlayerData(player.id);
-    // If pData is crucial and might be null, consider alternative ways to get currentTick or adjust check logic.
+    // Anti-Grief Dependencies (ensuring they are available)
+    const depConfig = dependencies?.config || ConfigValuesImport; // Renamed to avoid conflict with direct param 'config'
+    const depPlayerUtils = dependencies?.playerUtils || PlayerUtilsImport;
+    const depActionManager = dependencies?.actionManager;
+    const depLogManager = dependencies?.logManager;
+    const depPlayerDataManager = dependencies?.playerDataManager;
+    const depChecks = dependencies?.checks;
+    const depCurrentTick = dependencies?.currentTick;
 
+    const placeableEntityItemMap = {
+        "minecraft:oak_boat": "minecraft:boat", "minecraft:spruce_boat": "minecraft:boat",
+        "minecraft:birch_boat": "minecraft:boat", "minecraft:jungle_boat": "minecraft:boat",
+        "minecraft:acacia_boat": "minecraft:boat", "minecraft:dark_oak_boat": "minecraft:boat",
+        "minecraft:mangrove_boat": "minecraft:boat", "minecraft:cherry_boat": "minecraft:boat",
+        "minecraft:bamboo_raft": "minecraft:boat",
+        "minecraft:armor_stand": "minecraft:armor_stand",
+        "minecraft:item_frame": "minecraft:item_frame",
+        "minecraft:glow_item_frame": "minecraft:glow_item_frame",
+        "minecraft:minecart": "minecraft:minecart",
+        "minecraft:chest_minecart": "minecraft:chest_minecart",
+        "minecraft:furnace_minecart": "minecraft:furnace_minecart",
+        "minecraft:tnt_minecart": "minecraft:tnt_minecart",
+        "minecraft:hopper_minecart": "minecraft:hopper_minecart",
+        "minecraft:command_block_minecart": "minecraft:command_block_minecart"
+    };
+
+    // --- Anti-Grief Fire Logic ---
+    if (griefConfig.enableFireAntiGrief) {
+        const itemUsedForFire = itemStack.typeId;
+        if (itemUsedForFire === 'minecraft:flint_and_steel' || itemUsedForFire === 'minecraft:fire_charge') {
+            const playerPermission = griefPlayerUtils.getPlayerPermissionLevel(player);
+
+            if (!(griefConfig.allowAdminFire && playerPermission <= permissionLevels.admin)) {
+                const actionTaken = griefConfig.fireControlAction;
+                const violationDetails = {
+                    playerNameOrContext: player.nameTag,
+                    checkType: "AntiGrief Fire",
+                    itemUsed: itemUsedForFire,
+                    targetBlock: eventData.block?.typeId || 'N/A',
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z },
+                    actionTaken: actionTaken,
+                    detailsString: `Player ${player.nameTag} attempted to start a fire with ${itemUsedForFire} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                };
+
+                if (griefActionManager && typeof griefActionManager.executeCheckAction === 'function') {
+                    await griefActionManager.executeCheckAction("world_antigrief_fire", player, violationDetails, dependencies);
+                } else {
+                    griefPlayerUtils.debugLog("AntiGrief Fire: actionManager or executeCheckAction is not available.", player.nameTag);
+                     if (griefLogManager && typeof griefLogManager.addLog === 'function') {
+                        griefLogManager.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_fire_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    }
+                }
+
+                switch (actionTaken) {
+                    case "extinguish":
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] Fire starting is restricted here.");
+                        break;
+                    case "warn":
+                        player.sendMessage("§e[AntiGrief] Warning: Fire starting is monitored.");
+                        break;
+                    case "logOnly":
+                        break;
+                }
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Fire Anti-Grief
+
+    // --- Anti-Grief Lava Logic ---
+    if (griefConfig.enableLavaAntiGrief) {
+        const itemUsedForLava = itemStack.typeId;
+        if (itemUsedForLava === 'minecraft:lava_bucket') {
+            const playerPermission = griefPlayerUtils.getPlayerPermissionLevel(player);
+
+            if (!(griefConfig.allowAdminLava && playerPermission <= permissionLevels.admin)) {
+                const actionTaken = griefConfig.lavaPlacementAction;
+                const violationDetails = {
+                    playerNameOrContext: player.nameTag,
+                    checkType: "AntiGrief Lava",
+                    itemUsed: itemUsedForLava,
+                    targetBlock: eventData.block?.typeId || 'N/A',
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z },
+                    actionTaken: actionTaken,
+                    detailsString: `Player ${player.nameTag} attempted to place lava with ${itemUsedForLava} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                };
+
+                if (griefActionManager && typeof griefActionManager.executeCheckAction === 'function') {
+                    await griefActionManager.executeCheckAction("world_antigrief_lava", player, violationDetails, dependencies);
+                } else {
+                    griefPlayerUtils.debugLog("AntiGrief Lava: actionManager or executeCheckAction is not available.", player.nameTag);
+                    if (griefLogManager && typeof griefLogManager.addLog === 'function') {
+                        griefLogManager.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_lava_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    }
+                }
+
+                switch (actionTaken) {
+                    case "remove":
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] Lava placement is restricted here.");
+                        break;
+                    case "warn":
+                        player.sendMessage("§e[AntiGrief] Warning: Lava placement is monitored.");
+                        break;
+                    case "logOnly":
+                        break;
+                }
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Lava Anti-Grief
+
+    // --- Anti-Grief Water Logic ---
+    if (griefConfig.enableWaterAntiGrief) {
+        const itemUsedForWater = itemStack.typeId;
+        if (itemUsedForWater === 'minecraft:water_bucket') {
+            const playerPermission = griefPlayerUtils.getPlayerPermissionLevel(player);
+
+            if (!(griefConfig.allowAdminWater && playerPermission <= permissionLevels.admin)) {
+                const actionTaken = griefConfig.waterPlacementAction;
+                const violationDetails = {
+                    playerNameOrContext: player.nameTag,
+                    checkType: "AntiGrief Water",
+                    itemUsed: itemUsedForWater,
+                    targetBlock: eventData.block?.typeId || 'N/A',
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z },
+                    actionTaken: actionTaken,
+                    detailsString: `Player ${player.nameTag} attempted to place water with ${itemUsedForWater} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                };
+
+                if (griefActionManager && typeof griefActionManager.executeCheckAction === 'function') {
+                    await griefActionManager.executeCheckAction("world_antigrief_water", player, violationDetails, dependencies);
+                } else {
+                    griefPlayerUtils.debugLog("AntiGrief Water: actionManager or executeCheckAction is not available.", player.nameTag);
+                    if (griefLogManager && typeof griefLogManager.addLog === 'function') {
+                        griefLogManager.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_water_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    }
+                }
+
+                switch (actionTaken) {
+                    case "remove":
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] Water placement is restricted here.");
+                        break;
+                    case "warn":
+                        player.sendMessage("§e[AntiGrief] Warning: Water placement is monitored.");
+                        break;
+                    case "logOnly":
+                        break;
+                }
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Water Anti-Grief
+
+    // --- Anti-Grief Entity Spam Logic (from ItemUseOn) ---
+    const itemUsedForEntitySpam = itemStack.typeId;
+    let correspondingEntityType = placeableEntityItemMap[itemUsedForEntitySpam];
+
+    // If not in map, but itemID itself is in monitoredEntityTypes (e.g. if armor_stand item ID is directly "minecraft:armor_stand")
+    // This handles cases where item ID and entity ID might be the same and explicitly monitored.
+    if (!correspondingEntityType && griefConfig.entitySpamMonitoredEntityTypes?.includes(itemUsedForEntitySpam)) {
+        correspondingEntityType = itemUsedForEntitySpam;
+    }
+
+    if (griefConfig.enableEntitySpamAntiGrief && correspondingEntityType && griefChecks?.checkEntitySpam) {
+        if (!eventData.cancel) { // Check if not already cancelled by previous anti-grief
+            const pDataForSpamCheck = await griefPlayerDataManager.ensurePlayerDataInitialized(player, currentTick);
+            if (pDataForSpamCheck) {
+                const spamDetected = await griefChecks.checkEntitySpam(
+                    player,
+                    correspondingEntityType,
+                    griefConfig, // Pass the correct config object (dependencies.config)
+                    pDataForSpamCheck,
+                    griefPlayerUtils,
+                    griefPlayerDataManager,
+                    griefLogManager, // Pass the correct logManager (dependencies.logManager)
+                    griefActionManager.executeCheckAction, // Pass the function itself
+                    currentTick
+                );
+
+                if (spamDetected) {
+                    if (griefConfig.entitySpamAction === "kill") { // Interpreted as "prevent" for ItemUseOn
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] You are placing these items too quickly!");
+                        griefPlayerUtils.debugLog?.(`EntitySpam: Prevented item use for ${player.nameTag} due to spam detection of ${correspondingEntityType}`, player.nameTag);
+                    } else if (griefConfig.entitySpamAction === "warn") {
+                        player.sendMessage("§e[AntiGrief] Warning: Placing these items too quickly is monitored.");
+                    }
+                    // Logging of detection is handled within checkEntitySpam via executeCheckAction
+                }
+            } else {
+                griefPlayerUtils.debugLog?.(`EntitySpam: Could not get pData for ${player.nameTag} in handleItemUseOn.`, player.nameTag);
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Entity Spam Anti-Grief
+
+
+    // Original logic for other checks (e.g., illegal item placement)
+    // Ensure pData is correctly initialized using dependencies if available, especially currentTick.
+    const pDataForIllegalItems = await depPlayerDataManager.ensurePlayerDataInitialized(player, depCurrentTick);
+
+    if (!pDataForIllegalItems) {
+        depPlayerUtils.debugLog?.(`IllegalItemCheck: Could not get pData for ${player.nameTag} in handleItemUseOn. Skipping check.`, player.nameTag);
+        return;
+    }
+
+    // 'checks', 'config', 'playerUtils', 'playerDataManager', 'logManager', 'executeCheckAction' here are the original direct parameters of handleItemUseOn.
+    // It's better to use the 'dep' versions if they are meant to be the same, or ensure clarity.
+    // For now, assuming the direct parameters are intended for checkIllegalItems as per its existing integration.
     if (checks.checkIllegalItems && config.enableIllegalItemCheck) {
-        // Pass `pData` which might be null. `checkIllegalItems` must handle this.
-        await checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        await checks.checkIllegalItems(player, itemStack, eventData, "place", pDataForIllegalItems, config, playerUtils, playerDataManager, logManager, executeCheckAction);
     }
 }
 
@@ -773,6 +1256,34 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
     if (checks.checkFlatRotationBuilding && config.enableFlatRotationCheck) await checks.checkFlatRotationBuilding(...commonArgs);
     if (checks.checkDownwardScaffold && config.enableDownwardScaffoldCheck) await checks.checkDownwardScaffold(...blockArgs);
     if (checks.checkFastPlace && config.enableFastPlaceCheck) await checks.checkFastPlace(...blockArgs);
+    // Call Block Spam (Rate) Check
+    if (dependencies.checks && dependencies.checks.checkBlockSpam) { // Ensure dependencies and the check exist
+        await dependencies.checks.checkBlockSpam(
+            player,
+            pData,
+            block, // eventData.block
+            dependencies.config,
+            dependencies.playerUtils,
+            dependencies.playerDataManager,
+            dependencies.logManager,
+            dependencies.actionManager.executeCheckAction,
+            dependencies.currentTick
+        );
+    }
+    // Call Block Spam Density Check
+    if (dependencies.checks && dependencies.checks.checkBlockSpamDensity) {
+        await dependencies.checks.checkBlockSpamDensity(
+            player,
+            pData,
+            block, // eventData.block
+            dependencies.config,
+            dependencies.playerUtils,
+            dependencies.playerDataManager,
+            dependencies.logManager,
+            dependencies.actionManager.executeCheckAction,
+            dependencies.currentTick
+        );
+    }
 }
 
 /**

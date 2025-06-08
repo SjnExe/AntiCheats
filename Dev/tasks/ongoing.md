@@ -3,49 +3,55 @@
 This list tracks features and tasks that are currently under development.
 
 ## Features in Progress
-*No major features currently in active, multi-step development.*
+*   **Anti-Grief System:** (Moved from todo.md)
+    *   **Phase 1: TNT Control (Completed):**
+        *   Implemented configuration options (`enableTntAntiGrief`, `allowAdminTntPlacement`, `tntPlacementAction`) in `config.js`.
+        *   Added event handler to monitor `minecraft:tnt` placement.
+        *   Unauthorized TNT placement is handled based on `tntPlacementAction` (remove, warn, logOnly), with appropriate player/admin notifications and logging via `actionManager`.
+        *   Defined conceptual test cases for TNT control in `Dev/tests/AntiGriefTests.md`.
+            *   Default set to disabled (`enableTntAntiGrief: false`) as per user request.
+        *   **Phase 2: Wither Control (Completed - Kill/Log Actions):**
+            *   Implemented configuration options (`enableWitherAntiGrief`, `allowAdminWitherSpawn`, `witherSpawnAction`) in `config.js`.
+            *   Default set to disabled (`enableWitherAntiGrief: false`) as per user request.
+            *   Added event handler for `entitySpawn` to monitor Wither spawns (`minecraft:wither`).
+            *   Unauthorized Wither spawns are handled based on `witherSpawnAction` ("kill", "prevent" (as kill), "logOnly").
+            *   Admin notifications and logging are handled via `actionManager` profile `world_antigrief_wither_spawn`.
+            *   Noted limitation: Spawner identification is difficult with `entitySpawn`, so `allowAdminWitherSpawn` currently doesn't exempt admin-spawned Withers if the feature is active.
+        *   **Phase 3: Fire Control (Completed - Initial Ignition Control):**
+            *   Implemented configuration options (`enableFireAntiGrief`, `allowAdminFire`, `fireControlAction`, etc.) in `config.js`.
+            *   Default set to disabled (`enableFireAntiGrief: false`) as per user request.
+            *   Updated `handleItemUseOn` event handler to monitor Flint & Steel and Fire Charge usage.
+            *   Unauthorized fire starting attempts are handled based on `fireControlAction` ("extinguish" by cancelling event, "warn", "logOnly").
+            *   Admin notifications and logging via `actionManager` profile `world_antigrief_fire`.
+            *   Noted: Advanced fire tracking (spread, duration, max blocks) is complex and deferred to future enhancements.
+    *   **Phase 4: Other Griefing Vectors (Partially Implemented):**
+        *   **Lava Placement Control (Completed - Bucket Use):**
+            *   Implemented configuration options (`enableLavaAntiGrief`, `allowAdminLava`, `lavaPlacementAction`) in `config.js`.
+            *   Default set to disabled (`enableLavaAntiGrief: false`) as per user request.
+            *   Updated `handleItemUseOn` event handler to monitor `minecraft:lava_bucket` usage.
+            *   Unauthorized lava placement attempts are handled based on `lavaPlacementAction` ("remove" by cancelling event, "warn", "logOnly").
+            *   Admin notifications and logging via `actionManager` profile `world_antigrief_lava`.
+            *   **Water Placement Control (Completed - Bucket Use):**
+                *   Implemented configuration options (`enableWaterAntiGrief`, `allowAdminWater`, `waterPlacementAction`) in `config.js`.
+                *   Default set to disabled (`enableWaterAntiGrief: false`) as per user request.
+                *   Updated `handleItemUseOn` event handler to monitor `minecraft:water_bucket` usage.
+                *   Unauthorized water placement attempts are handled based on `waterPlacementAction` ("remove" by cancelling event, "warn", "logOnly").
+                *   Admin notifications and logging via `actionManager` profile `world_antigrief_water`.
+            *   **Block Spam Control (Completed - Initial Rate-Based):**
+                *   Implemented configuration options (`enableBlockSpamAntiGrief`, `blockSpamBypassInCreative`, `blockSpamTimeWindowMs`, `blockSpamMaxBlocksInWindow`, `blockSpamMonitoredBlockTypes`, `blockSpamAction`) in `config.js`.
+                *   Default set to disabled (`enableBlockSpamAntiGrief: false`).
+                *   Added `checkBlockSpam` function to `buildingChecks.js` to monitor placement rate of all/specific blocks.
+                *   Called from `handlePlayerPlaceBlockAfterEvent`.
+                *   Unauthorized block spam attempts are handled based on `blockSpamAction` (e.g., "warn", "logOnly").
+                *   Admin notifications and logging via `actionManager` profile `world_antigrief_blockspam`.
+            *   **Entity Spam Control (Partially Implemented - Player-initiated spawns via `itemUse`/`itemUseOn`):**
+                *   Investigated entity spam techniques and documented strategy in `Dev/notes/EntitySpamDetectionStrategy.md` (including spawn egg strategy using `itemUse`/`itemUseOn`).
+                *   Implemented configuration options (`enableEntitySpamAntiGrief`, `entitySpamMonitoredEntityTypes`, etc.) in `config.js`, disabled by default.
+                *   Created `checkEntitySpam` function in `entityChecks.js` for rate-limiting spawns of monitored entities by a player.
+                *   Integrated `checkEntitySpam` into `handleItemUseOn` (for placeable entity items like boats, armor stands) and `handleItemUse` (for spawn eggs).
+                *   This allows for player-attributed spam detection and prevention for these item uses.
+                *   If spam is detected and `config.entitySpamAction === "kill"`, the item use event is cancelled, preventing entity spawn. Player is notified.
+                *   **Next Step (TODO):** Consider if any other significant player-driven entity spawn mechanisms (not covered by item use) need addressing, or if general non-attributable `entitySpawn` events still pose a high risk that needs a different (non-player-rate-limit) mitigation.
+        *   (TODO): Investigate other common griefing methods (e.g., piston grief) and potential mitigations. Advanced block spam detection (density/patterns) was investigated (see `Dev/notes/BlockSpamDetectionStrategy.md`) but not implemented due to subtask execution issues.
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.
-overwrite_file_with_block
-Dev/tasks/todo.md
-# To-Do / Future Tasks
-
-This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
-
-## High Priority / Next Up
-*No high priority tasks currently identified.*
-
-## Medium Priority
-
-*   **Advanced Cheat Detections:**
-    *   **Packet Anomalies / Chat Violations:**
-        *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
-        *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')
-
-*   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
-    *   **Enhanced Commands:**
-        *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
-    *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
-        *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
-        *   Investigate: In-game config editor via UI (for `config.js` values).
-    *   **System Features:** SjnExe parity goal.
-        *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
-
-*   **World Management & Protection:** SjnExe parity goal.
-    *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
-
-*   **Normal Player Panel Features (`!panel`):**
-
-## Low Priority / Ideas
-
-*   **Player Utilities & Experience:** SjnExe parity goal.
-    *   Death Effects: Investigate and implement cosmetic effects on player death.
-    *   Chat Formatting (potentially linked to the Rank System).
-*   **Logging Enhancements:** SjnExe parity goal.
-    *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
-*   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
-*   **AutoMod System Review & Future Enhancements:**
-    - Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.
-
-## Documentation & Workflow
-*   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

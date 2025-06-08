@@ -916,7 +916,7 @@ Implement Persistent Logging & UI Viewer for Admin Actions (Ban, Mute, Kick): Lo
 ## Admin Panel Config Editing, TP, and Gamemode Commands (Completed on 2025-06-05)
 
 *   **Admin Panel UI (`!panel`) Development:**
-    *   **View/Edit parts of `config.js`:** Implemented editing of simple configuration values (booleans, strings, numbers) in `config.js` via the Admin Panel. Changes are made in memory for the current session. This completes the task: "View/Edit parts of `config.js`: (View read-only: Completed; Edit simple values: TODO)".
+    *   **View/Edit parts of `config.js`:** Implemented editing of simple configuration values (booleans, strings, numbers) in `config.js` via the Admin Panel. Changes are made in memory for the current session. (Note: The UI for this feature was a placeholder at this time and not accessible. Full UI implementation completed on 2025-07-19). This completes the task: "View/Edit parts of `config.js`: (View read-only: Completed; Edit simple values: TODO)".
 *   **New Admin Commands (User Suggested):**
     *   **`!tp <playerName>` & `!tp <x> <y> <z>`:** Implemented teleport command for admins/owner.
         *   Supports teleporting a player to another player.
@@ -1092,6 +1092,17 @@ Removed the '### Text Commands' subsection and its table from the '## Admin Comm
 *(Date: Current Session)*
 
 Implemented a UI for viewing Ban/Unban and Mute/Unmute logs within the Admin Panel. Added 'View Moderation Logs' to the Server Management form (`showServerManagementForm`). This leads to a new UI flow (`showModLogTypeSelectionForm`) allowing selection of log type (Ban/Unban or Mute/Unmute) and optional filtering by player name. Logs are fetched from `logManager` and displayed in a `MessageFormData` (`showLogViewerForm`). Handled in `uiManager.js`.
+
+## Admin Panel / UI Enhancements (Completed on 2025-07-19)
+**Owner-Only Configuration Editor UI (`!panel`):**
+- Implemented a user interface within the Admin Panel (`!panel`) for editing configuration values from `config.js`.
+- Access to this editor is strictly restricted to players with 'owner' permission level.
+- The UI allows owners to view all `editableConfigValues`, select a configuration key, and modify its value.
+- Supports editing boolean, string, number, and array (via JSON string input) types.
+- Provides feedback on successful updates or errors during the process.
+- Changes are made in memory for the current session using the `updateConfigValue` function.
+- Configuration changes are logged via `logManager`.
+- This completes and clarifies the config editing functionality previously noted on 2025-06-05.
 
 ---
 *(Date: Current Session)*

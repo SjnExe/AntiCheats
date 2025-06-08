@@ -442,6 +442,113 @@ export const TPARequestCooldownSeconds = 10;
 /** @type {number} Duration in seconds a player must wait (warm-up) before teleportation occurs after a TPA request is accepted. Taking damage during warm-up cancels the teleport. */
 export const TPATeleportWarmupSeconds = 10;
 
+// --- Anti-Grief Settings ---
+/** @type {boolean} If true, the TNT Anti-Grief system is active. */
+export const enableTntAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to place TNT without restriction. */
+export const allowAdminTntPlacement = true;
+
+/** @type {string} Action to take for unauthorized TNT placement. Valid: "remove", "warn", "logOnly". */
+export const tntPlacementAction = "remove";
+
+/** @type {boolean} If true, the Wither Anti-Grief system is active. */
+export const enableWitherAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to spawn Withers without restriction. */
+export const allowAdminWitherSpawn = true;
+
+/** @type {string} Action to take for unauthorized Wither spawns. Valid: "prevent", "kill", "logOnly". */
+export const witherSpawnAction = "prevent";
+
+/** @type {boolean} If true, the Fire Anti-Grief system is active. */
+export const enableFireAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to start fires without restriction. */
+export const allowAdminFire = true;
+
+/** @type {number} Maximum number of fire blocks a non-admin can be responsible for in a defined scope/time. */
+export const maxPlayerStartedFires = 10;
+
+/** @type {number} Time in seconds. If a fire started by a player spreads for too long, consider extinguishing it. */
+export const fireSpreadDurationLimit = 60;
+
+/** @type {string} Action to take for unauthorized or excessive fire. Valid: "extinguish", "warn", "logOnly". */
+export const fireControlAction = "extinguish";
+
+/** @type {boolean} If true, the Lava Anti-Grief system is active. */
+export const enableLavaAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to place lava without restriction. */
+export const allowAdminLava = true;
+
+/** @type {string} Action to take for unauthorized lava placement. Valid: "remove", "warn", "logOnly". */
+export const lavaPlacementAction = "remove";
+
+/** @type {boolean} If true, the Water Anti-Grief system is active. */
+export const enableWaterAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to place water without restriction. */
+export const allowAdminWater = true;
+
+/** @type {string} Action to take for unauthorized water placement. Valid: "remove", "warn", "logOnly". */
+export const waterPlacementAction = "remove";
+
+/** @type {boolean} If true, the Block Spam Anti-Grief system is active. */
+export const enableBlockSpamAntiGrief = false;
+
+/** @type {boolean} If true, players in Creative mode bypass the block spam check. */
+export const blockSpamBypassInCreative = true;
+
+/** @type {number} Time window in milliseconds to count block placements for spam detection. */
+export const blockSpamTimeWindowMs = 1000;
+
+/** @type {number} Maximum blocks allowed in the time window before flagging for spam. */
+export const blockSpamMaxBlocksInWindow = 8;
+
+/** @type {string[]} List of block type IDs to specifically monitor for spam. If empty, all blocks are monitored. */
+export const blockSpamMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
+
+/** @type {string} Action to take for detected block spam. Valid: "warn", "logOnly". */
+export const blockSpamAction = "warn";
+
+/** @type {boolean} If true, the Entity Spam Anti-Grief system is active. */
+export const enableEntitySpamAntiGrief = false;
+
+/** @type {boolean} If true, players in Creative mode bypass the entity spam check. */
+export const entitySpamBypassInCreative = true;
+
+/** @type {number} Time window in milliseconds to count entity spawns for spam detection by a player. */
+export const entitySpamTimeWindowMs = 2000;
+
+/** @type {number} Maximum monitored entities a player can spawn in the time window before flagging. */
+export const entitySpamMaxSpawnsInWindow = 5;
+
+/** @type {string[]} List of entity type IDs to specifically monitor for spam. If empty, this check might be too broad or not trigger. */
+export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart"];
+
+/** @type {string} Action to take for detected entity spam. Valid: "kill", "warn", "logOnly". */
+export const entitySpamAction = "kill";
+
+/** @type {boolean} If true, the Density-Based Block Spam Anti-Grief system is active. */
+export const enableBlockSpamDensityCheck = false;
+
+/** @type {number} Radius for the density check cube (e.g., 1 means 3x3x3 cube). */
+export const blockSpamDensityCheckRadius = 1;
+
+/** @type {number} Time window in ticks to consider recent blocks for density calculation. */
+export const blockSpamDensityTimeWindowTicks = 60; // 3 seconds
+
+/** @type {number} Percentage of volume filled by player's recent blocks to trigger detection. */
+export const blockSpamDensityThresholdPercentage = 70;
+
+/** @type {string[]} List of block type IDs to specifically monitor for density spam. If empty, all blocks are monitored. */
+export const blockSpamDensityMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
+
+/** @type {string} Action to take for detected density block spam. Valid: "warn", "logOnly". */
+export const blockSpamDensityAction = "warn";
+
+
 // --- UI Display Texts ---
 /**
  * @type {string}
@@ -995,6 +1102,126 @@ export const checkActionProfiles = {
             message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
         },
         cancelMessage: true
+    },
+    "world_antigrief_tnt_place": {
+        enabled: true, // This will be controlled by enableTntAntiGrief at a higher level
+        flag: {
+            increment: 1,
+            reason: "Player attempted to place TNT without authorization.",
+            type: "antigrief_tnt"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_tnt_placement",
+            detailsPrefix: "AntiGrief TNT: "
+        }
+    },
+    "world_antigrief_wither_spawn": {
+        enabled: true, // This will be effectively controlled by enableWitherAntiGrief at a higher level
+        flag: {
+            increment: 5, // Wither griefing is severe
+            reason: "Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.",
+            type: "antigrief_wither"
+        },
+        notifyAdmins: {
+            message: "§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_wither_spawn",
+            detailsPrefix: "AntiGrief Wither: "
+        }
+    },
+    "world_antigrief_fire": {
+        enabled: true, // Effectively controlled by enableFireAntiGrief
+        flag: {
+            increment: 2,
+            reason: "Player involved in unauthorized or excessive fire incident.",
+            type: "antigrief_fire"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "antigrief_fire_incident",
+            detailsPrefix: "AntiGrief Fire: "
+        }
+    },
+    "world_antigrief_lava": {
+        enabled: true, // Effectively controlled by enableLavaAntiGrief
+        flag: {
+            increment: 2,
+            reason: "Player involved in unauthorized lava placement.",
+            type: "antigrief_lava"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "antigrief_lava_placement",
+            detailsPrefix: "AntiGrief Lava: "
+        }
+    },
+    "world_antigrief_water": {
+        enabled: true, // Effectively controlled by enableWaterAntiGrief
+        flag: {
+            increment: 1, // Water grief is often less permanent than lava/TNT
+            reason: "Player involved in unauthorized water placement.",
+            type: "antigrief_water"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "antigrief_water_placement",
+            detailsPrefix: "AntiGrief Water: "
+        }
+    },
+    "world_antigrief_blockspam": {
+        enabled: true, // Effectively controlled by enableBlockSpamAntiGrief
+        flag: {
+            increment: 1,
+            reason: "Player suspected of block spamming.",
+            type: "antigrief_blockspam"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_blockspam_detected",
+            detailsPrefix: "AntiGrief BlockSpam: "
+        }
+    },
+    "world_antigrief_entityspam": {
+        enabled: true, // Effectively controlled by enableEntitySpamAntiGrief
+        flag: {
+            increment: 1,
+            reason: "Player suspected of entity spamming.",
+            type: "antigrief_entityspam"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_entityspam_detected",
+            detailsPrefix: "AntiGrief EntitySpam: "
+        }
+    },
+    "world_antigrief_blockspam_density": {
+        enabled: true, // Effectively controlled by enableBlockSpamDensityCheck
+        flag: {
+            increment: 2, // Potentially more severe than just rate
+            reason: "Player suspected of block spamming (high density).",
+            type: "antigrief_blockspam_density" // Distinct flag type
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_blockspam_density_detected",
+            detailsPrefix: "AntiGrief BlockSpam (Density): "
+        }
     }
 };
 
@@ -1117,6 +1344,49 @@ export let editableConfigValues = {
     TPARequestTimeoutSeconds,
     TPARequestCooldownSeconds,
     TPATeleportWarmupSeconds,
+    // AntiGrief TNT Configs
+    enableTntAntiGrief,
+    allowAdminTntPlacement,
+    tntPlacementAction,
+    // AntiGrief Wither Configs
+    enableWitherAntiGrief,
+    allowAdminWitherSpawn,
+    witherSpawnAction,
+    // AntiGrief Fire Configs
+    enableFireAntiGrief,
+    allowAdminFire,
+    maxPlayerStartedFires,
+    fireSpreadDurationLimit,
+    fireControlAction,
+    // AntiGrief Lava Configs
+    enableLavaAntiGrief,
+    allowAdminLava,
+    lavaPlacementAction,
+    // AntiGrief Water Configs
+    enableWaterAntiGrief,
+    allowAdminWater,
+    waterPlacementAction,
+    // AntiGrief Block Spam Configs
+    enableBlockSpamAntiGrief,
+    blockSpamBypassInCreative,
+    blockSpamTimeWindowMs,
+    blockSpamMaxBlocksInWindow,
+    blockSpamMonitoredBlockTypes,
+    blockSpamAction,
+    // AntiGrief Entity Spam Configs
+    enableEntitySpamAntiGrief,
+    entitySpamBypassInCreative,
+    entitySpamTimeWindowMs,
+    entitySpamMaxSpawnsInWindow,
+    entitySpamMonitoredEntityTypes,
+    entitySpamAction,
+    // AntiGrief Density Block Spam Configs
+    enableBlockSpamDensityCheck,
+    blockSpamDensityCheckRadius,
+    blockSpamDensityTimeWindowTicks,
+    blockSpamDensityThresholdPercentage,
+    blockSpamDensityMonitoredBlockTypes,
+    blockSpamDensityAction,
 };
 
 /**
@@ -1153,22 +1423,45 @@ export function updateConfigValue(key, newValue) {
             console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected boolean, got unparsable string "${newValue}" for boolean. Update rejected.`);
             return false;
         }
-    } else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
+    } else if (Array.isArray(oldValue) && typeof newValue === 'string') {
+        // Special handling for stringified arrays for config editing, if needed.
+        // For now, assume arrays are passed as actual arrays.
+        // If string input for arrays is a requirement from UI:
+        // try {
+        //     const parsedArray = JSON.parse(newValue);
+        //     if (!Array.isArray(parsedArray)) {
+        //         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got non-array JSON string "${newValue}". Update rejected.`);
+        //         return false;
+        //     }
+        //     coercedNewValue = parsedArray;
+        // } catch (e) {
+        //     console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got unparsable JSON string "${newValue}". Update rejected.`);
+        //     return false;
+        // }
+        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got string. Update rejected.`);
+        return false;
+    }
+     else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${typeof coercedNewValue}. Update rejected.`);
         return false;
     }
 
+
     // For arrays and objects, a simple comparison checks reference, not content.
     // For this application, if new and old value are "equal" by strict comparison, consider it unchanged.
     // Deep equality check for objects/arrays could be added if needed but adds complexity.
-    if (oldValue === coercedNewValue) {
+    if (oldValue === coercedNewValue && !Array.isArray(coercedNewValue)) { // For non-arrays, strict equality is fine
         if (enableDebugLogging) console.log(`[ConfigManager] No change for ${key}, value is already ${coercedNewValue}`);
-        return false; // Value is the same, not technically an "update"
+        return false;
+    }
+    // For arrays, compare JSON strings to check for content equality
+    if (Array.isArray(oldValue) && Array.isArray(coercedNewValue) && JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
+        if (enableDebugLogging) console.log(`[ConfigManager] No change for array ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
+        return false;
     }
 
+
     editableConfigValues[key] = coercedNewValue;
-    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${oldValue}" to "${coercedNewValue}"`);
+    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
     return true;
 }
-
-[end of AntiCheatsBP/scripts/config.js]

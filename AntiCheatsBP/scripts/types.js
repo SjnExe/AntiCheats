@@ -97,6 +97,14 @@
  * @property {PlayerFlagDetail} [player_antigmc] - Player was detected in unauthorized Creative Mode.
  * @property {PlayerFlagDetail} [player_inventory_mod] - Player manipulated inventory/hotbar suspiciously.
  * @property {PlayerFlagDetail} [player_self_hurt] - Player damaged themselves via direct entity attack.
+ * @property {PlayerFlagDetail} [antigrief_tnt] - Player attempted to place TNT without authorization.
+ * @property {PlayerFlagDetail} [antigrief_wither] - Player involved in unauthorized Wither spawn.
+ * @property {PlayerFlagDetail} [antigrief_fire] - Player involved in unauthorized or excessive fire incident.
+ * @property {PlayerFlagDetail} [antigrief_lava] - Player involved in unauthorized lava placement.
+ * @property {PlayerFlagDetail} [antigrief_water] - Player involved in unauthorized water placement.
+ * @property {PlayerFlagDetail} [antigrief_blockspam] - Player suspected of block spamming.
+ * @property {PlayerFlagDetail} [antigrief_entityspam] - Player suspected of entity spamming.
+ * @property {PlayerFlagDetail} [antigrief_blockspam_density] - Player suspected of block spamming (high density).
  */
 
 /**
