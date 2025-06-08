@@ -10,11 +10,11 @@ import * as playerUtils from '../utils/playerUtils.js'; // Direct import for gen
 // Specific import getPlayerPermissionLevel removed, use playerUtils.getPlayerPermissionLevel
 import { permissionLevels } from './rankManager.js';
 import * as logManager from './logManager.js'; // Direct import for logManager
-// editableConfigValues and updateConfigValue are not directly used here, but might be by functions called via dependencies.
-// import { editableConfigValues, updateConfigValue } from '../config.js';
+import { editableConfigValues, updateConfigValue } from '../config.js';
 
 // Forward declarations for functions that might call each other, ensuring they are defined before use.
 let showAdminPanelMain;
+let showEditConfigForm; // Added forward declaration
 let showOnlinePlayersList;
 let showPlayerActionsForm;
 let showServerManagementForm;
@@ -390,7 +390,17 @@ showAdminPanelMain = async function (adminPlayer, playerDataManager, config, dep
         form.button("Reset Flags (Text)", "textures/ui/refresh");             // 2
         form.button("List Watched Players", "textures/ui/magnifying_glass");  // 3
         form.button("Server Management", "textures/ui/icon_graph");           // 4
-        // form.button("View/Edit Configuration", "textures/ui/gear");        // 5 - Placeholder, not fully implemented
+
+        let backButtonIndex = 5; // Default index for "Back" or next action button
+
+        if (userPermLevel === permissionLevels.owner) {
+            form.button("Edit Configuration", "textures/ui/gear"); // Index 5 for owners
+            backButtonIndex = 6; // "Close Panel" will be index 6 for owners
+        }
+        // No explicit "Back" button, panel closure is usually handled by the form system or escape key.
+        // Adding a "Close Panel" or "Exit" button for clarity if desired.
+        // For this iteration, we assume the standard form closure mechanisms are sufficient.
+        // If a dedicated exit/close button is needed, it would be added here, adjusting backButtonIndex.
 
         const response = await form.show(adminPlayer);
         if (response.canceled) {
@@ -403,10 +413,26 @@ showAdminPanelMain = async function (adminPlayer, playerDataManager, config, dep
             case 2: await showResetFlagsForm(adminPlayer, playerDataManager, dependencies); break;
             case 3: await showWatchedPlayersList(adminPlayer, playerDataManager, dependencies); break;
             case 4: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
-            // case 5: await showEditConfigForm(adminPlayer, playerDataManager, config, dependencies); break; // Placeholder
+            case 5: // This is "Edit Configuration" if owner, otherwise it's an invalid selection or would be "Close"
+                if (userPermLevel === permissionLevels.owner) {
+                    await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies);
+                } else {
+                    // If not owner, this index might correspond to a "Close" button if implemented,
+                    // or it's an out-of-bounds selection if no such button exists.
+                    // Assuming no explicit "Close" button for now, so this path might indicate an issue or form cancellation.
+                    playerUtils.debugLog(`Admin Panel Main: Selection 5 by non-owner ${adminPlayer.nameTag} - likely form closure.`, adminPlayer.nameTag);
+                    // No action needed, form closed.
+                }
+                break;
+            // case 6 would be for a "Close" button if explicitly added for owners.
             default:
-                adminPlayer.sendMessage("§cInvalid selection from main panel.");
-                await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies); // Re-show
+                // This default case handles cancellations or unexpected selections.
+                // If response.canceled is true, it's handled by the check before the switch.
+                // If it's a selection not covered, it could be considered invalid.
+                if (!response.canceled) { // Only show message if not a deliberate cancellation
+                    adminPlayer.sendMessage("§cInvalid selection or panel closed.");
+                }
+                // No automatic re-showing of the panel; user can reopen if needed.
                 break;
         }
     } catch (error) {
@@ -439,22 +465,207 @@ More details will be available in a future update.")
 }
 
 /**
- * Placeholder: Allows editing configuration (intended functionality). Currently navigates back.
+ * Displays a form to edit individual configuration values.
+ * This function is called by `showEditConfigForm`.
+ * @param {mc.Player} adminPlayer - The admin player.
+ * @param {string} keyName - The name of the configuration key to edit.
+ * @param {string} keyType - The type of the configuration value ('boolean', 'string', 'number', 'object').
+ * @param {any} currentValue - The current value of the configuration key.
+ * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
+ */
+async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, currentValue, dependencies) {
+    playerUtils.debugLog(`UI: showEditSingleConfigValueForm for key ${keyName} (type: ${keyType}) requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    const { config, playerDataManager } = dependencies; // config here refers to the overall system config, not editableConfigValues directly
+    const modalForm = new ModalFormData();
+    modalForm.title(`Edit: ${keyName}`);
+
+    let originalValueForComparison = currentValue; // Keep for comparison after potential stringification
+
+    switch (keyType) {
+        case 'boolean':
+            modalForm.toggle(keyName, currentValue);
+            break;
+        case 'string':
+            modalForm.textField(keyName, "Enter new string value", String(currentValue));
+            break;
+        case 'number':
+            modalForm.textField(keyName, "Enter new number value", String(currentValue));
+            break;
+        case 'object': // Primarily for arrays
+            if (Array.isArray(currentValue)) {
+                originalValueForComparison = JSON.stringify(currentValue);
+                modalForm.textField(keyName, "Enter new array (JSON format, e.g., [\"val1\",\"val2\"])", JSON.stringify(currentValue));
+            } else {
+                adminPlayer.sendMessage(`§cConfiguration for '${keyName}' is an object but not an array. Direct editing via UI is not supported for this type.`);
+                await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies); // Pass editableConfigValues as config
+                return;
+            }
+            break;
+        default:
+            adminPlayer.sendMessage(`§cUnknown configuration type '${keyType}' for key '${keyName}'.`);
+            await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies); // Pass editableConfigValues as config
+            return;
+    }
+
+    try {
+        const response = await modalForm.show(adminPlayer);
+        if (response.canceled) {
+            playerUtils.debugLog(`Edit single config form for ${keyName} cancelled. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies); // Re-show main config list
+            return;
+        }
+
+        let newValue = response.formValues[0];
+
+        // Type Coercion/Validation
+        let updateSuccess = false;
+        let failureReason = "";
+
+        switch (keyType) {
+            case 'boolean':
+                // newValue is already a boolean from toggle
+                break;
+            case 'number':
+                const numVal = Number(newValue);
+                if (isNaN(numVal)) {
+                    failureReason = "Invalid input: Not a number.";
+                } else {
+                    newValue = numVal;
+                }
+                break;
+            case 'string':
+                // newValue is already a string
+                break;
+            case 'object': // Array
+                if (Array.isArray(currentValue)) { // Ensure it was an array to begin with
+                    try {
+                        const parsedArray = JSON.parse(newValue);
+                        if (Array.isArray(parsedArray)) {
+                            newValue = parsedArray;
+                        } else {
+                            failureReason = "Invalid input: Not a valid JSON array.";
+                        }
+                    } catch (e) {
+                        failureReason = `Invalid JSON format: ${e.message}`;
+                    }
+                } else {
+                     // Should not happen due to earlier check, but as a safeguard
+                    failureReason = "Original type was not an array.";
+                }
+                break;
+        }
+
+        if (failureReason) {
+            adminPlayer.sendMessage(`§cFailed to update ${keyName}. Reason: ${failureReason}`);
+        } else {
+            // Check if value actually changed (especially for stringified arrays)
+            const valueToCompare = (keyType === 'object' && Array.isArray(newValue)) ? JSON.stringify(newValue) : newValue;
+            if (valueToCompare === originalValueForComparison && !(keyType === 'object' && JSON.stringify(newValue) !== originalValueForComparison) ) {
+                 adminPlayer.sendMessage(`§7Value for ${keyName} remains unchanged.`);
+            } else {
+                const success = updateConfigValue(keyName, newValue);
+                if (success) {
+                    adminPlayer.sendMessage(`§aSuccessfully updated ${keyName} to: ${typeof newValue === 'object' ? JSON.stringify(newValue) : newValue}`);
+                    if (dependencies.addLog) {
+                        dependencies.addLog({
+                            adminName: adminPlayer.nameTag,
+                            actionType: 'config_update',
+                            targetName: keyName, // Store key name as target
+                            details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : newValue}'`
+                        });
+                    }
+                } else {
+                    // updateConfigValue might return false if type mismatch or other internal issues.
+                    adminPlayer.sendMessage(`§cFailed to update ${keyName}. The new value might be invalid or of the wrong type.`);
+                }
+            }
+        }
+    } catch (error) {
+        playerUtils.debugLog(`Error in showEditSingleConfigValueForm for ${keyName}: ${error.stack || error}`, adminPlayer.nameTag);
+        adminPlayer.sendMessage(`§cAn error occurred while editing ${keyName}.`);
+    }
+    // Always re-show the main config form to allow further edits or to go back.
+    await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies);
+}
+
+
+/**
+ * Displays a form to select and edit configuration values from `editableConfigValues`.
+ * Access is restricted to players with 'owner' permission level.
  * @param {mc.Player} adminPlayer - The admin player.
  * @param {import('./playerDataManager.js')} playerDataManager - The player data manager instance.
- * @param {import('../config.js').editableConfigValues} config - The system configuration.
+ * @param {import('../config.js').editableConfigValues} config - The editable configuration values (passed as `editableConfigValues`).
  * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
+ * @returns {Promise<void>}
  */
-async function showEditConfigForm(adminPlayer, playerDataManager, config, dependencies) {
-    playerUtils.debugLog(`UI: Edit Config requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    // Actual config editing UI would go here.
-    const msgForm = new MessageFormData()
-        .title("Edit Configuration")
-        .body("Configuration editing via UI is not yet implemented.
-Please use the configuration files directly or future commands.")
-        .button1("Back to Admin Panel"); // Or Server Management if that's more appropriate
-    await msgForm.show(adminPlayer);
-    await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies);
+showEditConfigForm = async function (adminPlayer, playerDataManager, config, dependencies) { // config here will be editableConfigValues
+    playerUtils.debugLog(`UI: Edit Config Form requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+
+    // Permission Check: Owner Only
+    if (playerUtils.getPlayerPermissionLevel(adminPlayer) !== permissionLevels.owner) {
+        adminPlayer.sendMessage("§cPermission denied. This feature is owner-only.");
+        // Navigate back to the main admin panel or another appropriate form
+        // Assuming showAdminPanelMain is the correct fallback.
+        // Note: showAdminPanelMain expects the overall config, not editableConfigValues directly as its 'config' param in some calls.
+        // This might need adjustment based on how showAdminPanelMain uses its config parameter.
+        // For now, we pass dependencies.config which should be the main config object.
+        await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
+        return;
+    }
+
+    const form = new ActionFormData();
+    form.title("Edit Configuration");
+    form.body("Select a configuration key to edit:");
+
+    const configKeys = Object.keys(editableConfigValues);
+    const keyDetailsMapping = []; // To store details for handling selection
+
+    for (const key of configKeys) {
+        const currentValue = editableConfigValues[key];
+        const valueType = typeof currentValue;
+        let displayValue = String(currentValue);
+        if (valueType === 'object' && Array.isArray(currentValue)) {
+            displayValue = JSON.stringify(currentValue);
+        } else if (valueType === 'object') {
+            displayValue = "{Object}"; // Placeholder for non-array objects, not directly editable by this form
+        }
+        form.button(`${key} (${valueType}): ${displayValue.length > 30 ? displayValue.substring(0, 27) + "..." : displayValue}`);
+        keyDetailsMapping.push({ name: key, type: valueType, value: currentValue });
+    }
+
+    form.button("Back to Admin Panel", "textures/ui/undo"); // Index for back button will be configKeys.length
+
+    try {
+        const response = await form.show(adminPlayer);
+        if (response.canceled) {
+            playerUtils.debugLog(`Edit Config form cancelled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            // Optionally, navigate back or provide feedback. Here, we just return.
+            return;
+        }
+
+        if (response.selection === configKeys.length) { // "Back to Admin Panel" button
+            // Pass the main config object to showAdminPanelMain
+            await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
+        } else if (response.selection < configKeys.length) {
+            const selectedKeyDetail = keyDetailsMapping[response.selection];
+            if (selectedKeyDetail.type === 'object' && !Array.isArray(selectedKeyDetail.value)) {
+                adminPlayer.sendMessage(`§cEditing for non-array objects ('${selectedKeyDetail.name}') is not supported via this UI.`);
+                await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies); // Re-show current form
+            } else {
+                await showEditSingleConfigValueForm(adminPlayer, selectedKeyDetail.name, selectedKeyDetail.type, selectedKeyDetail.value, dependencies);
+            }
+        } else {
+            adminPlayer.sendMessage("§cInvalid selection from config edit form.");
+            await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies); // Re-show
+        }
+
+    } catch (error) {
+        playerUtils.debugLog(`Error in showEditConfigForm: ${error.stack || error}`, adminPlayer.nameTag);
+        adminPlayer.sendMessage("§cAn error occurred displaying the configuration editor.");
+        // Fallback navigation
+        await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
+    }
 }
 
 /**
@@ -628,7 +839,11 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
     form.button("Lag Clear (Ground Items)", "textures/ui/icon_trash");        // 2
     form.button("View General Action Logs", "textures/ui/book_writable");     // 3
     form.button("View Moderation Logs", "textures/ui/book_edit_default");     // 4
-    form.button("Back to Main Admin Panel", "textures/ui/undo");              // 5
+        // Add Edit Configuration button if user is owner
+        if (playerUtils.getPlayerPermissionLevel(adminPlayer) === permissionLevels.owner) {
+            form.button("Edit Configuration", "textures/ui/gear"); // Index 5 (if owner)
+        }
+        form.button("Back to Main Admin Panel", "textures/ui/undo");              // Index 5 or 6
 
     try {
         const response = await form.show(adminPlayer);
@@ -642,7 +857,22 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
             case 2: await handleLagClearAction(adminPlayer, config, playerDataManager, dependencies); break;
             case 3: await showActionLogsForm(adminPlayer, config, playerDataManager, dependencies); break;
             case 4: await showModLogTypeSelectionForm(adminPlayer, dependencies, null); break;
-            case 5: await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies); break;
+            // Adjust case numbers based on whether "Edit Configuration" is present
+            case 5:
+                if (playerUtils.getPlayerPermissionLevel(adminPlayer) === permissionLevels.owner) {
+                    await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies);
+                } else { // This case is "Back to Main Admin Panel" for non-owners
+                    await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies);
+                }
+                break;
+            case 6: // This case is only reachable if owner, and it's "Back to Main Admin Panel"
+                if (playerUtils.getPlayerPermissionLevel(adminPlayer) === permissionLevels.owner) {
+                    await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies);
+                } else {
+                     adminPlayer.sendMessage("§cInvalid selection from server management.");
+                     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
+                }
+                break;
             default:
                 adminPlayer.sendMessage("§cInvalid selection from server management.");
                 await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
