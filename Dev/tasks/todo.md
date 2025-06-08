@@ -26,10 +26,27 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Normal Player Panel Features (`!panel`):**
 
+## AutoMod System (Future Phases)
+
+*   **Phase 2: Implement Basic Actions (Warn, Kick) & Flag-Only**
+    - Implement execution logic in `AutoModManager` for "WARN", "KICK", and "FLAG_ONLY" action types.
+    - Integrate with configuration for messages and reasons.
+    - Add logging for AutoMod actions taken.
+*   **Phase 3: Implement Persistent Actions (Ban, Mute) & Freeze**
+    - Implement execution logic for "TEMP_BAN", "PERM_BAN", "MUTE", and "FREEZE" actions.
+    - Ensure proper integration with `playerDataManager` (for bans/mutes) and `freeze` command logic.
+    - Handle durations and persistent storage.
+*   **Phase 4: Implement Illegal Item Removal**
+    - Implement the "REMOVE_ILLEGAL_ITEM" action.
+    - Logic to identify and remove all instances of specified illegal items from player inventory.
+*   **Phase 5: Admin Notifications, System Toggles, and Documentation**
+    - Add admin notifications for AutoMod actions.
+    - Implement finer-grained toggles for AutoMod per check type (if desired beyond the global toggle).
+    - Update all relevant project documentation (`README.md`, etc.).
+    - Conduct thorough end-to-end testing.
+
 ## Low Priority / Ideas
 
-*   **Automated Actions (AutoMod):** (from original todo, Scythe, SafeGuard)
-    *   Implement configurable automated actions (e.g., kick, temporary ban, extended watch period) based on accumulated flag counts or specific severe cheat detections. Requires careful design to minimize false positives and allow for admin review/override.
 *   **Player Utilities & Experience:** SjnExe parity goal.
     *   Death Effects: Investigate and implement cosmetic effects on player death.
     *   Chat Formatting (potentially linked to the Rank System).

@@ -7,6 +7,11 @@
  */
 import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
+import { processAutoModActions } from './automodManager.js';
+import * as config from '../config.js';
+import * as automodConfig from '../automodConfig.js'; // Assuming automodConfig.js will be created at this path
+// playerUtils is already partially imported (debugLog, warnPlayer, notifyAdmins),
+// but automodManager expects it as an object. We'll construct it for the call.
 
 /**
  * @type {Map<string, import('../types.js').PlayerAntiCheatData>}
@@ -457,6 +462,24 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     warnPlayer(player, reasonMessage); // Assumes warnPlayer is available from playerUtils
     notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${detailsForNotify}`, player, pData); // Assumes notifyAdmins is available
     debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${fullReason}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
+
+    // Prepare dependencies for AutoModManager
+    const automodDependencies = {
+        config: config, // The main config module/object
+        automodConfig: automodConfig, // The automod specific config
+        playerUtils: { debugLog, warnPlayer, notifyAdmins }, // Constructing playerUtils object
+        logManager: null // logManager is not directly available in addFlag's current scope
+    };
+
+    try {
+        // Call processAutoModActions. checkType is 'flagType' in this context.
+        processAutoModActions(player, pData, flagType, automodDependencies);
+    } catch (e) {
+        console.error(`[playerDataManager] Error calling processAutoModActions for ${player.nameTag}: ${e}\n${e.stack}`);
+        // debugLog is directly available in this file
+        debugLog(`Error during processAutoModActions for ${player.nameTag}, checkType ${flagType}: ${e}`, player.nameTag);
+        // Decide if failure in automod should affect anything else. Usually, it should be self-contained.
+    }
 }
 
 /**

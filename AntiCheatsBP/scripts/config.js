@@ -14,6 +14,9 @@ export const ownerPlayerName = "PlayerNameHere"; // TODO: Replace with actual ow
 /** @type {boolean} If true, enables detailed console logging for debugging purposes. */
 export const enableDebugLogging = true;
 
+/** @type {boolean} If true, the Automated Moderation system is active. */
+export const enableAutoMod = true;
+
 /** @type {string} The prefix used for chat-based commands (e.g., "!ac version"). */
 export const prefix = "!";
 
