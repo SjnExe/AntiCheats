@@ -1,6 +1,7 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **Created `!rules` command:** Developed a dedicated command (`!rules` and alias `!rule`) that displays server rules (from `config.serverRules`) to players using a MessageForm. Accessible to all permission levels.
 *   **Public Info UI (`!ui`) Development - Phase 2: Server Info & Links:** Added configurable server rules (as a single string), Discord link, and website link to the `!uinfo` panel. Updated `config.js` with new variables (`serverRules`, `discordLink`, `websiteLink`) and modified `uinfo.js` to display this information in the 'Server Rules' and 'Helpful Links' sections respectively.
 *   **Admin Command Usage Logging:** Implemented logging to the console for commands executed by admin-level users, including timestamp, player name (actual account name), and the full raw command string as typed by the admin. This log appears with an `[AdminCommandLog]` prefix.
 *   **Welcomer Message for New Players:**
@@ -692,7 +693,7 @@ This task involved reviewing all `debugLog` calls across the primary check funct
 ## Folder Renaming and Path Updates (Submitted)
 *(Date is a placeholder based on current interaction)*
 
-This task involved renaming the core Behavior Pack (`BP/`) and Resource Pack (`RP/`) folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively. All references to these paths within the project's configuration and documentation files were updated accordingly.
+This task involved renaming the core Behavior Pack (`BP/`) and `Resource Pack (`RP/`) folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively. All references to these paths within the project's configuration and documentation files were updated accordingly.
 
 *   **Task:** Rename `BP/` and `RP/` folders to `AntiCheatsBP/` and `AntiCheatsRP/` respectively, and update all references.
     *   **Status:** Completed

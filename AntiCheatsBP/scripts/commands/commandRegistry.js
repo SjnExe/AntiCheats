@@ -13,6 +13,7 @@ import * as clearchatCmd from './clearchat.js';
 import * as inspectCmd from './inspect.js';
 import * as warningsCmd from './warnings.js';
 import * as resetflagsCmd from './resetflags.js'; // Handles resetflags (and clearwarnings via alias)
+import * as rulesCmd from './rules.js';
 import * as vanishCmd from './vanish.js';
 import * as freezeCmd from './freeze.js';
 import * as muteCmd from './mute.js';
@@ -68,5 +69,6 @@ export const commandModules = [
     uinfoCmd,
     netherlockCmd,
     endlockCmd,
+    rulesCmd,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");
