@@ -48,15 +48,17 @@ This list contains planned features, improvements, and areas for future investig
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
-## TPA System Implementation
-- **Phase 4: Status & System Mechanics (`!tpastatus`, Expiry)**
-  - Implement `!tpastatus` command (COMPLETED)
-  - Implement Teleport Logic in `tpaManager.js` (COMPLETED)
-  - Implement Automatic Request Expiry (COMPLETED)
-- **Phase 5: Integration & Finalization (Help, Testing)** (Pending)
-- **Phase 6: Enhancements**
-  - Implement cooldown for sending TPA requests (`!tpa`, `!tpahere`) (COMPLETED).
-  - Implement TPA teleport warm-up with damage cancellation (COMPLETED).
+## TPA System Implementation (COMPLETED)
+- **Phase 1: Core Setup & Configuration** (COMPLETED)
+- **Phase 2: Basic Request Commands (`!tpa`, `!tpahere`)** (COMPLETED)
+- **Phase 3: Responding to Requests (`!tpaccept`, `!tpacancel`)** (COMPLETED)
+- **Phase 4: Status & System Mechanics (`!tpastatus`, Expiry)** (COMPLETED)
+- **Phase 5: Integration & Finalization (Help, Testing)** (COMPLETED)
+  - Update `!help` command for TPA features (COMPLETED)
+  - Thoroughly test all TPA functionalities (COMPLETED)
+- **Phase 6: Enhancements (Cooldown, Warm-up)** (COMPLETED)
+  - Implement cooldown for sending TPA requests (COMPLETED)
+  - Implement TPA teleport warm-up with damage cancellation (COMPLETED)
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

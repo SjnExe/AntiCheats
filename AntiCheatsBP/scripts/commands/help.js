@@ -4,7 +4,7 @@
  * or detailed information about a specific command based on their permission level.
  * @version 1.0.0
  */
-// AntiCheatsBP/scripts/commands/help.js
+import * as config from '../config.js'; // Added import for config
 import { permissionLevels } from '../core/rankManager.js'; // Assuming this path is correct from command's perspective
 
 /**
@@ -24,17 +24,19 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include `allCommands` list.
  */
 export async function execute(player, args, dependencies) {
-    const { config, getPlayerPermissionLevel, permissionLevels: permLevelsDep, allCommands: acAllCommands } = dependencies;
+    // config is now directly imported, not from dependencies for this command's direct use.
+    // However, other parts of dependencies.config might be used by other commands, so keep it in destructuring.
+    const { getPlayerPermissionLevel, permissionLevels: permLevelsDep, allCommands: acAllCommands, config: depConfig } = dependencies;
     const userPermissionLevel = getPlayerPermissionLevel(player);
 
     if (args[0]) {
         const specificCommandName = args[0].toLowerCase().replace(config.prefix, ""); // Remove prefix if present
         let foundCmdDef = acAllCommands.find(cmd => cmd.name === specificCommandName);
 
-        if (!foundCmdDef && config.commandAliases) { // Check aliases if not found by direct name
-             const aliasTarget = Object.keys(config.commandAliases).find(alias => alias === specificCommandName && config.commandAliases[alias]);
+        if (!foundCmdDef && depConfig.commandAliases) { // Check aliases if not found by direct name
+             const aliasTarget = Object.keys(depConfig.commandAliases).find(alias => alias === specificCommandName && depConfig.commandAliases[alias]);
              if(aliasTarget) {
-                const targetCmdName = config.commandAliases[aliasTarget];
+                const targetCmdName = depConfig.commandAliases[aliasTarget];
                 foundCmdDef = acAllCommands.find(cmd => cmd.name === targetCmdName);
              }
         }
@@ -63,16 +65,32 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(`§cCommand '${specificCommandName}' not found. Try ${config.prefix}help for a list of available commands.`);
         }
     } else {
-        let helpOutput = ["§aAvailable commands (for your permission level):"];
+        let helpMessage = "§aAvailable commands (for your permission level):\n";
         acAllCommands.forEach(cmdDef => {
             if (userPermissionLevel <= cmdDef.permissionLevel) {
                 const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                helpOutput.push(`§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${cmdDef.description}`);
+                helpMessage += `§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${cmdDef.description}\n`;
             }
         });
-        if (helpOutput.length === 1) { // Only title, no commands
-            helpOutput.push("§7No commands available at your current permission level.");
+
+        if (config.enableTpaSystem) {
+            helpMessage += "\n\n§e--- TPA Commands ---§r\n";
+            helpMessage += `§b${config.prefix}tpa <playerName>§r - Request to teleport to another player.\n`;
+            helpMessage += `§b${config.prefix}tpahere <playerName>§r - Request another player to teleport to you.\n`;
+            helpMessage += `§b${config.prefix}tpaccept [playerName]§r - Accept an incoming TPA request (from specific player or latest).\n`;
+            helpMessage += `§b${config.prefix}tpacancel [playerName]§r - Cancel/decline a TPA request (specific or all).\n`;
+            helpMessage += `§b${config.prefix}tpastatus <on|off|status>§r - Manage or view your TPA request availability.`;
         }
-        player.sendMessage(helpOutput.join('\n'));
+
+        // Check if only the title was added (meaning no commands available at this permission level BEFORE TPA check)
+        // Or if after adding TPA commands, it's still just the title (unlikely if TPA is on and user is normal)
+        if (helpMessage === "§aAvailable commands (for your permission level):\n" && !config.enableTpaSystem) {
+             helpMessage += "§7No commands available at your current permission level.";
+        } else if (helpMessage.endsWith("§r\n")) { // Remove trailing newline if TPA commands were the last thing added
+            helpMessage = helpMessage.slice(0, -1);
+        }
+
+
+        player.sendMessage(helpMessage);
     }
 }
