@@ -98,6 +98,7 @@
  * @property {PlayerFlagDetail} [player_inventory_mod] - Player manipulated inventory/hotbar suspiciously.
  * @property {PlayerFlagDetail} [player_self_hurt] - Player damaged themselves via direct entity attack.
  * @property {PlayerFlagDetail} [antigrief_tnt] - Player attempted to place TNT without authorization.
+ * @property {PlayerFlagDetail} [antigrief_wither] - Player involved in unauthorized Wither spawn.
  */
 
 /**

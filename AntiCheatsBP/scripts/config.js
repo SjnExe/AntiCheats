@@ -442,6 +442,26 @@ export const TPARequestCooldownSeconds = 10;
 /** @type {number} Duration in seconds a player must wait (warm-up) before teleportation occurs after a TPA request is accepted. Taking damage during warm-up cancels the teleport. */
 export const TPATeleportWarmupSeconds = 10;
 
+// --- Anti-Grief Settings ---
+/** @type {boolean} If true, the TNT Anti-Grief system is active. */
+export const enableTntAntiGrief = false; // Default changed to false
+
+/** @type {boolean} If true, Admins/Owners are allowed to place TNT without restriction. */
+export const allowAdminTntPlacement = true;
+
+/** @type {string} Action to take for unauthorized TNT placement. Valid: "remove", "warn", "logOnly". */
+export const tntPlacementAction = "remove";
+
+/** @type {boolean} If true, the Wither Anti-Grief system is active. */
+export const enableWitherAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to spawn Withers without restriction. */
+export const allowAdminWitherSpawn = true;
+
+/** @type {string} Action to take for unauthorized Wither spawns. Valid: "prevent", "kill", "logOnly". */
+export const witherSpawnAction = "prevent";
+
+
 // --- UI Display Texts ---
 /**
  * @type {string}
@@ -1010,6 +1030,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_tnt_placement",
             detailsPrefix: "AntiGrief TNT: "
         }
+    },
+    "world_antigrief_wither_spawn": {
+        enabled: true, // This will be effectively controlled by enableWitherAntiGrief at a higher level
+        flag: {
+            increment: 5, // Wither griefing is severe
+            reason: "Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.",
+            type: "antigrief_wither"
+        },
+        notifyAdmins: {
+            message: "§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_wither_spawn",
+            detailsPrefix: "AntiGrief Wither: "
+        }
     }
 };
 
@@ -1133,9 +1168,13 @@ export let editableConfigValues = {
     TPARequestCooldownSeconds,
     TPATeleportWarmupSeconds,
     // AntiGrief TNT Configs
-    enableTntAntiGrief: true,
-    allowAdminTntPlacement: true,
-    tntPlacementAction: "remove",
+    enableTntAntiGrief, // Default is false
+    allowAdminTntPlacement,
+    tntPlacementAction,
+    // AntiGrief Wither Configs
+    enableWitherAntiGrief,
+    allowAdminWitherSpawn,
+    witherSpawnAction,
 };
 
 /**
@@ -1189,5 +1228,3 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${oldValue}" to "${coercedNewValue}"`);
     return true;
 }
-
-[end of AntiCheatsBP/scripts/config.js]

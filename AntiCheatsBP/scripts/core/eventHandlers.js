@@ -243,6 +243,93 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
 }
 
 /**
+ * Handles entity spawn events, specifically for Wither Anti-Grief.
+ * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData - The event data.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Dependencies needed by the handler.
+ * @returns {Promise<void>}
+ */
+export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) {
+    const { config, playerUtils, logManager, actionManager } = dependencies;
+
+    // Ensure config is the editableConfigValues object
+    const currentConfig = config || ConfigValuesImport;
+    const actualPlayerUtils = playerUtils || PlayerUtilsImport; // Fallback if not in dependencies
+
+    if (!currentConfig.enableWitherAntiGrief) {
+        return;
+    }
+
+    if (eventData.entity?.typeId === "minecraft:wither") {
+        const witherEntity = eventData.entity;
+        let actionTaken = currentConfig.witherSpawnAction;
+        let playerNameOrContext = "Unknown/Environment"; // Default context
+
+        // Known Limitation: EntitySpawnAfterEvent does not directly provide the spawning player.
+        // If allowAdminWitherSpawn is true, we cannot reliably exempt admin-spawned Withers here
+        // without a more complex player activity tracking system leading up to the spawn.
+        // Thus, if enableWitherAntiGrief is true, the action applies to ALL Wither spawns
+        // unless allowAdminWitherSpawn is false (which also makes it apply to all).
+        // For now, the check for allowAdminWitherSpawn is implicitly handled by the fact that
+        // we can't identify the spawner. If a mechanism is added later to identify the spawner,
+        // then an exemption for admins could be added here.
+
+        actualPlayerUtils.debugLog(`AntiGrief: Wither spawned (ID: ${witherEntity.id}). Config action: ${actionTaken}. allowAdminWitherSpawn is ${currentConfig.allowAdminWitherSpawn} (currently not usable for exemption in this event).`, null);
+
+        const violationDetails = {
+            playerNameOrContext: playerNameOrContext,
+            checkType: "AntiGrief Wither",
+            entityId: witherEntity.id,
+            entityLocation: { x: witherEntity.location.x, y: witherEntity.location.y, z: witherEntity.location.z }, // Store location object
+            actionTaken: actionTaken, // Initial action
+            detailsString: `A Wither (ID: ${witherEntity.id}) was spawned at ${witherEntity.location.x.toFixed(1)},${witherEntity.location.y.toFixed(1)},${witherEntity.location.z.toFixed(1)}. Configured action: ${actionTaken}.`
+        };
+
+        try {
+            if (actionTaken === "kill" || actionTaken === "prevent") {
+                if (witherEntity.isValid()) { // Check if entity is still valid before trying to kill
+                    witherEntity.kill();
+                    violationDetails.detailsString = `A Wither (ID: ${witherEntity.id}) was spawned and killed by AntiGrief at ${violationDetails.entityLocation.x.toFixed(1)},${violationDetails.entityLocation.y.toFixed(1)},${violationDetails.entityLocation.z.toFixed(1)}.`;
+                    violationDetails.actionTaken = actionTaken === "prevent" ? "prevent (executed as kill)" : "kill (executed)";
+                    actualPlayerUtils.debugLog(`AntiGrief: Wither (ID: ${witherEntity.id}) killed. Action: ${violationDetails.actionTaken}`, null);
+                } else {
+                    violationDetails.detailsString = `A Wither (ID: ${witherEntity.id}) was spawned but was invalid before kill action could be taken. Original action: ${actionTaken}.`;
+                    violationDetails.actionTaken = actionTaken + " (entity invalid)";
+                    actualPlayerUtils.debugLog(`AntiGrief: Wither (ID: ${witherEntity.id}) was invalid before kill. Action: ${actionTaken}`, null);
+                }
+            } else if (actionTaken === "logOnly") {
+                // Details string already set
+                 actualPlayerUtils.debugLog(`AntiGrief: Wither (ID: ${witherEntity.id}) spawn logged. Action: logOnly`, null);
+            } else {
+                actualPlayerUtils.debugLog(`AntiGrief: Unknown witherSpawnAction: ${actionTaken} for Wither (ID: ${witherEntity.id}). Defaulting to logOnly.`, null);
+                violationDetails.detailsString = `A Wither (ID: ${witherEntity.id}) was spawned. Unknown action '${actionTaken}' configured, defaulted to logOnly.`;
+                violationDetails.actionTaken = "logOnly (unknown config)";
+            }
+        } catch (error) {
+            actualPlayerUtils.debugLog(`AntiGrief: Error during Wither action '${actionTaken}': ${error}`, null);
+            violationDetails.detailsString += ` Error during action: ${error.message}.`;
+            violationDetails.actionTaken = actionTaken + " (error)";
+        }
+
+        // Log and notify for all actions (flagging might be too aggressive for environmental spawns)
+        // Passing null for player as spawner is unknown.
+        // The checkActionProfile for 'world_antigrief_wither_spawn' should be configured for logging/notification but perhaps not aggressive flagging by default.
+        if (actionManager && typeof actionManager.executeCheckAction === 'function') {
+            await actionManager.executeCheckAction("world_antigrief_wither_spawn", null, violationDetails, dependencies);
+        } else {
+            actualPlayerUtils.debugLog("AntiGrief: actionManager or executeCheckAction is not available for Wither check.", null);
+            if (logManager && typeof logManager.addLog === 'function') {
+                 logManager.addLog({
+                    adminName: "SYSTEM (AntiGrief)",
+                    actionType: "antigrief_wither_spawn_fallback",
+                    targetName: playerNameOrContext, // "Unknown/Environment"
+                    details: violationDetails.detailsString
+                });
+            }
+        }
+    }
+}
+
+/**
  * Handles logic before a player places a block, specifically for AntiGrief (TNT control).
  * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The event data.
  * @param {import('../types.js').EventHandlerDependencies} dependencies - Dependencies needed by the handler.

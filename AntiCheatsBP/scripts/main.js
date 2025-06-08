@@ -226,6 +226,21 @@ mc.world.afterEvents.entityDie.subscribe(async (eventData) => {
     await eventHandlers.handleEntityDieForDeathEffects(eventData, config.editableConfigValues);
 });
 
+/**
+ * Handles entity spawn events, for AntiGrief checks (e.g., Wither control).
+ * @param {mc.EntitySpawnAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
+    const antiGriefDependencies = {
+        config: config.editableConfigValues,
+        playerUtils: playerUtils,
+        logManager: logManager,
+        actionManager: { executeCheckAction },
+        playerDataManager: playerDataManager // ensure playerDataManager is available if needed by executeCheckAction's internals
+    };
+    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, antiGriefDependencies);
+});
+
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
 // Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
