@@ -397,7 +397,7 @@ export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dime
  * Use newline characters `\n` for line breaks.
  * This is a single string to allow easier editing via in-game commands if such a feature is added.
  */
-export const serverRules = "1. Be respectful to all players and staff.\n2. No cheating, exploiting, or unfair advantages.\n3. No griefing or stealing.\n4. Do not spam chat or use excessive caps.\n5. PVP is only allowed in designated areas or if agreed upon.";
+export const serverRules = "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.";
 
 /**
  * @type {string}
