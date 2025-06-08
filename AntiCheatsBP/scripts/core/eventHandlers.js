@@ -87,8 +87,9 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
+ * @param {object} dependencies - Additional dependencies, expected to include `addLog`.
  */
-export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config) {
+export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, dependencies) {
     const { player, initialSpawn } = eventData; // initialSpawn can be useful
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
@@ -106,6 +107,31 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
         }
         updatePlayerNametag(player); // Assuming this function handles ranks/prefixes
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, player.nameTag);
+
+        // Welcomer message logic
+        if (initialSpawn && config.enableWelcomerMessage) {
+            let message = config.welcomeMessage || "Welcome, {playerName}, to the server!";
+            message = message.replace(/{playerName}/g, player.nameTag);
+
+            // Send the message after a short delay
+            mc.system.runTimeout(() => {
+                player.sendMessage(message);
+            }, 20); // 1 second delay (20 ticks)
+
+            if (dependencies && dependencies.addLog) {
+                dependencies.addLog({
+                    timestamp: Date.now(),
+                    actionType: 'player_initial_join',
+                    targetName: player.nameTag,
+                    details: `Player ${player.nameTag} joined for the first time. Welcome message sent.`
+                });
+            }
+
+            if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) {
+                playerUtils.notifyAdmins(`§eNew player ${player.nameTag} has joined the server for the first time!`, null, null);
+            }
+        }
+
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);

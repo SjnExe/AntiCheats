@@ -370,6 +370,17 @@ export const combatLogMessage = "§cCombat Log: {playerName} disconnected {timeS
 /** @type {boolean} If true, admins receive all AntiCheat notifications by default, unless individually overridden by specific check settings or admin preferences. */
 export const acGlobalNotificationsDefaultOn = true;
 
+// --- Welcomer Message ---
+/** @type {boolean} If true, a welcome message is sent to players on their first join. */
+export const enableWelcomerMessage = true;
+/**
+ * @type {string} The welcome message template. Use {playerName} as a placeholder for the player's name.
+ * Example: "Welcome, {playerName}, to the server! Enjoy your stay."
+ */
+export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
+/** @type {boolean} If true, admins will be notified when a new player joins for the first time. */
+export const notifyAdminOnNewPlayerJoin = true;
+
 // --- UI Display Texts ---
 /** @type {string[]} Defines the server rules to be displayed in the UI (e.g., via !rules command). */
 export const serverRules = [
@@ -1010,6 +1021,9 @@ export let editableConfigValues = {
     combatLogFlagIncrement,
     combatLogReason,
     combatLogMessage,
+    enableWelcomerMessage,
+    welcomeMessage,
+    notifyAdminOnNewPlayerJoin,
 };
 
 /**

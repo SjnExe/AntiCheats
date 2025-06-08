@@ -44,7 +44,7 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
  * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
  */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config);
+    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, { addLog: logManager.addLog });
 });
 
 /**

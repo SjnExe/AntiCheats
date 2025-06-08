@@ -42,7 +42,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Automated Actions (AutoMod):** (from original todo, Scythe, SafeGuard)
     *   Implement configurable automated actions (e.g., kick, temporary ban, extended watch period) based on accumulated flag counts or specific severe cheat detections. Requires careful design to minimize false positives and allow for admin review/override.
 *   **Player Utilities & Experience:** SjnExe parity goal.
-    *   Welcomer message for new players (optionally show their device type if API allows).
     *   Death Coords / Death Effects: Announce player death coordinates in chat (to player or party), possibly with cosmetic effects.
     *   Chat Formatting (potentially linked to the Rank System).
 *   **Logging Enhancements:** SjnExe parity goal.

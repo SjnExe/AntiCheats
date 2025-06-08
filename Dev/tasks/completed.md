@@ -1,6 +1,12 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Welcomer Message for New Players:**
+    *   Implemented a feature to send a configurable welcome message to players upon their initial join (`initialSpawn`).
+    *   The message template (`{playerName}` placeholder) and feature toggle (`enableWelcomerMessage`) are configurable in `config.js`.
+    *   Added an option (`notifyAdminOnNewPlayerJoin`) to notify admins when a new player joins.
+    *   Device type detection was not implemented due to current API limitations for reliability.
+    *   (Task was previously in Low Priority / Ideas).
 *   **Dimension Locks Feature:**
     *   Implemented `!netherlock <on|off|status>` and `!endlock <on|off|status>` commands for admins to control access to the Nether and End dimensions.
     *   Lock states are stored persistently using world dynamic properties via a new `worldStateUtils.js` utility.
