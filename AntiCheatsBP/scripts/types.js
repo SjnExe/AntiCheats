@@ -104,6 +104,7 @@
  * @property {PlayerFlagDetail} [antigrief_water] - Player involved in unauthorized water placement.
  * @property {PlayerFlagDetail} [antigrief_blockspam] - Player suspected of block spamming.
  * @property {PlayerFlagDetail} [antigrief_entityspam] - Player suspected of entity spamming.
+ * @property {PlayerFlagDetail} [antigrief_blockspam_density] - Player suspected of block spamming (high density).
  */
 
 /**

@@ -64,3 +64,60 @@ The initial strategy will enhance the existing rate-based detection mechanism, l
 *   **Preventative Actions:** For more aggressive mitigation (like preventing block placement), logic would need to be in a `playerPlaceBlock.before` event handler. The current proposal focuses on detection and warning/logging as an initial step using an after-event.
 
 This initial strategy aims to provide a foundational layer of block spam detection that can be built upon if necessary.
+
+## 6. Advanced Strategy: Density-Based Detection
+
+While rate-based detection catches rapid placements, density-based detection aims to identify situations where an area is being excessively filled with blocks, even if the instantaneous placement rate isn't always high. This is particularly useful against walling, area filling, or creating large obstructive shapes.
+
+### 6.1. Data Requirements & Collection
+
+Effective density checking requires a history of recently placed blocks by a player, including their `typeId` and location.
+
+*   **Proposal:** Enhance `pData.recentBlockPlacements` (currently managed by `checkTower` in `buildingChecks.js`) to store the `typeId` of each block.
+    *   The `newPlacement` object in `checkTower` would be modified from:
+        `{ x, y, z, pitch, yaw, tick }`
+        to:
+        `{ x, y, z, typeId, pitch, yaw, tick }`
+    *   The existing `config.towerPlacementHistoryLength` (e.g., 20 blocks) would serve as the history limit for blocks considered in density calculations.
+*   **(Alternative):** A separate array like `pData.recentDensityTrackedBlocks = [{x, y, z, typeId, tick}]` could be maintained specifically for this check, but enhancing `pData.recentBlockPlacements` is preferred for data consolidation if `checkTower`'s primary function isn't negatively impacted.
+
+### 6.2. Detection Logic (`checkBlockSpamDensity`)
+
+This new function would be called from `handlePlayerPlaceBlockAfterEvent`.
+
+1.  **Configuration Checks:**
+    *   If `!config.enableBlockSpamDensityCheck`, return.
+    *   Bypass if player is in creative and `config.blockSpamBypassInCreative` is true (can share this config with rate check or have a specific one).
+
+2.  **Volume Definition:**
+    *   When a `newBlock` is placed by the player.
+    *   Define a cubic volume centered on `newBlock.location`. The radius `R` is `config.blockSpamDensityCheckRadius`.
+    *   The volume dimensions are `(2*R + 1) x (2*R + 1) x (2*R + 1)`.
+    *   Total potential block locations in this volume: `totalVolumeBlocks = Math.pow((2 * R + 1), 3)`.
+
+3.  **Counting Relevant Recent Blocks in Volume:**
+    *   Initialize `playerPlacedBlocksInVolumeCount = 0`.
+    *   Iterate through `pData.recentBlockPlacements`:
+        *   For each `record` in `pData.recentBlockPlacements`:
+            *   **Recency Filter:** Check if `currentTick - record.tick <= config.blockSpamDensityTimeWindowTicks`. If too old, skip.
+            *   **Location Filter:** Check if `record.x, record.y, record.z` falls within the defined cubic volume around `newBlock.location`.
+            *   **Type Filter (Optional):** If `config.blockSpamDensityMonitoredBlockTypes` is not empty, check if `record.typeId` is in this list. If not, skip.
+            *   If all filters pass, increment `playerPlacedBlocksInVolumeCount`.
+
+4.  **Thresholding:**
+    *   Calculate `densityPercentage = (playerPlacedBlocksInVolumeCount / totalVolumeBlocks) * 100`.
+    *   If `densityPercentage > config.blockSpamDensityThresholdPercentage`:
+        *   Trigger `actionManager.executeCheckAction("world_antigrief_blockspam_density", player, violationDetails, dependencies)`.
+        *   `violationDetails` to include: `densityPercentage`, `radius`, `countInVolume`, `totalVolumeBlocks`, `blockType` of the `newBlock`.
+
+### 6.3. New Configuration Options (for Density Check):
+
+*   `enableBlockSpamDensityCheck` (boolean, default: `false`)
+*   `blockSpamDensityCheckRadius` (number, e.g., 1 for 3x3x3, 2 for 5x5x5. Default: `1`)
+*   `blockSpamDensityTimeWindowTicks` (number): How far back in ticks to look in `recentBlockPlacements`. Default: `60` (3 seconds).
+*   `blockSpamDensityThresholdPercentage` (number): Percentage of volume filled by player's recent blocks to trigger. Default: `70`.
+*   `blockSpamDensityMonitoredBlockTypes` (array of strings): Specific blocks to count for density. Can reuse `blockSpamMonitoredBlockTypes` or be a separate list. Default: `[]` (monitor all).
+*   `blockSpamDensityAction` (string): Action profile. Default: `"warn"`. (Could be a sub-profile or share with rate-based spam).
+
+### 6.4. Performance:
+The check iterates `towerPlacementHistoryLength` blocks and performs coordinate comparisons. For small radii (R=1, R=2) and history length (~20), this should be acceptable per block placement.

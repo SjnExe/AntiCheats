@@ -52,6 +52,6 @@ This list tracks features and tasks that are currently under development.
                 *   This allows for player-attributed spam detection and prevention for these item uses.
                 *   If spam is detected and `config.entitySpamAction === "kill"`, the item use event is cancelled, preventing entity spawn. Player is notified.
                 *   **Next Step (TODO):** Consider if any other significant player-driven entity spawn mechanisms (not covered by item use) need addressing, or if general non-attributable `entitySpawn` events still pose a high risk that needs a different (non-player-rate-limit) mitigation.
-        *   (TODO): Investigate other common griefing methods (e.g., piston grief) and potential mitigations for them, and advanced block spam detection (density/patterns).
+        *   (TODO): Investigate other common griefing methods (e.g., piston grief) and potential mitigations. Advanced block spam detection (density/patterns) was investigated (see `Dev/notes/BlockSpamDetectionStrategy.md`) but not implemented due to subtask execution issues.
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.

@@ -530,6 +530,24 @@ export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armo
 /** @type {string} Action to take for detected entity spam. Valid: "kill", "warn", "logOnly". */
 export const entitySpamAction = "kill";
 
+/** @type {boolean} If true, the Density-Based Block Spam Anti-Grief system is active. */
+export const enableBlockSpamDensityCheck = false;
+
+/** @type {number} Radius for the density check cube (e.g., 1 means 3x3x3 cube). */
+export const blockSpamDensityCheckRadius = 1;
+
+/** @type {number} Time window in ticks to consider recent blocks for density calculation. */
+export const blockSpamDensityTimeWindowTicks = 60; // 3 seconds
+
+/** @type {number} Percentage of volume filled by player's recent blocks to trigger detection. */
+export const blockSpamDensityThresholdPercentage = 70;
+
+/** @type {string[]} List of block type IDs to specifically monitor for density spam. If empty, all blocks are monitored. */
+export const blockSpamDensityMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
+
+/** @type {string} Action to take for detected density block spam. Valid: "warn", "logOnly". */
+export const blockSpamDensityAction = "warn";
+
 
 // --- UI Display Texts ---
 /**
@@ -1189,6 +1207,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_entityspam_detected",
             detailsPrefix: "AntiGrief EntitySpam: "
         }
+    },
+    "world_antigrief_blockspam_density": {
+        enabled: true, // Effectively controlled by enableBlockSpamDensityCheck
+        flag: {
+            increment: 2, // Potentially more severe than just rate
+            reason: "Player suspected of block spamming (high density).",
+            type: "antigrief_blockspam_density" // Distinct flag type
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_blockspam_density_detected",
+            detailsPrefix: "AntiGrief BlockSpam (Density): "
+        }
     }
 };
 
@@ -1347,6 +1380,13 @@ export let editableConfigValues = {
     entitySpamMaxSpawnsInWindow,
     entitySpamMonitoredEntityTypes,
     entitySpamAction,
+    // AntiGrief Density Block Spam Configs
+    enableBlockSpamDensityCheck,
+    blockSpamDensityCheckRadius,
+    blockSpamDensityTimeWindowTicks,
+    blockSpamDensityThresholdPercentage,
+    blockSpamDensityMonitoredBlockTypes,
+    blockSpamDensityAction,
 };
 
 /**

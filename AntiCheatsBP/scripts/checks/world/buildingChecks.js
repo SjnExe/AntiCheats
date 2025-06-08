@@ -55,6 +55,7 @@ export async function checkTower(
     pData.recentBlockPlacements = pData.recentBlockPlacements || [];
     const newPlacement = {
         x: blockLocation.x, y: blockLocation.y, z: blockLocation.z,
+        typeId: block.typeId, // **** ADDED typeId ****
         pitch: pitch, yaw: rotation.y, tick: currentTick
     };
     pData.recentBlockPlacements.push(newPlacement);
@@ -554,10 +555,10 @@ export async function checkBlockSpam(
 }
 
 /**
- * Checks for block spamming based on placement rate and optionally monitored block types.
+ * Checks for high-density block spam in a defined radius around a newly placed block.
  * @param {mc.Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {mc.Block} block - The block that was just placed.
+ * @param {mc.Block} block - The newly placed block that triggered this check.
  * @param {Config} config - The server configuration object.
  * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
  * @param {PlayerDataManager} playerDataManager - Manager for player data.
@@ -566,10 +567,10 @@ export async function checkBlockSpam(
  * @param {number} currentTick - The current game tick.
  * @returns {Promise<void>}
  */
-export async function checkBlockSpam(
+export async function checkBlockSpamDensity(
     player,
     pData,
-    block,
+    block, // This is the newly placed block
     config,
     playerUtils,
     playerDataManager,
@@ -577,59 +578,71 @@ export async function checkBlockSpam(
     executeCheckAction,
     currentTick
 ) {
-    if (!config.enableBlockSpamAntiGrief || !pData) {
+    if (!config.enableBlockSpamDensityCheck || !pData) {
         return;
     }
 
-    if (config.blockSpamBypassInCreative && player.gameMode === mc.GameMode.creative) {
+    // Use blockSpamBypassInCreative, assuming it's shared. Or add blockSpamDensityBypassInCreative to config.
+    if ((config.blockSpamBypassInCreative ?? true) && player.gameMode === mc.GameMode.creative) {
         return;
     }
 
-    pData.recentBlockSpamTimestamps = pData.recentBlockSpamTimestamps || [];
-    const blockType = block.typeId;
-
-    if (config.blockSpamMonitoredBlockTypes &&
-        config.blockSpamMonitoredBlockTypes.length > 0 &&
-        !config.blockSpamMonitoredBlockTypes.includes(blockType)) {
-        // Not a monitored block type for spam, so we don't count this placement towards spam detection.
+    if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length === 0) {
         return;
     }
 
-    const currentTime = Date.now();
-    pData.recentBlockSpamTimestamps.push(currentTime);
-    pData.isDirtyForSave = true; // Timestamps list modified
+    const R = config.blockSpamDensityCheckRadius ?? 1;
+    const totalVolumeBlocks = Math.pow((2 * R + 1), 3);
+    if (totalVolumeBlocks === 0) return; // Prevent division by zero
 
-    const windowMs = config.blockSpamTimeWindowMs ?? 1000;
-    const originalCount = pData.recentBlockSpamTimestamps.length;
+    const newBlockLocation = block.location;
+    let playerPlacedBlocksInVolumeCount = 0;
+    const densityTimeWindow = config.blockSpamDensityTimeWindowTicks ?? 60; // Default to 3 seconds (60 ticks)
+    const monitoredTypes = config.blockSpamDensityMonitoredBlockTypes ?? [];
 
-    pData.recentBlockSpamTimestamps = pData.recentBlockSpamTimestamps.filter(
-        ts => (currentTime - ts) <= windowMs
-    );
 
-    // Mark dirty only if the array actually changed by filter, though already marked above.
-    if (pData.recentBlockSpamTimestamps.length !== originalCount) {
-        pData.isDirtyForSave = true;
+    for (const record of pData.recentBlockPlacements) {
+        if (!record.typeId) continue; // Skip records from before typeId was added
+
+        if ((currentTick - record.tick) > densityTimeWindow) {
+            continue; // Block is too old
+        }
+
+        if (monitoredTypes.length > 0 && !monitoredTypes.includes(record.typeId)) {
+            continue; // Not a monitored type for density spam
+        }
+
+        if (
+            Math.abs(record.x - newBlockLocation.x) <= R &&
+            Math.abs(record.y - newBlockLocation.y) <= R &&
+            Math.abs(record.z - newBlockLocation.z) <= R
+        ) {
+            playerPlacedBlocksInVolumeCount++;
+        }
     }
 
-    const maxBlocks = config.blockSpamMaxBlocksInWindow ?? 8;
+    const densityPercentage = (playerPlacedBlocksInVolumeCount / totalVolumeBlocks) * 100;
+    const thresholdPercentage = config.blockSpamDensityThresholdPercentage ?? 70;
 
-    if (pData.recentBlockSpamTimestamps.length > maxBlocks) {
-        const dependencies = { config, playerDataManager, playerUtils, logManager }; // Pass necessary dependencies for executeCheckAction
+    if (densityPercentage > thresholdPercentage) {
+        const actionDependencies = { config, playerDataManager, playerUtils, logManager };
         const violationDetails = {
-            count: pData.recentBlockSpamTimestamps.length.toString(),
-            maxBlocks: maxBlocks.toString(),
-            windowMs: windowMs.toString(),
-            blockType: blockType,
-            actionTaken: config.blockSpamAction // For logging/notification purposes
+            playerName: player.nameTag,
+            densityPercentage: densityPercentage.toFixed(1),
+            radius: R.toString(),
+            countInVolume: playerPlacedBlocksInVolumeCount.toString(),
+            totalVolumeBlocks: totalVolumeBlocks.toString(),
+            blockType: block.typeId, // Type of the block that triggered the check
+            actionTaken: config.blockSpamDensityAction ?? "warn"
         };
 
-        // The 'player' argument to executeCheckAction should be the mc.Player object
-        await executeCheckAction(player, "world_antigrief_blockspam", violationDetails, dependencies);
+        await executeCheckAction(player, "world_antigrief_blockspam_density", violationDetails, actionDependencies);
 
-        playerUtils.debugLog?.(`BlockSpam: Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, pData.isWatched ? player.nameTag : null);
-
-        // Clear timestamps after flagging to prevent immediate re-flagging and give player a chance to stop.
-        pData.recentBlockSpamTimestamps = [];
-        pData.isDirtyForSave = true;
+        playerUtils.debugLog?.(`BlockSpamDensity: Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${R} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null);
+        // No need to clear recentBlockPlacements here as it's shared and managed by checkTower.
+        // This check is purely observational on that data.
     }
 }
+// Removed the duplicated checkBlockSpam function
+
+[end of AntiCheatsBP/scripts/checks/world/buildingChecks.js]

@@ -841,6 +841,60 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
     if (checks.checkIllegalItems && config.enableIllegalItemCheck) {
         await checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
     }
+    if (eventData.cancel) return; // If cancelled by illegal item check or others above
+
+    // Anti-Grief Entity Spam Logic for Spawn Eggs (ItemUse event)
+    // The 'dependencies' object is not typically passed to handleItemUse in main.js in the same way as handleItemUseOn.
+    // We rely on parameters passed directly to handleItemUse, and direct imports if necessary.
+    // 'config' parameter here is the main config, so ConfigValuesImport (config.editableConfigValues) is used for runtime values.
+    // 'checks' parameter contains the checkEntitySpam function.
+    // 'currentTick' is passed as a parameter.
+
+    const itemTypeIdForSpawnEgg = itemStack.typeId;
+    let derivedEntityTypeFromSpawnEgg = null;
+
+    if (ConfigValuesImport.enableEntitySpamAntiGrief && itemTypeIdForSpawnEgg.endsWith("_spawn_egg")) {
+        // Derive entity type: "minecraft:pig_spawn_egg" -> "minecraft:pig"
+        let entityName = itemTypeIdForSpawnEgg.substring(0, itemTypeIdForSpawnEgg.length - "_spawn_egg".length);
+        if (entityName.startsWith("minecraft:")) { // Ensure it's not double-namespaced if item ID was already full
+            entityName = entityName.substring("minecraft:".length);
+        }
+        const potentialFullEntityId = "minecraft:" + entityName;
+
+        if (ConfigValuesImport.entitySpamMonitoredEntityTypes && ConfigValuesImport.entitySpamMonitoredEntityTypes.includes(potentialFullEntityId)) {
+            derivedEntityTypeFromSpawnEgg = potentialFullEntityId;
+        }
+    }
+
+    if (derivedEntityTypeFromSpawnEgg && checks?.checkEntitySpam) {
+        if (pData) { // pData should have been initialized at the start of handleItemUse
+            const spamDetected = await checks.checkEntitySpam(
+                player,
+                derivedEntityTypeFromSpawnEgg,
+                ConfigValuesImport, // Pass the runtime editable config
+                pData,
+                playerUtils,
+                playerDataManager,
+                logManager,
+                executeCheckAction, // This is the function itself
+                currentTick
+            );
+
+            if (spamDetected) {
+                if (ConfigValuesImport.entitySpamAction === "kill") { // "kill" here means prevent item use
+                    eventData.cancel = true;
+                    player.sendMessage("§c[AntiGrief] You are using spawn eggs too quickly!");
+                    playerUtils.debugLog?.(`EntitySpam (ItemUse): Prevented spawn egg use for ${player.nameTag} (entity: ${derivedEntityTypeFromSpawnEgg}) due to spam detection.`, pData.isWatched ? player.nameTag : null);
+                } else if (ConfigValuesImport.entitySpamAction === "warn") {
+                    player.sendMessage("§e[AntiGrief] Warning: Using spawn eggs too quickly is monitored.");
+                    // Admin notification is handled by checkEntitySpam via actionManager
+                }
+                // For "logOnly", no direct player message; actionManager handles logs/notifications.
+            }
+        } else {
+            playerUtils.debugLog?.(`EntitySpam (ItemUse): pData not available for ${player.nameTag}, skipping check for ${itemTypeIdForSpawnEgg}.`, null);
+        }
+    }
     if (eventData.cancel) return;
 
     // Anti-Grief Entity Spam Logic for Spawn Eggs (ItemUse event)
@@ -914,13 +968,13 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
     if (player?.typeId !== 'minecraft:player') return;
 
     // Anti-Grief Dependencies (ensuring they are available)
-    const griefConfig = dependencies?.config || ConfigValuesImport;
-    const griefPlayerUtils = dependencies?.playerUtils || PlayerUtilsImport;
-    const griefActionManager = dependencies?.actionManager;
-    const griefLogManager = dependencies?.logManager;
-    const griefPlayerDataManager = dependencies?.playerDataManager; // For pData access
-    const griefChecks = dependencies?.checks; // For checkEntitySpam
-    const currentTick = dependencies?.currentTick; // For checkEntitySpam
+    const depConfig = dependencies?.config || ConfigValuesImport; // Renamed to avoid conflict with direct param 'config'
+    const depPlayerUtils = dependencies?.playerUtils || PlayerUtilsImport;
+    const depActionManager = dependencies?.actionManager;
+    const depLogManager = dependencies?.logManager;
+    const depPlayerDataManager = dependencies?.playerDataManager;
+    const depChecks = dependencies?.checks;
+    const depCurrentTick = dependencies?.currentTick;
 
     const placeableEntityItemMap = {
         "minecraft:oak_boat": "minecraft:boat", "minecraft:spruce_boat": "minecraft:boat",
@@ -930,13 +984,13 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
         "minecraft:bamboo_raft": "minecraft:boat",
         "minecraft:armor_stand": "minecraft:armor_stand",
         "minecraft:item_frame": "minecraft:item_frame",
-        "minecraft:glow_item_frame": "minecraft:glow_item_frame", // Could be mapped to item_frame if desired
+        "minecraft:glow_item_frame": "minecraft:glow_item_frame",
         "minecraft:minecart": "minecraft:minecart",
-        "minecraft:chest_minecart": "minecraft:chest_minecart", // Could be mapped to minecart
-        "minecraft:furnace_minecart": "minecraft:furnace_minecart",// Could be mapped to minecart
-        "minecraft:tnt_minecart": "minecraft:tnt_minecart", // Could be mapped to minecart
-        "minecraft:hopper_minecart": "minecraft:hopper_minecart", // Could be mapped to minecart
-        "minecraft:command_block_minecart": "minecraft:command_block_minecart" // Could be mapped to minecart
+        "minecraft:chest_minecart": "minecraft:chest_minecart",
+        "minecraft:furnace_minecart": "minecraft:furnace_minecart",
+        "minecraft:tnt_minecart": "minecraft:tnt_minecart",
+        "minecraft:hopper_minecart": "minecraft:hopper_minecart",
+        "minecraft:command_block_minecart": "minecraft:command_block_minecart"
     };
 
     // --- Anti-Grief Fire Logic ---
@@ -1113,14 +1167,19 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
 
 
     // Original logic for other checks (e.g., illegal item placement)
-    // Using getPlayerData and checking for null, as currentTick isn't available for ensurePlayerDataInitialized.
-    // Checks using this pData must be robust against potentially missing fields if it's not fully initialized.
-    const pData = playerDataManager.getPlayerData(player.id); // This uses the direct param playerDataManager
-    // If pData is crucial and might be null, consider alternative ways to get currentTick or adjust check logic.
+    // Ensure pData is correctly initialized using dependencies if available, especially currentTick.
+    const pDataForIllegalItems = await depPlayerDataManager.ensurePlayerDataInitialized(player, depCurrentTick);
 
-    if (checks.checkIllegalItems && config.enableIllegalItemCheck) { // config here is the one passed as direct param
-        // Pass `pData` which might be null. `checkIllegalItems` must handle this.
-        await checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+    if (!pDataForIllegalItems) {
+        depPlayerUtils.debugLog?.(`IllegalItemCheck: Could not get pData for ${player.nameTag} in handleItemUseOn. Skipping check.`, player.nameTag);
+        return;
+    }
+
+    // 'checks', 'config', 'playerUtils', 'playerDataManager', 'logManager', 'executeCheckAction' here are the original direct parameters of handleItemUseOn.
+    // It's better to use the 'dep' versions if they are meant to be the same, or ensure clarity.
+    // For now, assuming the direct parameters are intended for checkIllegalItems as per its existing integration.
+    if (checks.checkIllegalItems && config.enableIllegalItemCheck) {
+        await checks.checkIllegalItems(player, itemStack, eventData, "place", pDataForIllegalItems, config, playerUtils, playerDataManager, logManager, executeCheckAction);
     }
 }
 
