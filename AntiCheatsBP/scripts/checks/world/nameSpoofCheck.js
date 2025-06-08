@@ -104,8 +104,8 @@ export async function checkNameSpoof(
             disallowedCharRegexConfig: config.nameSpoofDisallowedCharsRegex ?? "N/A",
             minChangeIntervalConfig: (config.nameSpoofMinChangeIntervalTicks ?? 0).toString()
         };
-        // Action profile name: config.nameSpoofActionProfileName ?? "player_namespoof"
-        await executeCheckAction(player, "player_namespoof", violationDetails, dependencies);
+        const nameSpoofActionProfile = config.nameSpoofActionProfileName ?? "player_namespoof";
+        await executeCheckAction(player, nameSpoofActionProfile, violationDetails, dependencies);
 
         playerUtils.debugLog?.(`NameSpoof: Flagged ${player.name} (current nameTag: "${currentNameTag}") for ${flaggedReason}`, watchedPrefix);
     }

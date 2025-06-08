@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/version.js
+ * Defines the !version command to display the AntiCheat addon version.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/version.js
 import { permissionLevels } from '../core/rankManager.js';
 

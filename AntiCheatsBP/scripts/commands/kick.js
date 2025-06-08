@@ -5,7 +5,6 @@
  */
 // AntiCheatsBP/scripts/commands/kick.js
 import { permissionLevels } from '../core/rankManager.js';
-import * as mc from '@minecraft/server'; // For world.getAllPlayers() if not using dependencies.findPlayer
 
 /**
  * @type {import('../types.js').CommandDefinition}

@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/vanish.js
+ * Defines the !vanish command for administrators to toggle their visibility and related effects.
+ * @version 1.0.1
+ */
 // AntiCheatsBP/scripts/commands/vanish.js
 import { world } from "@minecraft/server";
 import { permissionLevels } from '../core/rankManager.js';

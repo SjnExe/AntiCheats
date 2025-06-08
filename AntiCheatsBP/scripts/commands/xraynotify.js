@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/xraynotify.js
+ * Defines the !xraynotify command for administrators to manage their X-Ray mining notifications.
+ * @version 1.0.0
+ */
 // AntiCheatsBP/scripts/commands/xraynotify.js
 import { permissionLevels } from '../core/rankManager.js';
 

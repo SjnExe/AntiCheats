@@ -1,3 +1,8 @@
+/**
+ * @file AntiCheatsBP/scripts/commands/netherlock.js
+ * Defines the !netherlock command for administrators to manage Nether dimension access.
+ * @version 1.0.0
+ */
 import { permissionLevels } from '../core/rankManager.js';
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js'; // Corrected import path
 

@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/main.js
+ * Main entry point for the AntiCheat system. Initializes modules, subscribes to events,
+ * and runs the main tick loop for processing checks and player data.
+ * @version 1.1.0
+ */
 import * as mc from '@minecraft/server';
 import * as config from './config.js';
 import * as playerUtils from './utils/playerUtils.js';
@@ -104,9 +110,11 @@ mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
  * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
  */
 mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
-    // Assuming handleItemUseOn is a typo and should be handlePlayerPlaceBlock or similar,
-    // or that checkIllegalItems within it handles the eventData type correctly.
-    // For now, keeping as is from previous state.
+    // TODO: Review this subscription. handleItemUseOn is typically for ItemUseOnBeforeEvent.
+    // PlayerPlaceBlockBeforeEvent is passed here. This might lead to issues if handleItemUseOn
+    // or its downstream checks (like checkIllegalItems for "place") expect properties unique to ItemUseOnBeforeEvent
+    // that are not present or different in PlayerPlaceBlockBeforeEvent (e.g., faceLocation object vs. faceLocationX/Y/Z).
+    // For now, keeping as is from previous state, but needs verification.
     eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
 });
 

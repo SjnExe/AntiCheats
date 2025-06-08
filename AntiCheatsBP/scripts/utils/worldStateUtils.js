@@ -1,3 +1,9 @@
+/**
+ * @file AntiCheatsBP/scripts/utils/worldStateUtils.js
+ * Provides utility functions for managing global world states like dimension locks
+ * using world dynamic properties.
+ * @version 1.0.1
+ */
 import { world } from '@minecraft/server';
 
 const netherLockedProp = 'anticheat:netherLocked'; // Renamed to camelCase
