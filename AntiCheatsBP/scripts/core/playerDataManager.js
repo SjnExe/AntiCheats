@@ -150,6 +150,7 @@ export async function prepareAndSavePlayerData(player) {
  * @returns {import('../types.js').PlayerAntiCheatData} The default player data object.
  */
 export function initializeDefaultPlayerData(player, currentTick) {
+    debugLog(`Initializing default pData for ${player.nameTag} (ID: ${player.id})`, player.nameTag);
     return {
         playerNameTag: player.nameTag,
         lastPosition: player.location,
@@ -256,7 +257,7 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
     const loadedData = await loadPlayerDataFromDynamicProperties(player);
 
     if (loadedData) {
-        debugLog(`PDM:ensureInit: Loaded persisted data for ${player.nameTag}. Merging.`, player.nameTag);
+        debugLog(`Merged persisted pData for ${player.nameTag}. Session-only fields (e.g., lastAttackTick, recentHits, isUsingConsumable, etc.) reset to defaults.`, player.nameTag);
 
         // Merge loaded data into newPData. Persisted fields will overwrite defaults.
         newPData = { ...newPData, ...loadedData };
@@ -409,6 +410,21 @@ export function updateTransientPlayerData(player, pData, currentTick) {
     if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
         pData.lastSelectedSlotChangeTick = currentTick;
         pData.previousSelectedSlotIndex = player.selectedSlotIndex;
+    }
+
+    if (pData.isWatched) { // debugLog itself will check enableDebugLogging
+        const transientSnapshot = {
+            vx: player.getVelocity().x.toFixed(3),
+            vy: player.getVelocity().y.toFixed(3),
+            vz: player.getVelocity().z.toFixed(3),
+            pitch: pData.lastPitch.toFixed(3),
+            yaw: pData.lastYaw.toFixed(3),
+            isSprinting: player.isSprinting,
+            isSneaking: player.isSneaking,
+            isOnGround: player.isOnGround,
+            fallDistance: player.fallDistance.toFixed(3)
+        };
+        debugLog(`Transient update for ${player.nameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, player.nameTag);
     }
 }
 
