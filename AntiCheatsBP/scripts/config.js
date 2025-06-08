@@ -346,8 +346,7 @@ export const xrayDetectionNotifyOnOreMineEnabled = true;
 /** @type {string[]} List of block type IDs to monitor for X-Ray mining notifications. */
 export const xrayDetectionMonitoredOres = [
     "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore",
-    "minecraft:ancient_debris", "minecraft:emerald_ore",
-    "minecraft:deepslate_emerald_ore"
+    "minecraft:ancient_debris"
 ];
 /** @type {boolean} If true, admins (users with `adminTag`) will receive X-Ray mining notifications by default, unless they explicitly disable them. */
 export const xrayDetectionAdminNotifyByDefault = true;
@@ -370,6 +369,27 @@ export const combatLogMessage = "§cCombat Log: {playerName} disconnected {timeS
 
 /** @type {boolean} If true, admins receive all AntiCheat notifications by default, unless individually overridden by specific check settings or admin preferences. */
 export const acGlobalNotificationsDefaultOn = true;
+
+// --- Welcomer Message ---
+/** @type {boolean} If true, a welcome message is sent to players on their first join. */
+export const enableWelcomerMessage = true;
+/**
+ * @type {string} The welcome message template. Use {playerName} as a placeholder for the player's name.
+ * Example: "Welcome, {playerName}, to the server! Enjoy your stay."
+ */
+export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
+/** @type {boolean} If true, admins will be notified when a new player joins for the first time. */
+export const notifyAdminOnNewPlayerJoin = true;
+
+// --- Death Coords ---
+/** @type {boolean} If true, a message with death coordinates is shown to players upon respawn. */
+export const enableDeathCoordsMessage = true;
+/**
+ * @type {string} The death coordinates message template.
+ * Placeholders: {x}, {y}, {z}, {dimensionId}.
+ * Example: "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}."
+ */
+export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
 // --- UI Display Texts ---
 /** @type {string[]} Defines the server rules to be displayed in the UI (e.g., via !rules command). */
@@ -1002,13 +1022,20 @@ export let editableConfigValues = {
     enableFastPlaceCheck,
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
-    xrayDetectionNotifyOnOreMineEnabled, xrayDetectionAdminNotifyByDefault,
+    xrayDetectionNotifyOnOreMineEnabled,
+    xrayDetectionMonitoredOres: ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"], // Updated default
+    xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     enableCombatLogDetection,
     combatLogThresholdSeconds,
     combatLogFlagIncrement,
     combatLogReason,
     combatLogMessage,
+    enableWelcomerMessage,
+    welcomeMessage,
+    notifyAdminOnNewPlayerJoin,
+    enableDeathCoordsMessage,
+    deathCoordsMessage,
 };
 
 /**

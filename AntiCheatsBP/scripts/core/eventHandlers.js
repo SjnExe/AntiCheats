@@ -5,8 +5,8 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-import { getPlayerRankDisplay, updatePlayerNametag } from './rankManager.js';
-import { getExpectedBreakTicks } from '../utils/index.js'; // For InstaBreak Speed Check
+import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js'; // Added isNetherLocked, isEndLocked
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
 
@@ -87,8 +87,9 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
+ * @param {object} dependencies - Additional dependencies, expected to include `addLog`.
  */
-export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config) {
+export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, dependencies) {
     const { player, initialSpawn } = eventData; // initialSpawn can be useful
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
@@ -106,6 +107,45 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
         }
         updatePlayerNametag(player); // Assuming this function handles ranks/prefixes
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, player.nameTag);
+
+        // Welcomer message logic
+        if (initialSpawn && config.enableWelcomerMessage) { // Check if welcomer is enabled
+            let message = config.welcomeMessage || "Welcome, {playerName}, to the server!"; // Default message if not in config
+            message = message.replace(/{playerName}/g, player.nameTag);
+
+            // Send the message after a short delay
+            mc.system.runTimeout(() => {
+                player.sendMessage(message);
+            }, 20); // 1 second delay (20 ticks)
+
+            if (dependencies && dependencies.addLog) {
+                dependencies.addLog({
+                    timestamp: Date.now(),
+                    actionType: 'player_initial_join',
+                    targetName: player.nameTag,
+                    details: `Player ${player.nameTag} joined for the first time. Welcome message sent.`
+                });
+            }
+
+            if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) { // Optional: Notify admins
+                playerUtils.notifyAdmins(`§eNew player ${player.nameTag} has joined the server for the first time!`, null, null);
+            }
+        }
+
+        // Death Coords message display logic
+        // Ensure pData is fetched for the spawned player to check for a death message
+        const pData = playerDataManager.getPlayerData(player.id); // Get pData for the spawned player
+        if (pData && pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
+            // Send with a slight delay to ensure it's seen
+            mc.system.runTimeout(() => {
+                player.sendMessage(pData.deathMessageToShowOnSpawn);
+            }, 5); // 5 ticks = 0.25 seconds
+
+            playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, pData.isWatched ? player.nameTag : null);
+            pData.deathMessageToShowOnSpawn = null; // Clear the message
+            pData.isDirtyForSave = true; // Mark for saving
+        }
+
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
@@ -178,6 +218,61 @@ export async function handleEntityHurt(eventData, playerDataManager, checks, pla
                 await checks.checkAttackWhileUsingItem(...commonArgs);
             }
         }
+    }
+}
+
+/**
+ * Handles player death events to store death coordinates.
+ * The coordinates are stored in pData and displayed to the player upon respawn via handlePlayerSpawn.
+ * @param {import('@minecraft/server').EntityDieAfterEvent} eventData - The entity die event data. Note: Player is `deadEntity`.
+ * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../config.js').editableConfigValues} config - The server configuration object.
+ * @param {function} addLog - Function from logManager to add logs.
+ */
+export async function handlePlayerDeath(eventData, playerDataManager, playerUtils, config, addLog) {
+    const { deadEntity } = eventData;
+
+    if (deadEntity?.typeId === 'minecraft:player' && config.enableDeathCoordsMessage) {
+        const player = deadEntity;
+        const location = player.location;
+        const dimensionId = player.dimension.id.split(':')[1];
+
+        let pData;
+        try {
+            pData = playerDataManager.getPlayerData(player.id);
+        } catch (e) {
+            playerUtils.debugLog(`DeathCoords: Error fetching pData for ${player.nameTag || player.id} in handlePlayerDeath: ${e}`, null);
+            return;
+        }
+
+        if (!pData) {
+            playerUtils.debugLog(`DeathCoords: No pData for ${player.nameTag || player.id} in handlePlayerDeath. Cannot store message.`, null);
+            return;
+        }
+
+        const x = Math.floor(location.x);
+        const y = Math.floor(location.y);
+        const z = Math.floor(location.z);
+
+        let message = (config.deathCoordsMessage || "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.")
+            .replace(/{x}/g, x.toString())
+            .replace(/{y}/g, y.toString())
+            .replace(/{z}/g, z.toString())
+            .replace(/{dimensionId}/g, dimensionId);
+
+        pData.deathMessageToShowOnSpawn = message;
+        pData.isDirtyForSave = true;
+
+        if (addLog) {
+            addLog({
+                timestamp: Date.now(),
+                actionType: 'player_death_coords',
+                targetName: player.nameTag,
+                details: `Player ${player.nameTag} died at ${x},${y},${z} in ${dimensionId}. Coords stored for respawn.`
+            });
+        }
+        playerUtils.debugLog(`DeathCoords: Stored death message for ${player.nameTag}: "${message}"`, pData.isWatched ? player.nameTag : null);
     }
 }
 
@@ -275,6 +370,9 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, playerDataMan
 
 /**
  * Handles actions after a player breaks a block. Updates AutoTool state and triggers X-Ray notifications.
+ * X-Ray notifications for Diamond Ore (Overworld, Y 14 to -63) and Ancient Debris (Nether, Y 8 to 119)
+ * are filtered by dimension and Y-levels if enabled. Notification message includes dimension and uses
+ * standardized block names (e.g., "Diamond Ore" for both variants).
  * @param {mc.PlayerBreakBlockAfterEvent} eventData - The event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {Object<string, function>} checks - Object containing various check functions.
@@ -316,20 +414,45 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
 
     const brokenBlockId = brokenBlockPermutation.type.id;
     if (config.xrayDetectionMonitoredOres.includes(brokenBlockId)) {
-        const location = block.location;
-        const prettyBlockName = brokenBlockId.replace("minecraft:", "");
-        const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(location.y)}, ${Math.floor(location.z)}§7.`;
-        playerUtils.debugLog(message, null); // Log for server console
+        // X-Ray Alert Logic: Filter for specific ores, dimensions, and Y-levels.
+        const dimensionId = player.dimension.id;
+        const blockY = block.location.y;
+        let sendNotification = false;
+        let prettyBlockName = brokenBlockId.replace("minecraft:", "").replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase()); // Default pretty name
 
-        mc.world.getAllPlayers().forEach(adminPlayer => {
-            if (playerUtils.isAdmin(adminPlayer)) { // Use playerUtils.isAdmin
-                const wantsNotifications = adminPlayer.hasTag("xray_notify_on");
-                const explicitlyDisabled = adminPlayer.hasTag("xray_notify_off");
-                if (wantsNotifications || (config.xrayDetectionAdminNotifyByDefault && !explicitlyDisabled)) {
-                    adminPlayer.sendMessage(message);
-                }
+        if (brokenBlockId === "minecraft:diamond_ore" || brokenBlockId === "minecraft:deepslate_diamond_ore") {
+            prettyBlockName = "Diamond Ore"; // Standardize name for both diamond ore variants
+            // Diamond Ore: Overworld, Y <= 14 && Y >= -63
+            if (dimensionId === "minecraft:overworld" && blockY <= 14 && blockY >= -63) {
+                sendNotification = true;
             }
-        });
+        } else if (brokenBlockId === "minecraft:ancient_debris") {
+            prettyBlockName = "Ancient Debris"; // Standardize name
+            // Ancient Debris: Nether, Y >= 8 && Y <= 119
+            if (dimensionId === "minecraft:nether" && blockY >= 8 && blockY <= 119) {
+                sendNotification = true;
+            }
+        } else {
+            // For other ores that might be in xrayDetectionMonitoredOres (currently none by default configuration).
+            // This block maintains previous broader alerting behavior if other ores are added back to the monitored list without specific filters.
+            sendNotification = true;
+        }
+
+        if (sendNotification) {
+            const location = block.location;
+            const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(blockY)}, ${Math.floor(location.z)}§7 in ${dimensionId.replace("minecraft:","")}.`;
+            playerUtils.debugLog(message, null); // Log for server console
+
+            mc.world.getAllPlayers().forEach(adminPlayer => {
+                if (playerUtils.isAdmin(adminPlayer)) {
+                    const wantsNotifications = adminPlayer.hasTag("xray_notify_on");
+                    const explicitlyDisabled = adminPlayer.hasTag("xray_notify_off");
+                    if (wantsNotifications || (config.xrayDetectionAdminNotifyByDefault && !explicitlyDisabled)) {
+                        adminPlayer.sendMessage(message);
+                    }
+                }
+            });
+        }
     }
 }
 
@@ -544,6 +667,64 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         pData.recentMessages.shift();
     }
     pData.isDirtyForSave = true;
+}
+
+
+/**
+ * Handles actions after a player changes dimension, specifically for Dimension Lock enforcement.
+ * If a non-admin player enters a locked dimension (Nether or End), they are teleported back.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The event data.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions.
+ * @param {import('../config.js').editableConfigValues} config - The server configuration.
+ */
+export async function handlePlayerDimensionChangeAfter(eventData, playerUtils, config) {
+    const { player, fromDimension, toDimension, fromLocation } = eventData;
+
+    if (!player || !fromDimension || !toDimension || !fromLocation) {
+        playerUtils.debugLog("DimensionLock: Invalid eventData in handlePlayerDimensionChangeAfter.", null);
+        return;
+    }
+
+    // Using permissionLevels.admin directly as config.dimensionLockAdminBypassLevel might not exist yet.
+    // It's assumed playerUtils.getPlayerPermissionLevel is available and correct.
+    const playerPermLevel = playerUtils.getPlayerPermissionLevel ? playerUtils.getPlayerPermissionLevel(player) : permissionLevels.member;
+
+    if (playerPermLevel <= permissionLevels.admin) {
+        playerUtils.debugLog(`DimensionLock: Player ${player.nameTag} has bypass permission (Level: ${playerPermLevel}). Allowing dimension change.`, player.nameTag);
+        return; // Admin/Owner bypass
+    }
+
+    let dimensionIsLocked = false;
+    let lockedDimensionName = "";
+
+    if (toDimension.id === "minecraft:the_nether" && isNetherLocked()) {
+        dimensionIsLocked = true;
+        lockedDimensionName = "The Nether";
+    } else if (toDimension.id === "minecraft:the_end" && isEndLocked()) {
+        dimensionIsLocked = true;
+        lockedDimensionName = "The End";
+    }
+
+    if (dimensionIsLocked) {
+        try {
+            // Ensure fromLocation and fromDimension are valid before teleporting
+            if (fromLocation && fromDimension) {
+                player.teleport(fromLocation, { dimension: fromDimension });
+                playerUtils.warnPlayer(player, `Access to ${lockedDimensionName} is currently restricted by an administrator.`);
+                playerUtils.debugLog(`DimensionLock: Teleported ${player.nameTag} back from ${lockedDimensionName} (locked).`, player.nameTag);
+
+                const adminMessage = `§7[DimensionLock] Player ${player.nameTag} attempted to enter ${lockedDimensionName} (locked) and was teleported back.`;
+                if (playerUtils.notifyAdmins) playerUtils.notifyAdmins(adminMessage, player, null);
+
+            } else {
+                 playerUtils.debugLog(`DimensionLock: Cannot teleport ${player.nameTag}, fromLocation or fromDimension is invalid.`, player.nameTag);
+                 console.error(`DimensionLock: Invalid teleport parameters for ${player.nameTag}: fromLocation or fromDimension undefined.`);
+            }
+        } catch (e) {
+            playerUtils.debugLog(`DimensionLock: Error teleporting ${player.nameTag} back from ${lockedDimensionName}: ${e}`, player.nameTag);
+            console.error(`DimensionLock: Teleportation error for ${player.nameTag}: ${e.stack || e}`);
+        }
+    }
 }
 
 [end of AntiCheatsBP/scripts/core/eventHandlers.js]

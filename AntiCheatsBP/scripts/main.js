@@ -44,7 +44,7 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
  * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
  */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config);
+    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, { addLog: logManager.addLog });
 });
 
 /**
@@ -134,6 +134,24 @@ mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
  */
 mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
     await eventHandlers.handleInventoryItemChange(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+});
+
+/**
+ * Handles player dimension change events after they occur.
+ * @param {mc.PlayerDimensionChangeAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
+    eventHandlers.handlePlayerDimensionChangeAfter(eventData, playerUtils, config);
+});
+
+/**
+ * Handles entity die events, specifically for player deaths to record coordinates.
+ * @param {mc.EntityDieAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.entityDie.subscribe((eventData) => {
+    // Assuming player is deadEntity from this event type (needs verification if API differs for players specifically)
+    // Pass logManager.addLog for logging within handlePlayerDeath
+    eventHandlers.handlePlayerDeath(eventData, playerDataManager, playerUtils, config, logManager.addLog);
 });
 
 let currentTick = 0;

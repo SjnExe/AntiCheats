@@ -133,12 +133,16 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
 
     form.button("View Detailed Info/Flags", "textures/ui/magnifying_glass");   // Index 0
     form.button("View Inventory (InvSee)", "textures/ui/chest_icon.png");      // Index 1
-    form.button("Kick Player", "textures/ui/icon_hammer");                     // Index 2
-    form.button(freezeButtonText, freezeButtonIcon);                           // Index 3
-    form.button(muteButtonText, muteButtonIcon);                               // Index 4
-    form.button("Ban Player", "textures/ui/icon_resource_pack");               // Index 5
-    form.button("Reset Player Flags", "textures/ui/refresh");                  // Index 6
-    form.button("Back to Player List", "textures/ui/undo");                    // Index 7
+    form.button("Teleport to Player", "textures/ui/portal");                   // Index 2
+    form.button("Teleport Player Here", "textures/ui/arrow_down_thin");        // Index 3 (New)
+    form.button("Kick Player", "textures/ui/icon_hammer");                     // Index 4 (Shifted)
+    form.button(freezeButtonText, freezeButtonIcon);                           // Index 5 (Shifted)
+    form.button(muteButtonText, muteButtonIcon);                               // Index 6 (Shifted)
+    form.button("Ban Player", "textures/ui/icon_resource_pack");               // Index 7 (Shifted)
+    form.button("Reset Player Flags", "textures/ui/refresh");                  // Index 8
+    form.button("Clear Inventory", "textures/ui/icon_trash");                  // Index 9
+    // Removed "Clear Ender Chest" button formerly at Index 10
+    form.button("Back to Player List", "textures/ui/undo");                    // Index 10 (Shifted from 11)
 
     try {
         const response = await form.show(adminPlayer);
@@ -150,8 +154,8 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
 
         const commandExecute = dependencies.commandExecutionMap?.get(response.selection === 0 ? 'inspect' :
             response.selection === 1 ? 'invsee' :
-                response.selection === 3 ? 'freeze' :
-                    response.selection === 6 ? 'resetflags' : '');
+                response.selection === 5 ? 'freeze' : // Shifted from 4
+                    response.selection === 8 ? 'resetflags' : ''); // Shifted from 7
 
         // Helper for commands that require a modal (like kick, mute, ban)
         const showModalAndExecute = async (commandName, title, fields, argsTransform = (vals) => vals) => {
@@ -180,16 +184,54 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         switch (response.selection) {
             case 0: // View Detailed Info/Flags
             case 1: // View Inventory (InvSee)
-            case 3: // Freeze/Unfreeze Player
-            case 6: // Reset Player Flags
+                // Teleport buttons handled below
+            case 5: // Freeze/Unfreeze Player (Shifted from 4)
+            case 8: // Reset Player Flags (Shifted from 7)
                 if (commandExecute) await commandExecute(adminPlayer, [targetPlayer.nameTag], dependencies);
                 else adminPlayer.sendMessage("§cSelected command module not found.");
                 break;
-            case 2: // Kick Player
+            case 2: // Teleport to Player
+                try {
+                    adminPlayer.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
+                    adminPlayer.sendMessage(`§aSuccessfully teleported to ${targetPlayer.nameTag}.`);
+                    if (dependencies.addLog) {
+                        dependencies.addLog({
+                            adminName: adminPlayer.nameTag,
+                            actionType: 'teleport_self_to_player',
+                            targetName: targetPlayer.nameTag,
+                            details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag} at ${targetPlayer.location.x.toFixed(1)},${targetPlayer.location.y.toFixed(1)},${targetPlayer.location.z.toFixed(1)} in ${targetPlayer.dimension.id.split(':')[1]}`
+                        });
+                    }
+                } catch (e) {
+                    adminPlayer.sendMessage(`§cError teleporting: ${e.message}`);
+                    playerUtils.debugLog(`Error teleporting admin ${adminPlayer.nameTag} to ${targetPlayer.nameTag}: ${e.stack || e}`, adminPlayer.nameTag);
+                }
+                // Stay on player actions form
+                break;
+            case 3: // Teleport Player Here (New)
+                try {
+                    targetPlayer.teleport(adminPlayer.location, { dimension: adminPlayer.dimension });
+                    adminPlayer.sendMessage(`§aSuccessfully teleported ${targetPlayer.nameTag} to your location.`);
+                    targetPlayer.sendMessage("§7You have been teleported by an admin.");
+                    if (dependencies.addLog) {
+                        dependencies.addLog({
+                            adminName: adminPlayer.nameTag,
+                            actionType: 'teleport_player_to_admin',
+                            targetName: targetPlayer.nameTag,
+                            details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to their location (${adminPlayer.location.x.toFixed(1)},${adminPlayer.location.y.toFixed(1)},${adminPlayer.location.z.toFixed(1)} in ${adminPlayer.dimension.id.split(':')[1]})`
+                        });
+                    }
+                } catch (e) {
+                    adminPlayer.sendMessage(`§cError teleporting ${targetPlayer.nameTag}: ${e.message}`);
+                    playerUtils.debugLog(`Error teleporting ${targetPlayer.nameTag} to admin ${adminPlayer.nameTag}: ${e.stack || e}`, adminPlayer.nameTag);
+                }
+                // Stay on player actions form
+                break;
+            case 4: // Kick Player (Shifted from 3)
                 await showModalAndExecute('kick', `Kick ${targetPlayer.nameTag}`, [{ type: 'textField', label: "Kick Reason:", placeholder: "Enter reason" }]);
                 shouldReturnToPlayerList = true;
                 break;
-            case 4: // Mute/Unmute Player
+            case 6: // Mute/Unmute Player (Shifted from 5)
                 if (isTargetMuted) {
                     const unmuteExec = dependencies.commandExecutionMap?.get('unmute');
                     if (unmuteExec) await unmuteExec(adminPlayer, [targetPlayer.nameTag], dependencies);
@@ -201,14 +243,48 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     );
                 }
                 break;
-            case 5: // Ban Player
+            case 7: // Ban Player (Shifted from 6)
                 await showModalAndExecute('ban', `Ban ${targetPlayer.nameTag}`,
                     [{ type: 'textField', label: "Duration (e.g., 1d, 2w, perm):", placeholder: "1d" }, { type: 'textField', label: "Reason:", placeholder: "Enter reason" }],
                     (vals) => [vals[0], vals[1], vals[2]] // targetName, duration, reason
                 );
                 shouldReturnToPlayerList = true;
                 break;
-            case 7: // Back to Player List
+            // case 8 is Reset Player Flags, handled above
+            case 9: // Clear Inventory (Shifted from 8)
+                {
+                    const confirmClearInvForm = new ModalFormData()
+                        .title("Confirm Clear Inventory")
+                        .body(`Are you sure you want to clear ${targetPlayer.nameTag}'s main inventory? This action cannot be undone.`)
+                        .toggle("Yes, clear main inventory.", false);
+                    const confirmClearInvResponse = await confirmClearInvForm.show(adminPlayer);
+
+                    if (confirmClearInvResponse.canceled || !confirmClearInvResponse.formValues[0]) {
+                        adminPlayer.sendMessage("§7Clear Inventory action cancelled.");
+                    } else {
+                        const inventoryComp = targetPlayer.getComponent("minecraft:inventory");
+                        if (inventoryComp && inventoryComp.container) {
+                            for (let i = 0; i < inventoryComp.container.size; i++) {
+                                inventoryComp.container.setItem(i); // Clears the slot
+                            }
+                            adminPlayer.sendMessage(`§aSuccessfully cleared ${targetPlayer.nameTag}'s inventory.`);
+                            if (dependencies.addLog) {
+                                dependencies.addLog({
+                                    adminName: adminPlayer.nameTag,
+                                    actionType: 'clear_inventory',
+                                    targetName: targetPlayer.nameTag,
+                                    details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}`
+                                });
+                            }
+                        } else {
+                            adminPlayer.sendMessage(`§cCould not access ${targetPlayer.nameTag}'s inventory component.`);
+                        }
+                    }
+                }
+                // Stay on player actions form
+                break;
+            // Case 10 for "Clear Ender Chest" has been removed.
+            case 10: // Back to Player List (Shifted Index from 11)
                 shouldReturnToPlayerList = true;
                 shouldReturnToPlayerActions = false;
                 break;

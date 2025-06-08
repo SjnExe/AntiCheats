@@ -15,7 +15,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
-        *   `!notify <on|off|toggle>`: Toggle admin notifications for themselves globally. (Scythe/SafeGuard)
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
         *   Investigate: In-game config editor via UI (for `config.js` values).
@@ -33,7 +32,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **World Management & Protection:** SjnExe parity goal.
     *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
-    *   Investigate & Implement: Dimension Locks (prevent entry to Nether/End via configuration, with bypass for admins).
 
 *   **Normal Player Panel Features (`!panel`):**
 
@@ -44,16 +42,8 @@ This list contains planned features, improvements, and areas for future investig
 *   **Automated Actions (AutoMod):** (from original todo, Scythe, SafeGuard)
     *   Implement configurable automated actions (e.g., kick, temporary ban, extended watch period) based on accumulated flag counts or specific severe cheat detections. Requires careful design to minimize false positives and allow for admin review/override.
 *   **Player Utilities & Experience:** SjnExe parity goal.
-    *   Welcomer message for new players (optionally show their device type if API allows).
-    *   Death Coords / Death Effects: Announce player death coordinates in chat (to player or party), possibly with cosmetic effects.
+    *   Death Effects: Investigate and implement cosmetic effects on player death.
     *   Chat Formatting (potentially linked to the Rank System).
-*   **Fake Leave/Join Command (`!fakeleave`/`!fakejoin` or `!vanish` enhancement):**
-    *   **Objective:** Allow admins to simulate leaving and rejoining the game.
-    *   **Mechanics:**
-        *   Combines current `!vanish` functionality (invisibility, hidden nametag).
-        *   Broadcasts a server message: "§ePlayerName left the game." on activation, and "§ePlayerName joined the game." on deactivation.
-        *   **Investigate:** Further methods to ensure the vanished player is hidden from player lists (tab menu) for other players as effectively as possible.
-    *   **Considerations:** True removal from one's own tab list via server scripts is likely infeasible; focus on appearance to others.
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Admin Command Usage Logging:** Log when an admin uses an `!` command (especially AC related), what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).

@@ -31,6 +31,8 @@ import * as xraynotifyCmd from './xraynotify.js';
 import * as tpCmd from './tp.js';
 import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
+import * as netherlockCmd from './netherlock.js';
+import * as endlockCmd from './endlock.js';
 
 /**
  * Array containing all registered command modules.
@@ -64,5 +66,7 @@ export const commandModules = [
     tpCmd,
     copyinvCmd,
     uinfoCmd,
+    netherlockCmd,
+    endlockCmd,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");

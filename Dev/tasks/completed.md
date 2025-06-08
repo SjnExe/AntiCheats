@@ -1,5 +1,37 @@
 # Completed Tasks Documentation
 
+## Recently Completed
+*   **Welcomer Message for New Players:**
+    *   Implemented a feature to send a configurable welcome message to players upon their initial join (`initialSpawn`).
+    *   The message template (`{playerName}` placeholder) and feature toggle (`enableWelcomerMessage`) are configurable in `config.js`.
+    *   Added an option (`notifyAdminOnNewPlayerJoin`) to notify admins when a new player joins.
+    *   Device type detection was not implemented due to current API limitations for reliability.
+    *   (Task was previously in Low Priority / Ideas).
+*   **Dimension Locks Feature:**
+    *   Implemented `!netherlock <on|off|status>` and `!endlock <on|off|status>` commands for admins to control access to the Nether and End dimensions.
+    *   Lock states are stored persistently using world dynamic properties via a new `worldStateUtils.js` utility.
+    *   Enforcement mechanism uses the `PlayerDimensionChangeAfterEvent` to teleport non-exempt players back from locked dimensions, providing them with a notification.
+    *   Admins (or users with `permissionLevels.admin` or lower) can bypass these locks.
+    *   (Task was previously in Medium Priority under World Management).
+*   **Admin Panel - Player Actions Enhancement:** Added several new actions to the Player Actions form in the Admin Panel:
+    *   **Clear Inventory:** Allows admins to clear a target player's main inventory (with confirmation).
+    *   **Teleport to Player:** Allows admin to teleport themselves to the target player.
+    *   **Teleport Player Here:** Allows admin to teleport the target player to the admin's current location.
+    *   These features enhance admin utility for player management within the UI.
+*   **`!vanish` Command - Comprehensive Admin Invisibility Suite:**
+    *   Refined `!vanish` to use `!vanish [silent|notify]` syntax (defaults to `silent`, always toggles state).
+    *   When activated, provides the following effects and abilities:
+        *   Invisibility (effect, no particles)
+        *   Night Vision (effect, no particles)
+        *   Damage Immunity (Resistance V effect, no particles)
+        *   Fire Immunity (Fire Resistance effect, no particles, prevents visual burning)
+        *   Item Pickup Prevention (`player.canPickupItems = false`)
+    *   In 'notify' mode, also broadcasts fake "left game" / "joined game" server messages.
+    *   Displays a persistent "You are now vanished" status on the player's action bar, which is cleared upon unvanishing.
+    *   Chat messages are still used to confirm the unvanish action directly to the admin.
+    *   This set of features incorporates and supersedes the functionality previously planned for a separate `!fakeleave` command. (Task originally in Low Priority / Ideas, significantly enhanced).
+*   **`!notify <on|off|toggle>`:** Allows admins to toggle their own command/system notifications. (Originally in Medium Priority Admin Tools).
+
 ---
 ## Integration: Deferred Player Data Saving
 *(Completed During This Session Cycle)*
