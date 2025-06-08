@@ -99,3 +99,24 @@ export const automodActionMessages = {
   "automod.illegalitem.warn_repeat": "AutoMod Warning: Illegal items have been detected in your possession multiple times. Please adhere to server rules."
   // Add more messages as rules are defined
 };
+
+/**
+ * @type {Object.<string, boolean>}
+ * Enables or disables AutoMod functionality for specific check types.
+ * If a checkType is not listed here, AutoMod is assumed to be ENABLED for it (provided global enableAutoMod is true).
+ * Set a checkType to 'false' to disable AutoMod specifically for it.
+ * Example:
+ *   "fly_y_velocity": true,  // AutoMod enabled for fly_y_velocity
+ *   "reach_combat": false, // AutoMod disabled for reach_combat
+ */
+export const automodPerCheckTypeToggles = {
+  "fly_y_velocity": true,
+  "speed_ground": true,
+  "nuker_break_speed": true,
+  "reach_combat": true,
+  "chat_spam_fast": true,
+  "fly_severe_long": true,
+  "illegal_item_possession": true
+  // Add new checkTypes here if you want to explicitly set their AutoMod toggle.
+  // If a checkType from automodRules is NOT listed here, it defaults to AutoMod being ON for it.
+};

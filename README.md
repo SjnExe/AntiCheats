@@ -13,6 +13,7 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 *   [Owner and Rank System](#owner-and-rank-system)
 *   [General Player Commands](#general-player-commands)
 *   [Contributing](#contributing)
+*   [Automated Moderation (AutoMod)](#automated-moderation-automod)
 
 ## Features
 
@@ -99,3 +100,98 @@ We welcome contributions! Please follow these general guidelines:
 6.  Create a pull request against the `main` branch with a clear description.
 
 For more detailed development practices, task management, and workflow considerations, refer to the [Addon Development Resources in ``Dev/README.md``](Dev/README.md).
+
+## Automated Moderation (AutoMod)
+
+The AutoMod system is designed to automatically take action against players who repeatedly trigger cheat detections. It is highly configurable and aims to reduce the manual workload on administrators.
+
+### How It Works
+When a player triggers a specific cheat detection (e.g., for flying, speeding), they accumulate flags for that particular type of cheat (`checkType`). The AutoMod system monitors these flag counts. If a player's flag count for a `checkType` reaches a predefined threshold, AutoMod will execute a configured sequence of actions.
+
+### Configuration
+AutoMod is configured through two main files: `AntiCheatsBP/scripts/config.js` (for global settings) and `AntiCheatsBP/scripts/automodConfig.js` (for specific rules and messages).
+
+#### 1. Global AutoMod Toggle
+- **File:** `AntiCheatsBP/scripts/config.js`
+- **Setting:** `enableAutoMod`
+- **Usage:** Set to `true` to enable the entire AutoMod system, or `false` to disable it globally.
+  ```javascript
+  export const enableAutoMod = true; // or false
+  ```
+
+#### 2. Per-CheckType AutoMod Toggles
+- **File:** `AntiCheatsBP/scripts/automodConfig.js`
+- **Setting:** `automodPerCheckTypeToggles`
+- **Usage:** This object allows you to enable or disable AutoMod for specific `checkType`s. If a `checkType` is not listed in this object, or if its value is `true`, AutoMod will be active for it (assuming the global `enableAutoMod` is also `true`). To disable AutoMod for a particular check, set its value to `false`.
+  ```javascript
+  export const automodPerCheckTypeToggles = {
+    "fly_y_velocity": true,  // AutoMod enabled for this check
+    "reach_combat": false, // AutoMod disabled for this check
+    // ... other check types
+  };
+  ```
+
+#### 3. AutoMod Rules (`automodRules`)
+- **File:** `AntiCheatsBP/scripts/automodConfig.js`
+- **Setting:** `automodRules`
+- **Structure:** This is an object where each key is a `checkType` string (e.g., `"fly_y_velocity"`, `"nuker_break_speed"`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
+- **`actionStep` Object Properties:**
+  - `flagThreshold` (number): The number of flags for this `checkType` at which this action step is triggered.
+  - `actionType` (string): The type of action to take. See "Supported Action Types" below.
+  - `parameters` (object): Action-specific parameters.
+    - `reasonKey` (string): A key to look up the message/reason in `automodActionMessages`.
+    - `duration` (string, optional): For actions like `TEMP_BAN` or `MUTE` (e.g., "30m", "1h", "7d").
+    - *(Other parameters might be used by specific actions in the future).*
+  - `resetFlagsAfterAction` (boolean, optional): If `true`, the flag count for this specific `checkType` will be reset to 0 after this action is performed. Defaults to `false`.
+
+- **Example Rule:**
+  ```javascript
+  // In automodRules
+  "fly_y_velocity": [
+    {
+      "flagThreshold": 3,
+      "actionType": "WARN",
+      "parameters": { "reasonKey": "automod.fly.warn1" }
+    },
+    {
+      "flagThreshold": 5,
+      "actionType": "KICK",
+      "parameters": { "reasonKey": "automod.fly.kick1" }
+    },
+    {
+      "flagThreshold": 10,
+      "actionType": "TEMP_BAN",
+      "parameters": { "duration": "1h", "reasonKey": "automod.fly.tempban1" },
+      "resetFlagsAfterAction": true
+    }
+  ],
+  ```
+
+#### 4. Supported Action Types (`actionType`)
+The following `actionType` strings can be used in your `automodRules`:
+- `FLAG_ONLY`: Takes no direct punitive action. Useful for sensitive checks or as an initial step. Logs that the rule was processed.
+- `WARN`: Sends a configurable warning message to the player's chat.
+- `KICK`: Kicks the player from the server with a configurable reason.
+- `TEMP_BAN`: Temporarily bans the player for a configurable duration and reason. The player is also kicked.
+- `PERM_BAN`: Permanently bans the player with a configurable reason. The player is also kicked.
+- `MUTE`: Temporarily mutes the player for a configurable duration and reason. Player receives an in-game notification.
+- `FREEZE`: Freezes the player (prevents movement). Player receives an in-game notification. This action is delegated to the `!freeze` command logic.
+- `REMOVE_ILLEGAL_ITEM`: Removes all instances of a specific illegal item from the player's inventory. The item type is determined by the `violationDetails` of the flag that triggered this action.
+
+#### 5. Action Messages (`automodActionMessages`)
+- **File:** `AntiCheatsBP/scripts/automodConfig.js`
+- **Setting:** `automodActionMessages`
+- **Usage:** This is an object mapping `reasonKey` strings (used in `automodRules`) to the actual text messages that will be shown to players or used in logs. This allows for easy customization and potential localization of messages.
+  ```javascript
+  export const automodActionMessages = {
+    "automod.fly.warn1": "Automated Warning: Unusual flight activity detected.",
+    "automod.default.kick": "You have been kicked by AutoMod.",
+    // ... other messages
+  };
+  ```
+
+### Important Notes
+- The AutoMod system processes rules based on escalating `flagThresholds` for each `checkType`.
+- The `pData.automodState[checkType].lastActionThreshold` is used to prevent the same action from being repeatedly applied if the flag count hasn't increased beyond that threshold (unless flags are reset).
+- All actions taken by AutoMod are logged in the Admin Action Logs (viewable via `!panel`) with "AutoMod" as the issuer.
+- Administrators are also notified in chat when AutoMod takes a significant action.

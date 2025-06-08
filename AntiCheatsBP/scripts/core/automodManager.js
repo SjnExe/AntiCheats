@@ -254,6 +254,29 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             reason: parameters?.reasonKey || \`Automated action for \${checkType}\`,
             details: logDetails
         });
+
+        // Admin Notification Logic
+        if (playerUtils && playerUtils.notifyAdmins) {
+            let adminMessage = \`§7[§cAutoMod§7] Action: \${actionType} on \${player.nameTag} for \${checkType}.\`;
+            const reasonMessage = (automodConfig?.automodActionMessages && parameters.reasonKey && automodConfig.automodActionMessages[parameters.reasonKey])
+                                  ? automodConfig.automodActionMessages[parameters.reasonKey]
+                                  : (parameters.reasonKey || "N/A");
+
+            adminMessage += \` Reason: \${reasonMessage}.\`;
+
+            if (actionType === "TEMP_BAN" || actionType === "MUTE") {
+                const durationString = parameters.duration || "N/A";
+                // Use durationForLog as it's already parsed Ms, formatDuration handles Infinity correctly
+                const friendlyDuration = formatDuration(durationForLog);
+                adminMessage += \` Duration: \${friendlyDuration}.\`;
+            } else if (actionType === "PERM_BAN") {
+                adminMessage += " Duration: Permanent.";
+            } else if (actionType === "REMOVE_ILLEGAL_ITEM" && parameters.itemToRemoveTypeId) {
+                adminMessage += \` Item: \${parameters.itemToRemoveTypeId}.\`;
+                // logDetails already contains the count, could parse it out or add to parameters if needed here.
+            }
+            playerUtils.notifyAdmins(adminMessage, player, pData);
+        }
     } else if (!actionProcessed) {
         if (actionType !== "FLAG_ONLY" && (actionType === "WARN" || actionType === "KICK" || actionType === "TEMP_BAN" || actionType === "PERM_BAN" || actionType === "MUTE" || actionType === "FREEZE" || actionType === "REMOVE_ILLEGAL_ITEM")) {
              playerUtils.debugLog(\`AutomodManager: Action '\${actionType}' failed to process correctly for \${player.nameTag}.\`, player.nameTag);
@@ -276,6 +299,15 @@ export async function processAutoModActions(player, pData, checkType, dependenci
 
     if (!config.enableAutoMod) {
         return;
+    }
+
+    // Check per-checkType toggle
+    if (automodConfig.automodPerCheckTypeToggles &&
+        typeof automodConfig.automodPerCheckTypeToggles[checkType] === 'boolean' &&
+        !automodConfig.automodPerCheckTypeToggles[checkType]) {
+
+        playerUtils.debugLog(\`AutomodManager: AutoMod for checkType '\${checkType}' on \${player.nameTag} is disabled via per-check toggle.\`, player.nameTag);
+        return; // AutoMod for this specific checkType is disabled
     }
 
     if (!automodConfig?.automodRules) {
@@ -325,7 +357,7 @@ export async function processAutoModActions(player, pData, checkType, dependenci
             playerUtils.debugLog(\`AutomodManager: Action parameters: \${JSON.stringify(bestRuleToApply.parameters)}\`, player.nameTag);
         }
 
-        let finalParameters = bestRuleToApply.parameters || {}; // Start with rule-defined parameters
+        let finalParameters = bestRuleToApply.parameters || {};
 
         if (bestRuleToApply.actionType === "REMOVE_ILLEGAL_ITEM") {
             if (pData.lastViolationDetailsMap && pData.lastViolationDetailsMap[checkType] && pData.lastViolationDetailsMap[checkType].itemTypeId) {
@@ -333,7 +365,6 @@ export async function processAutoModActions(player, pData, checkType, dependenci
                 finalParameters = {
                     ...finalParameters,
                     itemToRemoveTypeId: itemDetail.itemTypeId,
-                    // quantityOriginallyFound: itemDetail.quantityFound // Optional
                 };
                 playerUtils.debugLog(\`AutomodManager: Extracted item \${itemDetail.itemTypeId} from pData.lastViolationDetailsMap for REMOVE_ILLEGAL_ITEM action.\`, player.nameTag);
             } else {

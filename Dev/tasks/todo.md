@@ -26,25 +26,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Normal Player Panel Features (`!panel`):**
 
-## AutoMod System (Future Phases)
-
-*   **Phase 2: Implement Basic Actions (Warn, Kick) & Flag-Only**
-    - Implement execution logic in `AutoModManager` for "WARN", "KICK", and "FLAG_ONLY" action types.
-    - Integrate with configuration for messages and reasons.
-    - Add logging for AutoMod actions taken.
-*   **Phase 3: Implement Persistent Actions (Ban, Mute) & Freeze**
-    - Implement execution logic for "TEMP_BAN", "PERM_BAN", "MUTE", and "FREEZE" actions.
-    - Ensure proper integration with `playerDataManager` (for bans/mutes) and `freeze` command logic.
-    - Handle durations and persistent storage.
-*   **Phase 4: Implement Illegal Item Removal**
-    - Implement the "REMOVE_ILLEGAL_ITEM" action.
-    - Logic to identify and remove all instances of specified illegal items from player inventory.
-*   **Phase 5: Admin Notifications, System Toggles, and Documentation**
-    - Add admin notifications for AutoMod actions.
-    - Implement finer-grained toggles for AutoMod per check type (if desired beyond the global toggle).
-    - Update all relevant project documentation (`README.md`, etc.).
-    - Conduct thorough end-to-end testing.
-
 ## Low Priority / Ideas
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
@@ -53,6 +34,8 @@ This list contains planned features, improvements, and areas for future investig
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
+*   **AutoMod System Review & Future Enhancements:**
+    - Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
