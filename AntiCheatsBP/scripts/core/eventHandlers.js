@@ -161,6 +161,65 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
 }
 
 /**
+ * Handles entity death events to trigger cosmetic death effects for players.
+ * @param {mc.EntityDieAfterEvent} eventData The entity die event data.
+ * @param {object} config The editable configuration object (config.editableConfigValues).
+ */
+export async function handleEntityDieForDeathEffects(eventData, config) {
+    if (!config.enableDeathEffects) {
+        return;
+    }
+
+    const deadEntity = eventData.deadEntity;
+    if (!(deadEntity instanceof mc.Player)) {
+        return;
+    }
+
+    const location = deadEntity.location;
+    const dimension = deadEntity.dimension;
+    const effectConfig = config.defaultDeathEffect;
+
+    if (effectConfig) {
+        // Play sound
+        if (effectConfig.soundId && effectConfig.soundOptions) {
+            try {
+                dimension.playSound(effectConfig.soundId, location, effectConfig.soundOptions);
+            } catch (e) {
+                console.warn(`[DeathEffects] Error playing sound '\${effectConfig.soundId}': \${e}`);
+            }
+        }
+
+        // Execute particle command
+        if (effectConfig.particleCommand) {
+            try {
+                // Replace placeholders. Handles "~ ~1 ~" and "~ ~ ~" for basic relative coordinates.
+                // More robust placeholder replacement might be needed for complex commands.
+                let commandToRun = effectConfig.particleCommand;
+                const yOffsetMatch = commandToRun.match(/~ ~(-?\d+) ~/)
+                let yOffset = 0;
+                if (yOffsetMatch && yOffsetMatch[1]) {
+                     yOffset = parseInt(yOffsetMatch[1]);
+                }
+
+                // Replace common relative position placeholders.
+                // This simple replacement assumes placeholders are separated by spaces.
+                commandToRun = commandToRun.replace("~ ~1 ~", `\${location.x.toFixed(3)} \${(location.y + 1).toFixed(3)} \${location.z.toFixed(3)}`);
+                commandToRun = commandToRun.replace("~ ~ ~", `\${location.x.toFixed(3)} \${location.y.toFixed(3)} \${location.z.toFixed(3)}`);
+                // A more generic replacement if a different y-offset was used in the string:
+                if (yOffset !== 0 && commandToRun.includes(`~ ~${yOffset} ~`)) {
+                     commandToRun = commandToRun.replace(`~ ~${yOffset} ~`, `\${location.x.toFixed(3)} \${(location.y + yOffset).toFixed(3)} \${location.z.toFixed(3)}`);
+                }
+
+
+                await dimension.runCommandAsync(commandToRun);
+            } catch (e) {
+                console.warn(`[DeathEffects] Error running particle command '\${effectConfig.particleCommand}': \${e}`);
+            }
+        }
+    }
+}
+
+/**
  * Handles entity hurt events to track player damage, fall damage, and trigger combat-related checks.
  * @param {mc.EntityHurtAfterEvent} eventData - The entity hurt event data.
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.

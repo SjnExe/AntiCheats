@@ -399,6 +399,26 @@ export const enableDeathCoordsMessage = true;
  */
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
+// --- Death Effects ---
+/** @type {boolean} If true, cosmetic effects are shown when a player dies. */
+export const enableDeathEffects = true;
+/**
+ * @type {object} Defines the default cosmetic effect shown when a player dies.
+ * @property {string} soundId - The sound ID to play on player death (e.g., "ambient.weather.lightning.impact").
+ * @property {string} particleCommand - The command to execute for spawning particles (e.g., "particle minecraft:large_explosion ~ ~1 ~"). Location placeholders (~ ~ ~) are relative to the death location.
+ * @property {object} soundOptions - Options for the sound playback.
+ * @property {number} soundOptions.volume - Volume of the sound (e.g., 1.0).
+ * @property {number} soundOptions.pitch - Pitch of the sound (e.g., 1.0).
+ */
+export const defaultDeathEffect = {
+    soundId: "ambient.weather.lightning.impact",
+    particleCommand: "particle minecraft:large_explosion ~ ~1 ~", // Example: large explosion slightly above death point
+    soundOptions: {
+        volume: 1.0,
+        pitch: 0.8 // Slightly deeper pitch for impact
+    }
+};
+
 // --- TPA System Settings ---
 /**
  * @type {boolean}
@@ -1086,6 +1106,8 @@ export let editableConfigValues = {
     notifyAdminOnNewPlayerJoin,
     enableDeathCoordsMessage,
     deathCoordsMessage,
+    enableDeathEffects,
+    defaultDeathEffect,
     serverRules,
     discordLink,
     websiteLink,

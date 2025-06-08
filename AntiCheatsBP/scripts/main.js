@@ -208,6 +208,12 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
     eventHandlers.handlePlayerDeath(eventData, playerDataManager, playerUtils, config, logManager.addLog);
 });
 
+mc.world.afterEvents.entityDie.subscribe(async (eventData) => {
+    // Assuming 'config' here refers to the imported 'config.js' module,
+    // and editableConfigValues holds the runtime values.
+    await eventHandlers.handleEntityDieForDeathEffects(eventData, config.editableConfigValues);
+});
+
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
 // Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
