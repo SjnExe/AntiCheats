@@ -54,6 +54,8 @@ This list contains planned features, improvements, and areas for future investig
   - Implement Teleport Logic in `tpaManager.js` (COMPLETED)
   - Implement Automatic Request Expiry (COMPLETED)
 - **Phase 5: Integration & Finalization (Help, Testing)** (Pending)
+- **Phase 6: Enhancements**
+  - Implement cooldown for sending TPA requests (`!tpa`, `!tpahere`) (COMPLETED).
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

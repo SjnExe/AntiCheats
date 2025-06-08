@@ -69,8 +69,14 @@ async function tpahereCommandExecute(player, args, dependencies) {
          return;
     }
 
-    const request = tpaManager.addRequest(player, target, 'tpahere');
-    if (request) {
+    const requestResult = tpaManager.addRequest(player, target, 'tpahere');
+
+    if (requestResult && requestResult.error === 'cooldown') {
+        player.sendMessage(`§cYou must wait ${requestResult.remaining} more seconds before sending another TPA request.`);
+        return;
+    }
+
+    if (requestResult) { // Successfully created request object
         player.sendMessage(`§aTPA Here request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
 
         system.run(() => {
@@ -82,6 +88,8 @@ async function tpahereCommandExecute(player, args, dependencies) {
             }
         });
     } else {
+        // This case might occur if addRequest implements more complex validation later
+        // or if requestResult was null from tpaManager.addRequest for other reasons.
         player.sendMessage("§cCould not send TPA Here request. There might be an existing request or other issue.");
     }
 }

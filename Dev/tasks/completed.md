@@ -1,6 +1,7 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **TPA System Enhancement: Request Cooldown:** Implemented a cooldown (`tpaRequestCooldownSeconds`, default 10s) between sending `!tpa` or `!tpahere` requests. Players are notified if they try to send requests too quickly. This involved updates to `config.js` (verified existing), `tpaManager.js` (cooldown logic and last request timestamp tracking), and command files `tpa.js` and `tpahere.js` (to handle cooldown notifications).
 - **TPA System - Phase 3: Responding to Requests:** Implemented `!tpaccept` (to accept specific or latest incoming TPA requests) and `!tpacancel` (to cancel outgoing or decline incoming TPA requests, specific or all). Both commands provide feedback to relevant players and are registered.
 - **TPA System - Phase 1: Core Setup & Configuration:** Updated `config.js` with TPA enable/timeout settings (`enableTpaSystem`, `tpaRequestTimeoutSeconds`), defined `TpaRequest` and `PlayerTpaStatus` JSDoc typedefs in `types.js`, and created the initial structure for `AntiCheatsBP/scripts/core/tpaManager.js` including data storage (in-memory Maps for active requests and player TPA statuses) and stubs for core functions like `addRequest`, `findRequest`, `acceptRequest`, `declineRequest`, `getPlayerTpaStatus`, `setPlayerTpaStatus`.
 - **TPA System - Phase 2: Basic Request Commands:** Implemented `!tpa` and `!tpahere` commands.

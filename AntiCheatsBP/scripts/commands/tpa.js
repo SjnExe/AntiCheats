@@ -71,8 +71,14 @@ export async function execute(player, args, dependencies) {
          return;
     }
 
-    const request = tpaManager.addRequest(player, target, 'tpa');
-    if (request) {
+    const requestResult = tpaManager.addRequest(player, target, 'tpa');
+
+    if (requestResult && requestResult.error === 'cooldown') {
+        player.sendMessage(`§cYou must wait ${requestResult.remaining} more seconds before sending another TPA request.`);
+        return;
+    }
+
+    if (requestResult) { // Successfully created request object
         player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
 
         // Send action bar message to target player
@@ -88,6 +94,7 @@ export async function execute(player, args, dependencies) {
 
     } else {
         // This case might occur if addRequest implements more complex validation later (e.g., target has too many pending requests)
+        // or if requestResult was null from tpaManager.addRequest for other reasons.
         player.sendMessage("§cCould not send TPA request. There might be an existing request or other issue.");
     }
 }

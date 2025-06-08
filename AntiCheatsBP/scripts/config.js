@@ -199,14 +199,14 @@ export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]";
 export const nameSpoofMinChangeIntervalTicks = 200;
 
 /** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check (detecting unauthorized Creative mode usage) is active. */
-export const enableAntiGMCCheck = true;
+export const enableAntiGmcCheck = true;
 /**
- * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGMCAutoSwitch` is true.
+ * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGmcAutoSwitch` is true.
  * Valid values: "survival", "adventure", "spectator". Default: "survival".
  */
-export const antiGMCSwitchToGameMode = "survival";
-/** @type {boolean} If true, automatically switch a player's gamemode to `antiGMCSwitchToGameMode` if unauthorized Creative mode is detected. */
-export const antiGMCAutoSwitch = true;
+export const antiGmcSwitchToGameMode = "survival";
+/** @type {boolean} If true, automatically switch a player's gamemode to `antiGmcSwitchToGameMode` if unauthorized Creative mode is detected. */
+export const antiGmcAutoSwitch = true;
 
 /** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
 export const enableInventoryModCheck = true;
@@ -404,6 +404,12 @@ export const enableTpaSystem = false;
  */
 export const tpaRequestTimeoutSeconds = 60;
 
+/**
+ * @type {number}
+ * Cooldown in seconds a player must wait after sending a TPA/TPAHere request before sending another.
+ */
+export const tpaRequestCooldownSeconds = 10;
+
 // --- UI Display Texts ---
 /**
  * @type {string}
@@ -427,8 +433,8 @@ export const discordLink = "https://discord.gg/example";
  */
 export const websiteLink = "https://example.com";
 
-/** @type {{title: string, url: string}[]} Defines links to be displayed in the Help & Links UI section. */
-export const helpLinks = [ // This specific helpLinks might be deprecated or used for more generic links if discordLink/websiteLink are primary.
+/** @type {{title: string, url: string}[]} Defines additional links to be displayed in the Help & Links UI section. */
+export const helpLinks = [
     { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
@@ -442,7 +448,11 @@ export const generalHelpMessages = [
 ];
 
 // --- System ---
-/** @type {string} The current version of the AntiCheat system. (This might be updated by a build process). */
+/**
+ * @type {string}
+ * The current version of the AntiCheat system.
+ * (This might be updated by a build process or during packaging).
+ */
 export const acVersion = "v__VERSION_STRING__";
 
 // --- Check Action Profiles ---
@@ -958,8 +968,9 @@ export const checkActionProfiles = {
 
 // --- Command Aliases ---
 /**
- * @type {Object.<string, string>} Defines aliases for commands.
- * Keys are the alias, values are the full command name.
+ * @type {Object.<string, string>}
+ * Defines aliases for commands. Keys are the alias, values are the full command name.
+ * This allows for shorter command inputs.
  * Example: { "v": "version", "i": "inspect" }
  */
 export const commandAliases = {
@@ -991,9 +1002,9 @@ export let editableConfigValues = {
     nameSpoofMaxLength,
     nameSpoofDisallowedCharsRegex,
     nameSpoofMinChangeIntervalTicks,
-    enableAntiGMCCheck,
-    antiGMCSwitchToGameMode,
-    antiGMCAutoSwitch,
+    enableAntiGmcCheck,
+    antiGmcSwitchToGameMode,
+    antiGmcAutoSwitch,
     enableInventoryModCheck,
     enableSelfHurtCheck,
     enableNoSlowCheck,
@@ -1068,8 +1079,9 @@ export let editableConfigValues = {
     websiteLink,
     helpLinks,
     generalHelpMessages,
-    enableTpaSystem, // Added
-    tpaRequestTimeoutSeconds, // Added
+    enableTpaSystem,
+    tpaRequestTimeoutSeconds,
+    tpaRequestCooldownSeconds, // Added
 };
 
 /**

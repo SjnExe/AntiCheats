@@ -24,6 +24,13 @@ import * as config from '../config.js'; // Needed for timeout, etc.
 const activeRequests = new Map(); // Key: requestId
 
 /**
+ * Stores the timestamp of the last TPA request made by a player.
+ * Used for implementing request cooldowns.
+ * @type {Map<string, number>} PlayerName -> Timestamp (Date.now())
+ */
+const lastPlayerRequestTimestamp = new Map();
+
+/**
  * In-memory store for player TPA statuses.
  * @type {Map<string, PlayerTpaStatus>} PlayerName -> PlayerTpaStatus
  */
@@ -46,12 +53,28 @@ function generateRequestId() {
  * @param {Player} requester - The player making the request.
  * @param {Player} target - The player receiving the request.
  * @param {'tpa' | 'tpahere'} type - The type of request.
- * @returns {TpaRequest | null} The created request object or null if failed.
+ * @returns {TpaRequest | { error: 'cooldown', remaining: number } | null}
+ * The created request object, an error object if on cooldown, or null if other pre-checks fail (future).
  */
 export function addRequest(requester, target, type) {
+    const now = Date.now(); // Define 'now' early
+
+    // --- Cooldown Check ---
+    if (lastPlayerRequestTimestamp.has(requester.name)) {
+        const elapsedTime = now - lastPlayerRequestTimestamp.get(requester.name);
+        if (elapsedTime < config.tpaRequestCooldownSeconds * 1000) {
+            const remainingSeconds = Math.ceil((config.tpaRequestCooldownSeconds * 1000 - elapsedTime) / 1000);
+            // console.warn is not available in Bedrock scripting environment, using world.sendMessage for debug or removing for production
+            // For now, let's use a simple console.log which might go to content log
+            console.log(`[TPAManager] Cooldown active for ${requester.name}. Remaining: ${remainingSeconds}s`);
+            return { error: 'cooldown', remaining: remainingSeconds };
+        }
+    }
+    // --- End Cooldown Check ---
+
     // TODO: Check if a request already exists between these players
     // TODO: Check target's TPA status (playerTpaStatuses)
-    const now = Date.now();
+
     const requestId = generateRequestId();
     const request = {
         requestId,
@@ -62,12 +85,17 @@ export function addRequest(requester, target, type) {
         targetLocation: target.location,
         targetDimensionId: target.dimension.id,
         requestType: type,
-        creationTimestamp: now,
+        creationTimestamp: now, // Use 'now'
         expiryTimestamp: now + (config.tpaRequestTimeoutSeconds * 1000),
     };
     activeRequests.set(requestId, request);
+
+    // --- Update Last Request Timestamp ---
+    lastPlayerRequestTimestamp.set(requester.name, now);
+    // --- End Update ---
+
     console.log(`[TPAManager] Added request ${requestId}: ${requester.name} -> ${target.name}, type: ${type}`);
-    return request;
+    return request; // Return the request object on success
 }
 
 /**
@@ -153,36 +181,56 @@ export function acceptRequest(requestId) {
         return false;
     }
     if (!targetPlayer) {
-        requesterPlayer.sendMessage(`§c${request.targetName} is no longer online. TPA request cancelled.`);
+        if (requesterPlayer) { // Check if requesterPlayer is valid before sending message
+            requesterPlayer.sendMessage(`§c${request.targetName} is no longer online. TPA request cancelled.`);
+        }
         console.log(`[TPAManager] Target ${request.targetName} not found for request ${requestId}.`);
         removeRequest(requestId);
         return false;
     }
 
     try {
+        let teleportSuccessful = false;
         if (request.requestType === 'tpa') {
-            requesterPlayer.teleport(request.targetLocation, { dimension: world.getDimension(request.targetDimensionId) });
+            // Ensure dimension objects are valid before teleporting
+            const targetDimension = world.getDimension(request.targetDimensionId);
+            if (!targetDimension) {
+                 console.error(`[TPAManager] Invalid target dimension ID: ${request.targetDimensionId} for request ${requestId}`);
+                 throw new Error(`Invalid target dimension ID: ${request.targetDimensionId}`);
+            }
+            requesterPlayer.teleport(request.targetLocation, { dimension: targetDimension });
             requesterPlayer.sendMessage("§aTeleported successfully to " + targetPlayer.nameTag); // Use nameTag for display
             targetPlayer.sendMessage("§a" + requesterPlayer.nameTag + " has teleported to you.");
+            teleportSuccessful = true;
         } else if (request.requestType === 'tpahere') {
-            targetPlayer.teleport(request.requesterLocation, { dimension: world.getDimension(request.requesterDimensionId) });
+            const requesterDimension = world.getDimension(request.requesterDimensionId);
+            if (!requesterDimension) {
+                console.error(`[TPAManager] Invalid requester dimension ID: ${request.requesterDimensionId} for request ${requestId}`);
+                throw new Error(`Invalid requester dimension ID: ${request.requesterDimensionId}`);
+            }
+            targetPlayer.teleport(request.requesterLocation, { dimension: requesterDimension });
             targetPlayer.sendMessage("§aTeleported successfully to " + requesterPlayer.nameTag);
             requesterPlayer.sendMessage("§a" + targetPlayer.nameTag + " has teleported to you.");
+            teleportSuccessful = true;
         } else {
             console.error(`[TPAManager] Unknown request type: ${request.requestType} for request ${requestId}`);
-            removeRequest(requestId); // Clean up invalid request type
-            return false;
+            // No teleportation, but still remove the invalid request
         }
-        console.log(`[TPAManager] Request ${requestId} processed successfully. Type: ${request.requestType}`);
-        removeRequest(requestId); // Remove after successful processing
-        return true;
+
+        if (teleportSuccessful) {
+            console.log(`[TPAManager] Request ${requestId} processed successfully. Type: ${request.requestType}`);
+        }
+        removeRequest(requestId); // Remove after processing (successful or invalid type)
+        return teleportSuccessful; // True if teleport happened, false if invalid type or error
     } catch (e) {
         console.error(`[TPAManager] Error during teleport for request ${requestId}: ${e.stack || e}`);
         // Attempt to notify players if possible, as they are confirmed to be online at this point.
         try {
-            requesterPlayer.sendMessage("§cAn error occurred during teleportation. Please try again.");
-            if (targetPlayer && targetPlayer.isValid()) { // Check if targetPlayer is still valid before sending message
-                 targetPlayer.sendMessage("§cAn error occurred during a TPA teleportation involving " + requesterPlayer.nameTag + ".");
+            if (requesterPlayer && requesterPlayer.isValid()) {
+                 requesterPlayer.sendMessage("§cAn error occurred during teleportation. Please try again.");
+            }
+            if (targetPlayer && targetPlayer.isValid()) {
+                 targetPlayer.sendMessage("§cAn error occurred during a TPA teleportation involving " + (requesterPlayer ? requesterPlayer.nameTag : request.requesterName) + ".");
             }
         } catch (notifyError) {
             console.warn(`[TPAManager] Failed to notify players after teleport error: ${notifyError.stack || notifyError}`);
