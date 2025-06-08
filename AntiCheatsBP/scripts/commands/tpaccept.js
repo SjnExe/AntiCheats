@@ -36,7 +36,7 @@ const tpacceptCommandDefinition = {
 async function tpacceptCommandExecute(player, args, dependencies) {
     const { playerUtils } = dependencies; // For debugLog or other utils if needed
 
-    if (!config.enableTpaSystem) {
+    if (!config.enableTPASystem) {
         player.sendMessage("§cThe TPA system is currently disabled.");
         return;
     }
@@ -79,7 +79,7 @@ async function tpacceptCommandExecute(player, args, dependencies) {
     if (warmUpInitiated) {
         // The tpaManager.acceptRequest now handles detailed player notifications.
         // This command can send a simpler confirmation to the player who typed !tpaccept.
-        player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.tpaTeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
+        player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.TPATeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
     } else {
         // This might happen if the request was already cancelled, expired, or the player went offline.
         // tpaManager.acceptRequest would have logged details.

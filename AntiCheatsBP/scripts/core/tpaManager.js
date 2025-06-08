@@ -62,8 +62,8 @@ export function addRequest(requester, target, type) {
     // --- Cooldown Check ---
     if (lastPlayerRequestTimestamp.has(requester.name)) {
         const elapsedTime = now - lastPlayerRequestTimestamp.get(requester.name);
-        if (elapsedTime < config.tpaRequestCooldownSeconds * 1000) {
-            const remainingSeconds = Math.ceil((config.tpaRequestCooldownSeconds * 1000 - elapsedTime) / 1000);
+        if (elapsedTime < config.TPARequestCooldownSeconds * 1000) {
+            const remainingSeconds = Math.ceil((config.TPARequestCooldownSeconds * 1000 - elapsedTime) / 1000);
             // console.warn is not available in Bedrock scripting environment, using world.sendMessage for debug or removing for production
             // For now, let's use a simple console.log which might go to content log
             console.log(`[TPAManager] Cooldown active for ${requester.name}. Remaining: ${remainingSeconds}s`);
@@ -87,7 +87,7 @@ export function addRequest(requester, target, type) {
         requestType: type,
         status: 'pending_acceptance', // Added status
         creationTimestamp: now, // Use 'now'
-        expiryTimestamp: now + (config.tpaRequestTimeoutSeconds * 1000),
+        expiryTimestamp: now + (config.TPARequestTimeoutSeconds * 1000),
         warmupExpiryTimestamp: 0, // Initialize, will be set on accept
     };
     activeRequests.set(requestId, request);
@@ -190,19 +190,19 @@ export function acceptRequest(requestId) {
     }
 
     request.status = 'pending_teleport_warmup';
-    request.warmupExpiryTimestamp = Date.now() + (config.tpaTeleportWarmupSeconds * 1000);
+    request.warmupExpiryTimestamp = Date.now() + (config.TPATeleportWarmupSeconds * 1000);
     activeRequests.set(requestId, request); // Update the request in the map
 
-    const warmupMessage = `§eTeleporting in ${config.tpaTeleportWarmupSeconds} seconds. Do not move or take damage.`;
+    const warmupMessage = `§eTeleporting in ${config.TPATeleportWarmupSeconds} seconds. Do not move or take damage.`;
     let requesterMessage = `§aYour TPA request to "${targetPlayer.nameTag}" has been accepted. ${warmupMessage}`;
     let targetMessage = `§a"${requesterPlayer.nameTag}" accepted your TPA request. ${warmupMessage}`;
 
     if (request.requestType === 'tpa') { // Requester teleports
         requesterPlayer.sendMessage(requesterMessage);
-        targetPlayer.sendMessage(`§aYou accepted the TPA request from "${requesterPlayer.nameTag}". They will teleport in ${config.tpaTeleportWarmupSeconds}s.`);
+        targetPlayer.sendMessage(`§aYou accepted the TPA request from "${requesterPlayer.nameTag}". They will teleport in ${config.TPATeleportWarmupSeconds}s.`);
     } else { // Target teleports
         targetPlayer.sendMessage(targetMessage);
-        requesterPlayer.sendMessage(`§a"${targetPlayer.nameTag}" accepted your TPA Here request. They will teleport in ${config.tpaTeleportWarmupSeconds}s.`);
+        requesterPlayer.sendMessage(`§a"${targetPlayer.nameTag}" accepted your TPA Here request. They will teleport in ${config.TPATeleportWarmupSeconds}s.`);
     }
 
     console.log(`[TPAManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`);

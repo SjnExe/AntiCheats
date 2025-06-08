@@ -22,6 +22,7 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, addLog } = dependencies; // setPlayerGameMode is expected in playerUtils

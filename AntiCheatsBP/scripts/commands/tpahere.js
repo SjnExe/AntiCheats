@@ -33,7 +33,7 @@ const tpahereCommandDefinition = {
 async function tpahereCommandExecute(player, args, dependencies) {
     // const { playerUtils } = dependencies; // For debugLog, if needed
 
-    if (!config.enableTpaSystem) {
+    if (!config.enableTPASystem) {
         player.sendMessage("§cThe TPA system is currently disabled.");
         return;
     }
@@ -77,7 +77,7 @@ async function tpahereCommandExecute(player, args, dependencies) {
     }
 
     if (requestResult) { // Successfully created request object
-        player.sendMessage(`§aTPA Here request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
+        player.sendMessage(`§aTPA Here request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
 
         system.run(() => {
             try {

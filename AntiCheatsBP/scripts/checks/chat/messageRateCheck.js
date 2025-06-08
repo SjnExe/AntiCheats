@@ -48,7 +48,7 @@ export async function checkMessageRate(
     const currentTime = Date.now();
     // Use nullish coalescing for robust default values, in case config values could be 0 or false.
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
-    const actionProfileName = config.fastMessageSpamActionProfileName ?? "chat_spam_fast_message";
+    const actionProfileName = config.fastMessageSPAMActionProfileName ?? "chat_spam_fast_message";
     const actionProfile = config.checkActionProfiles?.[actionProfileName];
 
     let shouldCancel = false;

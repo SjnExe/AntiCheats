@@ -211,7 +211,7 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
 // Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
-    if (config.enableTpaSystem) {
+    if (config.enableTPASystem) {
         tpaManager.clearExpiredRequests();
 
         // Process TPA warm-ups
@@ -229,7 +229,7 @@ mc.system.runInterval(() => {
  * @param {mc.EntityHurtBeforeEvent} eventData The entity hurt event data.
  */
 mc.world.beforeEvents.entityHurt.subscribe(eventData => {
-    if (!config.enableTpaSystem) return;
+    if (!config.enableTPASystem) return;
 
     const { hurtEntity, damageSource } = eventData;
     // Ensure hurtEntity is a Player. For some reason, instanceof Player doesn't work directly with Player objects from events in some contexts.
@@ -288,6 +288,7 @@ let currentTick = 0;
  * - Updates transient player data (like position, velocity).
  * - Executes various cheat checks (Fly, Speed, NoFall, CPS, Nuker, ViewSnap).
  * - Manages fall distance accumulation and reset logic.
+ * @returns {Promise<void>}
  */
 mc.system.runInterval(async () => {
     currentTick++;
@@ -323,7 +324,7 @@ mc.system.runInterval(async () => {
         if (config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         if (config.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         if (config.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableCpsCheck && checks.checkCPS) await checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (config.enableCPSCheck && checks.checkCPS) await checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         if (config.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
 
         // ViewSnap check might need config and currentTick directly if not passed via dependencies object to all checks

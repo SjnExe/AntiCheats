@@ -105,6 +105,7 @@ export async function executeLagClear(adminPerformingAction) {
  * The message is prefixed with "[AntiCheat] Warning: " and colored red.
  * @param {mc.Player} player The player instance to warn.
  * @param {string} reason The reason for the warning, which will be displayed to the player.
+ * @returns {void}
  */
 export function warnPlayer(player, reason) {
     player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
@@ -119,6 +120,7 @@ export function warnPlayer(player, reason) {
  * @param {mc.Player} [player] Optional: The player related to this notification.
  * @param {object} [pData] Optional: The player-specific data, typically from playerDataManager,
  *                         expected to have `flags.totalFlags` and `lastFlagType` if player context is relevant.
+ * @returns {void}
  */
 export function notifyAdmins(baseMessage, player, pData) {
     let fullMessage = `§7[AC Notify] ${baseMessage}§r`;
@@ -162,6 +164,7 @@ export function notifyAdmins(baseMessage, player, pData) {
  * @param {string} message The message to log.
  * @param {string} [contextPlayerNameIfWatched=null] Optional: The nameTag of a player being watched.
  *                                                  If provided, the log prefix changes to indicate context.
+ * @returns {void}
  */
 export function debugLog(message, contextPlayerNameIfWatched = null) {
     if (enableDebugLogging) {

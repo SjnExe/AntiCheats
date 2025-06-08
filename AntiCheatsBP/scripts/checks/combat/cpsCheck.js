@@ -38,7 +38,7 @@ export async function checkCPS(
     executeCheckAction,
     currentTick // Not directly used by CPS logic but part of standard signature
 ) {
-    if (!config.enableCpsCheck) {
+    if (!config.enableCPSCheck) {
         return;
     }
 
