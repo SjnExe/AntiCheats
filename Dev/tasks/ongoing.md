@@ -24,6 +24,13 @@ This list tracks features and tasks that are currently under development.
             *   Unauthorized fire starting attempts are handled based on `fireControlAction` ("extinguish" by cancelling event, "warn", "logOnly").
             *   Admin notifications and logging via `actionManager` profile `world_antigrief_fire`.
             *   Noted: Advanced fire tracking (spread, duration, max blocks) is complex and deferred to future enhancements.
-    *   **Phase 4: Other Griefing Vectors (TODO):** Investigate other common griefing methods and potential mitigations.
+    *   **Phase 4: Other Griefing Vectors (Partially Implemented):**
+        *   **Lava Placement Control (Completed - Bucket Use):**
+            *   Implemented configuration options (`enableLavaAntiGrief`, `allowAdminLava`, `lavaPlacementAction`) in `config.js`.
+            *   Default set to disabled (`enableLavaAntiGrief: false`) as per user request.
+            *   Updated `handleItemUseOn` event handler to monitor `minecraft:lava_bucket` usage.
+            *   Unauthorized lava placement attempts are handled based on `lavaPlacementAction` ("remove" by cancelling event, "warn", "logOnly").
+            *   Admin notifications and logging via `actionManager` profile `world_antigrief_lava`.
+        *   (TODO): Investigate other common griefing methods (e.g., water griefing, block spam, entity spam, piston grief) and potential mitigations.
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.

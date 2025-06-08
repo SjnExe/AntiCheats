@@ -476,6 +476,15 @@ export const fireSpreadDurationLimit = 60;
 /** @type {string} Action to take for unauthorized or excessive fire. Valid: "extinguish", "warn", "logOnly". */
 export const fireControlAction = "extinguish";
 
+/** @type {boolean} If true, the Lava Anti-Grief system is active. */
+export const enableLavaAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to place lava without restriction. */
+export const allowAdminLava = true;
+
+/** @type {string} Action to take for unauthorized lava placement. Valid: "remove", "warn", "logOnly". */
+export const lavaPlacementAction = "remove";
+
 
 // --- UI Display Texts ---
 /**
@@ -1075,6 +1084,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_fire_incident",
             detailsPrefix: "AntiGrief Fire: "
         }
+    },
+    "world_antigrief_lava": {
+        enabled: true, // Effectively controlled by enableLavaAntiGrief
+        flag: {
+            increment: 2,
+            reason: "Player involved in unauthorized lava placement.",
+            type: "antigrief_lava"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "antigrief_lava_placement",
+            detailsPrefix: "AntiGrief Lava: "
+        }
     }
 };
 
@@ -1211,6 +1235,10 @@ export let editableConfigValues = {
     maxPlayerStartedFires,
     fireSpreadDurationLimit,
     fireControlAction,
+    // AntiGrief Lava Configs
+    enableLavaAntiGrief,
+    allowAdminLava,
+    lavaPlacementAction,
 };
 
 /**
