@@ -564,6 +564,14 @@ export const enableInvalidRenderDistanceCheck = true;
 /** @type {number} Maximum allowed client-reported render distance in chunks. */
 export const maxAllowedClientRenderDistance = 64;
 
+// --- Chat Behavior Checks ---
+/** @type {boolean} If true, the Chat During Combat check is active. */
+export const enableChatDuringCombatCheck = true;
+/** @type {number} Seconds after the last combat interaction during which a player cannot chat. */
+export const chatDuringCombatCooldownSeconds = 4;
+/** @type {boolean} If true, the Chat During Item Use check is active. */
+export const enableChatDuringItemUseCheck = true;
+
 
 // --- UI Display Texts ---
 /**
@@ -1264,6 +1272,38 @@ export const checkActionProfiles = {
             "actionType": "detected_invalid_render_distance",
             "detailsPrefix": "Invalid Render Distance: "
         }
+    },
+    "player_chat_during_combat": {
+        "enabled": true,
+        "flag": {
+            "increment": 1,
+            "reason": "Attempted to chat too soon after combat ({timeSinceCombat}s ago).",
+            "type": "player_chat_state_violation"
+        },
+        "notifyAdmins": {
+            "message": "§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled."
+        },
+        "cancelMessage": true,
+        "log": {
+            "actionType": "detected_chat_during_combat",
+            "detailsPrefix": "Chat During Combat: "
+        }
+    },
+    "player_chat_during_item_use": {
+        "enabled": true,
+        "flag": {
+            "increment": 1,
+            "reason": "Attempted to chat while actively using an item ({itemUseState}).",
+            "type": "player_chat_state_violation"
+        },
+        "notifyAdmins": {
+            "message": "§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled."
+        },
+        "cancelMessage": true,
+        "log": {
+            "actionType": "detected_chat_during_item_use",
+            "detailsPrefix": "Chat During Item Use: "
+        }
     }
 };
 
@@ -1437,6 +1477,10 @@ export let editableConfigValues = {
     // Client Behavior Checks
     enableInvalidRenderDistanceCheck,
     maxAllowedClientRenderDistance,
+    // Chat Behavior Checks
+    enableChatDuringCombatCheck,
+    chatDuringCombatCooldownSeconds,
+    enableChatDuringItemUseCheck,
 };
 
 /**

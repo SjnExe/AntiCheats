@@ -1,6 +1,16 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Advanced Cheat Detections: Sending Messages During Invalid States - Combat State**
+    *   Implemented a check to prevent players from sending chat messages shortly after being in combat.
+    *   Added configurations: `enableChatDuringCombatCheck` (boolean) and `chatDuringCombatCooldownSeconds` (number).
+    *   Integrated into `handleBeforeChatSend` in `eventHandlers.js`. If active, messages sent within the cooldown are cancelled.
+    *   Added `player_chat_during_combat` action profile for flagging, admin notifications, and message cancellation.
+*   **Advanced Cheat Detections: Sending Messages During Invalid States - Item Use State**
+    *   Implemented a check to prevent players from sending chat messages while actively using consumables or charging bows.
+    *   Added configuration: `enableChatDuringItemUseCheck` (boolean).
+    *   Integrated into `handleBeforeChatSend` in `eventHandlers.js`. If active, messages sent while `pData.isUsingConsumable` or `pData.isChargingBow` is true are cancelled.
+    *   Added `player_chat_during_item_use` action profile for flagging, admin notifications, and message cancellation.
 *   **Anti-Grief System - Phase 4: Entity Spam Control Completed**
     *   Enhanced entity spam detection to include player-constructed entities like Snow Golems and Iron Golems.
     *   Detection logic involves identifying placement of key structure blocks (`handlePlayerPlaceBlockAfter`), setting an expectation flag in `pData` (`expectingConstructedEntity`), and then attributing the subsequent entity spawn (`handleEntitySpawnEvent_AntiGrief`) to the constructing player based on type, location, and timing.

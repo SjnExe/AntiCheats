@@ -42,7 +42,18 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         );
     } else {
         // Call the general chat handler for non-command messages
-        await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, mc.system.currentTick);
+        // Construct a comprehensive dependencies object for chat handler
+        const chatHandlerDependencies = {
+            config: config.editableConfigValues,
+            playerUtils: playerUtils,
+            logManager: logManager,
+            actionManager: { executeCheckAction }, // Pass the wrapper
+            playerDataManager: playerDataManager,
+            checks: checks,
+            currentTick: currentTick // currentTick from main.js tick loop scope
+        };
+        // Pass editableConfigValues as the 'config' parameter for the handler too
+        await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config.editableConfigValues, playerUtils, checks, logManager, executeCheckAction, currentTick, chatHandlerDependencies);
     }
 });
 

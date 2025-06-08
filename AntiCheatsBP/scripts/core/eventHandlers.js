@@ -94,6 +94,38 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
         }
     }
 
+    // Chat During Item Use Check
+    if (currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
+        let itemUseState = "unknown";
+        if (pData.isUsingConsumable) itemUseState = "using a consumable";
+        if (pData.isChargingBow) itemUseState = "charging a bow";
+
+        const violationDetails = {
+            playerName: player.nameTag,
+            itemUseState: itemUseState,
+            messageContent: originalMessage // originalMessage is from eventData
+        };
+
+        if (actualExecuteCheckAction) {
+            await actualExecuteCheckAction(player, "player_chat_during_item_use", violationDetails, dependencies);
+        } else {
+            currentPUtils.debugLog("ChatDuringItemUse: executeCheckAction not available.", null);
+            if (currentLogManager && typeof currentLogManager.addLog === 'function') {
+                currentLogManager.addLog({ adminName: "System", actionType: "error_missing_action_manager", targetName: player.nameTag, details: "ChatDuringItemUse: executeCheckAction missing." });
+            }
+        }
+
+        const profile = currentConfig.checkActionProfiles?.player_chat_during_item_use;
+        if (profile && profile.cancelMessage) {
+            eventData.cancel = true;
+            currentPUtils.warnPlayer(player, `§cYou cannot chat while ${itemUseState}.`);
+            if (currentPUtils.debugLog && pData.isWatched) {
+                currentPUtils.debugLog(`Chat cancelled for ${player.nameTag} (item use state: ${itemUseState}).`, player.nameTag);
+            }
+            return; // Stop further processing
+        }
+    }
+
     if (pData && addLog) { // Ensure pData and addLog are available
         const lastLocation = pData.lastPosition || player.location; // Fallback to current if lastPosition not set
         const lastDimensionId = (pData.lastDimensionId || player.dimension.id).split(':')[1];
@@ -1501,8 +1533,9 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
  * @param {number} currentTick - The current game tick.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Full dependencies object (used for combat chat check).
  */
-export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick) {
+export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick, dependencies) {
     const { sender: player, message: originalMessage } = eventData;
     if (!player) {
         console.warn("[AntiCheat] handleBeforeChatSend: eventData.sender is undefined.");
@@ -1526,19 +1559,69 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         return;
     }
 
-    const commonArgs = [player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick];
+    // Chat During Combat Check (before other spam checks)
+    // The 'config' parameter here refers to the global config module (config.js values directly)
+    // 'dependencies.config' would refer to the editableConfigValues if passed that way.
+    // For consistency, let's assume 'config' passed to this handler IS editableConfigValues.
+    // The executeCheckAction and other managers should come from the 'dependencies' object if that's the new pattern.
+    const currentConfig = dependencies && dependencies.config ? dependencies.config : config; // Prefer dependencies.config if available
+    const currentPUtils = dependencies && dependencies.playerUtils ? dependencies.playerUtils : playerUtils;
+    const currentLogManager = dependencies && dependencies.logManager ? dependencies.logManager : logManager;
+    // Resolve executeCheckAction: it might be passed directly, or via actionManager in dependencies
+    let actualExecuteCheckAction = executeCheckAction;
+    if (!actualExecuteCheckAction && dependencies && dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
+        actualExecuteCheckAction = dependencies.actionManager.executeCheckAction;
+    }
 
-    if (checks.checkMessageRate && config.enableFastMessageSpamCheck) {
-        if (await checks.checkMessageRate(...commonArgs)) { // checkMessageRate should return true to cancel
+
+    if (currentConfig.enableChatDuringCombatCheck && pData.lastCombatInteractionTime && pData.lastCombatInteractionTime > 0) {
+        const currentTime = Date.now();
+        const timeSinceCombatMs = currentTime - pData.lastCombatInteractionTime;
+        const cooldownMs = currentConfig.chatDuringCombatCooldownSeconds * 1000;
+
+        if (timeSinceCombatMs < cooldownMs) {
+            const violationDetails = {
+                playerName: player.nameTag,
+                timeSinceCombat: (timeSinceCombatMs / 1000).toFixed(1),
+                cooldown: currentConfig.chatDuringCombatCooldownSeconds.toString(),
+                messageContent: originalMessage
+            };
+
+            if (actualExecuteCheckAction) {
+                 await actualExecuteCheckAction(player, "player_chat_during_combat", violationDetails, dependencies);
+            } else {
+                currentPUtils.debugLog("ChatDuringCombat: executeCheckAction not available.", null);
+                if (currentLogManager && typeof currentLogManager.addLog === 'function') {
+                    currentLogManager.addLog({ adminName: "System", actionType: "error_missing_action_manager", targetName: player.nameTag, details: "ChatDuringCombat: executeCheckAction missing." });
+                }
+            }
+
+            const profile = currentConfig.checkActionProfiles?.player_chat_during_combat;
+            if (profile && profile.cancelMessage) {
+                eventData.cancel = true;
+                currentPUtils.warnPlayer(player, `§cYou cannot chat for ${currentConfig.chatDuringCombatCooldownSeconds} seconds after combat.`);
+                if (currentPUtils.debugLog && pData.isWatched) {
+                    currentPUtils.debugLog(`Chat cancelled for ${player.nameTag} (combat cooldown). ${(timeSinceCombatMs / 1000).toFixed(1)}s since combat.`, player.nameTag);
+                }
+                return;
+            }
+        }
+    }
+
+    const commonArgs = [player, pData, eventData, currentConfig, currentPUtils, playerDataManager, currentLogManager, actualExecuteCheckAction, currentTick];
+
+
+    if (checks.checkMessageRate && currentConfig.enableFastMessageSpamCheck) {
+        if (await checks.checkMessageRate(...commonArgs)) {
             eventData.cancel = true;
-            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
+            if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }
-    if (checks.checkMessageWordCount && config.enableMaxWordsSpamCheck) {
-        if (await checks.checkMessageWordCount(...commonArgs)) { // checkMessageWordCount should return true to cancel
+    if (checks.checkMessageWordCount && currentConfig.enableMaxWordsSpamCheck) {
+        if (await checks.checkMessageWordCount(...commonArgs)) {
             eventData.cancel = true;
-            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
+            if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }

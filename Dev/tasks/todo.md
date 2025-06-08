@@ -9,7 +9,7 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
-        *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')
+        *   **Sending Messages During Invalid States (Chest/Container UI):** Investigate/implement detection for players sending chat messages while a chest or other container UI is presumed open (API feasibility remains low). (Scythe 'BadPackets')
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
