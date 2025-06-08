@@ -485,6 +485,15 @@ export const allowAdminLava = true;
 /** @type {string} Action to take for unauthorized lava placement. Valid: "remove", "warn", "logOnly". */
 export const lavaPlacementAction = "remove";
 
+/** @type {boolean} If true, the Water Anti-Grief system is active. */
+export const enableWaterAntiGrief = false; // Disabled by default
+
+/** @type {boolean} If true, Admins/Owners are allowed to place water without restriction. */
+export const allowAdminWater = true;
+
+/** @type {string} Action to take for unauthorized water placement. Valid: "remove", "warn", "logOnly". */
+export const waterPlacementAction = "remove";
+
 
 // --- UI Display Texts ---
 /**
@@ -1099,6 +1108,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_lava_placement",
             detailsPrefix: "AntiGrief Lava: "
         }
+    },
+    "world_antigrief_water": {
+        enabled: true, // Effectively controlled by enableWaterAntiGrief
+        flag: {
+            increment: 1, // Water grief is often less permanent than lava/TNT
+            reason: "Player involved in unauthorized water placement.",
+            type: "antigrief_water"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "antigrief_water_placement",
+            detailsPrefix: "AntiGrief Water: "
+        }
     }
 };
 
@@ -1239,6 +1263,10 @@ export let editableConfigValues = {
     enableLavaAntiGrief,
     allowAdminLava,
     lavaPlacementAction,
+    // AntiGrief Water Configs
+    enableWaterAntiGrief,
+    allowAdminWater,
+    waterPlacementAction,
 };
 
 /**

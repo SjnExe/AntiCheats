@@ -861,41 +861,41 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
     const { source: player, itemStack } = eventData;
     if (player?.typeId !== 'minecraft:player') return;
 
-    // Anti-Grief Fire Logic
-    const currentConfig_AG = dependencies?.config || ConfigValuesImport; // Use dependencies.config if available, else direct import
-    const actualPlayerUtils_AG = dependencies?.playerUtils || PlayerUtilsImport;
-    const actionManager_AG = dependencies?.actionManager;
-    const logManager_AG = dependencies?.logManager; // Already a param but good to have in dependencies obj if pattern is followed
+    // Anti-Grief Dependencies (ensuring they are available)
+    const griefConfig = dependencies?.config || ConfigValuesImport;
+    const griefPlayerUtils = dependencies?.playerUtils || PlayerUtilsImport;
+    const griefActionManager = dependencies?.actionManager;
+    const griefLogManager = dependencies?.logManager; // Direct param 'logManager' can also be used if it's the same instance
 
-    if (currentConfig_AG.enableFireAntiGrief) {
-        const itemUsed = itemStack.typeId;
-        if (itemUsed === 'minecraft:flint_and_steel' || itemUsed === 'minecraft:fire_charge') {
-            const playerPermission = actualPlayerUtils_AG.getPlayerPermissionLevel(player);
+    // --- Anti-Grief Fire Logic ---
+    if (griefConfig.enableFireAntiGrief) {
+        const itemUsedForFire = itemStack.typeId;
+        if (itemUsedForFire === 'minecraft:flint_and_steel' || itemUsedForFire === 'minecraft:fire_charge') {
+            const playerPermission = griefPlayerUtils.getPlayerPermissionLevel(player);
 
-            if (!(currentConfig_AG.allowAdminFire && playerPermission <= permissionLevels.admin)) {
-                // Unauthorized fire starting attempt
-                const actionTaken = currentConfig_AG.fireControlAction;
+            if (!(griefConfig.allowAdminFire && playerPermission <= permissionLevels.admin)) {
+                const actionTaken = griefConfig.fireControlAction;
                 const violationDetails = {
                     playerNameOrContext: player.nameTag,
                     checkType: "AntiGrief Fire",
-                    itemUsed: itemUsed,
+                    itemUsed: itemUsedForFire,
                     targetBlock: eventData.block?.typeId || 'N/A',
-                    location: { x: player.location.x, y: player.location.y, z: player.location.z }, // Player's location for context
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z },
                     actionTaken: actionTaken,
-                    detailsString: `Player ${player.nameTag} attempted to start a fire with ${itemUsed} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                    detailsString: `Player ${player.nameTag} attempted to start a fire with ${itemUsedForFire} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
                 };
 
-                if (actionManager_AG && typeof actionManager_AG.executeCheckAction === 'function') {
-                    await actionManager_AG.executeCheckAction("world_antigrief_fire", player, violationDetails, dependencies);
+                if (griefActionManager && typeof griefActionManager.executeCheckAction === 'function') {
+                    await griefActionManager.executeCheckAction("world_antigrief_fire", player, violationDetails, dependencies);
                 } else {
-                    actualPlayerUtils_AG.debugLog("AntiGrief Fire: actionManager or executeCheckAction is not available.", player.nameTag);
-                     if (logManager_AG && typeof logManager_AG.addLog === 'function') { // Fallback log
-                        logManager_AG.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_fire_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    griefPlayerUtils.debugLog("AntiGrief Fire: actionManager or executeCheckAction is not available.", player.nameTag);
+                     if (griefLogManager && typeof griefLogManager.addLog === 'function') {
+                        griefLogManager.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_fire_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
                     }
                 }
 
                 switch (actionTaken) {
-                    case "extinguish": // "extinguish" means prevent ignition here
+                    case "extinguish":
                         eventData.cancel = true;
                         player.sendMessage("§c[AntiGrief] Fire starting is restricted here.");
                         break;
@@ -903,13 +903,98 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
                         player.sendMessage("§e[AntiGrief] Warning: Fire starting is monitored.");
                         break;
                     case "logOnly":
-                        // Logging/notification handled by actionManager
                         break;
                 }
-                if (eventData.cancel) return; // If event is cancelled, no further checks in this handler
             }
         }
     }
+    if (eventData.cancel) return; // Event cancelled by Fire Anti-Grief
+
+    // --- Anti-Grief Lava Logic ---
+    if (griefConfig.enableLavaAntiGrief) {
+        const itemUsedForLava = itemStack.typeId;
+        if (itemUsedForLava === 'minecraft:lava_bucket') {
+            const playerPermission = griefPlayerUtils.getPlayerPermissionLevel(player);
+
+            if (!(griefConfig.allowAdminLava && playerPermission <= permissionLevels.admin)) {
+                const actionTaken = griefConfig.lavaPlacementAction;
+                const violationDetails = {
+                    playerNameOrContext: player.nameTag,
+                    checkType: "AntiGrief Lava",
+                    itemUsed: itemUsedForLava,
+                    targetBlock: eventData.block?.typeId || 'N/A',
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z },
+                    actionTaken: actionTaken,
+                    detailsString: `Player ${player.nameTag} attempted to place lava with ${itemUsedForLava} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                };
+
+                if (griefActionManager && typeof griefActionManager.executeCheckAction === 'function') {
+                    await griefActionManager.executeCheckAction("world_antigrief_lava", player, violationDetails, dependencies);
+                } else {
+                    griefPlayerUtils.debugLog("AntiGrief Lava: actionManager or executeCheckAction is not available.", player.nameTag);
+                    if (griefLogManager && typeof griefLogManager.addLog === 'function') {
+                        griefLogManager.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_lava_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    }
+                }
+
+                switch (actionTaken) {
+                    case "remove":
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] Lava placement is restricted here.");
+                        break;
+                    case "warn":
+                        player.sendMessage("§e[AntiGrief] Warning: Lava placement is monitored.");
+                        break;
+                    case "logOnly":
+                        break;
+                }
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Lava Anti-Grief
+
+    // --- Anti-Grief Water Logic ---
+    if (griefConfig.enableWaterAntiGrief) {
+        const itemUsedForWater = itemStack.typeId;
+        if (itemUsedForWater === 'minecraft:water_bucket') {
+            const playerPermission = griefPlayerUtils.getPlayerPermissionLevel(player);
+
+            if (!(griefConfig.allowAdminWater && playerPermission <= permissionLevels.admin)) {
+                const actionTaken = griefConfig.waterPlacementAction;
+                const violationDetails = {
+                    playerNameOrContext: player.nameTag,
+                    checkType: "AntiGrief Water",
+                    itemUsed: itemUsedForWater,
+                    targetBlock: eventData.block?.typeId || 'N/A',
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z },
+                    actionTaken: actionTaken,
+                    detailsString: `Player ${player.nameTag} attempted to place water with ${itemUsedForWater} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                };
+
+                if (griefActionManager && typeof griefActionManager.executeCheckAction === 'function') {
+                    await griefActionManager.executeCheckAction("world_antigrief_water", player, violationDetails, dependencies);
+                } else {
+                    griefPlayerUtils.debugLog("AntiGrief Water: actionManager or executeCheckAction is not available.", player.nameTag);
+                    if (griefLogManager && typeof griefLogManager.addLog === 'function') {
+                        griefLogManager.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_water_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    }
+                }
+
+                switch (actionTaken) {
+                    case "remove":
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] Water placement is restricted here.");
+                        break;
+                    case "warn":
+                        player.sendMessage("§e[AntiGrief] Warning: Water placement is monitored.");
+                        break;
+                    case "logOnly":
+                        break;
+                }
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Water Anti-Grief
 
     // Original logic for other checks (e.g., illegal item placement)
     // Using getPlayerData and checking for null, as currentTick isn't available for ensurePlayerDataInitialized.

@@ -101,6 +101,7 @@
  * @property {PlayerFlagDetail} [antigrief_wither] - Player involved in unauthorized Wither spawn.
  * @property {PlayerFlagDetail} [antigrief_fire] - Player involved in unauthorized or excessive fire incident.
  * @property {PlayerFlagDetail} [antigrief_lava] - Player involved in unauthorized lava placement.
+ * @property {PlayerFlagDetail} [antigrief_water] - Player involved in unauthorized water placement.
  */
 
 /**

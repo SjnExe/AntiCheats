@@ -31,6 +31,12 @@ This list tracks features and tasks that are currently under development.
             *   Updated `handleItemUseOn` event handler to monitor `minecraft:lava_bucket` usage.
             *   Unauthorized lava placement attempts are handled based on `lavaPlacementAction` ("remove" by cancelling event, "warn", "logOnly").
             *   Admin notifications and logging via `actionManager` profile `world_antigrief_lava`.
-        *   (TODO): Investigate other common griefing methods (e.g., water griefing, block spam, entity spam, piston grief) and potential mitigations.
+            *   **Water Placement Control (Completed - Bucket Use):**
+                *   Implemented configuration options (`enableWaterAntiGrief`, `allowAdminWater`, `waterPlacementAction`) in `config.js`.
+                *   Default set to disabled (`enableWaterAntiGrief: false`) as per user request.
+                *   Updated `handleItemUseOn` event handler to monitor `minecraft:water_bucket` usage.
+                *   Unauthorized water placement attempts are handled based on `waterPlacementAction` ("remove" by cancelling event, "warn", "logOnly").
+                *   Admin notifications and logging via `actionManager` profile `world_antigrief_water`.
+        *   (TODO): Investigate other common griefing methods (e.g., block spam, entity spam, piston grief) and potential mitigations.
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.
