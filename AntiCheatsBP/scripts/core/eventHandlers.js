@@ -841,6 +841,58 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
     if (checks.checkIllegalItems && config.enableIllegalItemCheck) {
         await checks.checkIllegalItems(player, itemStack, eventData, "use", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
     }
+    if (eventData.cancel) return;
+
+    // Anti-Grief Entity Spam Logic for Spawn Eggs (ItemUse event)
+    // Dependencies are passed differently to handleItemUse in main.js, so we need to access them directly or ensure they are passed.
+    // For this integration, we assume 'config', 'playerUtils', 'playerDataManager', 'logManager', 'checks.checkEntitySpam',
+    // 'executeCheckAction', and 'currentTick' are available via the parameters or broader scope if main.js is updated.
+    // Let's assume 'dependencies' is NOT passed to handleItemUse, so we use direct params and imported values.
+
+    const itemTypeIdForSpawnEgg = itemStack.typeId;
+    let derivedEntityTypeFromSpawnEgg = null;
+
+    if (ConfigValuesImport.enableEntitySpamAntiGrief && itemTypeIdForSpawnEgg.endsWith("_spawn_egg")) {
+        const entityName = itemTypeIdForSpawnEgg.substring("minecraft:".length, itemTypeIdForSpawnEgg.length - "_spawn_egg".length);
+        // Fallback for older spawn eggs that might not have "minecraft:" prefix if itemTypeId is just "pig_spawn_egg"
+        // However, itemStack.typeId from vanilla should always include the namespace.
+        // const entityName = itemTypeIdForSpawnEgg.startsWith("minecraft:") ? itemTypeIdForSpawnEgg.substring("minecraft:".length, itemTypeIdForSpawnEgg.length - "_spawn_egg".length) : itemTypeIdForSpawnEgg.substring(0, itemTypeIdForSpawnEgg.length - "_spawn_egg".length);
+
+        const potentialFullEntityId = "minecraft:" + entityName; // Assuming all vanilla spawn eggs produce entities in minecraft namespace
+
+        if (ConfigValuesImport.entitySpamMonitoredEntityTypes && ConfigValuesImport.entitySpamMonitoredEntityTypes.includes(potentialFullEntityId)) {
+            derivedEntityTypeFromSpawnEgg = potentialFullEntityId;
+        }
+    }
+
+    if (derivedEntityTypeFromSpawnEgg && checks?.checkEntitySpam) {
+        // pData should already be initialized and available from the start of handleItemUse.
+        if (pData) {
+            const spamDetected = await checks.checkEntitySpam(
+                player,
+                derivedEntityTypeFromSpawnEgg,
+                ConfigValuesImport, // Use imported config values
+                pData,
+                playerUtils,    // Direct parameter
+                playerDataManager, // Direct parameter
+                logManager,     // Direct parameter
+                executeCheckAction, // Direct parameter
+                currentTick     // Direct parameter
+            );
+
+            if (spamDetected) {
+                if (ConfigValuesImport.entitySpamAction === "kill") { // Prevent item use
+                    eventData.cancel = true;
+                    player.sendMessage("§c[AntiGrief] You are using spawn eggs too quickly!");
+                    playerUtils.debugLog?.(`EntitySpam (ItemUse): Prevented spawn egg use for ${player.nameTag} due to spam detection of ${derivedEntityTypeFromSpawnEgg}`, player.nameTag);
+                } else if (ConfigValuesImport.entitySpamAction === "warn") {
+                    player.sendMessage("§e[AntiGrief] Warning: Using spawn eggs too quickly is monitored.");
+                }
+            }
+        } else {
+            playerUtils.debugLog?.(`EntitySpam (ItemUse): pData not available for ${player.nameTag}, skipping check.`, player.nameTag);
+        }
+    }
 }
 
 /**

@@ -44,13 +44,14 @@ This list tracks features and tasks that are currently under development.
                 *   Called from `handlePlayerPlaceBlockAfterEvent`.
                 *   Unauthorized block spam attempts are handled based on `blockSpamAction` (e.g., "warn", "logOnly").
                 *   Admin notifications and logging via `actionManager` profile `world_antigrief_blockspam`.
-            *   **Entity Spam Control (Partially Implemented - `itemUseOn` for placeables):**
-                *   Investigated entity spam techniques and documented strategy in `Dev/notes/EntitySpamDetectionStrategy.md`.
+            *   **Entity Spam Control (Partially Implemented - Player-initiated spawns via `itemUse`/`itemUseOn`):**
+                *   Investigated entity spam techniques and documented strategy in `Dev/notes/EntitySpamDetectionStrategy.md` (including spawn egg strategy using `itemUse`/`itemUseOn`).
                 *   Implemented configuration options (`enableEntitySpamAntiGrief`, `entitySpamMonitoredEntityTypes`, etc.) in `config.js`, disabled by default.
                 *   Created `checkEntitySpam` function in `entityChecks.js` for rate-limiting spawns of monitored entities by a player.
-                *   Integrated `checkEntitySpam` into `handleItemUseOn` for items that place monitored entities (e.g., boats, armor stands). This allows for player-attributed spam detection and prevention for these items.
-                *   If spam is detected via `itemUseOn` and action is "kill", the item use is cancelled, preventing entity spawn.
-                *   **Next Step (TODO):** Further investigation for attributing spawns from `entitySpawn` event (e.g., spawn eggs) to players and integrating `checkEntitySpam` there if feasible.
+                *   Integrated `checkEntitySpam` into `handleItemUseOn` (for placeable entity items like boats, armor stands) and `handleItemUse` (for spawn eggs).
+                *   This allows for player-attributed spam detection and prevention for these item uses.
+                *   If spam is detected and `config.entitySpamAction === "kill"`, the item use event is cancelled, preventing entity spawn. Player is notified.
+                *   **Next Step (TODO):** Consider if any other significant player-driven entity spawn mechanisms (not covered by item use) need addressing, or if general non-attributable `entitySpawn` events still pose a high risk that needs a different (non-player-rate-limit) mitigation.
         *   (TODO): Investigate other common griefing methods (e.g., piston grief) and potential mitigations for them, and advanced block spam detection (density/patterns).
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.

@@ -69,6 +69,27 @@ This is the trickiest part for `entitySpawn`.
 *   **For spawn eggs:** `itemUseOn` (if used on a block) or `itemUse` (if used in air) would be the trigger. The player is known. The `entitySpawn` event would follow.
 *   **Simplification for initial step:** The check might initially only work well for spawns that can be reasonably attributed to a player through recent actions.
 
+### 3.5. Specific Strategy for Spawn Egg Entity Spam
+
+Spawn eggs provide a direct way for players to create entities and can be a source of spam if not rate-limited. Due to the challenges of player attribution in the `world.afterEvents.entitySpawn` event, a more reliable approach for spawn eggs is to act on the `world.beforeEvents.itemUse` (for using in air/on entity) and `world.beforeEvents.itemUseOn` (for using on a block) events.
+
+**Event Handling:**
+
+1.  **Target Events:** `itemUse` and `itemUseOn`.
+2.  **Item Check:** In these handlers, check if `eventData.itemStack.typeId` matches the pattern of a spawn egg (e.g., ends with `_spawn_egg`).
+3.  **Entity Type Derivation:**
+    *   If a spawn egg is detected, derive the corresponding `entityTypeId` by removing the `_spawn_egg` suffix from the item's `typeId`. For example, `minecraft:pig_spawn_egg` becomes `minecraft:pig`.
+    *   This derived `entityTypeId` is then checked against `config.entitySpamMonitoredEntityTypes`.
+4.  **Spam Check Execution:**
+    *   If the derived entity type is monitored, call the existing `checkEntitySpam` function, passing the `player` (from `eventData.source`), the derived `entityTypeId`, and other necessary dependencies.
+5.  **Action (Prevention):**
+    *   Since `itemUse` and `itemUseOn` are `beforeEvents`, if `checkEntitySpam` returns `true` (indicating spam is detected) and `config.entitySpamAction` is `"kill"` (which is interpreted as "prevent item use" in this context):
+        *   Set `eventData.cancel = true`. This will prevent the spawn egg from being consumed and the entity from being spawned.
+        *   The player should be notified that their action was prevented due to rapid item use/entity spawning.
+    *   If `config.entitySpamAction` is `"warn"` or `"logOnly"`, the event is not cancelled, and `checkEntitySpam` handles the logging/notifications as usual.
+
+This approach leverages cancellable `beforeEvents` for more effective control over entity spam originating from spawn eggs, with reliable player attribution.
+
 ## 4. Future Considerations (Deferred):
 
 *   **Density-Based Checks:** Detecting too many monitored entities of a certain type within a given area, regardless of spawn rate (e.g., >X boats in a Y-block radius).

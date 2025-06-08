@@ -1,4 +1,4 @@
-# Anti-Grief Entity Spam Control (`itemUseOn` for Placeables) - Conceptual Test Cases
+# Anti-Grief Entity Spam Control (Player-Initiated via Item Use) - Conceptual Test Cases
 
 ## Test Case Structure:
 1.  **Test Case ID:** Unique identifier.
@@ -8,10 +8,10 @@
     *   Player type (Non-Admin, Admin, Owner).
     *   Player game mode (Survival, Creative).
     *   Content of `entitySpamMonitoredEntityTypes`.
-    *   Item used for placing the entity.
+    *   Item used for placing/spawning the entity.
 4.  **Action:** Action performed (e.g., Player attempts to use the specified item rapidly).
 5.  **Expected Outcome:**
-    *   Item use event cancelled/allowed (entity placed/prevented).
+    *   Item use event cancelled/allowed (entity placed/spawned or prevented).
     *   Player messages.
     *   Admin notifications (conceptual).
     *   Log entry details (conceptual).
@@ -19,7 +19,7 @@
 
 ---
 
-## Scenario 1: `entitySpamAction: "kill"` (Interpreted as "prevent" by `handleItemUseOn`)
+## Scenario 1: Placeable Item Spam (`itemUseOn`) - `entitySpamAction: "kill"` (Interpreted as "prevent")
 
 ### AG_ES_IUO_001
 *   **Test Case ID:** AG_ES_IUO_001
@@ -117,7 +117,7 @@
 
 ---
 
-## Scenario 2: `entitySpamAction: "warn"`
+## Scenario 2: Placeable Item Spam (`itemUseOn`) - `entitySpamAction: "warn"`
 
 ### AG_ES_IUO_006
 *   **Test Case ID:** AG_ES_IUO_006
@@ -141,7 +141,7 @@
 
 ---
 
-## Scenario 3: `entitySpamAction: "logOnly"`
+## Scenario 3: Placeable Item Spam (`itemUseOn`) - `entitySpamAction: "logOnly"`
 
 ### AG_ES_IUO_007
 *   **Test Case ID:** AG_ES_IUO_007
@@ -165,7 +165,7 @@
 
 ---
 
-## Scenario 4: Feature Disabled
+## Scenario 4: Placeable Item Spam (`itemUseOn`) - Feature Disabled
 
 ### AG_ES_IUO_008
 *   **Test Case ID:** AG_ES_IUO_008
@@ -185,5 +185,122 @@
     *   No anti-grief admin notification.
     *   No anti-grief log entry.
     *   No anti-grief flag.
+
+---
+## Scenario 5: Spawn Egg Spam (`itemUse`/`itemUseOn`) - `entitySpamAction: "kill"` (Prevent Use)
+
+### AG_ES_SE_001
+*   **Test Case ID:** AG_ES_SE_001
+*   **Description:** Verify Non-Admin rapid use of `minecraft:pig_spawn_egg` (monitored as `minecraft:pig` entity) is prevented when action is "kill".
+*   **Prerequisites/Setup:**
+    *   `config.enableEntitySpamAntiGrief: true`
+    *   `config.entitySpamBypassInCreative: true`
+    *   `config.entitySpamTimeWindowMs: 2000`
+    *   `config.entitySpamMaxSpawnsInWindow: 3`
+    *   `config.entitySpamMonitoredEntityTypes: ["minecraft:pig", "minecraft:boat"]`
+    *   `config.entitySpamAction: "kill"`
+    *   Player is Non-Admin, in Survival mode.
+*   **Action:** Player attempts to use `minecraft:pig_spawn_egg` item for the 4th time within 2000ms (via `itemUse` or `itemUseOn`).
+*   **Expected Outcome:**
+    *   `itemUse`/`itemUseOn` event is cancelled (`eventData.cancel = true`). Pig entity is not spawned.
+    *   Player receives message: "§c[AntiGrief] You are using spawn eggs too quickly!"
+    *   Detection is logged by `checkEntitySpam` via `actionManager` (profile `world_antigrief_entityspam`):
+        *   Flag: type "antigrief_entityspam", reason "Player suspected of entity spamming."
+        *   Admin Notification: "§eAC [AntiGrief]: {PlayerName} suspected of Entity Spam. Entity: minecraft:pig. Count: 4/3 in 2000ms. Action: kill."
+        *   Log Entry: ActionType "antigrief_entityspam_detected", Details "AntiGrief EntitySpam: Player {PlayerName} suspected of Entity Spam. Entity: minecraft:pig. Count: 4/3 in 2000ms. Action: kill.".
+
+### AG_ES_SE_002
+*   **Test Case ID:** AG_ES_SE_002
+*   **Description:** Verify Non-Admin rapid use of `minecraft:creeper_spawn_egg` (Creeper entity is NOT monitored) results in no action.
+*   **Prerequisites/Setup:**
+    *   `config.enableEntitySpamAntiGrief: true`
+    *   `config.entitySpamBypassInCreative: true`
+    *   `config.entitySpamTimeWindowMs: 2000`
+    *   `config.entitySpamMaxSpawnsInWindow: 3`
+    *   `config.entitySpamMonitoredEntityTypes: ["minecraft:pig"]` (Creeper is not listed)
+    *   `config.entitySpamAction: "kill"`
+    *   Player is Non-Admin, in Survival mode.
+*   **Action:** Player attempts to use `minecraft:creeper_spawn_egg` item for the 4th time within 2000ms.
+*   **Expected Outcome:**
+    *   Item use event is allowed. Creeper entity spawns.
+    *   No anti-grief message to player.
+    *   No anti-grief admin notification from entity spam check.
+    *   No anti-grief log entry from entity spam check.
+    *   No anti-grief flag from entity spam check.
+
+### AG_ES_SE_003
+*   **Test Case ID:** AG_ES_SE_003
+*   **Description:** Verify Non-Admin rapid use of `minecraft:pig_spawn_egg` in Creative mode is allowed due to `entitySpamBypassInCreative: true`.
+*   **Prerequisites/Setup:**
+    *   `config.enableEntitySpamAntiGrief: true`
+    *   `config.entitySpamBypassInCreative: true`
+    *   `config.entitySpamTimeWindowMs: 2000`
+    *   `config.entitySpamMaxSpawnsInWindow: 3`
+    *   `config.entitySpamMonitoredEntityTypes: ["minecraft:pig"]`
+    *   `config.entitySpamAction: "kill"`
+    *   Player is Non-Admin, in Creative mode.
+*   **Action:** Player attempts to use `minecraft:pig_spawn_egg` item for the 4th time within 2000ms.
+*   **Expected Outcome:**
+    *   Item use event is allowed. Pig entity spawns.
+    *   No anti-grief action.
+
+### AG_ES_SE_004
+*   **Test Case ID:** AG_ES_SE_004
+*   **Description:** Verify Non-Admin rapid use of `minecraft:pig_spawn_egg` (Survival) is prevented when `entitySpamBypassInCreative: false`.
+*   **Prerequisites/Setup:**
+    *   `config.enableEntitySpamAntiGrief: true`
+    *   `config.entitySpamBypassInCreative: false`
+    *   `config.entitySpamTimeWindowMs: 2000`
+    *   `config.entitySpamMaxSpawnsInWindow: 3`
+    *   `config.entitySpamMonitoredEntityTypes: ["minecraft:pig"]`
+    *   `config.entitySpamAction: "kill"`
+    *   Player is Non-Admin, in Survival mode.
+*   **Action:** Player attempts to use `minecraft:pig_spawn_egg` item for the 4th time within 2000ms.
+*   **Expected Outcome:**
+    *   Event cancelled. Pig not spawned.
+    *   Player receives message: "§c[AntiGrief] You are using spawn eggs too quickly!"
+    *   Detection logged by `checkEntitySpam` via `actionManager`.
+
+---
+
+## Scenario 6: Spawn Egg Spam (`entitySpamAction: "warn"`)
+
+### AG_ES_SE_005
+*   **Test Case ID:** AG_ES_SE_005
+*   **Description:** Verify Non-Admin rapid use of `minecraft:cow_spawn_egg` (monitored) results in a warning, but spawn is allowed.
+*   **Prerequisites/Setup:**
+    *   `config.enableEntitySpamAntiGrief: true`
+    *   `config.entitySpamBypassInCreative: true`
+    *   `config.entitySpamTimeWindowMs: 2000`
+    *   `config.entitySpamMaxSpawnsInWindow: 3`
+    *   `config.entitySpamMonitoredEntityTypes: ["minecraft:cow"]`
+    *   `config.entitySpamAction: "warn"`
+    *   Player is Non-Admin, in Survival mode.
+*   **Action:** Player attempts to use `minecraft:cow_spawn_egg` item for the 4th time within 2000ms.
+*   **Expected Outcome:**
+    *   Item use event is allowed. Cow entity spawns.
+    *   Player receives message: "§e[AntiGrief] Warning: Using spawn eggs too quickly is monitored."
+    *   Detection logged by `checkEntitySpam` via `actionManager`.
+
+---
+
+## Scenario 7: Spawn Egg Spam (`entitySpamAction: "logOnly"`)
+
+### AG_ES_SE_006
+*   **Test Case ID:** AG_ES_SE_006
+*   **Description:** Verify Non-Admin rapid use of `minecraft:sheep_spawn_egg` (monitored) is allowed, no player message, only admin/log actions.
+*   **Prerequisites/Setup:**
+    *   `config.enableEntitySpamAntiGrief: true`
+    *   `config.entitySpamBypassInCreative: true`
+    *   `config.entitySpamTimeWindowMs: 2000`
+    *   `config.entitySpamMaxSpawnsInWindow: 3`
+    *   `config.entitySpamMonitoredEntityTypes: ["minecraft:sheep"]`
+    *   `config.entitySpamAction: "logOnly"`
+    *   Player is Non-Admin, in Survival mode.
+*   **Action:** Player attempts to use `minecraft:sheep_spawn_egg` item for the 4th time within 2000ms.
+*   **Expected Outcome:**
+    *   Item use event is allowed. Sheep entity spawns.
+    *   No direct player message from handler.
+    *   Detection logged by `checkEntitySpam` via `actionManager`.
 
 ---
