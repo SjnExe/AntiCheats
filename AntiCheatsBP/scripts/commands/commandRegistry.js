@@ -29,6 +29,10 @@ import * as invseeCmd from './invsee.js';
 import * as panelCmd from './panel.js';
 import * as notifyCmd from './notify.js';
 import * as xraynotifyCmd from './xraynotify.js';
+import * as tpaCmd from './tpa.js';
+import * as tpacceptCmd from './tpaccept.js';
+import * as tpacancelCmd from './tpacancel.js';
+import * as tpahereCmd from './tpahere.js';
 import * as tpCmd from './tp.js';
 import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
@@ -70,5 +74,9 @@ export const commandModules = [
     netherlockCmd,
     endlockCmd,
     rulesCmd,
+    tpaCmd,
+    tpahereCmd,
+    tpacceptCmd,
+    tpacancelCmd,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");

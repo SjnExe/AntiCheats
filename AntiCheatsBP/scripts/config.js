@@ -390,6 +390,20 @@ export const enableDeathCoordsMessage = true;
  */
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
+// --- TPA System Settings ---
+/**
+ * @type {boolean}
+ * Enable or disable the player TPA (teleport request) system.
+ * If false, TPA commands will not be usable.
+ */
+export const enableTpaSystem = false;
+
+/**
+ * @type {number}
+ * How long (in seconds) a TPA request remains valid before automatically declining.
+ */
+export const tpaRequestTimeoutSeconds = 60;
+
 // --- UI Display Texts ---
 /**
  * @type {string}
@@ -970,7 +984,7 @@ export let editableConfigValues = {
     autoToolSwitchToOptimalWindowTicks,
     autoToolSwitchBackWindowTicks,
     enableInstaBreakUnbreakableCheck,
-    instaBreakUnbreakableBlocks, // Note: Arrays are mutable; care should be taken if modifying directly vs. reassigning.
+    instaBreakUnbreakableBlocks,
     enableInstaBreakSpeedCheck,
     instaBreakTimeToleranceTicks,
     enableNameSpoofCheck,
@@ -988,9 +1002,9 @@ export let editableConfigValues = {
     noSlowMaxSpeedUsingShield,
     noSlowMaxSpeedSneaking,
     enableInvalidSprintCheck,
-    attackBlockingConsumables, // Note: Arrays are mutable.
-    attackBlockingBows,       // Note: Arrays are mutable.
-    attackBlockingShields,    // Note: Arrays are mutable.
+    attackBlockingConsumables,
+    attackBlockingBows,
+    attackBlockingShields,
     itemUseStateClearTicks,
     maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus, minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold, flySustainedOffGroundTicksThreshold,
@@ -1029,14 +1043,14 @@ export let editableConfigValues = {
     downwardScaffoldMaxTickGap,
     downwardScaffoldMinHorizontalSpeed,
     enableAirPlaceCheck,
-    airPlaceSolidBlocks, // Note: Arrays are mutable.
+    airPlaceSolidBlocks,
     enableFastUseCheck,
-    fastUseItemCooldowns, // Note: Object is mutable.
+    fastUseItemCooldowns,
     enableFastPlaceCheck,
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
     xrayDetectionNotifyOnOreMineEnabled,
-    xrayDetectionMonitoredOres, // Corrected this line in the previous step
+    xrayDetectionMonitoredOres,
     xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     enableCombatLogDetection,
@@ -1054,6 +1068,8 @@ export let editableConfigValues = {
     websiteLink,
     helpLinks,
     generalHelpMessages,
+    enableTpaSystem, // Added
+    tpaRequestTimeoutSeconds, // Added
 };
 
 /**

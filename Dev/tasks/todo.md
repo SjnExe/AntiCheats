@@ -48,5 +48,9 @@ This list contains planned features, improvements, and areas for future investig
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
+## TPA System Implementation
+- **Phase 4: Status & System Mechanics (`!tpastatus`, Expiry)** (Pending)
+- **Phase 5: Integration & Finalization (Help, Testing)** (Pending)
+
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

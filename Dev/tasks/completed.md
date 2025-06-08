@@ -1,6 +1,12 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **TPA System - Phase 3: Responding to Requests:** Implemented `!tpaccept` (to accept specific or latest incoming TPA requests) and `!tpacancel` (to cancel outgoing or decline incoming TPA requests, specific or all). Both commands provide feedback to relevant players and are registered.
+- **TPA System - Phase 1: Core Setup & Configuration:** Updated `config.js` with TPA enable/timeout settings (`enableTpaSystem`, `tpaRequestTimeoutSeconds`), defined `TpaRequest` and `PlayerTpaStatus` JSDoc typedefs in `types.js`, and created the initial structure for `AntiCheatsBP/scripts/core/tpaManager.js` including data storage (in-memory Maps for active requests and player TPA statuses) and stubs for core functions like `addRequest`, `findRequest`, `acceptRequest`, `declineRequest`, `getPlayerTpaStatus`, `setPlayerTpaStatus`.
+- **TPA System - Phase 2: Basic Request Commands:** Implemented `!tpa` and `!tpahere` commands.
+  - Created `AntiCheatsBP/scripts/commands/tpa.js` for `!tpa <targetPlayerName>`: Allows players to request teleportation to another player. Includes checks for system enabled, target validity, self-request, target's TPA acceptance status, and existing requests. Notifies requester and target (via action bar).
+  - Created `AntiCheatsBP/scripts/commands/tpahere.js` for `!tpahere <targetPlayerName>`: Allows players to request another player to teleport to them. Similar checks and notifications as `!tpa`.
+  - Both commands use `tpaManager.addRequest` to store the request and are registered in `commandRegistry.js`.
 - **Created `!rules` command:** Developed a dedicated command (`!rules` and alias `!rule`) that displays server rules (from `config.serverRules`) to players using a MessageForm. Accessible to all permission levels.
 *   **Public Info UI (`!ui`) Development - Phase 2: Server Info & Links:** Added configurable server rules (as a single string), Discord link, and website link to the `!uinfo` panel. Updated `config.js` with new variables (`serverRules`, `discordLink`, `websiteLink`) and modified `uinfo.js` to display this information in the 'Server Rules' and 'Helpful Links' sections respectively.
 *   **Admin Command Usage Logging:** Implemented logging to the console for commands executed by admin-level users, including timestamp, player name (actual account name), and the full raw command string as typed by the admin. This log appears with an `[AdminCommandLog]` prefix.

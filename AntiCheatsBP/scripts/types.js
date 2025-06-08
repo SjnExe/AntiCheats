@@ -225,6 +225,30 @@
  * @property {LogManager} logManager
  */
 
+/**
+ * Represents an active teleport request between two players.
+ * @typedef {object} TpaRequest
+ * @property {string} requestId - A unique identifier for the request (e.g., a UUID).
+ * @property {string} requesterName - The name of the player who initiated the request.
+ * @property {import('@minecraft/server').Vector3} requesterLocation - The location of the requester when the request was made.
+ * @property {string} requesterDimensionId - The dimension ID of the requester when the request was made.
+ * @property {string} targetName - The name of the player to whom the request was sent.
+ * @property {import('@minecraft/server').Vector3} targetLocation - The location of the target when the request was made.
+ * @property {string} targetDimensionId - The dimension ID of the target when the request was made.
+ * @property {'tpa' | 'tpahere'} requestType - The type of request:
+ *                                            'tpa' = requester wants to teleport to the target.
+ *                                            'tpahere' = requester wants the target to teleport to them.
+ * @property {number} creationTimestamp - The server time (e.g., from Date.now()) when the request was created.
+ * @property {number} expiryTimestamp - The server time when the request will automatically expire.
+ */
+
+/**
+ * Represents a player's TPA preference.
+ * @typedef {object} PlayerTpaStatus
+ * @property {string} playerName - The name of the player.
+ * @property {boolean} acceptsTpaRequests - Whether the player is currently accepting TPA requests. Defaults to true.
+ * @property {number} lastTpaToggleTimestamp - Timestamp of when the status was last changed.
+ */
 
 // This line is important to make this file a module and allow JSDoc types to be imported.
 export {};
