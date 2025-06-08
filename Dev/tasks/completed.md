@@ -1,6 +1,7 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+- **Refactor `!help` Command:** Improved readability by grouping commands into categories (General, TPA, Moderation, Administrative, Owner). TPA commands are shown conditionally based on `config.enableTpaSystem`. The `!panel` command description was updated to reflect its multi-mode nature.
 - **TPA System (Complete Implementation):**
   - Phase 1 (Core Setup & Configuration): Established foundational settings, TPA request/status types, and `tpaManager.js` structure.
   - Phase 2 (Basic Request Commands): Implemented `!tpa` and `!tpahere` commands with core logic.

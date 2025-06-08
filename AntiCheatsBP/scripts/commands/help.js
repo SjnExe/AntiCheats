@@ -26,29 +26,29 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     // config is now directly imported, not from dependencies for this command's direct use.
     // However, other parts of dependencies.config might be used by other commands, so keep it in destructuring.
-    const { getPlayerPermissionLevel, permissionLevels: permLevelsDep, allCommands: acAllCommands, config: depConfig } = dependencies;
+    // config is now directly imported. permissionLevels is also directly imported.
+    const { getPlayerPermissionLevel, allCommands, config: depConfig } = dependencies; // depConfig for commandAliases
     const userPermissionLevel = getPlayerPermissionLevel(player);
 
     if (args[0]) {
-        const specificCommandName = args[0].toLowerCase().replace(config.prefix, ""); // Remove prefix if present
-        let foundCmdDef = acAllCommands.find(cmd => cmd.name === specificCommandName);
+        const specificCommandName = args[0].toLowerCase().replace(config.prefix, "");
+        let foundCmdDef = allCommands.find(cmd => cmd.name === specificCommandName);
 
-        if (!foundCmdDef && depConfig.commandAliases) { // Check aliases if not found by direct name
-             const aliasTarget = Object.keys(depConfig.commandAliases).find(alias => alias === specificCommandName && depConfig.commandAliases[alias]);
-             if(aliasTarget) {
+        if (!foundCmdDef && depConfig.commandAliases) {
+            const aliasTarget = Object.keys(depConfig.commandAliases).find(alias => alias === specificCommandName && depConfig.commandAliases[alias]);
+            if (aliasTarget) {
                 const targetCmdName = depConfig.commandAliases[aliasTarget];
-                foundCmdDef = acAllCommands.find(cmd => cmd.name === targetCmdName);
-             }
+                foundCmdDef = allCommands.find(cmd => cmd.name === targetCmdName);
+            }
         }
 
         if (foundCmdDef) {
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
                 const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
                 let permLevelName = "Unknown";
-                // Find the name of the permission level
-                for (const key in permLevelsDep) {
-                    if (permLevelsDep[key] === foundCmdDef.permissionLevel) {
-                        permLevelName = key.charAt(0).toUpperCase() + key.slice(1); // Capitalize
+                for (const key in permissionLevels) { // Use imported permissionLevels
+                    if (permissionLevels[key] === foundCmdDef.permissionLevel) {
+                        permLevelName = key.charAt(0).toUpperCase() + key.slice(1);
                         break;
                     }
                 }
@@ -66,31 +66,72 @@ export async function execute(player, args, dependencies) {
         }
     } else {
         let helpMessage = "§aAvailable commands (for your permission level):\n";
-        acAllCommands.forEach(cmdDef => {
-            if (userPermissionLevel <= cmdDef.permissionLevel) {
-                const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                helpMessage += `§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${cmdDef.description}\n`;
+        let commandsListed = 0;
+
+        const categories = [
+            {
+                name: "--- General Player Commands ---",
+                commands: ['help', 'myflags', 'rules', 'uinfo', 'version']
+            },
+            {
+                name: "--- TPA Commands ---",
+                commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
+                condition: () => config.enableTpaSystem
+            },
+            {
+                name: "--- Moderation Commands ---",
+                permissionRequired: permissionLevels.moderator, // Assuming a moderator level might exist or defaults to admin
+                commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel']
+            },
+            {
+                name: "--- Administrative Commands ---",
+                permissionRequired: permissionLevels.admin,
+                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock']
+            },
+            {
+                name: "--- Owner Commands ---",
+                permissionRequired: permissionLevels.owner,
+                commands: ['testnotify']
+            }
+        ];
+
+        categories.forEach(category => {
+            if (category.condition && !category.condition()) {
+                return; // Skip this category if condition is not met (e.g., TPA disabled)
+            }
+
+            // Check if user meets the general permission for the category, if defined
+            if (category.permissionRequired && userPermissionLevel > category.permissionRequired) {
+                return;
+            }
+
+            let categoryHelp = "";
+            category.commands.forEach(commandName => {
+                const cmdDef = allCommands.find(cmd => cmd.name === commandName);
+                if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) {
+                    const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
+                    let description = cmdDef.description;
+                    if (cmdDef.name === 'panel') {
+                        description = "Opens the Info/Admin Panel (content varies by permission).";
+                    }
+                    categoryHelp += `§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
+                    commandsListed++;
+                }
+            });
+
+            if (categoryHelp) {
+                helpMessage += `\n${category.name}\n${categoryHelp}`;
             }
         });
 
-        if (config.enableTpaSystem) {
-            helpMessage += "\n\n§e--- TPA Commands ---§r\n";
-            helpMessage += `§b${config.prefix}tpa <playerName>§r - Request to teleport to another player.\n`;
-            helpMessage += `§b${config.prefix}tpahere <playerName>§r - Request another player to teleport to you.\n`;
-            helpMessage += `§b${config.prefix}tpaccept [playerName]§r - Accept an incoming TPA request (from specific player or latest).\n`;
-            helpMessage += `§b${config.prefix}tpacancel [playerName]§r - Cancel/decline a TPA request (specific or all).\n`;
-            helpMessage += `§b${config.prefix}tpastatus <on|off|status>§r - Manage or view your TPA request availability.`;
+        if (commandsListed === 0) {
+            helpMessage += "§7No commands available at your current permission level.";
+        } else {
+            // Remove last trailing newline if any commands were added
+            if (helpMessage.endsWith('\n')) {
+                helpMessage = helpMessage.slice(0, -1);
+            }
         }
-
-        // Check if only the title was added (meaning no commands available at this permission level BEFORE TPA check)
-        // Or if after adding TPA commands, it's still just the title (unlikely if TPA is on and user is normal)
-        if (helpMessage === "§aAvailable commands (for your permission level):\n" && !config.enableTpaSystem) {
-             helpMessage += "§7No commands available at your current permission level.";
-        } else if (helpMessage.endsWith("§r\n")) { // Remove trailing newline if TPA commands were the last thing added
-            helpMessage = helpMessage.slice(0, -1);
-        }
-
-
         player.sendMessage(helpMessage);
     }
 }

@@ -35,7 +35,19 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Normal Player Panel Features (`!panel`):**
 
+*   **Improved Banned Player Join Message:**
+    - When a banned player attempts to join, display a detailed message:
+      - Standard message: "You are banned from this server. Contact an admin to appeal."
+      - If `config.discordLink` is set and not empty, append: "Discord: [discordLinkValue]".
+      - Display who issued the ban (e.g., "Banned by: [AdminName]").
+      - Display the reason for the ban.
+      - (Future consideration: If ban was by AutoMod, state "Banned by: AutoMod").
+    - This requires storing ban details (banner, reason) more persistently or making them accessible at join time.
+
 ## Refactoring & Enhancements
+
+## UI/UX Enhancements
+- Refactor `!help` command with categorized sections for better readability (COMPLETED).
 
 ## Low Priority / Ideas
 
