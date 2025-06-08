@@ -33,6 +33,7 @@ import * as tpaCmd from './tpa.js';
 import * as tpacceptCmd from './tpaccept.js';
 import * as tpacancelCmd from './tpacancel.js';
 import * as tpahereCmd from './tpahere.js';
+import * as tpastatusCmd from './tpastatus.js';
 import * as tpCmd from './tp.js';
 import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
@@ -78,5 +79,6 @@ export const commandModules = [
     tpahereCmd,
     tpacceptCmd,
     tpacancelCmd,
+    tpastatusCmd,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");
