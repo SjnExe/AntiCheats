@@ -1,6 +1,25 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Anti-Grief System - Phase 4: Entity Spam Control Completed**
+    *   Enhanced entity spam detection to include player-constructed entities like Snow Golems and Iron Golems.
+    *   Detection logic involves identifying placement of key structure blocks (`handlePlayerPlaceBlockAfter`), setting an expectation flag in `pData` (`expectingConstructedEntity`), and then attributing the subsequent entity spawn (`handleEntitySpawnEvent_AntiGrief`) to the constructing player based on type, location, and timing.
+    *   Calls `checkEntitySpam` for attributed spawns, allowing for rate-limiting and configured actions (e.g., "kill" which reactively removes the spawned entity).
+    *   Updated `config.js` to include `minecraft:snow_golem` and `minecraft:iron_golem` in `entitySpamMonitoredEntityTypes`.
+    *   Updated `Dev/notes/EntitySpamDetectionStrategy.md` to reflect these new capabilities and discuss limitations (e.g., dispenser-based spam).
+*   **Anti-Grief System - Phase 4: Piston Grief Mitigation (Conservative Logging)**
+    *   Implemented a conservative piston lag check focused on logging and admin notification due to challenges in player attribution.
+    *   Added new configurations: `enablePistonLagCheck` (default `false`), `pistonActivationLogThresholdPerSecond`, `pistonActivationSustainedDurationSeconds`, and `pistonLagLogCooldownSeconds`.
+    *   Created `AntiCheatsBP/scripts/checks/world/pistonChecks.js` with the `checkPistonLag` function. This function monitors the activation rates of individual pistons using a global map (`pistonActivityData`) to store timestamps.
+    *   Integrated into `AntiCheatsBP/scripts/core/eventHandlers.js` via a new `handlePistonActivate_AntiGrief` function, subscribed to `world.afterEvents.pistonActivate`.
+    *   Added a new action profile `world_antigrief_piston_lag` to `checkActionProfiles` for handling admin notifications and server logging.
+*   **Packet Anomalies / Chat Violations: Invalid Max Render Distance Check**
+    *   Implemented a check to detect clients reporting an excessively high maximum render distance, which could indicate client modification.
+    *   Added new configurations: `enableInvalidRenderDistanceCheck` (default `true`) and `maxAllowedClientRenderDistance` (default `64`).
+    *   Created `AntiCheatsBP/scripts/checks/player/clientInfoChecks.js` with the `checkInvalidRenderDistance` function.
+    *   The logic reads `player.clientSystemInfo.maxRenderDistance` and compares it against `config.maxAllowedClientRenderDistance`.
+    *   The check is performed upon player spawn (integrated into `handlePlayerSpawn` in `eventHandlers.js`) and periodically for all online players (integrated into the main tick loop in `main.js`).
+    *   Added a new action profile `player_invalid_render_distance` to `checkActionProfiles` for appropriate flagging, admin notifications, and logging.
 - **Enhanced Ban & Kick Messages:**
     - Updated ban data structures (`types.js` - `PlayerBanInfo`, `playerDataManager.js`) to store `bannedBy` (admin name), `banTime`, `playerName`, and `xuid` along with reason and expiry.
     - `!ban` command (`ban.js`) now records the admin who issued the ban.

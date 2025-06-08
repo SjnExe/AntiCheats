@@ -525,7 +525,7 @@ export const entitySpamTimeWindowMs = 2000;
 export const entitySpamMaxSpawnsInWindow = 5;
 
 /** @type {string[]} List of entity type IDs to specifically monitor for spam. If empty, this check might be too broad or not trigger. */
-export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart"];
+export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart", "minecraft:snow_golem", "minecraft:iron_golem"];
 
 /** @type {string} Action to take for detected entity spam. Valid: "kill", "warn", "logOnly". */
 export const entitySpamAction = "kill";
@@ -547,6 +547,22 @@ export const blockSpamDensityMonitoredBlockTypes = ["minecraft:dirt", "minecraft
 
 /** @type {string} Action to take for detected density block spam. Valid: "warn", "logOnly". */
 export const blockSpamDensityAction = "warn";
+
+// --- Piston Lag Check Settings ---
+/** @type {boolean} If true, the Piston Lag check is active. */
+export const enablePistonLagCheck = false;
+/** @type {number} Number of piston activations per second at a single location to be considered rapid. */
+export const pistonActivationLogThresholdPerSecond = 15;
+/** @type {number} Duration in seconds the rapid activation rate must be sustained to trigger a log/notification. */
+export const pistonActivationSustainedDurationSeconds = 3;
+/** @type {number} Cooldown in seconds before logging/notifying again for the same piston location. */
+export const pistonLagLogCooldownSeconds = 60;
+
+// --- Client Behavior Checks ---
+/** @type {boolean} If true, the Invalid Render Distance check is active. */
+export const enableInvalidRenderDistanceCheck = true;
+/** @type {number} Maximum allowed client-reported render distance in chunks. */
+export const maxAllowedClientRenderDistance = 64;
 
 
 // --- UI Display Texts ---
@@ -1222,6 +1238,32 @@ export const checkActionProfiles = {
             actionType: "antigrief_blockspam_density_detected",
             detailsPrefix: "AntiGrief BlockSpam (Density): "
         }
+    },
+    "world_antigrief_piston_lag": {
+        "enabled": true,
+        "flag": null,
+        "notifyAdmins": {
+            "message": "§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)"
+        },
+        "log": {
+            "actionType": "antigrief_piston_lag_detected",
+            "detailsPrefix": "AntiGrief Piston Lag: "
+        }
+    },
+    "player_invalid_render_distance": {
+        "enabled": true,
+        "flag": {
+            "increment": 1,
+            "reason": "Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).",
+            "type": "player_client_anomaly"
+        },
+        "notifyAdmins": {
+            "message": "§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification."
+        },
+        "log": {
+            "actionType": "detected_invalid_render_distance",
+            "detailsPrefix": "Invalid Render Distance: "
+        }
     }
 };
 
@@ -1378,7 +1420,7 @@ export let editableConfigValues = {
     entitySpamBypassInCreative,
     entitySpamTimeWindowMs,
     entitySpamMaxSpawnsInWindow,
-    entitySpamMonitoredEntityTypes,
+    entitySpamMonitoredEntityTypes: ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart", "minecraft:snow_golem", "minecraft:iron_golem"],
     entitySpamAction,
     // AntiGrief Density Block Spam Configs
     enableBlockSpamDensityCheck,
@@ -1387,6 +1429,14 @@ export let editableConfigValues = {
     blockSpamDensityThresholdPercentage,
     blockSpamDensityMonitoredBlockTypes,
     blockSpamDensityAction,
+    // Piston Lag Check
+    enablePistonLagCheck,
+    pistonActivationLogThresholdPerSecond,
+    pistonActivationSustainedDurationSeconds,
+    pistonLagLogCooldownSeconds,
+    // Client Behavior Checks
+    enableInvalidRenderDistanceCheck,
+    maxAllowedClientRenderDistance,
 };
 
 /**

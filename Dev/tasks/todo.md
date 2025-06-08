@@ -9,7 +9,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
-        *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
         *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.

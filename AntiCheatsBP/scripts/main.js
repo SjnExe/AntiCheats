@@ -98,7 +98,16 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
  * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
  */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, { addLog: logManager.addLog });
+    // Augment dependencies for handlePlayerSpawn to include more modules
+    const spawnHandlerDependencies = {
+        config: config.editableConfigValues, // Pass the editable runtime config
+        playerUtils: playerUtils,
+        logManager: logManager, // Pass the full logManager
+        actionManager: { executeCheckAction }, // Pass executeCheckAction
+        checks: checks, // Pass all available checks
+        addLog: logManager.addLog // Keep addLog for direct use if still needed by handlePlayerSpawn internally
+    };
+    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config.editableConfigValues, spawnHandlerDependencies);
 });
 
 /**
@@ -242,9 +251,22 @@ mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
         playerUtils: playerUtils,
         logManager: logManager,
         actionManager: { executeCheckAction },
-        playerDataManager: playerDataManager // ensure playerDataManager is available if needed by executeCheckAction's internals
+            playerDataManager: playerDataManager, // ensure playerDataManager is available
+            checks: checks, // Add the checks object
+            currentTick: currentTick // Add currentTick from the main tick loop scope
     };
     await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, antiGriefDependencies);
+});
+
+/**
+ * Handles piston activation events for AntiGrief checks (e.g., Piston Lag).
+ * @param {mc.PistonActivateAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
+    // Using the same antiGriefDependencies as entitySpawn, as it contains all necessary components
+    // (config, playerUtils, logManager, actionManager, playerDataManager, checks, currentTick)
+    // If a more specific set is needed, a new dependencies object can be created here.
+    await eventHandlers.handlePistonActivate_AntiGrief(eventData, antiGriefDependencies);
 });
 
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
@@ -387,6 +409,23 @@ mc.system.runInterval(async () => {
 
         if (config.enableAntiGMCCheck && checks.checkAntiGMC) {
             await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        }
+
+        // Periodic Invalid Render Distance Check
+        if (config.enableInvalidRenderDistanceCheck && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= 400)) { // 400 ticks = 20 seconds
+            if (checks.checkInvalidRenderDistance) {
+                const renderDistDependencies = { config, playerDataManager, playerUtils, logManager, actionManager: { executeCheckAction }, checks, currentTick };
+                await checks.checkInvalidRenderDistance(
+                    player,
+                    pData,
+                    config, // This is config.editableConfigValues from the tick loop's scope
+                    playerUtils,
+                    logManager,
+                    { executeCheckAction }, // Pass actionManager/executeCheckAction wrapper
+                    renderDistDependencies // Pass the full dependencies object
+                );
+            }
+            pData.lastRenderDistanceCheckTick = currentTick;
         }
 
         // Construct dependencies specifically for checkNetherRoof as its signature expects a 'dependencies' object
