@@ -26,7 +26,7 @@ This list contains planned features, improvements, and areas for future investig
             -   **Ranks & Criteria:** *(IMPLEMENTED: Owner, Admin, Member defined; Owner via `ownerPlayerName` in `config.js`, Admin via `adminTag`)*
             -   **Chat Display:** *(IMPLEMENTED: Rank prefix like `[Owner] PlayerName: message` with colors)*
             -   **Nametag Display:** *(IMPLEMENTED: Rank above player name like `Owner\nPlayerName` with colors. Nametag modification via `player.nameTag` was successful.)*
-            -   Permissions for AC commands could be tied to ranks. *(Still to do)*
+            -   Permissions for AC commands could be tied to ranks. (VERIFIED - System already correctly ties command permissions to Owner/Admin/Normal ranks via `playerUtils.getPlayerPermissionLevel` and `commandManager.js` logic).
             -   Requires persistent storage if not solely derived from config/tags at runtime. *(Still relevant; current implementation is runtime derived from config/tags)*
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 

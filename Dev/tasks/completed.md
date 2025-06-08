@@ -7,6 +7,7 @@
     - Improved join handling for banned players (`main.js` - `playerJoin` event): Join is cancelled, and detailed ban info (banned by, reason, expiry, Discord link) is logged to console and notified to admins.
     - `!kick` command's (`kick.js`) message to the kicked player now includes who kicked them, the original reason, and a prompt to check server rules via `!rules`.
 - **Refactor `!help` Command:** Improved readability by grouping commands into categories (General, TPA, Moderation, Administrative, Owner). TPA commands are shown conditionally based on `config.enableTpaSystem`. The `!panel` command description was updated to reflect its multi-mode nature.
+- **Integrate Command Permissions with Rank System (Verification):** Verified that the existing system in `playerUtils.getPlayerPermissionLevel` (which uses `rankManager.js`) and `commandManager.js` correctly checks command `permissionLevel` against player's rank (Owner, Admin, Normal/Member) before executing commands. No code changes were required beyond documentation updates.
 - **TPA System (Complete Implementation):**
   - Phase 1 (Core Setup & Configuration): Established foundational settings, TPA request/status types, and `tpaManager.js` structure.
   - Phase 2 (Basic Request Commands): Implemented `!tpa` and `!tpahere` commands with core logic.
