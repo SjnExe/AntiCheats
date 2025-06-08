@@ -17,7 +17,13 @@ This list tracks features and tasks that are currently under development.
             *   Unauthorized Wither spawns are handled based on `witherSpawnAction` ("kill", "prevent" (as kill), "logOnly").
             *   Admin notifications and logging are handled via `actionManager` profile `world_antigrief_wither_spawn`.
             *   Noted limitation: Spawner identification is difficult with `entitySpawn`, so `allowAdminWitherSpawn` currently doesn't exempt admin-spawned Withers if the feature is active.
-    *   **Phase 3: Fire Control (TODO):** Investigate and implement measures for auto-extinguishing excessive fires not from natural sources.
+        *   **Phase 3: Fire Control (Completed - Initial Ignition Control):**
+            *   Implemented configuration options (`enableFireAntiGrief`, `allowAdminFire`, `fireControlAction`, etc.) in `config.js`.
+            *   Default set to disabled (`enableFireAntiGrief: false`) as per user request.
+            *   Updated `handleItemUseOn` event handler to monitor Flint & Steel and Fire Charge usage.
+            *   Unauthorized fire starting attempts are handled based on `fireControlAction` ("extinguish" by cancelling event, "warn", "logOnly").
+            *   Admin notifications and logging via `actionManager` profile `world_antigrief_fire`.
+            *   Noted: Advanced fire tracking (spread, duration, max blocks) is complex and deferred to future enhancements.
     *   **Phase 4: Other Griefing Vectors (TODO):** Investigate other common griefing methods and potential mitigations.
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.

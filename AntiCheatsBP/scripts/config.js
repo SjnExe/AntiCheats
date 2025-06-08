@@ -444,7 +444,7 @@ export const TPATeleportWarmupSeconds = 10;
 
 // --- Anti-Grief Settings ---
 /** @type {boolean} If true, the TNT Anti-Grief system is active. */
-export const enableTntAntiGrief = false; // Default changed to false
+export const enableTntAntiGrief = false;
 
 /** @type {boolean} If true, Admins/Owners are allowed to place TNT without restriction. */
 export const allowAdminTntPlacement = true;
@@ -460,6 +460,21 @@ export const allowAdminWitherSpawn = true;
 
 /** @type {string} Action to take for unauthorized Wither spawns. Valid: "prevent", "kill", "logOnly". */
 export const witherSpawnAction = "prevent";
+
+/** @type {boolean} If true, the Fire Anti-Grief system is active. */
+export const enableFireAntiGrief = false;
+
+/** @type {boolean} If true, Admins/Owners are allowed to start fires without restriction. */
+export const allowAdminFire = true;
+
+/** @type {number} Maximum number of fire blocks a non-admin can be responsible for in a defined scope/time. */
+export const maxPlayerStartedFires = 10;
+
+/** @type {number} Time in seconds. If a fire started by a player spreads for too long, consider extinguishing it. */
+export const fireSpreadDurationLimit = 60;
+
+/** @type {string} Action to take for unauthorized or excessive fire. Valid: "extinguish", "warn", "logOnly". */
+export const fireControlAction = "extinguish";
 
 
 // --- UI Display Texts ---
@@ -1045,6 +1060,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_wither_spawn",
             detailsPrefix: "AntiGrief Wither: "
         }
+    },
+    "world_antigrief_fire": {
+        enabled: true, // Effectively controlled by enableFireAntiGrief
+        flag: {
+            increment: 2,
+            reason: "Player involved in unauthorized or excessive fire incident.",
+            type: "antigrief_fire"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+        },
+        log: {
+            actionType: "antigrief_fire_incident",
+            detailsPrefix: "AntiGrief Fire: "
+        }
     }
 };
 
@@ -1168,13 +1198,19 @@ export let editableConfigValues = {
     TPARequestCooldownSeconds,
     TPATeleportWarmupSeconds,
     // AntiGrief TNT Configs
-    enableTntAntiGrief, // Default is false
+    enableTntAntiGrief,
     allowAdminTntPlacement,
     tntPlacementAction,
     // AntiGrief Wither Configs
     enableWitherAntiGrief,
     allowAdminWitherSpawn,
     witherSpawnAction,
+    // AntiGrief Fire Configs
+    enableFireAntiGrief,
+    allowAdminFire,
+    maxPlayerStartedFires,
+    fireSpreadDurationLimit,
+    fireControlAction,
 };
 
 /**

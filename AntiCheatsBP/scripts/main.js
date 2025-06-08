@@ -152,16 +152,22 @@ mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
 });
 
 /**
- * Handles player place block events before they occur.
- * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
+ * Handles item use on block events before they occur, for AntiGrief (Fire) and IllegalItem checks.
+ * @param {mc.ItemUseOnBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
-    // TODO: Review this subscription. handleItemUseOn is typically for ItemUseOnBeforeEvent.
-    // PlayerPlaceBlockBeforeEvent is passed here. This might lead to issues if handleItemUseOn
-    // or its downstream checks (like checkIllegalItems for "place") expect properties unique to ItemUseOnBeforeEvent
-    // that are not present or different in PlayerPlaceBlockBeforeEvent (e.g., faceLocation object vs. faceLocationX/Y/Z).
-    // For now, keeping as is from previous state, but needs verification.
-    eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction);
+mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => { // Changed to itemUseOn and made async
+    const eventDependencies = {
+        config: config.editableConfigValues, // Pass runtime editable config
+        playerUtils: playerUtils,
+        logManager: logManager,
+        actionManager: { executeCheckAction },
+        playerDataManager: playerDataManager, // Added for consistency if executeCheckAction needs it via dependencies
+        checks: checks // Pass checks object if handleItemUseOn calls other checks directly
+    };
+    // Original parameters are still passed for now, but handleItemUseOn should ideally use the 'dependencies' object.
+    // The signature of handleItemUseOn was: (eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, dependencies)
+    // We will call it with the new consolidated dependencies object.
+    await eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config.editableConfigValues, logManager, executeCheckAction, eventDependencies);
 });
 
 /**

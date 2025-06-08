@@ -99,6 +99,7 @@
  * @property {PlayerFlagDetail} [player_self_hurt] - Player damaged themselves via direct entity attack.
  * @property {PlayerFlagDetail} [antigrief_tnt] - Player attempted to place TNT without authorization.
  * @property {PlayerFlagDetail} [antigrief_wither] - Player involved in unauthorized Wither spawn.
+ * @property {PlayerFlagDetail} [antigrief_fire] - Player involved in unauthorized or excessive fire incident.
  */
 
 /**

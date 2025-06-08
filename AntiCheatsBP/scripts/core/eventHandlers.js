@@ -853,18 +853,71 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
  */
-export async function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction) {
+export async function handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, dependencies) { // Added dependencies
     // currentTick is not available here without passing it from main.js through the event subscription.
     // If ensurePlayerDataInitialized is needed, this handler's signature in main.js needs currentTick.
+    // For AntiGrief, we'll use dependencies passed from main.js
+
     const { source: player, itemStack } = eventData;
     if (player?.typeId !== 'minecraft:player') return;
 
+    // Anti-Grief Fire Logic
+    const currentConfig_AG = dependencies?.config || ConfigValuesImport; // Use dependencies.config if available, else direct import
+    const actualPlayerUtils_AG = dependencies?.playerUtils || PlayerUtilsImport;
+    const actionManager_AG = dependencies?.actionManager;
+    const logManager_AG = dependencies?.logManager; // Already a param but good to have in dependencies obj if pattern is followed
+
+    if (currentConfig_AG.enableFireAntiGrief) {
+        const itemUsed = itemStack.typeId;
+        if (itemUsed === 'minecraft:flint_and_steel' || itemUsed === 'minecraft:fire_charge') {
+            const playerPermission = actualPlayerUtils_AG.getPlayerPermissionLevel(player);
+
+            if (!(currentConfig_AG.allowAdminFire && playerPermission <= permissionLevels.admin)) {
+                // Unauthorized fire starting attempt
+                const actionTaken = currentConfig_AG.fireControlAction;
+                const violationDetails = {
+                    playerNameOrContext: player.nameTag,
+                    checkType: "AntiGrief Fire",
+                    itemUsed: itemUsed,
+                    targetBlock: eventData.block?.typeId || 'N/A',
+                    location: { x: player.location.x, y: player.location.y, z: player.location.z }, // Player's location for context
+                    actionTaken: actionTaken,
+                    detailsString: `Player ${player.nameTag} attempted to start a fire with ${itemUsed} on ${eventData.block?.typeId || 'N/A'}. Action: ${actionTaken}`
+                };
+
+                if (actionManager_AG && typeof actionManager_AG.executeCheckAction === 'function') {
+                    await actionManager_AG.executeCheckAction("world_antigrief_fire", player, violationDetails, dependencies);
+                } else {
+                    actualPlayerUtils_AG.debugLog("AntiGrief Fire: actionManager or executeCheckAction is not available.", player.nameTag);
+                     if (logManager_AG && typeof logManager_AG.addLog === 'function') { // Fallback log
+                        logManager_AG.addLog({ adminName: "System(AntiGrief)", actionType: "antigrief_fire_fallback", targetName: player.nameTag, details: violationDetails.detailsString });
+                    }
+                }
+
+                switch (actionTaken) {
+                    case "extinguish": // "extinguish" means prevent ignition here
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] Fire starting is restricted here.");
+                        break;
+                    case "warn":
+                        player.sendMessage("§e[AntiGrief] Warning: Fire starting is monitored.");
+                        break;
+                    case "logOnly":
+                        // Logging/notification handled by actionManager
+                        break;
+                }
+                if (eventData.cancel) return; // If event is cancelled, no further checks in this handler
+            }
+        }
+    }
+
+    // Original logic for other checks (e.g., illegal item placement)
     // Using getPlayerData and checking for null, as currentTick isn't available for ensurePlayerDataInitialized.
     // Checks using this pData must be robust against potentially missing fields if it's not fully initialized.
     const pData = playerDataManager.getPlayerData(player.id);
     // If pData is crucial and might be null, consider alternative ways to get currentTick or adjust check logic.
 
-    if (checks.checkIllegalItems && config.enableIllegalItemCheck) {
+    if (checks.checkIllegalItems && config.enableIllegalItemCheck) { // config here is the one passed as direct param
         // Pass `pData` which might be null. `checkIllegalItems` must handle this.
         await checks.checkIllegalItems(player, itemStack, eventData, "place", pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
     }
