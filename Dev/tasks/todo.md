@@ -28,7 +28,7 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
     *   Death Effects: Investigate and implement cosmetic effects on player death.
-    *   Chat Formatting (potentially linked to the Rank System).
+    *   Chat Formatting (potentially linked to the Rank System). (Attempted 2025-07-22, but not completed due to persistent subtask execution issues preventing necessary code modifications).
 *   **Logging Enhancements:** SjnExe parity goal.
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.

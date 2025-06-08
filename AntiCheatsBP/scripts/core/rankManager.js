@@ -1,6 +1,6 @@
 /**
  * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
- * @version 1.0.1
+ * @version 1.1.0
  */
 
 import { Player } from '@minecraft/server';
@@ -29,65 +29,70 @@ export const permissionLevels = {
 };
 
 /**
- * @typedef {object} RankDisplayProperties
+ * @typedef {object} RankProperties
  * @property {string} name - The display name of the rank (e.g., "Owner", "Admin", "Member").
- * @property {string} chatPrefix - The prefix used before a player's chat message (e.g., "§c[Owner] §f").
+ * @property {string} prefixText - The text part of the prefix (e.g., "[Owner] ").
+ * @property {string} defaultColor - The default Minecraft color code for this rank (e.g., "§c").
  * @property {string} nametagPrefix - The prefix displayed above a player's nametag (e.g., "§cOwner§f\n").
  */
 
 /**
- * Display properties for the Owner rank.
- * @type {RankDisplayProperties}
+ * Defines display and formatting properties for different player ranks.
+ * @type {Object.<string, RankProperties>}
  */
-export const ownerRank = {
-    name: "Owner",
-    chatPrefix: "§c[Owner] §f",    // Red prefix, white player name in chat
-    nametagPrefix: "§cOwner§f\n"   // Red "Owner" text above the player's actual name
+export const ranks = {
+    owner: {
+        name: "Owner",
+        prefixText: "[Owner] ",
+        defaultColor: "§c", // Red
+        nametagPrefix: "§cOwner§f\n"
+    },
+    admin: {
+        name: "Admin",
+        prefixText: "[Admin] ",
+        defaultColor: "§b", // Aqua
+        nametagPrefix: "§bAdmin§f\n"
+    },
+    member: {
+        name: "Member",
+        prefixText: "[Member] ",
+        defaultColor: "§7", // Gray
+        nametagPrefix: "§7Member§f\n"
+    }
 };
 
 /**
- * Display properties for the Admin rank.
- * @type {RankDisplayProperties}
- */
-export const adminRank = {
-    name: "Admin",
-    chatPrefix: "§b[Admin] §f",    // Aqua prefix, white player name in chat
-    nametagPrefix: "§bAdmin§f\n"   // Aqua "Admin" text above the player's actual name
-};
-
-/**
- * Display properties for the Member rank (standard players).
- * @type {RankDisplayProperties}
- */
-export const memberRank = {
-    name: "Member",
-    chatPrefix: "§7[Member] §f",   // Gray prefix, white player name in chat
-    nametagPrefix: "§7Member§f\n"  // Gray "Member" text above the player's actual name
-};
-
-/**
- * Determines the rank display properties (name, chat prefix, nametag prefix) for a given player
- * based on their status (Owner, Admin, or Member).
- *
+ * Determines the rank ID ('owner', 'admin', 'member') for a given player.
  * @param {Player} player - The Minecraft Player object.
- * @returns {RankDisplayProperties} The rank display properties object corresponding to the player's rank.
- *                                  Defaults to `memberRank` if the player object is invalid.
+ * @returns {string} The rank ID. Defaults to 'member'.
  */
-export function getPlayerRankDisplay(player) {
+export function getPlayerRankId(player) {
     if (!(player instanceof Player)) {
-        // This case should ideally not be reached if player objects are always validated upstream.
-        console.error("[RankManager] Invalid player object passed to getPlayerRankDisplay. Defaulting to Member rank.");
-        return memberRank;
+         console.warn("[RankManager] Invalid player object passed to getPlayerRankId. Defaulting to member.");
+         return 'member';
     }
-
-    if (isOwner(player.nameTag)) {
-        return ownerRank;
-    } else if (isAdmin(player)) {
-        return adminRank;
-    } else {
-        return memberRank;
+    // Ensure player.nameTag is available, which it should be for a valid Player object.
+    if (typeof player.nameTag !== 'string') {
+        console.warn(`[RankManager] Player object for ID ${player.id} has no nameTag. Defaulting to member.`);
+        return 'member';
     }
+    if (isOwner(player.nameTag)) return 'owner';
+    if (isAdmin(player)) return 'admin';
+    return 'member';
 }
+
+// Old constants and function are removed/commented out as per instructions.
+// /**
+//  * Display properties for the Owner rank.
+//  * @type {RankDisplayProperties}
+//  */
+// export const ownerRank = {
+//     name: "Owner",
+//     chatPrefix: "§c[Owner] §f",
+//     nametagPrefix: "§cOwner§f\n"
+// };
+// // ... (adminRank, memberRank, getPlayerRankDisplay commented or removed) ...
+
 
 /**
  * Updates a player's nametag to reflect their current rank.
@@ -111,19 +116,24 @@ export function updatePlayerNametag(player) {
             return;
         }
 
-        const rankDisplay = getPlayerRankDisplay(player);
-        // player.name is the read-only actual name. player.nameTag is the modifiable display name.
+        const rankId = getPlayerRankId(player);
+        const rankDisplay = ranks[rankId];
+
+        if (!rankDisplay) {
+            console.error(`[RankManager] Could not find rank display properties for rankId: ${rankId} for player ${player.nameTag}. Defaulting nametag.`);
+            player.nameTag = player.name; // Fallback to just player name
+            return;
+        }
+
         player.nameTag = rankDisplay.nametagPrefix + player.name;
 
     } catch (error) {
         let playerNameForError = "UnknownPlayer";
-        // Attempt to get player's name for logging, but be cautious as player object might be problematic.
         try {
-            if (player && typeof player.name === 'string') { // Check type of player.name
+            if (player && typeof player.name === 'string') {
                 playerNameForError = player.name;
             }
         } catch (nameAccessError) {
-            // player or player.name might not be accessible if the player object is in a bad state.
             console.warn(`[RankManager] Could not access name of player during nametag update error: ${nameAccessError}`);
         }
         console.error(`[RankManager] Error setting nametag for '${playerNameForError}': ${error.stack || error}`);

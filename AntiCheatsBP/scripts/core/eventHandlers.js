@@ -1256,6 +1256,34 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
     if (checks.checkFlatRotationBuilding && config.enableFlatRotationCheck) await checks.checkFlatRotationBuilding(...commonArgs);
     if (checks.checkDownwardScaffold && config.enableDownwardScaffoldCheck) await checks.checkDownwardScaffold(...blockArgs);
     if (checks.checkFastPlace && config.enableFastPlaceCheck) await checks.checkFastPlace(...blockArgs);
+    // Call Block Spam (Rate) Check
+    if (dependencies.checks && dependencies.checks.checkBlockSpam) { // Ensure dependencies and the check exist
+        await dependencies.checks.checkBlockSpam(
+            player,
+            pData,
+            block, // eventData.block
+            dependencies.config,
+            dependencies.playerUtils,
+            dependencies.playerDataManager,
+            dependencies.logManager,
+            dependencies.actionManager.executeCheckAction,
+            dependencies.currentTick
+        );
+    }
+    // Call Block Spam Density Check
+    if (dependencies.checks && dependencies.checks.checkBlockSpamDensity) {
+        await dependencies.checks.checkBlockSpamDensity(
+            player,
+            pData,
+            block, // eventData.block
+            dependencies.config,
+            dependencies.playerUtils,
+            dependencies.playerDataManager,
+            dependencies.logManager,
+            dependencies.actionManager.executeCheckAction,
+            dependencies.currentTick
+        );
+    }
 }
 
 /**

@@ -23,7 +23,7 @@ export * from './combat/stateConflictCheck.js';
 // World Checks
 export * from './world/nukerCheck.js';
 export * from './world/illegalItemCheck.js';
-export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirPlace, checkFastPlace, checkBlockSpam } from './world/buildingChecks.js';
+export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirPlace, checkFastPlace, checkBlockSpam, checkBlockSpamDensity } from './world/buildingChecks.js';
 export { checkFastUse } from './world/fastUseCheck.js';
 export { checkAutoTool } from './world/autoToolCheck.js';
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
