@@ -30,7 +30,7 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 
 To ensure this addon works correctly, you **must** enable the following experimental toggle(s) in your world settings:
 
-*   **Beta APIs:** This toggle enables the ``@minecraft/server`` and ``@minecraft/server-ui`` scripting modules, essential for core functionality (may be named "Experimental Scripting Features" on some versions).
+*   **Beta APIs:** This toggle enables the ``@minecraft/server`` and ``@minecraft/server-ui`` scripting modules, essential for core functionality.
 
 As new features are added, this list may be updated. Always check this README for the latest requirements.
 

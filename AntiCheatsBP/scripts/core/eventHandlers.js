@@ -109,8 +109,8 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, player.nameTag);
 
         // Welcomer message logic
-        if (initialSpawn && config.enableWelcomerMessage) {
-            let message = config.welcomeMessage || "Welcome, {playerName}, to the server!";
+        if (initialSpawn && config.enableWelcomerMessage) { // Check if welcomer is enabled
+            let message = config.welcomeMessage || "Welcome, {playerName}, to the server!"; // Default message if not in config
             message = message.replace(/{playerName}/g, player.nameTag);
 
             // Send the message after a short delay
@@ -127,9 +127,23 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
                 });
             }
 
-            if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) {
+            if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) { // Optional: Notify admins
                 playerUtils.notifyAdmins(`§eNew player ${player.nameTag} has joined the server for the first time!`, null, null);
             }
+        }
+
+        // Death Coords message display logic
+        // Ensure pData is fetched for the spawned player to check for a death message
+        const pData = playerDataManager.getPlayerData(player.id); // Get pData for the spawned player
+        if (pData && pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
+            // Send with a slight delay to ensure it's seen
+            mc.system.runTimeout(() => {
+                player.sendMessage(pData.deathMessageToShowOnSpawn);
+            }, 5); // 5 ticks = 0.25 seconds
+
+            playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, pData.isWatched ? player.nameTag : null);
+            pData.deathMessageToShowOnSpawn = null; // Clear the message
+            pData.isDirtyForSave = true; // Mark for saving
         }
 
     } catch (error) {
@@ -204,6 +218,61 @@ export async function handleEntityHurt(eventData, playerDataManager, checks, pla
                 await checks.checkAttackWhileUsingItem(...commonArgs);
             }
         }
+    }
+}
+
+/**
+ * Handles player death events to store death coordinates.
+ * The coordinates are stored in pData and displayed to the player upon respawn via handlePlayerSpawn.
+ * @param {import('@minecraft/server').EntityDieAfterEvent} eventData - The entity die event data. Note: Player is `deadEntity`.
+ * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
+ * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
+ * @param {import('../config.js').editableConfigValues} config - The server configuration object.
+ * @param {function} addLog - Function from logManager to add logs.
+ */
+export async function handlePlayerDeath(eventData, playerDataManager, playerUtils, config, addLog) {
+    const { deadEntity } = eventData;
+
+    if (deadEntity?.typeId === 'minecraft:player' && config.enableDeathCoordsMessage) {
+        const player = deadEntity;
+        const location = player.location;
+        const dimensionId = player.dimension.id.split(':')[1];
+
+        let pData;
+        try {
+            pData = playerDataManager.getPlayerData(player.id);
+        } catch (e) {
+            playerUtils.debugLog(`DeathCoords: Error fetching pData for ${player.nameTag || player.id} in handlePlayerDeath: ${e}`, null);
+            return;
+        }
+
+        if (!pData) {
+            playerUtils.debugLog(`DeathCoords: No pData for ${player.nameTag || player.id} in handlePlayerDeath. Cannot store message.`, null);
+            return;
+        }
+
+        const x = Math.floor(location.x);
+        const y = Math.floor(location.y);
+        const z = Math.floor(location.z);
+
+        let message = (config.deathCoordsMessage || "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.")
+            .replace(/{x}/g, x.toString())
+            .replace(/{y}/g, y.toString())
+            .replace(/{z}/g, z.toString())
+            .replace(/{dimensionId}/g, dimensionId);
+
+        pData.deathMessageToShowOnSpawn = message;
+        pData.isDirtyForSave = true;
+
+        if (addLog) {
+            addLog({
+                timestamp: Date.now(),
+                actionType: 'player_death_coords',
+                targetName: player.nameTag,
+                details: `Player ${player.nameTag} died at ${x},${y},${z} in ${dimensionId}. Coords stored for respawn.`
+            });
+        }
+        playerUtils.debugLog(`DeathCoords: Stored death message for ${player.nameTag}: "${message}"`, pData.isWatched ? player.nameTag : null);
     }
 }
 

@@ -144,6 +144,16 @@ mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
     eventHandlers.handlePlayerDimensionChangeAfter(eventData, playerUtils, config);
 });
 
+/**
+ * Handles entity die events, specifically for player deaths to record coordinates.
+ * @param {mc.EntityDieAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.entityDie.subscribe((eventData) => {
+    // Assuming player is deadEntity from this event type (needs verification if API differs for players specifically)
+    // Pass logManager.addLog for logging within handlePlayerDeath
+    eventHandlers.handlePlayerDeath(eventData, playerDataManager, playerUtils, config, logManager.addLog);
+});
+
 let currentTick = 0;
 
 /**

@@ -381,6 +381,16 @@ export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We'
 /** @type {boolean} If true, admins will be notified when a new player joins for the first time. */
 export const notifyAdminOnNewPlayerJoin = true;
 
+// --- Death Coords ---
+/** @type {boolean} If true, a message with death coordinates is shown to players upon respawn. */
+export const enableDeathCoordsMessage = true;
+/**
+ * @type {string} The death coordinates message template.
+ * Placeholders: {x}, {y}, {z}, {dimensionId}.
+ * Example: "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}."
+ */
+export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
+
 // --- UI Display Texts ---
 /** @type {string[]} Defines the server rules to be displayed in the UI (e.g., via !rules command). */
 export const serverRules = [
@@ -1024,6 +1034,8 @@ export let editableConfigValues = {
     enableWelcomerMessage,
     welcomeMessage,
     notifyAdminOnNewPlayerJoin,
+    enableDeathCoordsMessage,
+    deathCoordsMessage,
 };
 
 /**
