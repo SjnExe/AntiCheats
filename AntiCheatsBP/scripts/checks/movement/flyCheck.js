@@ -78,8 +78,15 @@ export async function checkFly(
     // This check should run if enabled, regardless of the main enableFlyCheck for hover/sustained.
     if (config.enableHighYVelocityCheck && !pData.hasLevitation) { // Don't run if levitating, as that's a specific upward force
         const currentYVelocity = pData.velocity.y;
-        const jumpBoostBonus = (pData.jumpBoostAmplifier ?? 0) * (config.jumpBoostYVelocityBonus ?? 0.0); // Use pData.jumpBoostAmplifier
-        const effectiveMaxYVelocity = (config.maxYVelocityPositive ?? 2.0) + jumpBoostBonus;
+        const jumpBoostAmplifierValue = pData.jumpBoostAmplifier ?? 0;
+        const jumpBoostYVelocityBonusValue = config.jumpBoostYVelocityBonus ?? 0.0;
+        const jumpBoostBonus = jumpBoostAmplifierValue * jumpBoostYVelocityBonusValue;
+        const baseYVelocityPositive = config.maxYVelocityPositive ?? 2.0;
+        const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
+
+        if (pData.isWatched && playerUtils.debugLog) {
+            playerUtils.debugLog(`FlyCheck ${player.nameTag}: BaseMaxYVel: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMaxYVel: ${effectiveMaxYVelocity.toFixed(3)}`, player.nameTag);
+        }
 
         // Grace conditions evaluation
         const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
@@ -91,13 +98,25 @@ export async function checkFly(
         let underGraceCondition = false;
         const graceTicks = config.yVelocityGraceTicks ?? 10; // Default grace period
 
-        if (ticksSinceLastDamage <= graceTicks) underGraceCondition = true;
-        if (ticksSinceLastElytra <= graceTicks) underGraceCondition = true;
+        if (ticksSinceLastDamage <= graceTicks) {
+            underGraceCondition = true;
+            if (pData.isWatched && playerUtils.debugLog) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to recent damage (Ticks: ${ticksSinceLastDamage})`, player.nameTag);
+        }
+        if (ticksSinceLastElytra <= graceTicks) {
+            underGraceCondition = true;
+            if (pData.isWatched && playerUtils.debugLog) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to recent elytra use (Ticks: ${ticksSinceLastElytra})`, player.nameTag);
+        }
         // if (ticksSinceLastRiptide <= graceTicks) underGraceCondition = true;
         // if (ticksSinceLastSlime <= graceTicks) underGraceCondition = true;
-        if (player.isClimbing) underGraceCondition = true;
+        if (player.isClimbing) {
+            underGraceCondition = true;
+            if (pData.isWatched && playerUtils.debugLog) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to climbing.`, player.nameTag);
+        }
         // If slow falling is active and player is moving down, Y velocity check is not reliable for upward bursts.
-        if (pData.hasSlowFalling && currentYVelocity < 0) underGraceCondition = true;
+        if (pData.hasSlowFalling && currentYVelocity < 0) {
+            underGraceCondition = true;
+            if (pData.isWatched && playerUtils.debugLog) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to slow falling and downward movement.`, player.nameTag);
+        }
 
 
         if (currentYVelocity > effectiveMaxYVelocity && !underGraceCondition) {

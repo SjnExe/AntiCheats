@@ -72,6 +72,10 @@ export async function checkNuker(
     const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4; // Default to 4 blocks
 
     if (brokenBlocksInWindow > maxBreaks) {
+        if (pData.isWatched && playerUtils.debugLog) {
+            const eventSummary = pData.blockBreakEvents.slice(-5).map(ts => now - ts).join(', '); // Show last 5 event ages relative to now
+            playerUtils.debugLog(`NukerCheck ${player.nameTag}: Flagging. EventsInWindow: ${brokenBlocksInWindow}, Threshold: ${maxBreaks}, TimeWindow: ${checkIntervalMs}ms. Recent Event Ages (ms from now): [${eventSummary}]`, player.nameTag);
+        }
         const violationDetails = {
             blocksBroken: brokenBlocksInWindow.toString(),
             checkWindowMs: checkIntervalMs.toString(),
