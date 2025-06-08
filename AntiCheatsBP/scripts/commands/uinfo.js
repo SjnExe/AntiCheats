@@ -49,7 +49,8 @@ async function showMyStatsUI(player, dependencies) {
  */
 async function showServerRulesUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
-    const rules = config.serverRules && config.serverRules.length > 0 ? config.serverRules.join("\n") : "No server rules configured.";
+    // config.serverRules is now a single string, use it directly if not empty.
+    const rules = config.serverRules && config.serverRules.trim() !== "" ? config.serverRules : "No server rules configured.";
     const form = new MessageFormData().title("Server Rules").body(rules).button1("Close");
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showServerRulesUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
@@ -61,13 +62,46 @@ async function showServerRulesUI(player, dependencies) {
  */
 async function showHelpLinksUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
-    let linksBody = "§e--- Helpful Links ---\n"; // Added newline
+    let linksBody = "§e--- Helpful Links ---\n";
+    let hasLinks = false;
+
+    if (config.discordLink && config.discordLink.trim() !== "") {
+        linksBody += `§fDiscord: §7${config.discordLink}\n`;
+        hasLinks = true;
+    }
+    if (config.websiteLink && config.websiteLink.trim() !== "") {
+        linksBody += `§fWebsite: §7${config.websiteLink}\n`;
+        hasLinks = true;
+    }
+
+    // Optionally, display other links from helpLinks array if they are different
+    // or if a more structured approach is desired. For now, keeping it simple.
+    // This part can be expanded if helpLinks should still be fully listed.
     if (config.helpLinks && config.helpLinks.length > 0) {
-        config.helpLinks.forEach(link => linksBody += `§f${link.title}: §7${link.url}\n`); // Added newline
-    } else {
+        let otherLinksAdded = false;
+        config.helpLinks.forEach(link => {
+            // Avoid duplicating if titles/URLs are very similar to the new direct links
+            if ((link.title.toLowerCase().includes("discord") && config.discordLink) || (link.title.toLowerCase().includes("website") && config.websiteLink)) {
+                // Potentially skip if already covered by direct discordLink/websiteLink
+                // Or, list them all under a "More Links" sub-header if a distinction is needed.
+                // For now, let's assume helpLinks are more specific and list them if they provide value.
+                // This simple check might not be perfect.
+            }
+            linksBody += `§f${link.title}: §7${link.url}\n`;
+            hasLinks = true; // Ensure hasLinks is true if any helpLinks are present
+            otherLinksAdded = true;
+        });
+        if (otherLinksAdded && (config.discordLink || config.websiteLink)) {
+            // If we had direct links AND then added from helpLinks, maybe add a separator or context.
+            // For now, they just list sequentially.
+        }
+    }
+
+    if (!hasLinks) {
         linksBody += "No helpful links configured.";
     }
-    const form = new MessageFormData().title("Helpful Links").body(linksBody.trim()).button1("Close"); // trim() body
+
+    const form = new MessageFormData().title("Helpful Links").body(linksBody.trim()).button1("Close");
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showHelpLinksUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 

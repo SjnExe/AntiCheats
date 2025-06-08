@@ -345,8 +345,7 @@ export const fastPlaceMaxBlocksInWindow = 10;
 export const xrayDetectionNotifyOnOreMineEnabled = true;
 /** @type {string[]} List of block type IDs to monitor for X-Ray mining notifications. */
 export const xrayDetectionMonitoredOres = [
-    "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore",
-    "minecraft:ancient_debris"
+    "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"
 ];
 /** @type {boolean} If true, admins (users with `adminTag`) will receive X-Ray mining notifications by default, unless they explicitly disable them. */
 export const xrayDetectionAdminNotifyByDefault = true;
@@ -392,16 +391,30 @@ export const enableDeathCoordsMessage = true;
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
 // --- UI Display Texts ---
-/** @type {string[]} Defines the server rules to be displayed in the UI (e.g., via !rules command). */
-export const serverRules = [
-    "1. Be respectful to all players and staff.",
-    "2. No cheating, exploiting, or unfair advantages.",
-    "3. No griefing or stealing.",
-    "4. Do not spam chat or use excessive caps.",
-    "5. PVP is only allowed in designated areas or if agreed upon."
-];
+/**
+ * @type {string}
+ * Defines the server rules to be displayed in the UI (e.g., via !uinfo command).
+ * Use newline characters `\n` for line breaks.
+ * This is a single string to allow easier editing via in-game commands if such a feature is added.
+ */
+export const serverRules = "1. Be respectful to all players and staff.\n2. No cheating, exploiting, or unfair advantages.\n3. No griefing or stealing.\n4. Do not spam chat or use excessive caps.\n5. PVP is only allowed in designated areas or if agreed upon.";
+
+/**
+ * @type {string}
+ * Defines the Discord server invite link. Displayed in the UI.
+ * Example: "https://discord.gg/YourInviteCode"
+ */
+export const discordLink = "https://discord.gg/example";
+
+/**
+ * @type {string}
+ * Defines the server's website or forum link. Displayed in the UI.
+ * Example: "https://yourserver.com"
+ */
+export const websiteLink = "https://example.com";
+
 /** @type {{title: string, url: string}[]} Defines links to be displayed in the Help & Links UI section. */
-export const helpLinks = [
+export const helpLinks = [ // This specific helpLinks might be deprecated or used for more generic links if discordLink/websiteLink are primary.
     { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
@@ -1023,7 +1036,7 @@ export let editableConfigValues = {
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
     xrayDetectionNotifyOnOreMineEnabled,
-    xrayDetectionMonitoredOres: ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"], // Updated default
+    xrayDetectionMonitoredOres, // Corrected this line in the previous step
     xrayDetectionAdminNotifyByDefault,
     acGlobalNotificationsDefaultOn,
     enableCombatLogDetection,
@@ -1036,6 +1049,11 @@ export let editableConfigValues = {
     notifyAdminOnNewPlayerJoin,
     enableDeathCoordsMessage,
     deathCoordsMessage,
+    serverRules,
+    discordLink,
+    websiteLink,
+    helpLinks,
+    generalHelpMessages,
 };
 
 /**
@@ -1089,3 +1107,5 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${oldValue}" to "${coercedNewValue}"`);
     return true;
 }
+
+[end of AntiCheatsBP/scripts/config.js]

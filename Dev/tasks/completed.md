@@ -1,6 +1,8 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Public Info UI (`!ui`) Development - Phase 2: Server Info & Links:** Added configurable server rules (as a single string), Discord link, and website link to the `!uinfo` panel. Updated `config.js` with new variables (`serverRules`, `discordLink`, `websiteLink`) and modified `uinfo.js` to display this information in the 'Server Rules' and 'Helpful Links' sections respectively.
+*   **Admin Command Usage Logging:** Implemented logging to the console for commands executed by admin-level users, including timestamp, player name (actual account name), and the full raw command string as typed by the admin. This log appears with an `[AdminCommandLog]` prefix.
 *   **Welcomer Message for New Players:**
     *   Implemented a feature to send a configurable welcome message to players upon their initial join (`initialSpawn`).
     *   The message template (`{playerName}` placeholder) and feature toggle (`enableWelcomerMessage`) are configurable in `config.js`.
@@ -553,7 +555,7 @@ Implemented a basic Admin User Interface (UI) accessible via the `!ac ui` comman
             *   If confirmed, resets the target player's flags and relevant violation data (e.g., `consecutiveOffGroundTicks`, `attackEvents`, `lastFlagType`, `playerNameTag`, `attackEvents`, `lastAttackTime`, `blockBreakEvents`, `consecutiveOffGroundTicks`, `fallDistance`, `consecutiveOnGroundSpeedingTicks`).
             *   Persists the changes using `prepareAndSavePlayerData`.
             *   Displays a success/error message to the admin using `MessageFormData`.
-            *   Notifies other admins of the action.
+            *   Notifies other online admins of the action.
         3.  **List Watched Players:**
             *   Uses a `MessageFormData` to display a list of all players currently marked as `isWatched: true`.
             *   Shows a message if no players are currently being watched.

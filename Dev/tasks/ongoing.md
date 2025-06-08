@@ -1,5 +1,8 @@
 # Ongoing Tasks
 
-No tasks are currently ongoing.
+This list tracks features and tasks that are currently under development.
 
-Please refer to `Dev/tasks/todo.md` for new tasks to begin.
+## Features in Progress
+*(No features currently in active development)*
+
+Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.

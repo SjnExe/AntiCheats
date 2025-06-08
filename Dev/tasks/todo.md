@@ -45,14 +45,8 @@ This list contains planned features, improvements, and areas for future investig
     *   Death Effects: Investigate and implement cosmetic effects on player death.
     *   Chat Formatting (potentially linked to the Rank System).
 *   **Logging Enhancements:** SjnExe parity goal.
-    *   **Admin Command Usage Logging:** Log when an admin uses an `!` command (especially AC related), what command, target (if any), and timestamp. (Store persistently or to console).
     *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
-
-## Public Info UI (`!ui`) Development
-*   **Phase 2: Server Info & Links:**
-    *   Section for server rules (brief).
-    *   Links to Discord/website (configurable).
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
