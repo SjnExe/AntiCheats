@@ -37,6 +37,13 @@ This list tracks features and tasks that are currently under development.
                 *   Updated `handleItemUseOn` event handler to monitor `minecraft:water_bucket` usage.
                 *   Unauthorized water placement attempts are handled based on `waterPlacementAction` ("remove" by cancelling event, "warn", "logOnly").
                 *   Admin notifications and logging via `actionManager` profile `world_antigrief_water`.
-        *   (TODO): Investigate other common griefing methods (e.g., block spam, entity spam, piston grief) and potential mitigations.
+            *   **Block Spam Control (Completed - Initial Rate-Based):**
+                *   Implemented configuration options (`enableBlockSpamAntiGrief`, `blockSpamBypassInCreative`, `blockSpamTimeWindowMs`, `blockSpamMaxBlocksInWindow`, `blockSpamMonitoredBlockTypes`, `blockSpamAction`) in `config.js`.
+                *   Default set to disabled (`enableBlockSpamAntiGrief: false`).
+                *   Added `checkBlockSpam` function to `buildingChecks.js` to monitor placement rate of all/specific blocks.
+                *   Called from `handlePlayerPlaceBlockAfterEvent`.
+                *   Unauthorized block spam attempts are handled based on `blockSpamAction` (e.g., "warn", "logOnly").
+                *   Admin notifications and logging via `actionManager` profile `world_antigrief_blockspam`.
+        *   (TODO): Investigate other common griefing methods (e.g., entity spam, piston grief) and potential mitigations for them, and advanced block spam detection (density/patterns).
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.

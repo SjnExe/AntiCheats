@@ -486,13 +486,31 @@ export const allowAdminLava = true;
 export const lavaPlacementAction = "remove";
 
 /** @type {boolean} If true, the Water Anti-Grief system is active. */
-export const enableWaterAntiGrief = false; // Disabled by default
+export const enableWaterAntiGrief = false;
 
 /** @type {boolean} If true, Admins/Owners are allowed to place water without restriction. */
 export const allowAdminWater = true;
 
 /** @type {string} Action to take for unauthorized water placement. Valid: "remove", "warn", "logOnly". */
 export const waterPlacementAction = "remove";
+
+/** @type {boolean} If true, the Block Spam Anti-Grief system is active. */
+export const enableBlockSpamAntiGrief = false;
+
+/** @type {boolean} If true, players in Creative mode bypass the block spam check. */
+export const blockSpamBypassInCreative = true;
+
+/** @type {number} Time window in milliseconds to count block placements for spam detection. */
+export const blockSpamTimeWindowMs = 1000;
+
+/** @type {number} Maximum blocks allowed in the time window before flagging for spam. */
+export const blockSpamMaxBlocksInWindow = 8;
+
+/** @type {string[]} List of block type IDs to specifically monitor for spam. If empty, all blocks are monitored. */
+export const blockSpamMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
+
+/** @type {string} Action to take for detected block spam. Valid: "warn", "logOnly". */
+export const blockSpamAction = "warn";
 
 
 // --- UI Display Texts ---
@@ -1123,6 +1141,21 @@ export const checkActionProfiles = {
             actionType: "antigrief_water_placement",
             detailsPrefix: "AntiGrief Water: "
         }
+    },
+    "world_antigrief_blockspam": {
+        enabled: true, // Effectively controlled by enableBlockSpamAntiGrief
+        flag: {
+            increment: 1,
+            reason: "Player suspected of block spamming.",
+            type: "antigrief_blockspam"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_blockspam_detected",
+            detailsPrefix: "AntiGrief BlockSpam: "
+        }
     }
 };
 
@@ -1267,6 +1300,13 @@ export let editableConfigValues = {
     enableWaterAntiGrief,
     allowAdminWater,
     waterPlacementAction,
+    // AntiGrief Block Spam Configs
+    enableBlockSpamAntiGrief,
+    blockSpamBypassInCreative,
+    blockSpamTimeWindowMs,
+    blockSpamMaxBlocksInWindow,
+    blockSpamMonitoredBlockTypes,
+    blockSpamAction,
 };
 
 /**
@@ -1303,20 +1343,45 @@ export function updateConfigValue(key, newValue) {
             console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected boolean, got unparsable string "${newValue}" for boolean. Update rejected.`);
             return false;
         }
-    } else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
+    } else if (Array.isArray(oldValue) && typeof newValue === 'string') {
+        // Special handling for stringified arrays for config editing, if needed.
+        // For now, assume arrays are passed as actual arrays.
+        // If string input for arrays is a requirement from UI:
+        // try {
+        //     const parsedArray = JSON.parse(newValue);
+        //     if (!Array.isArray(parsedArray)) {
+        //         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got non-array JSON string "${newValue}". Update rejected.`);
+        //         return false;
+        //     }
+        //     coercedNewValue = parsedArray;
+        // } catch (e) {
+        //     console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got unparsable JSON string "${newValue}". Update rejected.`);
+        //     return false;
+        // }
+        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got string. Update rejected.`);
+        return false;
+    }
+     else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${typeof coercedNewValue}. Update rejected.`);
         return false;
     }
 
+
     // For arrays and objects, a simple comparison checks reference, not content.
     // For this application, if new and old value are "equal" by strict comparison, consider it unchanged.
     // Deep equality check for objects/arrays could be added if needed but adds complexity.
-    if (oldValue === coercedNewValue) {
+    if (oldValue === coercedNewValue && !Array.isArray(coercedNewValue)) { // For non-arrays, strict equality is fine
         if (enableDebugLogging) console.log(`[ConfigManager] No change for ${key}, value is already ${coercedNewValue}`);
-        return false; // Value is the same, not technically an "update"
+        return false;
+    }
+    // For arrays, compare JSON strings to check for content equality
+    if (Array.isArray(oldValue) && Array.isArray(coercedNewValue) && JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
+        if (enableDebugLogging) console.log(`[ConfigManager] No change for array ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
+        return false;
     }
 
+
     editableConfigValues[key] = coercedNewValue;
-    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${oldValue}" to "${coercedNewValue}"`);
+    if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
     return true;
 }

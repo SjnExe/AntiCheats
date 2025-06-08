@@ -102,6 +102,7 @@
  * @property {PlayerFlagDetail} [antigrief_fire] - Player involved in unauthorized or excessive fire incident.
  * @property {PlayerFlagDetail} [antigrief_lava] - Player involved in unauthorized lava placement.
  * @property {PlayerFlagDetail} [antigrief_water] - Player involved in unauthorized water placement.
+ * @property {PlayerFlagDetail} [antigrief_blockspam] - Player suspected of block spamming.
  */
 
 /**
