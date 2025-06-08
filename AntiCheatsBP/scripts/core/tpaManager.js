@@ -208,21 +208,44 @@ export function declineRequest(requestId) {
 }
 
 /**
- * Clears all expired TPA requests. (Placeholder for tick integration)
+ * Clears all expired TPA requests from the activeRequests map.
+ * Notifies relevant players if they are online when a request expires.
+ * This function is intended to be called periodically (e.g., every second) from the main tick loop.
  */
 export function clearExpiredRequests() {
     const now = Date.now();
     let clearedCount = 0;
+    // Iterate over a copy of keys or manage iteration carefully if modifying map during iteration
+    const requestIdsToExpire = [];
     for (const request of activeRequests.values()) {
         if (now >= request.expiryTimestamp) {
-            // TODO: Notify players if desired
-            console.log(`[TPAManager] Request ${request.requestId} expired.`);
-            removeRequest(request.requestId);
-            clearedCount++;
+            requestIdsToExpire.push(request.requestId);
         }
     }
+
+    for (const requestId of requestIdsToExpire) {
+        const request = activeRequests.get(requestId); // Get it again to ensure it wasn't processed by another async op
+        if (!request) continue; // Already processed or removed
+
+        console.log(`[TPAManager] Request ${request.requestId} between ${request.requesterName} and ${request.targetName} expired.`);
+
+        const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
+        const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
+
+        if (requesterPlayer) {
+            requesterPlayer.sendMessage(`§cYour TPA request to "${request.targetName}" has expired.`);
+        }
+        if (targetPlayer) {
+            targetPlayer.sendMessage(`§cThe TPA request from "${request.requesterName}" has expired.`);
+        }
+
+        removeRequest(request.requestId); // removeRequest already logs its action
+        clearedCount++;
+    }
+
     if (clearedCount > 0) {
-        console.log(`[TPAManager] Cleared ${clearedCount} expired TPA requests.`);
+        // Individual removals are logged by removeRequest, so this summary might be verbose.
+        // console.log(`[TPAManager] Cleared ${clearedCount} expired TPA requests.`);
     }
 }
 

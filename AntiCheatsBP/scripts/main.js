@@ -12,6 +12,7 @@ import * as commandManager from './core/commandManager.js';
 import * as uiManager from './core/uiManager.js';
 import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js'; // Ensure logManager is imported for addLog
+import * as tpaManager from './core/tpaManager.js';
 import { executeCheckAction } from './core/actionManager.js';
 
 // Import all checks from the barrel file
@@ -161,6 +162,13 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
     // Pass logManager.addLog for logging within handlePlayerDeath
     eventHandlers.handlePlayerDeath(eventData, playerDataManager, playerUtils, config, logManager.addLog);
 });
+
+// Periodically clear expired TPA requests (e.g., every second = 20 ticks)
+mc.system.runInterval(() => {
+    if (config.enableTpaSystem) { // Only run if TPA system is enabled
+        tpaManager.clearExpiredRequests();
+    }
+}, 20);
 
 let currentTick = 0;
 
