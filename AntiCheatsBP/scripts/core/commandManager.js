@@ -95,6 +95,9 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     const userPermissionLevel = getPlayerPermissionLevel(player);
     if (userPermissionLevel > commandDef.permissionLevel) {
         playerUtils.warnPlayer(player, "You do not have permission to use this command.");
+        if (playerUtils.debugLog) {
+            playerUtils.debugLog(`Command '${commandDef.name}' denied for ${player.nameTag} due to insufficient permissions. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel}`, player.nameTag);
+        }
         eventData.cancel = true;
         return;
     }
@@ -106,6 +109,12 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         const timestamp = new Date().toISOString();
         // 'message' from eventData contains the raw command string including prefix.
         console.warn(`[AdminCommandLog] ${timestamp} - Player: ${player.name} - Command: ${message}`);
+    }
+
+    // Echo Admin Command for Watched Admins
+    const pDataForAdminLog = playerDataManager.getPlayerData(player.id);
+    if (pDataForAdminLog && pDataForAdminLog.isWatched && playerUtils.isAdmin(player)) {
+        playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, player.nameTag);
     }
 
     const dependencies = {

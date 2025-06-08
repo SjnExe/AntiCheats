@@ -80,6 +80,10 @@ export async function checkReach(
     const reachBuffer = config.reachBuffer ?? 0.5;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
+    if (pData?.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`ReachCheck ${player.nameTag}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(3)}, ActualDist: ${distanceToTarget.toFixed(3)}`, player.nameTag);
+    }
+
     if (distanceToTarget > maxAllowedReach) {
         const violationDetails = {
             distance: distanceToTarget.toFixed(2),

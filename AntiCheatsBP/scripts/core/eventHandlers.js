@@ -79,6 +79,7 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
     // Ensure all data is attempted to be saved, regardless of dirty flag, as player is leaving.
     await playerDataManager.prepareAndSavePlayerData(player);
     playerUtils.debugLog(`Final data persistence attempted for ${player.nameTag} on leave.`, player.nameTag);
+    playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, player.nameTag);
 }
 
 /**
@@ -91,18 +92,25 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
  */
 export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, dependencies) {
     const { player, initialSpawn } = eventData; // initialSpawn can be useful
+    playerUtils.debugLog(`Processing playerSpawn event for ${player.nameTag} (Initial Spawn: ${initialSpawn}). Tick: ${mc.system.currentTick}`, player.nameTag);
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
         return;
     }
-    playerUtils.debugLog(`Player ${player.nameTag} spawned. Initial spawn: ${initialSpawn}.`, player.nameTag);
+    // playerUtils.debugLog(`Player ${player.nameTag} spawned. Initial spawn: ${initialSpawn}.`, player.nameTag); // Original log, replaced by the one above
 
     try {
         const banInfo = playerDataManager.getBanInfo(player);
         if (banInfo) {
+            // Enhanced debug log for ban details
+            if (playerUtils.debugLog) { // Ensure debugLog itself exists
+                 playerUtils.debugLog(`Player ${player.nameTag} is banned. Kicking. Ban reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`, player.nameTag);
+            } else { // Fallback if debugLog is not available on playerUtils for some reason (should not happen)
+                 console.warn(`Player ${player.nameTag} is banned. Kicking. Ban reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`);
+            }
             const kickReason = `You are banned from this server.\nReason: ${banInfo.reason}\n${banInfo.unbanTime === Infinity ? "This ban is permanent." : `Expires: ${new Date(banInfo.unbanTime).toLocaleString()}`}`;
             player.kick(kickReason);
-            playerUtils.debugLog(`Player ${player.nameTag} kicked due to active ban.`, player.nameTag);
+            // playerUtils.debugLog(`Player ${player.nameTag} kicked due to active ban.`, player.nameTag); // Original log, covered by enhanced one
             return;
         }
         updatePlayerNametag(player); // Assuming this function handles ranks/prefixes
@@ -165,6 +173,7 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
  */
 export async function handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction) {
     const { hurtEntity, cause, damagingEntity } = eventData;
+    playerUtils.debugLog(`EntityHurt: Victim ${hurtEntity?.nameTag || hurtEntity?.typeId || 'UnknownEntity'} (ID: ${hurtEntity?.id}), Attacker ${damagingEntity?.nameTag || damagingEntity?.typeId || 'None/World'}. Damage: ${eventData.damage}, Cause: ${cause?.category}. Tick: ${currentTick}`, hurtEntity?.typeId === 'minecraft:player' ? hurtEntity.nameTag : (damagingEntity?.typeId === 'minecraft:player' ? damagingEntity.nameTag : null));
 
     if (hurtEntity?.typeId === 'minecraft:player') {
         const victim = hurtEntity; // Player who was hurt
@@ -197,6 +206,12 @@ export async function handleEntityHurt(eventData, playerDataManager, checks, pla
             attackerPData.isDirtyForSave = true; // Mark as dirty due to combat interaction
 
             const commonArgs = [attacker, attackerPData, config, playerUtils, playerDataManager, logManager, executeCheckAction];
+
+            // Conditional log for attacker's game mode before reach check
+            if (hurtEntity instanceof mc.Player && attackerPData && attackerPData.isWatched && playerUtils.debugLog) {
+                const attackerGameMode = attacker.gameMode; // damagingEntity is attacker
+                playerUtils.debugLog(`Attacker ${attacker.nameTag}'s game mode: ${attackerGameMode} before reach check.`, hurtEntity.nameTag);
+            }
 
             if (checks.checkReach && config.enableReachCheck) {
                 // attacker.gameMode should ideally be available directly.
@@ -335,6 +350,10 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, playerDataMan
     const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
     if (!pData) return;
 
+    if (pData && pData.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`PlayerBreakBlockBefore: ${player.nameTag} trying to break ${block.typeId} at ${JSON.stringify(block.location)} with ${itemStack?.typeId || 'hand'}. Tick: ${currentTick}`, player.nameTag);
+    }
+
     if (checks.checkBreakUnbreakable && config.enableInstaBreakUnbreakableCheck) {
         await checks.checkBreakUnbreakable(player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
         if (eventData.cancel) {
@@ -386,6 +405,10 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
     const { player, block, brokenBlockPermutation } = eventData;
     const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
     if (!pData) return;
+
+    if (pData && pData.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`PlayerBreakBlockAfter: ${player.nameTag} broke ${brokenBlockPermutation.type.id} at ${JSON.stringify(block.location)}. Tick: ${currentTick}`, player.nameTag);
+    }
 
     if (pData.isAttemptingBlockBreak &&
         pData.breakingBlockLocation &&
@@ -441,6 +464,10 @@ export async function handlePlayerBreakBlockAfter(eventData, playerDataManager, 
         if (sendNotification) {
             const location = block.location;
             const message = `§7[§cX-Ray§7] §e${player.nameTag}§7 mined §b${prettyBlockName}§7 at §a${Math.floor(location.x)}, ${Math.floor(blockY)}, ${Math.floor(location.z)}§7 in ${dimensionId.replace("minecraft:","")}.`;
+
+            if (pData && pData.isWatched && playerUtils.debugLog) {
+                playerUtils.debugLog(`X-Ray notification triggered for ${player.nameTag} mining ${brokenBlockId}. Player is watched. Message: "${message}"`, player.nameTag);
+            }
             playerUtils.debugLog(message, null); // Log for server console
 
             mc.world.getAllPlayers().forEach(adminPlayer => {
@@ -475,6 +502,10 @@ export async function handleItemUse(eventData, playerDataManager, checks, player
     if (!pData) {
         if (playerUtils.debugLog) playerUtils.debugLog(`InventoryMod/FastUse: No pData for ${player.nameTag} in handleItemUse.`, player.nameTag);
         return;
+    }
+
+    if (pData && pData.isWatched && playerUtils.debugLog) {
+        playerUtils.debugLog(`ItemUse: ${player.nameTag} using item ${itemStack.typeId} (Amount: ${itemStack.amount}). Tick: ${currentTick}`, player.nameTag);
     }
 
     if (checks.checkSwitchAndUseInSameTick && config.enableInventoryModCheck) {
@@ -634,6 +665,10 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
     if (playerDataManager.isMuted(player)) {
         playerUtils.warnPlayer(player, "You are currently muted and cannot send messages.");
         eventData.cancel = true;
+        if (pData && pData.isWatched && playerUtils.debugLog) {
+            const muteInfo = playerDataManager.getMuteInfo(player); // Fetch muteInfo for logging
+            playerUtils.debugLog(`Chat canceled for ${player.nameTag} due to active mute. Reason: ${muteInfo?.reason || 'N/A'}`, player.nameTag);
+        }
         return;
     }
 
@@ -652,6 +687,11 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
             if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
+    }
+
+    // Log if message passed checks before formatting and sending
+    if (pData && pData.isWatched && !eventData.cancel && playerUtils.debugLog) {
+        playerUtils.debugLog(`Chat message from ${player.nameTag} passed checks, proceeding to format/broadcast. Original: "${originalMessage}"`, player.nameTag);
     }
 
     const rankDisplay = getPlayerRankDisplay(player);
@@ -679,9 +719,10 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
  */
 export async function handlePlayerDimensionChangeAfter(eventData, playerUtils, config) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
+    playerUtils.debugLog(`Player ${player.nameTag} changed dimension from ${fromDimension.id} to ${toDimension.id}. From loc: ${JSON.stringify(fromLocation)}`, player.nameTag);
 
     if (!player || !fromDimension || !toDimension || !fromLocation) {
-        playerUtils.debugLog("DimensionLock: Invalid eventData in handlePlayerDimensionChangeAfter.", null);
+        playerUtils.debugLog("DimensionLock: Invalid eventData in handlePlayerDimensionChangeAfter (after initial log).", null);
         return;
     }
 
