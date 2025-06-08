@@ -123,7 +123,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         uiManager,
         config,
         playerUtils,
-        addLog,
+        logManager, // Pass the full logManager object
         // getPlayerPermissionLevel is already available in playerUtils
         permissionLevels, // permissionLevels enum/object
         // findPlayer and parseDuration are part of playerUtils

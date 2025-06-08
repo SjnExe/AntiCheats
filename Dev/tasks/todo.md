@@ -13,7 +13,7 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
+        *   `!worldborder` Enhancements: Implement circular border shape, damage-based enforcement, visual indicators, advanced safe teleport logic, and gradual border changes (see `Dev/notes/WorldBorderDesign.md`). (Initial square border with teleport enforcement is complete).
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
     *   **System Features:** SjnExe parity goal.

@@ -1568,8 +1568,9 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
     const currentPUtils = dependencies && dependencies.playerUtils ? dependencies.playerUtils : playerUtils;
     const currentLogManager = dependencies && dependencies.logManager ? dependencies.logManager : logManager;
     // Resolve executeCheckAction: it might be passed directly, or via actionManager in dependencies
-    let actualExecuteCheckAction = executeCheckAction;
+    let actualExecuteCheckAction = executeCheckAction; // This is the one passed directly to handleBeforeChatSend from main.js
     if (!actualExecuteCheckAction && dependencies && dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
+        // This fallback might be redundant if main.js always passes executeCheckAction directly
         actualExecuteCheckAction = dependencies.actionManager.executeCheckAction;
     }
 
@@ -1605,6 +1606,38 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
                 }
                 return;
             }
+        }
+    }
+
+    // Chat During Item Use Check (after combat check, before other spam checks)
+    if (currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
+        let itemUseState = "unknown";
+        if (pData.isUsingConsumable) itemUseState = "using a consumable";
+        else if (pData.isChargingBow) itemUseState = "charging a bow"; // Use else if to avoid overriding
+
+        const violationDetails = {
+            playerName: player.nameTag,
+            itemUseState: itemUseState,
+            messageContent: originalMessage
+        };
+
+        if (actualExecuteCheckAction) {
+            await actualExecuteCheckAction(player, "player_chat_during_item_use", violationDetails, dependencies);
+        } else {
+            currentPUtils.debugLog("ChatDuringItemUse: executeCheckAction not available.", null);
+            if (currentLogManager && typeof currentLogManager.addLog === 'function') {
+                currentLogManager.addLog({ adminName: "System", actionType: "error_missing_action_manager", targetName: player.nameTag, details: "ChatDuringItemUse: executeCheckAction missing." });
+            }
+        }
+
+        const profile = currentConfig.checkActionProfiles?.player_chat_during_item_use;
+        if (profile && profile.cancelMessage) {
+            eventData.cancel = true;
+            currentPUtils.warnPlayer(player, `§cYou cannot chat while ${itemUseState}.`);
+            if (currentPUtils.debugLog && pData.isWatched) {
+                currentPUtils.debugLog(`Chat cancelled for ${player.nameTag} (item use state: ${itemUseState}).`, player.nameTag);
+            }
+            return;
         }
     }
 

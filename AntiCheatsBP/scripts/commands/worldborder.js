@@ -1,194 +1,236 @@
 /**
  * @file AntiCheatsBP/scripts/commands/worldborder.js
- * Defines the !worldborder command for managing a server-side world border.
- * Note: Actual border enforcement is highly API-dependent and may not be fully implemented here.
- * This command structure provides the interface for such a feature.
+ * Manages world border settings via commands.
  * @version 1.0.0
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
-// import { worldBorderManager } from '../core/worldBorderManager.js'; // Conceptual: would handle storage & logic
+import { world, system } from '@minecraft/server';
+import { getPlayerPermissionLevel, permissionLevels } from '../core/rankManager.js';
+import { saveBorderSettings, getBorderSettings, clearBorderSettings } from '../utils/worldBorderManager.js';
+// logManager.addLog will be accessed via dependencies.logManager.addLog
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
-export const definition = {
+export const commandData = {
     name: "worldborder",
+    description: "Manages the world border for different dimensions.",
     aliases: ["wb"],
-    syntax: "!worldborder <get|set|on|off|remove|damage|warning> [params...]",
-    description: "Manages the server's world border. Type !wb help for sub-commands.",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin, // Or owner, adjust as needed
+    requiresCheats: false,
+    subcommands: [
+        {
+            name: "set",
+            description: "Sets a square world border for a dimension.",
+            parameters: [
+                { name: "shape", type: "string", description: "Shape of the border (currently only 'square')." },
+                { name: "centerX", type: "number", description: "Center X-coordinate." },
+                { name: "centerZ", type: "number", description: "Center Z-coordinate." },
+                { name: "halfSize", type: "number", description: "Half the side length of the square border." },
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID (e.g., overworld, nether, the_end). Defaults to current." }
+            ]
+        },
+        {
+            name: "get",
+            description: "Gets the current world border settings for a dimension.",
+            parameters: [
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
+        },
+        {
+            name: "toggle",
+            description: "Toggles the world border on or off for a dimension.",
+            parameters: [
+                { name: "state", type: "string", description: "'on' or 'off'."},
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
+        },
+        {
+            name: "remove",
+            description: "Removes the world border settings for a dimension.",
+            parameters: [
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
+        }
+    ]
 };
 
-// Conceptual: Placeholder for where border settings would be stored/managed
-// In a real implementation, this might come from a dedicated manager or dynamic properties.
-let currentBorderSettings = {
-    enabled: false,
-    diameter: 20000,
-    centerX: 0,
-    centerZ: 0,
-    warningDistance: 16,
-    warningTimeSeconds: 15,
-    damagePerBlockPerSecond: 0.2
-};
-let borderIsSet = false; // To track if 'set' has been used at least once
+export async function execute(player, args, subCommand, config, dependencies) {
+    const { playerUtils, logManager } = dependencies;
+    const subCommandData = commandData.subcommands.find(sc => sc.name === subCommand);
 
-/**
- * Executes the worldborder command.
- * @param {mc.Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
- */
-export async function execute(player, args, dependencies) {
-    const { playerUtils, config, addLog } = dependencies;
-    const subCommand = args[0]?.toLowerCase();
-
-    if (!subCommand || subCommand === 'help') {
-        player.sendMessage(
-            "§e--- World Border Commands ---§r\n" +
-            `§7${config.prefix}wb set <diameter> [centerX] [centerZ] [warnDist] [warnTime]§r - Sets/updates the border.\n` +
-            `§7${config.prefix}wb get§r - Shows current border settings.\n` +
-            `§7${config.prefix}wb on§r - Activates the border.\n` +
-            `§7${config.prefix}wb off§r - Deactivates the border.\n` +
-            `§7${config.prefix}wb remove§r - Clears border settings.\n` +
-            `§7${config.prefix}wb damage <amount>§r - Sets damage per block/sec outside border.\n` +
-            `§7${config.prefix}wb warning <distanceBlocks> <timeSeconds>§r - Sets warning distance/time."
-        );
+    if (!subCommandData) {
+        playerUtils.warnPlayer(player, "Invalid subcommand. Available: set, get, toggle, remove.");
         return;
     }
 
-    // For now, most commands will just acknowledge. Logic would be in worldBorderManager.
-    // const borderManager = worldBorderManager; // Conceptual
+    // Permission check is handled by commandManager
 
     switch (subCommand) {
         case "set":
-            // !wb set <diameter> [centerX] [centerZ] [warnDist] [warnTime]
-            const diameter = parseFloat(args[1]);
-            if (isNaN(diameter) || diameter <= 0) {
-                player.sendMessage("§cInvalid diameter. Must be a positive number.");
-                return;
-            }
-            const centerX = args[2] ? parseFloat(args[2]) : player.location.x;
-            const centerZ = args[3] ? parseFloat(args[3]) : player.location.z;
-            const warnDist = args[4] ? parseInt(args[4]) : 16;
-            const warnTime = args[5] ? parseInt(args[5]) : 15;
-
-            if (isNaN(centerX) || isNaN(centerZ) || isNaN(warnDist) || isNaN(warnTime)) {
-                player.sendMessage("§cInvalid numeric value for center, warning distance, or warning time.");
-                return;
-            }
-
-            currentBorderSettings = {
-                enabled: true,
-                diameter: diameter,
-                centerX: centerX,
-                centerZ: centerZ,
-                warningDistance: warnDist,
-                warningTimeSeconds: warnTime,
-                damagePerBlockPerSecond: currentBorderSettings.damagePerBlockPerSecond // Retain existing damage
-            };
-            borderIsSet = true;
-
-            player.sendMessage(
-                `§aWorld border set: Diameter: ${diameter}, Center: X:${centerX.toFixed(1)}, Z:${centerZ.toFixed(1)}, ` +
-                `Warning: ${warnDist}b / ${warnTime}s. Border is ON.`
-            );
-            if (addLog) addLog({ actionType: 'command_worldborder_set', adminName: player.nameTag, details: `Set to Dia:${diameter}, C:[${centerX.toFixed(1)},${centerZ.toFixed(1)}], Warn:${warnDist}b/${warnTime}s` });
-            // Conceptual: await borderManager.set(diameter, centerX, centerZ, warnDist, warnTime);
+            await handleSetCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
-
         case "get":
-            if (!borderIsSet) {
-                player.sendMessage("§eWorld border is not currently set. Use `!wb set ...`");
-                return;
-            }
-            player.sendMessage(
-                `§e--- Current World Border ---§r\n` +
-                `§7Status: §f${currentBorderSettings.enabled ? "§aON" : "§cOFF"}§r\n` +
-                `§7Diameter: §f${currentBorderSettings.diameter.toFixed(0)} blocks\n` +
-                `§7Center: §fX: ${currentBorderSettings.centerX.toFixed(1)}, Z: ${currentBorderSettings.centerZ.toFixed(1)}\n` +
-                `§7Damage: §f${currentBorderSettings.damagePerBlockPerSecond.toFixed(2)}/block/sec\n` +
-                `§7Warning Distance: §f${currentBorderSettings.warningDistance} blocks\n` +
-                `§7Warning Time: §f${currentBorderSettings.warningTimeSeconds} seconds`
-            );
+            await handleGetCommand(player, args, playerUtils, logManager, dependencies);
             break;
-
-        case "on":
-            if (!borderIsSet) {
-                player.sendMessage("§cNo world border has been set. Use `!wb set ...` first.");
-                return;
-            }
-            currentBorderSettings.enabled = true;
-            player.sendMessage("§aWorld border activated.");
-            if (addLog) addLog({ actionType: 'command_worldborder_on', adminName: player.nameTag });
-            // Conceptual: await borderManager.enable();
+        case "toggle":
+            await handleToggleCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
-
-        case "off":
-            if (!borderIsSet) {
-                player.sendMessage("§eWorld border is not set. Nothing to turn off.");
-                return;
-            }
-            currentBorderSettings.enabled = false;
-            player.sendMessage("§eWorld border deactivated.");
-             if (addLog) addLog({ actionType: 'command_worldborder_off', adminName: player.nameTag });
-            // Conceptual: await borderManager.disable();
-            break;
-
         case "remove":
-            if (!borderIsSet) {
-                player.sendMessage("§eWorld border is not set. Nothing to remove.");
-                return;
-            }
-            // Reset to some defaults or mark as unset
-            currentBorderSettings = {
-                enabled: false, diameter: 20000, centerX: 0, centerZ: 0,
-                warningDistance: 16, warningTimeSeconds: 15, damagePerBlockPerSecond: 0.2
-            };
-            borderIsSet = false;
-            player.sendMessage("§eWorld border settings removed and border deactivated.");
-            if (addLog) addLog({ actionType: 'command_worldborder_remove', adminName: player.nameTag });
-            // Conceptual: await borderManager.remove();
+            await handleRemoveCommand(player, args, playerUtils, logManager, dependencies);
             break;
+    }
+}
 
-        case "damage":
-            // !wb damage <amount>
-            const amount = parseFloat(args[1]);
-            if (isNaN(amount) || amount < 0) {
-                player.sendMessage("§cInvalid damage amount. Must be a non-negative number.");
-                return;
-            }
-            if (!borderIsSet) {
-                 player.sendMessage("§cSet a border first with `!wb set ...` before configuring damage.");
-                 return;
-            }
-            currentBorderSettings.damagePerBlockPerSecond = amount;
-            player.sendMessage(`§aWorld border damage set to ${amount.toFixed(2)} per block/sec.`);
-            if (addLog) addLog({ actionType: 'command_worldborder_damage', adminName: player.nameTag, details: `Damage set to ${amount.toFixed(2)}` });
-            // Conceptual: await borderManager.setDamage(amount);
-            break;
+function normalizeDimensionId(inputDimId, currentPlayerDimensionId) {
+    let normalized = inputDimId ? inputDimId.toLowerCase() : currentPlayerDimensionId;
+    if (normalized === "overworld") return "minecraft:overworld";
+    if (normalized === "nether") return "minecraft:the_nether";
+    if (normalized === "the_end" || normalized === "end") return "minecraft:the_end";
+    // Check if it's already in the correct full format
+    if (normalized === "minecraft:overworld" || normalized === "minecraft:the_nether" || normalized === "minecraft:the_end") return normalized;
+    return null; // Invalid or unrecognized
+}
 
-        case "warning":
-            // !wb warning <distanceBlocks> <timeSeconds>
-            const dist = parseInt(args[1]);
-            const time = parseInt(args[2]);
-            if (isNaN(dist) || dist < 0 || isNaN(time) || time < 0) {
-                player.sendMessage("§cInvalid warning distance or time. Must be non-negative integers.");
-                return;
-            }
-            if (!borderIsSet) {
-                 player.sendMessage("§cSet a border first with `!wb set ...` before configuring warnings.");
-                 return;
-            }
-            currentBorderSettings.warningDistance = dist;
-            currentBorderSettings.warningTimeSeconds = time;
-            player.sendMessage(`§aWorld border warning set to ${dist} blocks and ${time} seconds.`);
-            if (addLog) addLog({ actionType: 'command_worldborder_warning', adminName: player.nameTag, details: `Warn set to ${dist}b / ${time}s` });
-            // Conceptual: await borderManager.setWarning(dist, time);
-            break;
 
-        default:
-            player.sendMessage(`§cUnknown subcommand for !worldborder. Type ${config.prefix}wb help.`);
-            break;
+async function handleSetCommand(player, args, playerUtils, logManager, config, dependencies) {
+    if (args.length < 4) {
+        playerUtils.warnPlayer(player, "Usage: !worldborder set <square> <centerX> <centerZ> <halfSize> [dimensionId]");
+        return;
+    }
+
+    const shape = args[0].toLowerCase();
+    if (shape !== 'square') {
+        playerUtils.warnPlayer(player, "Invalid shape. Currently only 'square' is supported.");
+        return;
+    }
+
+    const centerX = parseInt(args[1]);
+    const centerZ = parseInt(args[2]);
+    const halfSize = parseInt(args[3]);
+
+    const dimensionIdInput = args.length > 4 ? args[4] : player.dimension.id;
+    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+
+    if (isNaN(centerX) || isNaN(centerZ) || isNaN(halfSize) || halfSize <= 0) {
+        playerUtils.warnPlayer(player, "Invalid coordinates or size. centerX, centerZ, halfSize must be numbers, and halfSize > 0.");
+        return;
+    }
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[4] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        return;
+    }
+
+    const settings = {
+        shape: "square",
+        centerX: centerX,
+        centerZ: centerZ,
+        halfSize: halfSize,
+        enabled: true // Default to enabled when set
+        // dimensionId is added by saveBorderSettings
+    };
+
+    if (saveBorderSettings(dimensionId, settings)) {
+        const successMsg = `§aWorld border set for ${dimensionId}: square, center (${centerX},${centerZ}), size ${halfSize*2}x${halfSize*2}.`;
+        playerUtils.notifyPlayer(player, successMsg);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(settings) });
+        } else {
+            playerUtils.debugLog("LogManager or addLog not available for worldborder_set.", null);
+        }
+    } else {
+        playerUtils.warnPlayer(player, "§cFailed to save world border settings.");
+    }
+}
+
+async function handleGetCommand(player, args, playerUtils, logManager, dependencies) {
+    const dimensionIdInput = args.length > 0 ? args[0] : player.dimension.id;
+    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[0] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        return;
+    }
+
+    const settings = getBorderSettings(dimensionId);
+    if (settings) {
+        playerUtils.notifyPlayer(player, `§bWorld Border for ${dimensionId}:`);
+        playerUtils.notifyPlayer(player, `  Enabled: ${settings.enabled}`);
+        playerUtils.notifyPlayer(player, `  Shape: ${settings.shape}`);
+        playerUtils.notifyPlayer(player, `  Center: (${settings.centerX}, ${settings.centerZ})`);
+        playerUtils.notifyPlayer(player, `  Half Size: ${settings.halfSize} (Full Size: ${settings.halfSize * 2})`);
+        playerUtils.notifyPlayer(player, `  Bounds: X[${settings.centerX - settings.halfSize} to ${settings.centerX + settings.halfSize}], Z[${settings.centerZ - settings.halfSize} to ${settings.centerZ + settings.halfSize}]`);
+    } else {
+        playerUtils.notifyPlayer(player, `§eNo world border configured for ${dimensionId}.`);
+    }
+}
+
+async function handleToggleCommand(player, args, playerUtils, logManager, config, dependencies) {
+    if (args.length < 1) {
+        playerUtils.warnPlayer(player, "Usage: !worldborder toggle <on|off> [dimensionId]");
+        return;
+    }
+
+    const state = args[0].toLowerCase();
+    if (state !== 'on' && state !== 'off') {
+        playerUtils.warnPlayer(player, "Invalid state. Use 'on' or 'off'.");
+        return;
+    }
+
+    const dimensionIdInput = args.length > 1 ? args[1] : player.dimension.id;
+    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[1] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        return;
+    }
+
+    const currentSettings = getBorderSettings(dimensionId);
+    if (!currentSettings) {
+        playerUtils.warnPlayer(player, `§eNo world border configured for ${dimensionId}. Use 'set' command first to define a border.`);
+        return;
+    }
+
+    const newState = state === 'on';
+    if (currentSettings.enabled === newState) {
+        playerUtils.notifyPlayer(player, `§eWorld border for ${dimensionId} is already ${state}.`);
+        return;
+    }
+
+    currentSettings.enabled = newState;
+
+    // saveBorderSettings expects the settings object without dimensionId, as it adds it itself.
+    const { dimensionId: _, ...settingsToSave } = currentSettings;
+
+    if (saveBorderSettings(dimensionId, settingsToSave)) {
+        const successMsg = `§aWorld border for ${dimensionId} turned ${state}.`;
+        playerUtils.notifyPlayer(player, successMsg);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_toggle', targetName: dimensionId, details: `Set to ${state}` });
+        } else {
+            playerUtils.debugLog("LogManager or addLog not available for worldborder_toggle.", null);
+        }
+    } else {
+        playerUtils.warnPlayer(player, "§cFailed to update world border state.");
+    }
+}
+
+async function handleRemoveCommand(player, args, playerUtils, logManager, dependencies) {
+    const dimensionIdInput = args.length > 0 ? args[0] : player.dimension.id;
+    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[0] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        return;
+    }
+
+    if (clearBorderSettings(dimensionId)) {
+        const successMsg = `§aWorld border settings removed for ${dimensionId}.`;
+        playerUtils.notifyPlayer(player, successMsg);
+         if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_remove', targetName: dimensionId, details: 'Border removed' });
+        } else {
+            playerUtils.debugLog("LogManager or addLog not available for worldborder_remove.", null);
+        }
+    } else {
+        playerUtils.warnPlayer(player, "§cFailed to remove world border settings. It might not have been set or an error occurred.");
     }
 }

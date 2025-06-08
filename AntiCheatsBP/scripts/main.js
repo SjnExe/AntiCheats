@@ -17,6 +17,8 @@ import { executeCheckAction } from './core/actionManager.js';
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
+import { getBorderSettings } from './utils/worldBorderManager.js'; // For World Border
+import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 
@@ -464,6 +466,52 @@ mc.system.runInterval(async () => {
                  pData.fallDistance = 0;
             }
             pData.isTakingFallDamage = false;
+        }
+
+        // World Border Enforcement
+        if (config.enableWorldBorderSystem) {
+            const borderSettings = getBorderSettings(player.dimension.id);
+
+            if (borderSettings && borderSettings.enabled) {
+                const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
+
+                if (playerPermLevel > permissionLevels.admin) { // Apply to non-admins/owners
+                    const { centerX, centerZ, halfSize } = borderSettings;
+                    const loc = player.location;
+
+                    const minX = centerX - halfSize;
+                    const maxX = centerX + halfSize;
+                    const minZ = centerZ - halfSize;
+                    const maxZ = centerZ + halfSize;
+
+                    let outside = false;
+                    let targetX = loc.x;
+                    let targetZ = loc.z;
+
+                    if (loc.x < minX) { targetX = minX + 0.5; outside = true; }
+                    else if (loc.x > maxX) { targetX = maxX - 0.5; outside = true; }
+
+                    if (loc.z < minZ) { targetZ = minZ + 0.5; outside = true; }
+                    else if (loc.z > maxZ) { targetZ = maxZ - 0.5; outside = true; }
+
+                    if (outside) {
+                        try {
+                            player.teleport({ x: targetX, y: loc.y, z: targetZ }, { dimension: player.dimension });
+                            if (config.worldBorderWarningMessage) {
+                                playerUtils.warnPlayer(player, config.worldBorderWarningMessage);
+                            }
+                            if (playerUtils.debugLog && pData?.isWatched) {
+                                playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} back into border for dimension ${player.dimension.id}. Original: (${loc.x.toFixed(1)},${loc.z.toFixed(1)}), Target: (${targetX.toFixed(1)},${targetZ.toFixed(1)})`, player.nameTag);
+                            }
+                        } catch (e) {
+                            console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
+                            if (playerUtils.debugLog) {
+                                 playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
