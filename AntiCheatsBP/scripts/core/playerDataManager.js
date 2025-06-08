@@ -224,6 +224,9 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastNameTagChangeTick: currentTick,
         muteInfo: null,
         banInfo: null,
+        joinTime: 0,
+        lastGameMode: player.gameMode, // Initialize with current game mode
+        lastDimensionId: player.dimension.id, // Initialize with current dimension
         isDirtyForSave: false,
         lastViolationDetailsMap: {}, // Initialize the new map
         automodState: {} // Initialize automodState
@@ -264,6 +267,10 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         if (!newPData.automodState) { // Ensure automodState exists when loading older data
             newPData.automodState = {};
         }
+        // Ensure new fields exist if loading older data
+        if (typeof newPData.joinTime === 'undefined') newPData.joinTime = 0;
+        if (typeof newPData.lastGameMode === 'undefined') newPData.lastGameMode = player.gameMode;
+        if (typeof newPData.lastDimensionId === 'undefined') newPData.lastDimensionId = player.dimension.id;
         newPData.isDirtyForSave = false;
         newPData.lastPosition = player.location;
         newPData.previousPosition = player.location;
@@ -385,6 +392,14 @@ export function updateTransientPlayerData(player, pData, currentTick) {
     if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
         pData.lastSelectedSlotChangeTick = currentTick;
         pData.previousSelectedSlotIndex = player.selectedSlotIndex;
+    }
+    if (pData.lastGameMode !== player.gameMode) {
+        pData.lastGameMode = player.gameMode;
+        pData.isDirtyForSave = true;
+    }
+    if (pData.lastDimensionId !== player.dimension.id) {
+        pData.lastDimensionId = player.dimension.id;
+        pData.isDirtyForSave = true;
     }
     if (pData.isWatched) {
         const transientSnapshot = {
