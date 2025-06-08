@@ -45,8 +45,14 @@ export const enableIllegalItemCheck = true;
 /** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
 export const enableSelfHurtCheck = true;
 
+/** @type {boolean} If true, the Nether Roof Check is active and will flag players found on the Nether roof. */
+export const enableNetherRoofCheck = true;
+
 
 // --- Movement Checks ---
+
+/** @type {number} The Y-level at or above which a player in the Nether is considered to be on the roof. */
+export const netherRoofYLevelThreshold = 128;
 
 /** @type {number} Maximum vertical speed (positive for upward, negative for downward) in blocks per second. Used by Fly check. */
 export const maxVerticalSpeed = 10;
@@ -993,10 +999,10 @@ export const commandAliases = {
  * Use `updateConfigValue(key, newValue)` to modify these values safely.
  */
 export let editableConfigValues = {
-    adminTag, ownerPlayerName, enableDebugLogging, prefix,
+    adminTag, ownerPlayerName, enableDebugLogging, prefix, enableAutoMod,
     enableReachCheck, enableCpsCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
-    enableNukerCheck, enableIllegalItemCheck,
+    enableNukerCheck, enableIllegalItemCheck, enableSelfHurtCheck, enableNetherRoofCheck,
     enableAutoToolCheck,
     autoToolSwitchToOptimalWindowTicks,
     autoToolSwitchBackWindowTicks,
@@ -1026,7 +1032,7 @@ export let editableConfigValues = {
     maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus, minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold, flySustainedOffGroundTicksThreshold,
     flyHoverNearGroundThreshold, flyHoverVerticalSpeedThreshold, flyHoverOffGroundTicksThreshold,
-    flyHoverMaxFallDistanceThreshold, speedToleranceBuffer, speedGroundConsecutiveTicksThreshold,
+    flyHoverMaxFallDistanceThreshold, speedToleranceBuffer, speedGroundConsecutiveTicksThreshold, netherRoofYLevelThreshold,
     maxCpsThreshold, reachDistanceSurvival, reachDistanceCreative, reachBuffer,
     cpsCalculationWindowMs, maxPitchSnapPerTick, maxYawSnapPerTick, viewSnapWindowTicks,
     invalidPitchThresholdMin, invalidPitchThresholdMax,

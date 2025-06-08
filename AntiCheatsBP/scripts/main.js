@@ -356,6 +356,19 @@ mc.system.runInterval(async () => {
             await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
+        // Call NetherRoof Check
+        // Construct dependencies specifically for checkNetherRoof as its signature expects a 'dependencies' object
+        const netherRoofDependencies = {
+            config: config,
+            playerDataManager: playerDataManager,
+            playerUtils: playerUtils
+            // logManager and executeCheckAction are not expected by checkNetherRoof's current signature
+        };
+        if (config.enableNetherRoofCheck && checks.checkNetherRoof) {
+            // Note: checkNetherRoof is not async currently, so no await
+            checks.checkNetherRoof(player, pData, netherRoofDependencies);
+        }
+
         // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {
             if (pData.velocity.y < -0.07 && pData.previousPosition) {

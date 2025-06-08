@@ -266,14 +266,12 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
             if (actionType === "TEMP_BAN" || actionType === "MUTE") {
                 const durationString = parameters.duration || "N/A";
-                // Use durationForLog as it's already parsed Ms, formatDuration handles Infinity correctly
                 const friendlyDuration = formatDuration(durationForLog);
                 adminMessage += \` Duration: \${friendlyDuration}.\`;
             } else if (actionType === "PERM_BAN") {
                 adminMessage += " Duration: Permanent.";
             } else if (actionType === "REMOVE_ILLEGAL_ITEM" && parameters.itemToRemoveTypeId) {
                 adminMessage += \` Item: \${parameters.itemToRemoveTypeId}.\`;
-                // logDetails already contains the count, could parse it out or add to parameters if needed here.
             }
             playerUtils.notifyAdmins(adminMessage, player, pData);
         }
