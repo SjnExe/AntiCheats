@@ -25,7 +25,7 @@ export const prefix = "!";
 /** @type {boolean} If true, the Reach check is active. */
 export const enableReachCheck = true;
 /** @type {boolean} If true, the CPS (Clicks Per Second) check is active. */
-export const enableCpsCheck = true;
+export const enableCPSCheck = true;
 /** @type {boolean} If true, the View Snap / Invalid Pitch check is active. */
 export const enableViewSnapCheck = true;
 /** @type {boolean} If true, the Multi-Target Killaura check is active. */
@@ -208,13 +208,13 @@ export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]";
 export const nameSpoofMinChangeIntervalTicks = 200;
 
 /** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check (detecting unauthorized Creative mode usage) is active. */
-export const enableAntiGmcCheck = true;
+export const enableAntiGMCCheck = true;
 /**
  * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGmcAutoSwitch` is true.
  * Valid values: "survival", "adventure", "spectator". Default: "survival".
  */
-export const antiGmcSwitchToGameMode = "survival";
-/** @type {boolean} If true, automatically switch a player's gamemode to `antiGmcSwitchToGameMode` if unauthorized Creative mode is detected. */
+export const antiGMCSwitchToGameMode = "survival";
+/** @type {boolean} If true, automatically switch a player's gamemode to `antiGMCSwitchToGameMode` if unauthorized Creative mode is detected. */
 export const antiGmcAutoSwitch = true;
 
 /** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
@@ -236,14 +236,14 @@ export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for fast message spam violations. */
-export const fastMessageSpamActionProfileName = "chat_spam_fast_message";
+export const fastMessageSPAMActionProfileName = "chat_spam_fast_message";
 
 /** @type {boolean} If true, the Max Words Spam check (preventing overly long messages) is active. */
 export const enableMaxWordsSpamCheck = true;
 /** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for max words spam violations. */
-export const maxWordsSpamActionProfileName = "chat_spam_max_words";
+export const maxWordsSPAMActionProfileName = "chat_spam_max_words";
 
 /** @type {boolean} If true, checks for newline or carriage return characters in chat messages. */
 export const enableNewlineCheck = true;
@@ -399,28 +399,48 @@ export const enableDeathCoordsMessage = true;
  */
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
+// --- Death Effects ---
+/** @type {boolean} If true, cosmetic effects are shown when a player dies. */
+export const enableDeathEffects = false;
+/**
+ * @type {object} Defines the default cosmetic effect shown when a player dies.
+ * @property {string} soundId - The sound ID to play on player death (e.g., "ambient.weather.lightning.impact").
+ * @property {string} particleCommand - The command to execute for spawning particles (e.g., "particle minecraft:large_explosion ~ ~1 ~"). Location placeholders (~ ~ ~) are relative to the death location.
+ * @property {object} soundOptions - Options for the sound playback.
+ * @property {number} soundOptions.volume - Volume of the sound (e.g., 1.0).
+ * @property {number} soundOptions.pitch - Pitch of the sound (e.g., 1.0).
+ */
+export const defaultDeathEffect = {
+    soundId: "ambient.weather.lightning.impact",
+    particleCommand: "particle minecraft:large_explosion ~ ~1 ~", // Example: large explosion slightly above death point
+    soundOptions: {
+        volume: 1.0,
+        pitch: 0.8 // Slightly deeper pitch for impact
+    }
+};
+
 // --- TPA System Settings ---
 /**
  * @type {boolean}
  * Enable or disable the player TPA (teleport request) system.
  * If false, TPA commands will not be usable.
  */
-export const enableTpaSystem = false;
+export const enableTPASystem = false;
 
 /**
  * @type {number}
  * How long (in seconds) a TPA request remains valid before automatically declining.
  */
-export const tpaRequestTimeoutSeconds = 60;
+export const TPARequestTimeoutSeconds = 60;
 
 /**
  * @type {number}
  * Cooldown in seconds a player must wait after sending a TPA/TPAHere request before sending another.
  */
-export const tpaRequestCooldownSeconds = 10;
+export const TPARequestCooldownSeconds = 10;
 
 /** @type {number} Duration in seconds a player must wait (warm-up) before teleportation occurs after a TPA request is accepted. Taking damage during warm-up cancels the teleport. */
-export const tpaTeleportWarmupSeconds = 10;
+export const TPATeleportWarmupSeconds = 10;
 
 // --- UI Display Texts ---
 /**
@@ -1000,7 +1020,7 @@ export const commandAliases = {
  */
 export let editableConfigValues = {
     adminTag, ownerPlayerName, enableDebugLogging, prefix, enableAutoMod,
-    enableReachCheck, enableCpsCheck, enableViewSnapCheck, enableMultiTargetCheck,
+    enableReachCheck, enableCPSCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck, enableSelfHurtCheck, enableNetherRoofCheck,
     enableAutoToolCheck,
@@ -1014,8 +1034,8 @@ export let editableConfigValues = {
     nameSpoofMaxLength,
     nameSpoofDisallowedCharsRegex,
     nameSpoofMinChangeIntervalTicks,
-    enableAntiGmcCheck,
-    antiGmcSwitchToGameMode,
+    enableAntiGMCCheck,
+    antiGMCSwitchToGameMode,
     antiGmcAutoSwitch,
     enableInventoryModCheck,
     enableSelfHurtCheck,
@@ -1044,10 +1064,10 @@ export let editableConfigValues = {
     spamRepeatFlagPlayer, spamRepeatCancelMessage,
     enableFastMessageSpamCheck,
     fastMessageSpamThresholdMs,
-    fastMessageSpamActionProfileName,
+    fastMessageSPAMActionProfileName,
     enableMaxWordsSpamCheck,
     maxWordsSpamThreshold,
-    maxWordsSpamActionProfileName,
+    maxWordsSPAMActionProfileName,
     enableTowerCheck,
     towerMaxTickGap,
     towerMinHeight,
@@ -1086,15 +1106,17 @@ export let editableConfigValues = {
     notifyAdminOnNewPlayerJoin,
     enableDeathCoordsMessage,
     deathCoordsMessage,
+    enableDeathEffects,
+    defaultDeathEffect,
     serverRules,
     discordLink,
     websiteLink,
     helpLinks,
     generalHelpMessages,
-    enableTpaSystem,
-    tpaRequestTimeoutSeconds,
-    tpaRequestCooldownSeconds,
-    tpaTeleportWarmupSeconds,
+    enableTPASystem,
+    TPARequestTimeoutSeconds,
+    TPARequestCooldownSeconds,
+    TPATeleportWarmupSeconds,
 };
 
 /**

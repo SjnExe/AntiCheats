@@ -34,7 +34,7 @@ export async function execute(player, args, dependencies) {
     // playerUtils can be accessed from dependencies if needed for debugLog, etc.
     // const { playerUtils } = dependencies;
 
-    if (!config.enableTpaSystem) {
+    if (!config.enableTPASystem) {
         player.sendMessage("§cThe TPA system is currently disabled.");
         return;
     }
@@ -79,7 +79,7 @@ export async function execute(player, args, dependencies) {
     }
 
     if (requestResult) { // Successfully created request object
-        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
+        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
 
         // Send action bar message to target player
         // Using system.run to ensure it's executed in a separate tick, which can help with reliability of setActionBar.

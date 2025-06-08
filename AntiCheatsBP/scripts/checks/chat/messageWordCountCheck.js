@@ -51,14 +51,14 @@ export async function checkMessageWordCount(
     // that result from multiple spaces between words.
     const wordCount = message.split(/\s+/).filter(str => str.length > 0).length;
 
-    const threshold = config.maxWordsSpamThreshold ?? 50; // Default to 50 words
-    const actionProfileName = config.maxWordsSpamActionProfileName ?? "chat_spam_max_words";
+    const threshold = config.maxWordsSpamThreshold ?? 50;
+    const actionProfileName = config.maxWordsSPAMActionProfileName ?? "chat_spam_max_words";
     const actionProfile = config.checkActionProfiles?.[actionProfileName];
 
     let shouldCancel = false;
 
     if (wordCount > threshold) {
-        if (playerUtils.debugLog) { // Ensure debugLog exists
+        if (playerUtils.debugLog) {
             playerUtils.debugLog(`MessageWordCountCheck: ${player.nameTag}'s message too long. Words: ${wordCount}, Threshold: ${threshold}`, watchedPrefix);
         }
 

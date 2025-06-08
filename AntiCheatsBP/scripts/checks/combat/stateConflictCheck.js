@@ -53,7 +53,6 @@ export async function checkAttackWhileSleeping(
             // For now, keeping details minimal as this check focuses on the attacker's state.
         };
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        // Action profile name: config.attackWhileSleepingActionProfileName ?? "combat_attack_while_sleeping"
         await executeCheckAction(player, "combat_attack_while_sleeping", violationDetails, dependencies);
 
         playerUtils.debugLog?.(`StateConflict: Flagged ${player.nameTag} for Attack While Sleeping.`, watchedPrefix);
@@ -97,7 +96,6 @@ export async function checkAttackWhileUsingItem(
             itemCategory: "consumable",
             // To get specific item: pData.lastUsedItemTypeId (if stored during handleItemUse)
         };
-        // Action profile name: config.attackWhileConsumingActionProfileName ?? "combat_attack_while_consuming"
         await executeCheckAction(player, "combat_attack_while_consuming", violationDetails, dependencies);
         playerUtils.debugLog?.(`StateConflict: Flagged ${player.nameTag} for Attack While Consuming.`, watchedPrefix);
     }
@@ -109,7 +107,6 @@ export async function checkAttackWhileUsingItem(
             state: "isChargingBow",
             itemCategory: "bow",
         };
-        // Action profile name: config.attackWhileChargingBowActionProfileName ?? "combat_attack_while_bow_charging"
         await executeCheckAction(player, "combat_attack_while_bow_charging", violationDetails, dependencies);
         playerUtils.debugLog?.(`StateConflict: Flagged ${player.nameTag} for Attack While Charging Bow.`, watchedPrefix);
     }
@@ -119,7 +116,6 @@ export async function checkAttackWhileUsingItem(
             state: "isUsingShield",
             itemCategory: "shield",
         };
-        // Action profile name: config.attackWhileShieldingActionProfileName ?? "combat_attack_while_shielding"
         await executeCheckAction(player, "combat_attack_while_shielding", violationDetails, dependencies);
         playerUtils.debugLog?.(`StateConflict: Flagged ${player.nameTag} for Attack While Shielding.`, watchedPrefix);
     }

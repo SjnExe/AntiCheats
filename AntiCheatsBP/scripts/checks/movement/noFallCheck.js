@@ -74,7 +74,7 @@ export async function checkNoFall(
             watchedPrefix
         );
 
-        const minDamageDistance = config.minFallDistanceForDamage ?? 3.5; // Default if not in config
+        const minDamageDistance = config.minFallDistanceForDamage ?? 3.5;
 
         // If fallDistance exceeds threshold and player did NOT take fall damage this landing cycle
         if (pData.fallDistance > minDamageDistance && !pData.isTakingFallDamage) {
@@ -108,7 +108,6 @@ export async function checkNoFall(
                 activeEffects: activeEffectsString
             };
             const dependencies = { config, playerDataManager, playerUtils, logManager };
-            // Action profile name: config.noFallActionProfileName ?? "movement_nofall"
             await executeCheckAction(player, "movement_nofall", violationDetails, dependencies);
         }
         // pData.fallDistance is reset in main.js tick loop when player is onGround and not pData.isTakingFallDamage.

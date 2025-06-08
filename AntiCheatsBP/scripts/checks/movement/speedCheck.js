@@ -63,7 +63,7 @@ export async function checkSpeed(
     const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2)); // Horizontal speed in blocks per tick
     const hSpeedBPS = hSpeed * 20; // Convert to blocks per second
 
-    let maxAllowedSpeedBPS = config.maxHorizontalSpeed ?? 7.0; // Default base max speed if not in config
+    let maxAllowedSpeedBPS = config.maxHorizontalSpeed ?? 7.0;
 
     // Adjust max speed based on Speed effect amplifier stored in pData
     // pData.speedAmplifier = -1 (no effect), 0 (Speed I), 1 (Speed II), etc.
@@ -72,7 +72,7 @@ export async function checkSpeed(
         maxAllowedSpeedBPS += (speedAmplifier + 1) * (config.speedEffectBonus ?? 2.0);
     }
 
-    maxAllowedSpeedBPS += (config.speedToleranceBuffer ?? 0.5); // Add tolerance buffer
+    maxAllowedSpeedBPS += (config.speedToleranceBuffer ?? 0.5);
 
     playerUtils.debugLog?.(
         `SpeedCheck: Processing for ${player.nameTag}. HSpeedBPS=${hSpeedBPS.toFixed(2)}, MaxAllowableBPS=${maxAllowedSpeedBPS.toFixed(2)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}`,
@@ -80,9 +80,7 @@ export async function checkSpeed(
     );
 
     const dependencies = { config, playerDataManager, playerUtils, logManager };
-    // Action profile name: config.speedGroundActionProfileName ?? "example_speed_ground" (or "movement_speed_ground")
     const groundActionProfileKey = "example_speed_ground";
-    // Example: const airActionProfileKey = "movement_speed_air"; // If you have a separate profile for air speed
 
     if (player.isOnGround) {
         if (hSpeedBPS > maxAllowedSpeedBPS) {
@@ -126,10 +124,5 @@ export async function checkSpeed(
         }
 
         // Implement airborne speed check if desired (potentially with different thresholds/profile key)
-        // For example, you might allow slightly higher burst speeds in air due to knockback, etc.
-        // if (hSpeedBPS > (maxAllowedSpeedBPS + (config.speedAirToleranceExtra ?? 2.0) )) { // Example: higher tolerance in air
-        //     const violationDetails = { /* ... */ };
-        //     await executeCheckAction(player, airActionProfileKey, violationDetails, dependencies);
-        // }
     }
 }

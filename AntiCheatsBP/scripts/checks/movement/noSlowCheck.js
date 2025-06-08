@@ -64,7 +64,7 @@ export async function checkNoSlow(
         maxAllowedBaseSpeed = config.noSlowMaxSpeedChargingBow ?? 1.0;
     } else if (pData.isUsingShield) {
         slowingAction = "Using Shield";
-        maxAllowedBaseSpeed = config.noSlowMaxSpeedUsingShield ?? 4.4; // Vanilla walk speed as a default example
+        maxAllowedBaseSpeed = config.noSlowMaxSpeedUsingShield ?? 4.4;
     } else if (player.isSneaking) {
         slowingAction = "Sneaking";
         maxAllowedBaseSpeed = config.noSlowMaxSpeedSneaking ?? 1.5;
@@ -99,7 +99,6 @@ export async function checkNoSlow(
                 hasSpeedEffect: (speedAmplifier >= 0).toString(),
                 speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : "0" // Show level 1 for amplifier 0
             };
-            // Action profile name: config.noSlowActionProfileName ?? "movement_noslow"
             await executeCheckAction(player, "movement_noslow", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;

@@ -431,7 +431,8 @@ async function showSystemInfo(adminPlayer, config, playerDataManager, dependenci
     // Actual system info display would go here.
     const msgForm = new MessageFormData()
         .title("System Information")
-        .body("System information display is not yet fully implemented.\nMore details will be available in a future update.")
+        .body("System information display is not yet fully implemented.
+More details will be available in a future update.")
         .button1("Back to Server Management");
     await msgForm.show(adminPlayer);
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
@@ -449,7 +450,8 @@ async function showEditConfigForm(adminPlayer, playerDataManager, config, depend
     // Actual config editing UI would go here.
     const msgForm = new MessageFormData()
         .title("Edit Configuration")
-        .body("Configuration editing via UI is not yet implemented.\nPlease use the configuration files directly or future commands.")
+        .body("Configuration editing via UI is not yet implemented.
+Please use the configuration files directly or future commands.")
         .button1("Back to Admin Panel"); // Or Server Management if that's more appropriate
     await msgForm.show(adminPlayer);
     await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies);
@@ -659,7 +661,6 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
  * @param {import('../config.js').editableConfigValues} config - The system configuration.
  * @param {import('./playerDataManager.js')} playerDataManager - The player data manager instance.
  * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
- * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
  */
 async function showActionLogsForm(adminPlayer, config, playerDataManager, dependencies) {
     playerUtils.debugLog(`UI: Action Logs (All) requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
@@ -762,5 +763,3 @@ async function showWatchedPlayersList(adminPlayer, playerDataManager, dependenci
     // This form is informational, so it naturally leads back to the main admin panel.
     await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
 }
-
-[end of AntiCheatsBP/scripts/core/uiManager.js]

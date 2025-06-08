@@ -390,5 +390,3 @@ export async function processAutoModActions(player, pData, checkType, dependenci
         }
     }
 }
-
-// Other helper functions for AutoModManager can be defined below if needed.

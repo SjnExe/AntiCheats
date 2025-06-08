@@ -132,7 +132,6 @@ export async function checkFly(
                 hasSlowFalling: pData.hasSlowFalling?.toString() ?? "false",
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            // Action profile name: config.highYVelocityActionProfileName ?? "movement_high_y_velocity"
             await executeCheckAction(player, "movement_high_y_velocity", violationDetails, dependencies);
             playerUtils.debugLog?.(`HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix);
         }
@@ -174,7 +173,6 @@ export async function checkFly(
                 isInWater: player.isInWater.toString(), // isInWater is a native boolean property
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            // Action profile name: config.flySustainedActionProfileName ?? "movement_fly_sustained"
             await executeCheckAction(player, "example_fly_hover", violationDetails, dependencies); // TODO: Use distinct action profile
         }
     }
@@ -208,7 +206,6 @@ export async function checkFly(
                 isInWater: player.isInWater.toString(),
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            // Action profile name: config.flyHoverActionProfileName ?? "movement_fly_hover"
             await executeCheckAction(player, "example_fly_hover", violationDetails, dependencies); // TODO: Use distinct action profile
         }
     }

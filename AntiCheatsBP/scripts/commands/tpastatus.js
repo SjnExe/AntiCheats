@@ -33,7 +33,7 @@ const tpastatusCommandDefinition = {
 async function tpastatusCommandExecute(player, args, dependencies) {
     // const { playerUtils } = dependencies; // For debugLog, if needed
 
-    if (!config.enableTpaSystem) {
+    if (!config.enableTPASystem) {
         player.sendMessage("§cThe TPA system is currently disabled.");
         return;
     }

@@ -10,6 +10,20 @@ import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/ind
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
 
+function formatSessionDuration(ms) {
+    if (ms <= 0) return "N/A";
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    seconds %= 60;
+    minutes %= 60;
+    const parts = [];
+    if (hours > 0) parts.push(\`\${hours}h\`);
+    if (minutes > 0) parts.push(\`\${minutes}m\`);
+    if (seconds > 0 || parts.length === 0) parts.push(\`\${seconds}s\`);
+    return parts.join(' ');
+}
+
 /**
  * Handles player leave events. Saves player data and checks for combat logging.
  * @param {mc.PlayerLeaveBeforeEvent} eventData - The data associated with the player leave event.
@@ -76,6 +90,29 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
             }
         }
     }
+
+    if (pData && addLog) { // Ensure pData and addLog are available
+        const lastLocation = pData.lastPosition || player.location; // Fallback to current if lastPosition not set
+        const lastDimensionId = (pData.lastDimensionId || player.dimension.id).split(':')[1];
+        const lastGameModeString = mc.GameMode[pData.lastGameMode] || "unknown";
+
+        let sessionDurationString = "N/A";
+        if (pData.joinTime && pData.joinTime > 0) {
+            const durationMs = Date.now() - pData.joinTime;
+            sessionDurationString = formatSessionDuration(durationMs);
+        }
+
+        addLog({
+            timestamp: Date.now(),
+            actionType: 'player_leave',
+            targetName: player.nameTag,
+            targetId: player.id,
+            details: `Player \${player.nameTag} left. Last Loc: \${Math.floor(lastLocation.x)},\${Math.floor(lastLocation.y)},\${Math.floor(lastLocation.z)} in \${lastDimensionId}. GameMode: \${lastGameModeString}. Session: \${sessionDurationString}.`,
+            location: { x: Math.floor(lastLocation.x), y: Math.floor(lastLocation.y), z: Math.floor(lastLocation.z), dimensionId: lastDimensionId },
+            gameMode: lastGameModeString,
+            sessionDuration: sessionDurationString
+        });
+    }
     // Ensure all data is attempted to be saved, regardless of dirty flag, as player is leaving.
     await playerDataManager.prepareAndSavePlayerData(player);
     playerUtils.debugLog(`Final data persistence attempted for ${player.nameTag} on leave.`, player.nameTag);
@@ -100,6 +137,24 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     // playerUtils.debugLog(`Player ${player.nameTag} spawned. Initial spawn: ${initialSpawn}.`, player.nameTag); // Original log, replaced by the one above
 
     try {
+        const pData = playerDataManager.getPlayerData(player.id); // pData should exist due to main.js ensurePlayerDataInitialized
+        if (!pData) {
+            console.warn(`[AntiCheat] handlePlayerSpawn: pData is unexpectedly null for ${player.nameTag}. Some logging features might be affected.`);
+            // Attempt to initialize again if really necessary, though this indicates a potential logic flow issue.
+            // await playerDataManager.ensurePlayerDataInitialized(player, mc.system.currentTick);
+            // pData = playerDataManager.getPlayerData(player.id); // Try fetching again
+        }
+
+        if (pData) { // Proceed if pData is available
+            const spawnLocation = player.location;
+            const spawnDimensionId = player.dimension.id.split(':')[1];
+            const spawnGameMode = mc.GameMode[player.gameMode];
+
+            pData.lastGameMode = player.gameMode;
+            pData.lastDimensionId = player.dimension.id;
+        }
+
+
         const banInfo = playerDataManager.getBanInfo(player);
         if (banInfo) {
             // Enhanced debug log for ban details
@@ -126,23 +181,47 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
                 player.sendMessage(message);
             }, 20); // 1 second delay (20 ticks)
 
+            if (pData) { // Ensure pData before setting joinTime
+                 pData.joinTime = Date.now();
+                 pData.isDirtyForSave = true;
+            }
+
             if (dependencies && dependencies.addLog) {
+                const spawnLocation = player.location; // Re-fetch or use from above if pData block is guaranteed
+                const spawnDimensionId = player.dimension.id.split(':')[1];
+                const spawnGameMode = mc.GameMode[player.gameMode];
                 dependencies.addLog({
-                    timestamp: Date.now(),
+                    timestamp: pData?.joinTime || Date.now(), // Use the exact join time if pData exists
                     actionType: 'player_initial_join',
                     targetName: player.nameTag,
-                    details: `Player ${player.nameTag} joined for the first time. Welcome message sent.`
+                    targetId: player.id,
+                    details: `Player \${player.nameTag} joined for the first time. Location: \${Math.floor(spawnLocation.x)},\${Math.floor(spawnLocation.y)},\${Math.floor(spawnLocation.z)} in \${spawnDimensionId}. GameMode: \${spawnGameMode}. Welcome sent.`,
+                    location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
+                    gameMode: spawnGameMode
                 });
             }
 
             if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) { // Optional: Notify admins
                 playerUtils.notifyAdmins(`§eNew player ${player.nameTag} has joined the server for the first time!`, null, null);
             }
+        } else if (!initialSpawn && dependencies && dependencies.addLog && pData) { // It's a respawn
+            const spawnLocation = player.location;
+            const spawnDimensionId = player.dimension.id.split(':')[1];
+            const spawnGameMode = mc.GameMode[player.gameMode];
+            dependencies.addLog({
+                timestamp: Date.now(),
+                actionType: 'player_respawn',
+                targetName: player.nameTag,
+                targetId: player.id,
+                details: `Player \${player.nameTag} respawned. Location: \${Math.floor(spawnLocation.x)},\${Math.floor(spawnLocation.y)},\${Math.floor(spawnLocation.z)} in \${spawnDimensionId}. GameMode: \${spawnGameMode}.`,
+                location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
+                gameMode: spawnGameMode
+            });
         }
 
+
         // Death Coords message display logic
-        // Ensure pData is fetched for the spawned player to check for a death message
-        const pData = playerDataManager.getPlayerData(player.id); // Get pData for the spawned player
+        // pData should already be fetched. If not, the earlier block would handle it or log.
         if (pData && pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
             // Send with a slight delay to ensure it's seen
             mc.system.runTimeout(() => {
@@ -157,6 +236,65 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
+    }
+}
+
+/**
+ * Handles entity death events to trigger cosmetic death effects for players.
+ * @param {mc.EntityDieAfterEvent} eventData The entity die event data.
+ * @param {object} config The editable configuration object (config.editableConfigValues).
+ */
+export async function handleEntityDieForDeathEffects(eventData, config) {
+    if (!config.enableDeathEffects) {
+        return;
+    }
+
+    const deadEntity = eventData.deadEntity;
+    if (!(deadEntity instanceof mc.Player)) {
+        return;
+    }
+
+    const location = deadEntity.location;
+    const dimension = deadEntity.dimension;
+    const effectConfig = config.defaultDeathEffect;
+
+    if (effectConfig) {
+        // Play sound
+        if (effectConfig.soundId && effectConfig.soundOptions) {
+            try {
+                dimension.playSound(effectConfig.soundId, location, effectConfig.soundOptions);
+            } catch (e) {
+                console.warn(`[DeathEffects] Error playing sound '\${effectConfig.soundId}': \${e}`);
+            }
+        }
+
+        // Execute particle command
+        if (effectConfig.particleCommand) {
+            try {
+                // Replace placeholders. Handles "~ ~1 ~" and "~ ~ ~" for basic relative coordinates.
+                // More robust placeholder replacement might be needed for complex commands.
+                let commandToRun = effectConfig.particleCommand;
+                const yOffsetMatch = commandToRun.match(/~ ~(-?\d+) ~/)
+                let yOffset = 0;
+                if (yOffsetMatch && yOffsetMatch[1]) {
+                     yOffset = parseInt(yOffsetMatch[1]);
+                }
+
+                // Replace common relative position placeholders.
+                // This simple replacement assumes placeholders are separated by spaces.
+                commandToRun = commandToRun.replace("~ ~1 ~", `\${location.x.toFixed(3)} \${(location.y + 1).toFixed(3)} \${location.z.toFixed(3)}`);
+                commandToRun = commandToRun.replace("~ ~ ~", `\${location.x.toFixed(3)} \${location.y.toFixed(3)} \${location.z.toFixed(3)}`);
+                // A more generic replacement if a different y-offset was used in the string:
+                if (yOffset !== 0 && commandToRun.includes(`~ ~${yOffset} ~`)) {
+                     commandToRun = commandToRun.replace(`~ ~${yOffset} ~`, `\${location.x.toFixed(3)} \${(location.y + yOffset).toFixed(3)} \${location.z.toFixed(3)}`);
+                }
+
+
+                await dimension.runCommandAsync(commandToRun);
+            } catch (e) {
+                console.warn(`[DeathEffects] Error running particle command '\${effectConfig.particleCommand}': \${e}`);
+            }
+        }
     }
 }
 
