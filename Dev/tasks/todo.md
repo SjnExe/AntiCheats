@@ -17,12 +17,10 @@ This list contains planned features, improvements, and areas for future investig
         *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
-        *   Investigate: In-game config editor via UI (for `config.js` values).
     *   **System Features:** SjnExe parity goal.
         *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
 *   **World Management & Protection:** SjnExe parity goal.
-    *   Investigate & Implement: Anti-Grief (e.g., auto-clear placed TNT by non-admins, auto-extinguish excessive fires not from natural sources).
 
 *   **Normal Player Panel Features (`!panel`):**
 

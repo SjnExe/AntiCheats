@@ -995,6 +995,21 @@ export const checkActionProfiles = {
             message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
         },
         cancelMessage: true
+    },
+    "world_antigrief_tnt_place": {
+        enabled: true, // This will be controlled by enableTntAntiGrief at a higher level
+        flag: {
+            increment: 1,
+            reason: "Player attempted to place TNT without authorization.",
+            type: "antigrief_tnt"
+        },
+        notifyAdmins: {
+            message: "§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}."
+        },
+        log: {
+            actionType: "antigrief_tnt_placement",
+            detailsPrefix: "AntiGrief TNT: "
+        }
     }
 };
 
@@ -1117,6 +1132,10 @@ export let editableConfigValues = {
     TPARequestTimeoutSeconds,
     TPARequestCooldownSeconds,
     TPATeleportWarmupSeconds,
+    // AntiGrief TNT Configs
+    enableTntAntiGrief: true,
+    allowAdminTntPlacement: true,
+    tntPlacementAction: "remove",
 };
 
 /**

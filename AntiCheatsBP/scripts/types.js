@@ -97,6 +97,7 @@
  * @property {PlayerFlagDetail} [player_antigmc] - Player was detected in unauthorized Creative Mode.
  * @property {PlayerFlagDetail} [player_inventory_mod] - Player manipulated inventory/hotbar suspiciously.
  * @property {PlayerFlagDetail} [player_self_hurt] - Player damaged themselves via direct entity attack.
+ * @property {PlayerFlagDetail} [antigrief_tnt] - Player attempted to place TNT without authorization.
  */
 
 /**

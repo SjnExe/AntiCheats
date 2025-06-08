@@ -5,8 +5,11 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
+// ItemStack is part of mc, no need for separate import unless it's a custom class
 import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
-import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js'; // Added isNetherLocked, isEndLocked
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked, playerUtils as PlayerUtilsImport } from '../utils/index.js'; // Added isNetherLocked, isEndLocked, playerUtils
+import { editableConfigValues as ConfigValuesImport } from '../config.js'; // For AntiGrief
+
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
 
@@ -236,6 +239,86 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
+    }
+}
+
+/**
+ * Handles logic before a player places a block, specifically for AntiGrief (TNT control).
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The event data.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Dependencies needed by the handler.
+ * @returns {Promise<void>}
+ */
+export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
+    const { config, playerUtils, logManager, actionManager } = dependencies;
+
+    // Ensure config is the editableConfigValues object from config.js
+    // If dependencies.config is already the correct one, this check might be redundant
+    // but good for safety if the structure of 'dependencies' can vary.
+    const currentConfig = config || ConfigValuesImport;
+
+
+    if (!currentConfig.enableTntAntiGrief) {
+        return;
+    }
+
+    // eventData.itemStack should be of type ItemStack.
+    // eventData.block refers to the block being placed against.
+    // The location where TNT would be placed is eventData.block.location offset by face, or eventData.blockFace if using PlayerPlaceBlockAfterEvent
+    // For PlayerPlaceBlockBeforeEvent, eventData.block.location is where it *would* be placed.
+    // Let's assume eventData.block.location is the intended placement spot for simplicity here.
+
+    if (eventData.itemStack?.typeId === "minecraft:tnt") {
+        const actualPlayerUtils = playerUtils || PlayerUtilsImport; // Use imported if not in dependencies
+        const playerPermission = actualPlayerUtils.getPlayerPermissionLevel(eventData.player);
+
+        if (currentConfig.allowAdminTntPlacement && playerPermission <= permissionLevels.admin) {
+            // actualPlayerUtils.debugLog(`AntiGrief: Admin ${eventData.player.nameTag} allowed to place TNT.`, eventData.player.nameTag);
+            return; // Allow placement for admins/owners
+        }
+
+        // Unauthorized TNT placement
+        const actionTaken = currentConfig.tntPlacementAction;
+        const placementLocation = eventData.block.location; // Location where the TNT would be placed
+
+        const violationDetails = {
+            playerName: eventData.player.nameTag,
+            checkType: "AntiGrief TNT",
+            x: placementLocation.x,
+            y: placementLocation.y,
+            z: placementLocation.z,
+            actionTaken: actionTaken,
+            detailsString: `Player ${eventData.player.nameTag} tried to place TNT at ${placementLocation.x.toFixed(1)},${placementLocation.y.toFixed(1)},${placementLocation.z.toFixed(1)}. Action: ${actionTaken}`
+        };
+
+        if (actionManager && typeof actionManager.executeCheckAction === 'function') {
+             await actionManager.executeCheckAction("world_antigrief_tnt_place", eventData.player, violationDetails, dependencies);
+        } else {
+            actualPlayerUtils.debugLog("AntiGrief: actionManager or executeCheckAction is not available for TNT check.", eventData.player.nameTag);
+            if (logManager && typeof logManager.addLog === 'function') {
+                 logManager.addLog({
+                    adminName: "SYSTEM (AntiGrief)",
+                    actionType: "antigrief_tnt_placement_fallback",
+                    targetName: eventData.player.nameTag,
+                    details: violationDetails.detailsString
+                });
+            }
+        }
+
+        switch (actionTaken) {
+            case "remove":
+                eventData.cancel = true;
+                eventData.player.sendMessage("§c[AntiGrief] TNT placement is restricted here.");
+                break;
+            case "warn":
+                eventData.player.sendMessage("§e[AntiGrief] Warning: TNT placement is monitored.");
+                break;
+            case "logOnly":
+                // Logging and admin notification handled by actionManager
+                break;
+            default:
+                actualPlayerUtils.debugLog(`AntiGrief: Unknown tntPlacementAction '${actionTaken}' for ${eventData.player.nameTag}. Defaulting to logOnly.`, eventData.player.nameTag);
+                break;
+        }
     }
 }
 

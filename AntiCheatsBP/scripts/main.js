@@ -171,6 +171,18 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => {
 mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
     // currentTick from main.js scope is passed to the handler
     await eventHandlers.handlePlayerPlaceBlockBefore(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+
+    // Call AntiGrief TNT check
+    const antiGriefDependencies = {
+        config: config.editableConfigValues, // Pass the editable config values
+        playerUtils: playerUtils,
+        logManager: logManager,
+        actionManager: { executeCheckAction } // Pass the executeCheckAction function
+        // playerDataManager is not explicitly listed as a direct dependency for handlePlayerPlaceBlockBeforeEvent_AntiGrief
+        // but executeCheckAction might need it via its own 'dependencies' argument.
+        // The 'dependencies' object passed to executeCheckAction from within AntiGrief handler will include playerDataManager.
+    };
+    await eventHandlers.handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, antiGriefDependencies);
 });
 
 /**
