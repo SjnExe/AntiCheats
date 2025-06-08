@@ -26,10 +26,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Normal Player Panel Features (`!panel`):**
 
-## Refactoring & Enhancements
-
-## UI/UX Enhancements
-
 ## Low Priority / Ideas
 
 *   **Automated Actions (AutoMod):** (from original todo, Scythe, SafeGuard)
