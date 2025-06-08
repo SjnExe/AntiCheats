@@ -865,7 +865,27 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
     const griefConfig = dependencies?.config || ConfigValuesImport;
     const griefPlayerUtils = dependencies?.playerUtils || PlayerUtilsImport;
     const griefActionManager = dependencies?.actionManager;
-    const griefLogManager = dependencies?.logManager; // Direct param 'logManager' can also be used if it's the same instance
+    const griefLogManager = dependencies?.logManager;
+    const griefPlayerDataManager = dependencies?.playerDataManager; // For pData access
+    const griefChecks = dependencies?.checks; // For checkEntitySpam
+    const currentTick = dependencies?.currentTick; // For checkEntitySpam
+
+    const placeableEntityItemMap = {
+        "minecraft:oak_boat": "minecraft:boat", "minecraft:spruce_boat": "minecraft:boat",
+        "minecraft:birch_boat": "minecraft:boat", "minecraft:jungle_boat": "minecraft:boat",
+        "minecraft:acacia_boat": "minecraft:boat", "minecraft:dark_oak_boat": "minecraft:boat",
+        "minecraft:mangrove_boat": "minecraft:boat", "minecraft:cherry_boat": "minecraft:boat",
+        "minecraft:bamboo_raft": "minecraft:boat",
+        "minecraft:armor_stand": "minecraft:armor_stand",
+        "minecraft:item_frame": "minecraft:item_frame",
+        "minecraft:glow_item_frame": "minecraft:glow_item_frame", // Could be mapped to item_frame if desired
+        "minecraft:minecart": "minecraft:minecart",
+        "minecraft:chest_minecart": "minecraft:chest_minecart", // Could be mapped to minecart
+        "minecraft:furnace_minecart": "minecraft:furnace_minecart",// Could be mapped to minecart
+        "minecraft:tnt_minecart": "minecraft:tnt_minecart", // Could be mapped to minecart
+        "minecraft:hopper_minecart": "minecraft:hopper_minecart", // Could be mapped to minecart
+        "minecraft:command_block_minecart": "minecraft:command_block_minecart" // Could be mapped to minecart
+    };
 
     // --- Anti-Grief Fire Logic ---
     if (griefConfig.enableFireAntiGrief) {
@@ -996,10 +1016,54 @@ export async function handleItemUseOn(eventData, playerDataManager, checks, play
     }
     if (eventData.cancel) return; // Event cancelled by Water Anti-Grief
 
+    // --- Anti-Grief Entity Spam Logic (from ItemUseOn) ---
+    const itemUsedForEntitySpam = itemStack.typeId;
+    let correspondingEntityType = placeableEntityItemMap[itemUsedForEntitySpam];
+
+    // If not in map, but itemID itself is in monitoredEntityTypes (e.g. if armor_stand item ID is directly "minecraft:armor_stand")
+    // This handles cases where item ID and entity ID might be the same and explicitly monitored.
+    if (!correspondingEntityType && griefConfig.entitySpamMonitoredEntityTypes?.includes(itemUsedForEntitySpam)) {
+        correspondingEntityType = itemUsedForEntitySpam;
+    }
+
+    if (griefConfig.enableEntitySpamAntiGrief && correspondingEntityType && griefChecks?.checkEntitySpam) {
+        if (!eventData.cancel) { // Check if not already cancelled by previous anti-grief
+            const pDataForSpamCheck = await griefPlayerDataManager.ensurePlayerDataInitialized(player, currentTick);
+            if (pDataForSpamCheck) {
+                const spamDetected = await griefChecks.checkEntitySpam(
+                    player,
+                    correspondingEntityType,
+                    griefConfig, // Pass the correct config object (dependencies.config)
+                    pDataForSpamCheck,
+                    griefPlayerUtils,
+                    griefPlayerDataManager,
+                    griefLogManager, // Pass the correct logManager (dependencies.logManager)
+                    griefActionManager.executeCheckAction, // Pass the function itself
+                    currentTick
+                );
+
+                if (spamDetected) {
+                    if (griefConfig.entitySpamAction === "kill") { // Interpreted as "prevent" for ItemUseOn
+                        eventData.cancel = true;
+                        player.sendMessage("§c[AntiGrief] You are placing these items too quickly!");
+                        griefPlayerUtils.debugLog?.(`EntitySpam: Prevented item use for ${player.nameTag} due to spam detection of ${correspondingEntityType}`, player.nameTag);
+                    } else if (griefConfig.entitySpamAction === "warn") {
+                        player.sendMessage("§e[AntiGrief] Warning: Placing these items too quickly is monitored.");
+                    }
+                    // Logging of detection is handled within checkEntitySpam via executeCheckAction
+                }
+            } else {
+                griefPlayerUtils.debugLog?.(`EntitySpam: Could not get pData for ${player.nameTag} in handleItemUseOn.`, player.nameTag);
+            }
+        }
+    }
+    if (eventData.cancel) return; // Event cancelled by Entity Spam Anti-Grief
+
+
     // Original logic for other checks (e.g., illegal item placement)
     // Using getPlayerData and checking for null, as currentTick isn't available for ensurePlayerDataInitialized.
     // Checks using this pData must be robust against potentially missing fields if it's not fully initialized.
-    const pData = playerDataManager.getPlayerData(player.id);
+    const pData = playerDataManager.getPlayerData(player.id); // This uses the direct param playerDataManager
     // If pData is crucial and might be null, consider alternative ways to get currentTick or adjust check logic.
 
     if (checks.checkIllegalItems && config.enableIllegalItemCheck) { // config here is the one passed as direct param

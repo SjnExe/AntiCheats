@@ -44,14 +44,13 @@ This list tracks features and tasks that are currently under development.
                 *   Called from `handlePlayerPlaceBlockAfterEvent`.
                 *   Unauthorized block spam attempts are handled based on `blockSpamAction` (e.g., "warn", "logOnly").
                 *   Admin notifications and logging via `actionManager` profile `world_antigrief_blockspam`.
-            *   **Entity Spam Control (Foundation Implemented, Integration Pending):**
+            *   **Entity Spam Control (Partially Implemented - `itemUseOn` for placeables):**
                 *   Investigated entity spam techniques and documented strategy in `Dev/notes/EntitySpamDetectionStrategy.md`.
                 *   Implemented configuration options (`enableEntitySpamAntiGrief`, `entitySpamMonitoredEntityTypes`, etc.) in `config.js`, disabled by default.
                 *   Created `checkEntitySpam` function in `entityChecks.js` for rate-limiting spawns of monitored entities by a player.
-                *   **Next Step (TODO):** Integrate `checkEntitySpam` effectively into event handlers. This will likely involve:
-                    *   Calling it from `handleItemUseOn` for items that directly place monitored entities (e.g., boat items, armor stand items) to ensure player attribution.
-                    *   Further investigation for attributing spawns from `entitySpawn` event (e.g., spawn eggs) to players.
-                *   (Conceptual tests for entity spam control to be added in `Dev/tests/AntiGriefEntitySpamTests.md` once integration is clearer).
+                *   Integrated `checkEntitySpam` into `handleItemUseOn` for items that place monitored entities (e.g., boats, armor stands). This allows for player-attributed spam detection and prevention for these items.
+                *   If spam is detected via `itemUseOn` and action is "kill", the item use is cancelled, preventing entity spawn.
+                *   **Next Step (TODO):** Further investigation for attributing spawns from `entitySpawn` event (e.g., spawn eggs) to players and integrating `checkEntitySpam` there if feasible.
         *   (TODO): Investigate other common griefing methods (e.g., piston grief) and potential mitigations for them, and advanced block spam detection (density/patterns).
 
 Please refer to `Dev/tasks/todo.md` for new tasks to begin if this list is empty.
