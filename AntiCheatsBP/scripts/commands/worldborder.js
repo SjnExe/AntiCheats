@@ -15,19 +15,17 @@ export const commandData = {
     aliases: ["wb"],
     permissionLevel: permissionLevels.admin,
     requiresCheats: false,
-    syntax: `${config.prefix}wb <set|get|toggle|remove> [args...]`, // General syntax
+    syntax: `${config.prefix}wb <set|get|toggle|remove|shrink|expand> [args...]`, // General syntax
     subcommands: [
         {
             name: "set",
-            description: "Sets a square or circle world border for a dimension. Applies default damage settings.",
-            parameters: [ // Note: These are more for help text generation; actual parsing is manual.
+            description: "Sets a square or circle world border. Cancels any ongoing resize. Applies default damage settings.",
+            parameters: [
                 { name: "shape", type: "string", description: "'square' or 'circle'." },
                 { name: "centerX", type: "number", description: "Center X-coordinate." },
                 { name: "centerZ", type: "number", description: "Center Z-coordinate." },
                 { name: "size", type: "number", description: "For square: half-size. For circle: radius." },
-                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID (e.g., overworld). Defaults to current." },
-                // Damage parameters are not explicitly listed here for 'set' to keep it simpler,
-                // as 'set' now applies defaults. A separate damage config command would be clearer.
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID (e.g., overworld). Defaults to current." }
             ]
         },
         {
@@ -51,30 +49,47 @@ export const commandData = {
             parameters: [
                 { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
             ]
+        },
+        {
+            name: "shrink",
+            description: "Gradually shrinks the border to a new size over a specified time.",
+            parameters: [
+                { name: "new_size", type: "number", description: "Target size (halfSize for square, radius for circle)." },
+                { name: "time_seconds", type: "number", description: "Duration of the shrink operation in seconds." },
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
+        },
+        {
+            name: "expand",
+            description: "Gradually expands the border to a new size over a specified time.",
+            parameters: [
+                { name: "new_size", type: "number", description: "Target size (halfSize for square, radius for circle)." },
+                { name: "time_seconds", type: "number", description: "Duration of the expand operation in seconds." },
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
         }
     ]
 };
 
 export async function execute(player, args, subCommand, config, dependencies) {
     const { playerUtils, logManager } = dependencies;
-    const subCommandData = commandData.subcommands.find(sc => sc.name === subCommand);
 
-    if (!subCommandData) {
-        playerUtils.warnPlayer(player, `Invalid subcommand. Usage: ${commandData.syntax}`);
-        playerUtils.notifyPlayer(player, `Available subcommands: set, get, toggle, remove. Use !help wb <subcommand> for details.`);
+    // Centralized help display if no subcommand or "help" is used
+    if (!subCommand || subCommand === "help") {
+        playerUtils.notifyPlayer(player, "§b--- World Border Commands ---§r");
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Size is half-length for square, radius for circle. Cancels ongoing resize.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb get [dim]§r - Shows current border settings, including resize progress.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb toggle <on|off> [dim]§r - Enables/disables border. Cancels ongoing resize if turning off.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb remove [dim]§r - Deletes border settings. Cancels ongoing resize.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb shrink <new_size> <time_seconds> [dim]§r - Gradually shrinks border.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb expand <new_size> <time_seconds> [dim]§r - Gradually expands border.`);
+        playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
         return;
     }
 
-    // Permission check is handled by commandManager
-
-    // Updated help message
-    if (args.length === 0 && !subCommand) { // Or if subCommand is 'help' and no further args
-        playerUtils.notifyPlayer(player, "§b--- World Border Commands ---§r");
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Size is half-length for square, radius for circle.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb get [dim]§r - Shows current border settings.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb toggle <on|off> [dim]§r - Enables/disables border.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb remove [dim]§r - Deletes border settings.`);
-        playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
+    const subCommandData = commandData.subcommands.find(sc => sc.name === subCommand);
+    if (!subCommandData) {
+        playerUtils.warnPlayer(player, `Invalid subcommand '${subCommand}'. Use '${config.prefix}wb help' for a list of commands.`);
         return;
     }
 
@@ -83,7 +98,7 @@ export async function execute(player, args, subCommand, config, dependencies) {
             await handleSetCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
         case "get":
-            await handleGetCommand(player, args, playerUtils, logManager, dependencies);
+            await handleGetCommand(player, args, playerUtils, logManager, config, dependencies); // Pass config for defaults
             break;
         case "toggle":
             await handleToggleCommand(player, args, playerUtils, logManager, config, dependencies);
@@ -91,10 +106,19 @@ export async function execute(player, args, subCommand, config, dependencies) {
         case "remove":
             await handleRemoveCommand(player, args, playerUtils, logManager, dependencies);
             break;
+        case "shrink":
+            await handleShrinkCommand(player, args, playerUtils, logManager, config, dependencies);
+            break;
+        case "expand":
+            await handleExpandCommand(player, args, playerUtils, logManager, config, dependencies);
+            break;
+        default: // Should be caught by subCommandData check, but as a fallback
+            playerUtils.warnPlayer(player, `Unknown subcommand '${subCommand}'. Use '${config.prefix}wb help'.`);
     }
 }
 
-function normalizeDimensionId(inputDimId, currentPlayerDimensionId) {
+function normalizeDimensionId(player, inputDimId) { // Added player for default dimension
+    const currentPlayerDimensionId = player.dimension.id;
     let normalized = inputDimId ? inputDimId.toLowerCase() : currentPlayerDimensionId;
     if (normalized === "overworld") return "minecraft:overworld";
     if (normalized === "nether") return "minecraft:the_nether";
@@ -116,7 +140,7 @@ async function handleSetCommand(player, args, playerUtils, logManager, config, d
 
     if (args.length < 4) { // Need at least shape, centerX, centerZ, sizeParam
         playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dimensionId]`);
-        playerUtils.notifyPlayer(player, "Size is half-length for square, radius for circle.");
+        playerUtils.notifyPlayer(player, "§7Size is half-length for square, radius for circle.");
         return;
     }
 
@@ -128,7 +152,7 @@ async function handleSetCommand(player, args, playerUtils, logManager, config, d
 
     const centerX = parseInt(args[1]);
     const centerZ = parseInt(args[2]);
-    const sizeParam = parseInt(args[3]);
+    const sizeParam = parseFloat(args[3]); // Use parseFloat for flexibility
 
     if (isNaN(centerX) || isNaN(centerZ) || isNaN(sizeParam)) {
         playerUtils.warnPlayer(player, "Invalid coordinates or size. centerX, centerZ, and size must be numbers.");
@@ -139,15 +163,29 @@ async function handleSetCommand(player, args, playerUtils, logManager, config, d
         return;
     }
 
-    const dimensionIdInput = args.length > 4 ? args[4] : player.dimension.id; // If dimensionId is args[4]
-    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+    const dimensionIdInput = args.length > 4 ? args[4] : undefined; // Pass undefined if not provided
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput); // normalizeDimensionId now takes player
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput}'. Use overworld, nether, or the_end, or their full Minecraft IDs.`);
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end, or their full Minecraft IDs.`);
         return;
     }
 
+    let currentSettings = getBorderSettings(dimensionId);
+    let cancelledResize = false;
+    if (currentSettings && currentSettings.isResizing) {
+        currentSettings.isResizing = false;
+        currentSettings.originalSize = undefined;
+        currentSettings.targetSize = undefined;
+        currentSettings.resizeStartTimeMs = undefined;
+        currentSettings.resizeDurationMs = undefined;
+        // These fields will be cleaned by saveBorderSettings if isResizing is false
+        cancelledResize = true;
+    }
+
+
     let settingsToSave = {
+        ...(currentSettings || {}), // Preserve existing settings like damage if just changing geometry
         shape,
         centerX,
         centerZ,
@@ -181,7 +219,10 @@ async function handleSetCommand(player, args, playerUtils, logManager, config, d
 
         playerUtils.notifyPlayer(player, `§aWorld border set for ${dimensionId}:`);
         playerUtils.notifyPlayer(player, `  Shape: ${shape}, Center: (${centerX},${centerZ}), ${sizeDisplay}.`);
-        playerUtils.notifyPlayer(player, `  Damage settings applied from defaults: ${damageStatus}.`);
+        playerUtils.notifyPlayer(player, `  Damage settings (defaults applied on new border): ${damageStatus}.`);
+        if (cancelledResize) {
+            playerUtils.notifyPlayer(player, "§eCancelled ongoing border resize operation.");
+        }
 
         if (logManager && typeof logManager.addLog === 'function') {
             const savedSettingsForLog = getBorderSettings(dimensionId); // Get the fully processed settings
@@ -195,11 +236,11 @@ async function handleSetCommand(player, args, playerUtils, logManager, config, d
 }
 
 async function handleGetCommand(player, args, playerUtils, logManager, dependencies) {
-    const dimensionIdInput = args.length > 0 ? args[0] : player.dimension.id;
-    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+    const dimensionIdInput = args.length > 0 ? args[0] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[0] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
         return;
     }
 
@@ -230,6 +271,25 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
             playerUtils.notifyPlayer(player, `    Damage Interval: §e${damageInterval} ticks`);
             playerUtils.notifyPlayer(player, `    Teleport After: §e${teleportEvents} damage events`);
         }
+
+        if (settings.isResizing && settings.resizeDurationMs > 0) {
+            const elapsedMs = Date.now() - (settings.resizeStartTimeMs || Date.now());
+            const progressPercent = Math.min(100, (elapsedMs / settings.resizeDurationMs) * 100);
+            const remainingSec = Math.max(0, (settings.resizeDurationMs - elapsedMs) / 1000);
+
+            let currentInterpolatedSize = settings.originalSize; // Default to original if duration is 0 or already past
+            if (settings.resizeDurationMs > 0 && elapsedMs > 0) {
+                 currentInterpolatedSize = settings.originalSize + (settings.targetSize - settings.originalSize) * Math.min(1, elapsedMs / settings.resizeDurationMs);
+            } else if (elapsedMs >= settings.resizeDurationMs) {
+                currentInterpolatedSize = settings.targetSize;
+            }
+
+
+            playerUtils.notifyPlayer(player, `  Resizing: §eYes (from ${settings.originalSize} to ${settings.targetSize})`);
+            playerUtils.notifyPlayer(player, `    Progress: §e${progressPercent.toFixed(1)}% (${remainingSec.toFixed(1)}s remaining)`);
+            playerUtils.notifyPlayer(player, `    Current Effective Size (approx.): §e${currentInterpolatedSize.toFixed(1)}`);
+        }
+
     } else {
         playerUtils.notifyPlayer(player, `§eNo world border configured for ${dimensionId}. Use '${config.prefix}wb set ...' to create one.`);
     }
@@ -247,11 +307,11 @@ async function handleToggleCommand(player, args, playerUtils, logManager, config
         return;
     }
 
-    const dimensionIdInput = args.length > 1 ? args[1] : player.dimension.id;
-    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+    const dimensionIdInput = args.length > 1 ? args[1] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[1] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
         return;
     }
 
@@ -262,30 +322,32 @@ async function handleToggleCommand(player, args, playerUtils, logManager, config
     }
 
     const newState = state === 'on';
-    if (currentSettings.enabled === newState) {
+    if (currentSettings.enabled === newState && !currentSettings.isResizing) { // Don't just say it's already on if a resize is active
         playerUtils.notifyPlayer(player, `§eWorld border for ${dimensionId} is already ${state}.`);
         return;
     }
 
     currentSettings.enabled = newState;
+    let cancelledResizeMessage = "";
 
-            // saveBorderSettings expects the settings object without dimensionId if it's passed as a separate arg.
-            // Our saveBorderSettings(dimensionId, settingsToSave) adds dimensionId internally.
-            // So, we pass the full currentSettings (which includes dimensionId) but it will be overwritten by the explicit param.
-            // More accurately, we should pass the part of settings that doesn't include the dimensionId IF saveBorderSettings expects that.
-            // Our current saveBorderSettings takes (dimensionId, settingsObject), and adds dimensionId to settingsObject.
-            // So, ensure settingsToSave for saveBorderSettings doesn't nest dimensionId if it's already a top-level key.
-            const { dimensionId: dimIdToExclude, ...settingsObjectForSaving } = currentSettings;
+    // If turning border off and a resize is active, cancel the resize.
+    if (!newState && currentSettings.isResizing) {
+        currentSettings.isResizing = false;
+        currentSettings.originalSize = undefined;
+        currentSettings.targetSize = undefined;
+        currentSettings.resizeStartTimeMs = undefined;
+        currentSettings.resizeDurationMs = undefined;
+        cancelledResizeMessage = " Ongoing border resize operation was cancelled.";
+    }
 
-
-            if (saveBorderSettings(dimensionId, settingsObjectForSaving)) {
-        const successMsg = `§aWorld border for ${dimensionId} turned ${state}.`;
+    // saveBorderSettings will clean up undefined resize fields if isResizing is false.
+    if (saveBorderSettings(dimensionId, currentSettings)) {
+        let successMsg = `§aWorld border for ${dimensionId} turned ${state}.${cancelledResizeMessage}`;
         playerUtils.notifyPlayer(player, successMsg);
-                // Log the full settings object to see what's stored, or just the toggle action.
-                // For consistency, log the resulting state including all parameters.
-                const finalSettingsForLog = getBorderSettings(dimensionId); // Get what was actually saved with defaults.
+
+        const finalSettingsForLog = getBorderSettings(dimensionId);
         if (logManager && typeof logManager.addLog === 'function') {
-                    logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_toggle', targetName: dimensionId, details: `Set to ${state}. Full settings: ${JSON.stringify(finalSettingsForLog)}` });
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_toggle', targetName: dimensionId, details: `Set to ${state}. Full settings: ${JSON.stringify(finalSettingsForLog)}` });
         } else {
             playerUtils.debugLog("LogManager or addLog not available for worldborder_toggle.", null);
         }
@@ -295,23 +357,105 @@ async function handleToggleCommand(player, args, playerUtils, logManager, config
 }
 
 async function handleRemoveCommand(player, args, playerUtils, logManager, dependencies) {
-    const dimensionIdInput = args.length > 0 ? args[0] : player.dimension.id;
-    const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
+    const dimensionIdInput = args.length > 0 ? args[0] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[0] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
         return;
     }
 
+    const currentSettings = getBorderSettings(dimensionId);
+    let cancelledResizeMessage = "";
+    if (currentSettings && currentSettings.isResizing) {
+        // No need to modify currentSettings object here, clearBorderSettings removes everything.
+        cancelledResizeMessage = " Ongoing border resize operation was also cancelled.";
+    }
+
     if (clearBorderSettings(dimensionId)) {
-        const successMsg = `§aWorld border settings removed for ${dimensionId}.`;
-        playerUtils.notifyPlayer(player, successMsg);
-         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_remove', targetName: dimensionId, details: 'Border removed' });
+        playerUtils.notifyPlayer(player, `§aWorld border settings removed for ${dimensionId}.${cancelledResizeMessage}`);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_remove', targetName: dimensionId, details: `Border removed.${cancelledResizeMessage}` });
         } else {
             playerUtils.debugLog("LogManager or addLog not available for worldborder_remove.", null);
         }
     } else {
         playerUtils.warnPlayer(player, "§cFailed to remove world border settings. It might not have been set or an error occurred.");
+    }
+}
+
+
+async function handleResizeCommand(player, args, playerUtils, logManager, config, operationType) {
+    // Args: <new_size> <time_seconds> [dimensionId]
+    // operationType is 'shrink' or 'expand'
+    if (args.length < 2) {
+        playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb ${operationType} <new_size> <time_seconds> [dimensionId]`);
+        return;
+    }
+
+    const newSize = parseFloat(args[0]);
+    const timeSeconds = parseFloat(args[1]);
+    const dimensionIdInput = args.length > 2 ? args[2] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end.`);
+        return;
+    }
+    if (isNaN(newSize) || newSize <= 0 || isNaN(timeSeconds) || timeSeconds <= 0) {
+        playerUtils.warnPlayer(player, "New size and time must be positive numbers.");
+        return;
+    }
+
+    let currentSettings = getBorderSettings(dimensionId);
+    if (!currentSettings || !currentSettings.enabled) {
+        playerUtils.warnPlayer(player, `Border in ${dimensionId.replace("minecraft:", "")} is not set or not enabled. Cannot ${operationType}.`);
+        return;
+    }
+
+    const currentActualSize = currentSettings.shape === 'circle' ? currentSettings.radius : currentSettings.halfSize;
+    if (typeof currentActualSize !== 'number') {
+        playerUtils.warnPlayer(player, `Current border size in ${dimensionId.replace("minecraft:", "")} is not properly defined. Cannot ${operationType}.`);
+        return;
+    }
+
+    if (operationType === 'shrink' && newSize >= currentActualSize) {
+        playerUtils.warnPlayer(player, `New size (${newSize}) must be smaller than current size (${currentActualSize}) for shrink.`);
+        return;
+    }
+    if (operationType === 'expand' && newSize <= currentActualSize) {
+        playerUtils.warnPlayer(player, `New size (${newSize}) must be larger than current size (${currentActualSize}) for expand.`);
+        return;
+    }
+
+    if (currentSettings.isResizing) {
+        playerUtils.notifyPlayer(player, "§eNote: Overriding an ongoing border resize operation.");
+    }
+
+    currentSettings.isResizing = true;
+    currentSettings.originalSize = currentActualSize;
+    currentSettings.targetSize = newSize;
+    currentSettings.resizeStartTimeMs = Date.now();
+    currentSettings.resizeDurationMs = timeSeconds * 1000;
+    // The actual 'halfSize' or 'radius' field is not changed here;
+    // it will be dynamically calculated by the tick loop during resize,
+    // and then set to targetSize upon completion.
+
+    if (saveBorderSettings(dimensionId, currentSettings)) {
+        playerUtils.notifyPlayer(player, `§aBorder in ${dimensionId.replace("minecraft:", "")} will ${operationType} from ${currentActualSize} to ${newSize} over ${timeSeconds}s.`);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: `worldborder_${operationType}_start`, targetName: dimensionId, details: JSON.stringify(currentSettings) });
+        }
+    } else {
+        playerUtils.warnPlayer(player, `§cFailed to start border ${operationType}.`);
+    }
+}
+
+async function handleShrinkCommand(player, args, playerUtils, logManager, config, dependencies) {
+    await handleResizeCommand(player, args, playerUtils, logManager, config, "shrink");
+}
+
+async function handleExpandCommand(player, args, playerUtils, logManager, config, dependencies) {
+    await handleResizeCommand(player, args, playerUtils, logManager, config, "expand");
     }
 }

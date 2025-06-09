@@ -137,6 +137,51 @@ To minimize players being teleported into blocks or hazardous locations, an adva
 *   Default damage settings (e.g., `worldBorderDefaultEnableDamage`, `worldBorderDefaultDamageAmount`, etc.) for when a border is set by command and these are not specified.
 *   Particle visual settings (see 3.8).
 
+### 3.9 Gradual Border Resizing (Shrink/Expand)
+
+*   **Objective:** Allow administrators to gradually change the size of an existing world border over a specified duration, rather than an instantaneous change. This is useful for in-game events or for smoothly adjusting playable areas.
+*   **New `WorldBorderSettings` Fields (in `worldBorderManager.js`):**
+    *   `isResizing` (boolean): If `true`, a resize operation is currently active for this border.
+    *   `originalSize` (number): Stores the `halfSize` (for square) or `radius` (for circle) at the moment the resize operation began.
+    *   `targetSize` (number): The final `halfSize` or `radius` the border will reach at the end of the resize.
+    *   `resizeStartTimeMs` (number): Timestamp (from `Date.now()`) when the resize operation was initiated.
+    *   `resizeDurationMs` (number): The total duration, in milliseconds, over which the resize should occur.
+*   **Admin Commands (`commands/worldborder.js`):**
+    *   **`!worldborder shrink <new_target_size> <time_seconds> [dimensionId]`**:
+        *   Initiates a shrink operation. `new_target_size` must be smaller than the current actual size.
+        *   Sets `isResizing = true` and populates `originalSize`, `targetSize`, `resizeStartTimeMs`, `resizeDurationMs`.
+    *   **`!worldborder expand <new_target_size> <time_seconds> [dimensionId]`**:
+        *   Initiates an expansion. `new_target_size` must be larger than the current actual size.
+        *   Sets `isResizing = true` and populates the resize fields similarly.
+    *   **Cancellation of Resize:**
+        *   Executing `!worldborder set ...` for a dimension with an ongoing resize will cancel the resize and establish the new static border.
+        *   Executing `!worldborder toggle off` or `!worldborder remove` for a dimension with an ongoing resize will also cancel the resize operation before disabling/removing the border.
+*   **Tick Loop Logic (`main.js`):**
+    *   **Dimension Loop (Finalization - runs before player loop):**
+        *   Iterates through known dimensions (e.g., overworld, nether, end).
+        *   For each dimension, fetches its `borderSettings`.
+        *   If `borderSettings.isResizing` is true and `borderSettings.enabled` is true:
+            *   Calculates `elapsedMs = Date.now() - resizeStartTimeMs`.
+            *   If `elapsedMs >= resizeDurationMs` (resize has completed):
+                *   Updates the primary size field (`halfSize` or `radius`) to `targetSize`.
+                *   Sets `isResizing = false`.
+                *   Clears `originalSize`, `targetSize`, `resizeStartTimeMs`, `resizeDurationMs` from settings.
+                *   Saves the updated `borderSettings`.
+                *   Logs the completion of the resize.
+    *   **Player Loop (Effective Size Calculation - for enforcement & visuals):**
+        *   After fetching `borderSettings` for the player's current dimension:
+        *   If `borderSettings.isResizing` is true and `borderSettings.enabled` is true (and all resize fields are valid):
+            *   Calculates `elapsedMs` and `progress = Math.min(1, elapsedMs / resizeDurationMs)`.
+            *   Calculates `currentEffectiveSize = originalSize + (targetSize - originalSize) * progress` using linear interpolation.
+            *   This `currentEffectiveSize` is then used as the `currentEffectiveHalfSize` (for squares) or `currentEffectiveRadius` (for circles) for that tick.
+        *   If not resizing, `currentEffectiveHalfSize` or `currentEffectiveRadius` are taken directly from the stored `halfSize` or `radius`.
+    *   **Enforcement and Visuals:** All border enforcement checks (determining if player is outside, calculating teleport target) and particle visual rendering logic use the `currentEffectiveHalfSize` or `currentEffectiveRadius` calculated in the player loop. This ensures they adapt to the border's size dynamically during a resize.
+*   **`!worldborder get` Display:**
+    *   If a resize is active for the queried dimension, the command output includes:
+        *   Indication that a resize is in progress (e.g., "Resizing: Yes (from X to Y)").
+        *   The progress of the resize as a percentage.
+        *   The remaining time in seconds.
+        *   The current, dynamically calculated effective size of the border.
 
 ### 3.8. Visual Indicators (Particles)
 
@@ -172,5 +217,6 @@ To help players understand where the border is, especially when they are close, 
 
 *   More sophisticated "safe teleport" logic if the current implementation proves insufficient (e.g., more extensive search, hazard type detection).
 *   Per-world (if multi-world support ever comes to BDS scripting in this way) or per-dimension group settings.
-*   Gradual border shrinking/expanding commands.
 *   Different particle patterns or effects for the visual border.
+*   Different resize interpolation methods (e.g., ease-in/out) instead of just linear for `currentEffectiveSize`.
+*   Commands to pause/resume an ongoing resize.

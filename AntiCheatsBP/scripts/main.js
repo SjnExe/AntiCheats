@@ -510,6 +510,66 @@ function findSafeY(player, dimension, x, z, startY, playerUtilsInstance) {
 mc.system.runInterval(async () => {
     currentTick++;
 
+    // --- Process Active Border Resizes (Dimension-based, runs once per server tick) ---
+    const knownBorderDimensions = ["minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"];
+    for (const dimId of knownBorderDimensions) {
+        let dimBorderSettings = null;
+        try {
+            // Ensure getBorderSettings and saveBorderSettings are in scope. They are imported at the top of main.js.
+            dimBorderSettings = getBorderSettings(dimId);
+        } catch (e) {
+            console.warn(`[WB Resize] Error getting border settings for ${dimId} during resize check: ${e}`);
+            continue;
+        }
+
+        if (dimBorderSettings && dimBorderSettings.isResizing && dimBorderSettings.enabled) {
+            const currentTimeMs = Date.now();
+
+            if (typeof dimBorderSettings.resizeStartTimeMs !== 'number' ||
+                typeof dimBorderSettings.resizeDurationMs !== 'number' ||
+                typeof dimBorderSettings.originalSize !== 'number' ||
+                typeof dimBorderSettings.targetSize !== 'number') {
+
+                console.warn(`[WB Resize] Invalid resize parameters for dimension ${dimId}. Cancelling resize.`);
+                dimBorderSettings.isResizing = false;
+                delete dimBorderSettings.originalSize;
+                delete dimBorderSettings.targetSize;
+                delete dimBorderSettings.resizeStartTimeMs;
+                delete dimBorderSettings.resizeDurationMs;
+                saveBorderSettings(dimId, dimBorderSettings);
+                continue;
+            }
+
+            const elapsedMs = currentTimeMs - dimBorderSettings.resizeStartTimeMs;
+            const durationMs = dimBorderSettings.resizeDurationMs;
+
+            if (elapsedMs >= durationMs) { // Resize finished
+                const targetSize = dimBorderSettings.targetSize;
+                if (dimBorderSettings.shape === "square") {
+                    dimBorderSettings.halfSize = targetSize;
+                } else if (dimBorderSettings.shape === "circle") {
+                    dimBorderSettings.radius = targetSize;
+                }
+                dimBorderSettings.isResizing = false;
+                delete dimBorderSettings.originalSize;
+                delete dimBorderSettings.targetSize;
+                delete dimBorderSettings.resizeStartTimeMs;
+                delete dimBorderSettings.resizeDurationMs;
+
+                if (saveBorderSettings(dimId, dimBorderSettings)) {
+                     console.warn(`[AntiCheat][WorldBorder] Border resize in ${dimId.replace("minecraft:","")} completed. New size parameter: ${targetSize}.`);
+                     // Ensure logManager is imported and available if this line is uncommented
+                     if (logManager && typeof logManager.addLog === 'function') {
+                        logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` });
+                     }
+                } else {
+                    console.warn(`[AntiCheat][WorldBorder] Failed to save completed border resize for ${dimId}.`);
+                }
+            }
+        }
+    }
+    // --- End of Processing Active Border Resizes ---
+
     const allPlayers = mc.world.getAllPlayers();
     playerDataManager.cleanupActivePlayerData(allPlayers);
 
@@ -638,52 +698,86 @@ mc.system.runInterval(async () => {
                     let targetX = loc.x; // Default to current location, will be updated if outside
                     let targetZ = loc.z;
 
-                    if (borderSettings.shape === "square" && typeof borderSettings.halfSize === 'number' && borderSettings.halfSize > 0) {
-                        const { centerX, centerZ, halfSize } = borderSettings;
-                        const minX = centerX - halfSize;
-                        const maxX = centerX + halfSize;
-                        const minZ = centerZ - halfSize;
-                        const maxZ = centerZ + halfSize;
+                    // Calculate effective size if resizing
+                    let currentEffectiveHalfSize = borderSettings.halfSize;
+                    let currentEffectiveRadius = borderSettings.radius;
+
+                    if (borderSettings.isResizing && borderSettings.enabled &&
+                        typeof borderSettings.originalSize === 'number' &&
+                        typeof borderSettings.targetSize === 'number' &&
+                        typeof borderSettings.resizeStartTimeMs === 'number' &&
+                        typeof borderSettings.resizeDurationMs === 'number') { // durationMs can be 0 for instant, but check other fields
+
+                        const currentTimeMs = Date.now();
+                        const elapsedMs = currentTimeMs - borderSettings.resizeStartTimeMs;
+                        const durationMs = borderSettings.resizeDurationMs;
+                        let progress = 0;
+
+                        if (durationMs > 0) {
+                             progress = Math.min(1, elapsedMs / durationMs);
+                        } else { // If duration is 0 or negative, snap to target (already past start time)
+                             progress = 1;
+                        }
+
+                        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * progress;
+
+                        if (borderSettings.shape === "square") {
+                            currentEffectiveHalfSize = interpolatedSize;
+                        } else if (borderSettings.shape === "circle") {
+                            currentEffectiveRadius = interpolatedSize;
+                        }
+                    } else if (borderSettings.isResizing && borderSettings.enabled) {
+                        // Fallback or if resize fields are somehow incomplete after validation in dimension loop
+                        // This indicates an issue, ideally the dimension loop should have cleaned/finalized it.
+                        // For safety, use targetSize if isResizing is still true but params seem off.
+                        if (typeof borderSettings.targetSize === 'number') {
+                            if (borderSettings.shape === "square") {
+                                currentEffectiveHalfSize = borderSettings.targetSize;
+                            } else if (borderSettings.shape === "circle") {
+                                currentEffectiveRadius = borderSettings.targetSize;
+                            }
+                        }
+                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: In-progress resize for dim ${player.dimension.id} has incomplete parameters in player loop. Using targetSize or stored size.`, player.nameTag);
+                    }
+
+
+                    if (borderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
+                        const { centerX, centerZ } = borderSettings;
+                        const minX = centerX - currentEffectiveHalfSize;
+                        const maxX = centerX + currentEffectiveHalfSize;
+                        const minZ = centerZ - currentEffectiveHalfSize;
+                        const maxZ = centerZ + currentEffectiveHalfSize;
 
                         if (loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ) {
                             isPlayerOutside = true;
-                            // Clamp to the closest point on the border edge, then offset slightly inwards
-                            targetX = loc.x; // Start with current location
+                            targetX = loc.x;
                             targetZ = loc.z;
-
-                            if (targetX < minX) targetX = minX + 0.5;
-                            else if (targetX > maxX) targetX = maxX - 0.5;
-
-                            if (targetZ < minZ) targetZ = minZ + 0.5;
-                            else if (targetZ > maxZ) targetZ = maxZ - 0.5;
+                            if (targetX < minX) targetX = minX + 0.5; else if (targetX > maxX) targetX = maxX - 0.5;
+                            if (targetZ < minZ) targetZ = minZ + 0.5; else if (targetZ > maxZ) targetZ = maxZ - 0.5;
                         }
-                    } else if (borderSettings.shape === "circle" && typeof borderSettings.radius === 'number' && borderSettings.radius > 0) {
-                        const { centerX, centerZ, radius } = borderSettings;
+                    } else if (borderSettings.shape === "circle" && typeof currentEffectiveRadius === 'number' && currentEffectiveRadius > 0) {
+                        const { centerX, centerZ } = borderSettings;
                         const dx = loc.x - centerX;
                         const dz = loc.z - centerZ;
                         const distSq = dx * dx + dz * dz;
-                        const radiusSq = radius * radius;
+                        const radiusSq = currentEffectiveRadius * currentEffectiveRadius;
 
                         if (distSq > radiusSq) {
                             isPlayerOutside = true;
                             const currentDist = Math.sqrt(distSq);
-                            const teleportOffset = 0.5; // How far inside the border to place them
-
-                            // Prevent division by zero if currentDist is 0 (player is at center)
-                            // And ensure radius is greater than offset to avoid negative scaling factor
-                            if (currentDist === 0 || radius <= teleportOffset) {
-                                targetX = centerX + (radius > teleportOffset ? radius - teleportOffset : 0); // Nudge along X-axis
+                            const teleportOffset = 0.5;
+                            if (currentDist === 0 || currentEffectiveRadius <= teleportOffset) {
+                                targetX = centerX + (currentEffectiveRadius > teleportOffset ? currentEffectiveRadius - teleportOffset : 0);
                                 targetZ = centerZ;
                             } else {
-                                const scale = (radius - teleportOffset) / currentDist;
+                                const scale = (currentEffectiveRadius - teleportOffset) / currentDist;
                                 targetX = centerX + dx * scale;
                                 targetZ = centerZ + dz * scale;
                             }
                         }
-                    } else if (borderSettings.shape) { // Shape is defined but not square or circle, or params missing
-                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Invalid or incomplete border settings for shape '${borderSettings.shape}' in dimension ${player.dimension.id}. Skipping enforcement for ${player.nameTag}.`, player.nameTag);
+                    } else if (borderSettings.shape) {
+                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Invalid shape ('${borderSettings.shape}') or non-positive effective size (Sq: ${currentEffectiveHalfSize}, Circ: ${currentEffectiveRadius}) in dimension ${player.dimension.id}. Skipping enforcement.`, player.nameTag);
                     }
-
 
                     if (isPlayerOutside) {
                         pData.ticksOutsideBorder = (pData.ticksOutsideBorder || 0) + 1;
@@ -784,8 +878,7 @@ mc.system.runInterval(async () => {
                     pData.lastBorderVisualTick = currentTick;
                     // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
 
-                    const playerLoc = player.location;
-                    const playerLoc = player.location;
+                    const playerLoc = player.location; // playerLoc is already defined earlier in the player loop
                     const particleName = config.worldBorderParticleName;
                     const visualRange = config.worldBorderVisualRange;
                     const density = Math.max(0.1, config.worldBorderParticleDensity);
@@ -793,12 +886,15 @@ mc.system.runInterval(async () => {
                     const segmentLength = config.worldBorderParticleSegmentLength;
                     const yBase = Math.floor(playerLoc.y);
 
-                    if (currentBorderSettings.shape === "square" && typeof currentBorderSettings.halfSize === 'number' && currentBorderSettings.halfSize > 0) {
-                        const { centerX, centerZ, halfSize } = currentBorderSettings;
-                        const minX = centerX - halfSize;
-                        const maxX = centerX + halfSize;
-                        const minZ = centerZ - halfSize;
-                        const maxZ = centerZ + halfSize;
+                    // Use currentEffectiveHalfSize/Radius from the enforcement section
+                    // currentBorderSettings is the same as borderSettings from the enforcement section in this player loop iteration
+
+                    if (currentBorderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
+                        const { centerX, centerZ } = currentBorderSettings;
+                        const minX = centerX - currentEffectiveHalfSize;
+                        const maxX = centerX + currentEffectiveHalfSize;
+                        const minZ = centerZ - currentEffectiveHalfSize;
+                        const maxZ = centerZ + currentEffectiveHalfSize;
 
                         const spawnSquareParticleLine = (isXPlane, fixedCoord, startDynamic, endDynamic, playerCoordDynamic) => {
                             const lengthToRender = Math.min(segmentLength, Math.abs(endDynamic - startDynamic));
@@ -822,25 +918,24 @@ mc.system.runInterval(async () => {
                         if (Math.abs(playerLoc.z - minZ) < visualRange) spawnSquareParticleLine(false, minZ, minX, maxX, playerLoc.x);
                         if (Math.abs(playerLoc.z - maxZ) < visualRange) spawnSquareParticleLine(false, maxZ, minX, maxX, playerLoc.x);
 
-                    } else if (currentBorderSettings.shape === "circle" && typeof currentBorderSettings.radius === 'number' && currentBorderSettings.radius > 0) {
-                        const { centerX, centerZ, radius } = currentBorderSettings;
+                    } else if (currentBorderSettings.shape === "circle" && typeof currentEffectiveRadius === 'number' && currentEffectiveRadius > 0) {
+                        const { centerX, centerZ } = currentBorderSettings;
+                        const radiusToUse = currentEffectiveRadius;
+
                         const distanceToCenter = Math.sqrt(Math.pow(playerLoc.x - centerX, 2) + Math.pow(playerLoc.z - centerZ, 2));
 
-                        if (Math.abs(distanceToCenter - radius) < visualRange) {
+                        if (Math.abs(distanceToCenter - radiusToUse) < visualRange) {
                             const playerAngle = Math.atan2(playerLoc.z - centerZ, playerLoc.x - centerX);
-                            // Calculate the angle subtended by the segmentLength at the given radius
-                            // Ensure radius is not zero to avoid division by zero
-                            const halfAngleSpan = radius > 0 ? (segmentLength / 2) / radius : Math.PI; // Default to full circle if radius is 0
+                            const halfAngleSpan = radiusToUse > 0 ? (segmentLength / 2) / radiusToUse : Math.PI;
 
                             for (let i = 0; i < segmentLength * density; i++) {
-                                const currentAngleOffset = (i / (segmentLength * density) - 0.5) * (segmentLength / radius); // Spread particles over arc length
+                                const currentAngleOffset = (i / (segmentLength * density) - 0.5) * (segmentLength / radiusToUse);
                                 const angle = playerAngle + currentAngleOffset;
 
-                                // Ensure we only render the intended segment length by checking the offset angle
                                 if (Math.abs(currentAngleOffset) > halfAngleSpan && segmentLength * density > 1) continue;
 
-                                const particleX = centerX + radius * Math.cos(angle);
-                                const particleZ = centerZ + radius * Math.sin(angle);
+                                const particleX = centerX + radiusToUse * Math.cos(angle);
+                                const particleZ = centerZ + radiusToUse * Math.sin(angle);
                                 for (let h = 0; h < wallHeight; h++) {
                                     try {
                                         player.dimension.spawnParticle(particleName, { x: particleX, y: yBase + h, z: particleZ });

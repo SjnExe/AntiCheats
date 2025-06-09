@@ -1,6 +1,17 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **World Border Enhancement: Gradual Border Changes (Shrink/Expand)**
+    *   Implemented functionality for world borders to gradually shrink or expand over a specified duration.
+    *   **Storage:** Added new fields to `WorldBorderSettings` in `worldBorderManager.js` to track resize state: `isResizing`, `originalSize` (initial halfSize/radius), `targetSize`, `resizeStartTimeMs`, `resizeDurationMs`. `saveBorderSettings` validates these fields if `isResizing` is true, or clears them if false.
+    *   **Admin Commands:**
+        *   Added `!worldborder shrink <new_size> <time_seconds> [dimensionId]` and `!worldborder expand <new_size> <time_seconds> [dimensionId]` subcommands to `commands/worldborder.js` to initiate a resize.
+        *   The `!worldborder set`, `toggle off`, and `remove` commands now cancel any ongoing resize for the affected dimension.
+        *   `!worldborder get` displays detailed progress of an active resize (percentage, time remaining, current effective size).
+    *   **Tick Loop Logic (`main.js`):**
+        *   A dimension-based loop (outside player loop) finalizes completed resizes by updating the stored `halfSize`/`radius` to `targetSize` and clearing resize flags. It also validates resize parameters and cancels faulty resizes.
+        *   Within the player loop, if a border is resizing, an `currentEffectiveHalfSize` or `currentEffectiveRadius` is calculated each tick using linear interpolation.
+        *   Both world border enforcement (out-of-bounds checks, teleportation) and particle visuals now use this dynamic effective size, adapting in real-time to the resize.
 *   **World Border Enhancement: Circular Border Shape Support**
     *   Modified `worldBorderManager.js` to store and retrieve border settings for both "square" (with `halfSize`) and "circle" (with `radius`) shapes. Validation ensures appropriate parameters for the selected shape.
     *   Updated `!worldborder set` command to accept `circle <centerX> <centerZ> <radius> ...` and `!worldborder get` to display information correctly for circular borders.

@@ -20,6 +20,11 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
  * @property {number} [damageAmount] - Optional: Damage per interval.
  * @property {number} [damageIntervalTicks] - Optional: Interval in ticks for damage.
  * @property {number} [teleportAfterNumDamageEvents] - Optional: Teleport after this many damage events.
+ * @property {boolean} [isResizing] - Optional: True if a resize operation is currently in progress.
+ * @property {number} [originalSize] - Optional: The halfSize or radius at the start of the resize.
+ * @property {number} [targetSize] - Optional: The target halfSize or radius for the resize.
+ * @property {number} [resizeStartTimeMs] - Optional: Timestamp (ms) when the resize operation began.
+ * @property {number} [resizeDurationMs] - Optional: Total duration (ms) for the resize operation.
  */
 
 /**
@@ -61,11 +66,13 @@ export function getBorderSettings(dimensionId) {
                 return null;
             }
 
-            // Damage properties are optional and will be handled by the caller if not present
+            // Damage and resize properties are optional and will be handled by the caller if not present
+            // No specific validation for resize fields here, as they are managed by commands and the tick loop
             return settings;
         }
     } catch (error) {
         // This can happen if JSON.parse fails or if the property is not a string.
+        // It's also possible for getDynamicProperty to throw if the key is invalid, though unlikely with prefixing.
         // console.warn(`[WorldBorderManager] Error parsing border settings for ${dimensionId}: ${error}`);
     }
     return null;
@@ -103,10 +110,40 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
             return false;
         }
         fullSettings.halfSize = undefined; // Ensure halfSize is explicitly not part of circle settings
-    } else {
-        console.warn("[WorldBorderManager] saveBorderSettings: Invalid or missing shape provided.");
+    } else if (fullSettings.shape) { // Shape exists but is not 'square' or 'circle'
+        console.warn(`[WorldBorderManager] saveBorderSettings: Unknown shape '${fullSettings.shape}' provided.`);
+        return false;
+    } else { // Shape is missing
+        console.warn("[WorldBorderManager] saveBorderSettings: Shape is required.");
         return false;
     }
+
+    // Ensure resize fields are either all present or all absent (or handle partial cases if necessary)
+    const resizeFields = ['isResizing', 'originalSize', 'targetSize', 'resizeStartTimeMs', 'resizeDurationMs'];
+    const hasSomeResizeFields = resizeFields.some(field => fullSettings[field] !== undefined);
+    const hasAllResizeFieldsIfResizing = fullSettings.isResizing ?
+        (typeof fullSettings.originalSize === 'number' &&
+         typeof fullSettings.targetSize === 'number' &&
+         typeof fullSettings.resizeStartTimeMs === 'number' &&
+         typeof fullSettings.resizeDurationMs === 'number' && fullSettings.resizeDurationMs > 0)
+        : true; // If not resizing, other fields don't strictly need to be there or can be cleaned up
+
+    if (hasSomeResizeFields && !hasAllResizeFieldsIfResizing && fullSettings.isResizing) {
+        console.warn("[WorldBorderManager] saveBorderSettings: Incomplete or invalid resize operation data. All resize fields must be valid if isResizing is true.");
+        // Optionally, clean up partial resize fields if isResizing is false
+        // For now, we'll rely on the command layer to set these correctly or clear them.
+        return false;
+    }
+
+    // If not resizing, ensure resize fields are cleaned up (set to undefined)
+    if (!fullSettings.isResizing) {
+        fullSettings.isResizing = undefined; // or false, but undefined is cleaner for JSON
+        fullSettings.originalSize = undefined;
+        fullSettings.targetSize = undefined;
+        fullSettings.resizeStartTimeMs = undefined;
+        fullSettings.resizeDurationMs = undefined;
+    }
+
 
     try {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));
