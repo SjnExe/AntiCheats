@@ -94,6 +94,38 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
         }
     }
 
+    // Chat During Item Use Check
+    if (currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
+        let itemUseState = "unknown";
+        if (pData.isUsingConsumable) itemUseState = "using a consumable";
+        if (pData.isChargingBow) itemUseState = "charging a bow";
+
+        const violationDetails = {
+            playerName: player.nameTag,
+            itemUseState: itemUseState,
+            messageContent: originalMessage // originalMessage is from eventData
+        };
+
+        if (actualExecuteCheckAction) {
+            await actualExecuteCheckAction(player, "player_chat_during_item_use", violationDetails, dependencies);
+        } else {
+            currentPUtils.debugLog("ChatDuringItemUse: executeCheckAction not available.", null);
+            if (currentLogManager && typeof currentLogManager.addLog === 'function') {
+                currentLogManager.addLog({ adminName: "System", actionType: "error_missing_action_manager", targetName: player.nameTag, details: "ChatDuringItemUse: executeCheckAction missing." });
+            }
+        }
+
+        const profile = currentConfig.checkActionProfiles?.player_chat_during_item_use;
+        if (profile && profile.cancelMessage) {
+            eventData.cancel = true;
+            currentPUtils.warnPlayer(player, `§cYou cannot chat while ${itemUseState}.`);
+            if (currentPUtils.debugLog && pData.isWatched) {
+                currentPUtils.debugLog(`Chat cancelled for ${player.nameTag} (item use state: ${itemUseState}).`, player.nameTag);
+            }
+            return; // Stop further processing
+        }
+    }
+
     if (pData && addLog) { // Ensure pData and addLog are available
         const lastLocation = pData.lastPosition || player.location; // Fallback to current if lastPosition not set
         const lastDimensionId = (pData.lastDimensionId || player.dimension.id).split(':')[1];
@@ -128,11 +160,13 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
  * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data.
  * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for players.
  * @param {import('../config.js').editableConfigValues} config - The server configuration object.
- * @param {object} dependencies - Additional dependencies, expected to include `addLog`.
+ * @param {object} dependencies - Additional dependencies, expected to include full `config`, `playerUtils`, `logManager`, `actionManager`, `checks`, and `addLog`.
  */
-export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, dependencies) {
+export async function handlePlayerSpawn(eventData, playerDataManager, playerUtils, globalConfig, dependencies) { // Renamed config to globalConfig to avoid conflict with dependencies.config
     const { player, initialSpawn } = eventData; // initialSpawn can be useful
-    playerUtils.debugLog(`Processing playerSpawn event for ${player.nameTag} (Initial Spawn: ${initialSpawn}). Tick: ${mc.system.currentTick}`, player.nameTag);
+    // Use playerUtils from dependencies if available, otherwise fallback to the direct parameter.
+    const currentPUtils = dependencies.playerUtils || playerUtils;
+    currentPUtils.debugLog(`Processing playerSpawn event for ${player.nameTag} (Initial Spawn: ${initialSpawn}). Tick: ${mc.system.currentTick}`, player.nameTag);
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
         return;
@@ -225,20 +259,69 @@ export function handlePlayerSpawn(eventData, playerDataManager, playerUtils, con
 
         // Death Coords message display logic
         // pData should already be fetched. If not, the earlier block would handle it or log.
-        if (pData && pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
+        // Use dependencies.config for feature checks, globalConfig might be the base config module.
+        if (pData && pData.deathMessageToShowOnSpawn && dependencies.config.enableDeathCoordsMessage) {
             // Send with a slight delay to ensure it's seen
             mc.system.runTimeout(() => {
                 player.sendMessage(pData.deathMessageToShowOnSpawn);
             }, 5); // 5 ticks = 0.25 seconds
 
-            playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, pData.isWatched ? player.nameTag : null);
+            currentPUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, pData.isWatched ? player.nameTag : null);
             pData.deathMessageToShowOnSpawn = null; // Clear the message
             pData.isDirtyForSave = true; // Mark for saving
         }
 
+        // Invalid Render Distance Check on Spawn
+        // Ensure all necessary parts of 'dependencies' are available as expected by checkInvalidRenderDistance
+        if (dependencies.checks?.checkInvalidRenderDistance && dependencies.config?.enableInvalidRenderDistanceCheck) {
+            await dependencies.checks.checkInvalidRenderDistance(
+                player,
+                pData,
+                dependencies.config, // Full config from dependencies
+                currentPUtils, // Use the resolved playerUtils
+                dependencies.logManager,
+                dependencies.actionManager, // Pass the actionManager object/wrapper
+                dependencies // Pass the full dependencies object passed to handlePlayerSpawn
+            );
+        }
+
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player.nameTag}: ${error.stack || error}`);
-        playerUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
+        currentPUtils.debugLog(`Error in handlePlayerSpawn for ${player.nameTag}: ${error}`, player.nameTag);
+    }
+}
+
+/**
+ * Handles piston activation events for AntiGrief checks (Piston Lag).
+ * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData - The event data.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Dependencies needed by the handler.
+ */
+export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
+    const { config, playerUtils, logManager, actionManager, checks } = dependencies; // Ensure 'checks' is destructured
+
+    if (!config.enablePistonLagCheck) {
+        return;
+    }
+
+    const pistonBlock = eventData.pistonBlock;
+    // PistonActivateAfterEvent has event.dimension
+    const dimensionId = eventData.dimension.id;
+
+    if (!pistonBlock) {
+        playerUtils.debugLog("PistonLag: eventData.pistonBlock is undefined in handlePistonActivate_AntiGrief.", null);
+        return;
+    }
+    if (!dimensionId) {
+        playerUtils.debugLog(`PistonLag: dimensionId is undefined for piston at ${JSON.stringify(pistonBlock.location)}.`, null);
+        return;
+    }
+
+
+    // Call checkPistonLag from the 'checks' object
+    if (checks && typeof checks.checkPistonLag === 'function') {
+        await checks.checkPistonLag(pistonBlock, dimensionId, config, playerUtils, logManager, actionManager, dependencies);
+    } else {
+        playerUtils.debugLog("PistonLag: checkPistonLag function is not available in dependencies.checks.", null);
     }
 }
 
@@ -324,6 +407,106 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
                     targetName: playerNameOrContext, // "Unknown/Environment"
                     details: violationDetails.detailsString
                 });
+            }
+        }
+    }
+
+    // --- Snow Golem Spam Control ---
+    else if (currentConfig.enableEntitySpamAntiGrief && eventData.entity?.typeId === "minecraft:snow_golem") {
+        const spawnedGolem = eventData.entity;
+        actualPlayerUtils.debugLog(`AntiGrief: Snow Golem spawned at ${JSON.stringify(spawnedGolem.location)}. Checking for player attribution. Tick: ${currentTick}`, null);
+
+        for (const player of mc.world.getAllPlayers()) {
+            if (!playerDataManager) {
+                actualPlayerUtils.debugLog(`AntiGrief: playerDataManager is not available in dependencies for Snow Golem check. Skipping.`, null);
+                break;
+            }
+            const pData = playerDataManager.getPlayerData(player.id);
+
+            if (pData && pData.expectingConstructedEntity && pData.expectingConstructedEntity.type === "minecraft:snow_golem") {
+                const expectedData = pData.expectingConstructedEntity;
+                const pumpkinLoc = expectedData.location;
+                const expectedGolemLoc = { x: pumpkinLoc.x, y: pumpkinLoc.y - 1, z: pumpkinLoc.z };
+
+                if (Math.abs(spawnedGolem.location.x - expectedGolemLoc.x) <= 0.5 &&
+                    Math.abs(spawnedGolem.location.y - expectedGolemLoc.y) <= 0.1 &&
+                    Math.abs(spawnedGolem.location.z - expectedGolemLoc.z) <= 0.5 &&
+                    (currentTick - expectedData.tick <= 5) &&
+                    player.dimension.id === expectedData.dimensionId) {
+
+                    actualPlayerUtils.debugLog(`AntiGrief: Attributed snow golem spawn at ${JSON.stringify(spawnedGolem.location)} to player ${player.nameTag}. Expected data: ${JSON.stringify(expectedData)}`, pData.isWatched ? player.nameTag : null);
+
+                    if (checks && typeof checks.checkEntitySpam === 'function') {
+                        const isSpam = await checks.checkEntitySpam(
+                            player, "minecraft:snow_golem", currentConfig, pData,
+                            actualPlayerUtils, playerDataManager, logManager,
+                            actionManager.executeCheckAction, currentTick
+                        );
+
+                        if (isSpam && currentConfig.entitySpamAction === "kill") {
+                            if (spawnedGolem.isValid()) {
+                                spawnedGolem.kill();
+                                actualPlayerUtils.debugLog(`AntiGrief: Killed spam-spawned snow golem from ${player.nameTag}.`, pData.isWatched ? player.nameTag : null);
+                            }
+                        }
+                    } else {
+                        actualPlayerUtils.debugLog(`AntiGrief: checkEntitySpam function not available in dependencies.checks for Snow Golem check for ${player.nameTag}.`, null);
+                    }
+
+                    pData.expectingConstructedEntity = null;
+                    pData.isDirtyForSave = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    // --- Iron Golem Spam Control ---
+    else if (currentConfig.enableEntitySpamAntiGrief && eventData.entity?.typeId === "minecraft:iron_golem") {
+        const spawnedGolem = eventData.entity;
+        actualPlayerUtils.debugLog(`AntiGrief: Iron Golem spawned at ${JSON.stringify(spawnedGolem.location)}. Checking for player attribution. Tick: ${currentTick}`, null);
+
+        for (const player of mc.world.getAllPlayers()) {
+            if (!playerDataManager) {
+                actualPlayerUtils.debugLog(`AntiGrief: playerDataManager is not available in dependencies for Iron Golem check. Skipping.`, null);
+                break;
+            }
+            const pData = playerDataManager.getPlayerData(player.id);
+
+            if (pData && pData.expectingConstructedEntity && pData.expectingConstructedEntity.type === "minecraft:iron_golem") {
+                const expectedData = pData.expectingConstructedEntity;
+                const pumpkinLoc = expectedData.location;
+                const expectedGolemLoc = { x: pumpkinLoc.x, y: pumpkinLoc.y - 1, z: pumpkinLoc.z };
+
+                if (Math.abs(spawnedGolem.location.x - expectedGolemLoc.x) <= 0.5 &&
+                    Math.abs(spawnedGolem.location.y - expectedGolemLoc.y) <= 0.5 &&
+                    Math.abs(spawnedGolem.location.z - expectedGolemLoc.z) <= 0.5 &&
+                    (currentTick - expectedData.tick <= 5) &&
+                    player.dimension.id === expectedData.dimensionId) {
+
+                    actualPlayerUtils.debugLog(`AntiGrief: Attributed iron golem spawn at ${JSON.stringify(spawnedGolem.location)} to player ${player.nameTag}. Expected data: ${JSON.stringify(expectedData)}`, pData.isWatched ? player.nameTag : null);
+
+                    if (checks && typeof checks.checkEntitySpam === 'function') {
+                        const isSpam = await checks.checkEntitySpam(
+                            player, "minecraft:iron_golem", currentConfig, pData,
+                            actualPlayerUtils, playerDataManager, logManager,
+                            actionManager.executeCheckAction, currentTick
+                        );
+
+                        if (isSpam && currentConfig.entitySpamAction === "kill") {
+                            if (spawnedGolem.isValid()) {
+                                spawnedGolem.kill();
+                                actualPlayerUtils.debugLog(`AntiGrief: Killed spam-spawned iron golem from ${player.nameTag}.`, pData.isWatched ? player.nameTag : null);
+                            }
+                        }
+                    } else {
+                        actualPlayerUtils.debugLog(`AntiGrief: checkEntitySpam function not available for Iron Golem check for ${player.nameTag}.`, null);
+                    }
+
+                    pData.expectingConstructedEntity = null;
+                    pData.isDirtyForSave = true;
+                    break;
+                }
             }
         }
     }
@@ -1284,6 +1467,60 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
             dependencies.currentTick
         );
     }
+
+    // --- Snow Golem & Iron Golem Construction Detection ---
+    const { playerDataManager: pDataManagerForConstruct, playerUtils: pUtilsForConstruct, config: constructConfig, currentTick: constructCurrentTick } = dependencies;
+
+    if (constructConfig && constructConfig.enableEntitySpamAntiGrief && block.typeId && (block.typeId === "minecraft:carved_pumpkin" || block.typeId === "minecraft:pumpkin")) {
+        if (pData) { // pData is from the outer scope of handlePlayerPlaceBlockAfter
+            try {
+                const pumpkinLoc = block.location;
+                const dimension = player.dimension;
+
+                // Snow Golem Check
+                const snowBlockBelow = dimension.getBlock(pumpkinLoc.offset(0, -1, 0));
+                const snowBlockTwoBelow = dimension.getBlock(pumpkinLoc.offset(0, -2, 0));
+
+                if (snowBlockBelow?.typeId === "minecraft:snow_block" && snowBlockTwoBelow?.typeId === "minecraft:snow_block") {
+                    pData.expectingConstructedEntity = {
+                        type: "minecraft:snow_golem",
+                        location: pumpkinLoc,
+                        tick: constructCurrentTick,
+                        dimensionId: dimension.id
+                    };
+                    pData.isDirtyForSave = true;
+                    pUtilsForConstruct.debugLog(`AntiGrief: Player ${player.nameTag} completed potential snow golem structure at ${JSON.stringify(pumpkinLoc)}. Expecting spawn.`, pData.isWatched ? player.nameTag : null);
+                } else {
+                    // Iron Golem Check (only if not a snow golem structure)
+                    const centerIronBelow = dimension.getBlock(pumpkinLoc.offset(0, -1, 0));
+                    const bodyIron = dimension.getBlock(pumpkinLoc.offset(0, -2, 0));
+
+                    if (centerIronBelow?.typeId === "minecraft:iron_block" && bodyIron?.typeId === "minecraft:iron_block") {
+                        const armX1 = dimension.getBlock(pumpkinLoc.offset(1, -1, 0));
+                        const armX2 = dimension.getBlock(pumpkinLoc.offset(-1, -1, 0));
+                        const armZ1 = dimension.getBlock(pumpkinLoc.offset(0, -1, 1));
+                        const armZ2 = dimension.getBlock(pumpkinLoc.offset(0, -1, -1));
+
+                        const xArmsValid = armX1?.typeId === "minecraft:iron_block" && armX2?.typeId === "minecraft:iron_block";
+                        const zArmsValid = armZ1?.typeId === "minecraft:iron_block" && armZ2?.typeId === "minecraft:iron_block";
+
+                        if (xArmsValid || zArmsValid) {
+                            pData.expectingConstructedEntity = {
+                                type: "minecraft:iron_golem",
+                                location: pumpkinLoc,
+                                tick: constructCurrentTick,
+                                dimensionId: dimension.id
+                            };
+                            pData.isDirtyForSave = true;
+                            pUtilsForConstruct.debugLog(`AntiGrief: Player ${player.nameTag} completed potential iron golem structure at ${JSON.stringify(pumpkinLoc)}. Expecting spawn.`, pData.isWatched ? player.nameTag : null);
+                        }
+                    }
+                }
+            } catch (e) {
+                pUtilsForConstruct.debugLog(`AntiGrief: Error checking for constructable entity structure for ${player.nameTag}: ${e}`, pData.isWatched ? player.nameTag : null);
+            }
+        }
+    }
 }
 
 /**
@@ -1296,8 +1533,9 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
  * @param {import('./logManager.js')} logManager - Manager for logging.
  * @param {function} executeCheckAction - Function to execute defined actions for a check.
  * @param {number} currentTick - The current game tick.
+ * @param {import('../types.js').EventHandlerDependencies} dependencies - Full dependencies object (used for combat chat check).
  */
-export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick) {
+export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick, dependencies) {
     const { sender: player, message: originalMessage } = eventData;
     if (!player) {
         console.warn("[AntiCheat] handleBeforeChatSend: eventData.sender is undefined.");
@@ -1321,19 +1559,102 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         return;
     }
 
-    const commonArgs = [player, pData, eventData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick];
+    // Chat During Combat Check (before other spam checks)
+    // The 'config' parameter here refers to the global config module (config.js values directly)
+    // 'dependencies.config' would refer to the editableConfigValues if passed that way.
+    // For consistency, let's assume 'config' passed to this handler IS editableConfigValues.
+    // The executeCheckAction and other managers should come from the 'dependencies' object if that's the new pattern.
+    const currentConfig = dependencies && dependencies.config ? dependencies.config : config; // Prefer dependencies.config if available
+    const currentPUtils = dependencies && dependencies.playerUtils ? dependencies.playerUtils : playerUtils;
+    const currentLogManager = dependencies && dependencies.logManager ? dependencies.logManager : logManager;
+    // Resolve executeCheckAction: it might be passed directly, or via actionManager in dependencies
+    let actualExecuteCheckAction = executeCheckAction; // This is the one passed directly to handleBeforeChatSend from main.js
+    if (!actualExecuteCheckAction && dependencies && dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
+        // This fallback might be redundant if main.js always passes executeCheckAction directly
+        actualExecuteCheckAction = dependencies.actionManager.executeCheckAction;
+    }
 
-    if (checks.checkMessageRate && config.enableFastMessageSpamCheck) {
-        if (await checks.checkMessageRate(...commonArgs)) { // checkMessageRate should return true to cancel
+
+    if (currentConfig.enableChatDuringCombatCheck && pData.lastCombatInteractionTime && pData.lastCombatInteractionTime > 0) {
+        const currentTime = Date.now();
+        const timeSinceCombatMs = currentTime - pData.lastCombatInteractionTime;
+        const cooldownMs = currentConfig.chatDuringCombatCooldownSeconds * 1000;
+
+        if (timeSinceCombatMs < cooldownMs) {
+            const violationDetails = {
+                playerName: player.nameTag,
+                timeSinceCombat: (timeSinceCombatMs / 1000).toFixed(1),
+                cooldown: currentConfig.chatDuringCombatCooldownSeconds.toString(),
+                messageContent: originalMessage
+            };
+
+            if (actualExecuteCheckAction) {
+                 await actualExecuteCheckAction(player, "player_chat_during_combat", violationDetails, dependencies);
+            } else {
+                currentPUtils.debugLog("ChatDuringCombat: executeCheckAction not available.", null);
+                if (currentLogManager && typeof currentLogManager.addLog === 'function') {
+                    currentLogManager.addLog({ adminName: "System", actionType: "error_missing_action_manager", targetName: player.nameTag, details: "ChatDuringCombat: executeCheckAction missing." });
+                }
+            }
+
+            const profile = currentConfig.checkActionProfiles?.player_chat_during_combat;
+            if (profile && profile.cancelMessage) {
+                eventData.cancel = true;
+                currentPUtils.warnPlayer(player, `§cYou cannot chat for ${currentConfig.chatDuringCombatCooldownSeconds} seconds after combat.`);
+                if (currentPUtils.debugLog && pData.isWatched) {
+                    currentPUtils.debugLog(`Chat cancelled for ${player.nameTag} (combat cooldown). ${(timeSinceCombatMs / 1000).toFixed(1)}s since combat.`, player.nameTag);
+                }
+                return;
+            }
+        }
+    }
+
+    // Chat During Item Use Check (after combat check, before other spam checks)
+    if (currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
+        let itemUseState = "unknown";
+        if (pData.isUsingConsumable) itemUseState = "using a consumable";
+        else if (pData.isChargingBow) itemUseState = "charging a bow"; // Use else if to avoid overriding
+
+        const violationDetails = {
+            playerName: player.nameTag,
+            itemUseState: itemUseState,
+            messageContent: originalMessage
+        };
+
+        if (actualExecuteCheckAction) {
+            await actualExecuteCheckAction(player, "player_chat_during_item_use", violationDetails, dependencies);
+        } else {
+            currentPUtils.debugLog("ChatDuringItemUse: executeCheckAction not available.", null);
+            if (currentLogManager && typeof currentLogManager.addLog === 'function') {
+                currentLogManager.addLog({ adminName: "System", actionType: "error_missing_action_manager", targetName: player.nameTag, details: "ChatDuringItemUse: executeCheckAction missing." });
+            }
+        }
+
+        const profile = currentConfig.checkActionProfiles?.player_chat_during_item_use;
+        if (profile && profile.cancelMessage) {
             eventData.cancel = true;
-            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
+            currentPUtils.warnPlayer(player, `§cYou cannot chat while ${itemUseState}.`);
+            if (currentPUtils.debugLog && pData.isWatched) {
+                currentPUtils.debugLog(`Chat cancelled for ${player.nameTag} (item use state: ${itemUseState}).`, player.nameTag);
+            }
             return;
         }
     }
-    if (checks.checkMessageWordCount && config.enableMaxWordsSpamCheck) {
-        if (await checks.checkMessageWordCount(...commonArgs)) { // checkMessageWordCount should return true to cancel
+
+    const commonArgs = [player, pData, eventData, currentConfig, currentPUtils, playerDataManager, currentLogManager, actualExecuteCheckAction, currentTick];
+
+
+    if (checks.checkMessageRate && currentConfig.enableFastMessageSpamCheck) {
+        if (await checks.checkMessageRate(...commonArgs)) {
             eventData.cancel = true;
-            if (playerUtils.debugLog) playerUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
+            if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
+            return;
+        }
+    }
+    if (checks.checkMessageWordCount && currentConfig.enableMaxWordsSpamCheck) {
+        if (await checks.checkMessageWordCount(...commonArgs)) {
+            eventData.cancel = true;
+            if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }

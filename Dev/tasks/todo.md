@@ -9,16 +9,14 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
-        *   **Invalid Max Render Distance:** (API Dependent) If client settings like render distance are accessible or inferable and an invalid value is detected, flag. (Scythe 'BadPackets')
-        *   **Sending Messages During Invalid States:** Detect if player sends chat messages while performing actions that should normally restrict chat input (e.g., actively in combat, using an item, chest open - API feasibility varies). (Scythe 'BadPackets')
+        *   **Sending Messages During Invalid States (Chest/Container UI):** Investigate/implement detection for players sending chat messages while a chest or other container UI is presumed open (API feasibility remains low). (Scythe 'BadPackets')
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!worldborder <get|set|remove> [params...]`: Manage a configurable world border (API dependent for enforcement).
+        *   `!worldborder` Enhancements: Consider further enhancements like more complex shape support or different resize interpolation methods (see `Dev/notes/WorldBorderDesign.md`). (Initial square/circle, damage, visuals, safe teleport, & gradual resize are now complete).
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
     *   **System Features:** SjnExe parity goal.
-        *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
 *   **World Management & Protection:** SjnExe parity goal.
 

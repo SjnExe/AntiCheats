@@ -1,6 +1,75 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Investigation: Device Ban Feasibility**
+    *   Conducted an investigation into the feasibility of implementing device bans using only the `@minecraft/server` Script API.
+    *   Reviewed available player properties (`player.id`, `player.clientSystemInfo`, etc.) and API capabilities.
+    *   **Conclusion:** Determined that reliable device banning is not feasible with the current Script API due to the absence of unique and persistent device identifiers. Attempts at fingerprinting would be unreliable and prone to false positives.
+    *   Detailed findings are documented in `Dev/notes/DeviceBanInvestigation.md`.
+*   **World Border Enhancement: Gradual Border Changes (Shrink/Expand)**
+    *   Implemented functionality for world borders to gradually shrink or expand over a specified duration.
+    *   **Storage:** Added new fields to `WorldBorderSettings` in `worldBorderManager.js` to track resize state: `isResizing`, `originalSize` (initial halfSize/radius), `targetSize`, `resizeStartTimeMs`, `resizeDurationMs`. `saveBorderSettings` validates these fields if `isResizing` is true, or clears them if false.
+    *   **Admin Commands:**
+        *   Added `!worldborder shrink <new_size> <time_seconds> [dimensionId]` and `!worldborder expand <new_size> <time_seconds> [dimensionId]` subcommands to `commands/worldborder.js` to initiate a resize.
+        *   The `!worldborder set`, `toggle off`, and `remove` commands now cancel any ongoing resize for the affected dimension.
+        *   `!worldborder get` displays detailed progress of an active resize (percentage, time remaining, current effective size).
+    *   **Tick Loop Logic (`main.js`):**
+        *   A dimension-based loop (outside player loop) finalizes completed resizes by updating the stored `halfSize`/`radius` to `targetSize` and clearing resize flags. It also validates resize parameters and cancels faulty resizes.
+        *   Within the player loop, if a border is resizing, an `currentEffectiveHalfSize` or `currentEffectiveRadius` is calculated each tick using linear interpolation.
+        *   Both world border enforcement (out-of-bounds checks, teleportation) and particle visuals now use this dynamic effective size, adapting in real-time to the resize.
+*   **World Border Enhancement: Circular Border Shape Support**
+    *   Modified `worldBorderManager.js` to store and retrieve border settings for both "square" (with `halfSize`) and "circle" (with `radius`) shapes. Validation ensures appropriate parameters for the selected shape.
+    *   Updated `!worldborder set` command to accept `circle <centerX> <centerZ> <radius> ...` and `!worldborder get` to display information correctly for circular borders.
+    *   Adapted enforcement logic in `main.js` to calculate out-of-bounds status and teleportation targets correctly for circular borders using distance formula and vector math.
+*   **World Border Enhancement: Advanced Safe Teleport Logic**
+    *   Implemented a `findSafeTeleportY` helper function in `main.js` for the world border enforcement.
+    *   When teleporting a player, this function searches for a 2-block high air gap (preferably on a solid block) near the target X,Z coordinates, searching downwards then upwards from the player's original Y-level within limited depth.
+    *   This reduces the chance of players being teleported into blocks or unsafe locations. It's used for both square and circular border teleports.
+*   **World Border Enhancement: Visuals for Circular Borders**
+    *   Extended the particle visual system in `main.js` to support circular world borders.
+    *   When `borderSettings.shape === "circle"`, particles are now rendered along an arc segment of the border near the player, if visuals are enabled.
+    *   This complements the existing visuals for square borders.
+*   **World Border Enhancement: Damage-Based Enforcement**
+    *   Added damage-based enforcement as a configurable option for world borders.
+    *   New per-dimension settings (stored in `worldBorderManager`): `enableDamage`, `damageAmount`, `damageIntervalTicks`, `teleportAfterNumDamageEvents`.
+    *   Global default configurations for these settings added to `config.js`.
+    *   The `!worldborder set` command updated to configure these damage parameters, and `!worldborder get` displays them.
+    *   Modified `main.js` enforcement logic: If damage is enabled, players outside the border receive periodic damage (`player.applyDamage`). Teleportation occurs if damage is disabled or after a configurable number of damage applications.
+    *   New `pData` fields `ticksOutsideBorder` and `borderDamageApplications` track player state relative to the border.
+*   **World Border Enhancement: Visual Indicators (Particles)**
+    *   Implemented player-specific particle visuals for world borders.
+    *   Added global configurations to `config.js`: `worldBorderEnableVisuals`, `worldBorderParticleName`, `worldBorderVisualRange`, `worldBorderParticleDensity`, `worldBorderParticleWallHeight`, `worldBorderParticleSegmentLength`, `worldBorderVisualUpdateIntervalTicks`.
+    *   Logic in `main.js` tick loop: If enabled, players near a border edge are shown a particle wall segment (using `player.spawnParticle`) along that edge for square borders. Visuals are throttled for performance. (Circular border visuals added in a subsequent task).
+    *   A helper function `spawnParticleLine` was added to `main.js` to handle rendering of particle segments for square borders.
+*   **Advanced Cheat Detections: Sending Messages During Invalid States - Combat State**
+    *   Implemented a check to prevent players from sending chat messages shortly after being in combat.
+    *   Added configurations: `enableChatDuringCombatCheck` (boolean) and `chatDuringCombatCooldownSeconds` (number).
+    *   Integrated into `handleBeforeChatSend` in `eventHandlers.js`. If active, messages sent within the cooldown are cancelled.
+    *   Added `player_chat_during_combat` action profile for flagging, admin notifications, and message cancellation.
+*   **Advanced Cheat Detections: Sending Messages During Invalid States - Item Use State**
+    *   Implemented a check to prevent players from sending chat messages while actively using consumables or charging bows.
+    *   Added configuration: `enableChatDuringItemUseCheck` (boolean).
+    *   Integrated into `handleBeforeChatSend` in `eventHandlers.js`. If active, messages sent while `pData.isUsingConsumable` or `pData.isChargingBow` is true are cancelled.
+    *   Added `player_chat_during_item_use` action profile for flagging, admin notifications, and message cancellation.
+*   **Anti-Grief System - Phase 4: Entity Spam Control Completed**
+    *   Enhanced entity spam detection to include player-constructed entities like Snow Golems and Iron Golems.
+    *   Detection logic involves identifying placement of key structure blocks (`handlePlayerPlaceBlockAfter`), setting an expectation flag in `pData` (`expectingConstructedEntity`), and then attributing the subsequent entity spawn (`handleEntitySpawnEvent_AntiGrief`) to the constructing player based on type, location, and timing.
+    *   Calls `checkEntitySpam` for attributed spawns, allowing for rate-limiting and configured actions (e.g., "kill" which reactively removes the spawned entity).
+    *   Updated `config.js` to include `minecraft:snow_golem` and `minecraft:iron_golem` in `entitySpamMonitoredEntityTypes`.
+    *   Updated `Dev/notes/EntitySpamDetectionStrategy.md` to reflect these new capabilities and discuss limitations (e.g., dispenser-based spam).
+*   **Anti-Grief System - Phase 4: Piston Grief Mitigation (Conservative Logging)**
+    *   Implemented a conservative piston lag check focused on logging and admin notification due to challenges in player attribution.
+    *   Added new configurations: `enablePistonLagCheck` (default `false`), `pistonActivationLogThresholdPerSecond`, `pistonActivationSustainedDurationSeconds`, and `pistonLagLogCooldownSeconds`.
+    *   Created `AntiCheatsBP/scripts/checks/world/pistonChecks.js` with the `checkPistonLag` function. This function monitors the activation rates of individual pistons using a global map (`pistonActivityData`) to store timestamps.
+    *   Integrated into `AntiCheatsBP/scripts/core/eventHandlers.js` via a new `handlePistonActivate_AntiGrief` function, subscribed to `world.afterEvents.pistonActivate`.
+    *   Added a new action profile `world_antigrief_piston_lag` to `checkActionProfiles` for handling admin notifications and server logging.
+*   **Packet Anomalies / Chat Violations: Invalid Max Render Distance Check**
+    *   Implemented a check to detect clients reporting an excessively high maximum render distance, which could indicate client modification.
+    *   Added new configurations: `enableInvalidRenderDistanceCheck` (default `true`) and `maxAllowedClientRenderDistance` (default `64`).
+    *   Created `AntiCheatsBP/scripts/checks/player/clientInfoChecks.js` with the `checkInvalidRenderDistance` function.
+    *   The logic reads `player.clientSystemInfo.maxRenderDistance` and compares it against `config.maxAllowedClientRenderDistance`.
+    *   The check is performed upon player spawn (integrated into `handlePlayerSpawn` in `eventHandlers.js`) and periodically for all online players (integrated into the main tick loop in `main.js`).
+    *   Added a new action profile `player_invalid_render_distance` to `checkActionProfiles` for appropriate flagging, admin notifications, and logging.
 - **Enhanced Ban & Kick Messages:**
     - Updated ban data structures (`types.js` - `PlayerBanInfo`, `playerDataManager.js`) to store `bannedBy` (admin name), `banTime`, `playerName`, and `xuid` along with reason and expiry.
     - `!ban` command (`ban.js`) now records the admin who issued the ban.

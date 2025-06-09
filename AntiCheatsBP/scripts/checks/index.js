@@ -30,10 +30,12 @@ export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.
 export { checkNameSpoof } from './world/nameSpoofCheck.js';
 export { checkAntiGMC } from './world/antiGMCCheck.js';
 export * from './world/entityChecks.js'; // Exporting checkEntitySpam
+export { checkPistonLag } from './world/pistonChecks.js';
 
 // Player Behavior Checks
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';
 export { checkSelfHurt } from './player/selfHurtCheck.js';
+export { checkInvalidRenderDistance } from './player/clientInfoChecks.js';
 
 // Chat Checks
 export { checkMessageRate } from './chat/messageRateCheck.js';

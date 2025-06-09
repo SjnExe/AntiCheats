@@ -525,7 +525,7 @@ export const entitySpamTimeWindowMs = 2000;
 export const entitySpamMaxSpawnsInWindow = 5;
 
 /** @type {string[]} List of entity type IDs to specifically monitor for spam. If empty, this check might be too broad or not trigger. */
-export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart"];
+export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart", "minecraft:snow_golem", "minecraft:iron_golem"];
 
 /** @type {string} Action to take for detected entity spam. Valid: "kill", "warn", "logOnly". */
 export const entitySpamAction = "kill";
@@ -547,6 +547,62 @@ export const blockSpamDensityMonitoredBlockTypes = ["minecraft:dirt", "minecraft
 
 /** @type {string} Action to take for detected density block spam. Valid: "warn", "logOnly". */
 export const blockSpamDensityAction = "warn";
+
+// --- Piston Lag Check Settings ---
+/** @type {boolean} If true, the Piston Lag check is active. */
+export const enablePistonLagCheck = false;
+/** @type {number} Number of piston activations per second at a single location to be considered rapid. */
+export const pistonActivationLogThresholdPerSecond = 15;
+/** @type {number} Duration in seconds the rapid activation rate must be sustained to trigger a log/notification. */
+export const pistonActivationSustainedDurationSeconds = 3;
+/** @type {number} Cooldown in seconds before logging/notifying again for the same piston location. */
+export const pistonLagLogCooldownSeconds = 60;
+
+// --- Client Behavior Checks ---
+/** @type {boolean} If true, the Invalid Render Distance check is active. */
+export const enableInvalidRenderDistanceCheck = true;
+/** @type {number} Maximum allowed client-reported render distance in chunks. */
+export const maxAllowedClientRenderDistance = 64;
+
+// --- World Border System --- (Already existing section, adding more to it)
+/** @type {boolean} Master switch for the entire World Border feature. */
+export const enableWorldBorderSystem = false; // This was from previous subtask, ensure it's here
+
+/** @type {string} Message sent to players when they are teleported back by the world border. */
+export const worldBorderWarningMessage = "§cYou have reached the world border!"; // This was from previous subtask
+
+/** @type {boolean} Default for enabling damage when a new border is set or damage is toggled on. */
+export const worldBorderDefaultEnableDamage = false;
+/** @type {number} Default damage amount per interval when border damage is enabled. */
+export const worldBorderDefaultDamageAmount = 0.5; // Half a heart
+/** @type {number} Default interval in ticks for applying border damage. (20 ticks = 1 second) */
+export const worldBorderDefaultDamageIntervalTicks = 20;
+/** @type {number} Default number of damage events after which player is teleported if still outside and damage is enabled. */
+export const worldBorderTeleportAfterNumDamageEvents = 30; // e.g., 30 damage applications (30 seconds if interval is 20 ticks)
+
+/** @type {boolean} Enables visual particle effects for the world border. */
+export const worldBorderEnableVisuals = false;
+/** @type {string} The particle name to use for the border visuals. E.g., "minecraft:end_rod", "minecraft:totem_particle". */
+export const worldBorderParticleName = "minecraft:end_rod";
+/** @type {number} How close (in blocks) a player must be to a border edge to see the visual effect. */
+export const worldBorderVisualRange = 24;
+/** @type {number} Density of particles along the border edge (particles per block). Higher is denser. */
+export const worldBorderParticleDensity = 1;
+/** @type {number} Height of the particle wall in blocks. */
+export const worldBorderParticleWallHeight = 4;
+/** @type {number} Length of the particle wall segment to render in front of/around the player. */
+export const worldBorderParticleSegmentLength = 32;
+/** @type {number} Interval in ticks for how often to update border visuals per player. */
+export const worldBorderVisualUpdateIntervalTicks = 10; // 0.5 seconds
+
+
+// --- Chat Behavior Checks ---
+/** @type {boolean} If true, the Chat During Combat check is active. */
+export const enableChatDuringCombatCheck = true;
+/** @type {number} Seconds after the last combat interaction during which a player cannot chat. */
+export const chatDuringCombatCooldownSeconds = 4;
+/** @type {boolean} If true, the Chat During Item Use check is active. */
+export const enableChatDuringItemUseCheck = true;
 
 
 // --- UI Display Texts ---
@@ -1222,6 +1278,64 @@ export const checkActionProfiles = {
             actionType: "antigrief_blockspam_density_detected",
             detailsPrefix: "AntiGrief BlockSpam (Density): "
         }
+    },
+    "world_antigrief_piston_lag": {
+        "enabled": true,
+        "flag": null,
+        "notifyAdmins": {
+            "message": "§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)"
+        },
+        "log": {
+            "actionType": "antigrief_piston_lag_detected",
+            "detailsPrefix": "AntiGrief Piston Lag: "
+        }
+    },
+    "player_invalid_render_distance": {
+        "enabled": true,
+        "flag": {
+            "increment": 1,
+            "reason": "Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).",
+            "type": "player_client_anomaly"
+        },
+        "notifyAdmins": {
+            "message": "§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification."
+        },
+        "log": {
+            "actionType": "detected_invalid_render_distance",
+            "detailsPrefix": "Invalid Render Distance: "
+        }
+    },
+    "player_chat_during_combat": {
+        "enabled": true,
+        "flag": {
+            "increment": 1,
+            "reason": "Attempted to chat too soon after combat ({timeSinceCombat}s ago).",
+            "type": "player_chat_state_violation"
+        },
+        "notifyAdmins": {
+            "message": "§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled."
+        },
+        "cancelMessage": true,
+        "log": {
+            "actionType": "detected_chat_during_combat",
+            "detailsPrefix": "Chat During Combat: "
+        }
+    },
+    "player_chat_during_item_use": {
+        "enabled": true,
+        "flag": {
+            "increment": 1,
+            "reason": "Attempted to chat while actively using an item ({itemUseState}).",
+            "type": "player_chat_state_violation"
+        },
+        "notifyAdmins": {
+            "message": "§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled."
+        },
+        "cancelMessage": true,
+        "log": {
+            "actionType": "detected_chat_during_item_use",
+            "detailsPrefix": "Chat During Item Use: "
+        }
     }
 };
 
@@ -1378,7 +1492,7 @@ export let editableConfigValues = {
     entitySpamBypassInCreative,
     entitySpamTimeWindowMs,
     entitySpamMaxSpawnsInWindow,
-    entitySpamMonitoredEntityTypes,
+    entitySpamMonitoredEntityTypes: ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart", "minecraft:snow_golem", "minecraft:iron_golem"],
     entitySpamAction,
     // AntiGrief Density Block Spam Configs
     enableBlockSpamDensityCheck,
@@ -1387,6 +1501,32 @@ export let editableConfigValues = {
     blockSpamDensityThresholdPercentage,
     blockSpamDensityMonitoredBlockTypes,
     blockSpamDensityAction,
+    // Piston Lag Check
+    enablePistonLagCheck,
+    pistonActivationLogThresholdPerSecond,
+    pistonActivationSustainedDurationSeconds,
+    pistonLagLogCooldownSeconds,
+    // Client Behavior Checks
+    enableInvalidRenderDistanceCheck,
+    maxAllowedClientRenderDistance,
+    // World Border System
+    enableWorldBorderSystem,
+    worldBorderWarningMessage,
+    worldBorderDefaultEnableDamage,
+    worldBorderDefaultDamageAmount,
+    worldBorderDefaultDamageIntervalTicks,
+    worldBorderTeleportAfterNumDamageEvents,
+    worldBorderEnableVisuals,
+    worldBorderParticleName,
+    worldBorderVisualRange,
+    worldBorderParticleDensity,
+    worldBorderParticleWallHeight,
+    worldBorderParticleSegmentLength,
+    worldBorderVisualUpdateIntervalTicks,
+    // Chat Behavior Checks
+    enableChatDuringCombatCheck,
+    chatDuringCombatCooldownSeconds,
+    enableChatDuringItemUseCheck,
 };
 
 /**

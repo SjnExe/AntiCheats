@@ -17,6 +17,8 @@ import { executeCheckAction } from './core/actionManager.js';
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
+import { getBorderSettings } from './utils/worldBorderManager.js'; // For World Border
+import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 
@@ -42,7 +44,18 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         );
     } else {
         // Call the general chat handler for non-command messages
-        await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, mc.system.currentTick);
+        // Construct a comprehensive dependencies object for chat handler
+        const chatHandlerDependencies = {
+            config: config.editableConfigValues,
+            playerUtils: playerUtils,
+            logManager: logManager,
+            actionManager: { executeCheckAction }, // Pass the wrapper
+            playerDataManager: playerDataManager,
+            checks: checks,
+            currentTick: currentTick // currentTick from main.js tick loop scope
+        };
+        // Pass editableConfigValues as the 'config' parameter for the handler too
+        await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config.editableConfigValues, playerUtils, checks, logManager, executeCheckAction, currentTick, chatHandlerDependencies);
     }
 });
 
@@ -98,7 +111,16 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
  * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
  */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config, { addLog: logManager.addLog });
+    // Augment dependencies for handlePlayerSpawn to include more modules
+    const spawnHandlerDependencies = {
+        config: config.editableConfigValues, // Pass the editable runtime config
+        playerUtils: playerUtils,
+        logManager: logManager, // Pass the full logManager
+        actionManager: { executeCheckAction }, // Pass executeCheckAction
+        checks: checks, // Pass all available checks
+        addLog: logManager.addLog // Keep addLog for direct use if still needed by handlePlayerSpawn internally
+    };
+    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config.editableConfigValues, spawnHandlerDependencies);
 });
 
 /**
@@ -242,9 +264,22 @@ mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
         playerUtils: playerUtils,
         logManager: logManager,
         actionManager: { executeCheckAction },
-        playerDataManager: playerDataManager // ensure playerDataManager is available if needed by executeCheckAction's internals
+            playerDataManager: playerDataManager, // ensure playerDataManager is available
+            checks: checks, // Add the checks object
+            currentTick: currentTick // Add currentTick from the main tick loop scope
     };
     await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, antiGriefDependencies);
+});
+
+/**
+ * Handles piston activation events for AntiGrief checks (e.g., Piston Lag).
+ * @param {mc.PistonActivateAfterEvent} eventData The event data.
+ */
+mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
+    // Using the same antiGriefDependencies as entitySpawn, as it contains all necessary components
+    // (config, playerUtils, logManager, actionManager, playerDataManager, checks, currentTick)
+    // If a more specific set is needed, a new dependencies object can be created here.
+    await eventHandlers.handlePistonActivate_AntiGrief(eventData, antiGriefDependencies);
 });
 
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
@@ -262,6 +297,96 @@ mc.system.runInterval(() => {
         }
     }
 }, 20); // Run this check every 20 ticks (1 second)
+
+
+/**
+ * Attempts to find a safe Y coordinate for teleportation at a given X, Z.
+ * @param {mc.Dimension} dimension - The dimension to check in.
+ * @param {number} targetX - The target X coordinate.
+ * @param {number} initialY - The initial Y coordinate to start searching from.
+ * @param {number} targetZ - The target Z coordinate.
+ * @param {mc.Player} [playerForDebug] - Optional player for debug logging.
+ * @param {object} [playerUtilsForDebug] - Optional playerUtils for debug logging.
+ * @returns {number} A safe Y coordinate, or the initialY if no safer spot is quickly found.
+ */
+function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug, playerUtilsForDebug) {
+    const minDimensionHeight = dimension.heightRange.min;
+    const maxDimensionHeight = dimension.heightRange.max - 2; // Max spawnable Y to leave room for player
+
+    let currentY = Math.floor(initialY);
+    currentY = Math.max(minDimensionHeight, Math.min(currentY, maxDimensionHeight));
+
+    const maxSearchDepthDown = 10;
+    const maxSearchDepthUp = 5;
+
+    // Search down first
+    for (let i = 0; i < maxSearchDepthDown; i++) {
+        const checkY = currentY - i;
+        if (checkY < minDimensionHeight) break;
+
+        try {
+            const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
+            const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
+
+            if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
+                const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
+                if (blockBelowFeet && blockBelowFeet.isSolid) {
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //     playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                } else if (blockFeet.isAir && blockHead.isAir) { // If below is not solid, but current spot is air (e.g. on a torch)
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //     playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                }
+            }
+        } catch (e) {
+            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (down) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
+            // }
+        }
+    }
+
+    // If no spot found searching down, try searching up a little from initialY
+    // Start from initialY + 1 because currentY might have been adjusted down by the loop above
+    let searchUpStartY = Math.floor(initialY);
+    searchUpStartY = Math.max(minDimensionHeight, Math.min(searchUpStartY, maxDimensionHeight));
+
+    for (let i = 1; i < maxSearchDepthUp; i++) {
+        const checkY = searchUpStartY + i;
+        if (checkY > maxDimensionHeight) break;
+        try {
+            const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
+            const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
+             if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
+                const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
+                if (blockBelowFeet && blockBelowFeet.isSolid) {
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //    playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (up, solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                } else if (blockFeet.isAir && blockHead.isAir) { // Air gap, even if not solid below, is better than inside unknown block
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //    playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (up, below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                }
+            }
+        } catch(e) {
+            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (up) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
+            // }
+        }
+    }
+
+    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+    //     playerUtilsForDebug.debugLog(`SafeY: No ideal safe Y found for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}). Defaulting to ${Math.floor(initialY)}`, playerForDebug.nameTag);
+    // }
+    return Math.floor(initialY);
+}
+
 
 /**
  * Handles entity hurt events, for TPA warm-up cancellation.
@@ -317,6 +442,59 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
 
 let currentTick = 0;
 
+// Helper function for finding a safe Y level for teleportation
+function findSafeY(player, dimension, x, z, startY, playerUtilsInstance) {
+    const maxSearchDown = 3;
+    const maxSearchUp = 5;
+    const worldMinY = dimension.heightRange.min;
+    const worldMaxY = dimension.heightRange.max;
+
+    let currentY = Math.max(worldMinY, Math.min(Math.floor(startY), worldMaxY - 2));
+
+    // Search down
+    for (let i = 0; i <= maxSearchDown; i++) {
+        const checkY = currentY - i;
+        if (checkY < worldMinY) break;
+
+        try {
+            const blockBelow = dimension.getBlock({ x: x, y: checkY -1, z: z });
+            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
+            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
+
+            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
+                blockAtFeet && blockAtFeet.isAir &&
+                blockAtHead && blockAtHead.isAir) {
+                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} downwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
+                return checkY;
+            }
+        } catch (e) { /* getBlock can fail */ }
+    }
+
+    // Search up from original startY
+    currentY = Math.floor(startY); // Start search from original Y upwards
+    for (let i = 0; i <= maxSearchUp; i++) {
+        const checkY = currentY + i;
+        if (checkY > worldMaxY - 2) break;
+
+        try {
+            const blockBelow = dimension.getBlock({ x: x, y: checkY - 1, z: z });
+            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
+            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
+
+            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
+                blockAtFeet && blockAtFeet.isAir &&
+                blockAtHead && blockAtHead.isAir) {
+                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} upwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
+                return checkY;
+            }
+        } catch (e) { /* getBlock can fail */ }
+    }
+
+    if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: No safe Y found for (${x},${z}) near ${startY} for player ${player.nameTag}, using original Y.`, player.nameTag);
+    return Math.floor(startY);
+}
+
+
 /**
  * Main tick loop for the Anti-Cheat system.
  * Runs every game tick (nominally 20 times per second).
@@ -332,6 +510,66 @@ let currentTick = 0;
 mc.system.runInterval(async () => {
     currentTick++;
 
+    // --- Process Active Border Resizes (Dimension-based, runs once per server tick) ---
+    const knownBorderDimensions = ["minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"];
+    for (const dimId of knownBorderDimensions) {
+        let dimBorderSettings = null;
+        try {
+            // Ensure getBorderSettings and saveBorderSettings are in scope. They are imported at the top of main.js.
+            dimBorderSettings = getBorderSettings(dimId);
+        } catch (e) {
+            console.warn(`[WB Resize] Error getting border settings for ${dimId} during resize check: ${e}`);
+            continue;
+        }
+
+        if (dimBorderSettings && dimBorderSettings.isResizing && dimBorderSettings.enabled) {
+            const currentTimeMs = Date.now();
+
+            if (typeof dimBorderSettings.resizeStartTimeMs !== 'number' ||
+                typeof dimBorderSettings.resizeDurationMs !== 'number' ||
+                typeof dimBorderSettings.originalSize !== 'number' ||
+                typeof dimBorderSettings.targetSize !== 'number') {
+
+                console.warn(`[WB Resize] Invalid resize parameters for dimension ${dimId}. Cancelling resize.`);
+                dimBorderSettings.isResizing = false;
+                delete dimBorderSettings.originalSize;
+                delete dimBorderSettings.targetSize;
+                delete dimBorderSettings.resizeStartTimeMs;
+                delete dimBorderSettings.resizeDurationMs;
+                saveBorderSettings(dimId, dimBorderSettings);
+                continue;
+            }
+
+            const elapsedMs = currentTimeMs - dimBorderSettings.resizeStartTimeMs;
+            const durationMs = dimBorderSettings.resizeDurationMs;
+
+            if (elapsedMs >= durationMs) { // Resize finished
+                const targetSize = dimBorderSettings.targetSize;
+                if (dimBorderSettings.shape === "square") {
+                    dimBorderSettings.halfSize = targetSize;
+                } else if (dimBorderSettings.shape === "circle") {
+                    dimBorderSettings.radius = targetSize;
+                }
+                dimBorderSettings.isResizing = false;
+                delete dimBorderSettings.originalSize;
+                delete dimBorderSettings.targetSize;
+                delete dimBorderSettings.resizeStartTimeMs;
+                delete dimBorderSettings.resizeDurationMs;
+
+                if (saveBorderSettings(dimId, dimBorderSettings)) {
+                     console.warn(`[AntiCheat][WorldBorder] Border resize in ${dimId.replace("minecraft:","")} completed. New size parameter: ${targetSize}.`);
+                     // Ensure logManager is imported and available if this line is uncommented
+                     if (logManager && typeof logManager.addLog === 'function') {
+                        logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` });
+                     }
+                } else {
+                    console.warn(`[AntiCheat][WorldBorder] Failed to save completed border resize for ${dimId}.`);
+                }
+            }
+        }
+    }
+    // --- End of Processing Active Border Resizes ---
+
     const allPlayers = mc.world.getAllPlayers();
     playerDataManager.cleanupActivePlayerData(allPlayers);
 
@@ -339,6 +577,18 @@ mc.system.runInterval(async () => {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
         if (!pData) {
             if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure.`, player.nameTag);
+            continue;
+        }
+
+        // Initialize World Border Visuals pData field if it doesn't exist
+        pData.lastBorderVisualTick = pData.lastBorderVisualTick || 0;
+
+        // Initialize World Border pData fields if they don't exist (moved up for clarity)
+        pData.ticksOutsideBorder = pData.ticksOutsideBorder || 0;
+        pData.borderDamageApplications = pData.borderDamageApplications || 0;
+
+        if (!pData) { // This check is redundant now due to the earlier one, but kept for safety if code moves
+            if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData somehow became null for ${player.nameTag} before transient update.`, player.nameTag);
             continue;
         }
 
@@ -389,6 +639,23 @@ mc.system.runInterval(async () => {
             await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
+        // Periodic Invalid Render Distance Check
+        if (config.enableInvalidRenderDistanceCheck && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= 400)) { // 400 ticks = 20 seconds
+            if (checks.checkInvalidRenderDistance) {
+                const renderDistDependencies = { config, playerDataManager, playerUtils, logManager, actionManager: { executeCheckAction }, checks, currentTick };
+                await checks.checkInvalidRenderDistance(
+                    player,
+                    pData,
+                    config, // This is config.editableConfigValues from the tick loop's scope
+                    playerUtils,
+                    logManager,
+                    { executeCheckAction }, // Pass actionManager/executeCheckAction wrapper
+                    renderDistDependencies // Pass the full dependencies object
+                );
+            }
+            pData.lastRenderDistanceCheckTick = currentTick;
+        }
+
         // Construct dependencies specifically for checkNetherRoof as its signature expects a 'dependencies' object
         const netherRoofDependencies = {
             config: config,
@@ -403,22 +670,287 @@ mc.system.runInterval(async () => {
 
         // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {
-            if (pData.velocity.y < -0.07 && pData.previousPosition) {
-                const deltaY = pData.previousPosition.y - pData.lastPosition.y;
+            if (pData.velocity.y < -0.07 && pData.previousPosition) { // Ensure previousPosition exists
+                const deltaY = pData.previousPosition.y - pData.lastPosition.y; // Ensure lastPosition exists
                 if (deltaY > 0) {
                     pData.fallDistance += deltaY;
                 }
             }
-        } else {
-            if (!pData.isTakingFallDamage) {
+        } else { // Player is on ground
+            if (!pData.isTakingFallDamage) { // Only reset fallDistance if not currently processing fall damage
                  pData.fallDistance = 0;
             }
-            pData.isTakingFallDamage = false;
+            pData.isTakingFallDamage = false; // Reset this flag once player is on ground
+        }
+
+        // World Border Enforcement
+        // borderSettings variable will be declared here for potential use in Visuals section too
+        let borderSettings = null;
+        if (config.enableWorldBorderSystem) { // config here is config.editableConfigValues from the tick loop scope
+            borderSettings = getBorderSettings(player.dimension.id);
+
+            if (borderSettings && borderSettings.enabled) {
+                const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
+
+                if (playerPermLevel > permissionLevels.admin) { // Apply to non-admins/owners
+                    const loc = player.location;
+                    let isPlayerOutside = false;
+                    let targetX = loc.x; // Default to current location, will be updated if outside
+                    let targetZ = loc.z;
+
+                    // Calculate effective size if resizing
+                    let currentEffectiveHalfSize = borderSettings.halfSize;
+                    let currentEffectiveRadius = borderSettings.radius;
+
+                    if (borderSettings.isResizing && borderSettings.enabled &&
+                        typeof borderSettings.originalSize === 'number' &&
+                        typeof borderSettings.targetSize === 'number' &&
+                        typeof borderSettings.resizeStartTimeMs === 'number' &&
+                        typeof borderSettings.resizeDurationMs === 'number') { // durationMs can be 0 for instant, but check other fields
+
+                        const currentTimeMs = Date.now();
+                        const elapsedMs = currentTimeMs - borderSettings.resizeStartTimeMs;
+                        const durationMs = borderSettings.resizeDurationMs;
+                        let progress = 0;
+
+                        if (durationMs > 0) {
+                             progress = Math.min(1, elapsedMs / durationMs);
+                        } else { // If duration is 0 or negative, snap to target (already past start time)
+                             progress = 1;
+                        }
+
+                        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * progress;
+
+                        if (borderSettings.shape === "square") {
+                            currentEffectiveHalfSize = interpolatedSize;
+                        } else if (borderSettings.shape === "circle") {
+                            currentEffectiveRadius = interpolatedSize;
+                        }
+                    } else if (borderSettings.isResizing && borderSettings.enabled) {
+                        // Fallback or if resize fields are somehow incomplete after validation in dimension loop
+                        // This indicates an issue, ideally the dimension loop should have cleaned/finalized it.
+                        // For safety, use targetSize if isResizing is still true but params seem off.
+                        if (typeof borderSettings.targetSize === 'number') {
+                            if (borderSettings.shape === "square") {
+                                currentEffectiveHalfSize = borderSettings.targetSize;
+                            } else if (borderSettings.shape === "circle") {
+                                currentEffectiveRadius = borderSettings.targetSize;
+                            }
+                        }
+                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: In-progress resize for dim ${player.dimension.id} has incomplete parameters in player loop. Using targetSize or stored size.`, player.nameTag);
+                    }
+
+
+                    if (borderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
+                        const { centerX, centerZ } = borderSettings;
+                        const minX = centerX - currentEffectiveHalfSize;
+                        const maxX = centerX + currentEffectiveHalfSize;
+                        const minZ = centerZ - currentEffectiveHalfSize;
+                        const maxZ = centerZ + currentEffectiveHalfSize;
+
+                        if (loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ) {
+                            isPlayerOutside = true;
+                            targetX = loc.x;
+                            targetZ = loc.z;
+                            if (targetX < minX) targetX = minX + 0.5; else if (targetX > maxX) targetX = maxX - 0.5;
+                            if (targetZ < minZ) targetZ = minZ + 0.5; else if (targetZ > maxZ) targetZ = maxZ - 0.5;
+                        }
+                    } else if (borderSettings.shape === "circle" && typeof currentEffectiveRadius === 'number' && currentEffectiveRadius > 0) {
+                        const { centerX, centerZ } = borderSettings;
+                        const dx = loc.x - centerX;
+                        const dz = loc.z - centerZ;
+                        const distSq = dx * dx + dz * dz;
+                        const radiusSq = currentEffectiveRadius * currentEffectiveRadius;
+
+                        if (distSq > radiusSq) {
+                            isPlayerOutside = true;
+                            const currentDist = Math.sqrt(distSq);
+                            const teleportOffset = 0.5;
+                            if (currentDist === 0 || currentEffectiveRadius <= teleportOffset) {
+                                targetX = centerX + (currentEffectiveRadius > teleportOffset ? currentEffectiveRadius - teleportOffset : 0);
+                                targetZ = centerZ;
+                            } else {
+                                const scale = (currentEffectiveRadius - teleportOffset) / currentDist;
+                                targetX = centerX + dx * scale;
+                                targetZ = centerZ + dz * scale;
+                            }
+                        }
+                    } else if (borderSettings.shape) {
+                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Invalid shape ('${borderSettings.shape}') or non-positive effective size (Sq: ${currentEffectiveHalfSize}, Circ: ${currentEffectiveRadius}) in dimension ${player.dimension.id}. Skipping enforcement.`, player.nameTag);
+                    }
+
+                    if (isPlayerOutside) {
+                        pData.ticksOutsideBorder = (pData.ticksOutsideBorder || 0) + 1;
+
+                        const enableDamage = borderSettings.enableDamage ?? config.worldBorderDefaultEnableDamage;
+                        const damageAmount = borderSettings.damageAmount ?? config.worldBorderDefaultDamageAmount;
+                        const damageIntervalTicks = borderSettings.damageIntervalTicks ?? config.worldBorderDefaultDamageIntervalTicks;
+                        const teleportAfterNumDamageEvents = borderSettings.teleportAfterNumDamageEvents ?? config.worldBorderTeleportAfterNumDamageEvents;
+
+                        let performTeleport = true;
+
+                        if (enableDamage && damageIntervalTicks > 0 && damageAmount > 0) {
+                            performTeleport = false;
+
+                            if (pData.ticksOutsideBorder % damageIntervalTicks === 0) {
+                                try {
+                                    player.applyDamage(damageAmount, { cause: mc.EntityDamageCause.worldBorder });
+                                    pData.borderDamageApplications++;
+                                    pData.isDirtyForSave = true;
+
+                                    if (playerUtils.debugLog && pData.isWatched) {
+                                        playerUtils.debugLog(`WorldBorder: Applied ${damageAmount} damage to ${player.nameTag}. Total applications: ${pData.borderDamageApplications}`, player.nameTag);
+                                    }
+
+                                    if (pData.borderDamageApplications >= teleportAfterNumDamageEvents) {
+                                        performTeleport = true;
+                                        if (playerUtils.debugLog && pData.isWatched) {
+                                            playerUtils.debugLog(`WorldBorder: ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag);
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.warn(`[WorldBorder] Failed to apply damage to player ${player.nameTag}: ${e}`);
+                                }
+                            }
+                        }
+
+                        if (performTeleport) {
+                            // const safeY = findSafeY(player, player.dimension, targetX, targetZ, loc.y, playerUtils); // Old call
+                            const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils);
+                            try {
+                                player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
+                                if (config.worldBorderWarningMessage) {
+                                    playerUtils.warnPlayer(player, config.worldBorderWarningMessage);
+                                }
+                                if (playerUtils.debugLog && pData.isWatched) {
+                                    playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
+                                }
+                                pData.ticksOutsideBorder = 0;
+                                pData.borderDamageApplications = 0;
+                                pData.isDirtyForSave = true;
+                            } catch (e) {
+                                console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
+                                 if (playerUtils.debugLog && pData.isWatched) { // Check pData.isWatched for contextual logging
+                                     playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
+                                 }
+                            }
+                        }
+
+                    } else { // Player is inside the border
+                        if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                             if (playerUtils.debugLog && pData.isWatched) { // Check pData.isWatched for contextual logging
+                                playerUtils.debugLog(`WorldBorder: Player ${player.nameTag} re-entered border. Resetting counters.`, player.nameTag);
+                            }
+                            pData.ticksOutsideBorder = 0;
+                            pData.borderDamageApplications = 0;
+                            pData.isDirtyForSave = true;
+                        }
+                    }
+                } else {
+                    if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                        pData.ticksOutsideBorder = 0;
+                        pData.borderDamageApplications = 0;
+                        pData.isDirtyForSave = true;
+                    }
+                }
+            } else {
+                 if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                    pData.ticksOutsideBorder = 0;
+                    pData.borderDamageApplications = 0;
+                    pData.isDirtyForSave = true;
+                }
+            }
+        } else {
+            if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
+                pData.ticksOutsideBorder = 0;
+                pData.borderDamageApplications = 0;
+                pData.isDirtyForSave = true;
+            }
+        }
+
+        // World Border Visuals
+        if (config.enableWorldBorderSystem && config.worldBorderEnableVisuals) {
+            // Use borderSettings if already fetched by enforcement, otherwise fetch it.
+            const currentBorderSettings = borderSettings || getBorderSettings(player.dimension.id);
+
+            if (currentBorderSettings && currentBorderSettings.enabled) {
+                if (currentTick - (pData.lastBorderVisualTick || 0) >= config.worldBorderVisualUpdateIntervalTicks) {
+                    pData.lastBorderVisualTick = currentTick;
+                    // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
+
+                    const playerLoc = player.location; // playerLoc is already defined earlier in the player loop
+                    const particleName = config.worldBorderParticleName;
+                    const visualRange = config.worldBorderVisualRange;
+                    const density = Math.max(0.1, config.worldBorderParticleDensity);
+                    const wallHeight = config.worldBorderParticleWallHeight;
+                    const segmentLength = config.worldBorderParticleSegmentLength;
+                    const yBase = Math.floor(playerLoc.y);
+
+                    // Use currentEffectiveHalfSize/Radius from the enforcement section
+                    // currentBorderSettings is the same as borderSettings from the enforcement section in this player loop iteration
+
+                    if (currentBorderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
+                        const { centerX, centerZ } = currentBorderSettings;
+                        const minX = centerX - currentEffectiveHalfSize;
+                        const maxX = centerX + currentEffectiveHalfSize;
+                        const minZ = centerZ - currentEffectiveHalfSize;
+                        const maxZ = centerZ + currentEffectiveHalfSize;
+
+                        const spawnSquareParticleLine = (isXPlane, fixedCoord, startDynamic, endDynamic, playerCoordDynamic) => {
+                            const lengthToRender = Math.min(segmentLength, Math.abs(endDynamic - startDynamic));
+                            let actualSegmentStart = playerCoordDynamic - lengthToRender / 2;
+                            let actualSegmentEnd = playerCoordDynamic + lengthToRender / 2;
+                            actualSegmentStart = Math.max(startDynamic, actualSegmentStart);
+                            actualSegmentEnd = Math.min(endDynamic, actualSegmentEnd);
+                            if (actualSegmentStart >= actualSegmentEnd) return;
+
+                            for (let dyn = actualSegmentStart; dyn <= actualSegmentEnd; dyn += (1 / density)) {
+                                for (let h = 0; h < wallHeight; h++) {
+                                    try {
+                                        const particleLoc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
+                                        player.dimension.spawnParticle(particleName, particleLoc);
+                                    } catch (e) { /* Silently ignore */ }
+                                }
+                            }
+                        };
+                        if (Math.abs(playerLoc.x - minX) < visualRange) spawnSquareParticleLine(true, minX, minZ, maxZ, playerLoc.z);
+                        if (Math.abs(playerLoc.x - maxX) < visualRange) spawnSquareParticleLine(true, maxX, minZ, maxZ, playerLoc.z);
+                        if (Math.abs(playerLoc.z - minZ) < visualRange) spawnSquareParticleLine(false, minZ, minX, maxX, playerLoc.x);
+                        if (Math.abs(playerLoc.z - maxZ) < visualRange) spawnSquareParticleLine(false, maxZ, minX, maxX, playerLoc.x);
+
+                    } else if (currentBorderSettings.shape === "circle" && typeof currentEffectiveRadius === 'number' && currentEffectiveRadius > 0) {
+                        const { centerX, centerZ } = currentBorderSettings;
+                        const radiusToUse = currentEffectiveRadius;
+
+                        const distanceToCenter = Math.sqrt(Math.pow(playerLoc.x - centerX, 2) + Math.pow(playerLoc.z - centerZ, 2));
+
+                        if (Math.abs(distanceToCenter - radiusToUse) < visualRange) {
+                            const playerAngle = Math.atan2(playerLoc.z - centerZ, playerLoc.x - centerX);
+                            const halfAngleSpan = radiusToUse > 0 ? (segmentLength / 2) / radiusToUse : Math.PI;
+
+                            for (let i = 0; i < segmentLength * density; i++) {
+                                const currentAngleOffset = (i / (segmentLength * density) - 0.5) * (segmentLength / radiusToUse);
+                                const angle = playerAngle + currentAngleOffset;
+
+                                if (Math.abs(currentAngleOffset) > halfAngleSpan && segmentLength * density > 1) continue;
+
+                                const particleX = centerX + radiusToUse * Math.cos(angle);
+                                const particleZ = centerZ + radiusToUse * Math.sin(angle);
+                                for (let h = 0; h < wallHeight; h++) {
+                                    try {
+                                        player.dimension.spawnParticle(particleName, { x: particleX, y: yBase + h, z: particleZ });
+                                    } catch (e) { /* Silently ignore */ }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     // Deferred player data saving
-    if (currentTick % 600 === 0) {
+    if (currentTick % 600 === 0) { // Approx every 30 seconds (600 ticks / 20 ticks_per_second)
         for (const player of allPlayers) {
             const pData = playerDataManager.getPlayerData(player.id); // Assuming getPlayerData takes playerId
             if (pData && pData.isDirtyForSave) {
