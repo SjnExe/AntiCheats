@@ -108,7 +108,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
 
         for (let i = 0; i < increment; i++) {
             // `playerDataManager.addFlag` handles its own admin notification part.
-            playerDataManager.addFlag(player, flagType, flagReasonMessage, flagDetailsForAdminNotify);
+            await playerDataManager.addFlag(player, flagType, flagReasonMessage, flagDetailsForAdminNotify, dependencies);
         }
         playerUtils?.debugLog?.(`[ActionManager] Flagged ${player.nameTag} for ${flagType} (x${increment}). Reason: "${flagReasonMessage}"`, player.nameTag);
     }

@@ -97,7 +97,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 parsedDurationMsTempBan = 300000; // 5 minutes in ms
             }
 
-            if (playerDataManager?.addBan && playerDataManager.addBan(player, parsedDurationMsTempBan, reasonMessageTempBan, "AutoMod")) {
+            if (playerDataManager?.addBan && playerDataManager.addBan(player, parsedDurationMsTempBan, reasonMessageTempBan, "AutoMod", true, checkType)) {
                 durationForLog = parsedDurationMsTempBan;
                 const friendlyDuration = formatDuration(parsedDurationMsTempBan);
                 const kickMsgTempBan = \`You are temporarily banned by AutoMod.\nReason: \${reasonMessageTempBan}\nDuration: \${friendlyDuration}\`;
@@ -125,7 +125,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             if (commandModules?.ban?.execute) {
                 try {
                     const args = [player.nameTag, "perm", ...reasonMessagePermBan.split(' ')];
-                    await commandModules.ban.execute(null, args, dependencies, "AutoMod");
+                    // Call signature: execute(source, args, dependencies, invokedBy = "PlayerCommand", isAutoMod = false, triggeringCheckType = null)
+                    await commandModules.ban.execute(null, args, dependencies, "AutoMod", true, checkType);
                     durationForLog = Infinity;
                     logDetails = \`PERM_BAN action delegated to ban command for \${player.nameTag}. Reason: \${reasonMessagePermBan}\`;
                     actionProcessed = true;
@@ -150,7 +151,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             if (commandModules?.mute?.execute) {
                 try {
                     const args = [player.nameTag, durationStringMute, ...reasonMessageMute.split(' ')];
-                    await commandModules.mute.execute(null, args, dependencies, "AutoMod");
+                    // Call signature: execute(source, args, dependencies, invokedBy = "PlayerCommand", isAutoMod = false, triggeringCheckType = null)
+                    await commandModules.mute.execute(null, args, dependencies, "AutoMod", true, checkType);
                     durationForLog = playerUtils.parseDuration(durationStringMute) || 0;
                     logDetails = \`MUTE action delegated to mute command for \${player.nameTag}. Duration: \${durationStringMute}, Reason: \${reasonMessageMute}\`;
                     actionProcessed = true;

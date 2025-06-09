@@ -6,9 +6,9 @@
  */
 import * as mc from '@minecraft/server';
 // ItemStack is part of mc, no need for separate import unless it's a custom class
-import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
+import { getPlayerRankFormattedChatElements, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Changed import
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, playerUtils as PlayerUtilsImport } from '../utils/index.js'; // Added isNetherLocked, isEndLocked, playerUtils
-import { editableConfigValues as ConfigValuesImport } from '../config.js'; // For AntiGrief
+import { editableConfigValues as ConfigValuesImport, editableConfigValues as config } from '../config.js'; // For AntiGrief
 
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
@@ -152,6 +152,13 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
     await playerDataManager.prepareAndSavePlayerData(player);
     playerUtils.debugLog(`Final data persistence attempted for ${player.nameTag} on leave.`, player.nameTag);
     playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, player.nameTag);
+
+    if (config.enableDetailedJoinLeaveLogging) {
+        const playerName = player.nameTag || player.name;
+        const playerId = player.id;
+        // Additional details like location or gamemode are harder to get reliably on leave or might be irrelevant.
+        console.warn(`[LeaveLog] Player: ${playerName} (ID: ${playerId}) left the game.`);
+    }
 }
 
 /**
@@ -283,6 +290,17 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
                 dependencies.actionManager, // Pass the actionManager object/wrapper
                 dependencies // Pass the full dependencies object passed to handlePlayerSpawn
             );
+        }
+
+        if (config.enableDetailedJoinLeaveLogging) {
+            const playerName = player.nameTag || player.name;
+            const playerId = player.id;
+            const deviceType = player.clientSystemInfo?.platformType?.toString() || "Unknown";
+            const gameMode = mc.GameMode[player.gameMode] || "Unknown";
+            const location = player.location;
+            const dimensionId = player.dimension.id.split(':')[1] || "unknown";
+            const locationString = `${Math.floor(location.x)}, ${Math.floor(location.y)}, ${Math.floor(location.z)} in ${dimensionId}`;
+            console.warn(`[JoinLog] Player: ${playerName} (ID: ${playerId}, Device: ${deviceType}, Mode: ${gameMode}) joined at ${locationString}.`);
         }
 
     } catch (error) {
@@ -594,11 +612,15 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
 
 /**
  * Handles entity death events to trigger cosmetic death effects for players.
+ * This function is intended to be subscribed to `world.afterEvents.entityDie`.
  * @param {mc.EntityDieAfterEvent} eventData The entity die event data.
- * @param {object} config The editable configuration object (config.editableConfigValues).
+ * @param {import('../config.js').editableConfigValues} currentConfig The editable configuration object.
  */
-export async function handleEntityDieForDeathEffects(eventData, config) {
-    if (!config.enableDeathEffects) {
+export async function handleEntityDieForDeathEffects(eventData, currentConfig) { // Renamed config to currentConfig to avoid conflict with imported config
+    // Ensure we are using the runtime editable config values
+    const activeConfig = currentConfig || config; // Fallback to imported config if currentConfig is not explicitly passed
+
+    if (!activeConfig.enableDeathEffects) {
         return;
     }
 
@@ -607,46 +629,28 @@ export async function handleEntityDieForDeathEffects(eventData, config) {
         return;
     }
 
-    const location = deadEntity.location;
-    const dimension = deadEntity.dimension;
-    const effectConfig = config.defaultDeathEffect;
+    const player = deadEntity; // More semantic name
+    const location = player.location;
+    const dimension = player.dimension;
 
-    if (effectConfig) {
-        // Play sound
-        if (effectConfig.soundId && effectConfig.soundOptions) {
-            try {
-                dimension.playSound(effectConfig.soundId, location, effectConfig.soundOptions);
-            } catch (e) {
-                console.warn(`[DeathEffects] Error playing sound '\${effectConfig.soundId}': \${e}`);
-            }
+    // Play sound using the new config value
+    if (activeConfig.deathEffectSoundId) {
+        try {
+            // Basic sound options can be added here if needed, e.g., volume, pitch from defaultDeathEffect or new specific configs
+            const soundOptions = activeConfig.defaultDeathEffect?.soundOptions || { volume: 1.0, pitch: 1.0 };
+            dimension.playSound(activeConfig.deathEffectSoundId, location, soundOptions);
+        } catch (e) {
+            console.warn(`[DeathEffects] Error playing sound '${activeConfig.deathEffectSoundId}': ${e}`);
         }
+    }
 
-        // Execute particle command
-        if (effectConfig.particleCommand) {
-            try {
-                // Replace placeholders. Handles "~ ~1 ~" and "~ ~ ~" for basic relative coordinates.
-                // More robust placeholder replacement might be needed for complex commands.
-                let commandToRun = effectConfig.particleCommand;
-                const yOffsetMatch = commandToRun.match(/~ ~(-?\d+) ~/)
-                let yOffset = 0;
-                if (yOffsetMatch && yOffsetMatch[1]) {
-                     yOffset = parseInt(yOffsetMatch[1]);
-                }
-
-                // Replace common relative position placeholders.
-                // This simple replacement assumes placeholders are separated by spaces.
-                commandToRun = commandToRun.replace("~ ~1 ~", `\${location.x.toFixed(3)} \${(location.y + 1).toFixed(3)} \${location.z.toFixed(3)}`);
-                commandToRun = commandToRun.replace("~ ~ ~", `\${location.x.toFixed(3)} \${location.y.toFixed(3)} \${location.z.toFixed(3)}`);
-                // A more generic replacement if a different y-offset was used in the string:
-                if (yOffset !== 0 && commandToRun.includes(`~ ~${yOffset} ~`)) {
-                     commandToRun = commandToRun.replace(`~ ~${yOffset} ~`, `\${location.x.toFixed(3)} \${(location.y + yOffset).toFixed(3)} \${location.z.toFixed(3)}`);
-                }
-
-
-                await dimension.runCommandAsync(commandToRun);
-            } catch (e) {
-                console.warn(`[DeathEffects] Error running particle command '\${effectConfig.particleCommand}': \${e}`);
-            }
+    // Spawn particle effect using the new config value
+    if (activeConfig.deathEffectParticleName) {
+        try {
+            // MolangVariableMap can be used for more complex particles if needed in the future
+            dimension.spawnParticle(activeConfig.deathEffectParticleName, location, new mc.MolangVariableMap());
+        } catch (e) {
+            console.warn(`[DeathEffects] Error spawning particle '${activeConfig.deathEffectParticleName}': ${e}`);
         }
     }
 }
@@ -1610,7 +1614,7 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
     }
 
     // Chat During Item Use Check (after combat check, before other spam checks)
-    if (currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
+    if (!eventData.cancel && currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) { // Added !eventData.cancel
         let itemUseState = "unknown";
         if (pData.isUsingConsumable) itemUseState = "using a consumable";
         else if (pData.isChargingBow) itemUseState = "charging a bow"; // Use else if to avoid overriding
@@ -1641,34 +1645,74 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         }
     }
 
+    // Swear Word Check
+    if (!eventData.cancel && currentConfig.enableSwearCheck && dependencies.checks && typeof dependencies.checks.checkSwear === 'function') {
+        // Ensure currentConfig, currentPUtils, and full dependencies are available.
+        // currentConfig is 'config' from params, currentPUtils is 'playerUtils' from params.
+        const swearViolation = await dependencies.checks.checkSwear(player, pData, eventData, config, playerUtils, dependencies);
+        if (swearViolation) {
+            // The checkSwear function calls executeCheckAction, which handles flagging and message cancellation via profile.
+            // Now, handle the custom MUTE action if specified in the profile.
+            const swearProfile = config.checkActionProfiles?.[config.swearCheckActionProfileName];
+            if (swearProfile?.customAction === "MUTE" && dependencies.commandModules?.mute?.execute) {
+                try {
+                    playerUtils.debugLog(\`SwearCheck: Attempting to apply MUTE (\${config.swearCheckMuteDuration}) for \${player.nameTag}\`, player.nameTag);
+                    await dependencies.commandModules.mute.execute(
+                        null, // Admin player, null for AutoMod
+                        [player.nameTag, config.swearCheckMuteDuration, "AutoMod: Language violation (swearing)"],
+                        dependencies, // Pass full dependencies
+                        "AutoMod",    // invokedBy
+                        true,         // isAutoModAction
+                        config.swearCheckActionProfileName // autoModCheckType
+                    );
+                } catch (muteError) {
+                    playerUtils.debugLog(\`SwearCheck: Error applying MUTE for \${player.nameTag}: \${muteError}\`, player.nameTag);
+                    if (dependencies.logManager && typeof dependencies.logManager.addLog === 'function') {
+                         dependencies.logManager.addLog({ adminName: "System", actionType: "error_automod_mute_fail", targetName: player.nameTag, details: \`SwearCheck: Mute failed - \${muteError}\` });
+                    }
+                }
+            }
+            // If checkSwear returned true, executeCheckAction (called within checkSwear) should have set eventData.cancel = true
+            // based on the "chat_swear_violation" profile's cancelMessage: true.
+            // We return to ensure no further processing of this chat message if a violation was handled.
+            if (eventData.cancel) return;
+        }
+    }
+
     const commonArgs = [player, pData, eventData, currentConfig, currentPUtils, playerDataManager, currentLogManager, actualExecuteCheckAction, currentTick];
 
-
-    if (checks.checkMessageRate && currentConfig.enableFastMessageSpamCheck) {
+    if (!eventData.cancel && checks.checkMessageRate && currentConfig.enableFastMessageSpamCheck) { // Added !eventData.cancel
         if (await checks.checkMessageRate(...commonArgs)) {
-            eventData.cancel = true;
+            eventData.cancel = true; // Ensure cancellation if checkMessageRate indicates violation
             if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }
-    if (checks.checkMessageWordCount && currentConfig.enableMaxWordsSpamCheck) {
+    if (!eventData.cancel && checks.checkMessageWordCount && currentConfig.enableMaxWordsSpamCheck) { // Added !eventData.cancel
         if (await checks.checkMessageWordCount(...commonArgs)) {
-            eventData.cancel = true;
+            eventData.cancel = true; // Ensure cancellation
             if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }
 
+    // If, after all checks, the message is still not cancelled, proceed with formatting and sending.
+    if (eventData.cancel) { // Explicitly return if any check above cancelled it.
+        return;
+    }
+
     // Log if message passed checks before formatting and sending
-    if (pData && pData.isWatched && !eventData.cancel && playerUtils.debugLog) {
+    if (pData && pData.isWatched && playerUtils.debugLog) { // Removed !eventData.cancel as it's handled above
         playerUtils.debugLog(`Chat message from ${player.nameTag} passed checks, proceeding to format/broadcast. Original: "${originalMessage}"`, player.nameTag);
     }
 
-    const rankDisplay = getPlayerRankDisplay(player);
-    const formattedMessage = `${rankDisplay.chatPrefix}${player.nameTag ?? player.name}§f: ${originalMessage}`; // Use nameTag, fallback to name
+    // Use the new rank formatting function
+    // 'currentConfig' in this scope is effectively config.editableConfigValues from main.js dependencies
+    const rankElements = getPlayerRankFormattedChatElements(player, currentConfig);
+    const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;
 
     eventData.cancel = true; // Cancel original vanilla message
-    mc.world.sendMessage(formattedMessage); // Broadcast formatted message
+    mc.world.sendMessage(finalMessage); // Broadcast formatted message
 
     // Update pData for other chat checks that might rely on message history AFTER successful send
     pData.recentMessages = pData.recentMessages || [];

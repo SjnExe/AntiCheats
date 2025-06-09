@@ -15,7 +15,7 @@ export const ownerPlayerName = "PlayerNameHere"; // TODO: Replace with actual ow
 export const enableDebugLogging = true;
 
 /** @type {boolean} If true, the Automated Moderation system is active. */
-export const enableAutoMod = true;
+export const enableAutoMod = false;
 
 /** @type {string} The prefix used for chat-based commands (e.g., "!ac version"). */
 export const prefix = "!";
@@ -33,20 +33,20 @@ export const enableMultiTargetCheck = true;
 /** @type {boolean} If true, various state conflict checks (e.g., attack while sleeping) are active. */
 export const enableStateConflictCheck = true;
 /** @type {boolean} If true, the Fly check (both sustained and hover) is active. */
-export const enableFlyCheck = true;
+export const enableFlyCheck = false;
 /** @type {boolean} If true, the Speed check is active. */
-export const enableSpeedCheck = true;
+export const enableSpeedCheck = false;
 /** @type {boolean} If true, the NoFall check is active. */
 export const enableNofallCheck = true;
 /** @type {boolean} If true, the Nuker check is active. */
-export const enableNukerCheck = true;
+export const enableNukerCheck = false;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
 export const enableIllegalItemCheck = true;
 /** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
 export const enableSelfHurtCheck = true;
 
 /** @type {boolean} If true, the Nether Roof Check is active and will flag players found on the Nether roof. */
-export const enableNetherRoofCheck = true;
+export const enableNetherRoofCheck = false;
 
 
 // --- Movement Checks ---
@@ -80,7 +80,7 @@ export const speedToleranceBuffer = 0.5;
 export const speedGroundConsecutiveTicksThreshold = 5;
 
 /** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass) is active. */
-export const enableNoSlowCheck = true;
+export const enableNoSlowCheck = false;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed. */
 export const noSlowMaxSpeedEating = 1.0;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla movement is significantly slowed. */
@@ -173,7 +173,7 @@ export const itemUseStateClearTicks = 60; // Default to 3 seconds
 
 // --- AutoTool Check ---
 /** @type {boolean} If true, the AutoTool check (detecting unnaturally fast tool switching for optimal block breaking) is active. */
-export const enableAutoToolCheck = true;
+export const enableAutoToolCheck = false;
 /** @type {number} Maximum ticks between starting to break a block and switching to an optimal tool to be considered suspicious by AutoTool check. */
 export const autoToolSwitchToOptimalWindowTicks = 2;
 /** @type {number} Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check. */
@@ -181,7 +181,7 @@ export const autoToolSwitchBackWindowTicks = 5;
 
 // --- InstaBreak Check ---
 /** @type {boolean} If true, the check for breaking normally unbreakable blocks (like Bedrock) is active. */
-export const enableInstaBreakUnbreakableCheck = true;
+export const enableInstaBreakUnbreakableCheck = false;
 /** @type {string[]} List of block type IDs considered normally unbreakable by non-Operator players. */
 export const instaBreakUnbreakableBlocks = [
     "minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
@@ -218,7 +218,7 @@ export const antiGMCSwitchToGameMode = "survival";
 export const antiGmcAutoSwitch = true;
 
 /** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
-export const enableInventoryModCheck = true;
+export const enableInventoryModCheck = false;
 
 
 /** @type {number} Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker. */
@@ -231,6 +231,19 @@ export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_bl
 export const bannedItemsUse = [];
 
 // --- Chat Checks ---
+
+/** @type {boolean} If true, enables the Swear Word detection check. */
+export const enableSwearCheck = false; // Disabled by default as per user request
+
+/** @type {string[]} List of swear words to detect (case-insensitive, whole word). Empty by default. */
+export const swearWordList = [];
+
+/** @type {string} The action profile name for swear word violations. */
+export const swearCheckActionProfileName = "chat_swear_violation";
+
+/** @type {string} Duration for the mute applied on swear word detection. */
+export const swearCheckMuteDuration = "30s";
+
 /** @type {boolean} If true, the Fast Message Spam check is active. */
 export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
@@ -272,7 +285,7 @@ export const spamRepeatCancelMessage = false;
 
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
-export const enableTowerCheck = true;
+export const enableTowerCheck = false;
 /** @type {number} Maximum time in game ticks between consecutive upward pillar blocks for them to be considered part of the same tower structure. */
 export const towerMaxTickGap = 10; // 0.5 seconds
 /** @type {number} Minimum number of consecutive upward blocks placed to trigger a tower flag. */
@@ -283,7 +296,7 @@ export const towerMaxPitchWhilePillaring = -30;
 export const towerPlacementHistoryLength = 20;
 
 /** @type {boolean} If true, the Flat/Invalid Rotation While Building check (detecting unnatural head movements during placement) is active. */
-export const enableFlatRotationCheck = true;
+export const enableFlatRotationCheck = false;
 /** @type {number} Number of consecutive block placements to analyze for static or flat rotation patterns. */
 export const flatRotationConsecutiveBlocks = 4;
 /** @type {number} Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks` to be considered 'static'. */
@@ -300,7 +313,7 @@ export const flatRotationPitchDownwardMin = -90.0;
 export const flatRotationPitchDownwardMax = -85.0;
 
 /** @type {boolean} If true, the Downward Scaffold check (detecting rapid downward block placement while airborne) is active. */
-export const enableDownwardScaffoldCheck = true;
+export const enableDownwardScaffoldCheck = false;
 /** @type {number} Minimum number of consecutive downward blocks placed while airborne to trigger a downward scaffold flag. */
 export const downwardScaffoldMinBlocks = 3;
 /** @type {number} Maximum time in game ticks between consecutive downward scaffold blocks. */
@@ -309,7 +322,7 @@ export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
 export const downwardScaffoldMinHorizontalSpeed = 3.0;
 
 /** @type {boolean} If true, the check for Placing Blocks onto Air/Liquid without adjacent support is active. */
-export const enableAirPlaceCheck = true;
+export const enableAirPlaceCheck = false;
 /**
  * @type {string[]} List of block type IDs that are considered 'solid' and typically require support.
  * Placing these against air or liquid without other solid adjacent support may be flagged.
@@ -343,7 +356,7 @@ export const fastUseItemCooldowns = {
 };
 
 /** @type {boolean} If true, the Fast Block Place check is active. */
-export const enableFastPlaceCheck = true;
+export const enableFastPlaceCheck = false;
 /** @type {number} Time window in milliseconds for fast block placement detection. */
 export const fastPlaceTimeWindowMs = 1000; // 1 second
 /** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
@@ -400,10 +413,14 @@ export const enableDeathCoordsMessage = true;
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
 // --- Death Effects ---
-/** @type {boolean} If true, cosmetic effects are shown when a player dies. */
+/** @type {boolean} If true, cosmetic effects (particle and sound) are shown when a player dies. */
 export const enableDeathEffects = false;
+/** @type {string} The particle effect name to spawn when a player dies. Example: "minecraft:totem_particle". */
+export const deathEffectParticleName = "minecraft:totem_particle";
+/** @type {string} The sound ID to play when a player dies. Example: "mob.ghast.scream". */
+export const deathEffectSoundId = "mob.ghast.scream";
 /**
- * @type {object} Defines the default cosmetic effect shown when a player dies.
+ * @type {object} Defines the default cosmetic effect shown when a player dies (legacy, can be removed if particleName/soundId are preferred).
  * @property {string} soundId - The sound ID to play on player death (e.g., "ambient.weather.lightning.impact").
  * @property {string} particleCommand - The command to execute for spawning particles (e.g., "particle minecraft:large_explosion ~ ~1 ~"). Location placeholders (~ ~ ~) are relative to the death location.
  * @property {object} soundOptions - Options for the sound playback.
@@ -411,11 +428,11 @@ export const enableDeathEffects = false;
  * @property {number} soundOptions.pitch - Pitch of the sound (e.g., 1.0).
  */
 export const defaultDeathEffect = {
-    soundId: "ambient.weather.lightning.impact",
-    particleCommand: "particle minecraft:large_explosion ~ ~1 ~", // Example: large explosion slightly above death point
+    soundId: "ambient.weather.lightning.impact", // This will be overridden by deathEffectSoundId if it's set
+    particleCommand: "particle minecraft:large_explosion ~ ~1 ~", // This will be overridden by deathEffectParticleName if it's set
     soundOptions: {
         volume: 1.0,
-        pitch: 0.8 // Slightly deeper pitch for impact
+        pitch: 0.8
     }
 };
 
@@ -604,6 +621,32 @@ export const chatDuringCombatCooldownSeconds = 4;
 /** @type {boolean} If true, the Chat During Item Use check is active. */
 export const enableChatDuringItemUseCheck = true;
 
+// --- Chat Formatting Settings ---
+/** @type {string} Default color for the Owner rank's chat prefix. */
+export const chatFormatOwnerPrefixColor = "§c";
+/** @type {string} Default color for the Owner rank's name in chat. */
+export const chatFormatOwnerNameColor = "§c";
+/** @type {string} Default color for the Owner rank's messages in chat. */
+export const chatFormatOwnerMessageColor = "§f";
+
+/** @type {string} Default color for the Admin rank's chat prefix. */
+export const chatFormatAdminPrefixColor = "§b";
+/** @type {string} Default color for the Admin rank's name in chat. */
+export const chatFormatAdminNameColor = "§b";
+/** @type {string} Default color for the Admin rank's messages in chat. */
+export const chatFormatAdminMessageColor = "§f";
+
+/** @type {string} Default color for the Member rank's chat prefix. */
+export const chatFormatMemberPrefixColor = "§7";
+/** @type {string} Default color for the Member rank's name in chat. */
+export const chatFormatMemberNameColor = "§7";
+/** @type {string} Default color for the Member rank's messages in chat. */
+export const chatFormatMemberMessageColor = "§f";
+
+// --- Player Join/Leave Logging ---
+/** @type {boolean} If true, detailed logging for player join and leave events is enabled. */
+export const enableDetailedJoinLeaveLogging = true;
+
 
 // --- UI Display Texts ---
 /**
@@ -649,6 +692,294 @@ export const generalHelpMessages = [
  * (This might be updated by a build process or during packaging).
  */
 export const acVersion = "v__VERSION_STRING__";
+
+/**
+ * @typedef {object} AutoModRuleParameter
+ * @property {string} reasonKey - Key to look up the message in `automodActionMessages`.
+ * @property {string} [duration] - Duration for actions like TEMP_BAN or MUTE (e.g., "5m", "1h").
+ * @property {string} [itemToRemoveTypeId] - Specific item TypeId for REMOVE_ILLEGAL_ITEM action.
+ */
+
+/**
+ * @typedef {object} AutoModRule
+ * @property {number} flagThreshold - Number of flags of a specific checkType to trigger this rule.
+ * @property {string} actionType - Type of action (e.g., "WARN", "KICK", "TEMP_BAN", "MUTE", "REMOVE_ILLEGAL_ITEM", "FLAG_ONLY").
+ * @property {AutoModRuleParameter} parameters - Parameters for the action.
+ * @property {boolean} resetFlagsAfterAction - Whether to reset the flag count for this checkType after the action.
+ */
+
+/**
+ * Configuration for the AutoMod system.
+ * Defines rules for automated actions based on flag counts, messages for those actions,
+ * and per-check type toggles for AutoMod.
+ * @type {{
+ *   automodRules: Object.<string, AutoModRule[]>,
+ *   automodActionMessages: Object.<string, string>,
+ *   automodPerCheckTypeToggles: Object.<string, boolean>
+ * }}
+ */
+export const automodConfig = {
+    /**
+     * Defines sets of rules for different checkTypes.
+     * Each key is a checkType (e.g., "fly_hover", "combat_cps_high"),
+     * and its value is an array of AutoModRule objects, ordered by escalating severity.
+     * Example: "fly_hover": [ { flagThreshold: 5, actionType: "WARN", ... }, { flagThreshold: 10, actionType: "KICK", ... } ]
+     */
+    automodRules: {
+        "example_fly_hover": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.fly.hover.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.fly.hover.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fly.hover.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "example_speed_ground": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.speed.ground.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "KICK", parameters: { reasonKey: "automod.speed.ground.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 35, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.speed.ground.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_cps_high": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.cps.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.cps.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.cps.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_nofall": [
+            { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.nofall.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.nofall.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.nofall.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "world_illegal_item_use": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.illegalitem.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.illegalitem.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.illegalitem.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "player_namespoof": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.namespoof.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "KICK", parameters: { reasonKey: "automod.namespoof.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "example_reach_attack": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.reach.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "KICK", parameters: { reasonKey: "automod.reach.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 40, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.reach.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_noslow": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.noslow.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.noslow.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.noslow.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "action_fast_use": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.fastuse.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "KICK", parameters: { reasonKey: "automod.fastuse.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 40, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fastuse.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "player_antigmc": [
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.antigmc.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.antigmc.tempban1", duration: "1d" }, resetFlagsAfterAction: true }
+        ],
+        "combat_multitarget_aura": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.multitarget.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.multitarget.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.multitarget.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_illegal_item_place": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.illegalplace.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.illegalplace.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.illegalplace.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_invalid_sprint": [
+            { flagThreshold: 8, actionType: "WARN", parameters: { reasonKey: "automod.invalidsprint.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 16, actionType: "KICK", parameters: { reasonKey: "automod.invalidsprint.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 24, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.invalidsprint.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_spam_fast_message": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatfast.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatfast.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatfast.mute2", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_invalid_pitch": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.invalidpitch.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.invalidpitch.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.invalidpitch.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_sleeping": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.attacksleep.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "KICK", parameters: { reasonKey: "automod.attacksleep.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attacksleep.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_instabreak_speed": [
+            { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.instabreak.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.instabreak.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.instabreak.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "chat_spam_max_words": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatmaxwords.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatmaxwords.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatmaxwords.mute2", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_viewsnap_pitch": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.viewsnap.pitch.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.viewsnap.pitch.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.viewsnap.pitch.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_viewsnap_yaw": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.viewsnap.yaw.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.viewsnap.yaw.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.viewsnap.yaw.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_consuming": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackconsume.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.attackconsume.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackconsume.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "player_invalid_render_distance": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.renderdistance.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 5, actionType: "KICK", parameters: { reasonKey: "automod.renderdistance.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.renderdistance.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_bow_charging": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackbow.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.attackbow.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackbow.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_shielding": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackshield.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.attackshield.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackshield.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "player_chat_during_combat": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatcombat.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatcombat.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatcombat.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "player_chat_during_item_use": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatitemuse.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatitemuse.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatitemuse.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ]
+        // Add more checkTypes here in the future
+    },
+
+    /**
+     * Stores user-facing messages for AutoMod actions.
+     * Keys are `reasonKey` strings (e.g., "automod.fly.hover.warn") used in `AutoModRule.parameters`.
+     * Values are the message strings.
+     * Example: "automod.fly.hover.warn": "AutoMod: Flying (hover) detected. Please return to the ground."
+     */
+    automodActionMessages: {
+        "automod.fly.hover.warn1": "AutoMod: Persistent hovering detected. Please adhere to server rules.",
+        "automod.fly.hover.kick1": "AutoMod: Kicked for continued hovering violations.",
+        "automod.fly.hover.tempban1": "AutoMod: Temporarily banned for excessive hovering violations.",
+        "automod.speed.ground.warn1": "AutoMod: Excessive ground speed detected. Please play fairly.",
+        "automod.speed.ground.kick1": "AutoMod: Kicked for repeated ground speed violations.",
+        "automod.speed.ground.tempban1": "AutoMod: Temporarily banned for repeated ground speed violations.",
+        "automod.cps.warn1": "AutoMod: High click speed detected multiple times.",
+        "automod.cps.kick1": "AutoMod: Kicked for repeated high click speed violations.",
+        "automod.cps.tempban1": "AutoMod: Temporarily banned for excessive click speed violations.",
+        "automod.nofall.warn1": "AutoMod: NoFall (fall damage negation) detected multiple times.",
+        "automod.nofall.kick1": "AutoMod: Kicked for repeated NoFall violations.",
+        "automod.nofall.tempban1": "AutoMod: Temporarily banned for excessive NoFall violations.",
+        "automod.illegalitem.warn1": "AutoMod: Use of illegal items detected. Items may be removed if behavior persists.",
+        "automod.illegalitem.kick1": "AutoMod: Kicked for repeated use of illegal items.",
+        "automod.illegalitem.tempban1": "AutoMod: Temporarily banned for excessive use of illegal items.",
+        "automod.namespoof.warn1": "AutoMod: Name spoofing detected. Please change your name.",
+        "automod.namespoof.kick1": "AutoMod: Kicked for repeated name spoofing violations.",
+        "automod.namespoof.tempban1": "AutoMod: Temporarily banned for excessive name spoofing violations.",
+        "automod.reach.warn1": "AutoMod: Excessive reach detected.",
+        "automod.reach.kick1": "AutoMod: Kicked for repeated reach violations.",
+        "automod.reach.tempban1": "AutoMod: Temporarily banned for excessive reach violations.",
+        "automod.noslow.warn1": "AutoMod: NoSlow (movement exploit) detected.",
+        "automod.noslow.kick1": "AutoMod: Kicked for repeated NoSlow violations.",
+        "automod.noslow.tempban1": "AutoMod: Temporarily banned for excessive NoSlow violations.",
+        "automod.fastuse.warn1": "AutoMod: Fast item usage detected.",
+        "automod.fastuse.kick1": "AutoMod: Kicked for repeated fast item usage.",
+        "automod.fastuse.tempban1": "AutoMod: Temporarily banned for excessive fast item usage.",
+        "automod.antigmc.kick1": "AutoMod: Kicked for unauthorized Creative Mode usage.",
+        "automod.antigmc.tempban1": "AutoMod: Temporarily banned for repeated unauthorized Creative Mode usage.",
+        "automod.antigmc.permban1": "AutoMod: Permanently banned for repeated unauthorized Creative Mode usage.",
+        "automod.multitarget.warn1": "AutoMod: Attacking multiple targets too quickly. Please play fairly.",
+        "automod.multitarget.kick1": "AutoMod: Kicked for repeated multi-target aura violations.",
+        "automod.multitarget.tempban1": "AutoMod: Temporarily banned for excessive multi-target aura violations.",
+        "automod.illegalplace.warn1": "AutoMod: Placing illegal or restricted items detected.",
+        "automod.illegalplace.kick1": "AutoMod: Kicked for repeatedly placing illegal items.",
+        "automod.illegalplace.tempban1": "AutoMod: Temporarily banned for excessively placing illegal items.",
+        "automod.invalidsprint.warn1": "AutoMod: Sprinting under invalid conditions detected multiple times.",
+        "automod.invalidsprint.kick1": "AutoMod: Kicked for repeated invalid sprint violations.",
+        "automod.invalidsprint.tempban1": "AutoMod: Temporarily banned for excessive invalid sprint violations.",
+        "automod.chatfast.warn1": "AutoMod: Please do not send messages so quickly.",
+        "automod.chatfast.mute1": "AutoMod: Muted for 5 minutes for sending messages too quickly.",
+        "automod.chatfast.mute2": "AutoMod: Muted for 30 minutes for persistent fast message spam.",
+        "automod.invalidpitch.warn1": "AutoMod: Invalid viewing angles detected multiple times.",
+        "automod.invalidpitch.kick1": "AutoMod: Kicked for repeated invalid viewing angles.",
+        "automod.invalidpitch.tempban1": "AutoMod: Temporarily banned for excessive invalid viewing angles.",
+        "automod.attacksleep.warn1": "AutoMod: Attacking while sleeping detected.",
+        "automod.attacksleep.kick1": "AutoMod: Kicked for repeatedly attacking while sleeping.",
+        "automod.attacksleep.tempban1": "AutoMod: Temporarily banned for excessively attacking while sleeping.",
+        "automod.instabreak.warn1": "AutoMod: Breaking blocks too quickly detected multiple times.",
+        "automod.instabreak.kick1": "AutoMod: Kicked for repeated instabreak violations.",
+        "automod.instabreak.tempban1": "AutoMod: Temporarily banned for excessive instabreak violations.",
+        "automod.chatmaxwords.warn1": "AutoMod: Please avoid sending messages with excessive words.",
+        "automod.chatmaxwords.mute1": "AutoMod: Muted for 5 minutes for sending messages with too many words.",
+        "automod.chatmaxwords.mute2": "AutoMod: Muted for 30 minutes for persistent overly long messages.",
+        "automod.viewsnap.pitch.warn1": "AutoMod: Suspicious vertical camera movements detected.",
+        "automod.viewsnap.pitch.kick1": "AutoMod: Kicked for repeated suspicious vertical camera movements.",
+        "automod.viewsnap.pitch.tempban1": "AutoMod: Temporarily banned for excessive suspicious vertical camera movements.",
+        "automod.viewsnap.yaw.warn1": "AutoMod: Suspicious horizontal camera movements detected.",
+        "automod.viewsnap.yaw.kick1": "AutoMod: Kicked for repeated suspicious horizontal camera movements.",
+        "automod.viewsnap.yaw.tempban1": "AutoMod: Temporarily banned for excessive suspicious horizontal camera movements.",
+        "automod.attackconsume.warn1": "AutoMod: Attacking while consuming items detected.",
+        "automod.attackconsume.kick1": "AutoMod: Kicked for repeatedly attacking while consuming items.",
+        "automod.attackconsume.tempban1": "AutoMod: Temporarily banned for excessively attacking while consuming items.",
+        "automod.renderdistance.warn1": "AutoMod: Invalid client render distance reported.",
+        "automod.renderdistance.kick1": "AutoMod: Kicked for repeatedly reporting invalid render distance.",
+        "automod.renderdistance.tempban1": "AutoMod: Temporarily banned for persistently reporting invalid render distance.",
+        "automod.attackbow.warn1": "AutoMod: Attacking while charging a bow detected.",
+        "automod.attackbow.kick1": "AutoMod: Kicked for repeatedly attacking while charging a bow.",
+        "automod.attackbow.tempban1": "AutoMod: Temporarily banned for excessively attacking while charging a bow.",
+        "automod.attackshield.warn1": "AutoMod: Attacking while shielding detected.",
+        "automod.attackshield.kick1": "AutoMod: Kicked for repeatedly attacking while shielding.",
+        "automod.attackshield.tempban1": "AutoMod: Temporarily banned for excessively attacking while shielding.",
+        "automod.chatcombat.warn1": "AutoMod: Please avoid chatting during combat cooldown.",
+        "automod.chatcombat.mute1": "AutoMod: Muted for 5 minutes for chatting during combat cooldown.",
+        "automod.chatcombat.mute2": "AutoMod: Muted for 15 minutes for persistently chatting during combat cooldown.",
+        "automod.chatitemuse.warn1": "AutoMod: Please avoid chatting while using items.",
+        "automod.chatitemuse.mute1": "AutoMod: Muted for 5 minutes for chatting while using items.",
+        "automod.chatitemuse.mute2": "AutoMod: Muted for 15 minutes for persistently chatting while using items."
+        // Add more messages here
+    },
+
+    /**
+     * Allows enabling or disabling AutoMod for specific checkTypes.
+     * Keys are checkType strings (e.g., "fly_hover").
+     * Values are booleans (true to enable AutoMod for this check, false to disable).
+     * If a checkType is not listed here, AutoMod processing for it might be skipped or default to enabled,
+     * depending on `automodManager.js` logic (current logic implies it would skip if not found or if no rules).
+     */
+    automodPerCheckTypeToggles: {
+        "example_fly_hover": true, // Renamed from fly_hover
+        "example_speed_ground": true, // Renamed from speed_ground
+        "combat_cps_high": true,
+        "movement_nofall": true,
+        "world_illegal_item_use": true,
+        "player_namespoof": true,
+        "player_antigmc": true,
+        "combat_multitarget_aura": true,
+        "world_illegal_item_place": true,
+        "movement_invalid_sprint": true,
+        "chat_spam_fast_message": true,
+        "combat_invalid_pitch": true,
+        "combat_attack_while_sleeping": true,
+        "world_instabreak_speed": true,
+        "chat_spam_max_words": true,
+        "combat_viewsnap_pitch": true,
+        "combat_viewsnap_yaw": true,
+        "combat_attack_while_consuming": true,
+        "player_invalid_render_distance": true,
+        "combat_attack_while_bow_charging": true,
+        "combat_attack_while_shielding": true,
+        "player_chat_during_combat": true,
+        "player_chat_during_item_use": true
+        // Add more checkTypes here
+    }
+};
 
 // --- Check Action Profiles ---
 // Defines actions to be taken for specific cheat detections.
@@ -1336,6 +1667,24 @@ export const checkActionProfiles = {
             "actionType": "detected_chat_during_item_use",
             "detailsPrefix": "Chat During Item Use: "
         }
+    },
+    "chat_swear_violation": {
+        enabled: true, // The check itself is controlled by enableSwearCheck
+        flag: {
+            increment: 1,
+            reason: "Swear word detected in message: {detectedWord}",
+            type: "chat_language_violation" // A more general type for language issues
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}"
+        },
+        log: {
+            actionType: "detected_swear_word",
+            detailsPrefix: "Swear Word Violation: ",
+            includeViolationDetails: true // To include detectedWord and messageContent
+        },
+        cancelMessage: true, // Cancel the message containing the swear word
+        customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
     }
 };
 
@@ -1448,7 +1797,9 @@ export let editableConfigValues = {
     enableDeathCoordsMessage,
     deathCoordsMessage,
     enableDeathEffects,
-    defaultDeathEffect,
+    deathEffectParticleName,
+    deathEffectSoundId,
+    defaultDeathEffect, // Keeping for now, though individual particle/sound are preferred
     serverRules,
     discordLink,
     websiteLink,
@@ -1527,6 +1878,25 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    // Swear Check specific
+    enableSwearCheck,
+    swearWordList,
+    swearCheckActionProfileName,
+    swearCheckMuteDuration,
+    // Chat Formatting Settings
+    chatFormatOwnerPrefixColor,
+    chatFormatOwnerNameColor,
+    chatFormatOwnerMessageColor,
+    chatFormatAdminPrefixColor,
+    chatFormatAdminNameColor,
+    chatFormatAdminMessageColor,
+    chatFormatMemberPrefixColor,
+    chatFormatMemberNameColor,
+    chatFormatMemberMessageColor,
+    // Player Join/Leave Logging
+    enableDetailedJoinLeaveLogging,
+    // AutoMod Configuration
+    automodConfig,
 };
 
 /**
@@ -1605,3 +1975,5 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
     return true;
 }
+
+[end of AntiCheatsBP/scripts/config.js]

@@ -47,6 +47,7 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         // Construct a comprehensive dependencies object for chat handler
         const chatHandlerDependencies = {
             config: config.editableConfigValues,
+            automodConfig: config.editableConfigValues.automodConfig,
             playerUtils: playerUtils,
             logManager: logManager,
             actionManager: { executeCheckAction }, // Pass the wrapper
@@ -114,6 +115,7 @@ mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
     // Augment dependencies for handlePlayerSpawn to include more modules
     const spawnHandlerDependencies = {
         config: config.editableConfigValues, // Pass the editable runtime config
+        automodConfig: config.editableConfigValues.automodConfig,
         playerUtils: playerUtils,
         logManager: logManager, // Pass the full logManager
         actionManager: { executeCheckAction }, // Pass executeCheckAction
@@ -180,6 +182,7 @@ mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
 mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => { // Changed to itemUseOn and made async
     const eventDependencies = {
         config: config.editableConfigValues, // Pass runtime editable config
+        automodConfig: config.editableConfigValues.automodConfig,
         playerUtils: playerUtils,
         logManager: logManager,
         actionManager: { executeCheckAction },
@@ -203,6 +206,7 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
     // Call AntiGrief TNT check
     const antiGriefDependencies = {
         config: config.editableConfigValues, // Pass the editable config values
+        automodConfig: config.editableConfigValues.automodConfig,
         playerUtils: playerUtils,
         logManager: logManager,
         actionManager: { executeCheckAction } // Pass the executeCheckAction function
@@ -261,6 +265,7 @@ mc.world.afterEvents.entityDie.subscribe(async (eventData) => {
 mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
     const antiGriefDependencies = {
         config: config.editableConfigValues,
+        automodConfig: config.editableConfigValues.automodConfig,
         playerUtils: playerUtils,
         logManager: logManager,
         actionManager: { executeCheckAction },
@@ -642,15 +647,24 @@ mc.system.runInterval(async () => {
         // Periodic Invalid Render Distance Check
         if (config.enableInvalidRenderDistanceCheck && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= 400)) { // 400 ticks = 20 seconds
             if (checks.checkInvalidRenderDistance) {
-                const renderDistDependencies = { config, playerDataManager, playerUtils, logManager, actionManager: { executeCheckAction }, checks, currentTick };
+                const renderDistDependencies = {
+                    config: config.editableConfigValues, // Ensure this is the editable one
+                    automodConfig: config.editableConfigValues.automodConfig,
+                    playerDataManager,
+                    playerUtils,
+                    logManager,
+                    actionManager: { executeCheckAction },
+                    checks,
+                    currentTick
+                };
                 await checks.checkInvalidRenderDistance(
                     player,
                     pData,
-                    config, // This is config.editableConfigValues from the tick loop's scope
+                    config.editableConfigValues, // Pass editableConfigValues explicitly
                     playerUtils,
                     logManager,
-                    { executeCheckAction }, // Pass actionManager/executeCheckAction wrapper
-                    renderDistDependencies // Pass the full dependencies object
+                    { executeCheckAction },
+                    renderDistDependencies
                 );
             }
             pData.lastRenderDistanceCheckTick = currentTick;
@@ -658,7 +672,8 @@ mc.system.runInterval(async () => {
 
         // Construct dependencies specifically for checkNetherRoof as its signature expects a 'dependencies' object
         const netherRoofDependencies = {
-            config: config,
+            config: config.editableConfigValues, // Ensure this is the editable one
+            automodConfig: config.editableConfigValues.automodConfig,
             playerDataManager: playerDataManager,
             playerUtils: playerUtils
             // logManager and executeCheckAction are not expected by checkNetherRoof's current signature

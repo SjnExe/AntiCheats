@@ -29,11 +29,26 @@ export const permissionLevels = {
 };
 
 /**
+ * @typedef {object} RankChatColors
+ * @property {string} defaultPrefixColor - Default color for the rank prefix.
+ * @property {string} defaultNameColor - Default color for the player's name.
+ * @property {string} defaultMessageColor - Default color for the player's message.
+ */
+
+/**
+ * @typedef {object} RankConfigKeys
+ * @property {string} prefixColor - Config key for the rank prefix color.
+ * @property {string} nameColor - Config key for the player's name color.
+ * @property {string} messageColor - Config key for the player's message color.
+ */
+
+/**
  * @typedef {object} RankProperties
- * @property {string} name - The display name of the rank (e.g., "Owner", "Admin", "Member").
+ * @property {string} name - The display name of the rank.
  * @property {string} prefixText - The text part of the prefix (e.g., "[Owner] ").
- * @property {string} defaultColor - The default Minecraft color code for this rank (e.g., "§c").
- * @property {string} nametagPrefix - The prefix displayed above a player's nametag (e.g., "§cOwner§f\n").
+ * @property {string} nametagPrefix - The prefix displayed above a player's nametag.
+ * @property {RankChatColors} chatColors - Default color settings for chat.
+ * @property {RankConfigKeys} configKeys - Keys to look up actual colors in config.js.
  */
 
 /**
@@ -44,20 +59,47 @@ export const ranks = {
     owner: {
         name: "Owner",
         prefixText: "[Owner] ",
-        defaultColor: "§c", // Red
-        nametagPrefix: "§cOwner§f\n"
+        nametagPrefix: "§cOwner§f\n", // Nametag prefix remains as is
+        chatColors: {
+            defaultPrefixColor: "§c", // Red
+            defaultNameColor: "§c",   // Red for owner's name
+            defaultMessageColor: "§f" // White message
+        },
+        configKeys: {
+            prefixColor: "chatFormatOwnerPrefixColor",
+            nameColor: "chatFormatOwnerNameColor",
+            messageColor: "chatFormatOwnerMessageColor"
+        }
     },
     admin: {
         name: "Admin",
         prefixText: "[Admin] ",
-        defaultColor: "§b", // Aqua
-        nametagPrefix: "§bAdmin§f\n"
+        nametagPrefix: "§bAdmin§f\n", // Nametag prefix remains as is
+        chatColors: {
+            defaultPrefixColor: "§b", // Aqua
+            defaultNameColor: "§b",   // Aqua for admin's name
+            defaultMessageColor: "§f" // White message
+        },
+        configKeys: {
+            prefixColor: "chatFormatAdminPrefixColor",
+            nameColor: "chatFormatAdminNameColor",
+            messageColor: "chatFormatAdminMessageColor"
+        }
     },
     member: {
         name: "Member",
-        prefixText: "[Member] ",
-        defaultColor: "§7", // Gray
-        nametagPrefix: "§7Member§f\n"
+        prefixText: "[Member] ", // Added space for consistency
+        nametagPrefix: "§7Member§f\n", // Nametag prefix remains as is
+        chatColors: {
+            defaultPrefixColor: "§7", // Gray
+            defaultNameColor: "§7",   // Gray for member's name
+            defaultMessageColor: "§f" // White message
+        },
+        configKeys: {
+            prefixColor: "chatFormatMemberPrefixColor",
+            nameColor: "chatFormatMemberNameColor",
+            messageColor: "chatFormatMemberMessageColor"
+        }
     }
 };
 
@@ -93,6 +135,29 @@ export function getPlayerRankId(player) {
 // };
 // // ... (adminRank, memberRank, getPlayerRankDisplay commented or removed) ...
 
+/**
+ * Retrieves the formatted chat elements (prefix, name color, message color) for a player based on their rank
+ * and configurable color settings.
+ *
+ * @param {Player} player - The Minecraft Player object.
+ * @param {object} [configValues] - Optional: The editable configuration values from `config.js` (e.g., `config.editableConfigValues`).
+ *                                 If not provided, default colors from the `ranks` object will be used.
+ * @returns {{fullPrefix: string, nameColor: string, messageColor: string}} An object containing the formatted chat elements.
+ */
+export function getPlayerRankFormattedChatElements(player, configValues = {}) {
+    const rankId = getPlayerRankId(player);
+    const rankProperties = ranks[rankId] || ranks.member; // Fallback to member if rankId is somehow invalid
+
+    const actualPrefixColor = configValues?.[rankProperties.configKeys.prefixColor] ?? rankProperties.chatColors.defaultPrefixColor;
+    const actualNameColor = configValues?.[rankProperties.configKeys.nameColor] ?? rankProperties.chatColors.defaultNameColor;
+    const actualMessageColor = configValues?.[rankProperties.configKeys.messageColor] ?? rankProperties.chatColors.defaultMessageColor;
+
+    return {
+        fullPrefix: actualPrefixColor + rankProperties.prefixText,
+        nameColor: actualNameColor,
+        messageColor: actualMessageColor
+    };
+}
 
 /**
  * Updates a player's nametag to reflect their current rank.

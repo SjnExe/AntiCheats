@@ -1,6 +1,84 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **AutoMod Mute Durations Reduced:**
+    *   **Summary:** All MUTE actions within `automodConfig.automodRules` in `config.js` have had their durations changed to "1m".
+    *   Corresponding messages in `automodActionMessages` were updated to reflect "1 minute".
+*   **Swear Word Detection Feature Implemented (Disabled by Default):**
+    *   **Summary:** Added a new feature to detect swear words in chat messages and apply a configurable mute.
+    *   **Configuration (`config.js`):**
+        *   Added `enableSwearCheck` (default: `false`), `swearWordList` (default: `[]`), `swearCheckActionProfileName` (default: `"chat_swear_violation"`), `swearCheckMuteDuration` (default: `"30s"`). These are in `editableConfigValues`.
+        *   Added `checkActionProfiles` entry for `"chat_swear_violation"` with flag, notify, log, `cancelMessage: true`, and `customAction: "MUTE"`.
+    *   **Implementation:**
+        *   Created `AntiCheatsBP/scripts/checks/chat/swearCheck.js` with `checkSwear` function (case-insensitive, whole word matching, uses actionManager). Exported via `checks/index.js`.
+        *   Integrated `checkSwear` into `eventHandlers.js` (`handleBeforeChatSend`). If swear detected and profile has `customAction: "MUTE"`, it calls the `mute` command module to apply the `swearCheckMuteDuration`.
+    *   **Note:** The feature is disabled by default and the `swearWordList` is empty. Administrators need to enable it and populate the list for it to function.
+*   **AutoMod System Review - Phase 1 (Holistic Review & Analysis Completed):**
+    *   **Summary:** Conducted a holistic review of the existing AutoMod system (`automodManager.js`, `actionManager.js`) to understand its architecture and identify areas for improvement.
+    *   **Key Findings:** The `automodManager.js` logic for threshold-based actions is robust but currently non-operational due to missing `automodConfig` (rules, messages, per-check toggles) in `config.js`.
+    *   **Outcome:** Detailed findings and recommendations for making the system functional (primarily by adding the missing configurations) are documented in `Dev/notes/AutoModReview_Findings.md`.
+    *   *(This completes the 'review' part of the "AutoMod System Review & Future Enhancements" task. Subsequent work will focus on implementing the recommendations.)*
+*   **AutoMod System - Initial Operational Setup:**
+    *   **Summary:** Made the threshold-based `automodManager.js` operational by implementing its core configuration and trigger mechanism.
+    *   **Key Implementation Steps:**
+        *   Defined `automodConfig` structure (for `automodRules`, `automodActionMessages`, `automodPerCheckTypeToggles`) within `config.js` and added it to `editableConfigValues`.
+        *   Populated `automodConfig` with initial default rules and messages for `fly_hover` and `speed_ground` check types.
+        *   Ensured `automodConfig` (via `config.editableConfigValues.automodConfig`) is passed as a direct `dependencies.automodConfig` key in `dependencies` objects created in `main.js`.
+        *   Modified `playerDataManager.addFlag` to accept the full `dependencies` object and to call `automodManager.processAutoModActions` after a flag is added.
+        *   Updated `actionManager.executeCheckAction` to pass the `dependencies` object to `addFlag`.
+    *   **Outcome:** The AutoMod system can now execute escalating actions (WARN, KICK, TEMP_BAN, etc.) based on configured flag thresholds for enabled check types.
+    *   *(This work follows the review documented in "AutoMod System Review - Phase 1" and addresses its primary recommendation.)*
+*   **Enhanced Configurable Chat Formatting & Rank Display Fix:**
+    *   **Summary:** Implemented a configurable system for chat message formatting based on player ranks. This resolves previous inconsistencies and enhances customization.
+    *   **Key Changes:**
+        *   **`rankManager.js`:**
+            *   Modified the `ranks` object structure to include `chatColors` (for default prefix, name, and message colors) and `configKeys` (to link to `config.js` for runtime values).
+            *   Implemented `getPlayerRankFormattedChatElements(player, configValues)` function:
+                *   Determines player rank.
+                *   Fetches color configurations from `configValues` (passed from `config.js`) using `configKeys`, with fallbacks to default colors.
+                *   Returns an object `{ fullPrefix, nameColor, messageColor }`.
+        *   **`eventHandlers.js`:**
+            *   Updated `handleBeforeChatSend` to import and use `getPlayerRankFormattedChatElements`.
+            *   Constructs chat messages with distinct, configurable colors for the rank prefix, player name, and the message body itself (e.g., `PREFIX NAME: MESSAGE` can now have different colors for each part).
+        *   **`config.js`:**
+            *   Added new configuration constants for `prefixColor`, `nameColor`, and `messageColor` for each rank (owner, admin, member) (e.g., `chatFormatOwnerPrefixColor`).
+            *   Included these new constants in `editableConfigValues`, making them modifiable via an Admin Panel config editor if available.
+    *   **Functionality:**
+        *   Chat messages are now formatted with rank-specific colors for the prefix, player name, and message content.
+        *   These colors are configurable via `config.js` and can be edited at runtime.
+        *   The system is designed to be extensible for future ranks by adding new entries to `rankManager.js` and `config.js`.
+    *   *(Addresses original task: "Chat Formatting (potentially linked to the Rank System)..." and resolves noted "persistent subtask execution issues" by overhauling the underlying mechanism.)*
+*   **Adjust Default Configurations (Unplanned):** (Completed on 2024-07-29) Changed default values for several features to `false` based on user feedback during review. This includes:
+    - `enableDeathEffects`
+    - `enableNetherRoofCheck`
+    - `enableInstaBreakUnbreakableCheck`
+    - `enableNukerCheck`
+    - `enableTowerCheck`
+    - `enableFlatRotationCheck`
+    - `enableDownwardScaffoldCheck`
+    - `enableAirPlaceCheck`
+    - `enableFastPlaceCheck`
+*   **Investigation: Sending Messages During Invalid States (Chest/Container UI)**
+    *   **Status:** Investigated - Not Feasible with Current API.
+    *   **Summary:** Conducted an investigation into the feasibility of detecting if a player has a container UI open for the purpose of preventing chat messages.
+    *   **Findings:** The `@minecraft/server` API (reviewed up to v2.1.0-beta) does not provide a reliable method to determine if a player has a container UI open. There are no direct UI state properties or specific container open/close events. Proxies like `PlayerCursorInventoryComponent` are unreliable (e.g., not used with touch controls).
+    *   **Conclusion:** Implementation of this specific chat violation check is not currently feasible.
+    *   Detailed findings are documented in `Dev/notes/ChatInContainerUI_Investigation.md`.
+*   **Death Effects (Basic Implementation):**
+    *   Implemented basic cosmetic effects (sound and particle) upon player death.
+    *   **Implementation Details:**
+        *   Added `enableDeathEffects` (boolean, default `true`), `deathEffectParticleName` (string, default `"minecraft:totem_particle"`), and `deathEffectSoundId` (string, default `"mob.ghast.scream"`) to `config.js` and `editableConfigValues`.
+        *   Modified `handleEntityDieForDeathEffects` in `eventHandlers.js` to check the `enableDeathEffects` config. If true, it uses the new particle and sound configurations to spawn a particle and play a sound at the location of player death.
+        *   The existing `world.afterEvents.entityDie` subscription in `main.js` which calls this handler was confirmed to be sufficient and correctly passes the necessary configuration.
+*   **Detailed Player Join/Leave Logging:**
+    *   Implemented detailed logging for player join and leave events.
+    *   **Implementation Details:**
+        *   Added `enableDetailedJoinLeaveLogging` (boolean, default `true`) to `config.js` and `editableConfigValues`.
+        *   Modified `handlePlayerSpawn` in `eventHandlers.js`:
+            *   If enabled, logs player ID, name, device type (e.g., from `player.clientSystemInfo?.platformType`), game mode, and current location (coordinates and dimension) upon player join.
+        *   Modified `handlePlayerLeave` in `eventHandlers.js`:
+            *   If enabled, logs player ID and name upon player leave.
+        *   All detailed join/leave logs are output using `console.warn` with `[JoinLog]` or `[LeaveLog]` prefixes.
 *   **Investigation: Device Ban Feasibility**
     *   Conducted an investigation into the feasibility of implementing device bans using only the `@minecraft/server` Script API.
     *   Reviewed available player properties (`player.id`, `player.clientSystemInfo`, etc.) and API capabilities.
