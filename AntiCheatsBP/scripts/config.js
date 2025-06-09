@@ -944,6 +944,11 @@ export const automodConfig = {
             { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.densityspam.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.densityspam.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.densityspam.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "player_self_hurt": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.selfhurt.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.selfhurt.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.selfhurt.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -1086,7 +1091,10 @@ export const automodConfig = {
         "automod.entityspam.tempban1": "AutoMod: Temporarily banned for excessive entity spamming.",
         "automod.densityspam.warn1": "AutoMod: High-density block spamming detected.",
         "automod.densityspam.kick1": "AutoMod: Kicked for persistent high-density block spamming.",
-        "automod.densityspam.tempban1": "AutoMod: Temporarily banned for excessive high-density block spamming."
+        "automod.densityspam.tempban1": "AutoMod: Temporarily banned for excessive high-density block spamming.",
+        "automod.selfhurt.warn1": "AutoMod: Suspicious self-inflicted damage detected.",
+        "automod.selfhurt.kick1": "AutoMod: Kicked for repeated suspicious self-inflicted damage.",
+        "automod.selfhurt.tempban1": "AutoMod: Temporarily banned for excessive self-inflicted damage."
         // Add more messages here
     },
 
@@ -1138,7 +1146,8 @@ export const automodConfig = {
         "world_antigrief_water": true,
         "world_antigrief_blockspam": true,
         "world_antigrief_entityspam": true,
-        "world_antigrief_blockspam_density": true
+        "world_antigrief_blockspam_density": true,
+        "player_self_hurt": true
         // Add more checkTypes here
     }
 };
@@ -1847,6 +1856,21 @@ export const checkActionProfiles = {
         },
         cancelMessage: true, // Cancel the message containing the swear word
         customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
+    },
+    "player_self_hurt": {
+        enabled: true,
+        flag: {
+            increment: 2, // Moderate flagging
+            reason: "System detected suspicious self-inflicted damage.",
+            type: "player_self_damage" // Specific type for this flag
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}"
+        },
+        log: {
+            actionType: "detected_player_self_hurt",
+            detailsPrefix: "Self-Hurt Violation: "
+        }
     }
 };
 

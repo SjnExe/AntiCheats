@@ -1,6 +1,15 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Command Enhancement: `!worldborder remove` Confirmation:**
+    *   **Summary:** Modified the `!worldborder remove [dimensionId]` command to require an additional "confirm" argument to execute.
+    *   **Purpose:** To prevent accidental removal of world border configurations. If "confirm" is not provided, the command now instructs the user on how to confirm the action.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/worldborder.js`.
+*   **AutoMod: Integration for Self-Hurt Check:**
+    *   **Summary:** Identified the `checkType` for the existing Self-Hurt check as "player_self_hurt".
+    *   **Action Profile:** Added a new entry for "player_self_hurt" in `checkActionProfiles` within `config.js`, configured for flagging, admin notification, and logging.
+    *   **AutoMod Rules:** Implemented new AutoMod rules (WARN, KICK, TEMP_BAN), action messages, and a per-check toggle in `automodConfig` for "player_self_hurt".
+    *   **Purpose:** To enable automated moderation responses for suspicious self-inflicted damage if `enableAutoMod` and `enableSelfHurtCheck` are active.
 *   **AutoMod: Rule Definition for Disabled Checks:**
     *   **Summary:** Added default AutoMod rules (escalating WARN, KICK, TEMP_BAN), action messages, and per-check AutoMod toggles to `config.js` for a comprehensive list of checks that were previously disabled by default but had defined `checkActionProfiles`.
     *   **Purpose:** To ensure these checks have baseline AutoMod configurations ready for activation if an administrator chooses to enable them, promoting smoother integration into the AutoMod system.

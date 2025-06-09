@@ -45,9 +45,10 @@ export const commandData = {
         },
         {
             name: "remove",
-            description: "Removes the world border settings for a dimension.",
+            description: "Removes the world border settings for a dimension (requires confirmation). Syntax: !wb remove [dimensionId] confirm",
             parameters: [
-                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID (e.g., overworld, nether, the_end). Defaults to current dimension if 'confirm' is the only argument or if no dimension is specified before 'confirm'." },
+                { name: "confirm", type: "literal", value: "confirm", optional: true, description: "Required to confirm the removal action." }
             ]
         },
         {
@@ -104,7 +105,7 @@ export async function execute(player, args, subCommand, config, dependencies) {
             await handleToggleCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
         case "remove":
-            await handleRemoveCommand(player, args, playerUtils, logManager, dependencies);
+            await handleRemoveCommand(player, args, playerUtils, logManager, config, dependencies); // Added config
             break;
         case "shrink":
             await handleShrinkCommand(player, args, playerUtils, logManager, config, dependencies);
@@ -129,7 +130,7 @@ function normalizeDimensionId(player, inputDimId) { // Added player for default 
 }
 
 
-async function handleSetCommand(player, args, playerUtils, logManager, config, dependencies) {
+async function handleSetCommand(player, args, playerUtils, logManager, config, dependencies) { // Added dependencies
     // Command structure: !wb set <shape> <centerX> <centerZ> <sizeParam> [dimensionId]
     // Example args array for `handleSetCommand(player, args...)`:
     // args[0] = shape ("square" or "circle")
@@ -356,36 +357,72 @@ async function handleToggleCommand(player, args, playerUtils, logManager, config
     }
 }
 
-async function handleRemoveCommand(player, args, playerUtils, logManager, dependencies) {
-    const dimensionIdInput = args.length > 0 ? args[0] : undefined;
-    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+async function handleRemoveCommand(player, args, playerUtils, logManager, config, dependencies) {
+    let dimensionIdInput;
+    let confirmationArg = false;
 
-    if (!dimensionId) {
-        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+    if (args.length === 0) {
+        // Case: !wb remove (implies current dimension, needs confirm)
+        dimensionIdInput = undefined;
+    } else if (args.length === 1) {
+        if (args[0].toLowerCase() === 'confirm') {
+            // Case: !wb remove confirm (current dimension, confirmed)
+            dimensionIdInput = undefined;
+            confirmationArg = true;
+        } else {
+            // Case: !wb remove <dimensionId> (needs confirm)
+            dimensionIdInput = args[0];
+        }
+    } else if (args.length === 2) {
+        dimensionIdInput = args[0];
+        if (args[1].toLowerCase() === 'confirm') {
+            // Case: !wb remove <dimensionId> confirm (specific dimension, confirmed)
+            confirmationArg = true;
+        } else {
+            // Case: !wb remove <dimensionId> <something_else> (invalid)
+            playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb remove [dimensionId] confirm`);
+            return;
+        }
+    } else {
+        playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb remove [dimensionId] confirm`);
         return;
     }
 
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end, or their full Minecraft IDs.`);
+        return;
+    }
+
+    if (!confirmationArg) {
+        const dimToDisplay = dimensionIdInput ? dimensionIdInput : `your current dimension (${dimensionId.replace('minecraft:', '')})`;
+        const confirmCommand = `${config.prefix}wb remove ${dimensionIdInput ? dimensionIdInput + ' ' : ''}confirm`;
+        playerUtils.warnPlayer(player, `To confirm removal of the world border for ${dimToDisplay}, please run: ${confirmCommand}`);
+        return;
+    }
+
+    // If we reach here, confirmationArg is true
     const currentSettings = getBorderSettings(dimensionId);
     let cancelledResizeMessage = "";
     if (currentSettings && currentSettings.isResizing) {
-        // No need to modify currentSettings object here, clearBorderSettings removes everything.
         cancelledResizeMessage = " Ongoing border resize operation was also cancelled.";
     }
 
     if (clearBorderSettings(dimensionId)) {
-        playerUtils.notifyPlayer(player, `§aWorld border settings removed for ${dimensionId}.${cancelledResizeMessage}`);
+        playerUtils.notifyPlayer(player, `§aWorld border settings removed for ${dimensionId.replace('minecraft:', '')}.${cancelledResizeMessage}`);
         if (logManager && typeof logManager.addLog === 'function') {
             logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_remove', targetName: dimensionId, details: `Border removed.${cancelledResizeMessage}` });
         } else {
             playerUtils.debugLog("LogManager or addLog not available for worldborder_remove.", null);
         }
     } else {
-        playerUtils.warnPlayer(player, "§cFailed to remove world border settings. It might not have been set or an error occurred.");
+        playerUtils.warnPlayer(player, `§cFailed to remove world border settings for ${dimensionId.replace('minecraft:', '')}. It might not have been set or an error occurred.`);
     }
 }
 
 
-async function handleResizeCommand(player, args, playerUtils, logManager, config, operationType) {
+async function handleResizeCommand(player, args, playerUtils, logManager, config, operationType) { // Added config
     // Args: <new_size> <time_seconds> [dimensionId]
     // operationType is 'shrink' or 'expand'
     if (args.length < 2) {
