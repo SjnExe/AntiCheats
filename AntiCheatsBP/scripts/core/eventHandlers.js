@@ -6,7 +6,7 @@
  */
 import * as mc from '@minecraft/server';
 // ItemStack is part of mc, no need for separate import unless it's a custom class
-import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
+import { getPlayerRankFormattedChatElements, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Changed import
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, playerUtils as PlayerUtilsImport } from '../utils/index.js'; // Added isNetherLocked, isEndLocked, playerUtils
 import { editableConfigValues as ConfigValuesImport, editableConfigValues as config } from '../config.js'; // For AntiGrief
 
@@ -1668,11 +1668,13 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         playerUtils.debugLog(`Chat message from ${player.nameTag} passed checks, proceeding to format/broadcast. Original: "${originalMessage}"`, player.nameTag);
     }
 
-    const rankDisplay = getPlayerRankDisplay(player);
-    const formattedMessage = `${rankDisplay.chatPrefix}${player.nameTag ?? player.name}§f: ${originalMessage}`; // Use nameTag, fallback to name
+    // Use the new rank formatting function
+    // 'currentConfig' in this scope is effectively config.editableConfigValues from main.js dependencies
+    const rankElements = getPlayerRankFormattedChatElements(player, currentConfig);
+    const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;
 
     eventData.cancel = true; // Cancel original vanilla message
-    mc.world.sendMessage(formattedMessage); // Broadcast formatted message
+    mc.world.sendMessage(finalMessage); // Broadcast formatted message
 
     // Update pData for other chat checks that might rely on message history AFTER successful send
     pData.recentMessages = pData.recentMessages || [];

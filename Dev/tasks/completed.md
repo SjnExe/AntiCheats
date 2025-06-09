@@ -1,6 +1,26 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Enhanced Configurable Chat Formatting & Rank Display Fix:**
+    *   **Summary:** Implemented a configurable system for chat message formatting based on player ranks. This resolves previous inconsistencies and enhances customization.
+    *   **Key Changes:**
+        *   **`rankManager.js`:**
+            *   Modified the `ranks` object structure to include `chatColors` (for default prefix, name, and message colors) and `configKeys` (to link to `config.js` for runtime values).
+            *   Implemented `getPlayerRankFormattedChatElements(player, configValues)` function:
+                *   Determines player rank.
+                *   Fetches color configurations from `configValues` (passed from `config.js`) using `configKeys`, with fallbacks to default colors.
+                *   Returns an object `{ fullPrefix, nameColor, messageColor }`.
+        *   **`eventHandlers.js`:**
+            *   Updated `handleBeforeChatSend` to import and use `getPlayerRankFormattedChatElements`.
+            *   Constructs chat messages with distinct, configurable colors for the rank prefix, player name, and the message body itself (e.g., `PREFIX NAME: MESSAGE` can now have different colors for each part).
+        *   **`config.js`:**
+            *   Added new configuration constants for `prefixColor`, `nameColor`, and `messageColor` for each rank (owner, admin, member) (e.g., `chatFormatOwnerPrefixColor`).
+            *   Included these new constants in `editableConfigValues`, making them modifiable via an Admin Panel config editor if available.
+    *   **Functionality:**
+        *   Chat messages are now formatted with rank-specific colors for the prefix, player name, and message content.
+        *   These colors are configurable via `config.js` and can be edited at runtime.
+        *   The system is designed to be extensible for future ranks by adding new entries to `rankManager.js` and `config.js`.
+    *   *(Addresses original task: "Chat Formatting (potentially linked to the Rank System)..." and resolves noted "persistent subtask execution issues" by overhauling the underlying mechanism.)*
 *   **Adjust Default Configurations (Unplanned):** (Completed on 2024-07-29) Changed default values for several features to `false` based on user feedback during review. This includes:
     - `enableDeathEffects`
     - `enableNetherRoofCheck`
@@ -11,6 +31,12 @@
     - `enableDownwardScaffoldCheck`
     - `enableAirPlaceCheck`
     - `enableFastPlaceCheck`
+*   **Investigation: Sending Messages During Invalid States (Chest/Container UI)**
+    *   **Status:** Investigated - Not Feasible with Current API.
+    *   **Summary:** Conducted an investigation into the feasibility of detecting if a player has a container UI open for the purpose of preventing chat messages.
+    *   **Findings:** The `@minecraft/server` API (reviewed up to v2.1.0-beta) does not provide a reliable method to determine if a player has a container UI open. There are no direct UI state properties or specific container open/close events. Proxies like `PlayerCursorInventoryComponent` are unreliable (e.g., not used with touch controls).
+    *   **Conclusion:** Implementation of this specific chat violation check is not currently feasible.
+    *   Detailed findings are documented in `Dev/notes/ChatInContainerUI_Investigation.md`.
 *   **Death Effects (Basic Implementation):**
     *   Implemented basic cosmetic effects (sound and particle) upon player death.
     *   **Implementation Details:**

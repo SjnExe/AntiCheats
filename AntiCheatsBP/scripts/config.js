@@ -608,6 +608,28 @@ export const chatDuringCombatCooldownSeconds = 4;
 /** @type {boolean} If true, the Chat During Item Use check is active. */
 export const enableChatDuringItemUseCheck = true;
 
+// --- Chat Formatting Settings ---
+/** @type {string} Default color for the Owner rank's chat prefix. */
+export const chatFormatOwnerPrefixColor = "§c";
+/** @type {string} Default color for the Owner rank's name in chat. */
+export const chatFormatOwnerNameColor = "§c";
+/** @type {string} Default color for the Owner rank's messages in chat. */
+export const chatFormatOwnerMessageColor = "§f";
+
+/** @type {string} Default color for the Admin rank's chat prefix. */
+export const chatFormatAdminPrefixColor = "§b";
+/** @type {string} Default color for the Admin rank's name in chat. */
+export const chatFormatAdminNameColor = "§b";
+/** @type {string} Default color for the Admin rank's messages in chat. */
+export const chatFormatAdminMessageColor = "§f";
+
+/** @type {string} Default color for the Member rank's chat prefix. */
+export const chatFormatMemberPrefixColor = "§7";
+/** @type {string} Default color for the Member rank's name in chat. */
+export const chatFormatMemberNameColor = "§7";
+/** @type {string} Default color for the Member rank's messages in chat. */
+export const chatFormatMemberMessageColor = "§f";
+
 // --- Player Join/Leave Logging ---
 /** @type {boolean} If true, detailed logging for player join and leave events is enabled. */
 export const enableDetailedJoinLeaveLogging = true;
@@ -1537,6 +1559,16 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    // Chat Formatting Settings
+    chatFormatOwnerPrefixColor,
+    chatFormatOwnerNameColor,
+    chatFormatOwnerMessageColor,
+    chatFormatAdminPrefixColor,
+    chatFormatAdminNameColor,
+    chatFormatAdminMessageColor,
+    chatFormatMemberPrefixColor,
+    chatFormatMemberNameColor,
+    chatFormatMemberMessageColor,
     // Player Join/Leave Logging
     enableDetailedJoinLeaveLogging,
 };

@@ -9,7 +9,6 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
-        *   **Sending Messages During Invalid States (Chest/Container UI):** Investigate/implement detection for players sending chat messages while a chest or other container UI is presumed open (API feasibility remains low). (Scythe 'BadPackets')
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
@@ -25,7 +24,6 @@ This list contains planned features, improvements, and areas for future investig
 ## Low Priority / Ideas
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
-    *   Chat Formatting (potentially linked to the Rank System). (Attempted 2025-07-22, but not completed due to persistent subtask execution issues preventing necessary code modifications).
 *   **Logging Enhancements:** SjnExe parity goal.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 *   **AutoMod System Review & Future Enhancements:**
