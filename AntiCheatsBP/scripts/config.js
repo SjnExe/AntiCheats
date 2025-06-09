@@ -713,7 +713,7 @@ export const automodConfig = {
      * Example: "fly_hover": [ { flagThreshold: 5, actionType: "WARN", ... }, { flagThreshold: 10, actionType: "KICK", ... } ]
      */
     automodRules: {
-        "fly_hover": [
+        "example_fly_hover": [ // Renamed from fly_hover
             {
                 flagThreshold: 5,
                 actionType: "WARN",
@@ -733,7 +733,7 @@ export const automodConfig = {
                 resetFlagsAfterAction: true
             }
         ],
-        "speed_ground": [
+        "example_speed_ground": [ // Renamed from speed_ground
             {
                 flagThreshold: 8,
                 actionType: "WARN",
@@ -746,6 +746,28 @@ export const automodConfig = {
                 parameters: { reasonKey: "automod.speed.ground.tempban1", duration: "10m" },
                 resetFlagsAfterAction: true
             }
+        ],
+        "combat_cps_high": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.cps.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.cps.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.cps.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_nofall": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.nofall.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.nofall.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.nofall.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_illegal_item_use": [
+            { flagThreshold: 4, actionType: "WARN", parameters: { reasonKey: "automod.illegalitem.warn1" }, resetFlagsAfterAction: false },
+            // REMOVE_ILLEGAL_ITEM could be added here or handled by the check directly. For now, only WARN.
+            // { flagThreshold: 4, actionType: "REMOVE_ILLEGAL_ITEM", parameters: { reasonKey: "automod.illegalitem.removed" }, resetFlagsAfterAction: false },
+            { flagThreshold: 8, actionType: "KICK", parameters: { reasonKey: "automod.illegalitem.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.illegalitem.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "player_namespoof": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.namespoof.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.namespoof.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "2h" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -761,7 +783,21 @@ export const automodConfig = {
         "automod.fly.hover.kick1": "AutoMod: Kicked for continued hovering violations.",
         "automod.fly.hover.tempban1": "AutoMod: Temporarily banned for excessive hovering violations.",
         "automod.speed.ground.warn1": "AutoMod: Excessive ground speed detected. Please play fairly.",
-        "automod.speed.ground.tempban1": "AutoMod: Temporarily banned for repeated ground speed violations."
+        "automod.speed.ground.tempban1": "AutoMod: Temporarily banned for repeated ground speed violations.",
+        "automod.cps.warn1": "AutoMod: High click speed detected multiple times.",
+        "automod.cps.kick1": "AutoMod: Kicked for repeated high click speed violations.",
+        "automod.cps.tempban1": "AutoMod: Temporarily banned for excessive click speed violations.",
+        "automod.nofall.warn1": "AutoMod: NoFall (fall damage negation) detected multiple times.",
+        "automod.nofall.kick1": "AutoMod: Kicked for repeated NoFall violations.",
+        "automod.nofall.tempban1": "AutoMod: Temporarily banned for excessive NoFall violations.",
+        "automod.illegalitem.warn1": "AutoMod: Use of illegal items detected. Items may be removed if behavior persists.",
+        "automod.illegalitem.kick1": "AutoMod: Kicked for repeated use of illegal items.",
+        "automod.illegalitem.tempban1": "AutoMod: Temporarily banned for excessive use of illegal items.",
+        "automod.namespoof.warn1": "AutoMod: Name spoofing detected. Please change your name.",
+        "automod.namespoof.kick1": "AutoMod: Kicked for repeated name spoofing violations.",
+        "automod.namespoof.tempban1": "AutoMod: Temporarily banned for excessive name spoofing violations.",
+        "automod.antigmc.kick1": "AutoMod: Kicked for unauthorized Creative Mode usage.",
+        "automod.antigmc.permban1": "AutoMod: Permanently banned for repeated unauthorized Creative Mode usage."
         // Add more messages here
     },
 
@@ -773,8 +809,13 @@ export const automodConfig = {
      * depending on `automodManager.js` logic (current logic implies it would skip if not found or if no rules).
      */
     automodPerCheckTypeToggles: {
-        "fly_hover": true,
-        "speed_ground": true
+        "example_fly_hover": true, // Renamed from fly_hover
+        "example_speed_ground": true, // Renamed from speed_ground
+        "combat_cps_high": true,
+        "movement_nofall": true,
+        "world_illegal_item_use": true,
+        "player_namespoof": true,
+        "player_antigmc": true
         // Add more checkTypes here
     }
 };
