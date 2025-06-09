@@ -26,8 +26,6 @@ This list contains planned features, improvements, and areas for future investig
 *   **Player Utilities & Experience:** SjnExe parity goal.
 *   **Logging Enhancements:** SjnExe parity goal.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
-*   **AutoMod System Review & Future Enhancements:**
-    - Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.

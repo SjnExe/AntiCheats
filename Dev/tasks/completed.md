@@ -1,6 +1,21 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **AutoMod System Review - Phase 1 (Holistic Review & Analysis Completed):**
+    *   **Summary:** Conducted a holistic review of the existing AutoMod system (`automodManager.js`, `actionManager.js`) to understand its architecture and identify areas for improvement.
+    *   **Key Findings:** The `automodManager.js` logic for threshold-based actions is robust but currently non-operational due to missing `automodConfig` (rules, messages, per-check toggles) in `config.js`.
+    *   **Outcome:** Detailed findings and recommendations for making the system functional (primarily by adding the missing configurations) are documented in `Dev/notes/AutoModReview_Findings.md`.
+    *   *(This completes the 'review' part of the "AutoMod System Review & Future Enhancements" task. Subsequent work will focus on implementing the recommendations.)*
+*   **AutoMod System - Initial Operational Setup:**
+    *   **Summary:** Made the threshold-based `automodManager.js` operational by implementing its core configuration and trigger mechanism.
+    *   **Key Implementation Steps:**
+        *   Defined `automodConfig` structure (for `automodRules`, `automodActionMessages`, `automodPerCheckTypeToggles`) within `config.js` and added it to `editableConfigValues`.
+        *   Populated `automodConfig` with initial default rules and messages for `fly_hover` and `speed_ground` check types.
+        *   Ensured `automodConfig` (via `config.editableConfigValues.automodConfig`) is passed as a direct `dependencies.automodConfig` key in `dependencies` objects created in `main.js`.
+        *   Modified `playerDataManager.addFlag` to accept the full `dependencies` object and to call `automodManager.processAutoModActions` after a flag is added.
+        *   Updated `actionManager.executeCheckAction` to pass the `dependencies` object to `addFlag`.
+    *   **Outcome:** The AutoMod system can now execute escalating actions (WARN, KICK, TEMP_BAN, etc.) based on configured flag thresholds for enabled check types.
+    *   *(This work follows the review documented in "AutoMod System Review - Phase 1" and addresses its primary recommendation.)*
 *   **Enhanced Configurable Chat Formatting & Rank Display Fix:**
     *   **Summary:** Implemented a configurable system for chat message formatting based on player ranks. This resolves previous inconsistencies and enhances customization.
     *   **Key Changes:**

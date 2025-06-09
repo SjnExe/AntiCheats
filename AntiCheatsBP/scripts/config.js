@@ -680,6 +680,105 @@ export const generalHelpMessages = [
  */
 export const acVersion = "v__VERSION_STRING__";
 
+/**
+ * @typedef {object} AutoModRuleParameter
+ * @property {string} reasonKey - Key to look up the message in `automodActionMessages`.
+ * @property {string} [duration] - Duration for actions like TEMP_BAN or MUTE (e.g., "5m", "1h").
+ * @property {string} [itemToRemoveTypeId] - Specific item TypeId for REMOVE_ILLEGAL_ITEM action.
+ */
+
+/**
+ * @typedef {object} AutoModRule
+ * @property {number} flagThreshold - Number of flags of a specific checkType to trigger this rule.
+ * @property {string} actionType - Type of action (e.g., "WARN", "KICK", "TEMP_BAN", "MUTE", "REMOVE_ILLEGAL_ITEM", "FLAG_ONLY").
+ * @property {AutoModRuleParameter} parameters - Parameters for the action.
+ * @property {boolean} resetFlagsAfterAction - Whether to reset the flag count for this checkType after the action.
+ */
+
+/**
+ * Configuration for the AutoMod system.
+ * Defines rules for automated actions based on flag counts, messages for those actions,
+ * and per-check type toggles for AutoMod.
+ * @type {{
+ *   automodRules: Object.<string, AutoModRule[]>,
+ *   automodActionMessages: Object.<string, string>,
+ *   automodPerCheckTypeToggles: Object.<string, boolean>
+ * }}
+ */
+export const automodConfig = {
+    /**
+     * Defines sets of rules for different checkTypes.
+     * Each key is a checkType (e.g., "fly_hover", "combat_cps_high"),
+     * and its value is an array of AutoModRule objects, ordered by escalating severity.
+     * Example: "fly_hover": [ { flagThreshold: 5, actionType: "WARN", ... }, { flagThreshold: 10, actionType: "KICK", ... } ]
+     */
+    automodRules: {
+        "fly_hover": [
+            {
+                flagThreshold: 5,
+                actionType: "WARN",
+                parameters: { reasonKey: "automod.fly.hover.warn1" },
+                resetFlagsAfterAction: false
+            },
+            {
+                flagThreshold: 10,
+                actionType: "KICK",
+                parameters: { reasonKey: "automod.fly.hover.kick1" },
+                resetFlagsAfterAction: false
+            },
+            {
+                flagThreshold: 15,
+                actionType: "TEMP_BAN",
+                parameters: { reasonKey: "automod.fly.hover.tempban1", duration: "30m" },
+                resetFlagsAfterAction: true
+            }
+        ],
+        "speed_ground": [
+            {
+                flagThreshold: 8,
+                actionType: "WARN",
+                parameters: { reasonKey: "automod.speed.ground.warn1" },
+                resetFlagsAfterAction: false
+            },
+            {
+                flagThreshold: 15,
+                actionType: "TEMP_BAN",
+                parameters: { reasonKey: "automod.speed.ground.tempban1", duration: "10m" },
+                resetFlagsAfterAction: true
+            }
+        ]
+        // Add more checkTypes here in the future
+    },
+
+    /**
+     * Stores user-facing messages for AutoMod actions.
+     * Keys are `reasonKey` strings (e.g., "automod.fly.hover.warn") used in `AutoModRule.parameters`.
+     * Values are the message strings.
+     * Example: "automod.fly.hover.warn": "AutoMod: Flying (hover) detected. Please return to the ground."
+     */
+    automodActionMessages: {
+        "automod.fly.hover.warn1": "AutoMod: Persistent hovering detected. Please adhere to server rules.",
+        "automod.fly.hover.kick1": "AutoMod: Kicked for continued hovering violations.",
+        "automod.fly.hover.tempban1": "AutoMod: Temporarily banned for excessive hovering violations.",
+        "automod.speed.ground.warn1": "AutoMod: Excessive ground speed detected. Please play fairly.",
+        "automod.speed.ground.tempban1": "AutoMod: Temporarily banned for repeated ground speed violations."
+        // Add more messages here
+    },
+
+    /**
+     * Allows enabling or disabling AutoMod for specific checkTypes.
+     * Keys are checkType strings (e.g., "fly_hover").
+     * Values are booleans (true to enable AutoMod for this check, false to disable).
+     * If a checkType is not listed here, AutoMod processing for it might be skipped or default to enabled,
+     * depending on `automodManager.js` logic (current logic implies it would skip if not found or if no rules).
+     */
+    automodPerCheckTypeToggles: {
+        "fly_hover": true,
+        "speed_ground": true
+        // Add more checkTypes here
+    }
+};
+
 // --- Check Action Profiles ---
 // Defines actions to be taken for specific cheat detections.
 // Used by actionManager.js.
@@ -1571,6 +1670,8 @@ export let editableConfigValues = {
     chatFormatMemberMessageColor,
     // Player Join/Leave Logging
     enableDetailedJoinLeaveLogging,
+    // AutoMod Configuration
+    automodConfig,
 };
 
 /**

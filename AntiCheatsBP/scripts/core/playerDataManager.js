@@ -8,8 +8,8 @@
 import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 import { processAutoModActions } from './automodManager.js';
-import * as config from '../config.js';
-import * as automodConfig from '../automodConfig.js';
+// import * as config from '../config.js'; // Dependencies will pass config.editableConfigValues
+// import * as automodConfig from '../automodConfig.js'; // This was incorrect
 
 const playerData = new Map();
 
@@ -424,9 +424,10 @@ export function updateTransientPlayerData(player, pData, currentTick) {
  * @param {string} reasonMessage - The reason for the flag, often shown to the player.
  * @param {string | object} [detailsForNotify=""] - Additional details for notifications or logs.
  *                                                 If an object with itemTypeId, it's stored in lastViolationDetailsMap.
- * @returns {void}
+ * @param {object | null} [dependencies=null] - Optional dependencies object, expected to contain config, automodConfig, playerUtils, logManager, etc.
+ * @returns {Promise<void>}
  */
-export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") {
+export async function addFlag(player, flagType, reasonMessage, detailsForNotify = "", dependencies = null) {
     const pData = getPlayerData(player.id);
     if (!pData) {
         debugLog(`PDM:addFlag: No pData for ${player.nameTag}. Cannot add flag: ${flagType}.`, player.nameTag);
@@ -466,21 +467,23 @@ export function addFlag(player, flagType, reasonMessage, detailsForNotify = "") 
     notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${notifyString}`, player, pData);
     debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${fullReasonForLog}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
 
-    // Prepare dependencies for AutoModManager
-    const automodDependencies = {
-        config: config,
-        automodConfig: automodConfig,
-        playerUtils: { debugLog, warnPlayer, notifyAdmins },
-        logManager: null,
-        playerDataManager: { addBan, addMute, getBanInfo, getMuteInfo, isBanned, isMuted, saveDirtyPlayerData, prepareAndSavePlayerData, getPlayerData },
-        commandModules: null
-    };
-
-    try {
-        processAutoModActions(player, pData, flagType, automodDependencies);
-    } catch (e) {
-        console.error(`[playerDataManager] Error calling processAutoModActions for ${player.nameTag}: ${e}\n${e.stack}`);
-        debugLog(`Error during processAutoModActions for ${player.nameTag}, checkType ${flagType}: ${e}`, player.nameTag);
+    if (dependencies && dependencies.config && dependencies.config.enableAutoMod && dependencies.automodConfig) {
+        try {
+            // Ensure playerUtils is available in dependencies for debugLog within processAutoModActions
+            if (dependencies.playerUtils && dependencies.playerUtils.debugLog && pData.isWatched) {
+                dependencies.playerUtils.debugLog(`addFlag: Calling processAutoModActions for ${player.nameTag}, checkType: ${flagType}`, player.nameTag);
+            }
+            await processAutoModActions(player, pData, flagType, dependencies);
+        } catch (e) {
+            console.error(`[PlayerDataManager] Error calling processAutoModActions from addFlag for ${player.nameTag} / ${flagType}: ${e.stack || e}`);
+            if (dependencies.playerUtils && dependencies.playerUtils.debugLog) {
+                dependencies.playerUtils.debugLog(`Error in processAutoModActions called from addFlag: ${e.stack || e}`, player.nameTag);
+            }
+        }
+    } else if (dependencies && dependencies.playerUtils && dependencies.playerUtils.debugLog && pData.isWatched) {
+        const autoModEnabled = dependencies.config ? dependencies.config.enableAutoMod : 'N/A (no config in deps)';
+        const autoModConfigPresent = !!dependencies.automodConfig;
+        dependencies.playerUtils.debugLog(`addFlag: Skipping processAutoModActions for ${player.nameTag} (checkType: ${flagType}). enableAutoMod: ${autoModEnabled}, automodConfig present: ${autoModConfigPresent}.`, player.nameTag);
     }
 }
 
