@@ -1,6 +1,16 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Adjust Default Configurations (Unplanned):** (Completed on 2024-07-29) Changed default values for several features to `false` based on user feedback during review. This includes:
+    - `enableDeathEffects`
+    - `enableNetherRoofCheck`
+    - `enableInstaBreakUnbreakableCheck`
+    - `enableNukerCheck`
+    - `enableTowerCheck`
+    - `enableFlatRotationCheck`
+    - `enableDownwardScaffoldCheck`
+    - `enableAirPlaceCheck`
+    - `enableFastPlaceCheck`
 *   **Death Effects (Basic Implementation):**
     *   Implemented basic cosmetic effects (sound and particle) upon player death.
     *   **Implementation Details:**

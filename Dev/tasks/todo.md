@@ -33,15 +33,3 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
-
-## Ad-hoc Tasks & Adjustments
-*   **Adjust Default Configurations (Unplanned):** (Completed on 2024-07-29) Changed default values for several features to `false` based on user feedback during review. This includes:
-    - `enableDeathEffects`
-    - `enableNetherRoofCheck`
-    - `enableInstaBreakUnbreakableCheck`
-    - `enableNukerCheck`
-    - `enableTowerCheck`
-    - `enableFlatRotationCheck`
-    - `enableDownwardScaffoldCheck`
-    - `enableAirPlaceCheck`
-    - `enableFastPlaceCheck`
