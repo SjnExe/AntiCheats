@@ -15,7 +15,7 @@ This list contains planned features, improvements, and areas for future investig
         *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, & gradual resize are now complete. `!wb remove` now requires confirmation - Implemented). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
             *   - Implement commands to pause and resume an ongoing gradual border resize (e.g., `!worldborder resizepause [dimensionId]` and `!worldborder resizeresume [dimensionId]`) - Implemented.
             *   - Options for different particle patterns or effects for world border visuals (Global particle type changeable via `!wb setglobalparticle`. Per-dimension particle type now changeable via `!wb setparticle`. Further investigation for dynamic patterns pending).
-            *   - Consider different resize interpolation methods (e.g., ease-in/out) instead of just linear.
+            *   - Different resize interpolation methods (linear, easeOutQuad, easeInOutQuad) implemented for `!wb shrink/expand`.
             *   - (Consider more complex shape support - if still relevant beyond square/circle).
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*

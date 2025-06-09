@@ -29,6 +29,7 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
  * @property {number} [resizePausedTimeMs] - Optional: Total accumulated time (ms) the resize has been paused.
  * @property {number} [resizeLastPauseStartTimeMs] - Optional: Timestamp (ms) when the current pause period began.
  * @property {string} [particleNameOverride] - Optional: Specific particle name to use for this dimension's border visuals, overriding global default.
+ * @property {"linear" | "easeOutQuad" | "easeInOutQuad"} [resizeInterpolationType] - Optional: The type of interpolation to use for gradual resizing. Defaults to "linear".
  */
 
 /**
@@ -72,6 +73,11 @@ export function getBorderSettings(dimensionId) {
 
             // Damage and resize properties are optional and will be handled by the caller if not present
             // No specific validation for resize fields here, as they are managed by commands and the tick loop
+
+            // Default resizeInterpolationType if isResizing and it's missing
+            if (settings.isResizing && settings.resizeInterpolationType === undefined) {
+                settings.resizeInterpolationType = "linear";
+            }
             return settings;
         }
     } catch (error) {
@@ -159,6 +165,16 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
         // If isPaused is true, resizeLastPauseStartTimeMs should have a value.
         // If isPaused is explicitly set to false, resizeLastPauseStartTimeMs is cleared.
         // resizePausedTimeMs accumulates and is only cleared when isResizing becomes false.
+
+        // Validate or default resizeInterpolationType if resizing
+        if (fullSettings.isResizing) {
+            const validInterpolationTypes = ["linear", "easeOutQuad", "easeInOutQuad"];
+            if (!fullSettings.resizeInterpolationType || !validInterpolationTypes.includes(fullSettings.resizeInterpolationType)) {
+                fullSettings.resizeInterpolationType = "linear"; // Default to linear
+            }
+        } else {
+            fullSettings.resizeInterpolationType = undefined; // Clear if not resizing
+        }
     }
 
     // Handle particleNameOverride

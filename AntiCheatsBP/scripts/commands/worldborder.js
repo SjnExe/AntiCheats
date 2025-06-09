@@ -57,7 +57,8 @@ export const commandData = {
             parameters: [
                 { name: "new_size", type: "number", description: "Target size (halfSize for square, radius for circle)." },
                 { name: "time_seconds", type: "number", description: "Duration of the shrink operation in seconds." },
-                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." },
+                { name: "interpolationType", type: "string", optional: true, description: "Interpolation: 'linear', 'easeOutQuad', 'easeInOutQuad'. Defaults to 'linear'." }
             ]
         },
         {
@@ -66,7 +67,8 @@ export const commandData = {
             parameters: [
                 { name: "new_size", type: "number", description: "Target size (halfSize for square, radius for circle)." },
                 { name: "time_seconds", type: "number", description: "Duration of the expand operation in seconds." },
-                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." },
+                { name: "interpolationType", type: "string", optional: true, description: "Interpolation: 'linear', 'easeOutQuad', 'easeInOutQuad'. Defaults to 'linear'." }
             ]
         },
         {
@@ -113,13 +115,14 @@ export async function execute(player, args, subCommand, config, dependencies) {
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb get [dim]§r - Shows current border settings & resize progress.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb toggle <on|off> [dim]§r - Enables/disables border. Cancels resize if off.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb remove [dim] confirm§r - Deletes border. Cancels resize.`);
-        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb shrink <new_size> <time_s> [dim]§r - Gradually shrinks border.`);
-        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb expand <new_size> <time_s> [dim]§r - Gradually expands border.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb shrink <new_size> <time_s> [dim] [interpType]§r - Gradually shrinks border.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb expand <new_size> <time_s> [dim] [interpType]§r - Gradually expands border.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb resizepause [dim]§r - Pauses an ongoing resize.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb resizeresume [dim]§r - Resumes a paused resize.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb setglobalparticle <particleName>§r - Sets global default particle.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb setparticle <particleName|reset> [dim]§r - Sets particle for a dimension's border.`);
         playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
+        playerUtils.notifyPlayer(player, "§7  [interpType]: 'linear', 'easeOutQuad', 'easeInOutQuad'. Optional.");
         return;
     }
 
@@ -356,6 +359,7 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
             playerUtils.notifyPlayer(player, `  Resizing: §eYes (from ${settings.originalSize} to ${settings.targetSize})`);
             playerUtils.notifyPlayer(player, `    Progress: §e${progressPercent.toFixed(1)}% (${remainingSec.toFixed(1)}s remaining)`);
             playerUtils.notifyPlayer(player, `    Current Effective Size (approx.): §e${currentInterpolatedSize.toFixed(1)}`);
+            playerUtils.notifyPlayer(player, `    Interpolation: §e${settings.resizeInterpolationType || 'linear'}`);
             if (settings.isPaused) {
                 playerUtils.notifyPlayer(player, "    Status: §ePAUSED");
                 playerUtils.notifyPlayer(player, `    Total Paused Time: §e${formatDurationBrief(settings.resizePausedTimeMs || 0)}`);
@@ -505,22 +509,46 @@ async function handleRemoveCommand(player, args, playerUtils, logManager, config
 
 
 async function handleResizeCommand(player, args, playerUtils, logManager, config, operationType) { // Added config
-    // Args: <new_size> <time_seconds> [dimensionId]
-    // operationType is 'shrink' or 'expand'
+    // Args: new_size, time_seconds, [dimensionIdOrInterpolationType], [interpolationTypeIfDimWasFirst]
     if (args.length < 2) {
-        playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb ${operationType} <new_size> <time_seconds> [dimensionId]`);
+        playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb ${operationType} <new_size> <time_seconds> [dimensionId] [interpolationType]`);
         return;
     }
 
     const newSize = parseFloat(args[0]);
     const timeSeconds = parseFloat(args[1]);
-    const dimensionIdInput = args.length > 2 ? args[2] : undefined;
+
+    let dimensionIdInput = undefined;
+    let interpolationType = 'linear'; // Default
+
+    if (args.length > 3) { // size, time, dim, interp
+        dimensionIdInput = args[2];
+        interpolationType = args[3].toLowerCase();
+    } else if (args.length > 2) { // size, time, dimOrInterp
+        const thirdArg = args[2].toLowerCase();
+        const validInterpolationTypes = ['linear', 'easeoutquad', 'easeinoutquad'];
+        if (validInterpolationTypes.includes(thirdArg)) {
+            interpolationType = thirdArg;
+            // dimensionIdInput remains undefined (current dimension)
+        } else {
+            dimensionIdInput = args[2]; // Assume it's a dimension, interp remains 'linear' (default)
+        }
+    }
+    // If args.length is 2, dimensionIdInput is undefined and interpolationType is 'linear'
+
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
     if (!dimensionId) {
         playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end.`);
         return;
     }
+
+    const validInterpolationTypes = ['linear', 'easeoutquad', 'easeinoutquad'];
+    if (!validInterpolationTypes.includes(interpolationType)) {
+        playerUtils.warnPlayer(player, `Invalid interpolation type '${interpolationType}'. Valid types: ${validInterpolationTypes.join(', ')}. Defaulting to 'linear'.`);
+        interpolationType = 'linear';
+    }
+
     if (isNaN(newSize) || newSize <= 0 || isNaN(timeSeconds) || timeSeconds <= 0) {
         playerUtils.warnPlayer(player, "New size and time must be positive numbers.");
         return;
@@ -556,12 +584,14 @@ async function handleResizeCommand(player, args, playerUtils, logManager, config
     currentSettings.targetSize = newSize;
     currentSettings.resizeStartTimeMs = Date.now();
     currentSettings.resizeDurationMs = timeSeconds * 1000;
-    // The actual 'halfSize' or 'radius' field is not changed here;
-    // it will be dynamically calculated by the tick loop during resize,
-    // and then set to targetSize upon completion.
+    currentSettings.resizeInterpolationType = interpolationType; // Set the interpolation type
+    currentSettings.isPaused = false; // Ensure any new resize starts unpaused
+    currentSettings.resizePausedTimeMs = 0; // Reset accumulated pause time
+    currentSettings.resizeLastPauseStartTimeMs = undefined;
+
 
     if (saveBorderSettings(dimensionId, currentSettings)) {
-        playerUtils.notifyPlayer(player, `§aBorder in ${dimensionId.replace("minecraft:", "")} will ${operationType} from ${currentActualSize} to ${newSize} over ${timeSeconds}s.`);
+        playerUtils.notifyPlayer(player, `§aBorder in ${dimensionId.replace("minecraft:", "")} will ${operationType} from ${currentActualSize} to ${newSize} over ${timeSeconds}s using ${interpolationType} interpolation.`);
         if (logManager && typeof logManager.addLog === 'function') {
             logManager.addLog({ adminName: player.nameTag, actionType: `worldborder_${operationType}_start`, targetName: dimensionId, details: JSON.stringify(currentSettings) });
         }

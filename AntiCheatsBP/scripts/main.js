@@ -18,6 +18,25 @@ import { executeCheckAction } from './core/actionManager.js';
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
 import { getBorderSettings } from './utils/worldBorderManager.js'; // For World Border
+
+/**
+ * Quadratic easing out function: decelerates to zero velocity.
+ * @param {number} t - Input progress (0 to 1).
+ * @returns {number} Eased progress.
+ */
+function easeOutQuad(t) {
+    return t * (2 - t);
+}
+
+/**
+ * Quadratic easing in and out function: accelerates until halfway, then decelerates.
+ * @param {number} t - Input progress (0 to 1).
+ * @returns {number} Eased progress.
+ */
+function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
 import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
@@ -742,16 +761,25 @@ mc.system.runInterval(async () => {
                         }
                         elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
 
+                        elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
+
                         const durationMs = borderSettings.resizeDurationMs;
-                        let progress = 0;
+                        let rawProgress = 0;
 
                         if (durationMs > 0) {
-                             progress = Math.min(1, elapsedMs / durationMs);
+                             rawProgress = Math.min(1, elapsedMs / durationMs);
                         } else {
-                             progress = 1;
+                             rawProgress = 1;
                         }
 
-                        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * progress;
+                        let easedProgress = rawProgress; // Default to linear
+                        if (borderSettings.resizeInterpolationType === "easeOutQuad") {
+                            easedProgress = easeOutQuad(rawProgress);
+                        } else if (borderSettings.resizeInterpolationType === "easeInOutQuad") {
+                            easedProgress = easeInOutQuad(rawProgress);
+                        }
+
+                        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * easedProgress;
 
                         if (borderSettings.shape === "square") {
                             currentEffectiveHalfSize = interpolatedSize;

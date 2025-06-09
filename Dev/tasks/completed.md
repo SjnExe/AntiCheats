@@ -1,6 +1,19 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **`!worldborder` Enhancement: Resize Interpolation Methods:**
+    *   **Summary:** Enhanced the gradual resize functionality (`!wb shrink/expand`) to support different interpolation methods, allowing for smoother visual transitions.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `resizeInterpolationType` (string: "linear", "easeOutQuad", "easeInOutQuad") to `WorldBorderSettings`. Defaults to "linear" if not specified or invalid during resize setup or load.
+        *   **`commands/worldborder.js`:**
+            *   The `!worldborder shrink` and `!worldborder expand` commands now accept an optional final argument for `interpolationType`.
+            *   `!worldborder get` now displays the active interpolation type for an ongoing resize.
+            *   Help text updated to include the new parameter and valid types.
+        *   **`main.js`:**
+            *   Added `easeOutQuad` and `easeInOutQuad` helper functions.
+            *   The border resize logic in the player tick loop now applies the selected `resizeInterpolationType` (or defaults to linear) to the progress calculation, affecting how the border size changes over time.
+    *   **Purpose:** To provide administrators with more control over the aesthetic feel of world border resize operations.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
 *   **World Border Visuals: Per-Dimension Particle Configuration:**
     *   **Summary:** Enhanced the world border system to allow administrators to set a specific particle effect for each dimension's border, overriding the global default.
     *   **Changes:**
