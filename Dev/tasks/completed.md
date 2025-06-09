@@ -1,6 +1,14 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **World Border Visuals: Per-Dimension Particle Configuration:**
+    *   **Summary:** Enhanced the world border system to allow administrators to set a specific particle effect for each dimension's border, overriding the global default.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `particleNameOverride` to `WorldBorderSettings` to store the per-dimension particle choice. Updated save/get logic.
+        *   **`commands/worldborder.js`:** Implemented the `!worldborder setparticle <particleName|reset> [dimensionId]` command to set or reset this override. The `!worldborder get` command now displays the active particle setting (override or global).
+        *   **`main.js`:** The particle rendering logic for world border visuals now checks for a `particleNameOverride` in the dimension's settings and uses it; otherwise, it falls back to the global `worldBorderParticleName` from `config.editableConfigValues`.
+    *   **Purpose:** To provide more visual customization for world borders across different dimensions.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
 *   **World Border Visuals & Config Management Enhancement:**
     *   **Summary:** Implemented a command to change the global default particle for world border visuals and ensured the configuration update mechanism is accessible to command modules.
     *   **Details:**

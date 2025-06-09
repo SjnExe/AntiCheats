@@ -89,6 +89,14 @@ export const commandData = {
             parameters: [
                 { name: "particleName", type: "string", description: "The Minecraft particle name (e.g., minecraft:end_rod)." }
             ]
+        },
+        {
+            name: "setparticle",
+            description: "Sets a specific particle for a dimension's border, or resets to global default.",
+            parameters: [
+                { name: "particleName", type: "string", description: "Minecraft particle ID (e.g., minecraft:totem_particle) or 'reset'/'default'." },
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
         }
     ]
 };
@@ -110,6 +118,7 @@ export async function execute(player, args, subCommand, config, dependencies) {
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb resizepause [dim]§r - Pauses an ongoing resize.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb resizeresume [dim]§r - Resumes a paused resize.`);
         playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb setglobalparticle <particleName>§r - Sets global default particle.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb setparticle <particleName|reset> [dim]§r - Sets particle for a dimension's border.`);
         playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
         return;
     }
@@ -147,6 +156,9 @@ export async function execute(player, args, subCommand, config, dependencies) {
             break;
         case "setglobalparticle":
             await handleSetGlobalParticleCommand(player, args, playerUtils, logManager, config, dependencies);
+            break;
+        case "setparticle":
+            await handleSetParticleCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
         default: // Should be caught by subCommandData check, but as a fallback
             playerUtils.warnPlayer(player, `Unknown subcommand '${subCommand}'. Use '${config.prefix}wb help'.`);
@@ -324,6 +336,11 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
         }
 
         if (settings.isResizing && settings.resizeDurationMs > 0) {
+            // Note: The dependencies object passed to handleGetCommand is the one from execute,
+            // which has config: editableConfigValues and configModule: full config module.
+            // We need editableConfigValues for worldBorderDefaultEnableDamage etc.
+            const configToUseForDefaults = dependencies.config; // This is config.editableConfigValues
+
             const elapsedMs = Date.now() - (settings.resizeStartTimeMs || Date.now());
             const progressPercent = Math.min(100, (elapsedMs / settings.resizeDurationMs) * 100);
             const remainingSec = Math.max(0, (settings.resizeDurationMs - elapsedMs) / 1000);
@@ -343,6 +360,17 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
                 playerUtils.notifyPlayer(player, "    Status: §ePAUSED");
                 playerUtils.notifyPlayer(player, `    Total Paused Time: §e${formatDurationBrief(settings.resizePausedTimeMs || 0)}`);
             }
+        }
+
+        // Display particle override info
+        const currentGlobalParticle = dependencies.config.worldBorderParticleName; // Accessing from editableConfigValues via dependencies.config
+        if (settings.particleNameOverride) {
+            playerUtils.notifyPlayer(player, `  Particle Override: §e${settings.particleNameOverride}`);
+            if (settings.particleNameOverride !== currentGlobalParticle) {
+                 playerUtils.notifyPlayer(player, `    (Global Default is: §7${currentGlobalParticle}§r)`);
+            }
+        } else {
+            playerUtils.notifyPlayer(player, `  Particle: §e${currentGlobalParticle} §7(Global Default)§r`);
         }
 
     } else {
@@ -548,6 +576,56 @@ async function handleShrinkCommand(player, args, playerUtils, logManager, config
 
 async function handleExpandCommand(player, args, playerUtils, logManager, config, dependencies) {
     await handleResizeCommand(player, args, playerUtils, logManager, config, "expand");
+}
+
+async function handleSetParticleCommand(player, args, playerUtils, logManager, configPassedToExecute, dependencies) {
+    const commandPrefix = dependencies.configModule.prefix; // Using configModule for the true prefix
+    const globalDefaultParticle = dependencies.config.worldBorderParticleName; // From editableConfigValues via dependencies.config
+
+    if (args.length < 1) {
+        playerUtils.warnPlayer(player, `Usage: ${commandPrefix}wb setparticle <particleName|reset|default> [dimensionId]`);
+        return;
+    }
+
+    const particleNameInput = args[0];
+    const dimensionIdInput = args.length > 1 ? args[1] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end.`);
+        return;
+    }
+
+    let settings = getBorderSettings(dimensionId);
+    if (!settings || !settings.enabled) { // Ensure border is set and enabled for the dimension
+        playerUtils.warnPlayer(player, `No active world border configured for ${dimensionId.replace('minecraft:','')}. Set one first.`);
+        return;
+    }
+
+    let newParticleOverride;
+    let messageParticleName = particleNameInput;
+
+    if (particleNameInput.toLowerCase() === 'reset' || particleNameInput.toLowerCase() === 'default') {
+        newParticleOverride = undefined; // This will clear the override
+        messageParticleName = `Global Default (${globalDefaultParticle})`;
+    } else {
+        if (typeof particleNameInput !== 'string' || particleNameInput.trim() === "") {
+            playerUtils.warnPlayer(player, "Particle name cannot be empty if not resetting.");
+            return;
+        }
+        newParticleOverride = particleNameInput.trim();
+    }
+
+    settings.particleNameOverride = newParticleOverride;
+
+    if (saveBorderSettings(dimensionId, settings)) {
+        playerUtils.notifyPlayer(player, `§aBorder particle for ${dimensionId.replace('minecraft:','')} set to: ${messageParticleName}`);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setparticle', targetName: dimensionId, details: `Set particle override to: ${newParticleOverride === undefined ? 'Global Default' : newParticleOverride}` });
+        }
+    } else {
+        playerUtils.warnPlayer(player, "§cFailed to save border particle setting.");
+    }
 }
 
 async function handleSetGlobalParticleCommand(player, args, playerUtils, logManager, configPassedToExecute, dependencies) {

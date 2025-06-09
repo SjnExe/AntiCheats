@@ -28,6 +28,7 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
  * @property {boolean} [isPaused] - Optional: True if an ongoing resize is currently paused.
  * @property {number} [resizePausedTimeMs] - Optional: Total accumulated time (ms) the resize has been paused.
  * @property {number} [resizeLastPauseStartTimeMs] - Optional: Timestamp (ms) when the current pause period began.
+ * @property {string} [particleNameOverride] - Optional: Specific particle name to use for this dimension's border visuals, overriding global default.
  */
 
 /**
@@ -160,6 +161,16 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
         // resizePausedTimeMs accumulates and is only cleared when isResizing becomes false.
     }
 
+    // Handle particleNameOverride
+    if (typeof settingsToSave.particleNameOverride === 'string') {
+        const particleOverride = settingsToSave.particleNameOverride.trim();
+        if (particleOverride === "" || particleOverride.toLowerCase() === "reset" || particleOverride.toLowerCase() === "default") {
+            fullSettings.particleNameOverride = undefined; // Clear override
+        } else {
+            fullSettings.particleNameOverride = particleOverride; // Set override
+        }
+    }
+    // If settingsToSave.particleNameOverride is undefined, fullSettings.particleNameOverride will retain its current value from ...settingsToSave or be undefined.
 
     try {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));

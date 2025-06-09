@@ -911,11 +911,12 @@ mc.system.runInterval(async () => {
                     // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
 
                     const playerLoc = player.location; // playerLoc is already defined earlier in the player loop
-                    const particleName = config.worldBorderParticleName;
-                    const visualRange = config.worldBorderVisualRange;
-                    const density = Math.max(0.1, config.worldBorderParticleDensity);
-                    const wallHeight = config.worldBorderParticleWallHeight;
-                    const segmentLength = config.worldBorderParticleSegmentLength;
+                    // Use per-dimension override if available, otherwise global default
+                    const particleNameToUse = currentBorderSettings.particleNameOverride || config.editableConfigValues.worldBorderParticleName;
+                    const visualRange = config.editableConfigValues.worldBorderVisualRange;
+                    const density = Math.max(0.1, config.editableConfigValues.worldBorderParticleDensity);
+                    const wallHeight = config.editableConfigValues.worldBorderParticleWallHeight;
+                    const segmentLength = config.editableConfigValues.worldBorderParticleSegmentLength;
                     const yBase = Math.floor(playerLoc.y);
 
                     // Use currentEffectiveHalfSize/Radius from the enforcement section
@@ -940,7 +941,7 @@ mc.system.runInterval(async () => {
                                 for (let h = 0; h < wallHeight; h++) {
                                     try {
                                         const particleLoc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
-                                        player.dimension.spawnParticle(particleName, particleLoc);
+                                        player.dimension.spawnParticle(particleNameToUse, particleLoc);
                                     } catch (e) { /* Silently ignore */ }
                                 }
                             }
@@ -970,7 +971,7 @@ mc.system.runInterval(async () => {
                                 const particleZ = centerZ + radiusToUse * Math.sin(angle);
                                 for (let h = 0; h < wallHeight; h++) {
                                     try {
-                                        player.dimension.spawnParticle(particleName, { x: particleX, y: yBase + h, z: particleZ });
+                                        player.dimension.spawnParticle(particleNameToUse, { x: particleX, y: yBase + h, z: particleZ });
                                     } catch (e) { /* Silently ignore */ }
                                 }
                             }
