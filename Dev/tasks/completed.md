@@ -1,6 +1,18 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **AutoMod Mute Durations Reduced:**
+    *   **Summary:** All MUTE actions within `automodConfig.automodRules` in `config.js` have had their durations changed to "1m".
+    *   Corresponding messages in `automodActionMessages` were updated to reflect "1 minute".
+*   **Swear Word Detection Feature Implemented (Disabled by Default):**
+    *   **Summary:** Added a new feature to detect swear words in chat messages and apply a configurable mute.
+    *   **Configuration (`config.js`):**
+        *   Added `enableSwearCheck` (default: `false`), `swearWordList` (default: `[]`), `swearCheckActionProfileName` (default: `"chat_swear_violation"`), `swearCheckMuteDuration` (default: `"30s"`). These are in `editableConfigValues`.
+        *   Added `checkActionProfiles` entry for `"chat_swear_violation"` with flag, notify, log, `cancelMessage: true`, and `customAction: "MUTE"`.
+    *   **Implementation:**
+        *   Created `AntiCheatsBP/scripts/checks/chat/swearCheck.js` with `checkSwear` function (case-insensitive, whole word matching, uses actionManager). Exported via `checks/index.js`.
+        *   Integrated `checkSwear` into `eventHandlers.js` (`handleBeforeChatSend`). If swear detected and profile has `customAction: "MUTE"`, it calls the `mute` command module to apply the `swearCheckMuteDuration`.
+    *   **Note:** The feature is disabled by default and the `swearWordList` is empty. Administrators need to enable it and populate the list for it to function.
 *   **AutoMod System Review - Phase 1 (Holistic Review & Analysis Completed):**
     *   **Summary:** Conducted a holistic review of the existing AutoMod system (`automodManager.js`, `actionManager.js`) to understand its architecture and identify areas for improvement.
     *   **Key Findings:** The `automodManager.js` logic for threshold-based actions is robust but currently non-operational due to missing `automodConfig` (rules, messages, per-check toggles) in `config.js`.

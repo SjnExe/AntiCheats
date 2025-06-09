@@ -40,3 +40,4 @@ export { checkInvalidRenderDistance } from './player/clientInfoChecks.js';
 // Chat Checks
 export { checkMessageRate } from './chat/messageRateCheck.js';
 export { checkMessageWordCount } from './chat/messageWordCountCheck.js';
+export * from './chat/swearCheck.js';

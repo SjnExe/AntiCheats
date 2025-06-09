@@ -231,6 +231,19 @@ export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_bl
 export const bannedItemsUse = [];
 
 // --- Chat Checks ---
+
+/** @type {boolean} If true, enables the Swear Word detection check. */
+export const enableSwearCheck = false; // Disabled by default as per user request
+
+/** @type {string[]} List of swear words to detect (case-insensitive, whole word). Empty by default. */
+export const swearWordList = [];
+
+/** @type {string} The action profile name for swear word violations. */
+export const swearCheckActionProfileName = "chat_swear_violation";
+
+/** @type {string} Duration for the mute applied on swear word detection. */
+export const swearCheckMuteDuration = "30s";
+
 /** @type {boolean} If true, the Fast Message Spam check is active. */
 export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
@@ -1654,6 +1667,24 @@ export const checkActionProfiles = {
             "actionType": "detected_chat_during_item_use",
             "detailsPrefix": "Chat During Item Use: "
         }
+    },
+    "chat_swear_violation": {
+        enabled: true, // The check itself is controlled by enableSwearCheck
+        flag: {
+            increment: 1,
+            reason: "Swear word detected in message: {detectedWord}",
+            type: "chat_language_violation" // A more general type for language issues
+        },
+        notifyAdmins: {
+            message: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}"
+        },
+        log: {
+            actionType: "detected_swear_word",
+            detailsPrefix: "Swear Word Violation: ",
+            includeViolationDetails: true // To include detectedWord and messageContent
+        },
+        cancelMessage: true, // Cancel the message containing the swear word
+        customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
     }
 };
 
@@ -1847,6 +1878,11 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    // Swear Check specific
+    enableSwearCheck,
+    swearWordList,
+    swearCheckActionProfileName,
+    swearCheckMuteDuration,
     // Chat Formatting Settings
     chatFormatOwnerPrefixColor,
     chatFormatOwnerNameColor,

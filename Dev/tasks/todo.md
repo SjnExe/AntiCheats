@@ -26,6 +26,12 @@ This list contains planned features, improvements, and areas for future investig
 *   **Player Utilities & Experience:** SjnExe parity goal.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
+## AutoMod Enhancements
+*(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*
+
+## Chat Moderation Features
+*(Tasks related to chat content filtering, spam control, etc.)*
+
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
 

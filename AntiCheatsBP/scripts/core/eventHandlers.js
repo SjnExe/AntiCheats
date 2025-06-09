@@ -1614,7 +1614,7 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
     }
 
     // Chat During Item Use Check (after combat check, before other spam checks)
-    if (currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
+    if (!eventData.cancel && currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) { // Added !eventData.cancel
         let itemUseState = "unknown";
         if (pData.isUsingConsumable) itemUseState = "using a consumable";
         else if (pData.isChargingBow) itemUseState = "charging a bow"; // Use else if to avoid overriding
@@ -1645,26 +1645,64 @@ export async function handleBeforeChatSend(eventData, playerDataManager, config,
         }
     }
 
+    // Swear Word Check
+    if (!eventData.cancel && currentConfig.enableSwearCheck && dependencies.checks && typeof dependencies.checks.checkSwear === 'function') {
+        // Ensure currentConfig, currentPUtils, and full dependencies are available.
+        // currentConfig is 'config' from params, currentPUtils is 'playerUtils' from params.
+        const swearViolation = await dependencies.checks.checkSwear(player, pData, eventData, config, playerUtils, dependencies);
+        if (swearViolation) {
+            // The checkSwear function calls executeCheckAction, which handles flagging and message cancellation via profile.
+            // Now, handle the custom MUTE action if specified in the profile.
+            const swearProfile = config.checkActionProfiles?.[config.swearCheckActionProfileName];
+            if (swearProfile?.customAction === "MUTE" && dependencies.commandModules?.mute?.execute) {
+                try {
+                    playerUtils.debugLog(\`SwearCheck: Attempting to apply MUTE (\${config.swearCheckMuteDuration}) for \${player.nameTag}\`, player.nameTag);
+                    await dependencies.commandModules.mute.execute(
+                        null, // Admin player, null for AutoMod
+                        [player.nameTag, config.swearCheckMuteDuration, "AutoMod: Language violation (swearing)"],
+                        dependencies, // Pass full dependencies
+                        "AutoMod",    // invokedBy
+                        true,         // isAutoModAction
+                        config.swearCheckActionProfileName // autoModCheckType
+                    );
+                } catch (muteError) {
+                    playerUtils.debugLog(\`SwearCheck: Error applying MUTE for \${player.nameTag}: \${muteError}\`, player.nameTag);
+                    if (dependencies.logManager && typeof dependencies.logManager.addLog === 'function') {
+                         dependencies.logManager.addLog({ adminName: "System", actionType: "error_automod_mute_fail", targetName: player.nameTag, details: \`SwearCheck: Mute failed - \${muteError}\` });
+                    }
+                }
+            }
+            // If checkSwear returned true, executeCheckAction (called within checkSwear) should have set eventData.cancel = true
+            // based on the "chat_swear_violation" profile's cancelMessage: true.
+            // We return to ensure no further processing of this chat message if a violation was handled.
+            if (eventData.cancel) return;
+        }
+    }
+
     const commonArgs = [player, pData, eventData, currentConfig, currentPUtils, playerDataManager, currentLogManager, actualExecuteCheckAction, currentTick];
 
-
-    if (checks.checkMessageRate && currentConfig.enableFastMessageSpamCheck) {
+    if (!eventData.cancel && checks.checkMessageRate && currentConfig.enableFastMessageSpamCheck) { // Added !eventData.cancel
         if (await checks.checkMessageRate(...commonArgs)) {
-            eventData.cancel = true;
+            eventData.cancel = true; // Ensure cancellation if checkMessageRate indicates violation
             if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageRateCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }
-    if (checks.checkMessageWordCount && currentConfig.enableMaxWordsSpamCheck) {
+    if (!eventData.cancel && checks.checkMessageWordCount && currentConfig.enableMaxWordsSpamCheck) { // Added !eventData.cancel
         if (await checks.checkMessageWordCount(...commonArgs)) {
-            eventData.cancel = true;
+            eventData.cancel = true; // Ensure cancellation
             if (currentPUtils.debugLog) currentPUtils.debugLog(`handleBeforeChatSend: Message from ${player.nameTag} cancelled by MessageWordCountCheck.`, pData.isWatched ? player.nameTag : null);
             return;
         }
     }
 
+    // If, after all checks, the message is still not cancelled, proceed with formatting and sending.
+    if (eventData.cancel) { // Explicitly return if any check above cancelled it.
+        return;
+    }
+
     // Log if message passed checks before formatting and sending
-    if (pData && pData.isWatched && !eventData.cancel && playerUtils.debugLog) {
+    if (pData && pData.isWatched && playerUtils.debugLog) { // Removed !eventData.cancel as it's handled above
         playerUtils.debugLog(`Chat message from ${player.nameTag} passed checks, proceeding to format/broadcast. Original: "${originalMessage}"`, player.nameTag);
     }
 
