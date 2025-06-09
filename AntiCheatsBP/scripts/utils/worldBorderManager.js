@@ -25,6 +25,9 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
  * @property {number} [targetSize] - Optional: The target halfSize or radius for the resize.
  * @property {number} [resizeStartTimeMs] - Optional: Timestamp (ms) when the resize operation began.
  * @property {number} [resizeDurationMs] - Optional: Total duration (ms) for the resize operation.
+ * @property {boolean} [isPaused] - Optional: True if an ongoing resize is currently paused.
+ * @property {number} [resizePausedTimeMs] - Optional: Total accumulated time (ms) the resize has been paused.
+ * @property {number} [resizeLastPauseStartTimeMs] - Optional: Timestamp (ms) when the current pause period began.
  */
 
 /**
@@ -142,6 +145,19 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
         fullSettings.targetSize = undefined;
         fullSettings.resizeStartTimeMs = undefined;
         fullSettings.resizeDurationMs = undefined;
+        // Also clear all pause-related fields if not resizing
+        fullSettings.isPaused = undefined;
+        fullSettings.resizePausedTimeMs = undefined;
+        fullSettings.resizeLastPauseStartTimeMs = undefined;
+    } else {
+        // If resizing, but not paused, ensure resizeLastPauseStartTimeMs is cleared.
+        // resizePausedTimeMs should persist as it's an accumulator.
+        if (!fullSettings.isPaused) {
+            fullSettings.resizeLastPauseStartTimeMs = undefined;
+        }
+        // If isPaused is true, resizeLastPauseStartTimeMs should have a value.
+        // If isPaused is explicitly set to false, resizeLastPauseStartTimeMs is cleared.
+        // resizePausedTimeMs accumulates and is only cleared when isResizing becomes false.
     }
 
 

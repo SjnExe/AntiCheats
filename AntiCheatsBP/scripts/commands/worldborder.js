@@ -68,6 +68,20 @@ export const commandData = {
                 { name: "time_seconds", type: "number", description: "Duration of the expand operation in seconds." },
                 { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
             ]
+        },
+        {
+            name: "resizepause",
+            description: "Pauses an ongoing border resize operation.",
+            parameters: [
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
+        },
+        {
+            name: "resizeresume",
+            description: "Resumes a paused border resize operation.",
+            parameters: [
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
+            ]
         }
     ]
 };
@@ -78,12 +92,14 @@ export async function execute(player, args, subCommand, config, dependencies) {
     // Centralized help display if no subcommand or "help" is used
     if (!subCommand || subCommand === "help") {
         playerUtils.notifyPlayer(player, "§b--- World Border Commands ---§r");
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Size is half-length for square, radius for circle. Cancels ongoing resize.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb get [dim]§r - Shows current border settings, including resize progress.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb toggle <on|off> [dim]§r - Enables/disables border. Cancels ongoing resize if turning off.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb remove [dim]§r - Deletes border settings. Cancels ongoing resize.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb shrink <new_size> <time_seconds> [dim]§r - Gradually shrinks border.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb expand <new_size> <time_seconds> [dim]§r - Gradually expands border.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Cancels resize.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb get [dim]§r - Shows current border settings & resize progress.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb toggle <on|off> [dim]§r - Enables/disables border. Cancels resize if off.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb remove [dim] confirm§r - Deletes border. Cancels resize.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb shrink <new_size> <time_s> [dim]§r - Gradually shrinks border.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb expand <new_size> <time_s> [dim]§r - Gradually expands border.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb resizepause [dim]§r - Pauses an ongoing resize.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb resizeresume [dim]§r - Resumes a paused resize.`);
         playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
         return;
     }
@@ -113,9 +129,30 @@ export async function execute(player, args, subCommand, config, dependencies) {
         case "expand":
             await handleExpandCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
+        case "resizepause":
+            await handleResizePauseCommand(player, args, playerUtils, logManager, config, dependencies);
+            break;
+        case "resizeresume":
+            await handleResizeResumeCommand(player, args, playerUtils, logManager, config, dependencies);
+            break;
         default: // Should be caught by subCommandData check, but as a fallback
             playerUtils.warnPlayer(player, `Unknown subcommand '${subCommand}'. Use '${config.prefix}wb help'.`);
     }
+}
+
+// Helper function
+function formatDurationBrief(ms) {
+    if (ms <= 0) return "0s";
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    seconds %= 60;
+    minutes %= 60;
+    const parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+    return parts.join(' ');
 }
 
 function normalizeDimensionId(player, inputDimId) { // Added player for default dimension
@@ -289,6 +326,10 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
             playerUtils.notifyPlayer(player, `  Resizing: §eYes (from ${settings.originalSize} to ${settings.targetSize})`);
             playerUtils.notifyPlayer(player, `    Progress: §e${progressPercent.toFixed(1)}% (${remainingSec.toFixed(1)}s remaining)`);
             playerUtils.notifyPlayer(player, `    Current Effective Size (approx.): §e${currentInterpolatedSize.toFixed(1)}`);
+            if (settings.isPaused) {
+                playerUtils.notifyPlayer(player, "    Status: §ePAUSED");
+                playerUtils.notifyPlayer(player, `    Total Paused Time: §e${formatDurationBrief(settings.resizePausedTimeMs || 0)}`);
+            }
         }
 
     } else {
@@ -494,5 +535,72 @@ async function handleShrinkCommand(player, args, playerUtils, logManager, config
 
 async function handleExpandCommand(player, args, playerUtils, logManager, config, dependencies) {
     await handleResizeCommand(player, args, playerUtils, logManager, config, "expand");
+}
+
+async function handleResizePauseCommand(player, args, playerUtils, logManager, config, dependencies) {
+    const dimensionIdInput = args.length > 0 ? args[0] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end.`);
+        return;
+    }
+
+    const settings = getBorderSettings(dimensionId);
+
+    if (!settings || !settings.isResizing) {
+        playerUtils.warnPlayer(player, `Border in ${dimensionId.replace("minecraft:", "")} is not currently resizing. Nothing to pause.`);
+        return;
+    }
+    if (settings.isPaused) {
+        playerUtils.notifyPlayer(player, `Border resize in ${dimensionId.replace("minecraft:", "")} is already paused.`);
+        return;
+    }
+
+    settings.isPaused = true;
+    settings.resizeLastPauseStartTimeMs = Date.now();
+
+    if (saveBorderSettings(dimensionId, settings)) {
+        playerUtils.notifyPlayer(player, `§eBorder resize in ${dimensionId.replace("minecraft:", "")} is now PAUSED.`);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_pause', targetName: dimensionId, details: JSON.stringify(settings) });
+        }
+    } else {
+        playerUtils.warnPlayer(player, `§cFailed to pause border resize for ${dimensionId.replace("minecraft:", "")}.`);
+    }
+}
+
+async function handleResizeResumeCommand(player, args, playerUtils, logManager, config, dependencies) {
+    const dimensionIdInput = args.length > 0 ? args[0] : undefined;
+    const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+
+    if (!dimensionId) {
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput || player.dimension.id}'. Use overworld, nether, or the_end.`);
+        return;
+    }
+
+    const settings = getBorderSettings(dimensionId);
+
+    if (!settings || !settings.isResizing) {
+        playerUtils.warnPlayer(player, `Border in ${dimensionId.replace("minecraft:", "")} is not resizing. Nothing to resume.`);
+        return;
+    }
+    if (!settings.isPaused) {
+        playerUtils.notifyPlayer(player, `Border resize in ${dimensionId.replace("minecraft:", "")} is not currently paused.`);
+        return;
+    }
+
+    const currentPauseDurationMs = Date.now() - (settings.resizeLastPauseStartTimeMs || Date.now());
+    settings.resizePausedTimeMs = (settings.resizePausedTimeMs || 0) + currentPauseDurationMs;
+    settings.isPaused = false;
+    settings.resizeLastPauseStartTimeMs = undefined; // Clear it
+
+    if (saveBorderSettings(dimensionId, settings)) {
+        playerUtils.notifyPlayer(player, `§aBorder resize in ${dimensionId.replace("minecraft:", "")} has RESUMED.`);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_resume', targetName: dimensionId, details: JSON.stringify(settings) });
+        }
+    } else {
+        playerUtils.warnPlayer(player, `§cFailed to resume border resize for ${dimensionId.replace("minecraft:", "")}.`);
     }
 }

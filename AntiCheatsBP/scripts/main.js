@@ -545,10 +545,15 @@ mc.system.runInterval(async () => {
                 continue;
             }
 
-            const elapsedMs = currentTimeMs - dimBorderSettings.resizeStartTimeMs;
+            const accumulatedPausedMs = dimBorderSettings.resizePausedTimeMs || 0;
+            const effectiveElapsedMs = (currentTimeMs - dimBorderSettings.resizeStartTimeMs) - accumulatedPausedMs;
             const durationMs = dimBorderSettings.resizeDurationMs;
 
-            if (elapsedMs >= durationMs) { // Resize finished
+            if (dimBorderSettings.isPaused) {
+                continue; // Skip finalization if paused
+            }
+
+            if (effectiveElapsedMs >= durationMs) { // Resize finished
                 const targetSize = dimBorderSettings.targetSize;
                 if (dimBorderSettings.shape === "square") {
                     dimBorderSettings.halfSize = targetSize;
@@ -721,16 +726,28 @@ mc.system.runInterval(async () => {
                         typeof borderSettings.originalSize === 'number' &&
                         typeof borderSettings.targetSize === 'number' &&
                         typeof borderSettings.resizeStartTimeMs === 'number' &&
-                        typeof borderSettings.resizeDurationMs === 'number') { // durationMs can be 0 for instant, but check other fields
+                        typeof borderSettings.resizeDurationMs === 'number') {
 
                         const currentTimeMs = Date.now();
-                        const elapsedMs = currentTimeMs - borderSettings.resizeStartTimeMs;
+                        const accumulatedPausedMs = borderSettings.resizePausedTimeMs || 0;
+                        let elapsedMs;
+
+                        if (borderSettings.isPaused) {
+                            // If paused, use the time elapsed until the pause started
+                            const lastPauseStart = borderSettings.resizeLastPauseStartTimeMs || currentTimeMs; // Fallback
+                            elapsedMs = (lastPauseStart - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+                        } else {
+                            // If not paused, use current time minus start time, adjusted for total paused duration
+                            elapsedMs = (currentTimeMs - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+                        }
+                        elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
+
                         const durationMs = borderSettings.resizeDurationMs;
                         let progress = 0;
 
                         if (durationMs > 0) {
                              progress = Math.min(1, elapsedMs / durationMs);
-                        } else { // If duration is 0 or negative, snap to target (already past start time)
+                        } else {
                              progress = 1;
                         }
 
@@ -742,7 +759,7 @@ mc.system.runInterval(async () => {
                             currentEffectiveRadius = interpolatedSize;
                         }
                     } else if (borderSettings.isResizing && borderSettings.enabled) {
-                        // Fallback or if resize fields are somehow incomplete after validation in dimension loop
+                        // Fallback or if resize fields are somehow incomplete
                         // This indicates an issue, ideally the dimension loop should have cleaned/finalized it.
                         // For safety, use targetSize if isResizing is still true but params seem off.
                         if (typeof borderSettings.targetSize === 'number') {

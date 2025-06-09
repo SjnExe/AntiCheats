@@ -147,6 +147,20 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         playerUtils.notifyAdmins(notifyMsg, player, pData);
     }
 
+    // Store specific violation details if itemTypeId is present
+    if (playerDataManager && pData && violationDetails?.itemTypeId) {
+        if (!pData.lastViolationDetailsMap) {
+            pData.lastViolationDetailsMap = {};
+        }
+        pData.lastViolationDetailsMap[checkType] = {
+            itemTypeId: violationDetails.itemTypeId,
+            timestamp: Date.now()
+        };
+        pData.isDirtyForSave = true; // Mark pData as dirty to ensure it's saved
+
+        playerUtils?.debugLog?.(`[ActionManager] Stored itemTypeId '${violationDetails.itemTypeId}' for check '${checkType}' in pData.lastViolationDetailsMap for ${player.nameTag}.`, player.nameTag);
+    }
+
     // Future actions (e.g., running commands, custom events) could be handled here based on profile.
     // Example: if (profile.runCommands && Array.isArray(profile.runCommands)) { ... }
 }

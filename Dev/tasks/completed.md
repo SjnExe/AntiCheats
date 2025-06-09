@@ -1,6 +1,26 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **`!worldborder` Enhancement: Pause/Resume Gradual Resize:**
+    *   **Summary:** Implemented functionality to pause and resume ongoing gradual world border resize operations.
+    *   **Commands Added:**
+        *   `!worldborder resizepause [dimensionId]`: Pauses the current resize for the specified or current dimension.
+        *   `!worldborder resizeresume [dimensionId]`: Resumes a paused resize for the specified or current dimension.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `isPaused`, `resizePausedTimeMs` (accumulator), and `resizeLastPauseStartTimeMs` fields to `WorldBorderSettings` to manage pause state and duration.
+        *   **`commands/worldborder.js`:** Added new subcommands and handlers for `resizepause` and `resizeresume`. Updated `!worldborder get` to display pause status and total paused time.
+        *   **`main.js`:** Modified the tick loop's border processing logic to:
+            *   Prevent finalization of paused resizes.
+            *   Correctly calculate effective elapsed time for resize progress by subtracting accumulated paused time.
+            *   Freeze resize progress calculation when a border resize is paused.
+    *   **Purpose:** To provide administrators more control over dynamic world border adjustments during events or server management.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
+*   **AutoMod: Refactor `REMOVE_ILLEGAL_ITEM` Action Logic:**
+    *   **Summary:** Investigated the `REMOVE_ILLEGAL_ITEM` action in `automodManager.js` which depends on `itemTypeId` being present in `pData.lastViolationDetailsMap`.
+    *   **Change:** Modified `actionManager.js` (`executeCheckAction`) to store the `violationDetails` (specifically `itemTypeId` if present) into `pData.lastViolationDetailsMap[checkType]`. This ensures that when `automodManager.js` processes a rule for `REMOVE_ILLEGAL_ITEM`, it can access the correct `itemTypeId`.
+    *   **Verification:** Confirmed that `checkIllegalItems.js` correctly includes `itemTypeId` in the `violationDetails` it passes to `actionManager.js`.
+    *   **Purpose:** To ensure the `REMOVE_ILLEGAL_ITEM` AutoMod action functions correctly by making necessary item details available to the `automodManager`.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/actionManager.js`.
 *   **Command Enhancement: `!worldborder remove` Confirmation:**
     *   **Summary:** Modified the `!worldborder remove [dimensionId]` command to require an additional "confirm" argument to execute.
     *   **Purpose:** To prevent accidental removal of world border configurations. If "confirm" is not provided, the command now instructs the user on how to confirm the action.

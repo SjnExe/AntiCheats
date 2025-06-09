@@ -13,7 +13,7 @@ This list contains planned features, improvements, and areas for future investig
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
         *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, & gradual resize are now complete. `!wb remove` now requires confirmation - Implemented). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
-            *   - Implement commands to pause and resume an ongoing gradual border resize (e.g., `!worldborder resize pause [dimensionId]` and `!worldborder resize resume [dimensionId]`).
+            *   - Implement commands to pause and resume an ongoing gradual border resize (e.g., `!worldborder resizepause [dimensionId]` and `!worldborder resizeresume [dimensionId]`) - Implemented.
             *   - Investigate and implement options for different particle patterns or effects for the world border visuals (e.g., pulsing, different colors based on state).
             *   - Consider different resize interpolation methods (e.g., ease-in/out) instead of just linear.
             *   - (Consider more complex shape support - if still relevant beyond square/circle).
