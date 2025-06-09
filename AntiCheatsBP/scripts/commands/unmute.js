@@ -5,6 +5,7 @@
  */
 // AntiCheatsBP/scripts/commands/unmute.js
 import { permissionLevels } from '../core/rankManager.js';
+import { clearFlagsForCheckType } from '../../core/playerDataManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -38,12 +39,15 @@ export async function execute(player, args, dependencies) {
     }
 
     try {
-        // Assuming isMuted and removeMute are now on playerDataManager
-        if (!playerDataManager.isMuted(foundPlayer)) {
-            player.sendMessage(`§7Player ${foundPlayer.nameTag} is not currently muted.`);
+        const oldMuteInfo = playerDataManager.getMuteInfo(foundPlayer);
+
+        if (!oldMuteInfo) { // getMuteInfo returns null if not muted or expired
+            player.sendMessage(`§7Player ${foundPlayer.nameTag} is not currently effectively muted.`);
             return;
         }
+
         const unmuted = playerDataManager.removeMute(foundPlayer);
+
         if (unmuted) {
             try {
                 foundPlayer.onScreenDisplay.setActionBar("§aYou have been unmuted.");
@@ -55,7 +59,25 @@ export async function execute(player, args, dependencies) {
                 playerUtils.notifyAdmins(`Player ${foundPlayer.nameTag} was unmuted by ${player.nameTag}.`, player, null);
             }
             if (addLog) {
-                addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unmute', targetName: foundPlayer.nameTag });
+                addLog({
+                    timestamp: Date.now(),
+                    adminName: player.nameTag,
+                    actionType: 'unmute',
+                    targetName: foundPlayer.nameTag,
+                    reason: oldMuteInfo.reason, // Log original mute reason
+                    details: `Original mute by: ${oldMuteInfo.mutedBy}, AutoMod: ${oldMuteInfo.isAutoMod}, Check: ${oldMuteInfo.triggeringCheckType || 'N/A'}`
+                });
+            }
+
+            // Clear flags if it was an AutoMod mute
+            if (oldMuteInfo.isAutoMod && oldMuteInfo.triggeringCheckType) {
+                await clearFlagsForCheckType(foundPlayer, oldMuteInfo.triggeringCheckType, dependencies);
+                const message = `§aAutoMod flags for check type '${oldMuteInfo.triggeringCheckType}' were also cleared for ${foundPlayer.nameTag}.`;
+                player.sendMessage(message);
+                if (playerUtils.debugLog) playerUtils.debugLog(message.replace(/§[a-f0-9]/g, ''), player.nameTag);
+                if (playerUtils.notifyAdmins) {
+                    playerUtils.notifyAdmins(`AutoMod flags for '${oldMuteInfo.triggeringCheckType}' cleared for ${foundPlayer.nameTag} due to unmute by ${player.nameTag}.`, player, null);
+                }
             }
         } else {
             player.sendMessage(`§cFailed to unmute player ${foundPlayer.nameTag}. They might not have been muted or an error occurred.`);

@@ -33,9 +33,9 @@ export const enableMultiTargetCheck = true;
 /** @type {boolean} If true, various state conflict checks (e.g., attack while sleeping) are active. */
 export const enableStateConflictCheck = true;
 /** @type {boolean} If true, the Fly check (both sustained and hover) is active. */
-export const enableFlyCheck = true;
+export const enableFlyCheck = false;
 /** @type {boolean} If true, the Speed check is active. */
-export const enableSpeedCheck = true;
+export const enableSpeedCheck = false;
 /** @type {boolean} If true, the NoFall check is active. */
 export const enableNofallCheck = true;
 /** @type {boolean} If true, the Nuker check is active. */
@@ -80,7 +80,7 @@ export const speedToleranceBuffer = 0.5;
 export const speedGroundConsecutiveTicksThreshold = 5;
 
 /** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass) is active. */
-export const enableNoSlowCheck = true;
+export const enableNoSlowCheck = false;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed. */
 export const noSlowMaxSpeedEating = 1.0;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla movement is significantly slowed. */
@@ -173,7 +173,7 @@ export const itemUseStateClearTicks = 60; // Default to 3 seconds
 
 // --- AutoTool Check ---
 /** @type {boolean} If true, the AutoTool check (detecting unnaturally fast tool switching for optimal block breaking) is active. */
-export const enableAutoToolCheck = true;
+export const enableAutoToolCheck = false;
 /** @type {number} Maximum ticks between starting to break a block and switching to an optimal tool to be considered suspicious by AutoTool check. */
 export const autoToolSwitchToOptimalWindowTicks = 2;
 /** @type {number} Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check. */
@@ -218,7 +218,7 @@ export const antiGMCSwitchToGameMode = "survival";
 export const antiGmcAutoSwitch = true;
 
 /** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
-export const enableInventoryModCheck = true;
+export const enableInventoryModCheck = false;
 
 
 /** @type {number} Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker. */
@@ -713,61 +713,54 @@ export const automodConfig = {
      * Example: "fly_hover": [ { flagThreshold: 5, actionType: "WARN", ... }, { flagThreshold: 10, actionType: "KICK", ... } ]
      */
     automodRules: {
-        "example_fly_hover": [ // Renamed from fly_hover
-            {
-                flagThreshold: 5,
-                actionType: "WARN",
-                parameters: { reasonKey: "automod.fly.hover.warn1" },
-                resetFlagsAfterAction: false
-            },
-            {
-                flagThreshold: 10,
-                actionType: "KICK",
-                parameters: { reasonKey: "automod.fly.hover.kick1" },
-                resetFlagsAfterAction: false
-            },
-            {
-                flagThreshold: 15,
-                actionType: "TEMP_BAN",
-                parameters: { reasonKey: "automod.fly.hover.tempban1", duration: "30m" },
-                resetFlagsAfterAction: true
-            }
+        "example_fly_hover": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.fly.hover.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.fly.hover.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fly.hover.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "example_speed_ground": [ // Renamed from speed_ground
-            {
-                flagThreshold: 8,
-                actionType: "WARN",
-                parameters: { reasonKey: "automod.speed.ground.warn1" },
-                resetFlagsAfterAction: false
-            },
-            {
-                flagThreshold: 15,
-                actionType: "TEMP_BAN",
-                parameters: { reasonKey: "automod.speed.ground.tempban1", duration: "10m" },
-                resetFlagsAfterAction: true
-            }
+        "example_speed_ground": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.speed.ground.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "KICK", parameters: { reasonKey: "automod.speed.ground.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 35, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.speed.ground.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
         ],
         "combat_cps_high": [
-            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.cps.warn1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.cps.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.cps.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.cps.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.cps.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.cps.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
         "movement_nofall": [
-            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.nofall.warn1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.nofall.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.nofall.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.nofall.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.nofall.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.nofall.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "world_illegal_item_use": [
-            { flagThreshold: 4, actionType: "WARN", parameters: { reasonKey: "automod.illegalitem.warn1" }, resetFlagsAfterAction: false },
-            // REMOVE_ILLEGAL_ITEM could be added here or handled by the check directly. For now, only WARN.
-            // { flagThreshold: 4, actionType: "REMOVE_ILLEGAL_ITEM", parameters: { reasonKey: "automod.illegalitem.removed" }, resetFlagsAfterAction: false },
-            { flagThreshold: 8, actionType: "KICK", parameters: { reasonKey: "automod.illegalitem.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 12, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.illegalitem.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.illegalitem.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.illegalitem.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.illegalitem.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "player_namespoof": [
-            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.namespoof.warn1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.namespoof.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "2h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.namespoof.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "KICK", parameters: { reasonKey: "automod.namespoof.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "example_reach_attack": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.reach.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "KICK", parameters: { reasonKey: "automod.reach.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 40, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.reach.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_noslow": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.noslow.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.noslow.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.noslow.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "action_fast_use": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.fastuse.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "KICK", parameters: { reasonKey: "automod.fastuse.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 40, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fastuse.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "player_antigmc": [
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.antigmc.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.antigmc.tempban1", duration: "1d" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -783,6 +776,7 @@ export const automodConfig = {
         "automod.fly.hover.kick1": "AutoMod: Kicked for continued hovering violations.",
         "automod.fly.hover.tempban1": "AutoMod: Temporarily banned for excessive hovering violations.",
         "automod.speed.ground.warn1": "AutoMod: Excessive ground speed detected. Please play fairly.",
+        "automod.speed.ground.kick1": "AutoMod: Kicked for repeated ground speed violations.",
         "automod.speed.ground.tempban1": "AutoMod: Temporarily banned for repeated ground speed violations.",
         "automod.cps.warn1": "AutoMod: High click speed detected multiple times.",
         "automod.cps.kick1": "AutoMod: Kicked for repeated high click speed violations.",
@@ -796,7 +790,17 @@ export const automodConfig = {
         "automod.namespoof.warn1": "AutoMod: Name spoofing detected. Please change your name.",
         "automod.namespoof.kick1": "AutoMod: Kicked for repeated name spoofing violations.",
         "automod.namespoof.tempban1": "AutoMod: Temporarily banned for excessive name spoofing violations.",
+        "automod.reach.warn1": "AutoMod: Excessive reach detected.",
+        "automod.reach.kick1": "AutoMod: Kicked for repeated reach violations.",
+        "automod.reach.tempban1": "AutoMod: Temporarily banned for excessive reach violations.",
+        "automod.noslow.warn1": "AutoMod: NoSlow (movement exploit) detected.",
+        "automod.noslow.kick1": "AutoMod: Kicked for repeated NoSlow violations.",
+        "automod.noslow.tempban1": "AutoMod: Temporarily banned for excessive NoSlow violations.",
+        "automod.fastuse.warn1": "AutoMod: Fast item usage detected.",
+        "automod.fastuse.kick1": "AutoMod: Kicked for repeated fast item usage.",
+        "automod.fastuse.tempban1": "AutoMod: Temporarily banned for excessive fast item usage.",
         "automod.antigmc.kick1": "AutoMod: Kicked for unauthorized Creative Mode usage.",
+        "automod.antigmc.tempban1": "AutoMod: Temporarily banned for repeated unauthorized Creative Mode usage.",
         "automod.antigmc.permban1": "AutoMod: Permanently banned for repeated unauthorized Creative Mode usage."
         // Add more messages here
     },

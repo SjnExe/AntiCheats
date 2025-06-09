@@ -492,9 +492,12 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
  * @param {mc.Player} player - The player to mute.
  * @param {number} durationMs - The duration of the mute in milliseconds. Use Infinity for permanent.
  * @param {string} reason - The reason for the mute.
+ * @param {string} [mutedBy="Unknown"] - Who issued the mute.
+ * @param {boolean} [isAutoMod=false] - Was this mute issued by AutoMod.
+ * @param {string|null} [triggeringCheckType=null] - If by AutoMod, which checkType.
  * @returns {boolean} True if the mute was successfully added, false otherwise.
  */
-export function addMute(player, durationMs, reason) {
+export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoMod = false, triggeringCheckType = null) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         debugLog(`PDM:addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag);
         return false;
@@ -505,10 +508,16 @@ export function addMute(player, durationMs, reason) {
         return false;
     }
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
-    const muteReason = reason || "Muted by admin.";
-    pData.muteInfo = { unmuteTime, reason: muteReason };
+    const muteReason = reason || "Muted by system.";
+    pData.muteInfo = {
+        unmuteTime,
+        reason: muteReason,
+        mutedBy: mutedBy,
+        isAutoMod: isAutoMod,
+        triggeringCheckType: triggeringCheckType
+    };
     pData.isDirtyForSave = true;
-    let logMsg = `PDM:addMute: Player ${player.nameTag} muted. Reason: "${muteReason}".`;
+    let logMsg = `PDM:addMute: Player ${player.nameTag} muted by ${mutedBy}. Reason: "${muteReason}". AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType || 'N/A'}.`;
     if (durationMs === Infinity) {
         logMsg += " Duration: Permanent.";
     } else {
@@ -578,10 +587,12 @@ export function isMuted(player) {
  * @param {mc.Player} player - The player to ban.
  * @param {number} durationMs - The duration of the ban in milliseconds. Use Infinity for permanent.
  * @param {string} reason - The reason for the ban.
- * @param {string} bannedBy - The name of the admin or system component that issued the ban.
+ * @param {string} [bannedBy="Unknown"] - The name of the admin or system component that issued the ban.
+ * @param {boolean} [isAutoMod=false] - Was this ban issued by AutoMod.
+ * @param {string|null} [triggeringCheckType=null] - If by AutoMod, which checkType.
  * @returns {boolean} True if the ban was successfully added, false otherwise.
  */
-export function addBan(player, durationMs, reason, bannedBy) {
+export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoMod = false, triggeringCheckType = null) {
     if (!player || typeof durationMs !== 'number' || durationMs <= 0 || typeof bannedBy !== 'string') {
         debugLog(`PDM:addBan: Invalid arguments. Player: ${player?.nameTag}, Duration: ${durationMs}, BannedBy: ${bannedBy}`, player?.nameTag);
         return false;
@@ -593,21 +604,23 @@ export function addBan(player, durationMs, reason, bannedBy) {
     }
     const currentTime = Date.now();
     const unbanTime = (durationMs === Infinity) ? Infinity : currentTime + durationMs;
-    const banReason = reason || "Banned by admin.";
+    const banReason = reason || "Banned by system.";
     pData.banInfo = {
         xuid: player.id,
         playerName: player.nameTag,
         banTime: currentTime,
         unbanTime,
         reason: banReason,
-        bannedBy: bannedBy
+        bannedBy: bannedBy,
+        isAutoMod: isAutoMod,
+        triggeringCheckType: triggeringCheckType
     };
     pData.isDirtyForSave = true;
-    let logMsg = `PDM:addBan: Player ${player.nameTag} (XUID: ${player.id}) banned by ${bannedBy}. Reason: "${banReason}".`;
+    let logMsg = `PDM:addBan: Player ${player.nameTag} (XUID: ${player.id}) banned by ${bannedBy}. Reason: "${banReason}". AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType || 'N/A'}.`;
     if (durationMs === Infinity) {
         logMsg += " Duration: Permanent.";
     } else {
-        logMsg += ` Unmute time: ${new Date(unbanTime).toISOString()}.`;
+        logMsg += ` Unban time: ${new Date(unbanTime).toISOString()}.`;
     }
     debugLog(logMsg, pData.isWatched ? player.nameTag : null);
     return true;
@@ -698,4 +711,39 @@ export async function saveDirtyPlayerData(player) {
         return true;
     }
     return false;
+}
+
+/**
+ * Clears flags and resets AutoMod state for a specific checkType for a player.
+ * @param {import('@minecraft/server').Player} player The player.
+ * @param {string} checkType The checkType whose flags need to be cleared.
+ * @param {object} [dependencies] Optional dependencies, expecting playerUtils for logging.
+ */
+export async function clearFlagsForCheckType(player, checkType, dependencies) {
+    if (!player || !checkType) return;
+    const pData = getPlayerData(player.id); // Assuming getPlayerData is available
+    if (!pData) return;
+
+    let clearedCount = 0;
+    if (pData.flags && pData.flags[checkType]) {
+        clearedCount = pData.flags[checkType].count || 0;
+        if (pData.flags.totalFlags && typeof pData.flags.totalFlags === 'number') {
+            pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - clearedCount);
+        }
+        pData.flags[checkType].count = 0;
+        // Optionally clear lastDetectionTime etc. if desired
+        // delete pData.flags[checkType].lastDetectionTime;
+    }
+
+    if (pData.automodState && pData.automodState[checkType]) {
+        pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0 };
+    }
+
+    pData.isDirtyForSave = true;
+
+    // Use debugLog from dependencies if available and player is watched, otherwise use global debugLog
+    const logFunction = dependencies?.playerUtils?.debugLog || debugLog;
+    const playerContext = pData.isWatched ? player.nameTag : null;
+
+    logFunction(`Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, playerContext);
 }

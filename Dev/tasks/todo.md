@@ -24,7 +24,6 @@ This list contains planned features, improvements, and areas for future investig
 ## Low Priority / Ideas
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
-*   **Logging Enhancements:** SjnExe parity goal.
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
 ## Documentation & Workflow
