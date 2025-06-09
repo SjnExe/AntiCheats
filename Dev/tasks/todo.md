@@ -28,7 +28,6 @@ This list contains planned features, improvements, and areas for future investig
 ## Low Priority / Ideas
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
-*   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 
 ## AutoMod Enhancements
 *(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*

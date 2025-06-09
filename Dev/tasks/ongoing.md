@@ -21,3 +21,16 @@ This list tracks features and tasks that are currently under development.
         *   **Completed Phase 1.6 (REMOVE_ILLEGAL_ITEM Action Refactor - Current Session):** Investigated and refactored the `REMOVE_ILLEGAL_ITEM` AutoMod action. Modified `actionManager.js` to correctly store `violationDetails` (specifically `itemTypeId`) into `pData.lastViolationDetailsMap[checkType]`. This allows `automodManager.js` to retrieve the `itemTypeId` and properly execute the item removal. Verified that `checkIllegalItems.js` provides the necessary `itemTypeId` in its `violationDetails`.
     *   **Next Steps:** Refine existing AutoMod rules and thresholds based on live testing and feedback. Consider any other minor enhancements from `Dev/notes/AutoModReview_Findings.md` if applicable.
     *   *(Original description: Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.)*
+
+*   **Localization Implementation:** (Phase 1 Complete; Further Phases Pending)
+    *   **Objective:** To make the addon's user-facing strings localizable to support multiple languages.
+    *   **Completed Phase 1 (Core Setup & Key Modules - Current Session):**
+        *   Created `AntiCheatsBP/scripts/core/localizationManager.js` with a `getString(key, args)` function and a `translations` object.
+        *   Populated initial "en_US" strings for core messages from `config.js` (`welcomeMessage`, `deathCoordsMessage`, etc.), all messages in `uinfo.js`, key messages in `help.js`, and selected messages in `eventHandlers.js`.
+        *   Refactored `config.js` to store localization keys instead of hardcoded strings for the above messages.
+        *   Refactored `uinfo.js`, `help.js` (partially), and `eventHandlers.js` (partially) to use `localizationManager.getString()`.
+    *   **Next Steps (Phase 2+):**
+        *   Incrementally refactor remaining command modules and UI components to use the localization manager.
+        *   Externalize all user-facing strings from all check files and manager notifications.
+        *   Implement a mechanism for users/admins to select the current language (e.g., via a command or config setting in `config.js` that `localizationManager.js` reads).
+        *   Add translation files/entries for other languages (e.g., "es_ES", "de_DE").

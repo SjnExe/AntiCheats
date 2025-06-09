@@ -1,6 +1,28 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Localization System - Phase 1 Implementation:**
+    *   **Summary:** Established the core mechanism for localization and refactored key system messages and two command modules (`uinfo`, `help`) to use it.
+    *   **Details:**
+        *   Created `AntiCheatsBP/scripts/core/localizationManager.js` with `getString(key, args)` for retrieving and formatting localized strings.
+        *   Initialized a `translations` object with "en_US" strings for messages from `config.js` (e.g., welcome, death coords), `uinfo.js`, selected parts of `help.js`, and key `eventHandlers.js` messages.
+        *   Modified `config.js` to use localization keys for its main user-facing string constants.
+        *   Refactored `uinfo.js` fully, and `help.js` and `eventHandlers.js` partially, to utilize the new `getString` function.
+    *   **Purpose:** To enable future translation of the addon into multiple languages by centralizing string management.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/localizationManager.js` (new), `AntiCheatsBP/scripts/config.js`, `AntiCheatsBP/scripts/commands/uinfo.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/commands/help.js`.
+*   **`!worldborder` Enhancement: Resize Interpolation Methods:**
+    *   **Summary:** Enhanced the gradual resize functionality (`!wb shrink/expand`) to support different interpolation methods, allowing for smoother visual transitions.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `resizeInterpolationType` (string: "linear", "easeOutQuad", "easeInOutQuad") to `WorldBorderSettings`. Defaults to "linear" if not specified or invalid during resize setup or load.
+        *   **`commands/worldborder.js`:**
+            *   The `!worldborder shrink` and `!worldborder expand` commands now accept an optional final argument for `interpolationType`.
+            *   `!worldborder get` now displays the active interpolation type for an ongoing resize.
+            *   Help text updated to include the new parameter and valid types.
+        *   **`main.js`:**
+            *   Added `easeOutQuad` and `easeInOutQuad` helper functions.
+            *   The border resize logic in the player tick loop now applies the selected `resizeInterpolationType` (or defaults to linear) to the progress calculation, affecting how the border size changes over time.
+    *   **Purpose:** To provide administrators with more control over the aesthetic feel of world border resize operations.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
 *   **`!worldborder` Enhancement: Resize Interpolation Methods:**
     *   **Summary:** Enhanced the gradual resize functionality (`!wb shrink/expand`) to support different interpolation methods, allowing for smoother visual transitions.
     *   **Changes:**

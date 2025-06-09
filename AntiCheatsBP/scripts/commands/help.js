@@ -4,8 +4,9 @@
  * or detailed information about a specific command based on their permission level.
  * @version 1.0.0
  */
-import * as config from '../config.js'; // Added import for config
-import { permissionLevels } from '../core/rankManager.js'; // Assuming this path is correct from command's perspective
+import * as config from '../config.js';
+import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/localizationManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -53,43 +54,46 @@ export async function execute(player, args, dependencies) {
                     }
                 }
                 player.sendMessage(
-                    `§a--- Help for: ${config.prefix}${foundCmdDef.name} ---\n` +
-                    `§eSyntax: ${config.prefix}${foundCmdDef.name} ${syntaxArgs}\n` +
-                    `§7Description: ${foundCmdDef.description}\n` +
-                    `§bPermission Level Required: ${permLevelName} (Value: ${foundCmdDef.permissionLevel})`
+                    getString("help.specific.header", { prefix: config.prefix, commandName: foundCmdDef.name }) + "\n" +
+                    getString("help.specific.syntax", { prefix: config.prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" +
+                    getString("help.specific.description", { description: foundCmdDef.description }) + "\n" +
+                    getString("help.specific.permission", { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel })
                 );
             } else {
-                player.sendMessage(`§cCommand '${specificCommandName}' not found or you do not have permission to view its help. Try ${config.prefix}help for a list of your commands.`);
+                // Assuming the no permission to view specific help is covered by "common.error.noPermissionCommand" or a more specific one.
+                // The original message combined "not found" and "no permission".
+                // Using the specific key for "not found or no permission for specific command help"
+                player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: config.prefix }));
             }
         } else {
-            player.sendMessage(`§cCommand '${specificCommandName}' not found. Try ${config.prefix}help for a list of available commands.`);
+            player.sendMessage(getString("help.error.unknownCommand", { prefix: config.prefix, commandName: specificCommandName }));
         }
     } else {
-        let helpMessage = "§aAvailable commands (for your permission level):\n";
+        let helpMessage = getString("help.list.header") + "\n";
         let commandsListed = 0;
 
         const categories = [
             {
-                name: "--- General Player Commands ---",
+                nameKey: "help.list.category.general", // Key for "--- General Player Commands ---"
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version']
             },
             {
-                name: "--- TPA Commands ---",
+                nameKey: "help.list.category.tpa", // Key for "--- TPA Commands ---"
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
-                condition: () => config.enableTpaSystem
+                condition: () => config.enableTpaSystem // config is the imported config.js module
             },
             {
-                name: "--- Moderation Commands ---",
-                permissionRequired: permissionLevels.moderator, // Assuming a moderator level might exist or defaults to admin
+                nameKey: "help.list.category.moderation", // Key for "--- Moderation Commands ---"
+                permissionRequired: permissionLevels.moderator,
                 commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel']
             },
             {
-                name: "--- Administrative Commands ---",
+                nameKey: "help.list.category.administrative", // Key for "--- Administrative Commands ---"
                 permissionRequired: permissionLevels.admin,
                 commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock']
             },
             {
-                name: "--- Owner Commands ---",
+                nameKey: "help.list.category.owner", // Key for "--- Owner Commands ---"
                 permissionRequired: permissionLevels.owner,
                 commands: ['testnotify']
             }
@@ -97,10 +101,9 @@ export async function execute(player, args, dependencies) {
 
         categories.forEach(category => {
             if (category.condition && !category.condition()) {
-                return; // Skip this category if condition is not met (e.g., TPA disabled)
+                return;
             }
 
-            // Check if user meets the general permission for the category, if defined
             if (category.permissionRequired && userPermissionLevel > category.permissionRequired) {
                 return;
             }
@@ -110,24 +113,25 @@ export async function execute(player, args, dependencies) {
                 const cmdDef = allCommands.find(cmd => cmd.name === commandName);
                 if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) {
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                    let description = cmdDef.description;
-                    if (cmdDef.name === 'panel') {
-                        description = "Opens the Info/Admin Panel (content varies by permission).";
-                    }
+                    let description = cmdDef.name === 'panel' ? getString("help.descriptionOverride.panel") : cmdDef.description;
+
+                    // For Phase 1, command descriptions themselves are not localized yet, unless they are special like 'panel'.
+                    // This would be a larger change across all command definitions.
                     categoryHelp += `§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
                     commandsListed++;
                 }
             });
 
             if (categoryHelp) {
-                helpMessage += `\n${category.name}\n${categoryHelp}`;
+                // Get localized category name. If key doesn't exist, it returns the key itself.
+                const categoryNameString = getString(category.nameKey) || category.name; // Fallback to .name if nameKey isn't on all
+                helpMessage += `\n${categoryNameString}\n${categoryHelp}`;
             }
         });
 
         if (commandsListed === 0) {
-            helpMessage += "§7No commands available at your current permission level.";
+            helpMessage += getString("help.list.noCommandsAvailable");
         } else {
-            // Remove last trailing newline if any commands were added
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);
             }

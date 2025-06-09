@@ -385,7 +385,7 @@ export const combatLogReason = "Disconnected shortly after combat.";
  * @type {string} Template for admin notification message for combat logging.
  * Placeholders: {playerName}, {timeSinceCombat}, {incrementAmount}.
  */
-export const combatLogMessage = "§cCombat Log: {playerName} disconnected {timeSinceCombat}s after combat. Flagged +{incrementAmount}.";
+export const combatLogMessage = "message.combatLogAdminNotify"; // Key for localizationManager
 
 
 /** @type {boolean} If true, admins receive all AntiCheat notifications by default, unless individually overridden by specific check settings or admin preferences. */
@@ -398,7 +398,7 @@ export const enableWelcomerMessage = true;
  * @type {string} The welcome message template. Use {playerName} as a placeholder for the player's name.
  * Example: "Welcome, {playerName}, to the server! Enjoy your stay."
  */
-export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
+export const welcomeMessage = "message.welcome"; // Key for localizationManager
 /** @type {boolean} If true, admins will be notified when a new player joins for the first time. */
 export const notifyAdminOnNewPlayerJoin = true;
 
@@ -410,7 +410,7 @@ export const enableDeathCoordsMessage = true;
  * Placeholders: {x}, {y}, {z}, {dimensionId}.
  * Example: "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}."
  */
-export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
+export const deathCoordsMessage = "message.deathCoords"; // Key for localizationManager
 
 // --- Death Effects ---
 /** @type {boolean} If true, cosmetic effects (particle and sound) are shown when a player dies. */
@@ -586,7 +586,7 @@ export const maxAllowedClientRenderDistance = 64;
 export const enableWorldBorderSystem = false; // This was from previous subtask, ensure it's here
 
 /** @type {string} Message sent to players when they are teleported back by the world border. */
-export const worldBorderWarningMessage = "§cYou have reached the world border!"; // This was from previous subtask
+export const worldBorderWarningMessage = "message.worldBorderWarning"; // Key for localizationManager
 
 /** @type {boolean} Default for enabling damage when a new border is set or damage is toggled on. */
 export const worldBorderDefaultEnableDamage = false;
@@ -655,7 +655,7 @@ export const enableDetailedJoinLeaveLogging = true;
  * Use newline characters `\n` for line breaks.
  * This is a single string to allow easier editing via in-game commands if such a feature is added.
  */
-export const serverRules = "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.";
+export const serverRules = "config.serverRules"; // Key for localizationManager
 
 /**
  * @type {string}
@@ -679,11 +679,11 @@ export const helpLinks = [
 ];
 /** @type {string[]} General help messages or tips to display in the UI (e.g., in a general info panel). */
 export const generalHelpMessages = [
-    "Welcome to the server! We hope you have a great time.",
-    "For a list of commands, type !help in chat.",
-    "If you suspect a player of cheating, please use the report link or contact staff.",
-    "Please be familiar with our server rules, available via !uinfo."
-];
+    "message.generalHelp.welcome",
+    "message.generalHelp.helpCommandPrompt",
+    "message.generalHelp.reportPrompt",
+    "message.generalHelp.rulesPrompt"
+]; // Array of keys for localizationManager
 
 // --- System ---
 /**
