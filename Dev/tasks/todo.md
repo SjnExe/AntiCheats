@@ -25,13 +25,23 @@ This list contains planned features, improvements, and areas for future investig
 ## Low Priority / Ideas
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
-    *   Death Effects: Investigate and implement cosmetic effects on player death.
     *   Chat Formatting (potentially linked to the Rank System). (Attempted 2025-07-22, but not completed due to persistent subtask execution issues preventing necessary code modifications).
 *   **Logging Enhancements:** SjnExe parity goal.
-    *   **Detailed Player Join/Leave Logging:** Log player join/leave events with more context than default debug logs (e.g., IP if available via API - unlikely, device type).
 *   **Localization:** (from original todo) Consider options for localizing warning messages and UI elements for a multi-lingual audience.
 *   **AutoMod System Review & Future Enhancements:**
     - Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
+
+## Ad-hoc Tasks & Adjustments
+*   **Adjust Default Configurations (Unplanned):** (Completed on 2024-07-29) Changed default values for several features to `false` based on user feedback during review. This includes:
+    - `enableDeathEffects`
+    - `enableNetherRoofCheck`
+    - `enableInstaBreakUnbreakableCheck`
+    - `enableNukerCheck`
+    - `enableTowerCheck`
+    - `enableFlatRotationCheck`
+    - `enableDownwardScaffoldCheck`
+    - `enableAirPlaceCheck`
+    - `enableFastPlaceCheck`

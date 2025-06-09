@@ -8,7 +8,7 @@ import * as mc from '@minecraft/server';
 // ItemStack is part of mc, no need for separate import unless it's a custom class
 import { getPlayerRankDisplay, updatePlayerNametag, permissionLevels } from './rankManager.js'; // Added permissionLevels
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, playerUtils as PlayerUtilsImport } from '../utils/index.js'; // Added isNetherLocked, isEndLocked, playerUtils
-import { editableConfigValues as ConfigValuesImport } from '../config.js'; // For AntiGrief
+import { editableConfigValues as ConfigValuesImport, editableConfigValues as config } from '../config.js'; // For AntiGrief
 
 // Assuming checks are imported from a barrel file, specific imports aren't strictly necessary here if using the 'checks' object.
 // import { checkMessageRate, checkMessageWordCount } from '../checks/index.js';
@@ -152,6 +152,13 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
     await playerDataManager.prepareAndSavePlayerData(player);
     playerUtils.debugLog(`Final data persistence attempted for ${player.nameTag} on leave.`, player.nameTag);
     playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, player.nameTag);
+
+    if (config.enableDetailedJoinLeaveLogging) {
+        const playerName = player.nameTag || player.name;
+        const playerId = player.id;
+        // Additional details like location or gamemode are harder to get reliably on leave or might be irrelevant.
+        console.warn(`[LeaveLog] Player: ${playerName} (ID: ${playerId}) left the game.`);
+    }
 }
 
 /**
@@ -283,6 +290,17 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
                 dependencies.actionManager, // Pass the actionManager object/wrapper
                 dependencies // Pass the full dependencies object passed to handlePlayerSpawn
             );
+        }
+
+        if (config.enableDetailedJoinLeaveLogging) {
+            const playerName = player.nameTag || player.name;
+            const playerId = player.id;
+            const deviceType = player.clientSystemInfo?.platformType?.toString() || "Unknown";
+            const gameMode = mc.GameMode[player.gameMode] || "Unknown";
+            const location = player.location;
+            const dimensionId = player.dimension.id.split(':')[1] || "unknown";
+            const locationString = `${Math.floor(location.x)}, ${Math.floor(location.y)}, ${Math.floor(location.z)} in ${dimensionId}`;
+            console.warn(`[JoinLog] Player: ${playerName} (ID: ${playerId}, Device: ${deviceType}, Mode: ${gameMode}) joined at ${locationString}.`);
         }
 
     } catch (error) {
@@ -594,11 +612,15 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
 
 /**
  * Handles entity death events to trigger cosmetic death effects for players.
+ * This function is intended to be subscribed to `world.afterEvents.entityDie`.
  * @param {mc.EntityDieAfterEvent} eventData The entity die event data.
- * @param {object} config The editable configuration object (config.editableConfigValues).
+ * @param {import('../config.js').editableConfigValues} currentConfig The editable configuration object.
  */
-export async function handleEntityDieForDeathEffects(eventData, config) {
-    if (!config.enableDeathEffects) {
+export async function handleEntityDieForDeathEffects(eventData, currentConfig) { // Renamed config to currentConfig to avoid conflict with imported config
+    // Ensure we are using the runtime editable config values
+    const activeConfig = currentConfig || config; // Fallback to imported config if currentConfig is not explicitly passed
+
+    if (!activeConfig.enableDeathEffects) {
         return;
     }
 
@@ -607,46 +629,28 @@ export async function handleEntityDieForDeathEffects(eventData, config) {
         return;
     }
 
-    const location = deadEntity.location;
-    const dimension = deadEntity.dimension;
-    const effectConfig = config.defaultDeathEffect;
+    const player = deadEntity; // More semantic name
+    const location = player.location;
+    const dimension = player.dimension;
 
-    if (effectConfig) {
-        // Play sound
-        if (effectConfig.soundId && effectConfig.soundOptions) {
-            try {
-                dimension.playSound(effectConfig.soundId, location, effectConfig.soundOptions);
-            } catch (e) {
-                console.warn(`[DeathEffects] Error playing sound '\${effectConfig.soundId}': \${e}`);
-            }
+    // Play sound using the new config value
+    if (activeConfig.deathEffectSoundId) {
+        try {
+            // Basic sound options can be added here if needed, e.g., volume, pitch from defaultDeathEffect or new specific configs
+            const soundOptions = activeConfig.defaultDeathEffect?.soundOptions || { volume: 1.0, pitch: 1.0 };
+            dimension.playSound(activeConfig.deathEffectSoundId, location, soundOptions);
+        } catch (e) {
+            console.warn(`[DeathEffects] Error playing sound '${activeConfig.deathEffectSoundId}': ${e}`);
         }
+    }
 
-        // Execute particle command
-        if (effectConfig.particleCommand) {
-            try {
-                // Replace placeholders. Handles "~ ~1 ~" and "~ ~ ~" for basic relative coordinates.
-                // More robust placeholder replacement might be needed for complex commands.
-                let commandToRun = effectConfig.particleCommand;
-                const yOffsetMatch = commandToRun.match(/~ ~(-?\d+) ~/)
-                let yOffset = 0;
-                if (yOffsetMatch && yOffsetMatch[1]) {
-                     yOffset = parseInt(yOffsetMatch[1]);
-                }
-
-                // Replace common relative position placeholders.
-                // This simple replacement assumes placeholders are separated by spaces.
-                commandToRun = commandToRun.replace("~ ~1 ~", `\${location.x.toFixed(3)} \${(location.y + 1).toFixed(3)} \${location.z.toFixed(3)}`);
-                commandToRun = commandToRun.replace("~ ~ ~", `\${location.x.toFixed(3)} \${location.y.toFixed(3)} \${location.z.toFixed(3)}`);
-                // A more generic replacement if a different y-offset was used in the string:
-                if (yOffset !== 0 && commandToRun.includes(`~ ~${yOffset} ~`)) {
-                     commandToRun = commandToRun.replace(`~ ~${yOffset} ~`, `\${location.x.toFixed(3)} \${(location.y + yOffset).toFixed(3)} \${location.z.toFixed(3)}`);
-                }
-
-
-                await dimension.runCommandAsync(commandToRun);
-            } catch (e) {
-                console.warn(`[DeathEffects] Error running particle command '\${effectConfig.particleCommand}': \${e}`);
-            }
+    // Spawn particle effect using the new config value
+    if (activeConfig.deathEffectParticleName) {
+        try {
+            // MolangVariableMap can be used for more complex particles if needed in the future
+            dimension.spawnParticle(activeConfig.deathEffectParticleName, location, new mc.MolangVariableMap());
+        } catch (e) {
+            console.warn(`[DeathEffects] Error spawning particle '${activeConfig.deathEffectParticleName}': ${e}`);
         }
     }
 }

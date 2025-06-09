@@ -1,6 +1,21 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Death Effects (Basic Implementation):**
+    *   Implemented basic cosmetic effects (sound and particle) upon player death.
+    *   **Implementation Details:**
+        *   Added `enableDeathEffects` (boolean, default `true`), `deathEffectParticleName` (string, default `"minecraft:totem_particle"`), and `deathEffectSoundId` (string, default `"mob.ghast.scream"`) to `config.js` and `editableConfigValues`.
+        *   Modified `handleEntityDieForDeathEffects` in `eventHandlers.js` to check the `enableDeathEffects` config. If true, it uses the new particle and sound configurations to spawn a particle and play a sound at the location of player death.
+        *   The existing `world.afterEvents.entityDie` subscription in `main.js` which calls this handler was confirmed to be sufficient and correctly passes the necessary configuration.
+*   **Detailed Player Join/Leave Logging:**
+    *   Implemented detailed logging for player join and leave events.
+    *   **Implementation Details:**
+        *   Added `enableDetailedJoinLeaveLogging` (boolean, default `true`) to `config.js` and `editableConfigValues`.
+        *   Modified `handlePlayerSpawn` in `eventHandlers.js`:
+            *   If enabled, logs player ID, name, device type (e.g., from `player.clientSystemInfo?.platformType`), game mode, and current location (coordinates and dimension) upon player join.
+        *   Modified `handlePlayerLeave` in `eventHandlers.js`:
+            *   If enabled, logs player ID and name upon player leave.
+        *   All detailed join/leave logs are output using `console.warn` with `[JoinLog]` or `[LeaveLog]` prefixes.
 *   **Investigation: Device Ban Feasibility**
     *   Conducted an investigation into the feasibility of implementing device bans using only the `@minecraft/server` Script API.
     *   Reviewed available player properties (`player.id`, `player.clientSystemInfo`, etc.) and API capabilities.

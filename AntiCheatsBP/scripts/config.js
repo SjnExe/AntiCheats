@@ -39,14 +39,14 @@ export const enableSpeedCheck = true;
 /** @type {boolean} If true, the NoFall check is active. */
 export const enableNofallCheck = true;
 /** @type {boolean} If true, the Nuker check is active. */
-export const enableNukerCheck = true;
+export const enableNukerCheck = false;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
 export const enableIllegalItemCheck = true;
 /** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
 export const enableSelfHurtCheck = true;
 
 /** @type {boolean} If true, the Nether Roof Check is active and will flag players found on the Nether roof. */
-export const enableNetherRoofCheck = true;
+export const enableNetherRoofCheck = false;
 
 
 // --- Movement Checks ---
@@ -181,7 +181,7 @@ export const autoToolSwitchBackWindowTicks = 5;
 
 // --- InstaBreak Check ---
 /** @type {boolean} If true, the check for breaking normally unbreakable blocks (like Bedrock) is active. */
-export const enableInstaBreakUnbreakableCheck = true;
+export const enableInstaBreakUnbreakableCheck = false;
 /** @type {string[]} List of block type IDs considered normally unbreakable by non-Operator players. */
 export const instaBreakUnbreakableBlocks = [
     "minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
@@ -272,7 +272,7 @@ export const spamRepeatCancelMessage = false;
 
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
-export const enableTowerCheck = true;
+export const enableTowerCheck = false;
 /** @type {number} Maximum time in game ticks between consecutive upward pillar blocks for them to be considered part of the same tower structure. */
 export const towerMaxTickGap = 10; // 0.5 seconds
 /** @type {number} Minimum number of consecutive upward blocks placed to trigger a tower flag. */
@@ -283,7 +283,7 @@ export const towerMaxPitchWhilePillaring = -30;
 export const towerPlacementHistoryLength = 20;
 
 /** @type {boolean} If true, the Flat/Invalid Rotation While Building check (detecting unnatural head movements during placement) is active. */
-export const enableFlatRotationCheck = true;
+export const enableFlatRotationCheck = false;
 /** @type {number} Number of consecutive block placements to analyze for static or flat rotation patterns. */
 export const flatRotationConsecutiveBlocks = 4;
 /** @type {number} Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks` to be considered 'static'. */
@@ -300,7 +300,7 @@ export const flatRotationPitchDownwardMin = -90.0;
 export const flatRotationPitchDownwardMax = -85.0;
 
 /** @type {boolean} If true, the Downward Scaffold check (detecting rapid downward block placement while airborne) is active. */
-export const enableDownwardScaffoldCheck = true;
+export const enableDownwardScaffoldCheck = false;
 /** @type {number} Minimum number of consecutive downward blocks placed while airborne to trigger a downward scaffold flag. */
 export const downwardScaffoldMinBlocks = 3;
 /** @type {number} Maximum time in game ticks between consecutive downward scaffold blocks. */
@@ -309,7 +309,7 @@ export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
 export const downwardScaffoldMinHorizontalSpeed = 3.0;
 
 /** @type {boolean} If true, the check for Placing Blocks onto Air/Liquid without adjacent support is active. */
-export const enableAirPlaceCheck = true;
+export const enableAirPlaceCheck = false;
 /**
  * @type {string[]} List of block type IDs that are considered 'solid' and typically require support.
  * Placing these against air or liquid without other solid adjacent support may be flagged.
@@ -343,7 +343,7 @@ export const fastUseItemCooldowns = {
 };
 
 /** @type {boolean} If true, the Fast Block Place check is active. */
-export const enableFastPlaceCheck = true;
+export const enableFastPlaceCheck = false;
 /** @type {number} Time window in milliseconds for fast block placement detection. */
 export const fastPlaceTimeWindowMs = 1000; // 1 second
 /** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
@@ -400,10 +400,14 @@ export const enableDeathCoordsMessage = true;
 export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
 // --- Death Effects ---
-/** @type {boolean} If true, cosmetic effects are shown when a player dies. */
+/** @type {boolean} If true, cosmetic effects (particle and sound) are shown when a player dies. */
 export const enableDeathEffects = false;
+/** @type {string} The particle effect name to spawn when a player dies. Example: "minecraft:totem_particle". */
+export const deathEffectParticleName = "minecraft:totem_particle";
+/** @type {string} The sound ID to play when a player dies. Example: "mob.ghast.scream". */
+export const deathEffectSoundId = "mob.ghast.scream";
 /**
- * @type {object} Defines the default cosmetic effect shown when a player dies.
+ * @type {object} Defines the default cosmetic effect shown when a player dies (legacy, can be removed if particleName/soundId are preferred).
  * @property {string} soundId - The sound ID to play on player death (e.g., "ambient.weather.lightning.impact").
  * @property {string} particleCommand - The command to execute for spawning particles (e.g., "particle minecraft:large_explosion ~ ~1 ~"). Location placeholders (~ ~ ~) are relative to the death location.
  * @property {object} soundOptions - Options for the sound playback.
@@ -411,11 +415,11 @@ export const enableDeathEffects = false;
  * @property {number} soundOptions.pitch - Pitch of the sound (e.g., 1.0).
  */
 export const defaultDeathEffect = {
-    soundId: "ambient.weather.lightning.impact",
-    particleCommand: "particle minecraft:large_explosion ~ ~1 ~", // Example: large explosion slightly above death point
+    soundId: "ambient.weather.lightning.impact", // This will be overridden by deathEffectSoundId if it's set
+    particleCommand: "particle minecraft:large_explosion ~ ~1 ~", // This will be overridden by deathEffectParticleName if it's set
     soundOptions: {
         volume: 1.0,
-        pitch: 0.8 // Slightly deeper pitch for impact
+        pitch: 0.8
     }
 };
 
@@ -603,6 +607,10 @@ export const enableChatDuringCombatCheck = true;
 export const chatDuringCombatCooldownSeconds = 4;
 /** @type {boolean} If true, the Chat During Item Use check is active. */
 export const enableChatDuringItemUseCheck = true;
+
+// --- Player Join/Leave Logging ---
+/** @type {boolean} If true, detailed logging for player join and leave events is enabled. */
+export const enableDetailedJoinLeaveLogging = true;
 
 
 // --- UI Display Texts ---
@@ -1448,7 +1456,9 @@ export let editableConfigValues = {
     enableDeathCoordsMessage,
     deathCoordsMessage,
     enableDeathEffects,
-    defaultDeathEffect,
+    deathEffectParticleName,
+    deathEffectSoundId,
+    defaultDeathEffect, // Keeping for now, though individual particle/sound are preferred
     serverRules,
     discordLink,
     websiteLink,
@@ -1527,6 +1537,8 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    // Player Join/Leave Logging
+    enableDetailedJoinLeaveLogging,
 };
 
 /**
