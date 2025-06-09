@@ -1,6 +1,21 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **AutoMod: Rule Definition for Disabled Checks:**
+    *   **Summary:** Added default AutoMod rules (escalating WARN, KICK, TEMP_BAN), action messages, and per-check AutoMod toggles to `config.js` for a comprehensive list of checks that were previously disabled by default but had defined `checkActionProfiles`.
+    *   **Purpose:** To ensure these checks have baseline AutoMod configurations ready for activation if an administrator chooses to enable them, promoting smoother integration into the AutoMod system.
+    *   **Affected Check Types:** Included `world_nuker`, `world_autotool`, `world_instabreak_unbreakable`, `player_inventory_mod`, `world_tower_build`, `world_flat_rotation_building`, `world_downward_scaffold`, `world_air_place`, `world_fast_place`, `chat_swear_violation`, `world_antigrief_tnt_place`, `world_antigrief_wither_spawn`, `world_antigrief_fire`, `world_antigrief_lava`, `world_antigrief_water`, `world_antigrief_blockspam`, `world_antigrief_entityspam`, and `world_antigrief_blockspam_density`.
+    *   **Details:** Rules were designed to be conservative, with reasonable flag thresholds and initial TEMP_BAN durations (typically "5m" to "30m").
+*   **AutoMod: Conservative Refinement of Existing Rules:**
+    *   **Summary:** Reviewed existing AutoMod rules in `config.js` for already enabled checks and made conservative adjustments to TEMP_BAN durations and, in one case, rule thresholds, to enhance initial tolerance.
+    *   **Purpose:** To reduce the harshness of initial automated temporary bans and align certain rules more closely with general tolerance levels observed in other rules, pending live testing and feedback.
+    *   **Affected Check Types & Changes:**
+        *   `player_namespoof`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `player_antigmc`: TEMP_BAN duration changed from "1d" to "6h".
+        *   `combat_multitarget_aura`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `combat_attack_while_sleeping`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `world_instabreak_speed`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `player_invalid_render_distance`: Rule thresholds adjusted (WARN 3->5, KICK 5->10, TEMP_BAN 10->15) and TEMP_BAN duration changed from "1h" to "30m".
 *   **AutoMod Mute Durations Reduced:**
     *   **Summary:** All MUTE actions within `automodConfig.automodRules` in `config.js` have had their durations changed to "1m".
     *   Corresponding messages in `automodActionMessages` were updated to reflect "1 minute".

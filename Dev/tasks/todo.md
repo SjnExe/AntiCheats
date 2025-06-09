@@ -34,6 +34,3 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
-
-## Ad-hoc Tasks & Adjustments
-*   **Set AutoMod to Disabled by Default:** (Completed on 2024-07-29) Changed `enableAutoMod` in `config.js` to `false` by default as per user request.
