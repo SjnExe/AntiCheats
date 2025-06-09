@@ -20,6 +20,9 @@ export const enableAutoMod = false;
 /** @type {string} The prefix used for chat-based commands (e.g., "!ac version"). */
 export const prefix = "!";
 
+/** @type {string} The default language code for server messages (e.g., "en_US"). */
+export const defaultServerLanguage = "en_US";
+
 // --- General Check Toggles ---
 
 /** @type {boolean} If true, the Reach check is active. */
@@ -1895,7 +1898,7 @@ export const commandAliases = {
  * Use `updateConfigValue(key, newValue)` to modify these values safely.
  */
 export let editableConfigValues = {
-    adminTag, ownerPlayerName, enableDebugLogging, prefix, enableAutoMod,
+    adminTag, ownerPlayerName, enableDebugLogging, prefix, defaultServerLanguage, enableAutoMod,
     enableReachCheck, enableCPSCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck, enableSelfHurtCheck, enableNetherRoofCheck,
@@ -1914,7 +1917,7 @@ export let editableConfigValues = {
     antiGMCSwitchToGameMode,
     antiGmcAutoSwitch,
     enableInventoryModCheck,
-    enableSelfHurtCheck,
+    // enableSelfHurtCheck, // Already included above
     enableNoSlowCheck,
     noSlowMaxSpeedEating,
     noSlowMaxSpeedChargingBow,
@@ -2161,5 +2164,3 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
     return true;
 }
-
-[end of AntiCheatsBP/scripts/config.js]

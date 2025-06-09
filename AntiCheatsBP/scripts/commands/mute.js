@@ -1,10 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/mute.js
  * Defines the !mute command for administrators to prevent a player from sending chat messages.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/mute.js
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../../core/localizationManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -36,48 +36,48 @@ export async function execute(
     const { config, playerUtils, playerDataManager, addLog, findPlayer, parseDuration } = dependencies;
 
     if (args.length < 1) {
-        if (player) player.sendMessage(`§cUsage: ${config.prefix}mute <playername> [duration] [reason]`);
+        const usageMessage = getString('command.mute.usage', { prefix: config.prefix });
+        if (player) player.sendMessage(usageMessage);
         else console.warn("Mute command called without player and insufficient args by system.");
         return;
     }
     const targetPlayerName = args[0];
-    const durationString = args[1] || (invokedBy === "AutoMod" ? "10m" : "1h"); // Default duration
+    const defaultDuration = invokedBy === "AutoMod" ? "10m" : "1h";
+    const durationString = args[1] || defaultDuration;
 
     let reason;
-    if (invokedBy === "AutoMod" && args.length <= 2) { // args[0] is name, args[1] is duration
-        reason = `AutoMod action for ${autoModCheckType || 'violations'}.`;
+    if (invokedBy === "AutoMod" && args.length <= 2) {
+        reason = `AutoMod action for ${autoModCheckType || 'violations'}.`; // System reason
     } else {
-        reason = args.slice(2).join(" ") || (invokedBy === "AutoMod" ? `AutoMod action for ${autoModCheckType || 'violations'}.` : "Muted by an administrator.");
+        reason = args.slice(2).join(" ") || (invokedBy === "AutoMod" ? `AutoMod action for ${autoModCheckType || 'violations'}.` : "Muted by an administrator."); // Default reason
     }
 
     const foundPlayer = findPlayer(targetPlayerName, playerUtils);
 
     if (!foundPlayer) {
-        const message = `§cPlayer "${targetPlayerName}" not found.`;
+        const message = getString('command.mute.notFound', { targetName: targetPlayerName });
         if (player) player.sendMessage(message);
         else console.warn(message);
         return;
     }
 
     if (player && foundPlayer.id === player.id) {
-        player.sendMessage("§cYou cannot mute yourself.");
+        player.sendMessage(getString('command.mute.self'));
         return;
     }
 
-    // Basic permission check if invoked by player
     if (invokedBy === "PlayerCommand" && player) {
         const targetPermissionLevel = dependencies.getPlayerPermissionLevel(foundPlayer);
         const issuerPermissionLevel = dependencies.getPlayerPermissionLevel(player);
         if (targetPermissionLevel >= issuerPermissionLevel && player.id !== foundPlayer.id) {
-             player.sendMessage("§cYou do not have sufficient permissions to mute this player.");
+             player.sendMessage(getString('command.mute.permissionInsufficient'));
              return;
         }
     }
 
-
     const durationMs = parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
-        const message = `§cInvalid duration format. Use formats like 5m, 2h, 1d, or perm. Default is ${invokedBy === "AutoMod" ? "10m" : "1h"} if unspecified.`;
+        const message = getString('command.mute.invalidDuration', { defaultDuration: defaultDuration });
         if (player) player.sendMessage(message);
         else console.warn(message + ` (Invoked by ${invokedBy})`);
         return;
@@ -95,24 +95,24 @@ export async function execute(
         );
 
         if (muteAdded) {
-            const muteInfo = playerDataManager.getMuteInfo(foundPlayer); // Fetch full info
+            const muteInfo = playerDataManager.getMuteInfo(foundPlayer);
             const actualReason = muteInfo ? muteInfo.reason : reason;
             const actualMutedBy = muteInfo ? muteInfo.mutedBy : mutedBy;
-            const durationText = durationMs === Infinity ? "permanently (this session/until unmuted)" : `for ${durationString}`;
+            const durationText = durationMs === Infinity ? "permanently (this session/until unmuted)" : `for ${durationString}`; // This text is for admin notifications, not directly to target
 
+            let targetNotificationKey = durationMs === Infinity ? 'command.mute.targetNotification.permanent' : 'command.mute.targetNotification.timed';
             try {
-                foundPlayer.onScreenDisplay.setActionBar(`§cYou have been muted ${durationText}. Reason: ${actualReason}`);
+                foundPlayer.onScreenDisplay.setActionBar(getString(targetNotificationKey, { durationString: durationString, reason: actualReason }));
             } catch (e) {
                 if (playerUtils.debugLog) playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayer.nameTag}: ${e}`, player ? player.nameTag : "System");
             }
 
-            const successMessage = `§aPlayer ${foundPlayer.nameTag} has been muted ${durationText}. Reason: ${actualReason}`;
+            const successMessage = getString('command.mute.success', { targetName: foundPlayer.nameTag, durationText: durationText, reason: actualReason });
             if (player) player.sendMessage(successMessage);
             else console.log(successMessage.replace(/§[a-f0-9]/g, ''));
 
-
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(`Player ${foundPlayer.nameTag} was muted ${durationText} by ${actualMutedBy}. Reason: ${actualReason}`, player, null);
+                playerUtils.notifyAdmins(getString('command.mute.adminNotification', { targetName: foundPlayer.nameTag, durationText: durationText, mutedBy: actualMutedBy, reason: actualReason }), player, null);
             }
             if (addLog) {
                 addLog({
@@ -127,12 +127,12 @@ export async function execute(
                 });
             }
         } else {
-            const failureMessage = `§cFailed to apply mute for ${foundPlayer.nameTag}. They might already be muted with a longer or permanent duration, or an error occurred.`;
+            const failureMessage = getString('command.mute.fail', { targetName: foundPlayer.nameTag });
             if (player) player.sendMessage(failureMessage);
             else console.warn(failureMessage.replace(/§[a-f0-9]/g, ''));
         }
     } catch (e) {
-        const errorMessage = `§cAn unexpected error occurred while trying to mute ${foundPlayer.nameTag}: ${e}`;
+        const errorMessage = getString('command.mute.error', { targetName: foundPlayer.nameTag, error: e });
         if (player) player.sendMessage(errorMessage);
         else console.error(errorMessage.replace(/§[a-f0-9]/g, ''));
         if (playerUtils.debugLog) playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayer.nameTag} by ${player ? player.nameTag : invokedBy}: ${e}`, player ? player.nameTag : "System");

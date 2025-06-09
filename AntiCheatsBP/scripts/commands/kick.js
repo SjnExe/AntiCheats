@@ -1,10 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/kick.js
  * Defines the !kick command for administrators to remove a player from the server.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/kick.js
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../../core/localizationManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -23,40 +23,42 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, addLog, findPlayer } = dependencies; // findPlayer from dependencies
+    const { config, playerUtils, addLog, findPlayer } = dependencies;
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`);
+        player.sendMessage(getString('command.kick.usage', { prefix: config.prefix }));
         return;
     }
     const targetPlayerName = args[0];
-    const reason = args.slice(1).join(" ") || "Kicked by an administrator.";
+    const reason = args.slice(1).join(" ") || "Kicked by an administrator."; // Default reason, potentially not directly localized if admin-provided
 
-    const foundPlayer = findPlayer(targetPlayerName, playerUtils); // Use findPlayer from dependencies
+    const foundPlayer = findPlayer(targetPlayerName, playerUtils);
 
     if (foundPlayer) {
         if (foundPlayer.id === player.id) {
-            player.sendMessage("§cYou cannot kick yourself.");
+            player.sendMessage(getString('command.kick.self'));
             return;
         }
         try {
-            const originalReason = reason; // Keep the original reason for logging and admin messages
-            const kickMessage = `Kicked by: ${player.nameTag}\nReason: ${originalReason}\n§eCheck server rules with ${config.prefix}rules`;
-            foundPlayer.kick(kickMessage);
-            player.sendMessage(`§aPlayer ${foundPlayer.nameTag} has been kicked. Reason: ${originalReason}`);
+            const originalReason = reason;
+            const kickMessageToTarget = getString('command.kick.targetNotification', { adminName: player.nameTag, reason: originalReason, prefix: config.prefix });
+            foundPlayer.kick(kickMessageToTarget);
+
+            player.sendMessage(getString('command.kick.success', { targetName: foundPlayer.nameTag, reason: originalReason }));
+
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(`Player ${foundPlayer.nameTag} was kicked by ${player.nameTag}. Reason: ${originalReason}`, player, null);
+                playerUtils.notifyAdmins(getString('command.kick.adminNotification', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: originalReason }), player, null);
             }
             if (addLog) {
-                addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: reason });
+                addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: originalReason });
             }
         } catch (e) {
-            player.sendMessage(`§cError kicking player ${targetPlayerName}: ${e}`);
+            player.sendMessage(getString('command.kick.error', { targetName: targetPlayerName, error: e }));
             if (playerUtils.debugLog) {
                 playerUtils.debugLog(`Error kicking player ${targetPlayerName}: ${e}`);
             }
         }
     } else {
-        player.sendMessage(`§cPlayer "${targetPlayerName}" not found.`);
+        player.sendMessage(getString('command.kick.notFound', { targetName: targetPlayerName }));
     }
 }

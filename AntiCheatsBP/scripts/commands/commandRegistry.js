@@ -2,7 +2,7 @@
  * @file AntiCheatsBP/scripts/commands/commandRegistry.js
  * Central registry for all command modules. This file imports all individual command
  * files and exports them as an array to be used by the commandManager.
- * @version 1.0.1
+ * @version 1.0.2
  */
 // AntiCheatsBP/scripts/commands/commandRegistry.js
 import * as versionCmd from './version.js';
@@ -40,6 +40,7 @@ import * as uinfoCmd from './uinfo.js';
 import * as netherlockCmd from './netherlock.js';
 import * as endlockCmd from './endlock.js';
 import * as worldborderCmd from './worldborder.js';
+import * as setlang from './setlang.js';
 
 /**
  * Array containing all registered command modules.
@@ -82,5 +83,6 @@ export const commandModules = [
     tpacancelCmd,
     tpastatusCmd,
     worldborderCmd,
+    setlang,
 ];
 // console.log("[CommandRegistry] Registered final batch of commands.");
