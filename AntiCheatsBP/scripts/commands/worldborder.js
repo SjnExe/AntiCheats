@@ -13,18 +13,21 @@ export const commandData = {
     name: "worldborder",
     description: "Manages the world border for different dimensions.",
     aliases: ["wb"],
-    permissionLevel: permissionLevels.admin, // Or owner, adjust as needed
+    permissionLevel: permissionLevels.admin,
     requiresCheats: false,
+    syntax: `${config.prefix}wb <set|get|toggle|remove> [args...]`, // General syntax
     subcommands: [
         {
             name: "set",
-            description: "Sets a square world border for a dimension.",
-            parameters: [
-                { name: "shape", type: "string", description: "Shape of the border (currently only 'square')." },
+            description: "Sets a square or circle world border for a dimension. Applies default damage settings.",
+            parameters: [ // Note: These are more for help text generation; actual parsing is manual.
+                { name: "shape", type: "string", description: "'square' or 'circle'." },
                 { name: "centerX", type: "number", description: "Center X-coordinate." },
                 { name: "centerZ", type: "number", description: "Center Z-coordinate." },
-                { name: "halfSize", type: "number", description: "Half the side length of the square border." },
-                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID (e.g., overworld, nether, the_end). Defaults to current." }
+                { name: "size", type: "number", description: "For square: half-size. For circle: radius." },
+                { name: "dimensionId", type: "string", optional: true, description: "Dimension ID (e.g., overworld). Defaults to current." },
+                // Damage parameters are not explicitly listed here for 'set' to keep it simpler,
+                // as 'set' now applies defaults. A separate damage config command would be clearer.
             ]
         },
         {
@@ -57,11 +60,23 @@ export async function execute(player, args, subCommand, config, dependencies) {
     const subCommandData = commandData.subcommands.find(sc => sc.name === subCommand);
 
     if (!subCommandData) {
-        playerUtils.warnPlayer(player, "Invalid subcommand. Available: set, get, toggle, remove.");
+        playerUtils.warnPlayer(player, `Invalid subcommand. Usage: ${commandData.syntax}`);
+        playerUtils.notifyPlayer(player, `Available subcommands: set, get, toggle, remove. Use !help wb <subcommand> for details.`);
         return;
     }
 
     // Permission check is handled by commandManager
+
+    // Updated help message
+    if (args.length === 0 && !subCommand) { // Or if subCommand is 'help' and no further args
+        playerUtils.notifyPlayer(player, "§b--- World Border Commands ---§r");
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Size is half-length for square, radius for circle.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb get [dim]§r - Shows current border settings.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb toggle <on|off> [dim]§r - Enables/disables border.`);
+        playerUtils.notifyPlayer(player, `§7${config.prefix}wb remove [dim]§r - Deletes border settings.`);
+        playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
+        return;
+    }
 
     switch (subCommand) {
         case "set":
@@ -91,69 +106,86 @@ function normalizeDimensionId(inputDimId, currentPlayerDimensionId) {
 
 
 async function handleSetCommand(player, args, playerUtils, logManager, config, dependencies) {
-    if (args.length < 4) {
-        playerUtils.warnPlayer(player, "Usage: !worldborder set <square> <centerX> <centerZ> <halfSize> [dimensionId]");
+    // Command structure: !wb set <shape> <centerX> <centerZ> <sizeParam> [dimensionId]
+    // Example args array for `handleSetCommand(player, args...)`:
+    // args[0] = shape ("square" or "circle")
+    // args[1] = centerX
+    // args[2] = centerZ
+    // args[3] = sizeParam (halfSize or radius)
+    // args[4] = dimensionId (optional)
+
+    if (args.length < 4) { // Need at least shape, centerX, centerZ, sizeParam
+        playerUtils.warnPlayer(player, `Usage: ${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dimensionId]`);
+        playerUtils.notifyPlayer(player, "Size is half-length for square, radius for circle.");
         return;
     }
 
     const shape = args[0].toLowerCase();
-    if (shape !== 'square') {
-        playerUtils.warnPlayer(player, "Invalid shape. Currently only 'square' is supported.");
+    if (shape !== "square" && shape !== "circle") {
+        playerUtils.warnPlayer(player, "Invalid shape. Must be 'square' or 'circle'.");
         return;
     }
 
     const centerX = parseInt(args[1]);
     const centerZ = parseInt(args[2]);
-    const halfSize = parseInt(args[3]);
+    const sizeParam = parseInt(args[3]);
 
-    const dimensionIdInput = args.length > 4 ? args[4] : player.dimension.id;
+    if (isNaN(centerX) || isNaN(centerZ) || isNaN(sizeParam)) {
+        playerUtils.warnPlayer(player, "Invalid coordinates or size. centerX, centerZ, and size must be numbers.");
+        return;
+    }
+    if (sizeParam <= 0) {
+        playerUtils.warnPlayer(player, "Size parameter (halfSize/radius) must be greater than 0.");
+        return;
+    }
+
+    const dimensionIdInput = args.length > 4 ? args[4] : player.dimension.id; // If dimensionId is args[4]
     const dimensionId = normalizeDimensionId(dimensionIdInput, player.dimension.id);
 
-    if (isNaN(centerX) || isNaN(centerZ) || isNaN(halfSize) || halfSize <= 0) {
-        playerUtils.warnPlayer(player, "Invalid coordinates or size. centerX, centerZ, halfSize must be numbers, and halfSize > 0.");
-        return;
-    }
-
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `Invalid dimension ID: '${args[4] || player.dimension.id}'. Use overworld, nether, or the_end, or their full IDs.`);
+        playerUtils.warnPlayer(player, `Invalid dimension ID: '${dimensionIdInput}'. Use overworld, nether, or the_end, or their full Minecraft IDs.`);
         return;
     }
 
-    const settings = {
-        shape: "square",
-        centerX: centerX,
-        centerZ: centerZ,
-        halfSize: halfSize,
-                enabled: true, // Default to enabled when set
-                // Initialize damage properties based on inputs or defaults
-                enableDamage: args.length > 5 ? (args[5].toLowerCase() === 'true' || args[5] === 'on') : config.worldBorderDefaultEnableDamage,
+    let settingsToSave = {
+        shape,
+        centerX,
+        centerZ,
+        enabled: true, // Default to enabled when set
+        // Apply default damage settings when setting a new border or changing shape
+        enableDamage: config.worldBorderDefaultEnableDamage,
+        damageAmount: config.worldBorderDefaultDamageAmount,
+        damageIntervalTicks: config.worldBorderDefaultDamageIntervalTicks,
+        teleportAfterNumDamageEvents: config.worldBorderTeleportAfterNumDamageEvents,
     };
 
-            if (settings.enableDamage) {
-                settings.damageAmount = args.length > 6 && !isNaN(parseFloat(args[6])) ? parseFloat(args[6]) : config.worldBorderDefaultDamageAmount;
-                settings.damageIntervalTicks = args.length > 7 && !isNaN(parseInt(args[7])) ? parseInt(args[7]) : config.worldBorderDefaultDamageIntervalTicks;
-                settings.teleportAfterNumDamageEvents = args.length > 8 && !isNaN(parseInt(args[8])) ? parseInt(args[8]) : config.worldBorderTeleportAfterNumDamageEvents;
-            } else {
-                // If damage is not enabled, we can either not store them, or store them with defaults/nulls
-                // Storing with defaults might be better if user toggles damage on later without re-setting values
-                settings.damageAmount = config.worldBorderDefaultDamageAmount;
-                settings.damageIntervalTicks = config.worldBorderDefaultDamageIntervalTicks;
-                settings.teleportAfterNumDamageEvents = config.worldBorderTeleportAfterNumDamageEvents;
-            }
+    if (shape === "square") {
+        settingsToSave.halfSize = sizeParam;
+    } else if (shape === "circle") {
+        settingsToSave.radius = sizeParam;
+    }
+    // No 'else' needed here due to earlier shape validation
 
-            // dimensionId is added by saveBorderSettings internally from the parameter
-            const { dimensionId: dimId, ...settingsToPersist } = settings; // Exclude dimensionId for saving if it's part of settings
+    // When setting a new border geometry, always apply default damage settings from config.
+    // This simplifies the 'set' command. Fine-tuning damage can be a separate command.
+    // Note: config.worldBorderDefaultEnableDamage etc. are the global defaults.
 
-            if (saveBorderSettings(dimensionId, settingsToPersist)) {
-                let successMsg = `§aWorld border set for ${dimensionId}: square, center (${centerX},${centerZ}), size ${halfSize*2}x${halfSize*2}.`;
-                if (settings.enableDamage) {
-                    successMsg += ` Damage: ON (Amount: ${settings.damageAmount}, Interval: ${settings.damageIntervalTicks}t, Teleport After: ${settings.teleportAfterNumDamageEvents} events).`;
-                } else {
-                    successMsg += ` Damage: OFF.`;
-                }
-        playerUtils.notifyPlayer(player, successMsg);
+    if (saveBorderSettings(dimensionId, settingsToSave)) {
+        let sizeDisplay = "";
+        if (shape === "square") {
+            sizeDisplay = `halfSize ${settingsToSave.halfSize} (Full: ${settingsToSave.halfSize * 2}x${settingsToSave.halfSize * 2})`;
+        } else { // circle
+            sizeDisplay = `radius ${settingsToSave.radius}`;
+        }
+        const damageStatus = settingsToSave.enableDamage ? `ON (Amount: ${settingsToSave.damageAmount}, Interval: ${settingsToSave.damageIntervalTicks}t, TP Events: ${settingsToSave.teleportAfterNumDamageEvents})` : 'OFF';
+
+        playerUtils.notifyPlayer(player, `§aWorld border set for ${dimensionId}:`);
+        playerUtils.notifyPlayer(player, `  Shape: ${shape}, Center: (${centerX},${centerZ}), ${sizeDisplay}.`);
+        playerUtils.notifyPlayer(player, `  Damage settings applied from defaults: ${damageStatus}.`);
+
         if (logManager && typeof logManager.addLog === 'function') {
-                    logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(fullSettings) }); // Log full settings
+            const savedSettingsForLog = getBorderSettings(dimensionId); // Get the fully processed settings
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(savedSettingsForLog || settingsToSave) });
         } else {
             playerUtils.debugLog("LogManager or addLog not available for worldborder_set.", null);
         }
@@ -173,24 +205,33 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
 
     const settings = getBorderSettings(dimensionId);
     if (settings) {
-        playerUtils.notifyPlayer(player, `§bWorld Border for ${dimensionId}:`);
-        playerUtils.notifyPlayer(player, `  Enabled: ${settings.enabled}`);
-        playerUtils.notifyPlayer(player, `  Shape: ${settings.shape}`);
-        playerUtils.notifyPlayer(player, `  Center: (${settings.centerX}, ${settings.centerZ})`);
-        playerUtils.notifyPlayer(player, `  Half Size: ${settings.halfSize} (Full Size: ${settings.halfSize * 2})`);
-        playerUtils.notifyPlayer(player, `  Bounds: X[${settings.centerX - settings.halfSize} to ${settings.centerX + settings.halfSize}], Z[${settings.centerZ - settings.halfSize} to ${settings.centerZ + settings.halfSize}]`);
-                if (typeof settings.enableDamage !== 'undefined') { // Check if damage settings exist
-                    playerUtils.notifyPlayer(player, `  Damage Enabled: ${settings.enableDamage}`);
-                    if (settings.enableDamage) {
-                        playerUtils.notifyPlayer(player, `    Damage Amount: ${settings.damageAmount ?? config.worldBorderDefaultDamageAmount}`);
-                        playerUtils.notifyPlayer(player, `    Damage Interval: ${settings.damageIntervalTicks ?? config.worldBorderDefaultDamageIntervalTicks} ticks`);
-                        playerUtils.notifyPlayer(player, `    Teleport After: ${settings.teleportAfterNumDamageEvents ?? config.worldBorderTeleportAfterNumDamageEvents} damage events`);
-                    }
-                } else {
-                    playerUtils.notifyPlayer(player, `  Damage Settings: Not specified (Defaults will apply if enabled via toggle).`);
-                }
+        playerUtils.notifyPlayer(player, `§b--- World Border for ${dimensionId} ---§r`);
+        playerUtils.notifyPlayer(player, `  Enabled: §e${settings.enabled}`);
+        playerUtils.notifyPlayer(player, `  Shape: §e${settings.shape}`);
+        playerUtils.notifyPlayer(player, `  Center: §e(${settings.centerX}, ${settings.centerZ})`);
+
+        if (settings.shape === "square" && typeof settings.halfSize === 'number') {
+            playerUtils.notifyPlayer(player, `  Half Size: §e${settings.halfSize} §7(Full Diameter: ${settings.halfSize * 2})`);
+            playerUtils.notifyPlayer(player, `  Bounds: §7X[${settings.centerX - settings.halfSize} to ${settings.centerX + settings.halfSize}], Z[${settings.centerZ - settings.halfSize} to ${settings.centerZ + settings.halfSize}]`);
+        } else if (settings.shape === "circle" && typeof settings.radius === 'number') {
+            playerUtils.notifyPlayer(player, `  Radius: §e${settings.radius}`);
+            // Bounds for a circle are implicit and not easily represented as min/max X/Z.
+        }
+
+        // Display damage settings, using global defaults from config if not set on the border object
+        const enableDamage = settings.enableDamage ?? config.worldBorderDefaultEnableDamage;
+        const damageAmount = settings.damageAmount ?? config.worldBorderDefaultDamageAmount;
+        const damageInterval = settings.damageIntervalTicks ?? config.worldBorderDefaultDamageIntervalTicks;
+        const teleportEvents = settings.teleportAfterNumDamageEvents ?? config.worldBorderTeleportAfterNumDamageEvents;
+
+        playerUtils.notifyPlayer(player, `  Damage Enabled: §e${enableDamage}`);
+        if (enableDamage) {
+            playerUtils.notifyPlayer(player, `    Damage Amount: §e${damageAmount}`);
+            playerUtils.notifyPlayer(player, `    Damage Interval: §e${damageInterval} ticks`);
+            playerUtils.notifyPlayer(player, `    Teleport After: §e${teleportEvents} damage events`);
+        }
     } else {
-        playerUtils.notifyPlayer(player, `§eNo world border configured for ${dimensionId}.`);
+        playerUtils.notifyPlayer(player, `§eNo world border configured for ${dimensionId}. Use '${config.prefix}wb set ...' to create one.`);
     }
 }
 

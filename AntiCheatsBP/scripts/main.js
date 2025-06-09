@@ -298,6 +298,96 @@ mc.system.runInterval(() => {
     }
 }, 20); // Run this check every 20 ticks (1 second)
 
+
+/**
+ * Attempts to find a safe Y coordinate for teleportation at a given X, Z.
+ * @param {mc.Dimension} dimension - The dimension to check in.
+ * @param {number} targetX - The target X coordinate.
+ * @param {number} initialY - The initial Y coordinate to start searching from.
+ * @param {number} targetZ - The target Z coordinate.
+ * @param {mc.Player} [playerForDebug] - Optional player for debug logging.
+ * @param {object} [playerUtilsForDebug] - Optional playerUtils for debug logging.
+ * @returns {number} A safe Y coordinate, or the initialY if no safer spot is quickly found.
+ */
+function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug, playerUtilsForDebug) {
+    const minDimensionHeight = dimension.heightRange.min;
+    const maxDimensionHeight = dimension.heightRange.max - 2; // Max spawnable Y to leave room for player
+
+    let currentY = Math.floor(initialY);
+    currentY = Math.max(minDimensionHeight, Math.min(currentY, maxDimensionHeight));
+
+    const maxSearchDepthDown = 10;
+    const maxSearchDepthUp = 5;
+
+    // Search down first
+    for (let i = 0; i < maxSearchDepthDown; i++) {
+        const checkY = currentY - i;
+        if (checkY < minDimensionHeight) break;
+
+        try {
+            const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
+            const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
+
+            if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
+                const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
+                if (blockBelowFeet && blockBelowFeet.isSolid) {
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //     playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                } else if (blockFeet.isAir && blockHead.isAir) { // If below is not solid, but current spot is air (e.g. on a torch)
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //     playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                }
+            }
+        } catch (e) {
+            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (down) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
+            // }
+        }
+    }
+
+    // If no spot found searching down, try searching up a little from initialY
+    // Start from initialY + 1 because currentY might have been adjusted down by the loop above
+    let searchUpStartY = Math.floor(initialY);
+    searchUpStartY = Math.max(minDimensionHeight, Math.min(searchUpStartY, maxDimensionHeight));
+
+    for (let i = 1; i < maxSearchDepthUp; i++) {
+        const checkY = searchUpStartY + i;
+        if (checkY > maxDimensionHeight) break;
+        try {
+            const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
+            const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
+             if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
+                const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
+                if (blockBelowFeet && blockBelowFeet.isSolid) {
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //    playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (up, solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                } else if (blockFeet.isAir && blockHead.isAir) { // Air gap, even if not solid below, is better than inside unknown block
+                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+                    //    playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (up, below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
+                    // }
+                    return checkY;
+                }
+            }
+        } catch(e) {
+            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (up) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
+            // }
+        }
+    }
+
+    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
+    //     playerUtilsForDebug.debugLog(`SafeY: No ideal safe Y found for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}). Defaulting to ${Math.floor(initialY)}`, playerForDebug.nameTag);
+    // }
+    return Math.floor(initialY);
+}
+
+
 /**
  * Handles entity hurt events, for TPA warm-up cancellation.
  * @param {mc.EntityHurtBeforeEvent} eventData The entity hurt event data.
@@ -351,6 +441,59 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
 
 
 let currentTick = 0;
+
+// Helper function for finding a safe Y level for teleportation
+function findSafeY(player, dimension, x, z, startY, playerUtilsInstance) {
+    const maxSearchDown = 3;
+    const maxSearchUp = 5;
+    const worldMinY = dimension.heightRange.min;
+    const worldMaxY = dimension.heightRange.max;
+
+    let currentY = Math.max(worldMinY, Math.min(Math.floor(startY), worldMaxY - 2));
+
+    // Search down
+    for (let i = 0; i <= maxSearchDown; i++) {
+        const checkY = currentY - i;
+        if (checkY < worldMinY) break;
+
+        try {
+            const blockBelow = dimension.getBlock({ x: x, y: checkY -1, z: z });
+            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
+            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
+
+            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
+                blockAtFeet && blockAtFeet.isAir &&
+                blockAtHead && blockAtHead.isAir) {
+                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} downwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
+                return checkY;
+            }
+        } catch (e) { /* getBlock can fail */ }
+    }
+
+    // Search up from original startY
+    currentY = Math.floor(startY); // Start search from original Y upwards
+    for (let i = 0; i <= maxSearchUp; i++) {
+        const checkY = currentY + i;
+        if (checkY > worldMaxY - 2) break;
+
+        try {
+            const blockBelow = dimension.getBlock({ x: x, y: checkY - 1, z: z });
+            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
+            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
+
+            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
+                blockAtFeet && blockAtFeet.isAir &&
+                blockAtHead && blockAtHead.isAir) {
+                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} upwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
+                return checkY;
+            }
+        } catch (e) { /* getBlock can fail */ }
+    }
+
+    if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: No safe Y found for (${x},${z}) near ${startY} for player ${player.nameTag}, using original Y.`, player.nameTag);
+    return Math.floor(startY);
+}
+
 
 /**
  * Main tick loop for the Anti-Cheat system.
@@ -490,21 +633,60 @@ mc.system.runInterval(async () => {
                 const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
 
                 if (playerPermLevel > permissionLevels.admin) { // Apply to non-admins/owners
-                    const { centerX, centerZ, halfSize } = borderSettings;
                     const loc = player.location;
-
-                    const minX = centerX - halfSize;
-                    const maxX = centerX + halfSize;
-                    const minZ = centerZ - halfSize;
-                    const maxZ = centerZ + halfSize;
-
                     let isPlayerOutside = false;
-                    if (loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ) {
-                        isPlayerOutside = true;
+                    let targetX = loc.x; // Default to current location, will be updated if outside
+                    let targetZ = loc.z;
+
+                    if (borderSettings.shape === "square" && typeof borderSettings.halfSize === 'number' && borderSettings.halfSize > 0) {
+                        const { centerX, centerZ, halfSize } = borderSettings;
+                        const minX = centerX - halfSize;
+                        const maxX = centerX + halfSize;
+                        const minZ = centerZ - halfSize;
+                        const maxZ = centerZ + halfSize;
+
+                        if (loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ) {
+                            isPlayerOutside = true;
+                            // Clamp to the closest point on the border edge, then offset slightly inwards
+                            targetX = loc.x; // Start with current location
+                            targetZ = loc.z;
+
+                            if (targetX < minX) targetX = minX + 0.5;
+                            else if (targetX > maxX) targetX = maxX - 0.5;
+
+                            if (targetZ < minZ) targetZ = minZ + 0.5;
+                            else if (targetZ > maxZ) targetZ = maxZ - 0.5;
+                        }
+                    } else if (borderSettings.shape === "circle" && typeof borderSettings.radius === 'number' && borderSettings.radius > 0) {
+                        const { centerX, centerZ, radius } = borderSettings;
+                        const dx = loc.x - centerX;
+                        const dz = loc.z - centerZ;
+                        const distSq = dx * dx + dz * dz;
+                        const radiusSq = radius * radius;
+
+                        if (distSq > radiusSq) {
+                            isPlayerOutside = true;
+                            const currentDist = Math.sqrt(distSq);
+                            const teleportOffset = 0.5; // How far inside the border to place them
+
+                            // Prevent division by zero if currentDist is 0 (player is at center)
+                            // And ensure radius is greater than offset to avoid negative scaling factor
+                            if (currentDist === 0 || radius <= teleportOffset) {
+                                targetX = centerX + (radius > teleportOffset ? radius - teleportOffset : 0); // Nudge along X-axis
+                                targetZ = centerZ;
+                            } else {
+                                const scale = (radius - teleportOffset) / currentDist;
+                                targetX = centerX + dx * scale;
+                                targetZ = centerZ + dz * scale;
+                            }
+                        }
+                    } else if (borderSettings.shape) { // Shape is defined but not square or circle, or params missing
+                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Invalid or incomplete border settings for shape '${borderSettings.shape}' in dimension ${player.dimension.id}. Skipping enforcement for ${player.nameTag}.`, player.nameTag);
                     }
 
+
                     if (isPlayerOutside) {
-                        pData.ticksOutsideBorder++; // Increment each tick player is outside
+                        pData.ticksOutsideBorder = (pData.ticksOutsideBorder || 0) + 1;
 
                         const enableDamage = borderSettings.enableDamage ?? config.worldBorderDefaultEnableDamage;
                         const damageAmount = borderSettings.damageAmount ?? config.worldBorderDefaultDamageAmount;
@@ -539,35 +721,30 @@ mc.system.runInterval(async () => {
                         }
 
                         if (performTeleport) {
-                            let targetX = loc.x;
-                            let targetZ = loc.z;
-                            if (loc.x < minX) { targetX = minX + 0.5; }
-                            else if (loc.x > maxX) { targetX = maxX - 0.5; }
-                            if (loc.z < minZ) { targetZ = minZ + 0.5; }
-                            else if (loc.z > maxZ) { targetZ = maxZ - 0.5; }
-
+                            // const safeY = findSafeY(player, player.dimension, targetX, targetZ, loc.y, playerUtils); // Old call
+                            const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils);
                             try {
-                                player.teleport({ x: targetX, y: loc.y, z: targetZ }, { dimension: player.dimension });
+                                player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
                                 if (config.worldBorderWarningMessage) {
                                     playerUtils.warnPlayer(player, config.worldBorderWarningMessage);
                                 }
                                 if (playerUtils.debugLog && pData.isWatched) {
-                                    playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} back. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
+                                    playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
                                 }
                                 pData.ticksOutsideBorder = 0;
                                 pData.borderDamageApplications = 0;
                                 pData.isDirtyForSave = true;
                             } catch (e) {
                                 console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
-                                 if (playerUtils.debugLog) {
+                                 if (playerUtils.debugLog && pData.isWatched) { // Check pData.isWatched for contextual logging
                                      playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
                                  }
                             }
                         }
 
-                    } else {
+                    } else { // Player is inside the border
                         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
-                             if (playerUtils.debugLog && pData.isWatched) {
+                             if (playerUtils.debugLog && pData.isWatched) { // Check pData.isWatched for contextual logging
                                 playerUtils.debugLog(`WorldBorder: Player ${player.nameTag} re-entered border. Resetting counters.`, player.nameTag);
                             }
                             pData.ticksOutsideBorder = 0;
@@ -608,65 +785,69 @@ mc.system.runInterval(async () => {
                     // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
 
                     const playerLoc = player.location;
-                    const { centerX, centerZ, halfSize } = currentBorderSettings;
+                    const playerLoc = player.location;
                     const particleName = config.worldBorderParticleName;
                     const visualRange = config.worldBorderVisualRange;
-                    const density = Math.max(0.1, config.worldBorderParticleDensity); // Ensure density is not zero or negative
+                    const density = Math.max(0.1, config.worldBorderParticleDensity);
                     const wallHeight = config.worldBorderParticleWallHeight;
                     const segmentLength = config.worldBorderParticleSegmentLength;
+                    const yBase = Math.floor(playerLoc.y);
 
-                    const minX = centerX - halfSize;
-                    const maxX = centerX + halfSize;
-                    const minZ = centerZ - halfSize;
-                    const maxZ = centerZ + halfSize;
+                    if (currentBorderSettings.shape === "square" && typeof currentBorderSettings.halfSize === 'number' && currentBorderSettings.halfSize > 0) {
+                        const { centerX, centerZ, halfSize } = currentBorderSettings;
+                        const minX = centerX - halfSize;
+                        const maxX = centerX + halfSize;
+                        const minZ = centerZ - halfSize;
+                        const maxZ = centerZ + halfSize;
 
-                    const yBase = Math.floor(playerLoc.y); // Particles around player's feet/eye level
+                        const spawnSquareParticleLine = (isXPlane, fixedCoord, startDynamic, endDynamic, playerCoordDynamic) => {
+                            const lengthToRender = Math.min(segmentLength, Math.abs(endDynamic - startDynamic));
+                            let actualSegmentStart = playerCoordDynamic - lengthToRender / 2;
+                            let actualSegmentEnd = playerCoordDynamic + lengthToRender / 2;
+                            actualSegmentStart = Math.max(startDynamic, actualSegmentStart);
+                            actualSegmentEnd = Math.min(endDynamic, actualSegmentEnd);
+                            if (actualSegmentStart >= actualSegmentEnd) return;
 
-                    // Helper function to spawn a segment of particles
-                    const spawnParticleLine = (isXPlane, fixedCoord, startDynamic, endDynamic, playerCoordDynamic) => {
-                        const lengthToRender = Math.min(segmentLength, Math.abs(endDynamic - startDynamic));
-                        // Calculate segment based on player's dynamic coordinate and segmentLength
-                        let actualSegmentStart = playerCoordDynamic - lengthToRender / 2;
-                        let actualSegmentEnd = playerCoordDynamic + lengthToRender / 2;
+                            for (let dyn = actualSegmentStart; dyn <= actualSegmentEnd; dyn += (1 / density)) {
+                                for (let h = 0; h < wallHeight; h++) {
+                                    try {
+                                        const particleLoc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
+                                        player.dimension.spawnParticle(particleName, particleLoc);
+                                    } catch (e) { /* Silently ignore */ }
+                                }
+                            }
+                        };
+                        if (Math.abs(playerLoc.x - minX) < visualRange) spawnSquareParticleLine(true, minX, minZ, maxZ, playerLoc.z);
+                        if (Math.abs(playerLoc.x - maxX) < visualRange) spawnSquareParticleLine(true, maxX, minZ, maxZ, playerLoc.z);
+                        if (Math.abs(playerLoc.z - minZ) < visualRange) spawnSquareParticleLine(false, minZ, minX, maxX, playerLoc.x);
+                        if (Math.abs(playerLoc.z - maxZ) < visualRange) spawnSquareParticleLine(false, maxZ, minX, maxX, playerLoc.x);
 
-                        // Clamp segment to actual border boundaries
-                        actualSegmentStart = Math.max(startDynamic, actualSegmentStart);
-                        actualSegmentEnd = Math.min(endDynamic, actualSegmentEnd);
+                    } else if (currentBorderSettings.shape === "circle" && typeof currentBorderSettings.radius === 'number' && currentBorderSettings.radius > 0) {
+                        const { centerX, centerZ, radius } = currentBorderSettings;
+                        const distanceToCenter = Math.sqrt(Math.pow(playerLoc.x - centerX, 2) + Math.pow(playerLoc.z - centerZ, 2));
 
-                        // Ensure start is less than end after clamping, otherwise, no particles to spawn for this segment
-                        if (actualSegmentStart >= actualSegmentEnd) return;
+                        if (Math.abs(distanceToCenter - radius) < visualRange) {
+                            const playerAngle = Math.atan2(playerLoc.z - centerZ, playerLoc.x - centerX);
+                            // Calculate the angle subtended by the segmentLength at the given radius
+                            // Ensure radius is not zero to avoid division by zero
+                            const halfAngleSpan = radius > 0 ? (segmentLength / 2) / radius : Math.PI; // Default to full circle if radius is 0
 
-                        for (let dyn = actualSegmentStart; dyn <= actualSegmentEnd; dyn += (1 / density)) {
-                            for (let h = 0; h < wallHeight; h++) {
-                                try {
-                                    const loc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
-                                    player.dimension.spawnParticle(particleName, loc); // Use player.dimension.spawnParticle
-                                } catch (e) {
-                                    // Optional: Log particle spawn errors if debug mode is on
-                                    // if (playerUtils.debugLog && pData.isWatched) {
-                                    //     playerUtils.debugLog(`Particle spawn error for ${player.nameTag}: ${e}`, player.nameTag);
-                                    // }
-                                    // Silently ignore to prevent spam, common if particle name is invalid or player is in unloaded chunk area for particles
+                            for (let i = 0; i < segmentLength * density; i++) {
+                                const currentAngleOffset = (i / (segmentLength * density) - 0.5) * (segmentLength / radius); // Spread particles over arc length
+                                const angle = playerAngle + currentAngleOffset;
+
+                                // Ensure we only render the intended segment length by checking the offset angle
+                                if (Math.abs(currentAngleOffset) > halfAngleSpan && segmentLength * density > 1) continue;
+
+                                const particleX = centerX + radius * Math.cos(angle);
+                                const particleZ = centerZ + radius * Math.sin(angle);
+                                for (let h = 0; h < wallHeight; h++) {
+                                    try {
+                                        player.dimension.spawnParticle(particleName, { x: particleX, y: yBase + h, z: particleZ });
+                                    } catch (e) { /* Silently ignore */ }
                                 }
                             }
                         }
-                    };
-
-                    // Plane X_MIN
-                    if (Math.abs(playerLoc.x - minX) < visualRange) {
-                        spawnParticleLine(true, minX, minZ, maxZ, playerLoc.z);
-                    }
-                    // Plane X_MAX
-                    if (Math.abs(playerLoc.x - maxX) < visualRange) {
-                        spawnParticleLine(true, maxX, minZ, maxZ, playerLoc.z);
-                    }
-                    // Plane Z_MIN
-                    if (Math.abs(playerLoc.z - minZ) < visualRange) {
-                        spawnParticleLine(false, minZ, minX, maxX, playerLoc.x);
-                    }
-                    // Plane Z_MAX
-                    if (Math.abs(playerLoc.z - maxZ) < visualRange) {
-                        spawnParticleLine(false, maxZ, minX, maxX, playerLoc.x);
                     }
                 }
             }

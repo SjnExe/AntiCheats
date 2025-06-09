@@ -1,6 +1,18 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **World Border Enhancement: Circular Border Shape Support**
+    *   Modified `worldBorderManager.js` to store and retrieve border settings for both "square" (with `halfSize`) and "circle" (with `radius`) shapes. Validation ensures appropriate parameters for the selected shape.
+    *   Updated `!worldborder set` command to accept `circle <centerX> <centerZ> <radius> ...` and `!worldborder get` to display information correctly for circular borders.
+    *   Adapted enforcement logic in `main.js` to calculate out-of-bounds status and teleportation targets correctly for circular borders using distance formula and vector math.
+*   **World Border Enhancement: Advanced Safe Teleport Logic**
+    *   Implemented a `findSafeTeleportY` helper function in `main.js` for the world border enforcement.
+    *   When teleporting a player, this function searches for a 2-block high air gap (preferably on a solid block) near the target X,Z coordinates, searching downwards then upwards from the player's original Y-level within limited depth.
+    *   This reduces the chance of players being teleported into blocks or unsafe locations. It's used for both square and circular border teleports.
+*   **World Border Enhancement: Visuals for Circular Borders**
+    *   Extended the particle visual system in `main.js` to support circular world borders.
+    *   When `borderSettings.shape === "circle"`, particles are now rendered along an arc segment of the border near the player, if visuals are enabled.
+    *   This complements the existing visuals for square borders.
 *   **World Border Enhancement: Damage-Based Enforcement**
     *   Added damage-based enforcement as a configurable option for world borders.
     *   New per-dimension settings (stored in `worldBorderManager`): `enableDamage`, `damageAmount`, `damageIntervalTicks`, `teleportAfterNumDamageEvents`.
@@ -11,8 +23,8 @@
 *   **World Border Enhancement: Visual Indicators (Particles)**
     *   Implemented player-specific particle visuals for world borders.
     *   Added global configurations to `config.js`: `worldBorderEnableVisuals`, `worldBorderParticleName`, `worldBorderVisualRange`, `worldBorderParticleDensity`, `worldBorderParticleWallHeight`, `worldBorderParticleSegmentLength`, `worldBorderVisualUpdateIntervalTicks`.
-    *   Logic in `main.js` tick loop: If enabled, players near a border edge are shown a particle wall segment (using `player.spawnParticle`) along that edge. Visuals are throttled for performance.
-    *   A helper function `spawnParticleLine` was added to `main.js` to handle rendering of particle segments.
+    *   Logic in `main.js` tick loop: If enabled, players near a border edge are shown a particle wall segment (using `player.spawnParticle`) along that edge for square borders. Visuals are throttled for performance. (Circular border visuals added in a subsequent task).
+    *   A helper function `spawnParticleLine` was added to `main.js` to handle rendering of particle segments for square borders.
 *   **Advanced Cheat Detections: Sending Messages During Invalid States - Combat State**
     *   Implemented a check to prevent players from sending chat messages shortly after being in combat.
     *   Added configurations: `enableChatDuringCombatCheck` (boolean) and `chatDuringCombatCooldownSeconds` (number).

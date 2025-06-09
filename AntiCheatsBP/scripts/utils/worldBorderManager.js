@@ -9,13 +9,14 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
 
 /**
  * @typedef {object} WorldBorderSettings
- * @property {"square"} shape - The shape of the border.
- * @property {number} centerX - The X-coordinate of the border's center.
- * @property {number} centerZ - The Z-coordinate of the border's center.
- * @property {number} halfSize - Half the side length of the square border.
- * @property {boolean} enabled - Whether the border is active for this dimension.
- * @property {string} dimensionId - The dimension this border applies to.
- * @property {boolean} [enableDamage] - Optional: Whether damage enforcement is on.
+ * @property {"square" | "circle"} shape - The shape of the border.
+ * @property {number} centerX
+ * @property {number} centerZ
+ * @property {number} [halfSize] // Optional: For square borders, must be positive if present.
+ * @property {number} [radius]   // Optional: For circular borders, must be positive if present.
+ * @property {boolean} enabled
+ * @property {string} dimensionId - The dimension these settings apply to.
+ * @property {boolean} [enableDamage]
  * @property {number} [damageAmount] - Optional: Damage per interval.
  * @property {number} [damageIntervalTicks] - Optional: Interval in ticks for damage.
  * @property {number} [teleportAfterNumDamageEvents] - Optional: Teleport after this many damage events.
@@ -36,23 +37,36 @@ export function getBorderSettings(dimensionId) {
         const settingsJson = mc.world.getDynamicProperty(propertyKey);
         if (typeof settingsJson === 'string') {
             const settings = JSON.parse(settingsJson);
-            // Basic validation of core properties
-            if (settings && settings.shape === "square" &&
-                typeof settings.centerX === 'number' &&
-                typeof settings.centerZ === 'number' &&
-                typeof settings.halfSize === 'number' &&
-                // 'enabled' can be true or false
-                typeof settings.enabled === 'boolean' &&
-                settings.dimensionId === dimensionId) {
 
-                // Damage properties are optional and will be handled by the caller if not present
-                // No specific validation or defaulting for damage properties here in getBorderSettings
-                return settings;
+            // Basic validation for common properties
+            if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
+                typeof settings.enabled !== 'boolean' || settings.dimensionId !== dimensionId) {
+                console.warn(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}.`);
+                return null;
             }
+
+            // Shape-specific validation
+            if (settings.shape === "square") {
+                if (typeof settings.halfSize !== 'number' || settings.halfSize <= 0) {
+                    console.warn(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in ${dimensionId}.`);
+                    return null;
+                }
+            } else if (settings.shape === "circle") {
+                if (typeof settings.radius !== 'number' || settings.radius <= 0) {
+                    console.warn(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}.`);
+                    return null;
+                }
+            } else {
+                console.warn(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`);
+                return null;
+            }
+
+            // Damage properties are optional and will be handled by the caller if not present
+            return settings;
         }
     } catch (error) {
         // This can happen if JSON.parse fails or if the property is not a string.
-        // console.warn(\`[WorldBorderManager] Error parsing border settings for \${dimensionId}: \${error}\`);
+        // console.warn(`[WorldBorderManager] Error parsing border settings for ${dimensionId}: ${error}`);
     }
     return null;
 }
@@ -76,12 +90,30 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
         dimensionId: dimensionId // Ensure dimensionId is part of the stored object
     };
 
+    // Validate and clean shape-specific properties
+    if (fullSettings.shape === "square") {
+        if (typeof fullSettings.halfSize !== 'number' || fullSettings.halfSize <= 0) {
+            console.warn("[WorldBorderManager] saveBorderSettings: Invalid 'halfSize' for square shape.");
+            return false;
+        }
+        fullSettings.radius = undefined; // Ensure radius is explicitly not part of square settings
+    } else if (fullSettings.shape === "circle") {
+        if (typeof fullSettings.radius !== 'number' || fullSettings.radius <= 0) {
+            console.warn("[WorldBorderManager] saveBorderSettings: Invalid or non-positive 'radius' for circle shape.");
+            return false;
+        }
+        fullSettings.halfSize = undefined; // Ensure halfSize is explicitly not part of circle settings
+    } else {
+        console.warn("[WorldBorderManager] saveBorderSettings: Invalid or missing shape provided.");
+        return false;
+    }
+
     try {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));
-        // console.log(\`[WorldBorderManager] Saved border settings for \${dimensionId}.\`);
+        // console.log(`[WorldBorderManager] Saved border settings for ${dimensionId}.`);
         return true;
     } catch (error) {
-        console.error(\`[WorldBorderManager] Error saving border settings for \${dimensionId}: \${error}\`);
+        console.error(`[WorldBorderManager] Error saving border settings for ${dimensionId}: ${error}`);
         return false;
     }
 }
