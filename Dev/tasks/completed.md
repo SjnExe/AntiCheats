@@ -1,6 +1,11 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Investigation: Device Ban Feasibility**
+    *   Conducted an investigation into the feasibility of implementing device bans using only the `@minecraft/server` Script API.
+    *   Reviewed available player properties (`player.id`, `player.clientSystemInfo`, etc.) and API capabilities.
+    *   **Conclusion:** Determined that reliable device banning is not feasible with the current Script API due to the absence of unique and persistent device identifiers. Attempts at fingerprinting would be unreliable and prone to false positives.
+    *   Detailed findings are documented in `Dev/notes/DeviceBanInvestigation.md`.
 *   **World Border Enhancement: Gradual Border Changes (Shrink/Expand)**
     *   Implemented functionality for world borders to gradually shrink or expand over a specified duration.
     *   **Storage:** Added new fields to `WorldBorderSettings` in `worldBorderManager.js` to track resize state: `isResizing`, `originalSize` (initial halfSize/radius), `targetSize`, `resizeStartTimeMs`, `resizeDurationMs`. `saveBorderSettings` validates these fields if `isResizing` is true, or clears them if false.

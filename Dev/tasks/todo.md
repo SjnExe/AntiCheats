@@ -17,7 +17,6 @@ This list contains planned features, improvements, and areas for future investig
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
     *   **System Features:** SjnExe parity goal.
-        *   Investigate: Device Ban (highly API dependent, likely difficult/impossible with Script API alone, might involve external database if server has such capabilities). (SafeGuard)
 
 *   **World Management & Protection:** SjnExe parity goal.
 
