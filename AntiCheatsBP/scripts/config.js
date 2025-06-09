@@ -761,6 +761,26 @@ export const automodConfig = {
         "player_antigmc": [
             { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.antigmc.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.antigmc.tempban1", duration: "1d" }, resetFlagsAfterAction: true }
+        ],
+        "combat_multitarget_aura": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.multitarget.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.multitarget.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.multitarget.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_illegal_item_place": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.illegalplace.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.illegalplace.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.illegalplace.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_invalid_sprint": [
+            { flagThreshold: 8, actionType: "WARN", parameters: { reasonKey: "automod.invalidsprint.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 16, actionType: "KICK", parameters: { reasonKey: "automod.invalidsprint.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 24, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.invalidsprint.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_spam_fast_message": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatfast.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatfast.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatfast.mute2", duration: "30m" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -801,7 +821,19 @@ export const automodConfig = {
         "automod.fastuse.tempban1": "AutoMod: Temporarily banned for excessive fast item usage.",
         "automod.antigmc.kick1": "AutoMod: Kicked for unauthorized Creative Mode usage.",
         "automod.antigmc.tempban1": "AutoMod: Temporarily banned for repeated unauthorized Creative Mode usage.",
-        "automod.antigmc.permban1": "AutoMod: Permanently banned for repeated unauthorized Creative Mode usage."
+        "automod.antigmc.permban1": "AutoMod: Permanently banned for repeated unauthorized Creative Mode usage.",
+        "automod.multitarget.warn1": "AutoMod: Attacking multiple targets too quickly. Please play fairly.",
+        "automod.multitarget.kick1": "AutoMod: Kicked for repeated multi-target aura violations.",
+        "automod.multitarget.tempban1": "AutoMod: Temporarily banned for excessive multi-target aura violations.",
+        "automod.illegalplace.warn1": "AutoMod: Placing illegal or restricted items detected.",
+        "automod.illegalplace.kick1": "AutoMod: Kicked for repeatedly placing illegal items.",
+        "automod.illegalplace.tempban1": "AutoMod: Temporarily banned for excessively placing illegal items.",
+        "automod.invalidsprint.warn1": "AutoMod: Sprinting under invalid conditions detected multiple times.",
+        "automod.invalidsprint.kick1": "AutoMod: Kicked for repeated invalid sprint violations.",
+        "automod.invalidsprint.tempban1": "AutoMod: Temporarily banned for excessive invalid sprint violations.",
+        "automod.chatfast.warn1": "AutoMod: Please do not send messages so quickly.",
+        "automod.chatfast.mute1": "AutoMod: Muted for 5 minutes for sending messages too quickly.",
+        "automod.chatfast.mute2": "AutoMod: Muted for 30 minutes for persistent fast message spam."
         // Add more messages here
     },
 
@@ -819,7 +851,11 @@ export const automodConfig = {
         "movement_nofall": true,
         "world_illegal_item_use": true,
         "player_namespoof": true,
-        "player_antigmc": true
+        "player_antigmc": true,
+        "combat_multitarget_aura": true,
+        "world_illegal_item_place": true,
+        "movement_invalid_sprint": true,
+        "chat_spam_fast_message": true
         // Add more checkTypes here
     }
 };
