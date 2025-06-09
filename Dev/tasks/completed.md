@@ -1,6 +1,14 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **World Border Visuals & Config Management Enhancement:**
+    *   **Summary:** Implemented a command to change the global default particle for world border visuals and ensured the configuration update mechanism is accessible to command modules.
+    *   **Details:**
+        *   **`main.js` Update:** Verified that the full `config.js` module (which includes `updateConfigValue` function and `editableConfigValues` object) is passed to `commandManager.js` within its `dependencies` object (as `dependencies.configModule` and `dependencies.config` respectively). This makes `dependencies.configModule.updateConfigValue()` and `dependencies.config.editableConfigValues` available to all command modules.
+        *   **New Command:** Added `!worldborder setglobalparticle <particleName>` (alias: `!wb setglobalparticle`). This command allows admins to change the global `worldBorderParticleName` configuration value at runtime.
+        *   **Logging:** The command action is logged.
+    *   **Purpose:** To provide administrators with more control over the visual aspect of world borders and to establish a pattern for commands modifying global configurations.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/worldborder.js` (primarily), `AntiCheatsBP/scripts/main.js` (verification of dependency passing).
 *   **`!worldborder` Enhancement: Pause/Resume Gradual Resize:**
     *   **Summary:** Implemented functionality to pause and resume ongoing gradual world border resize operations.
     *   **Commands Added:**

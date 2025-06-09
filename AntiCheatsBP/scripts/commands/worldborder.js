@@ -82,24 +82,34 @@ export const commandData = {
             parameters: [
                 { name: "dimensionId", type: "string", optional: true, description: "Dimension ID. Defaults to current." }
             ]
+        },
+        {
+            name: "setglobalparticle",
+            description: "Sets the global default particle name for world border visuals.",
+            parameters: [
+                { name: "particleName", type: "string", description: "The Minecraft particle name (e.g., minecraft:end_rod)." }
+            ]
         }
     ]
 };
 
 export async function execute(player, args, subCommand, config, dependencies) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils, logManager, configModule } = dependencies; // Destructure configModule
 
     // Centralized help display if no subcommand or "help" is used
     if (!subCommand || subCommand === "help") {
+        // Use configModule.prefix for consistency if editableConfigValues.prefix might differ or not exist
+        const cmdPrefix = configModule.prefix || config.prefix; // Fallback to passed config.prefix
         playerUtils.notifyPlayer(player, "§b--- World Border Commands ---§r");
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Cancels resize.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb get [dim]§r - Shows current border settings & resize progress.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb toggle <on|off> [dim]§r - Enables/disables border. Cancels resize if off.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb remove [dim] confirm§r - Deletes border. Cancels resize.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb shrink <new_size> <time_s> [dim]§r - Gradually shrinks border.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb expand <new_size> <time_s> [dim]§r - Gradually expands border.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb resizepause [dim]§r - Pauses an ongoing resize.`);
-        playerUtils.notifyPlayer(player, `§7${config.prefix}wb resizeresume [dim]§r - Resumes a paused resize.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb set <square|circle> <centerX> <centerZ> <size> [dim]§r - Sets border. Cancels resize.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb get [dim]§r - Shows current border settings & resize progress.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb toggle <on|off> [dim]§r - Enables/disables border. Cancels resize if off.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb remove [dim] confirm§r - Deletes border. Cancels resize.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb shrink <new_size> <time_s> [dim]§r - Gradually shrinks border.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb expand <new_size> <time_s> [dim]§r - Gradually expands border.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb resizepause [dim]§r - Pauses an ongoing resize.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb resizeresume [dim]§r - Resumes a paused resize.`);
+        playerUtils.notifyPlayer(player, `§7${cmdPrefix}wb setglobalparticle <particleName>§r - Sets global default particle.`);
         playerUtils.notifyPlayer(player, `§7Dimension [dim] can be 'overworld', 'nether', 'the_end', or omitted for current.`);
         return;
     }
@@ -134,6 +144,9 @@ export async function execute(player, args, subCommand, config, dependencies) {
             break;
         case "resizeresume":
             await handleResizeResumeCommand(player, args, playerUtils, logManager, config, dependencies);
+            break;
+        case "setglobalparticle":
+            await handleSetGlobalParticleCommand(player, args, playerUtils, logManager, config, dependencies);
             break;
         default: // Should be caught by subCommandData check, but as a fallback
             playerUtils.warnPlayer(player, `Unknown subcommand '${subCommand}'. Use '${config.prefix}wb help'.`);
@@ -535,6 +548,46 @@ async function handleShrinkCommand(player, args, playerUtils, logManager, config
 
 async function handleExpandCommand(player, args, playerUtils, logManager, config, dependencies) {
     await handleResizeCommand(player, args, playerUtils, logManager, config, "expand");
+}
+
+async function handleSetGlobalParticleCommand(player, args, playerUtils, logManager, configPassedToExecute, dependencies) {
+    const { configModule } = dependencies; // This is the full config module with updateConfigValue
+
+    if (args.length < 1) {
+        playerUtils.warnPlayer(player, `Usage: ${configModule.prefix}wb setglobalparticle <particleName>`);
+        return;
+    }
+    const particleName = args[0];
+
+    if (typeof particleName !== 'string' || particleName.trim() === "") {
+        playerUtils.warnPlayer(player, "Particle name cannot be empty.");
+        return;
+    }
+
+    // Assuming updateConfigValue is available on the configModule
+    if (!configModule || typeof configModule.updateConfigValue !== 'function') {
+        playerUtils.warnPlayer(player, "§cError: Configuration system not available or `updateConfigValue` is missing.");
+        console.warn("[WB SetGlobalParticle] configModule or updateConfigValue is not available in dependencies.");
+        return;
+    }
+
+    const success = configModule.updateConfigValue('worldBorderParticleName', particleName);
+
+    if (success) {
+        playerUtils.notifyPlayer(player, `§aGlobal world border particle set to: ${particleName}`);
+        if (logManager && typeof logManager.addLog === 'function') {
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setglobalparticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` });
+        }
+    } else {
+        // updateConfigValue returns false if value is same or type mismatch (though it tries coercion)
+        // Check current value to give a more specific message
+        const currentParticleName = configModule.editableConfigValues.worldBorderParticleName;
+        if (currentParticleName === particleName) {
+            playerUtils.warnPlayer(player, `§eGlobal world border particle is already set to ${particleName}. No change made.`);
+        } else {
+            playerUtils.warnPlayer(player, `§cFailed to set global world border particle. It might be an invalid value or an internal error occurred.`);
+        }
+    }
 }
 
 async function handleResizePauseCommand(player, args, playerUtils, logManager, config, dependencies) {
