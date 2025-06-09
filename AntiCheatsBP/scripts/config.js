@@ -781,6 +781,26 @@ export const automodConfig = {
             { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatfast.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatfast.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatfast.mute2", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_invalid_pitch": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.invalidpitch.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.invalidpitch.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.invalidpitch.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_sleeping": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.attacksleep.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "KICK", parameters: { reasonKey: "automod.attacksleep.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 25, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attacksleep.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_instabreak_speed": [
+            { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.instabreak.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.instabreak.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.instabreak.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "chat_spam_max_words": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatmaxwords.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatmaxwords.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatmaxwords.mute2", duration: "30m" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -833,7 +853,19 @@ export const automodConfig = {
         "automod.invalidsprint.tempban1": "AutoMod: Temporarily banned for excessive invalid sprint violations.",
         "automod.chatfast.warn1": "AutoMod: Please do not send messages so quickly.",
         "automod.chatfast.mute1": "AutoMod: Muted for 5 minutes for sending messages too quickly.",
-        "automod.chatfast.mute2": "AutoMod: Muted for 30 minutes for persistent fast message spam."
+        "automod.chatfast.mute2": "AutoMod: Muted for 30 minutes for persistent fast message spam.",
+        "automod.invalidpitch.warn1": "AutoMod: Invalid viewing angles detected multiple times.",
+        "automod.invalidpitch.kick1": "AutoMod: Kicked for repeated invalid viewing angles.",
+        "automod.invalidpitch.tempban1": "AutoMod: Temporarily banned for excessive invalid viewing angles.",
+        "automod.attacksleep.warn1": "AutoMod: Attacking while sleeping detected.",
+        "automod.attacksleep.kick1": "AutoMod: Kicked for repeatedly attacking while sleeping.",
+        "automod.attacksleep.tempban1": "AutoMod: Temporarily banned for excessively attacking while sleeping.",
+        "automod.instabreak.warn1": "AutoMod: Breaking blocks too quickly detected multiple times.",
+        "automod.instabreak.kick1": "AutoMod: Kicked for repeated instabreak violations.",
+        "automod.instabreak.tempban1": "AutoMod: Temporarily banned for excessive instabreak violations.",
+        "automod.chatmaxwords.warn1": "AutoMod: Please avoid sending messages with excessive words.",
+        "automod.chatmaxwords.mute1": "AutoMod: Muted for 5 minutes for sending messages with too many words.",
+        "automod.chatmaxwords.mute2": "AutoMod: Muted for 30 minutes for persistent overly long messages."
         // Add more messages here
     },
 
@@ -855,7 +887,11 @@ export const automodConfig = {
         "combat_multitarget_aura": true,
         "world_illegal_item_place": true,
         "movement_invalid_sprint": true,
-        "chat_spam_fast_message": true
+        "chat_spam_fast_message": true,
+        "combat_invalid_pitch": true,
+        "combat_attack_while_sleeping": true,
+        "world_instabreak_speed": true,
+        "chat_spam_max_words": true
         // Add more checkTypes here
     }
 };
