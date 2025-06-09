@@ -821,6 +821,26 @@ export const automodConfig = {
             { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.renderdistance.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 5, actionType: "KICK", parameters: { reasonKey: "automod.renderdistance.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.renderdistance.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_bow_charging": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackbow.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.attackbow.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackbow.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_shielding": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackshield.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.attackshield.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackshield.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "player_chat_during_combat": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatcombat.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatcombat.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatcombat.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "player_chat_during_item_use": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatitemuse.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatitemuse.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatitemuse.mute2", duration: "15m" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -897,7 +917,19 @@ export const automodConfig = {
         "automod.attackconsume.tempban1": "AutoMod: Temporarily banned for excessively attacking while consuming items.",
         "automod.renderdistance.warn1": "AutoMod: Invalid client render distance reported.",
         "automod.renderdistance.kick1": "AutoMod: Kicked for repeatedly reporting invalid render distance.",
-        "automod.renderdistance.tempban1": "AutoMod: Temporarily banned for persistently reporting invalid render distance."
+        "automod.renderdistance.tempban1": "AutoMod: Temporarily banned for persistently reporting invalid render distance.",
+        "automod.attackbow.warn1": "AutoMod: Attacking while charging a bow detected.",
+        "automod.attackbow.kick1": "AutoMod: Kicked for repeatedly attacking while charging a bow.",
+        "automod.attackbow.tempban1": "AutoMod: Temporarily banned for excessively attacking while charging a bow.",
+        "automod.attackshield.warn1": "AutoMod: Attacking while shielding detected.",
+        "automod.attackshield.kick1": "AutoMod: Kicked for repeatedly attacking while shielding.",
+        "automod.attackshield.tempban1": "AutoMod: Temporarily banned for excessively attacking while shielding.",
+        "automod.chatcombat.warn1": "AutoMod: Please avoid chatting during combat cooldown.",
+        "automod.chatcombat.mute1": "AutoMod: Muted for 5 minutes for chatting during combat cooldown.",
+        "automod.chatcombat.mute2": "AutoMod: Muted for 15 minutes for persistently chatting during combat cooldown.",
+        "automod.chatitemuse.warn1": "AutoMod: Please avoid chatting while using items.",
+        "automod.chatitemuse.mute1": "AutoMod: Muted for 5 minutes for chatting while using items.",
+        "automod.chatitemuse.mute2": "AutoMod: Muted for 15 minutes for persistently chatting while using items."
         // Add more messages here
     },
 
@@ -927,7 +959,11 @@ export const automodConfig = {
         "combat_viewsnap_pitch": true,
         "combat_viewsnap_yaw": true,
         "combat_attack_while_consuming": true,
-        "player_invalid_render_distance": true
+        "player_invalid_render_distance": true,
+        "combat_attack_while_bow_charging": true,
+        "combat_attack_while_shielding": true,
+        "player_chat_during_combat": true,
+        "player_chat_during_item_use": true
         // Add more checkTypes here
     }
 };
