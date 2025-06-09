@@ -801,6 +801,26 @@ export const automodConfig = {
             { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatmaxwords.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatmaxwords.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatmaxwords.mute2", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_viewsnap_pitch": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.viewsnap.pitch.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.viewsnap.pitch.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.viewsnap.pitch.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_viewsnap_yaw": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.viewsnap.yaw.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.viewsnap.yaw.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.viewsnap.yaw.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "combat_attack_while_consuming": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackconsume.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.attackconsume.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackconsume.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "player_invalid_render_distance": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.renderdistance.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 5, actionType: "KICK", parameters: { reasonKey: "automod.renderdistance.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.renderdistance.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -865,7 +885,19 @@ export const automodConfig = {
         "automod.instabreak.tempban1": "AutoMod: Temporarily banned for excessive instabreak violations.",
         "automod.chatmaxwords.warn1": "AutoMod: Please avoid sending messages with excessive words.",
         "automod.chatmaxwords.mute1": "AutoMod: Muted for 5 minutes for sending messages with too many words.",
-        "automod.chatmaxwords.mute2": "AutoMod: Muted for 30 minutes for persistent overly long messages."
+        "automod.chatmaxwords.mute2": "AutoMod: Muted for 30 minutes for persistent overly long messages.",
+        "automod.viewsnap.pitch.warn1": "AutoMod: Suspicious vertical camera movements detected.",
+        "automod.viewsnap.pitch.kick1": "AutoMod: Kicked for repeated suspicious vertical camera movements.",
+        "automod.viewsnap.pitch.tempban1": "AutoMod: Temporarily banned for excessive suspicious vertical camera movements.",
+        "automod.viewsnap.yaw.warn1": "AutoMod: Suspicious horizontal camera movements detected.",
+        "automod.viewsnap.yaw.kick1": "AutoMod: Kicked for repeated suspicious horizontal camera movements.",
+        "automod.viewsnap.yaw.tempban1": "AutoMod: Temporarily banned for excessive suspicious horizontal camera movements.",
+        "automod.attackconsume.warn1": "AutoMod: Attacking while consuming items detected.",
+        "automod.attackconsume.kick1": "AutoMod: Kicked for repeatedly attacking while consuming items.",
+        "automod.attackconsume.tempban1": "AutoMod: Temporarily banned for excessively attacking while consuming items.",
+        "automod.renderdistance.warn1": "AutoMod: Invalid client render distance reported.",
+        "automod.renderdistance.kick1": "AutoMod: Kicked for repeatedly reporting invalid render distance.",
+        "automod.renderdistance.tempban1": "AutoMod: Temporarily banned for persistently reporting invalid render distance."
         // Add more messages here
     },
 
@@ -891,7 +923,11 @@ export const automodConfig = {
         "combat_invalid_pitch": true,
         "combat_attack_while_sleeping": true,
         "world_instabreak_speed": true,
-        "chat_spam_max_words": true
+        "chat_spam_max_words": true,
+        "combat_viewsnap_pitch": true,
+        "combat_viewsnap_yaw": true,
+        "combat_attack_while_consuming": true,
+        "player_invalid_render_distance": true
         // Add more checkTypes here
     }
 };
