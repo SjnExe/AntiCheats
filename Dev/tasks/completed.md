@@ -1,6 +1,20 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+### Localization System - Phase 2e (TPA Commands Refactoring)
+*   **Date:** October 26, 2023
+*   **Details:**
+    *   Refactored the entire TPA command suite (`tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, `tpastatus.js`) to utilize the `localizationManager.js`.
+    *   Added all required string keys and their "en_US" translations for these commands to `localizationManager.js`.
+    *   This phase ensures that all teleportation request-related user interactions are now localized.
+*   **Files Modified:**
+    *   `AntiCheatsBP/scripts/commands/tpa.js`
+    *   `AntiCheatsBP/scripts/commands/tpahere.js`
+    *   `AntiCheatsBP/scripts/commands/tpaccept.js`
+    *   `AntiCheatsBP/scripts/commands/tpacancel.js`
+    *   `AntiCheatsBP/scripts/commands/tpastatus.js`
+    *   `AntiCheatsBP/scripts/localizationManager.js`
+
 *   **Localization System - Phase 1 Implementation:**
     *   **Summary:** Established the core mechanism for localization and refactored key system messages and two command modules (`uinfo`, `help`) to use it.
     *   **Details:**

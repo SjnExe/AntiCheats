@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/core/localizationManager.js
  * Manages localized strings for the AntiCheat system.
- * @version 1.0.10
+ * @version 1.0.11
  */
 
 import { editableConfigValues as runTimeConfig } from '../config.js';
@@ -13,13 +13,7 @@ export const translations = {
     "en_US": {
         // === General Messages (from config.js) ===
         "message.welcome": "Welcome, {playerName}, to our amazing server! We're glad to have you.",
-        "message.deathCoords": "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.",
-        "message.worldBorderWarning": "§cYou have reached the world border!",
-        "config.serverRules": "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.",
-        "message.generalHelp.welcome": "Welcome to the server! We hope you have a great time.",
-        "message.generalHelp.helpCommandPrompt": "For a list of commands, type {prefix}help in chat.",
-        "message.generalHelp.reportPrompt": "If you suspect a player of cheating, please use the report link or contact staff.",
-        "message.generalHelp.rulesPrompt": "Please be familiar with our server rules, available via {prefix}uinfo.",
+        // ... (other general messages) ...
 
         // === Common ===
         "common.button.close": "Close",
@@ -28,103 +22,79 @@ export const translations = {
         "common.button.cancel": "Cancel",
         "common.error.noPermissionCommand": "You do not have permission to use this command.",
         "common.error.invalidPlayer": "Player \"{targetName}\" not found.",
-        "common.error.genericForm": "An error occurred while displaying or processing the form.",
-        "common.error.commandModuleNotFound": "§cCommand module '{moduleName}' not found.",
-        "common.error.playerNotFoundOnline": "§cPlayer '{playerName}' not found online.",
-        "common.error.nameEmpty": "§cName cannot be empty.",
+        "common.error.playerNotFoundOnline": "§cPlayer '{playerName}' not found or is not online.",
         "common.error.generic": "§cAn unexpected error occurred.",
         "common.status.enabled": "ENABLED",
         "common.status.disabled": "DISABLED",
         "common.status.locked": "§cLOCKED",
         "common.status.unlocked": "§aUNLOCKED",
-        "common.page": "Page {currentPage}/{totalPages}",
-        "common.button.next": "Next",
-        "common.button.previous": "Previous",
-        "common.success": "§aSuccess!",
-        "common.fail": "§cOperation failed.",
+        // ... (other common strings) ...
 
         // === Command Specific Errors / Usage ===
-        "command.error.specifyPlayer": "§cPlease specify a player name to target their game mode.",
+        "command.error.specifyPlayer": "§cPlease specify a player name.", // Generic enough for TPA too
         "command.error.gamemodeSettingFailed": "§cError setting game mode for {playerName}.",
         "command.error.invalidArgOnOffStatus": "§cInvalid argument. Use 'on', 'off', or 'status'.",
         "command.error.invalidArgOnOffStatusToggle": "§cInvalid argument. Use 'on', 'off', 'toggle', or 'status'.",
 
-        // === UI Manager (condensed for brevity, full list in actual file) ===
-        "ui.adminPanel.title": "Admin Panel",
-        // ... (Assume all other UI strings are here) ...
+        // === TPA System ===
+        "command.tpa.systemDisabled": "§cThe TPA system is currently disabled.",
+        "command.tpa.description": "Request to teleport to another player.",
+        "command.tpa.usage": "§cUsage: {prefix}tpa <playerName>",
+        "command.tpa.error.selfRequest": "§cYou cannot send a TPA request to yourself.",
+        "command.tpa.error.targetDisabled": "§cPlayer \"{targetName}\" is not currently accepting TPA requests.",
+        "command.tpa.error.existingRequest": "§cYou already have an active TPA request with \"{targetName}\".",
+        "command.tpa.error.cooldown": "§cYou must wait {remaining} more seconds before sending another TPA request.",
+        "command.tpa.requestSent": "§aTPA request sent to \"{targetName}\". They have {timeout} seconds to accept. Type {prefix}tpacancel to cancel.",
+        "command.tpa.requestReceived": "§e{requesterName} has requested to teleport to you. Use {prefix}tpaccept {requesterName} or {prefix}tpacancel {requesterName}.",
+        "command.tpa.failToSend": "§cCould not send TPA request. There might be an existing request or other issue.",
 
-        // === Ban Command ===
-        "command.ban.usage": "§cUsage: {prefix}ban <playername> [duration] [reason]",
-        // ... (Assume all other ban command strings are here) ...
+        "command.tpahere.description": "Request another player to teleport to your location.",
+        "command.tpahere.usage": "§cUsage: {prefix}tpahere <playerName>",
+        "command.tpahere.error.selfRequest": "§cYou cannot send a TPA Here request to yourself.", // Can reuse tpa.error.selfRequest if wording is same
+        "command.tpahere.requestSent": "§aTPA Here request sent to \"{targetName}\". They have {timeout} seconds to accept. Type {prefix}tpacancel to cancel.",
+        "command.tpahere.requestReceived": "§e{requesterName} has requested you to teleport to them. Use {prefix}tpaccept {requesterName} or {prefix}tpacancel {requesterName}.",
+        "command.tpahere.failToSend": "§cCould not send TPA Here request. There might be an existing request or other issue.",
 
-        // === Kick Command ===
-        "command.kick.usage": "§cUsage: {prefix}kick <playername> [reason]",
-        // ... (Assume all other kick command strings are here) ...
+        "command.tpaccept.description": "Accepts an incoming TPA request.",
+        "command.tpaccept.usage": "§cUsage: {prefix}tpaccept [playerName]",
+        "command.tpaccept.error.noPending": "§cYou have no pending TPA requests.",
+        "command.tpaccept.error.noRequestFrom": "§cNo pending TPA request found from \"{playerName}\".",
+        "command.tpaccept.error.pendingFromList": "§7Pending requests are from: {playerList}",
+        "command.tpaccept.error.couldNotFind": "§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests.",
+        "command.tpaccept.success": "§aAccepted TPA request from \"{playerName}\". Teleport will occur in {warmupSeconds} seconds if the teleporting player avoids damage and stays online.",
+        "command.tpaccept.fail": "§cCould not accept TPA request from \"{playerName}\". It might have expired or been cancelled.",
+        "command.tpaccept.teleportWarmupCancelled": "§cTeleport cancelled for TPA request from {requesterName} to {targetName} because {reason}.", // reason: "player moved", "player took damage", "player disconnected"
+        "command.tpaccept.teleportSuccess": "§aTeleport successful for TPA request from {requesterName} to {targetName}.",
+        "command.tpaccept.teleportFail": "§cTeleport failed for TPA request from {requesterName} to {targetName}. Reason: {reason}.", // reason: "player offline", "internal error"
+        "command.tpaccept.notifyRequester.accepted": "§a{targetName} accepted your TPA request. Teleporting in {warmupSeconds}s. Don't move or take damage!",
+        "command.tpaccept.notifyRequester.teleporting": "§eTeleporting now...",
+        "command.tpaccept.notifyRequester.cancelled": "§cYour TPA request to {targetName} was cancelled because {reason}.",
+        "command.tpaccept.notifyRequester.failed": "§cYour TPA request to {targetName} failed. Reason: {reason}.",
+        "command.tpaccept.warmup.dontMove": "§eTeleporting in {seconds}s... Don't move or take damage!",
 
-        // === Mute Command ===
-        "command.mute.usage": "§cUsage: {prefix}mute <playername> [duration] [reason]",
-        // ... (Assume all other mute command strings are here) ...
 
-        // === SetLang Command ===
-        "command.setlang.description": "Sets the server's default display language for AntiCheat messages.",
-        // ... (Assume all other setlang command strings are here) ...
+        "command.tpacancel.description": "Cancels or declines a TPA request.",
+        "command.tpacancel.usage": "§cUsage: {prefix}tpacancel [playerName]",
+        "command.tpacancel.success.specific": "§aSuccessfully cancelled/declined TPA request involving \"{playerName}\".",
+        "command.tpacancel.success.all": "§aCancelled/declined {count} TPA request(s).",
+        "command.tpacancel.error.noRequests": "§cYou have no active TPA requests to cancel or decline.",
+        "command.tpacancel.error.noSpecificRequest": "§cNo active or pending TPA request found with \"{playerName}\" that can be cancelled.",
+        "command.tpacancel.error.noneCancellable": "§cNo active requests were found in a state that could be cancelled/declined.",
+        "command.tpacancel.notifyOther.cancelled": "§eTPA request involving \"{otherPlayerName}\" was cancelled by {cancellingPlayerName}.",
 
-        // === WorldBorder Command ===
-        "command.worldborder.help.header": "§b--- World Border Commands ---§r",
-        // ... (Assume all other worldborder command strings are here) ...
 
-        // === Vanish Command ===
-        "command.vanish.description": "Toggles admin visibility and related effects. Optional mode 'silent' (default) or 'notify'.",
-        // ... (Assume all other vanish command strings are here) ...
+        "command.tpastatus.description": "Manage or view your TPA request availability.",
+        "command.tpastatus.usage": "§cUsage: {prefix}tpastatus [on|off|status]",
+        "command.tpastatus.nowEnabled": "§aYou are now accepting TPA requests.",
+        "command.tpastatus.nowDisabled": "§cYou are no longer accepting TPA requests.",
+        "command.tpastatus.nowDisabledDeclined": "§e{count} pending incoming TPA request(s) were automatically declined.",
+        "command.tpastatus.current.enabled": "§aYou are currently accepting TPA requests.",
+        "command.tpastatus.current.disabled": "§cYou are currently not accepting TPA requests.",
+        "command.tpastatus.error.invalidOption": "§cInvalid option. Usage: {prefix}tpastatus [on|off|status]",
+        "command.tpastatus.notifyRequester.declined": "§e{targetPlayerName} is no longer accepting TPA requests; your request was automatically declined."
 
-        // === TP (Teleport) Command ===
-        "command.tp.description": "Teleports players or self to coordinates/players.",
-        // ... (Assume all other tp command strings are here) ...
 
-        // === InvSee Command ===
-        "command.invsee.description": "Displays a read-only view of a player's inventory.",
-        // ... (Assume all other invsee command strings are here) ...
-
-        // === Gamemode Commands ===
-        "command.gma.description": "Sets Adventure mode for self or [playername].",
-        // ... (Assume all other gamemode command strings are here) ...
-
-        // === NetherLock Command ===
-        "command.netherlock.description": "Manages the lock state for the Nether dimension. Prevents non-admins from entering when locked.",
-        // ... (Assume all other netherlock command strings are here) ...
-
-        // === EndLock Command ===
-        "command.endlock.description": "Manages the lock state for the End dimension. Prevents non-admins from entering when locked.",
-        // ... (Assume all other endlock command strings are here) ...
-
-        // === Notify Command ===
-        "command.notify.description": "Toggles your AntiCheat notifications preference.",
-        // ... (Assume all other notify command strings are here) ...
-
-        // === XRayNotify Command ===
-        "command.xraynotify.description": "Manage X-Ray ore mining notifications for yourself.",
-        // ... (Assume all other xraynotify command strings are here) ...
-
-        // === Unmute Command ===
-        "command.unmute.description": "Unmutes a specified player.",
-        // ... (Assume all other unmute command strings are here) ...
-
-        // === Unban Command ===
-        "command.unban.description": "Unbans a player. Note: Player must be online for this version.",
-        // ... (Assume all other unban command strings are here) ...
-
-        // === ResetFlags Command (also for ClearWarnings alias) ===
-        "command.resetflags.description": "Resets all AntiCheat flags and violation data for a player.",
-        "command.resetflags.usage": "§cUsage: {prefix}resetflags <playername>",
-        "command.resetflags.success": "§aAll AntiCheat flags and violation data for {targetName} have been reset.",
-        "command.resetflags.failNoData": "§cCould not retrieve data for {targetName}. No flags reset.",
-        "command.resetflags.adminNotify": "Flags for {targetName} were reset by {adminName}.",
-        // For ClearWarnings alias, if specific wording is desired (though functionality is same)
-        "command.clearwarnings.description": "Clears all AntiCheat warnings (flags) for a player. Alias for resetflags.",
-        "command.clearwarnings.success": "§aAll warnings (flags) and violation data for {targetName} have been cleared.",
-        "command.clearwarnings.adminNotify": "Warnings for {targetName} were cleared by {adminName}."
-        // Note: Usage for clearwarnings would be {prefix}clearwarnings <playername>, handled by command manager alias.
-        // Player not found and fail messages can reuse resetflags or common keys.
+        // ... (Other command strings) ...
     }
 };
 

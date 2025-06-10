@@ -1,100 +1,89 @@
 /**
  * @file Script for the !tpa command, allowing players to request teleportation to another player.
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 import { world, system } from '@minecraft/server';
-import * as config from '../config.js';
+import * as config from '../config.js'; // Assuming config still exports prefix and TPARequestTimeoutSeconds directly
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../../core/localizationManager.js'; // Import getString
 
 /**
- * @typedef {import('../types.js').CommandDefinition} CommandDefinition
- * @typedef {import('@minecraft/server').Player} Player
- */
-
-/**
- * @type {CommandDefinition}
+ * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpa',
-    description: 'Request to teleport to another player.',
+    description: getString("command.tpa.description"),
     aliases: [],
-    permissionLevel: permissionLevels.normal, // Accessible to everyone
+    permissionLevel: permissionLevels.normal,
     syntax: '!tpa <playerName>',
 };
 
 /**
  * Executes the !tpa command.
- * @param {Player} player The player issuing the command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    // playerUtils can be accessed from dependencies if needed for debugLog, etc.
-    // const { playerUtils } = dependencies;
+    const { playerUtils, config: fullConfig } = dependencies; // config from dependencies is editableConfigValues, fullConfig is the module
+    const prefix = fullConfig.prefix; // Use prefix from the main config module via dependencies
 
-    if (!config.enableTPASystem) {
-        player.sendMessage("§cThe TPA system is currently disabled.");
+    if (!fullConfig.enableTPASystem) { // Check against the main config module
+        player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}${definition.name} ${definition.syntax.split(' ')[1]}`); // More dynamic syntax usage
+        player.sendMessage(getString("command.tpa.usage", { prefix: prefix }));
         return;
     }
 
     const targetName = args[0];
-    const target = world.getAllPlayers().find(p => p.name === targetName); // Using .name for matching, as nameTag can change.
+    const target = world.getAllPlayers().find(p => p.name === targetName);
 
     if (!target) {
-        player.sendMessage(`§cPlayer "${targetName}" not found or is not online.`);
+        player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetName }));
         return;
     }
 
     if (target.name === player.name) {
-        player.sendMessage("§cYou cannot send a TPA request to yourself.");
+        player.sendMessage(getString("command.tpa.error.selfRequest"));
         return;
     }
 
-    // Check target's TPA status
     const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name);
     if (!targetTpaStatus.acceptsTpaRequests) {
-        player.sendMessage(`§cPlayer "${target.nameTag}" is not currently accepting TPA requests.`);
+        player.sendMessage(getString("command.tpa.error.targetDisabled", { targetName: target.nameTag }));
         return;
     }
 
-    // Check for existing request
     const existingRequest = tpaManager.findRequest(player.name, target.name);
     if (existingRequest) {
-         player.sendMessage(`§cYou already have an active TPA request with "${target.nameTag}".`);
+         player.sendMessage(getString("command.tpa.error.existingRequest", { targetName: target.nameTag }));
          return;
     }
 
     const requestResult = tpaManager.addRequest(player, target, 'tpa');
 
     if (requestResult && requestResult.error === 'cooldown') {
-        player.sendMessage(`§cYou must wait ${requestResult.remaining} more seconds before sending another TPA request.`);
+        player.sendMessage(getString("command.tpa.error.cooldown", { remaining: requestResult.remaining }));
         return;
     }
 
-    if (requestResult) { // Successfully created request object
-        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${config.prefix}tpacancel to cancel.`);
+    if (requestResult) {
+        player.sendMessage(getString("command.tpa.requestSent", { targetName: target.nameTag, timeout: fullConfig.TPARequestTimeoutSeconds, prefix: prefix }));
 
-        // Send action bar message to target player
-        // Using system.run to ensure it's executed in a separate tick, which can help with reliability of setActionBar.
         system.run(() => {
             try {
-                target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${config.prefix}tpaccept ${player.nameTag} or ${config.prefix}tpacancel ${player.nameTag}.`);
+                target.onScreenDisplay.setActionBar(getString("command.tpa.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
             } catch (e) {
-                // playerUtils?.debugLog could be used here if playerUtils is destructured from dependencies
-                console.warn(`[TPACommand] Failed to set action bar for target ${target.nameTag}: ${e}`);
+                playerUtils?.debugLog?.(`[TPACommand] Failed to set action bar for target ${target.nameTag}: ${e}`, player.nameTag);
             }
         });
 
     } else {
-        // This case might occur if addRequest implements more complex validation later (e.g., target has too many pending requests)
-        // or if requestResult was null from tpaManager.addRequest for other reasons.
-        player.sendMessage("§cCould not send TPA request. There might be an existing request or other issue.");
+        player.sendMessage(getString("command.tpa.failToSend"));
     }
 }
