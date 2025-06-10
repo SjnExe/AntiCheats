@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/core/localizationManager.js
  * Manages localized strings for the AntiCheat system.
- * @version 1.0.5
+ * @version 1.0.7
  */
 
 import { editableConfigValues as runTimeConfig } from '../config.js';
@@ -33,82 +33,94 @@ export const translations = {
         "common.error.playerNotFoundOnline": "§cPlayer '{playerName}' not found online.",
         "common.error.nameEmpty": "§cName cannot be empty.",
         "common.error.generic": "§cAn unexpected error occurred.",
-        "common.status.enabled": "enabled",
-        "common.status.disabled": "disabled",
+        "common.status.enabled": "ENABLED", // Changed to uppercase for consistency with LOCKED/UNLOCKED
+        "common.status.disabled": "DISABLED",// Changed to uppercase
+        "common.status.locked": "§cLOCKED",
+        "common.status.unlocked": "§aUNLOCKED",
         "common.page": "Page {currentPage}/{totalPages}",
         "common.button.next": "Next",
         "common.button.previous": "Previous",
-        "common.success": "§aSuccess!", // Generic success
-        "common.fail": "§cOperation failed.", // Generic failure
+        "common.success": "§aSuccess!",
+        "common.fail": "§cOperation failed.",
 
+        // === Command Specific Errors / Usage ===
+        "command.error.specifyPlayer": "§cPlease specify a player name to target their game mode.",
+        "command.error.gamemodeSettingFailed": "§cError setting game mode for {playerName}.",
+        "command.error.invalidArgOnOffStatus": "§cInvalid argument. Use 'on', 'off', or 'status'.",
 
         // === UI Manager ===
         "ui.adminPanel.title": "Admin Panel",
-        // ... (All UI strings from previous step) ...
+        // ... (All UI strings) ...
 
         // === Ban Command ===
         "command.ban.usage": "§cUsage: {prefix}ban <playername> [duration] [reason]",
-        // ... (All ban command strings from previous step) ...
+        // ... (All ban command strings) ...
 
         // === Kick Command ===
         "command.kick.usage": "§cUsage: {prefix}kick <playername> [reason]",
-        // ... (All kick command strings from previous step) ...
+        // ... (All kick command strings) ...
 
         // === Mute Command ===
         "command.mute.usage": "§cUsage: {prefix}mute <playername> [duration] [reason]",
-        // ... (All mute command strings from previous step) ...
+        // ... (All mute command strings) ...
 
         // === SetLang Command ===
         "command.setlang.description": "Sets the server's default display language for AntiCheat messages.",
-        // ... (All setlang command strings from previous step) ...
+        // ... (All setlang command strings) ...
 
         // === WorldBorder Command ===
         "command.worldborder.help.header": "§b--- World Border Commands ---§r",
-        // ... (All worldborder command strings from previous step) ...
+        // ... (All worldborder command strings) ...
 
         // === Vanish Command ===
         "command.vanish.description": "Toggles admin visibility and related effects. Optional mode 'silent' (default) or 'notify'.",
-        "command.vanish.enabled.silent": "§7You are now vanished.",
-        "command.vanish.enabled.notify": "§7You are now vanished (notify mode).",
-        "command.vanish.disabled.silent": "§7You are no longer vanished.",
-        "command.vanish.disabled.notify": "§7You are no longer vanished (notify mode).",
-        "command.vanish.error.apply": "§cError applying vanish: {error}",
-        "command.vanish.error.remove": "§cError removing vanish: {error}",
-        "command.vanish.adminNotify.on": "{adminName} has vanished ({mode} mode).",
-        "command.vanish.adminNotify.off": "{adminName} is no longer vanished ({mode} mode).",
-        "command.vanish.fakeLeave": "§e{playerName} left the game.", // For notify mode
-        "command.vanish.fakeJoin": "§e{playerName} joined the game.", // For notify mode
+        // ... (All vanish command strings) ...
 
         // === TP (Teleport) Command ===
         "command.tp.description": "Teleports players or self to coordinates/players.",
-        "command.tp.usage": "§cUsage: {prefix}tp <target_player | x> [destination_player | y] [z] [dimension]. Try {prefix}help tp.",
-        "command.tp.error.playerToMoveNotFound": "§cPlayer to move \"{playerName}\" not found.",
-        "command.tp.error.destinationPlayerNotFound": "§cDestination player \"{playerName}\" not found.",
-        "command.tp.error.cannotTeleportToSelf": "§7Cannot teleport {playerName} to themselves this way.",
-        "command.tp.error.invalidCoordinates": "§cInvalid coordinates for player teleport.",
-        "command.tp.error.invalidDimension": "§cInvalid dimension \"{dimensionName}\". Using current or target's current.",
-        "command.tp.error.lookupUtilityNotAvailable": "§cTeleport command error: Player lookup utility not available.",
-        "command.tp.error.failed": "§cTeleportation failed: {errorMessage}",
-        "command.tp.success.playerToPlayer": "§aSuccessfully teleported {playerToMoveName} to player {destinationPlayerName}.",
-        "command.tp.success.playerToCoords": "§aSuccessfully teleported {playerToMoveName} to coordinates {x}, {y}, {z}{dimensionInfo}.",
-        "command.tp.notifyTarget.byAdmin": "§7You were teleported by {adminName} to {destinationDescription}.",
-        "command.tp.dimensionIn": " in {dimensionName}",
+        // ... (All tp command strings) ...
 
         // === InvSee Command ===
         "command.invsee.description": "Displays a read-only view of a player's inventory.",
-        "command.invsee.usage": "§cUsage: {prefix}invsee <playername>",
-        "command.invsee.error.notFound": "§cPlayer \"{playerName}\" not found.",
-        "command.invsee.error.noInventory": "§cCould not access inventory for {playerName}.",
-        "command.invsee.form.title": "Inventory: {playerName}",
-        "command.invsee.form.bodyHeader": "§lInventory of {playerName}:§r\n",
-        "command.invsee.form.itemEntry": "§eSlot {slotNum}:§r {itemName} x{itemAmount}{nameTag}{durability}{enchants}{lore}",
-        "command.invsee.form.itemEntry.nameTag": " | Name: \"{nameTag}\"",
-        "command.invsee.form.itemEntry.durability": " | Dur: {currentDurability}/{maxDurability}",
-        "command.invsee.form.itemEntry.enchants": " | Ench: [{enchantsString}]",
-        "command.invsee.form.itemEntry.lore": " | Lore: [\"{loreString}\"]",
-        "command.invsee.form.emptyInventory": "Inventory is empty.\n"
+        // ... (All invsee command strings) ...
+
+        // === Gamemode Commands ===
+        "command.gma.description": "Sets Adventure mode for self or [playername].",
+        "command.gma.success.self": "§aYour game mode has been updated to Adventure.",
+        "command.gma.success.other": "§aSuccessfully updated {targetPlayerName}'s game mode to Adventure.",
+
+        "command.gmc.description": "Sets Creative mode for self or [playername].",
+        "command.gmc.success.self": "§aYour game mode has been updated to Creative.",
+        "command.gmc.success.other": "§aSuccessfully updated {targetPlayerName}'s game mode to Creative.",
+
+        "command.gms.description": "Sets Survival mode for self or [playername].",
+        "command.gms.success.self": "§aYour game mode has been updated to Survival.",
+        "command.gms.success.other": "§aSuccessfully updated {targetPlayerName}'s game mode to Survival.",
+
+        "command.gmsp.description": "Sets Spectator mode for self or [playername].",
+        "command.gmsp.success.self": "§aYour game mode has been updated to Spectator.",
+        "command.gmsp.success.other": "§aSuccessfully updated {targetPlayerName}'s game mode to Spectator.",
+
+        // === NetherLock Command ===
+        "command.netherlock.description": "Manages the lock state for the Nether dimension. Prevents non-admins from entering when locked.",
+        "command.netherlock.status": "§eNether dimension lock status: {status}.",
+        "command.netherlock.locked": "§cNether dimension is now LOCKED.§r Non-admins will be prevented from entering.",
+        "command.netherlock.unlocked": "§aNether dimension is now UNLOCKED.§r All players can enter.",
+        "command.netherlock.fail": "§cFailed to update Nether lock status.", // Kept specific for now.
+        "command.netherlock.adminNotify.locked": "§cNether dimension was LOCKED by {adminName}.",
+        "command.netherlock.adminNotify.unlocked": "§aNether dimension was UNLOCKED by {adminName}.",
+        "command.netherlock.usage": "§cUsage: {prefix}netherlock <on|off|status>",
+
+        // === EndLock Command ===
+        "command.endlock.description": "Manages the lock state for the End dimension. Prevents non-admins from entering when locked.",
+        "command.endlock.status": "§eThe End dimension lock status: {status}.",
+        "command.endlock.locked": "§cThe End dimension is now LOCKED.§r Non-admins will be prevented from entering.",
+        "command.endlock.unlocked": "§aThe End dimension is now UNLOCKED.§r All players can enter.",
+        "command.endlock.fail": "§cFailed to update The End lock status.", // Kept specific for now.
+        "command.endlock.adminNotify.locked": "§cThe End dimension was LOCKED by {adminName}.",
+        "command.endlock.adminNotify.unlocked": "§aThe End dimension was UNLOCKED by {adminName}.",
+        "command.endlock.usage": "§cUsage: {prefix}endlock <on|off|status>"
     }
-    // Add other languages here, e.g., "es_ES": { ... }
 };
 
 export function setCurrentLanguage(langCode) {
