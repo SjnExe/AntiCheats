@@ -1,23 +1,21 @@
 /**
  * @file AntiCheatsBP/scripts/core/localizationManager.js
  * Manages localized strings for the AntiCheat system.
- * @version 1.0.2
+ * @version 1.0.4
  */
 
 import { editableConfigValues as runTimeConfig } from '../config.js';
 
 const DEFAULT_LANGUAGE = "en_US";
-// Initialize currentLanguage with the value from config, falling back to DEFAULT_LANGUAGE
 let currentLanguage = runTimeConfig.defaultServerLanguage || DEFAULT_LANGUAGE;
 
-// Export translations so setlang can check for valid language codes
 export const translations = {
     "en_US": {
         // === General Messages (from config.js) ===
         "message.welcome": "Welcome, {playerName}, to our amazing server! We're glad to have you.",
         "message.deathCoords": "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.",
         "message.worldBorderWarning": "§cYou have reached the world border!",
-        "config.serverRules": "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.", // Newlines escaped for storage
+        "config.serverRules": "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.",
         "message.generalHelp.welcome": "Welcome to the server! We hope you have a great time.",
         "message.generalHelp.helpCommandPrompt": "For a list of commands, type {prefix}help in chat.",
         "message.generalHelp.reportPrompt": "If you suspect a player of cheating, please use the report link or contact staff.",
@@ -25,109 +23,220 @@ export const translations = {
 
         // === Common ===
         "common.button.close": "Close",
+        "common.button.back": "Back",
+        "common.button.confirm": "Confirm",
+        "common.button.cancel": "Cancel",
         "common.error.noPermissionCommand": "You do not have permission to use this command.",
         "common.error.invalidPlayer": "Player \"{targetName}\" not found.",
+        "common.error.genericForm": "An error occurred while displaying or processing the form.",
+        "common.error.commandModuleNotFound": "§cCommand module '{moduleName}' not found.",
+        "common.error.playerNotFoundOnline": "§cPlayer '{playerName}' not found online.",
+        "common.error.nameEmpty": "§cName cannot be empty.",
 
-        // === uinfo Command ===
-        "uinfo.myStats.title": "My Anti-Cheat Stats",
-        "uinfo.myStats.header": "§e--- Your Anti-Cheat Stats ---",
-        "uinfo.myStats.totalFlags": "§fTotal Flags: §c{totalFlags}",
-        "uinfo.myStats.lastFlagType": "§fLast Flag Type: §7{lastFlagType}",
-        "uinfo.myStats.breakdownHeader": "§eBreakdown by Type:",
-        "uinfo.myStats.flagEntry": "  §f- {flagKey}: §c{count} §7(Last: {lastDetectionTime})",
-        "uinfo.myStats.noFlags": "§aYou have no active flags!",
-        "uinfo.myStats.noSpecificFlags": "§7Your current flags: §eTotal={totalFlags}§7. Last type: §e{lastFlagType}§r\n§7(No specific flag type details available with counts > 0).",
-        "uinfo.myStats.noData": "§aNo flag data found for you, or you have no flags.",
-        "uinfo.serverRules.title": "Server Rules",
-        "uinfo.serverRules.noRulesConfigured": "No server rules configured.",
-        "uinfo.helpLinks.title": "Helpful Links",
-        "uinfo.helpLinks.header": "§e--- Helpful Links ---",
-        "uinfo.helpLinks.discord": "§fDiscord: §7{discordLink}",
-        "uinfo.helpLinks.website": "§fWebsite: §7{websiteLink}",
-        "uinfo.helpLinks.otherLinksHeader": "\n§e--- Other Links ---",
-        "uinfo.helpLinks.linkEntry": "§f{title}: §7{url}",
-        "uinfo.helpLinks.noLinksConfigured": "No helpful links are currently configured.",
-        "uinfo.generalTips.title": "General Tips",
-        "uinfo.generalTips.noTipsConfigured": "No general tips configured.",
-        "uinfo.mainPanel.title": "Your Info & Server Help",
-        "uinfo.mainPanel.body": "Welcome, {playerName}! Select an option:",
-        "uinfo.mainPanel.button.myStats": "My Anti-Cheat Stats",
-        "uinfo.mainPanel.button.serverRules": "Server Rules",
-        "uinfo.mainPanel.button.helpLinks": "Helpful Links",
-        "uinfo.mainPanel.button.generalTips": "General Tips",
+        // === UI Manager ===
+        "ui.adminPanel.title": "Admin Panel",
+        "ui.adminPanel.body": "Welcome, {playerName}. Select an action:",
+        "ui.adminPanel.button.viewPlayers": "View Online Players",
+        "ui.adminPanel.button.inspectPlayerText": "Inspect Player (Text)",
+        "ui.adminPanel.button.resetFlagsText": "Reset Flags (Text)",
+        "ui.adminPanel.button.listWatched": "List Watched Players",
+        "ui.adminPanel.button.serverManagement": "Server Management",
+        "ui.adminPanel.button.editConfig": "Edit Configuration",
+        "ui.adminPanel.error.noAccess": "§7Please use the `!uinfo` command to access player-specific information and other features.",
+        "ui.adminPanel.error.generic": "§cAn error occurred displaying the admin panel.",
+        "ui.adminPanel.error.invalidSelection": "§cInvalid selection or panel closed.",
 
-        // === help Command (selected strings) ===
-        "help.error.noCommand": "§cPlease enter a command after the prefix. Type {prefix}help for a list of commands.",
-        "help.error.unknownCommand": "§cUnknown command: {prefix}{commandName}§r. Type {prefix}help for assistance.",
-        "help.specific.header": "§a--- Help for: {prefix}{commandName} ---",
-        "help.specific.syntax": "§eSyntax: {prefix}{commandName} {syntaxArgs}",
-        "help.specific.description": "§7Description: {description}",
-        "help.specific.permission": "§bPermission Level Required: {permLevelName} (Value: {permissionLevel})",
-        "help.specific.notFoundOrNoPermission": "§cCommand '{commandName}' not found or you do not have permission to view its help. Try {prefix}help for a list of your commands.",
-        "help.list.header": "§aAvailable commands (for your permission level):",
-        "help.list.category.general": "--- General Player Commands ---",
-        "help.list.noCommandsAvailable": "§7No commands available at your current permission level.",
-        "help.descriptionOverride.panel": "Opens the Info/Admin Panel (content varies by permission).",
+        "ui.normalPanel.title": "Info Panel",
+        "ui.normalPanel.body": "Welcome, {playerName}. View your info or server help.",
+        "ui.normalPanel.button.myStats": "My Stats (via !uinfo)",
+        "ui.normalPanel.button.serverRules": "Server Rules (via !uinfo)",
+        "ui.normalPanel.button.helpLinks": "Helpful Links & Tips (via !uinfo)",
+        "ui.normalPanel.info.useUinfo": "§7Please use the `!uinfo` command and select '{option}'.",
 
-        // === eventHandlers.js (selected strings) ===
-        "ban.kickMessage": "You are banned from this server.\nReason: {reason}\n{durationMessage}",
-        "ban.duration.permanent": "This ban is permanent.",
-        "ban.duration.expires": "Expires: {expiryDate}",
-        "ban.kickMessage.detailsError": "Reason: System detected an active ban, but details could not be fully retrieved. Please contact an admin.",
-        "ban.kickMessage.discord": "Discord: {discordLink}",
-        "admin.notify.bannedPlayerJoin": "Banned player {playerName} tried to join. Banned by: {bannedBy}, Reason: {reason}",
-        "admin.notify.newPlayerJoined": "§eNew player {playerName} has joined the server for the first time!",
-        "message.combatLogAdminNotify": "§cCombat Log: {playerName} disconnected {timeSinceCombat}s after combat. Flagged +{incrementAmount}.",
-        "dimensionLock.teleportMessage": "Access to {lockedDimensionName} is currently restricted by an administrator.",
-        "chat.error.muted": "You are currently muted and cannot send messages.",
-        "chat.error.combatCooldown": "§cYou cannot chat for {seconds} seconds after combat.",
-        "chat.error.itemUse": "§cYou cannot chat while {itemUseState}.",
 
-        // === Ban Command ===
-        "command.ban.usage": "§cUsage: {prefix}ban <playername> [duration] [reason]",
-        "command.ban.notFoundOffline": "§cPlayer \"{targetName}\" not found online. Offline banning by name is not yet supported by this command version.",
-        "command.ban.self": "§cYou cannot ban yourself.",
-        "command.ban.permissionInsufficient": "§cYou do not have sufficient permission to ban this player.",
-        "command.ban.ownerByNonOwner": "§cOwners cannot be banned by non-owners.",
-        "command.ban.ownerByOwner": "§cOne Owner cannot ban another Owner directly through this command.",
-        "command.ban.invalidDuration": "§cInvalid duration format. Use formats like 7d, 2h, 5m, or perm. Default is perm if unspecified.",
-        "command.ban.success": "§aSuccessfully banned {targetName}. Duration: {durationString}. Reason: {reason}",
-        "command.ban.fail": "§cFailed to ban {targetName}. They might already be banned or an error occurred.",
-        "command.ban.kickMessagePrefix": "§cYou have been banned from this server.",
-        "command.ban.kickMessageReason": "§rReason: {reason}",
-        "command.ban.kickMessageBannedBy": "§cBanned by: {bannedBy}",
-        "command.ban.kickMessagePermanent": "§cThis ban is permanent.",
-        "command.ban.kickMessageExpires": "§cExpires: {expiryDate}",
-        "command.ban.adminNotification": "Player {targetName} was banned by {bannedBy}. Duration: {durationString}. Reason: {reason}",
+        "ui.onlinePlayers.title": "Online Players ({playerCount})",
+        "ui.onlinePlayers.body": "Select a player to view actions or information.",
+        "ui.onlinePlayers.button.playerEntry": "{playerName} (Flags: {flagCount})",
+        "ui.onlinePlayers.noPlayers": "No players currently online.",
+        "ui.onlinePlayers.error.selectedPlayerNotFound": "§cSelected player not found (may have logged off).",
+        "ui.onlinePlayers.error.generic": "§cAn error occurred displaying the player list.",
+        "ui.button.backToAdminPanel": "Back to Admin Panel", // Used in multiple forms
 
-        // === Kick Command ===
-        "command.kick.usage": "§cUsage: {prefix}kick <playername> [reason]",
-        "command.kick.self": "§cYou cannot kick yourself.",
-        "command.kick.targetNotification": "Kicked by: {adminName}\nReason: {reason}\n§eCheck server rules with {prefix}rules",
-        "command.kick.success": "§aPlayer {targetName} has been kicked. Reason: {reason}",
-        "command.kick.error": "§cError kicking player {targetName}: {error}",
-        "command.kick.notFound": "§cPlayer \"{targetName}\" not found.",
-        "command.kick.adminNotification": "Player {targetName} was kicked by {adminName}. Reason: {reason}",
+        "ui.playerActions.title": "Actions for {targetPlayerName}",
+        "ui.playerActions.body": "Player Flags: {flagCount}. Watched: {isWatched}.",
+        "ui.playerActions.button.viewFlags": "View Detailed Info/Flags",
+        "ui.playerActions.button.viewInventory": "View Inventory (InvSee)",
+        "ui.playerActions.button.teleportTo": "Teleport to Player",
+        "ui.playerActions.button.teleportHere": "Teleport Player Here",
+        "ui.playerActions.button.kick": "Kick Player",
+        "ui.playerActions.button.freeze": "Freeze Player",
+        "ui.playerActions.button.unfreeze": "Unfreeze Player",
+        "ui.playerActions.button.mute": "Mute Player",
+        "ui.playerActions.button.unmute": "Unmute Player",
+        "ui.playerActions.button.unmutePermanent": "Unmute Player (Permanent)",
+        "ui.playerActions.button.unmuteTimed": "Unmute Player (exp. {time})",
+        "ui.playerActions.button.ban": "Ban Player",
+        "ui.playerActions.button.resetFlags": "Reset Player Flags",
+        "ui.playerActions.button.clearInventory": "Clear Inventory",
+        "ui.playerActions.button.viewSystemInfo": "View System Info",
+        "ui.playerActions.button.backToList": "Back to Player List",
+        "ui.playerActions.kick.title": "Kick {targetPlayerName}",
+        "ui.playerActions.kick.reasonPrompt": "Kick Reason:",
+        "ui.playerActions.kick.reasonPlaceholder": "Enter reason",
+        "ui.playerActions.kick.cancelled": "§7Kick action cancelled.",
+        "ui.playerActions.mute.title": "Mute {targetPlayerName}",
+        "ui.playerActions.mute.durationPrompt": "Duration (e.g., 5m, 1h, perm):",
+        "ui.playerActions.mute.durationPlaceholder": "5m",
+        "ui.playerActions.mute.reasonPrompt": "Reason:",
+        "ui.playerActions.mute.reasonPlaceholder": "Enter reason",
+        "ui.playerActions.mute.cancelled": "§7Mute action cancelled.",
+        "ui.playerActions.ban.title": "Ban {targetPlayerName}",
+        "ui.playerActions.ban.durationPrompt": "Duration (e.g., 1d, 2w, perm):",
+        "ui.playerActions.ban.durationPlaceholder": "1d",
+        "ui.playerActions.ban.reasonPrompt": "Reason:",
+        "ui.playerActions.ban.reasonPlaceholder": "Enter reason",
+        "ui.playerActions.ban.cancelled": "§7Ban action cancelled.",
+        "ui.playerActions.clearInventory.confirmTitle": "Confirm Clear Inventory",
+        "ui.playerActions.clearInventory.confirmBody": "Are you sure you want to clear {targetPlayerName}'s main inventory? This action cannot be undone.",
+        "ui.playerActions.clearInventory.confirmToggle": "Yes, clear main inventory.",
+        "ui.playerActions.clearInventory.cancelled": "§7Clear Inventory action cancelled.",
+        "ui.playerActions.clearInventory.success": "§aSuccessfully cleared {targetPlayerName}'s inventory.",
+        "ui.playerActions.clearInventory.fail": "§cCould not access {targetPlayerName}'s inventory component.",
+        "ui.playerActions.teleport.toPlayerSuccess": "§aSuccessfully teleported to {targetPlayerName}.",
+        "ui.playerActions.teleport.playerToAdminSuccess": "§aSuccessfully teleported {targetPlayerName} to your location.",
+        "ui.playerActions.teleport.playerToAdminNotifyTarget": "§7You have been teleported by an admin.",
+        "ui.playerActions.teleport.error": "§cError teleporting: {errorMessage}",
+        "ui.playerActions.error.generic": "§cAn error occurred while displaying player actions.",
 
-        // === Mute Command ===
-        "command.mute.usage": "§cUsage: {prefix}mute <playername> [duration] [reason]",
-        "command.mute.notFound": "§cPlayer \"{targetName}\" not found.",
-        "command.mute.self": "§cYou cannot mute yourself.",
-        "command.mute.permissionInsufficient": "§cYou do not have sufficient permissions to mute this player.",
-        "command.mute.invalidDuration": "§cInvalid duration format. Use formats like 5m, 2h, 1d, or perm. Default is {defaultDuration} if unspecified.",
-        "command.mute.targetNotification.timed": "§cYou have been muted for {durationString}. Reason: {reason}",
-        "command.mute.targetNotification.permanent": "§cYou have been muted permanently (this session/until unmuted). Reason: {reason}",
-        "command.mute.success": "§aPlayer {targetName} has been muted {durationText}. Reason: {reason}",
-        "command.mute.fail": "§cFailed to apply mute for {targetName}. They might already be muted with a longer or permanent duration, or an error occurred.",
-        "command.mute.error": "§cAn unexpected error occurred while trying to mute {targetName}: {error}",
-        "command.mute.adminNotification": "Player {targetName} was muted {durationText} by {mutedBy}. Reason: {reason}",
+        "ui.inspectPlayerForm.title": "Inspect Player Data (Text)",
+        "ui.inspectPlayerForm.textField.label": "Enter Player Name:",
+        "ui.inspectPlayerForm.textField.placeholder": "TargetPlayerName",
 
-        // === SetLang Command ===
-        "command.setlang.description": "Sets the server's default display language for AntiCheat messages.",
-        "command.setlang.success": "§aServer language successfully set to {langCode}.",
-        "command.setlang.fail": "§cFailed to set server language. Check console for details.",
-        "command.setlang.invalidCode": "§cError: Invalid or unsupported language code '{langCode}'. No changes made.",
-        "command.setlang.usage": "§cUsage: {prefix}setlang <language_code (e.g., en_US)>"
+        "ui.resetFlagsForm.title": "Reset Player Flags (Text Entry)",
+        "ui.resetFlagsForm.textField.label": "Enter Player Name to Reset Flags:",
+        "ui.resetFlagsForm.textField.placeholder": "TargetPlayerName",
+        "ui.resetFlagsForm.toggle.label": "Confirm Reset (Cannot be undone!)",
+        "ui.resetFlagsForm.cancelled": "§7Flag reset cancelled.",
+        "ui.resetFlagsForm.error.nameEmpty": "§cPlayer name cannot be empty.",
+        "ui.resetFlagsForm.error.generic": "§cAn error occurred during the reset flags process.",
+
+        "ui.watchedPlayers.title": "Watched Players",
+        "ui.watchedPlayers.header": "§e--- Watched Players ---",
+        "ui.watchedPlayers.playerEntry": "§f- {playerName}",
+        "ui.watchedPlayers.noPlayers": "§7No players are currently being watched.",
+        "ui.watchedPlayers.button.ok": "OK",
+
+        "ui.detailedFlags.title": "Detailed Flags for {targetPlayerName}",
+        "ui.detailedFlags.flagEntry": "Flag Type: {flagType}, Count: {count}, Last: {timestamp}",
+        "ui.detailedFlags.noFlags": "No flags recorded for this player.",
+
+        "ui.serverManagement.title": "Server Management",
+        "ui.serverManagement.body": "Select an administrative action:",
+        "ui.serverManagement.button.systemInfo": "View System Info",
+        "ui.serverManagement.button.actionLogs": "View General Action Logs",
+        "ui.serverManagement.button.modLogs": "View Moderation Logs",
+        "ui.serverManagement.button.clearChat": "Clear Chat for All Players",
+        "ui.serverManagement.button.lagClear": "Lag Clear (Ground Items)",
+        "ui.serverManagement.button.editConfig": "Edit Configuration", // Same as ui.adminPanel.button.editConfig
+        "ui.serverManagement.button.backToAdminPanel": "Back to Main Admin Panel", // Same as ui.button.backToAdminPanel
+        "ui.serverManagement.clearChat.confirmTitle": "Confirm Clear Chat",
+        "ui.serverManagement.clearChat.confirmBody": "Are you sure you want to clear global chat for all players?",
+        "ui.serverManagement.clearChat.confirmToggle": "Yes, clear global chat.",
+        "ui.serverManagement.clearChat.cancelled": "§7Clear chat action cancelled.",
+        "ui.serverManagement.clearChat.success": "§aGlobal chat has been cleared.",
+        "ui.serverManagement.lagClear.confirmTitle": "Confirm Lag Clear",
+        "ui.serverManagement.lagClear.confirmBody": "Are you sure you want to remove ALL dropped item entities from the server (Overworld, Nether, End)? This action cannot be undone.",
+        "ui.serverManagement.lagClear.confirmToggle": "Yes, remove all dropped items.",
+        "ui.serverManagement.lagClear.cancelled": "§7Lag clear action cancelled.",
+        "ui.serverManagement.lagClear.success": "§aRemoved {count} dropped item entities from the server.",
+        "ui.serverManagement.lagClear.fail": "§cFailed to execute lag clear: {error}",
+        "ui.serverManagement.error.generic": "§cAn error occurred displaying server management options.",
+        "ui.serverManagement.error.invalidSelection": "§cInvalid selection from server management.",
+
+
+        "ui.systemInfo.title": "System Information",
+        "ui.systemInfo.bodyNotImplemented": "System information display is not yet fully implemented.\nMore details will be available in a future update.",
+        "ui.systemInfo.entry.acVersion": "AC Version: {version}",
+        "ui.systemInfo.entry.mcVersion": "MC Version: {version}",
+        "ui.systemInfo.entry.serverTime": "Server Time: {time}",
+        "ui.systemInfo.entry.onlinePlayers": "Online Players: {onlineCount}/{maxCount}",
+        "ui.systemInfo.entry.totalPlayerData": "Total Player Data Entries: {count}",
+        "ui.systemInfo.entry.watchedPlayers": "Watched Players: {count}",
+        "ui.systemInfo.entry.mutedSession": "Muted (Session): {count}",
+        "ui.systemInfo.entry.mutedPersistent": "Muted (Persistent): {count}",
+        "ui.systemInfo.entry.bannedPersistent": "Banned (Persistent): {count}",
+        "ui.systemInfo.entry.activeWorldBorders": "Active World Borders: {count}",
+        "ui.systemInfo.entry.logManagerEntries": "LogManager Entries: {count}",
+        "ui.systemInfo.entry.reportManagerEntries": "ReportManager Entries: {count}",
+        "ui.systemInfo.button.backToServerMgmt": "Back to Server Management",
+
+        "ui.actionLogs.title": "Action Logs (All - Latest)",
+        "ui.actionLogs.noLogs": "No action logs found.",
+        "ui.actionLogs.bodyHeader": "", // Can be empty if logs start immediately
+        "ui.actionLogs.logEntry": "§7[{timestamp}] §e{adminNameOrPlayer}§r {actionType} §b{targetNameOrEmpty}§r{duration}{reason}{details}",
+        "ui.actionLogs.logEntry.durationPrefix": " (§7Dur: ",
+        "ui.actionLogs.logEntry.reasonPrefix": " (§7Reason: ",
+        "ui.actionLogs.logEntry.detailsPrefix": " (§7Details: ",
+        "ui.actionLogs.logEntry.suffix": "§r)",
+        "ui.actionLogs.footer.showingLatest": "\n§o(Displaying latest {count} logs. Older logs may exist.)§r",
+        "ui.actionLogs.body.empty": "No logs to display.",
+        "ui.actionLogs.button.backToServerMgmt": "Back to Server Management",
+
+        "ui.modLogSelect.title": "Select Moderation Log Type",
+        "ui.modLogSelect.body.all": "View all moderation logs or filter by player.",
+        "ui.modLogSelect.body.filtered": "View logs filtered by: §e{filterName}§r",
+        "ui.modLogSelect.button.banUnban": "View Ban/Unban Logs",
+        "ui.modLogSelect.button.muteUnmute": "View Mute/Unmute Logs",
+        "ui.modLogSelect.button.filterByName": "Filter by Player Name",
+        "ui.modLogSelect.button.clearFilter": "Clear Filter ({filterName})",
+        "ui.modLogSelect.button.backToServerMgmt": "Back to Server Management",
+        "ui.modLogSelect.filterModal.title": "Filter Logs by Player Name",
+        "ui.modLogSelect.filterModal.textField.label": "Enter Player Name (leave blank for no filter):",
+        "ui.modLogSelect.filterModal.textField.placeholder": "PlayerName",
+        "ui.modLogSelect.filterModal.filterCleared": "§aPlayer name filter cleared.",
+        "ui.modLogSelect.filterModal.filterSet": "§aLog filter set to: {filterName}",
+        "ui.modLogSelect.filterModal.filterBlank": "§7Filter input was blank. No filter applied.",
+        "ui.modLogSelect.error.generic": "§cError displaying log type selection.",
+
+        "ui.logViewer.title.banUnban": "Ban/Unban Logs",
+        "ui.logViewer.title.muteUnmute": "Mute/Unmute Logs",
+        "ui.logViewer.title.filtered": "{logTypeName} for \"{filterName}\"",
+        "ui.logViewer.noLogs": "No matching logs found with current filters.",
+        "ui.logViewer.button.backToLogSelect": "Back to Log Type Selection",
+
+        "ui.configEditor.title": "Configuration Editor",
+        "ui.configEditor.body": "Select a configuration key to edit:",
+        "ui.configEditor.button.format": "{key} ({type}): {value}",
+        "ui.configEditor.button.formatTruncated": "{key} ({type}): {value}...",
+        "ui.configEditor.button.objectPlaceholder": "{Object}",
+        "ui.configEditor.button.backToAdminPanel": "Back to Admin Panel", // Re-use from onlinePlayers
+        "ui.configEditor.error.ownerOnly": "§cPermission denied. This feature is owner-only.",
+        "ui.configEditor.error.nonArrayObject": "§cEditing for non-array objects ('{keyName}') is not supported via this UI.",
+        "ui.configEditor.error.invalidSelection": "§cInvalid selection from config edit form.",
+        "ui.configEditor.error.generic": "§cAn error occurred displaying the configuration editor.",
+
+        "ui.configEditor.valueInput.title": "Edit: {keyName}",
+        "ui.configEditor.valueInput.boolean.label": "{keyName}", // Toggle label
+        "ui.configEditor.valueInput.string.label": "{keyName}",
+        "ui.configEditor.valueInput.string.placeholder": "Enter new string value",
+        "ui.configEditor.valueInput.number.label": "{keyName}",
+        "ui.configEditor.valueInput.number.placeholder": "Enter new number value",
+        "ui.configEditor.valueInput.array.label": "{keyName}",
+        "ui.configEditor.valueInput.array.placeholder": "Enter new array (JSON format, e.g., [\"val1\",\"val2\"])",
+        "ui.configEditor.valueInput.error.typeUnknown": "§cUnknown configuration type '{type}' for key '{keyName}'.",
+        "ui.configEditor.valueInput.error.updateFailed": "§cFailed to update {keyName}. Reason: {failureReason}",
+        "ui.configEditor.valueInput.error.updateFailedInternal": "§cFailed to update {keyName}. The new value might be invalid or of the wrong type.",
+        "ui.configEditor.valueInput.error.jsonFormat": "Invalid JSON format: {errorMessage}",
+        "ui.configEditor.valueInput.error.notAnArray": "Invalid input: Not a valid JSON array.",
+        "ui.configEditor.valueInput.error.notANumber": "Invalid input: Not a number.",
+        "ui.configEditor.valueInput.success": "§aSuccessfully updated {keyName} to: {newValue}",
+        "ui.configEditor.valueInput.noChange": "§7Value for {keyName} remains unchanged.",
+        "ui.configEditor.valueInput.error.generic": "§cAn error occurred while editing {keyName}.",
+
+        // Panel Command
+        "command.panel.error.uiManagerUnavailable": "§cUI Manager or its main panel function is not available. Please contact an administrator."
+
+        // ... (other en_US strings from previous steps)
     }
     // Add other languages here, e.g., "es_ES": { ... }
 };
@@ -137,26 +246,18 @@ export function setCurrentLanguage(langCode) {
         currentLanguage = langCode;
         console.log(`[LocalizationManager] Runtime language set to: ${langCode}`);
     } else {
-        // Don't fallback here, let the calling function (like setlang command) handle invalid codes.
-        // If called internally and langCode is from config, it might be an issue.
         console.warn(`[LocalizationManager] Attempted to set runtime language to '${langCode}', which is not loaded. Current language remains '${currentLanguage}'.`);
     }
 }
 
-// Initialize language on load
 setCurrentLanguage(runTimeConfig.defaultServerLanguage || DEFAULT_LANGUAGE);
 
 export function getString(key, args) {
     let langToUse = currentLanguage;
-
-    // Check if currentLanguage (from config or setCurrentLanguage) is valid and has the key
     if (!translations[langToUse] || typeof translations[langToUse][key] !== 'string') {
-        // If not, try DEFAULT_LANGUAGE if it's different
         if (langToUse !== DEFAULT_LANGUAGE && translations[DEFAULT_LANGUAGE] && typeof translations[DEFAULT_LANGUAGE][key] === 'string') {
-            // console.warn(`[LocalizationManager] String key "${key}" not found for language "${currentLanguage}". Using fallback "${DEFAULT_LANGUAGE}".`);
             langToUse = DEFAULT_LANGUAGE;
         } else {
-            // If still not found, log a warning and return the key itself
             console.warn(`[LocalizationManager] String key "${key}" not found for language "${currentLanguage}" or fallback "${DEFAULT_LANGUAGE}". Returning key.`);
             return key;
         }
@@ -165,12 +266,12 @@ export function getString(key, args) {
     let str = translations[langToUse][key];
 
     if (args) {
-        if (Array.isArray(args)) { // For ordered placeholders like {0}, {1}
+        if (Array.isArray(args)) {
             for (let i = 0; i < args.length; i++) {
                 const regex = new RegExp(`\\{\${i}\\}`, "g");
                 str = str.replace(regex, String(args[i]));
             }
-        } else if (typeof args === 'object' && args !== null) { // For named placeholders like {playerName}
+        } else if (typeof args === 'object' && args !== null) {
             for (const placeholderKey in args) {
                 if (Object.prototype.hasOwnProperty.call(args, placeholderKey)) {
                     const regex = new RegExp(`\\{\${placeholderKey}\\}`, "g");
@@ -181,7 +282,3 @@ export function getString(key, args) {
     }
     return str;
 }
-
-// Call once at startup to ensure currentLanguage is set from config.
-// This is now handled by the direct initialization of currentLanguage and the setCurrentLanguage call below it.
-// console.log(`[LocalizationManager] Initial language set to: ${currentLanguage}`);
