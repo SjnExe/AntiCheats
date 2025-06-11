@@ -1,6 +1,31 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Issue Resolution & Task File Cleanup (User Request):**
+    *   **Summary:** Based on user feedback, the main issue ("Review everything, then check Dev/tasks for ongoing list and todo list, remove completed tasks from them(including unnecessary heading or something like that), after that complete unfinished tasks in them") is considered completed. Performed final cleanup of task files `Dev/tasks/ongoing.md` and `Dev/tasks/todo.md`.
+    *   **Details:**
+        *   The "Localization Implementation" task (code-side work) was moved from `ongoing.md` to `completed.md` with a full summary.
+        *   The "AutoMod System Review" task in `ongoing.md` was updated to note that active AI development is paused pending further feedback.
+        *   `todo.md` was reviewed and confirmed to be in an appropriate state.
+    *   **Files Affected:** `Dev/tasks/ongoing.md`, `Dev/tasks/todo.md`, `Dev/tasks/completed.md`.
+
+*   **Localization System Implementation (Code Base Completion):**
+    *   **Summary:** Completed a multi-phase effort to externalize user-facing strings from the majority of the addon's JavaScript codebase, making it ready for future translation. This involved creating a central `i18n.js` manager, refactoring all command modules, UI components (`uiManager.js`, `panel.js`), key configuration strings (`config.js`), core system messages (`eventHandlers.js`, other managers), and `checkActionProfiles` templates.
+    *   **Phases & Key Changes:**
+        *   **Phase 1 (Core Setup):** Established `AntiCheatsBP/scripts/core/i18n.js` (initially `localizationManager.js`) with `getString()` and initial "en_US" strings for `config.js`, `uinfo.js`, `help.js`, and `eventHandlers.js`.
+        *   **Phase 2a (Commands & Language Switch):** Localized `ban.js`, `kick.js`, `mute.js`. Implemented `!setlang` command and `defaultServerLanguage` config.
+        *   **Phase 2b (UI & Worldborder):** Localized `worldborder.js`, `panel.js`, and all of `uiManager.js`.
+        *   **Phase 2c (Key Admin Commands):** Localized `vanish.js`, `tp.js`, `invsee.js`.
+        *   **Phase 2d (Admin Utility Commands):** Localized gamemode, dimension lock, notification toggle, punishment reversal, and flag clearing commands.
+        *   **Phase 2e (TPA Command Suite):** Localized all TPA-related commands.
+        *   **Phase 2f (Further Utility Commands):** Localized `rules.js`, `version.js`, `copyinv.js`, `myflags.js`.
+        *   **Phase 2g (Inspect & Testnotify):** Localized `inspect.js` and `testnotify.js`.
+        *   **Phase 2h (Check Files & Core Managers):** Localized descriptive strings in `violationDetails` from check files and direct notifications from core managers.
+        *   **Phase 2i (`checkActionProfiles` & Final Review):** Localized `flag.reason` and `notifyAdmins.message` templates in `config.js`'s `checkActionProfiles`. Conducted a final review of key files.
+        *   **File Rename:** Renamed `localizationManager.js` to `i18n.js` and updated all imports.
+    *   **Purpose:** To enable multi-language support by centralizing string management. Next steps involve adding actual translation files for other languages.
+    *   **Primary Files Affected:** All `.js` files in `commands/`, most files in `core/` (especially `i18n.js`, `uiManager.js`, `eventHandlers.js`), `config.js`, and many files in `checks/`.
+
 *   **Localization System - Command Modules Pass Completion (`clearchat`, `warnings`):**
     *   **Summary:** Completed the localization of the remaining minor command modules, `clearchat.js` and `warnings.js`. This marks the end of the primary localization pass for all command scripts.
     *   **Details:**
