@@ -460,7 +460,7 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
 
     // Adjust how notifyAdmins gets its string detail if detailsForNotify is an object
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null)
-                         ? (detailsForNotify.originalDetailsForNotify || \`Item: \${detailsForNotify.itemTypeId}\`)
+                         ? (detailsForNotify.originalDetailsForNotify || ("Item: " + String(detailsForNotify.itemTypeId)))
                          : detailsForNotify;
     const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
 
