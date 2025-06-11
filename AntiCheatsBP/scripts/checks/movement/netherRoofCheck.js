@@ -1,9 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/checks/movement/netherRoofCheck.js
  * Checks if a player is on the Nether roof.
- * @version 1.0.0
+ * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
+import { getString } from '../../../core/i18n.js';
 
 /**
  * Checks if a player is on top of the Nether roof.
@@ -19,29 +20,37 @@ export function checkNetherRoof(player, pData, dependencies) {
         return;
     }
 
-    // It's more robust to use the actual dimension ID string directly.
-    // For direct comparison without a utility:
     if (player.dimension.id !== "minecraft:nether") {
          return;
     }
 
     if (player.location.y >= config.netherRoofYLevelThreshold) {
         if (playerDataManager && playerDataManager.addFlag) {
+            const detectedYValue = player.location.y.toFixed(2);
+            const thresholdValue = config.netherRoofYLevelThreshold;
             const detailsForNotify = {
-                detectedY: player.location.y.toFixed(2),
-                threshold: config.netherRoofYLevelThreshold,
-                originalDetailsForNotify: \`Player on Nether roof at Y: \${player.location.y.toFixed(2)} (Threshold: \${config.netherRoofYLevelThreshold})\`
+                detectedY: detectedYValue,
+                threshold: thresholdValue,
+                // This 'originalDetailsForNotify' is more for the internal flag reason in playerDataManager,
+                // the user-facing notification message comes from checkActionProfiles.
+                // However, if any part of this *were* to be directly shown, it should be built from localized parts.
+                // For now, it's an internal detail string. If it needs localization, the structure would change.
+                // If this `detailsForNotify.originalDetailsForNotify` IS used in a user-facing message template
+                // then it MUST be localized. Assuming it's for internal logging / details for admins for now.
+                // For true localization, the profile message would use {detectedY} and {threshold}.
+                originalDetailsForNotify: getString("check.netherRoof.details.onRoof", {
+                    detectedY: detectedYValue,
+                    threshold: thresholdValue.toString()
+                })
             };
             playerDataManager.addFlag(
                 player,
-                "movement_nether_roof", // checkType
-                "Player detected on Nether roof.", // Generic reason for flag, AutoMod will use its own for kick.
+                "movement_nether_roof",
+                "Player detected on Nether roof.", // This specific reason is for internal flagging, not typically directly shown to users.
+                                                  // User-facing messages come from action profiles.
                 detailsForNotify
             );
-            // The debugLog for addFlag in playerDataManager will show this.
-            // No need for an additional debugLog here unless more specific context from the check is needed.
         } else {
-            // Fallback or error if playerDataManager.addFlag is not available
             if (playerUtils && playerUtils.debugLog) {
                 playerUtils.debugLog(\`NetherRoofCheck: playerDataManager.addFlag not available for player \${player.nameTag}\`, player.nameTag);
             }

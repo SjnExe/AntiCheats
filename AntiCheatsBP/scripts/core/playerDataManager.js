@@ -8,6 +8,7 @@
 import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 import { processAutoModActions } from './automodManager.js';
+import { getString } from './i18n.js';
 // import * as config from '../config.js'; // Dependencies will pass config.editableConfigValues
 // import * as automodConfig from '../automodConfig.js'; // This was incorrect
 
@@ -508,7 +509,7 @@ export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoM
         return false;
     }
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
-    const muteReason = reason || "Muted by system.";
+    const muteReason = reason || getString("playerData.mute.defaultReason");
     pData.muteInfo = {
         unmuteTime,
         reason: muteReason,
@@ -604,7 +605,7 @@ export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoM
     }
     const currentTime = Date.now();
     const unbanTime = (durationMs === Infinity) ? Infinity : currentTime + durationMs;
-    const banReason = reason || "Banned by system.";
+    const banReason = reason || getString("playerData.ban.defaultReason");
     pData.banInfo = {
         xuid: player.id,
         playerName: player.nameTag,

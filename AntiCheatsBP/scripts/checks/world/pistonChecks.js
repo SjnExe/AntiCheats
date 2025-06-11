@@ -1,7 +1,9 @@
 /**
  * @file AntiCheatsBP/scripts/checks/world/pistonChecks.js
  * Piston related checks, primarily for detecting potential lag machines.
+ * @version 1.0.1
  */
+import { getString } from '../../../core/i18n.js';
 
 // Global map to store piston activation data.
 // Key: string like "x,y,z,dimensionId"
@@ -55,18 +57,21 @@ export async function checkPistonLag(pistonBlock, dimensionId, config, playerUti
                 dimensionId: dimensionName,
                 rate: activationRate.toFixed(1),
                 duration: config.pistonActivationSustainedDurationSeconds,
-                detailsString: `Piston at ${location.x},${location.y},${location.z} in ${dimensionName} activated ${activationRate.toFixed(1)} times/sec over ${config.pistonActivationSustainedDurationSeconds}s.`
+                detailsString: getString("check.pistonLag.details.activationRate", {
+                    x: location.x,
+                    y: location.y,
+                    z: location.z,
+                    dimensionName: dimensionName,
+                    rate: activationRate.toFixed(1),
+                    duration: config.pistonActivationSustainedDurationSeconds
+                })
             };
 
-            // Assuming actionManager is passed correctly within dependencies if needed by executeCheckAction's profile
-            // If executeCheckAction is a direct function: await actionManager(profileName, player, details, fullDependencies)
-            // If actionManager is an object with executeCheckAction method: await actionManager.executeCheckAction(...)
             if (dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
                  await dependencies.actionManager.executeCheckAction("world_antigrief_piston_lag", null, violationDetails, dependencies);
-            } else if (typeof actionManager === 'function') { // Fallback if actionManager itself is executeCheckAction
+            } else if (typeof actionManager === 'function') {
                  await actionManager("world_antigrief_piston_lag", null, violationDetails, dependencies);
             }
-
 
             playerUtils.debugLog(`PistonLag: Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, null);
         }
@@ -74,10 +79,8 @@ export async function checkPistonLag(pistonBlock, dimensionId, config, playerUti
 
     pistonActivityData.set(pistonKey, data);
 
-    // Simple pruning mechanism: if map gets too large, clear entries not active for a long time
-    // This is a basic example; a more robust solution might involve a separate cleanup interval.
-    if (pistonActivityData.size > 1000) { // Example threshold
-        const cleanupTime = currentTime - (config.pistonLagLogCooldownSeconds * 1000 * 5); // 5 times the cooldown
+    if (pistonActivityData.size > 1000) {
+        const cleanupTime = currentTime - (config.pistonLagLogCooldownSeconds * 1000 * 5);
         for (const [key, value] of pistonActivityData.entries()) {
             if (value.lastLogTime < cleanupTime && (!value.activations.length || value.activations[value.activations.length -1] < cleanupTime) ) {
                 pistonActivityData.delete(key);

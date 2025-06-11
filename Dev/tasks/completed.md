@@ -1,6 +1,15 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Localization System - Phase 2h (Check Files & Core Manager Notifications):**
+    *   **Summary:** Extended localization to strings originating from individual check files (within `violationDetails`) and core manager modules.
+    *   **Details:**
+        *   **Check Files:** Reviewed all files in `AntiCheatsBP/scripts/checks/`. Identified and localized descriptive strings that were part of `violationDetails` objects in checks like `invalidSprintCheck`, `inventoryModCheck`, `flatRotationBuilding`, `nameSpoofCheck`, etc. Most checks primarily pass raw data, which is preferred.
+        *   **Core Managers:** Reviewed `playerDataManager.js`, `automodManager.js`, and `tpaManager.js`. Localized default reasons, fallback messages, and direct notifications not covered by other localization efforts (e.g., TPA expiry messages, AutoMod admin notification templates). `logManager.js` and `reportManager.js` were confirmed to not require direct localization.
+        *   **`i18n.js`:** Updated with all new keys and their English translations.
+    *   **Purpose:** To ensure that detailed messages and internal system notifications that might be user-facing are also localizable.
+    *   **Files Affected:** Multiple files within `AntiCheatsBP/scripts/checks/`, `AntiCheatsBP/scripts/core/playerDataManager.js`, `AntiCheatsBP/scripts/core/automodManager.js`, `AntiCheatsBP/scripts/core/tpaManager.js`, and `AntiCheatsBP/scripts/core/i18n.js`.
+
 *   **Refactor: Renamed Localization Manager to i18n.js:**
     *   **Summary:** Renamed the central localization manager file for brevity and to follow a common convention (i18n for internationalization).
     *   **Details:** The file `AntiCheatsBP/scripts/core/localizationManager.js` was renamed to `AntiCheatsBP/scripts/core/i18n.js`. All import statements across the codebase that previously referenced `localizationManager.js` were updated to point to the new `i18n.js` filename.

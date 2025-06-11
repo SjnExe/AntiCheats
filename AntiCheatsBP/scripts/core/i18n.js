@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/core/i18n.js
  * Manages localized strings for the AntiCheat system.
- * @version 1.0.11
+ * @version 1.0.12
  */
 
 import { editableConfigValues as runTimeConfig } from '../config.js';
@@ -13,7 +13,9 @@ export const translations = {
     "en_US": {
         // === General Messages (from config.js) ===
         "message.welcome": "Welcome, {playerName}, to our amazing server! We're glad to have you.",
-        // ... (other general messages) ...
+        "message.deathCoords": "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.",
+        "message.combatLogAdminNotify": "§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}",
+
 
         // === Common ===
         "common.button.close": "Close",
@@ -24,24 +26,29 @@ export const translations = {
         "common.error.invalidPlayer": "Player \"{targetName}\" not found.",
         "common.error.playerNotFoundOnline": "§cPlayer '{playerName}' not found or is not online.",
         "common.error.generic": "§cAn unexpected error occurred.",
+        "common.error.genericForm": "An error occurred while displaying this form.",
+        "common.error.commandModuleNotFound": "§cError: Command module '{moduleName}' not found or failed to load.",
+        "common.error.nameEmpty": "§cName cannot be empty.",
         "common.status.enabled": "ENABLED",
         "common.status.disabled": "DISABLED",
         "common.status.locked": "§cLOCKED",
         "common.status.unlocked": "§aUNLOCKED",
         "common.boolean.yes": "Yes",
         "common.boolean.no": "No",
-        "common.value.none": "None", // Replaces command.myflags.value.none
-        "common.value.notApplicable": "N/A", // Replaces command.myflags.value.notApplicable
+        "common.value.none": "None",
+        "common.value.notApplicable": "N/A",
         "common.value.permanent": "Permanent",
-        // ... (other common strings) ...
+        "common.value.unknown": "Unknown",
+        "common.value.noReasonProvided": "No reason provided.",
+
 
         // === Command Specific Errors / Usage ===
-        "command.error.specifyPlayer": "§cPlease specify a player name.", // Generic enough for TPA too
+        "command.error.specifyPlayer": "§cPlease specify a player name.",
         "command.error.gamemodeSettingFailed": "§cError setting game mode for {playerName}.",
         "command.error.invalidArgOnOffStatus": "§cInvalid argument. Use 'on', 'off', or 'status'.",
         "command.error.invalidArgOnOffStatusToggle": "§cInvalid argument. Use 'on', 'off', 'toggle', or 'status'.",
 
-        // === TPA System ===
+        // === TPA System (Commands) ===
         "command.tpa.systemDisabled": "§cThe TPA system is currently disabled.",
         "command.tpa.description": "Request to teleport to another player.",
         "command.tpa.usage": "§cUsage: {prefix}tpa <playerName>",
@@ -55,7 +62,7 @@ export const translations = {
 
         "command.tpahere.description": "Request another player to teleport to your location.",
         "command.tpahere.usage": "§cUsage: {prefix}tpahere <playerName>",
-        "command.tpahere.error.selfRequest": "§cYou cannot send a TPA Here request to yourself.", // Can reuse tpa.error.selfRequest if wording is same
+        "command.tpahere.error.selfRequest": "§cYou cannot send a TPA Here request to yourself.",
         "command.tpahere.requestSent": "§aTPA Here request sent to \"{targetName}\". They have {timeout} seconds to accept. Type {prefix}tpacancel to cancel.",
         "command.tpahere.requestReceived": "§e{requesterName} has requested you to teleport to them. Use {prefix}tpaccept {requesterName} or {prefix}tpacancel {requesterName}.",
         "command.tpahere.failToSend": "§cCould not send TPA Here request. There might be an existing request or other issue.",
@@ -68,15 +75,14 @@ export const translations = {
         "command.tpaccept.error.couldNotFind": "§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests.",
         "command.tpaccept.success": "§aAccepted TPA request from \"{playerName}\". Teleport will occur in {warmupSeconds} seconds if the teleporting player avoids damage and stays online.",
         "command.tpaccept.fail": "§cCould not accept TPA request from \"{playerName}\". It might have expired or been cancelled.",
-        "command.tpaccept.teleportWarmupCancelled": "§cTeleport cancelled for TPA request from {requesterName} to {targetName} because {reason}.", // reason: "player moved", "player took damage", "player disconnected"
+        "command.tpaccept.teleportWarmupCancelled": "§cTeleport cancelled for TPA request from {requesterName} to {targetName} because {reason}.",
         "command.tpaccept.teleportSuccess": "§aTeleport successful for TPA request from {requesterName} to {targetName}.",
-        "command.tpaccept.teleportFail": "§cTeleport failed for TPA request from {requesterName} to {targetName}. Reason: {reason}.", // reason: "player offline", "internal error"
+        "command.tpaccept.teleportFail": "§cTeleport failed for TPA request from {requesterName} to {targetName}. Reason: {reason}.",
         "command.tpaccept.notifyRequester.accepted": "§a{targetName} accepted your TPA request. Teleporting in {warmupSeconds}s. Don't move or take damage!",
         "command.tpaccept.notifyRequester.teleporting": "§eTeleporting now...",
         "command.tpaccept.notifyRequester.cancelled": "§cYour TPA request to {targetName} was cancelled because {reason}.",
         "command.tpaccept.notifyRequester.failed": "§cYour TPA request to {targetName} failed. Reason: {reason}.",
         "command.tpaccept.warmup.dontMove": "§eTeleporting in {seconds}s... Don't move or take damage!",
-
 
         "command.tpacancel.description": "Cancels or declines a TPA request.",
         "command.tpacancel.usage": "§cUsage: {prefix}tpacancel [playerName]",
@@ -86,7 +92,6 @@ export const translations = {
         "command.tpacancel.error.noSpecificRequest": "§cNo active or pending TPA request found with \"{playerName}\" that can be cancelled.",
         "command.tpacancel.error.noneCancellable": "§cNo active requests were found in a state that could be cancelled/declined.",
         "command.tpacancel.notifyOther.cancelled": "§eTPA request involving \"{otherPlayerName}\" was cancelled by {cancellingPlayerName}.",
-
 
         "command.tpastatus.description": "Manage or view your TPA request availability.",
         "command.tpastatus.usage": "§cUsage: {prefix}tpastatus [on|off|status]",
@@ -101,7 +106,7 @@ export const translations = {
         // === Help Command ===
         "help.specific.header": "§l§b--- Help: {prefix}{commandName} ---",
         "help.specific.syntax": "§eSyntax:§r {prefix}{commandName} {syntaxArgs}",
-        "help.specific.description": "§bDescription:§r {description}", // Template for description
+        "help.specific.description": "§bDescription:§r {description}",
         "help.specific.permission": "§7Permission: {permLevelName} (Level {permissionLevel})",
         "help.specific.notFoundOrNoPermission": "§cCommand \"{commandName}\" not found or you do not have permission to view its details. Type {prefix}help for a list of available commands.",
         "help.error.unknownCommand": "§cUnknown command: \"{commandName}\". Type {prefix}help for a list of available commands.",
@@ -119,7 +124,6 @@ export const translations = {
         "command.rules.description": "Displays the server rules.",
         "command.rules.ui.title": "Server Rules",
         "command.rules.noRulesConfigured": "No server rules are currently configured. Please check back later!",
-        // Note: Button text for rules can use common.button.close
 
         // === Version Command ===
         "command.version.description": "Displays addon version.",
@@ -129,7 +133,6 @@ export const translations = {
         "command.copyinv.description": "Copies another player's inventory to your own.",
         "command.copyinv.error.playerLookupUnavailable": "§cCommand error: Player lookup utility not available.",
         "command.copyinv.usage": "§cUsage: {prefix}copyinv <playername>",
-        // "command.copyinv.error.targetNotFound": "§cPlayer \"{targetPlayerName}\" not found." // Covered by common.error.invalidPlayer
         "command.copyinv.error.selfCopy": "§cYou cannot copy your own inventory.",
         "command.copyinv.error.inventoryAccess": "§cCould not access inventories.",
         "command.copyinv.confirm.title": "Confirm Inventory Copy",
@@ -139,7 +142,6 @@ export const translations = {
         "command.copyinv.success": "§aCopied {targetPlayerName}'s inventory ({itemCount} items/stacks). Your inventory overwritten.",
         "command.copyinv.log": "Copied {itemCount} items.",
         "command.copyinv.notifyAdmins": "{adminName} copied {targetPlayerName}'s inventory.",
-        // "command.copyinv.error.generic": "§cError copying inventory: {error}" // Covered by common.error.generic if not passing specific error string
 
         // === MyFlags Command ===
         "command.myflags.description": "Shows your own current flag status.",
@@ -148,8 +150,6 @@ export const translations = {
         "command.myflags.noFlags": "§7You have no active flags.",
         "command.myflags.noSpecificFlags": "§7Your current flags: §eTotal={totalFlags}§7. Last type: §e{lastFlagType}§r\n§7(No specific flag type details available with counts > 0).",
         "command.myflags.noData": "§7No flag data found for you, or you have no flags.",
-        // "command.myflags.value.none": "None", // Moved to common.value.none
-        // "command.myflags.value.notApplicable": "N/A", // Moved to common.value.notApplicable
 
         // === Inspect Command ===
         "command.inspect.description": "Inspects a player's AntiCheat data summary.",
@@ -173,18 +173,86 @@ export const translations = {
         "command.testnotify.description": "Sends a test notification to all online admins.",
         "command.testnotify.success": "§aTest notification sent to online admins/owners.",
         "command.testnotify.adminNotification.message": "§6This is a test notification from {playerName} via the AntiCheat system.",
-        "command.testnotify.error.unavailable": "§cError: Notification utility not available."
+        "command.testnotify.error.unavailable": "§cError: Notification utility not available.",
 
-        // ... (Other command strings) ...
+        // === Check Violation Details ===
+        "check.invalidSprint.condition.blindness": "Blindness",
+        "check.invalidSprint.condition.sneaking": "Sneaking",
+        "check.invalidSprint.condition.riding": "Riding Entity",
+        "check.inventoryMod.details.switchAndUseSameTick": "Item used in the same tick as hotbar slot change",
+        "check.inventoryMod.details.movedWhileLocked": "Inventory item moved/changed (slot {slotNum}) while {action}",
+        "check.inventoryMod.action.usingConsumable": "using consumable",
+        "check.inventoryMod.action.chargingBow": "charging bow",
+        "check.flatRotation.reason.staticPitchYaw": "Static Pitch & Yaw",
+        "check.flatRotation.reason.staticPitch": "Static Pitch",
+        "check.flatRotation.reason.staticYaw": "Static Yaw",
+        "check.flatRotation.reason.flatHorizontal": "Flat Horizontal Pitch Range",
+        "check.flatRotation.reason.flatDownward": "Flat Downward Pitch Range",
+        "check.nameSpoof.reason.lengthExceeded": "NameTag length limit exceeded ({currentLength}/{maxLength})",
+        "check.nameSpoof.reason.disallowedChars": "NameTag contains disallowed character(s) (e.g., '{char}')",
+        "check.nameSpoof.reason.rapidChange": "NameTag changed too rapidly (within {interval} ticks, min is {minInterval}t)",
+        "check.pistonLag.details.activationRate": "Piston at {x},{y},{z} in {dimensionName} activated {rate} times/sec over {duration}s.",
+        "check.clientInfo.renderDistance.details": "Reported: {reportedDistance}, Max: {maxAllowed}",
+        "check.netherRoof.details.onRoof": "Player on Nether roof at Y: {detectedY} (Threshold: {threshold})",
+        "check.noSlow.action.eatingDrinking": "Eating/Drinking",
+        "check.noSlow.action.chargingBow": "Charging Bow",
+        "check.noSlow.action.usingShield": "Using Shield",
+        "check.noSlow.action.sneaking": "Sneaking",
+
+        // === PlayerDataManager ===
+        "playerData.ban.kickHeader": "§cYou are banned from this server.",
+        "playerData.ban.kickBannedBy": "§fBanned by: §e{adminName}",
+        "playerData.ban.kickReason": "§fReason: §e{reason}",
+        "playerData.ban.kickExpires": "§fExpires: §e{expiryDate}",
+        "playerData.ban.kickDiscord": "§fDiscord: §b{discordLink}",
+        "playerData.mute.defaultReason": "Muted by system.",
+        "playerData.ban.defaultReason": "Banned by system.",
+
+        // === AutoModManager ===
+        "automod.action.warnDefaultReason": "You have received an automated warning.",
+        "automod.action.kickDefaultReason": "Kicked by AutoMod due to rule violation.",
+        "automod.action.tempbanDefaultReason": "Temporarily banned by AutoMod for rule violations.",
+        "automod.action.permbanDefaultReason": "Permanently banned by AutoMod for severe rule violations.",
+        "automod.action.muteDefaultReason": "Muted by AutoMod.",
+        "automod.action.freezeDefaultReason": "Player frozen by AutoMod due to rule violation.",
+        "automod.kickMessage.tempban.header": "You are temporarily banned by AutoMod.",
+        "automod.kickMessage.common.reason": "Reason: {reason}",
+        "automod.kickMessage.common.duration": "Duration: {duration}",
+        "automod.adminNotify.actionReport": "{basePrefix} Action: {actionType} on {playerName} for {checkType}. Reason: {reason}{details}",
+        "automod.adminNotify.basePrefix": "§7[§cAutoMod§7]",
+        "automod.adminNotify.details.duration": ". Duration: {duration}",
+        "automod.adminNotify.details.item": ". Item: {item}",
+        "automod.default.itemRemoved": "AutoMod removed {quantity}x {itemTypeId} from your inventory.", // For REMOVE_ILLEGAL_ITEM default
+
+        // === TpaManager (Internal System Messages, some might be shown to player if commands don't override) ===
+        "tpa.manager.error.targetOfflineOnAccept": "§c{offlinePlayerName} is no longer online. TPA request cancelled.",
+        "tpa.manager.warmupMessage": "§eTeleporting in {warmupSeconds} seconds. Do not move or take damage.",
+        "tpa.manager.requester.accepted": "§aYour TPA request to \"{targetPlayerName}\" has been accepted. {warmupMessage}",
+        "tpa.manager.target.acceptedByRequester": "§a\"{requesterPlayerName}\" accepted your TPA request. {warmupMessage}", // Used for tpahere context
+        "tpa.manager.target.acceptedFromRequester": "§aYou accepted the TPA request from \"{requesterPlayerName}\". They will teleport in {warmupSeconds}s.", // Used for tpa context
+        "tpa.manager.requester.acceptedHere": "§a\"{targetPlayerName}\" accepted your TPA Here request. They will teleport in {warmupSeconds}s.", // Used for tpahere context
+        "tpa.manager.error.teleportTargetOffline": "§cTeleport cancelled: {offlinePlayerName} logged off.",
+        "tpa.manager.teleport.successToTarget": "§aTeleported successfully to {targetPlayerName}.",
+        "tpa.manager.teleport.successTargetNotified": "§a{requesterPlayerName} has teleported to you.",
+        "tpa.manager.teleport.successToRequester": "§aTeleported successfully to {requesterPlayerName}.", // For tpahere where target teleports to requester
+        "tpa.manager.teleport.successRequesterNotified": "§a{targetPlayerName} has teleported to you.", // For tpahere where target teleports to requester
+        "tpa.manager.error.teleportGenericErrorToRequester": "§cAn error occurred during teleportation. Please try again.",
+        "tpa.manager.error.teleportGenericErrorToTarget": "§cAn error occurred during a TPA teleportation involving {otherPlayerName}.",
+        "tpa.manager.decline.requesterNotified": "§c\"{targetPlayerName}\" declined your TPA request.",
+        "tpa.manager.decline.targetNotified": "§cYou declined the TPA request from \"{requesterPlayerName}\".",
+        "tpa.manager.decline.otherCancelledRequester": "§cTPA request involving \"{targetPlayerName}\" was cancelled.",
+        "tpa.manager.decline.otherCancelledTarget": "§cTPA request involving \"{requesterPlayerName}\" was cancelled.",
+        "tpa.manager.expired.requesterNotified": "§cYour TPA request to \"{targetName}\" has expired.",
+        "tpa.manager.expired.targetNotified": "§cThe TPA request from \"{requesterName}\" has expired."
     }
 };
 
 export function setCurrentLanguage(langCode) {
     if (translations[langCode]) {
         currentLanguage = langCode;
-        console.log(`[LocalizationManager] Runtime language set to: ${langCode}`);
+        console.log(`[i18n] Runtime language set to: ${langCode}`);
     } else {
-        console.warn(`[LocalizationManager] Attempted to set runtime language to '${langCode}', which is not loaded. Current language remains '${currentLanguage}'.`);
+        console.warn(`[i18n] Attempted to set runtime language to '${langCode}', which is not loaded. Current language remains '${currentLanguage}'.`);
     }
 }
 
@@ -196,7 +264,7 @@ export function getString(key, args) {
         if (langToUse !== DEFAULT_LANGUAGE && translations[DEFAULT_LANGUAGE] && typeof translations[DEFAULT_LANGUAGE][key] === 'string') {
             langToUse = DEFAULT_LANGUAGE;
         } else {
-            console.warn(`[LocalizationManager] String key "${key}" not found for language "${currentLanguage}" or fallback "${DEFAULT_LANGUAGE}". Returning key.`);
+            console.warn(`[i18n] String key "${key}" not found for language "${currentLanguage}" or fallback "${DEFAULT_LANGUAGE}". Returning key.`);
             return key;
         }
     }
