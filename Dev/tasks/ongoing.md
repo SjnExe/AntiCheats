@@ -22,7 +22,7 @@ This list tracks features and tasks that are currently under development.
     *   **Next Steps:** Refine existing AutoMod rules and thresholds based on live testing and feedback. Consider any other minor enhancements from `Dev/notes/AutoModReview_Findings.md` if applicable.
     *   *(Original description: Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.)*
 
-*   **Localization Implementation:** (Phases 1, 2a, 2b, 2c, 2d, 2e, 2f, 2g & 2h Complete; Further Phases Pending)
+*   **Localization Implementation:** (Code Localization Largely Complete; Translations Pending)
     *   **Objective:** To make the addon's user-facing strings localizable to support multiple languages.
     *   **Completed Phase 1 (Core Setup & Key Modules):**
         *   Created `AntiCheatsBP/scripts/core/i18n.js` with a `getString(key, args)` function and a `translations` object.
@@ -58,7 +58,10 @@ This list tracks features and tasks that are currently under development.
         *   Reviewed all check files (`AntiCheatsBP/scripts/checks/**/*.js`). Localized user-facing descriptive strings found within `violationDetails` objects in several checks (e.g., `invalidSprintCheck`, `inventoryModCheck`, `flatRotationBuilding`, `nameSpoofCheck`, `pistonChecks`, `clientInfoChecks`, `netherRoofCheck`, `noSlowCheck`).
         *   Reviewed core manager files (`playerDataManager.js`, `automodManager.js`, `tpaManager.js`). Localized direct user/admin notifications and default/fallback messages. `logManager.js` and `reportManager.js` required no direct string changes.
         *   Updated `i18n.js` with all new keys and English translations.
-    *   **Next Steps (Phase 2i+):**
-        *   Final review of all modules for any missed strings (e.g., `systeminfo.js` if found/needed, or any other commands/core files).
-        *   Review and localize any user-facing strings in `checkActionProfiles` templates within `config.js`.
-        *   Add translation files/entries for other languages (e.g., "es_ES", "de_DE").
+    *   **Completed Phase 2i (checkActionProfiles Localization & Final Review - Current Session):**
+        *   Localized all `flag.reason` and `notifyAdmins.message` template strings within `checkActionProfiles` in `config.js`, adding corresponding keys to `i18n.js`.
+        *   Performed a final review of key UI-related files (`eventHandlers.js`, `uiManager.js`, `help.js`, `panel.js`, `worldborder.js`) and localized a few remaining missed strings.
+    *   **Next Steps:**
+        *   Add translation files/entries for other languages (e.g., "es_ES", "de_DE") to `i18n.js` or separate language files.
+        *   (Consider if any strings in check file `violationDetails` still need to be keys if they are complex phrases - though most were found to be data.)
+        *   (Ongoing: Localize any new features as they are developed.)

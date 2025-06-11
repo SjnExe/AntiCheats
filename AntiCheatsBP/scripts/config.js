@@ -1184,11 +1184,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected Fly (Hover).",
+            reason: "profile.example_fly_hover.flagReason",
             type: "fly"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}"
+            message: "profile.example_fly_hover.notifyMessage"
         },
         log: {
             actionType: "detected_fly_hover",
@@ -1199,11 +1199,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected excessive ground speed.",
+            reason: "profile.example_speed_ground.flagReason",
             type: "speed"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})"
+            message: "profile.example_speed_ground.notifyMessage"
         },
         log: {
             actionType: "detected_speed_ground",
@@ -1214,11 +1214,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected excessive reach during combat.",
+            reason: "profile.example_reach_attack.flagReason",
             type: "reach"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Reach. Distance: {actualDistance} (Max: {allowedDistance})"
+            message: "profile.example_reach_attack.notifyMessage"
         },
         log: {
             actionType: "detected_reach_attack",
@@ -1229,11 +1229,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious fall damage negation (NoFall).",
+            reason: "profile.movement_nofall.flagReason",
             type: "movement_violation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}"
+            message: "profile.movement_nofall.notifyMessage"
         },
         log: {
             actionType: "detected_movement_nofall",
@@ -1244,11 +1244,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected Nuker activity (rapid/wide-area block breaking).",
+            reason: "profile.world_nuker.flagReason",
             type: "world_violation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}"
+            message: "profile.world_nuker.notifyMessage"
         },
         log: {
             actionType: "detected_world_nuker",
@@ -1259,11 +1259,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected abnormally high CPS (Clicks Per Second).",
+            reason: "profile.combat_cps_high.flagReason",
             type: "combat_cps"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}"
+            message: "profile.combat_cps_high.notifyMessage"
         },
         log: {
             actionType: "detected_combat_cps_high",
@@ -1274,11 +1274,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected suspicious pitch snap after attack.",
+            reason: "profile.combat_viewsnap_pitch.flagReason",
             type: "combat_viewsnap"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+            message: "profile.combat_viewsnap_pitch.notifyMessage"
         },
         log: {
             actionType: "detected_viewsnap_pitch",
@@ -1289,11 +1289,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected suspicious yaw snap after attack.",
+            reason: "profile.combat_viewsnap_yaw.flagReason",
             type: "combat_viewsnap"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+            message: "profile.combat_viewsnap_yaw.notifyMessage"
         },
         log: {
             actionType: "detected_viewsnap_yaw",
@@ -1304,11 +1304,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected invalid view pitch (e.g., looking straight up/down).",
+            reason: "profile.combat_invalid_pitch.flagReason",
             type: "combat_view_violation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)"
+            message: "profile.combat_invalid_pitch.notifyMessage"
         },
         log: {
             actionType: "detected_invalid_pitch",
@@ -1319,11 +1319,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected Multi-Target Aura (hitting multiple entities rapidly).",
+            reason: "profile.combat_multitarget_aura.flagReason",
             type: "combat_aura"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})"
+            message: "profile.combat_multitarget_aura.notifyMessage"
         },
         log: {
             actionType: "detected_multitarget_aura",
@@ -1334,11 +1334,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected player attacking while sleeping.",
+            reason: "profile.combat_attack_while_sleeping.flagReason",
             type: "combat_state_conflict"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntity}"
+            message: "profile.combat_attack_while_sleeping.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_sleeping",
@@ -1349,11 +1349,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected player attacking while consuming an item.",
+            reason: "profile.combat_attack_while_consuming.flagReason",
             type: "combat_state_conflict_consuming"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemUsed}"
+            message: "profile.combat_attack_while_consuming.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_consuming",
@@ -1364,11 +1364,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected player attacking while charging a bow.",
+            reason: "profile.combat_attack_while_bow_charging.flagReason",
             type: "combat_state_conflict_bow"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemUsed}"
+            message: "profile.combat_attack_while_bow_charging.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_bow_charging",
@@ -1379,11 +1379,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected player attacking while actively using a shield.",
+            reason: "profile.combat_attack_while_shielding.flagReason",
             type: "combat_state_conflict_shield"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemUsed}"
+            message: "profile.combat_attack_while_shielding.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_shielding",
@@ -1394,11 +1394,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected use of a banned item: {itemTypeId}.",
+            reason: "profile.world_illegal_item_use.flagReason",
             type: "world_illegal_item"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}"
+            message: "profile.world_illegal_item_use.notifyMessage"
         },
         log: {
             actionType: "detected_illegal_item_use",
@@ -1409,11 +1409,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected placement of a banned item: {itemTypeId}.",
+            reason: "profile.world_illegal_item_place.flagReason",
             type: "world_illegal_item"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}"
+            message: "profile.world_illegal_item_place.notifyMessage"
         },
         log: {
             actionType: "detected_illegal_item_place",
@@ -1424,11 +1424,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected suspicious tower-like building.",
+            reason: "profile.world_tower_build.flagReason",
             type: "world_scaffold_tower"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)"
+            message: "profile.world_tower_build.notifyMessage"
         },
         log: {
             actionType: "detected_world_tower_build",
@@ -1439,11 +1439,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected unnatural (flat or static) head rotation while building.",
+            reason: "profile.world_flat_rotation_building.flagReason",
             type: "world_scaffold_rotation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Variance: {pitchVariance}, Yaw Variance: {yawVariance}, Details: {details}"
+            message: "profile.world_flat_rotation_building.notifyMessage"
         },
         log: {
             actionType: "detected_world_flat_rotation_building",
@@ -1454,11 +1454,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious downward scaffolding while airborne.",
+            reason: "profile.world_downward_scaffold.flagReason",
             type: "world_scaffold_downward"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {hSpeed}bps (MinSpeed: {minHSpeed}bps)"
+            message: "profile.world_downward_scaffold.notifyMessage"
         },
         log: {
             actionType: "detected_world_downward_scaffold",
@@ -1469,11 +1469,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected block placed against air/liquid without solid support.",
+            reason: "profile.world_air_place.flagReason",
             type: "world_scaffold_airplace"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting air/liquid."
+            message: "profile.world_air_place.notifyMessage"
         },
         log: {
             actionType: "detected_world_air_place",
@@ -1484,11 +1484,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected item being used too quickly: {itemType}.",
+            reason: "profile.action_fast_use.flagReason",
             type: "action_fast_use"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldown}ms, Actual: {actualTime}ms"
+            message: "profile.action_fast_use.notifyMessage"
         },
         log: {
             actionType: "detected_fast_use",
@@ -1499,11 +1499,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected blocks being placed too quickly.",
+            reason: "profile.world_fast_place.flagReason",
             type: "world_fast_place"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {window}ms (Max: {maxBlocks})"
+            message: "profile.world_fast_place.notifyMessage"
         },
         log: {
             actionType: "detected_world_fast_place",
@@ -1514,11 +1514,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).",
+            reason: "profile.movement_noslow.flagReason",
             type: "movement_noslow"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxSpeed}bps)"
+            message: "profile.movement_noslow.notifyMessage"
         },
         log: {
             actionType: "detected_movement_noslow",
@@ -1529,11 +1529,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected sprinting under invalid conditions (e.g., blind, sneaking, riding).",
+            reason: "profile.movement_invalid_sprint.flagReason",
             type: "movement_invalid_sprint"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}"
+            message: "profile.movement_invalid_sprint.notifyMessage"
         },
         log: {
             actionType: "detected_movement_invalid_sprint",
@@ -1544,11 +1544,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected suspicious tool switching before/after breaking a block (AutoTool).",
+            reason: "profile.world_autotool.flagReason",
             type: "world_autotool"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolType}, Switched: {switchPattern}"
+            message: "profile.world_autotool.notifyMessage"
         },
         log: {
             actionType: "detected_world_autotool",
@@ -1559,11 +1559,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 10,
-            reason: "Attempted to break an unbreakable block: {blockType}.",
+            reason: "profile.world_instabreak_unbreakable.flagReason",
             type: "world_instabreak_unbreakable"
         },
         notifyAdmins: {
-            message: "§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled."
+            message: "profile.world_instabreak_unbreakable.notifyMessage"
         },
         log: {
             actionType: "detected_instabreak_unbreakable",
@@ -1574,11 +1574,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected block broken significantly faster than possible: {blockType}.",
+            reason: "profile.world_instabreak_speed.flagReason",
             type: "world_instabreak_speed"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t"
+            message: "profile.world_instabreak_speed.notifyMessage"
         },
         log: {
             actionType: "detected_instabreak_speed",
@@ -1589,11 +1589,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected an invalid or suspicious player nameTag ({reasonDetail}).",
+            reason: "profile.player_namespoof.flagReason",
             type: "player_namespoof"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: '{nameTag}'"
+            message: "profile.player_namespoof.notifyMessage"
         },
         log: {
             actionType: "detected_player_namespoof",
@@ -1604,11 +1604,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 10,
-            reason: "System detected unauthorized Creative Mode.",
+            reason: "profile.player_antigmc.flagReason",
             type: "player_antigmc"
         },
         notifyAdmins: {
-            message: "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}"
+            message: "profile.player_antigmc.notifyMessage"
         },
         log: {
             actionType: "detected_player_antigmc",
@@ -1619,11 +1619,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious inventory/hotbar manipulation ({reasonDetail}).",
+            reason: "profile.player_inventory_mod.flagReason",
             type: "player_inventory_mod"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for InventoryMod. Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}"
+            message: "profile.player_inventory_mod.notifyMessage"
         },
         log: {
             actionType: "detected_player_inventory_mod",
@@ -1635,7 +1635,7 @@ export const checkActionProfiles = {
         flag: {
             type: "chat_spam_fast",
             increment: 1,
-            reason: "Sent messages too quickly ({timeSinceLastMsgMs}ms apart)"
+            reason: "profile.chat_spam_fast_message.flagReason"
         },
         log: {
             actionType: "detected_fast_message_spam",
@@ -1643,7 +1643,7 @@ export const checkActionProfiles = {
             includeViolationDetails: false
         },
         notifyAdmins: {
-            message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
+            message: "profile.chat_spam_fast_message.notifyMessage"
         },
         cancelMessage: true
     },
@@ -1652,7 +1652,7 @@ export const checkActionProfiles = {
         flag: {
             type: "chat_spam_max_words",
             increment: 1,
-            reason: "Message too long ({wordCount} words, max: {maxWords})"
+            reason: "profile.chat_spam_max_words.flagReason"
         },
         log: {
             actionType: "detected_max_words_spam",
@@ -1660,7 +1660,7 @@ export const checkActionProfiles = {
             includeViolationDetails: false
         },
         notifyAdmins: {
-            message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
+            message: "profile.chat_spam_max_words.notifyMessage"
         },
         cancelMessage: true
     },
@@ -1668,11 +1668,11 @@ export const checkActionProfiles = {
         enabled: true, // This will be controlled by enableTntAntiGrief at a higher level
         flag: {
             increment: 1,
-            reason: "Player attempted to place TNT without authorization.",
+            reason: "profile.world_antigrief_tnt_place.flagReason",
             type: "antigrief_tnt"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}."
+            message: "profile.world_antigrief_tnt_place.notifyMessage"
         },
         log: {
             actionType: "antigrief_tnt_placement",
@@ -1683,11 +1683,11 @@ export const checkActionProfiles = {
         enabled: true, // This will be effectively controlled by enableWitherAntiGrief at a higher level
         flag: {
             increment: 5, // Wither griefing is severe
-            reason: "Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.",
+            reason: "profile.world_antigrief_wither_spawn.flagReason",
             type: "antigrief_wither"
         },
         notifyAdmins: {
-            message: "§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}."
+            message: "profile.world_antigrief_wither_spawn.notifyMessage"
         },
         log: {
             actionType: "antigrief_wither_spawn",
@@ -1698,11 +1698,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableFireAntiGrief
         flag: {
             increment: 2,
-            reason: "Player involved in unauthorized or excessive fire incident.",
+            reason: "profile.world_antigrief_fire.flagReason",
             type: "antigrief_fire"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: "profile.world_antigrief_fire.notifyMessage"
         },
         log: {
             actionType: "antigrief_fire_incident",
@@ -1713,11 +1713,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableLavaAntiGrief
         flag: {
             increment: 2,
-            reason: "Player involved in unauthorized lava placement.",
+            reason: "profile.world_antigrief_lava.flagReason",
             type: "antigrief_lava"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: "profile.world_antigrief_lava.notifyMessage"
         },
         log: {
             actionType: "antigrief_lava_placement",
@@ -1728,11 +1728,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableWaterAntiGrief
         flag: {
             increment: 1, // Water grief is often less permanent than lava/TNT
-            reason: "Player involved in unauthorized water placement.",
+            reason: "profile.world_antigrief_water.flagReason",
             type: "antigrief_water"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: "profile.world_antigrief_water.notifyMessage"
         },
         log: {
             actionType: "antigrief_water_placement",
@@ -1743,11 +1743,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableBlockSpamAntiGrief
         flag: {
             increment: 1,
-            reason: "Player suspected of block spamming.",
+            reason: "profile.world_antigrief_blockspam.flagReason",
             type: "antigrief_blockspam"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}."
+            message: "profile.world_antigrief_blockspam.notifyMessage"
         },
         log: {
             actionType: "antigrief_blockspam_detected",
@@ -1758,11 +1758,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableEntitySpamAntiGrief
         flag: {
             increment: 1,
-            reason: "Player suspected of entity spamming.",
+            reason: "profile.world_antigrief_entityspam.flagReason",
             type: "antigrief_entityspam"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}."
+            message: "profile.world_antigrief_entityspam.notifyMessage"
         },
         log: {
             actionType: "antigrief_entityspam_detected",
@@ -1773,11 +1773,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableBlockSpamDensityCheck
         flag: {
             increment: 2, // Potentially more severe than just rate
-            reason: "Player suspected of block spamming (high density).",
+            reason: "profile.world_antigrief_blockspam_density.flagReason",
             type: "antigrief_blockspam_density" // Distinct flag type
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}."
+            message: "profile.world_antigrief_blockspam_density.notifyMessage"
         },
         log: {
             actionType: "antigrief_blockspam_density_detected",
@@ -1788,7 +1788,7 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": null,
         "notifyAdmins": {
-            "message": "§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)"
+            "message": "profile.world_antigrief_piston_lag.notifyMessage"
         },
         "log": {
             "actionType": "antigrief_piston_lag_detected",
@@ -1799,11 +1799,11 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": {
             "increment": 1,
-            "reason": "Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).",
+            "reason": "profile.player_invalid_render_distance.flagReason",
             "type": "player_client_anomaly"
         },
         "notifyAdmins": {
-            "message": "§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification."
+            "message": "profile.player_invalid_render_distance.notifyMessage"
         },
         "log": {
             "actionType": "detected_invalid_render_distance",
@@ -1814,11 +1814,11 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": {
             "increment": 1,
-            "reason": "Attempted to chat too soon after combat ({timeSinceCombat}s ago).",
+            "reason": "profile.player_chat_during_combat.flagReason",
             "type": "player_chat_state_violation"
         },
         "notifyAdmins": {
-            "message": "§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled."
+            "message": "profile.player_chat_during_combat.notifyMessage"
         },
         "cancelMessage": true,
         "log": {
@@ -1830,11 +1830,11 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": {
             "increment": 1,
-            "reason": "Attempted to chat while actively using an item ({itemUseState}).",
+            "reason": "profile.player_chat_during_item_use.flagReason",
             "type": "player_chat_state_violation"
         },
         "notifyAdmins": {
-            "message": "§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled."
+            "message": "profile.player_chat_during_item_use.notifyMessage"
         },
         "cancelMessage": true,
         "log": {
@@ -1846,11 +1846,11 @@ export const checkActionProfiles = {
         enabled: true, // The check itself is controlled by enableSwearCheck
         flag: {
             increment: 1,
-            reason: "Swear word detected in message: {detectedWord}",
+            reason: "profile.chat_swear_violation.flagReason",
             type: "chat_language_violation" // A more general type for language issues
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}"
+            message: "profile.chat_swear_violation.notifyMessage"
         },
         log: {
             actionType: "detected_swear_word",
@@ -1864,11 +1864,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2, // Moderate flagging
-            reason: "System detected suspicious self-inflicted damage.",
+            reason: "profile.player_self_hurt.flagReason",
             type: "player_self_damage" // Specific type for this flag
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}"
+            message: "profile.player_self_hurt.notifyMessage"
         },
         log: {
             actionType: "detected_player_self_hurt",

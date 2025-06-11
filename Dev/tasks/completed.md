@@ -1,6 +1,15 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Localization System - Phase 2i (checkActionProfiles & Final Review):**
+    *   **Summary:** Completed the primary code localization effort by externalizing strings from `checkActionProfiles` in `config.js` and conducting a final review of major files for missed strings.
+    *   **Details:**
+        *   **`config.js` (`checkActionProfiles`):** All `flag.reason` and `notifyAdmins.message` template strings were converted to localization keys. These keys and their original English versions were added to `i18n.js`.
+        *   **Final Review:** Reviewed `eventHandlers.js`, `uiManager.js`, `help.js`, `panel.js`, and `worldborder.js`. Localized a few remaining hardcoded strings and corrected an import path.
+        *   **`i18n.js`:** Updated with all new keys from `checkActionProfiles` and the final review.
+    *   **Purpose:** To make nearly all user-facing strings in the addon manageable via the localization system, preparing for future translation.
+    *   **Files Affected:** `AntiCheatsBP/scripts/config.js`, `AntiCheatsBP/scripts/core/i18n.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/commands/panel.js`, `AntiCheatsBP/scripts/commands/worldborder.js`.
+
 *   **Localization System - Phase 2h (Check Files & Core Manager Notifications):**
     *   **Summary:** Extended localization to strings originating from individual check files (within `violationDetails`) and core manager modules.
     *   **Details:**

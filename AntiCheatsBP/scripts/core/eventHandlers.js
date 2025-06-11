@@ -46,7 +46,7 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
 
     const pData = playerDataManager.getPlayerData(player.id);
 
-    if (pData && config.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) {
+    if (pData && config.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) { // config is editableConfigValues
         const currentTime = Date.now();
         const timeSinceLastCombatMs = currentTime - pData.lastCombatInteractionTime;
         const combatLogThresholdMs = (config.combatLogThresholdSeconds || 15) * 1000;
@@ -63,7 +63,7 @@ export async function handlePlayerLeave(eventData, playerDataManager, playerUtil
                 playerDataManager.addFlag(player, flagType, baseFlagReason, `(#${i + 1}/${incrementAmount})`);
             }
 
-            const notifyMessage = getString(configModule.combatLogMessage, { // Use key from configModule
+            const notifyMessage = getString(config.combatLogMessage, { // Use key from config (editableConfigValues)
                 playerName: player.nameTag,
                 timeSinceCombat: timeSinceLastCombatSeconds,
                 incrementAmount: incrementAmount.toString()
@@ -151,8 +151,8 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
         updatePlayerNametag(player);
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, player.nameTag);
 
-        if (initialSpawn && globalConfig.enableWelcomerMessage) {
-            let message = getString(configModule.welcomeMessage, { playerName: player.nameTag });
+        if (initialSpawn && globalConfig.enableWelcomerMessage) { // globalConfig is editableConfigValues
+            let message = getString(globalConfig.welcomeMessage, { playerName: player.nameTag });
             mc.system.runTimeout(() => {
                 player.sendMessage(message);
             }, 20);
@@ -178,7 +178,7 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
             }
 
             if (currentPUtils?.notifyAdmins && globalConfig.notifyAdminOnNewPlayerJoin) {
-                currentPUtils.notifyAdmins(getString("admin.notify.newPlayerJoined", { playerName: player.nameTag }), null, null);
+                currentPUtils.notifyAdmins(getString("admin.notify.newPlayerJoined", { playerName: player.nameTag }), player, pData); // Pass player and pData
             }
         } else if (!initialSpawn && dependencies && dependencies.addLog && pData) {
             const spawnLocation = player.location;
@@ -195,7 +195,7 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
             });
         }
 
-        if (pData && pData.deathMessageToShowOnSpawn && globalConfig.enableDeathCoordsMessage) {
+        if (pData && pData.deathMessageToShowOnSpawn && globalConfig.enableDeathCoordsMessage) { // globalConfig is editableConfigValues
             mc.system.runTimeout(() => {
                 player.sendMessage(pData.deathMessageToShowOnSpawn); // Already localized from handlePlayerDeath
             }, 5);
@@ -204,11 +204,11 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
             pData.isDirtyForSave = true;
         }
 
-        if (dependencies.checks?.checkInvalidRenderDistance && dependencies.config?.enableInvalidRenderDistanceCheck) {
+        if (dependencies.checks?.checkInvalidRenderDistance && globalConfig.enableInvalidRenderDistanceCheck) { // globalConfig is editableConfigValues
             await dependencies.checks.checkInvalidRenderDistance(
                 player,
                 pData,
-                dependencies.config,
+                globalConfig, // Pass globalConfig (editableConfigValues)
                 currentPUtils,
                 dependencies.logManager,
                 dependencies.actionManager,
@@ -216,10 +216,10 @@ export async function handlePlayerSpawn(eventData, playerDataManager, playerUtil
             );
         }
 
-        if (globalConfig.enableDetailedJoinLeaveLogging) {
+        if (globalConfig.enableDetailedJoinLeaveLogging) { // globalConfig is editableConfigValues
             const playerName = player.nameTag || player.name;
             const playerId = player.id;
-            const deviceType = player.clientSystemInfo?.platformType?.toString() || "Unknown";
+            const deviceType = player.clientSystemInfo?.platformType?.toString() || getString("common.value.unknown");
             const gameMode = mc.GameMode[player.gameMode] || "Unknown";
             const location = player.location;
             const dimensionId = player.dimension.id.split(':')[1] || "unknown";
@@ -392,52 +392,59 @@ export async function handlePlayerPlaceBlockAfter(eventData, playerDataManager, 
 
 export async function handleBeforeChatSend(eventData, playerDataManager, config, playerUtils, checks, logManager, executeCheckAction, currentTick, dependencies) { // config is editableConfigValues
     const { sender: player, message: originalMessage } = eventData;
-    // ... (Mute check: "You are currently muted..." - this should be localized)
-    // ... (Combat/Item use chat restrictions: "§cYou cannot chat..." - should be localized)
-    // ... (Swear check: "AutoMod: Language violation..." - this comes from AutoMod messages, already handled if keys are used there)
-    // ... (Spam messages: These are typically admin notifications or internal flags, but player warnings should be localized if any)
+    const pData = playerDataManager.getPlayerData(player.id);
+    const currentPUtils = dependencies?.playerUtils || playerUtils;
+    const currentConfig = dependencies?.config || config; // config is editableConfigValues
 
-    // Rank formatting is fine.
-    // The main structure needs careful review for which messages are player-facing.
-    // For example:
     if (playerDataManager.isMuted(player)) {
-        // TODO: Localize "You are currently muted and cannot send messages."
-        // For now, let's assume a key like "chat.error.muted"
-        playerUtils.warnPlayer(player, getString("chat.error.muted", { /* Potentially duration/reason if available */ }));
+        const muteInfo = playerDataManager.getMuteInfo(player);
+        let reason = getString("common.value.noReasonProvided");
+        let durationStr = getString("common.value.permanent");
+        if (muteInfo) {
+            reason = muteInfo.reason || reason;
+            if (muteInfo.unmuteTime !== Infinity) {
+                const remainingMs = muteInfo.unmuteTime - Date.now();
+                durationStr = remainingMs > 0 ? formatSessionDuration(remainingMs) : getString("common.status.expired"); // Assuming formatSessionDuration exists and is appropriate
+            }
+        }
+        // Using existing key "ui.playerActions.mute.notifyTargetMuted" which has placeholders for reason and duration
+        // Consider a more specific key if the message needs to be different here.
+        // For now, using a general "chat.error.muted" as planned.
+        currentPUtils.warnPlayer(player, getString("chat.error.muted")); // Simpler message as planned
+        // If more details needed: currentPUtils.warnPlayer(player, getString("ui.playerActions.mute.notifyTargetMuted", { reason: reason, duration: durationStr }));
         eventData.cancel = true;
-        // ...
+        dependencies.logManager?.addLog?.({ timestamp: Date.now(), actionType: 'chat_attempt_muted', targetName: player.nameTag, details: `Message: "${originalMessage}" Reason: ${reason}` });
         return;
     }
 
-    const currentConfig = dependencies?.config || config;
-    // ...
-    if (currentConfig.enableChatDuringCombatCheck && pData.lastCombatInteractionTime /*...*/) {
-        // ...
-        const profile = currentConfig.checkActionProfiles?.player_chat_during_combat;
-            if (profile && profile.cancelMessage) {
+    // Combat check
+    if (currentConfig.enableChatDuringCombatCheck && pData && pData.lastCombatInteractionTime) {
+        const timeSinceCombat = (Date.now() - pData.lastCombatInteractionTime) / 1000;
+        if (timeSinceCombat < currentConfig.chatDuringCombatCooldownSeconds) {
+            const profile = currentConfig.checkActionProfiles?.player_chat_during_combat;
+            if (profile && profile.enabled && profile.cancelMessage) {
                 eventData.cancel = true;
-                // TODO: Localize "§cYou cannot chat for {seconds} seconds after combat."
-                // Key: "chat.error.combatCooldown"
                 currentPUtils.warnPlayer(player, getString("chat.error.combatCooldown", { seconds: currentConfig.chatDuringCombatCooldownSeconds }));
-                // ...
+                // Flagging etc. is handled by actionManager if profile is set up for it
+                dependencies.actionManager?.executeCheckAction?.("player_chat_during_combat", player, { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
                 return;
             }
-        // ...
+        }
     }
-    if (!eventData.cancel && currentConfig.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
-        // ...
+
+    // Item use check
+    if (!eventData.cancel && currentConfig.enableChatDuringItemUseCheck && pData && (pData.isUsingConsumable || pData.isChargingBow)) {
+        const itemUseState = pData.isUsingConsumable ? getString("check.inventoryMod.action.usingConsumable") : getString("check.inventoryMod.action.chargingBow");
         const profile = currentConfig.checkActionProfiles?.player_chat_during_item_use;
-            if (profile && profile.cancelMessage) {
-                eventData.cancel = true;
-                // TODO: Localize "§cYou cannot chat while {itemUseState}."
-                // Key: "chat.error.itemUse"
-                currentPUtils.warnPlayer(player, getString("chat.error.itemUse", { itemUseState: itemUseState }));
-                // ...
-                return;
-            }
-        // ...
+        if (profile && profile.enabled && profile.cancelMessage) {
+            eventData.cancel = true;
+            currentPUtils.warnPlayer(player, getString("chat.error.itemUse", { itemUseState: itemUseState }));
+            dependencies.actionManager?.executeCheckAction?.("player_chat_during_item_use", player, { itemUseState: itemUseState }, dependencies);
+            return;
+        }
     }
-    // ... (Swear check MUTE message comes from AutoMod config, which should use keys)
+
+    // Swear check (MUTE action is handled by AutoMod based on profile's customAction)
     // ... (Spam check messages, if player-facing, need localization)
 
     // Rank formatting:

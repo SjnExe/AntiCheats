@@ -33,12 +33,11 @@ export async function execute(player, args, dependencies) {
 
     if (uiManager && typeof uiManager.showAdminPanelMain === 'function' && playerDataManager && config) {
         // Pass the entire dependencies object
-        uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies); // Pass dependencies
+        uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies);
         if (addLog) {
             addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_panel_ui', targetName: player.nameTag, details: 'Admin opened main panel via command' });
         }
     } else {
-        // Use playerUtils.warnPlayer if available, otherwise fallback to sendMessage
         const errorMessage = getString("command.panel.error.uiManagerUnavailable");
         if (playerUtils && typeof playerUtils.warnPlayer === 'function') {
             playerUtils.warnPlayer(player, errorMessage);

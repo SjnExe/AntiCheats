@@ -7,7 +7,7 @@ import * as mc from '@minecraft/server';
 import { world, system } from '@minecraft/server';
 import { getPlayerPermissionLevel, permissionLevels } from '../core/rankManager.js';
 import { saveBorderSettings, getBorderSettings, clearBorderSettings } from '../utils/worldBorderManager.js';
-import { getString } from '../../core/localizationManager.js'; // Added for localization
+import { getString } from '../core/i18n.js'; // Corrected path
 
 // Removed original commandData as description and syntax are now localized or constructed.
 
