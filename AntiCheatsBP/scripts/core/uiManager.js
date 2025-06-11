@@ -10,7 +10,7 @@ import * as playerUtils from '../utils/playerUtils.js';
 import { permissionLevels } from './rankManager.js';
 import * as logManager from './logManager.js';
 import { editableConfigValues, updateConfigValue } from '../config.js';
-import { getString } from './localizationManager.js'; // Added for localization
+import { getString } from './i18n.js'; // Added for localization
 
 // Forward declarations
 let showAdminPanelMain;
@@ -846,3 +846,5 @@ showDetailedFlagsForm = async function(adminPlayer, targetPlayer, playerDataMana
     await form.show(adminPlayer).catch(e => playerUtils.debugLog(`Error showing detailed flags: ${e.stack || e}`, adminPlayer.nameTag));
     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); // Navigate back
 };
+
+[end of AntiCheatsBP/scripts/core/uiManager.js]

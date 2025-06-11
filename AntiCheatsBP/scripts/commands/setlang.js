@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { getString, setCurrentLanguage, translations as validLangCodesContainer } from '../core/localizationManager.js';
+import { getString, setCurrentLanguage, translations as validLangCodesContainer } from '../core/i18n.js';
 
 export const definition = {
     name: "setlang",
@@ -37,7 +37,7 @@ export async function execute(player, args, dependencies) {
     const successConfigUpdate = configModule.updateConfigValue('defaultServerLanguage', langCode);
 
     if (successConfigUpdate) {
-        setCurrentLanguage(langCode); // Update runtime language in localizationManager
+        setCurrentLanguage(langCode); // Update runtime language in i18n
         playerUtils.notifyPlayer(player, getString("command.setlang.success", { langCode: langCode }));
 
         // Ensure logManager and addLog are correctly accessed based on actual dependencies structure

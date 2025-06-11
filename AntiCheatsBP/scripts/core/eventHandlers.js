@@ -8,7 +8,7 @@ import * as mc from '@minecraft/server';
 import { getPlayerRankFormattedChatElements, updatePlayerNametag, permissionLevels } from './rankManager.js';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, playerUtils as PlayerUtilsImport } from '../utils/index.js';
 import { editableConfigValues as ConfigValuesImport, editableConfigValues as configBase } from '../config.js'; // Renamed to configBase to avoid conflict
-import { getString } from './localizationManager.js';
+import { getString } from './i18n.js';
 import * as configModule from '../config.js'; // For accessing config keys like configModule.welcomeMessage
 
 function formatSessionDuration(ms) {

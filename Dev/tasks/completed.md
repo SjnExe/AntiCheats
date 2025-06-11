@@ -1,11 +1,27 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Refactor: Renamed Localization Manager to i18n.js:**
+    *   **Summary:** Renamed the central localization manager file for brevity and to follow a common convention (i18n for internationalization).
+    *   **Details:** The file `AntiCheatsBP/scripts/core/localizationManager.js` was renamed to `AntiCheatsBP/scripts/core/i18n.js`. All import statements across the codebase that previously referenced `localizationManager.js` were updated to point to the new `i18n.js` filename.
+    *   **Purpose:** To use a more standard and concise naming convention for the internationalization utility.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js` (renamed from `localizationManager.js`), and numerous script files across the `commands/` and `core/` directories that had their import paths updated.
+
+*   **Localization System - Phase 2f (Utility Commands Refactoring):**
+    *   **Summary:** Continued localization by refactoring several utility command modules: `rules.js`, `version.js`, `copyinv.js`, and `myflags.js`.
+    *   **Details:**
+        *   All user-facing strings within these command modules, including their static `definition.description`, were externalized.
+        *   New localization keys and corresponding English translations were added to `AntiCheatsBP/scripts/core/i18n.js`.
+        *   The command files were updated to import and use the `getString` function from `i18n.js`.
+        *   The `systeminfo.js` command was not found in the codebase during this phase and was therefore skipped.
+    *   **Purpose:** To make these utility commands fully localizable.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/rules.js`, `AntiCheatsBP/scripts/commands/version.js`, `AntiCheatsBP/scripts/commands/copyinv.js`, `AntiCheatsBP/scripts/commands/myflags.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
 ### Localization System - Phase 2e (TPA Commands Refactoring)
 *   **Date:** October 26, 2023
 *   **Details:**
-    *   Refactored the entire TPA command suite (`tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, `tpastatus.js`) to utilize the `localizationManager.js`.
-    *   Added all required string keys and their "en_US" translations for these commands to `localizationManager.js`.
+    *   Refactored the entire TPA command suite (`tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, `tpastatus.js`) to utilize the `i18n.js`.
+    *   Added all required string keys and their "en_US" translations for these commands to `i18n.js`.
     *   This phase ensures that all teleportation request-related user interactions are now localized.
 *   **Files Modified:**
     *   `AntiCheatsBP/scripts/commands/tpa.js`
@@ -13,17 +29,17 @@
     *   `AntiCheatsBP/scripts/commands/tpaccept.js`
     *   `AntiCheatsBP/scripts/commands/tpacancel.js`
     *   `AntiCheatsBP/scripts/commands/tpastatus.js`
-    *   `AntiCheatsBP/scripts/localizationManager.js`
+    *   `AntiCheatsBP/scripts/core/i18n.js`
 
 *   **Localization System - Phase 1 Implementation:**
     *   **Summary:** Established the core mechanism for localization and refactored key system messages and two command modules (`uinfo`, `help`) to use it.
     *   **Details:**
-        *   Created `AntiCheatsBP/scripts/core/localizationManager.js` with `getString(key, args)` for retrieving and formatting localized strings.
+        *   Created `AntiCheatsBP/scripts/core/i18n.js` with `getString(key, args)` for retrieving and formatting localized strings.
         *   Initialized a `translations` object with "en_US" strings for messages from `config.js` (e.g., welcome, death coords), `uinfo.js`, selected parts of `help.js`, and key `eventHandlers.js` messages.
         *   Modified `config.js` to use localization keys for its main user-facing string constants.
         *   Refactored `uinfo.js` fully, and `help.js` and `eventHandlers.js` partially, to utilize the new `getString` function.
     *   **Purpose:** To enable future translation of the addon into multiple languages by centralizing string management.
-    *   **Files Affected:** `AntiCheatsBP/scripts/core/localizationManager.js` (new), `AntiCheatsBP/scripts/config.js`, `AntiCheatsBP/scripts/commands/uinfo.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/commands/help.js`.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js` (new), `AntiCheatsBP/scripts/config.js`, `AntiCheatsBP/scripts/commands/uinfo.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/commands/help.js`.
 *   **`!worldborder` Enhancement: Resize Interpolation Methods:**
     *   **Summary:** Enhanced the gradual resize functionality (`!wb shrink/expand`) to support different interpolation methods, allowing for smoother visual transitions.
     *   **Changes:**

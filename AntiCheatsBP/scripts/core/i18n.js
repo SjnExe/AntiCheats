@@ -1,5 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/core/localizationManager.js
+ * @file AntiCheatsBP/scripts/core/i18n.js
  * Manages localized strings for the AntiCheat system.
  * @version 1.0.11
  */
@@ -91,8 +91,60 @@ export const translations = {
         "command.tpastatus.current.enabled": "§aYou are currently accepting TPA requests.",
         "command.tpastatus.current.disabled": "§cYou are currently not accepting TPA requests.",
         "command.tpastatus.error.invalidOption": "§cInvalid option. Usage: {prefix}tpastatus [on|off|status]",
-        "command.tpastatus.notifyRequester.declined": "§e{targetPlayerName} is no longer accepting TPA requests; your request was automatically declined."
+        "command.tpastatus.notifyRequester.declined": "§e{targetPlayerName} is no longer accepting TPA requests; your request was automatically declined.",
 
+        // === Help Command ===
+        "help.specific.header": "§l§b--- Help: {prefix}{commandName} ---",
+        "help.specific.syntax": "§eSyntax:§r {prefix}{commandName} {syntaxArgs}",
+        "help.specific.description": "§bDescription:§r {description}", // Template for description
+        "help.specific.permission": "§7Permission: {permLevelName} (Level {permissionLevel})",
+        "help.specific.notFoundOrNoPermission": "§cCommand \"{commandName}\" not found or you do not have permission to view its details. Type {prefix}help for a list of available commands.",
+        "help.error.unknownCommand": "§cUnknown command: \"{commandName}\". Type {prefix}help for a list of available commands.",
+        "help.list.header": "§l§bAvailable Commands (prefix: {prefix}):§r",
+        "help.list.noCommandsAvailable": "§7No commands available to you at this time.",
+        "help.list.category.general": "--- General Player Commands ---",
+        "help.list.category.tpa": "--- TPA Commands ---",
+        "help.list.category.moderation": "--- Moderation Commands ---",
+        "help.list.category.administrative": "--- Administrative Commands ---",
+        "help.list.category.owner": "--- Owner Commands ---",
+        "help.descriptionOverride.panel": "Opens the Admin/User Interface Panel.",
+        "help.descriptionOverride.ui": "Alias for !panel. Opens the Admin/User Interface Panel.",
+
+        // === Rules Command ===
+        "command.rules.description": "Displays the server rules.",
+        "command.rules.ui.title": "Server Rules",
+        "command.rules.noRulesConfigured": "No server rules are currently configured. Please check back later!",
+        // Note: Button text for rules can use common.button.close
+
+        // === Version Command ===
+        "command.version.description": "Displays addon version.",
+        "command.version.message": "§7AntiCheat Addon Version: §e{version}",
+
+        // === CopyInv Command ===
+        "command.copyinv.description": "Copies another player's inventory to your own.",
+        "command.copyinv.error.playerLookupUnavailable": "§cCommand error: Player lookup utility not available.",
+        "command.copyinv.usage": "§cUsage: {prefix}copyinv <playername>",
+        // "command.copyinv.error.targetNotFound": "§cPlayer \"{targetPlayerName}\" not found." // Covered by common.error.invalidPlayer
+        "command.copyinv.error.selfCopy": "§cYou cannot copy your own inventory.",
+        "command.copyinv.error.inventoryAccess": "§cCould not access inventories.",
+        "command.copyinv.confirm.title": "Confirm Inventory Copy",
+        "command.copyinv.confirm.body": "Overwrite YOUR inventory with a copy of {targetPlayerName}'s inventory? THIS CANNOT BE UNDONE.",
+        "command.copyinv.confirm.toggle": "Yes, I confirm.",
+        "command.copyinv.cancelled": "§7Inventory copy cancelled.",
+        "command.copyinv.success": "§aCopied {targetPlayerName}'s inventory ({itemCount} items/stacks). Your inventory overwritten.",
+        "command.copyinv.log": "Copied {itemCount} items.",
+        "command.copyinv.notifyAdmins": "{adminName} copied {targetPlayerName}'s inventory.",
+        // "command.copyinv.error.generic": "§cError copying inventory: {error}" // Covered by common.error.generic if not passing specific error string
+
+        // === MyFlags Command ===
+        "command.myflags.description": "Shows your own current flag status.",
+        "command.myflags.header": "§7Your current flags: §eTotal={totalFlags}§7. Last type: §e{lastFlagType}§r",
+        "command.myflags.flagEntry": " §7- {flagName}: §e{count} §7(Last: {lastDetectionTime})\n",
+        "command.myflags.noFlags": "§7You have no active flags.",
+        "command.myflags.noSpecificFlags": "§7Your current flags: §eTotal={totalFlags}§7. Last type: §e{lastFlagType}§r\n§7(No specific flag type details available with counts > 0).",
+        "command.myflags.noData": "§7No flag data found for you, or you have no flags.",
+        "command.myflags.value.none": "None",
+        "command.myflags.value.notApplicable": "N/A"
 
         // ... (Other command strings) ...
     }

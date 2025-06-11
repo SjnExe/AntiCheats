@@ -6,7 +6,7 @@
  */
 import * as config from '../config.js';
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/localizationManager.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -56,46 +56,43 @@ export async function execute(player, args, dependencies) {
                 player.sendMessage(
                     getString("help.specific.header", { prefix: config.prefix, commandName: foundCmdDef.name }) + "\n" +
                     getString("help.specific.syntax", { prefix: config.prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" +
-                    getString("help.specific.description", { description: foundCmdDef.description }) + "\n" +
+                    getString("help.specific.description", { description: getString(foundCmdDef.description) }) + "\n" + // Use getString for cmdDef.description
                     getString("help.specific.permission", { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel })
                 );
             } else {
-                // Assuming the no permission to view specific help is covered by "common.error.noPermissionCommand" or a more specific one.
-                // The original message combined "not found" and "no permission".
-                // Using the specific key for "not found or no permission for specific command help"
                 player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: config.prefix }));
             }
         } else {
             player.sendMessage(getString("help.error.unknownCommand", { prefix: config.prefix, commandName: specificCommandName }));
         }
     } else {
-        let helpMessage = getString("help.list.header") + "\n";
+        let helpMessage = getString("help.list.header", { prefix: config.prefix }) + "\n"; // Added prefix arg
         let commandsListed = 0;
 
         const categories = [
             {
-                nameKey: "help.list.category.general", // Key for "--- General Player Commands ---"
+                nameKey: "help.list.category.general",
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version']
             },
             {
-                nameKey: "help.list.category.tpa", // Key for "--- TPA Commands ---"
+                nameKey: "help.list.category.tpa",
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
-                condition: () => config.enableTpaSystem // config is the imported config.js module
+                condition: () => config.enableTpaSystem
             },
             {
-                nameKey: "help.list.category.moderation", // Key for "--- Moderation Commands ---"
+                nameKey: "help.list.category.moderation",
                 permissionRequired: permissionLevels.moderator,
-                commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel']
+                commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel'] // 'ui' is an alias for panel
             },
             {
-                nameKey: "help.list.category.administrative", // Key for "--- Administrative Commands ---"
+                nameKey: "help.list.category.administrative",
                 permissionRequired: permissionLevels.admin,
-                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock']
+                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder', 'setlang', 'log', 'reports', 'systeminfo']
             },
             {
-                nameKey: "help.list.category.owner", // Key for "--- Owner Commands ---"
+                nameKey: "help.list.category.owner",
                 permissionRequired: permissionLevels.owner,
-                commands: ['testnotify']
+                commands: ['testnotify'] // Removed 'config' as it's panel-only for owner
             }
         ];
 
@@ -113,18 +110,23 @@ export async function execute(player, args, dependencies) {
                 const cmdDef = allCommands.find(cmd => cmd.name === commandName);
                 if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) {
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                    let description = cmdDef.name === 'panel' ? getString("help.descriptionOverride.panel") : cmdDef.description;
+                    // Get localized description for each command
+                    let description;
+                    if (cmdDef.name === 'panel') {
+                        description = getString("help.descriptionOverride.panel");
+                    } else if (cmdDef.name === 'ui') { // Handle 'ui' alias specifically if its description key is different
+                        description = getString("help.descriptionOverride.ui"); // Assuming 'ui' might have its own override or shares panel's
+                    } else {
+                        description = getString(cmdDef.description); // All command definitions should have description as a key
+                    }
 
-                    // For Phase 1, command descriptions themselves are not localized yet, unless they are special like 'panel'.
-                    // This would be a larger change across all command definitions.
                     categoryHelp += `§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
                     commandsListed++;
                 }
             });
 
             if (categoryHelp) {
-                // Get localized category name. If key doesn't exist, it returns the key itself.
-                const categoryNameString = getString(category.nameKey) || category.name; // Fallback to .name if nameKey isn't on all
+                const categoryNameString = getString(category.nameKey);
                 helpMessage += `\n${categoryNameString}\n${categoryHelp}`;
             }
         });

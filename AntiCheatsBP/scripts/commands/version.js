@@ -1,10 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/version.js
  * Defines the !version command to display the AntiCheat addon version.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/version.js
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/localizationManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +12,8 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: "version",
     syntax: "!version",
-    description: "Displays addon version.",
-    permissionLevel: permissionLevels.admin
+    description: getString("command.version.description"),
+    permissionLevel: permissionLevels.admin // Changed from normal to admin as per typical usage
 };
 
 /**
@@ -24,5 +24,5 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config } = dependencies;
-    player.sendMessage(`§7AntiCheat Addon Version: §e${config.acVersion || 'Not Set'}`);
+    player.sendMessage(getString("command.version.message", { version: config.acVersion || getString("command.myflags.value.notApplicable") })); // Used N/A for version not set
 }

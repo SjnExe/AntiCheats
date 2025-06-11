@@ -1,11 +1,12 @@
 // Script for the !rules command
 import { MessageFormData } from '@minecraft/server-ui';
 import * as config from '../config.js';
-import { permissionLevels } from '../core/rankManager.js'; // Corrected import path
+import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * @file Script for the !rules command, displays server rules to the player.
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 /**
@@ -131,7 +132,7 @@ export const execute = rulesCommand.execute; // Exporting execute function direc
  */
 export const definition = {
     name: 'rules',
-    description: 'Displays the server rules.',
+    description: getString("command.rules.description"),
     syntax: '!rules',
     aliases: ['rule'],
     permissionLevel: permissionLevels.normal, // Accessible to everyone
@@ -147,16 +148,21 @@ export async function execute(player, args, dependencies) {
     const { playerUtils } = dependencies; // For debugLog, if needed
 
     const form = new MessageFormData();
-    form.title("Server Rules");
+    form.title(getString("command.rules.ui.title"));
 
     if (config.serverRules && config.serverRules.trim() !== "") {
+        // Assuming config.serverRules is already a string, potentially with formatting codes.
+        // If serverRules itself needs to be a localization key, this would need to change to:
+        // form.body(getString(config.serverRules));
+        // For now, assuming it's a direct string from config.
         form.body(config.serverRules);
     } else {
-        form.body("No server rules are currently configured. Please check back later!");
+        form.body(getString("command.rules.noRulesConfigured"));
     }
 
-    form.button1("Close");
-    form.button2("OK"); // MessageFormData requires two buttons.
+    form.button1(getString("common.button.close"));
+    // MessageFormData requires two buttons. Using close for both as they have same behavior.
+    form.button2(getString("common.button.close"));
 
     try {
         // We don't need to do anything with the response for a simple info display.

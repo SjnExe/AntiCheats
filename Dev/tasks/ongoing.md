@@ -22,32 +22,36 @@ This list tracks features and tasks that are currently under development.
     *   **Next Steps:** Refine existing AutoMod rules and thresholds based on live testing and feedback. Consider any other minor enhancements from `Dev/notes/AutoModReview_Findings.md` if applicable.
     *   *(Original description: Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.)*
 
-*   **Localization Implementation - Phase 2e (TPA Commands) Complete**
+*   **Localization Implementation:** (Phases 1, 2a, 2b, 2c, 2d, 2e & 2f Complete; Further Phases Pending)
     *   **Objective:** To make the addon's user-facing strings localizable to support multiple languages.
     *   **Completed Phase 1 (Core Setup & Key Modules):**
-        *   Created `AntiCheatsBP/scripts/core/localizationManager.js` with a `getString(key, args)` function and a `translations` object.
+        *   Created `AntiCheatsBP/scripts/core/i18n.js` with a `getString(key, args)` function and a `translations` object.
         *   Populated initial "en_US" strings for core messages from `config.js` (`welcomeMessage`, `deathCoordsMessage`, etc.), all messages in `uinfo.js`, key messages in `help.js`, and selected messages in `eventHandlers.js`.
         *   Refactored `config.js` to store localization keys instead of hardcoded strings for the above messages.
-        *   Refactored `uinfo.js` fully, and `help.js` (partially), and `eventHandlers.js` (partially) to use `localizationManager.getString()`.
+        *   Refactored `uinfo.js` fully, and `help.js` (partially), and `eventHandlers.js` (partially) to use `i18n.getString()`.
     *   **Completed Phase 2a (More Commands & Language Switching):**
-        *   Refactored `ban.js`, `kick.js`, and `mute.js` command modules to use the localization manager.
-        *   Added `defaultServerLanguage` to `config.js` and updated `localizationManager.js` to use this for initializing `currentLanguage`.
+        *   Refactored `ban.js`, `kick.js`, and `mute.js` command modules to use the i18n manager.
+        *   Added `defaultServerLanguage` to `config.js` and updated `i18n.js` to use this for initializing `currentLanguage`.
         *   Implemented the `!setlang <language_code>` command for administrators to change the server's default language for AntiCheat messages at runtime.
     *   **Completed Phase 2b (UI & Worldborder Command Localization):**
-        *   Refactored all user-facing strings in `AntiCheatsBP/scripts/commands/worldborder.js` to use the localization manager.
-        *   Refactored all user-facing strings in `AntiCheatsBP/scripts/commands/panel.js` and the entirety of `AntiCheatsBP/scripts/core/uiManager.js` (all forms and UI elements) to use the localization manager.
-        *   Added a comprehensive set of new keys and English strings to `localizationManager.js` for these modules.
+        *   Refactored all user-facing strings in `AntiCheatsBP/scripts/commands/worldborder.js` to use the i18n manager.
+        *   Refactored all user-facing strings in `AntiCheatsBP/scripts/commands/panel.js` and the entirety of `AntiCheatsBP/scripts/core/uiManager.js` (all forms and UI elements) to use the i18n manager.
+        *   Added a comprehensive set of new keys and English strings to `i18n.js` for these modules.
     *   **Completed Phase 2c (Key Admin Commands Localization):**
-        *   Refactored `vanish.js`, `tp.js`, and `invsee.js` command modules to use the localization manager.
-        *   Added new localization keys and English translations to `localizationManager.js` for these commands, including their static descriptions.
+        *   Refactored `vanish.js`, `tp.js`, and `invsee.js` command modules to use the i18n manager.
+        *   Added new localization keys and English translations to `i18n.js` for these commands, including their static descriptions.
     *   **Completed Phase 2d (Admin Utility Commands Localization):**
-        *   Refactored gamemode commands (`gma.js`, `gmc.js`, `gms.js`, `gmsp.js`) to use the localization manager.
-        *   Refactored dimension lock commands (`netherlock.js`, `endlock.js`) to use the localization manager.
-        *   Refactored notification toggle commands (`notify.js`, `xraynotify.js`) to use the localization manager.
-        *   Refactored punishment reversal commands (`unmute.js`, `unban.js`) to use the localization manager.
-        *   Refactored flag/warning clearing commands (`resetflags.js` and its alias `clearwarnings.js`) to use the localization manager.
-        *   Added new localization keys and English translations to `localizationManager.js` for all these commands, including their static descriptions.
-    *   **Completed Phase 2e (TPA Command Suite Localization):** Refactored `tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, and `tpastatus.js` to use the localization system. Added all necessary string keys to `localizationManager.js`.
-    *   **Next Steps: Phase 2f - Refactor remaining miscellaneous command modules (e.g., `help.js` if not fully covered, `info.js`, `ping.js`, `stats.js`, `list.js`, etc.) and any other remaining user-facing strings in the system. Final review of all modules.**
+        *   Refactored gamemode commands (`gma.js`, `gmc.js`, `gms.js`, `gmsp.js`) to use the i18n manager.
+        *   Refactored dimension lock commands (`netherlock.js`, `endlock.js`) to use the i18n manager.
+        *   Refactored notification toggle commands (`notify.js`, `xraynotify.js`) to use the i18n manager.
+        *   Refactored punishment reversal commands (`unmute.js`, `unban.js`) to use the i18n manager.
+        *   Refactored flag/warning clearing commands (`resetflags.js` and its alias `clearwarnings.js`) to use the i18n manager.
+        *   Added new localization keys and English translations to `i18n.js` for all these commands, including their static descriptions.
+    *   **Completed Phase 2e (TPA Command Suite Localization):** Refactored `tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, and `tpastatus.js` to use the localization system. Added all necessary string keys to `i18n.js`.
+    *   **Completed Phase 2f (Utility Commands Localization - Current Session):**
+        *   Refactored `rules.js`, `version.js`, `copyinv.js`, and `myflags.js` command modules to use the i18n manager. (`systeminfo.js` was not found and skipped).
+        *   Added new localization keys and English translations to `i18n.js` for these commands, including their static descriptions.
+    *   **Next Steps (Phase 2g+):**
+        *   Incrementally refactor any remaining command modules (e.g., `inspect.js`, `testnotify.js`, `systeminfo.js` if found/needed).
         *   Externalize user-facing strings from all check files (e.g., violation detail messages if any are directly sent from checks) and manager notifications (e.g., `playerDataManager` flag reasons, `automodManager` admin notifications not already covered by command localization).
         *   Add translation files/entries for other languages (e.g., "es_ES", "de_DE").
