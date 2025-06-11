@@ -346,6 +346,10 @@ export const translations = {
         "chat.error.itemUse": "§cYou cannot chat while {itemUseState}.",
         "command.panel.error.uiManagerUnavailable": "§cError: The UI Panel manager is currently unavailable.",
 
+        // === System Info UI ===
+        "ui.systemInfo.label.currentTick": "Current Server Tick:",
+        "ui.systemInfo.label.worldTime": "World Time (ticks):",
+
         // === ClearChat Command ===
         "command.clearchat.description": "Clears the chat for all players.",
         "command.clearchat.success": "§aChat has been cleared.",

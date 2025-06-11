@@ -1,6 +1,12 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Admin Panel UI Enhancement: Added Server Tick & World Time to System Info:**
+    *   **Summary:** Enhanced the Admin Panel's "System Info" section to provide more real-time server state data.
+    *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to include the current server tick (`mc.system.currentTick`) and world time of day (`mc.world.getTime()`) in the information display. Added new localization keys ("ui.systemInfo.label.currentTick", "ui.systemInfo.label.worldTime") to `AntiCheatsBP/scripts/core/i18n.js` for the labels of these new data points.
+    *   **Purpose:** To give administrators quick access to basic server tick and time information via the in-game panel.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/uiManager.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
 *   **Issue Resolution & Task File Cleanup (User Request):**
     *   **Summary:** Based on user feedback, the main issue ("Review everything, then check Dev/tasks for ongoing list and todo list, remove completed tasks from them(including unnecessary heading or something like that), after that complete unfinished tasks in them") is considered completed. Performed final cleanup of task files `Dev/tasks/ongoing.md` and `Dev/tasks/todo.md`.
     *   **Details:**

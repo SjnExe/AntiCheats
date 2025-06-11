@@ -430,6 +430,8 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
             `${getString("ui.systemInfo.entry.acVersion", { version: version })}\n` +
             `${getString("ui.systemInfo.entry.mcVersion", { version: mc.game.version })}\n` +
             `${getString("ui.systemInfo.entry.serverTime", { time: new Date().toLocaleTimeString() })}\n` +
+            `${getString("ui.systemInfo.label.currentTick")}§r §e${mc.system.currentTick}\n` + // Added currentTick
+            `${getString("ui.systemInfo.label.worldTime")}§r §e${mc.world.getTime()}\n` + // Added worldTime
             `${getString("ui.systemInfo.entry.onlinePlayers", { onlineCount: onlinePlayers.length, maxCount: mc.world.maxPlayers })}\n` +
             `${getString("ui.systemInfo.entry.totalPlayerData", { count: pDataEntries })}\n` +
             `${getString("ui.systemInfo.entry.watchedPlayers", { count: watchedPlayers })}\n` +

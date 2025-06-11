@@ -18,7 +18,8 @@ This list contains planned features, improvements, and areas for future investig
             *   - Different resize interpolation methods (linear, easeOutQuad, easeInOutQuad) implemented for `!wb shrink/expand`.
             *   - (Consider more complex shape support - if still relevant beyond square/circle).
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
-        *   *(Existing: Base UI with Inspect, Reset Flags, List Watched)*
+        *   *(Existing: Base UI with Inspect, Reset Flags, List Watched, Player Actions, Server Management, Config Editor)*
+        *   - Added Server Tick & World Time to System Info panel - Implemented.
     *   **System Features:** SjnExe parity goal.
 
 *   **World Management & Protection:** SjnExe parity goal.
