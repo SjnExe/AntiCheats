@@ -344,7 +344,19 @@ export const translations = {
         "chat.error.muted": "§cYou are currently muted and cannot send messages.",
         "chat.error.combatCooldown": "§cYou cannot chat for {seconds} seconds after combat.",
         "chat.error.itemUse": "§cYou cannot chat while {itemUseState}.",
-        "command.panel.error.uiManagerUnavailable": "§cError: The UI Panel manager is currently unavailable."
+        "command.panel.error.uiManagerUnavailable": "§cError: The UI Panel manager is currently unavailable.",
+
+        // === ClearChat Command ===
+        "command.clearchat.description": "Clears the chat for all players.",
+        "command.clearchat.success": "§aChat has been cleared.",
+        "command.clearchat.notifyAdmins": "Chat was cleared by {playerName}.",
+
+        // === Warnings Command ===
+        "command.warnings.description": "Shows a detailed list of warnings/flags for a player.",
+        "command.warnings.usage": "§cUsage: {prefix}warnings <playername>",
+        "command.warnings.header": "§e--- Warnings for {playerName} ---",
+        "command.warnings.individualFlagsHeader": "§eIndividual Flags:",
+        "command.warnings.noData": "§cNo warning data found for {playerName}."
     }
 };
 

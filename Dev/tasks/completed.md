@@ -1,6 +1,14 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Localization System - Command Modules Pass Completion (`clearchat`, `warnings`):**
+    *   **Summary:** Completed the localization of the remaining minor command modules, `clearchat.js` and `warnings.js`. This marks the end of the primary localization pass for all command scripts.
+    *   **Details:**
+        *   User-facing strings in `clearchat.js` and `warnings.js` (including static descriptions) were externalized to `i18n.js`.
+        *   The command files were updated to use `getString()`.
+    *   **Purpose:** To ensure all chat commands are fully localizable.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/clearchat.js`, `AntiCheatsBP/scripts/commands/warnings.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
 *   **Localization System - Phase 2i (checkActionProfiles & Final Review):**
     *   **Summary:** Completed the primary code localization effort by externalizing strings from `checkActionProfiles` in `config.js` and conducting a final review of major files for missed strings.
     *   **Details:**
