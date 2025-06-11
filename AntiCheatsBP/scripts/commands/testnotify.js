@@ -2,10 +2,10 @@
  * @file AntiCheatsBP/scripts/commands/testnotify.js
  * Defines the !testnotify command for owners to send a test admin notification.
  * Useful for verifying that the admin notification system is working correctly.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/testnotify.js
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,7 +13,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: "testnotify",
     syntax: "!testnotify",
-    description: "Sends a test admin notification.",
+    description: getString("command.testnotify.description"),
     permissionLevel: permissionLevels.owner // Restricted to owner for system testing
 };
 
@@ -26,10 +26,11 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     const { playerUtils } = dependencies;
     if (playerUtils && playerUtils.notifyAdmins) {
-        playerUtils.notifyAdmins("§6This is a test notification from the AntiCheat system.", player, null);
-        player.sendMessage("§aTest notification sent to online admins/owners.");
+        // Pass player.nameTag to the notification message
+        playerUtils.notifyAdmins(getString("command.testnotify.adminNotification.message", { playerName: player.nameTag }), player, null);
+        player.sendMessage(getString("command.testnotify.success"));
     } else {
-        player.sendMessage("§cError: Notification utility not available.");
+        player.sendMessage(getString("command.testnotify.error.unavailable"));
         console.warn("[testnotify] playerUtils.notifyAdmins is not available in dependencies.");
     }
 }

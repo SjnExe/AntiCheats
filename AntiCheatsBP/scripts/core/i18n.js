@@ -28,6 +28,11 @@ export const translations = {
         "common.status.disabled": "DISABLED",
         "common.status.locked": "§cLOCKED",
         "common.status.unlocked": "§aUNLOCKED",
+        "common.boolean.yes": "Yes",
+        "common.boolean.no": "No",
+        "common.value.none": "None", // Replaces command.myflags.value.none
+        "common.value.notApplicable": "N/A", // Replaces command.myflags.value.notApplicable
+        "common.value.permanent": "Permanent",
         // ... (other common strings) ...
 
         // === Command Specific Errors / Usage ===
@@ -143,8 +148,32 @@ export const translations = {
         "command.myflags.noFlags": "§7You have no active flags.",
         "command.myflags.noSpecificFlags": "§7Your current flags: §eTotal={totalFlags}§7. Last type: §e{lastFlagType}§r\n§7(No specific flag type details available with counts > 0).",
         "command.myflags.noData": "§7No flag data found for you, or you have no flags.",
-        "command.myflags.value.none": "None",
-        "command.myflags.value.notApplicable": "N/A"
+        // "command.myflags.value.none": "None", // Moved to common.value.none
+        // "command.myflags.value.notApplicable": "N/A", // Moved to common.value.notApplicable
+
+        // === Inspect Command ===
+        "command.inspect.description": "Inspects a player's AntiCheat data summary.",
+        "command.inspect.usage": "§cUsage: {prefix}inspect <playername>",
+        "command.inspect.error.notFoundOrNoData": "§cPlayer \"{playerName}\" not found or no AntiCheat data available.",
+        "command.inspect.header": "§e--- AntiCheat Data for {playerName} ---",
+        "command.inspect.playerId": "§fPlayer ID: §7{id}",
+        "command.inspect.watchedStatus": "§fIs Watched: §7{status}",
+        "command.inspect.totalFlags": "§fTotal Flags: §c{count}",
+        "command.inspect.lastFlagType": "§fLast Flag Type: §7{type}",
+        "command.inspect.flagsByTypeHeader": "§fFlags by type:",
+        "command.inspect.flagEntry": "  §f- {flagKey}: §c{count} §7(Last: {timestamp})",
+        "command.inspect.noSpecificFlags": "    §7No specific flag types recorded.",
+        "command.inspect.mutedYes": "§fMuted: §cYes (Expires: {expiryDate}, Reason: {reason})",
+        "command.inspect.mutedNo": "§fMuted: §aNo",
+        "command.inspect.bannedYes": "§fBanned: §cYes (Expires: {expiryDate}, Reason: {reason})",
+        "command.inspect.bannedNo": "§fBanned: §aNo",
+        "command.inspect.noData": "§7No AntiCheat data found for this player (they might not have triggered any checks or joined recently).",
+
+        // === TestNotify Command ===
+        "command.testnotify.description": "Sends a test notification to all online admins.",
+        "command.testnotify.success": "§aTest notification sent to online admins/owners.",
+        "command.testnotify.adminNotification.message": "§6This is a test notification from {playerName} via the AntiCheat system.",
+        "command.testnotify.error.unavailable": "§cError: Notification utility not available."
 
         // ... (Other command strings) ...
     }

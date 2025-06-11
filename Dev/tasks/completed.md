@@ -7,6 +7,15 @@
     *   **Purpose:** To use a more standard and concise naming convention for the internationalization utility.
     *   **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js` (renamed from `localizationManager.js`), and numerous script files across the `commands/` and `core/` directories that had their import paths updated.
 
+*   **Localization System - Phase 2g (Inspect & Testnotify Commands):**
+    *   **Summary:** Continued localization by refactoring the `inspect.js` and `testnotify.js` command modules.
+    *   **Details:**
+        *   All user-facing strings within these command modules, including their static `definition.description`, were externalized.
+        *   New localization keys and corresponding English translations were added to `AntiCheatsBP/scripts/core/i18n.js`.
+        *   The command files were updated to import and use the `getString` function from `i18n.js`.
+    *   **Purpose:** To make these utility/administrative commands fully localizable.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/inspect.js`, `AntiCheatsBP/scripts/commands/testnotify.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
 *   **Localization System - Phase 2f (Utility Commands Refactoring):**
     *   **Summary:** Continued localization by refactoring several utility command modules: `rules.js`, `version.js`, `copyinv.js`, and `myflags.js`.
     *   **Details:**

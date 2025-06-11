@@ -22,7 +22,7 @@ This list tracks features and tasks that are currently under development.
     *   **Next Steps:** Refine existing AutoMod rules and thresholds based on live testing and feedback. Consider any other minor enhancements from `Dev/notes/AutoModReview_Findings.md` if applicable.
     *   *(Original description: Conduct a holistic review of the implemented AutoMod system (Phases 1-5) for any further refinements, performance optimizations, or new action types/conditions based on usage.)*
 
-*   **Localization Implementation:** (Phases 1, 2a, 2b, 2c, 2d, 2e & 2f Complete; Further Phases Pending)
+*   **Localization Implementation:** (Phases 1, 2a, 2b, 2c, 2d, 2e, 2f & 2g Complete; Further Phases Pending)
     *   **Objective:** To make the addon's user-facing strings localizable to support multiple languages.
     *   **Completed Phase 1 (Core Setup & Key Modules):**
         *   Created `AntiCheatsBP/scripts/core/i18n.js` with a `getString(key, args)` function and a `translations` object.
@@ -48,10 +48,13 @@ This list tracks features and tasks that are currently under development.
         *   Refactored flag/warning clearing commands (`resetflags.js` and its alias `clearwarnings.js`) to use the i18n manager.
         *   Added new localization keys and English translations to `i18n.js` for all these commands, including their static descriptions.
     *   **Completed Phase 2e (TPA Command Suite Localization):** Refactored `tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, and `tpastatus.js` to use the localization system. Added all necessary string keys to `i18n.js`.
-    *   **Completed Phase 2f (Utility Commands Localization - Current Session):**
+    *   **Completed Phase 2f (Utility Commands Localization):**
         *   Refactored `rules.js`, `version.js`, `copyinv.js`, and `myflags.js` command modules to use the i18n manager. (`systeminfo.js` was not found and skipped).
         *   Added new localization keys and English translations to `i18n.js` for these commands, including their static descriptions.
-    *   **Next Steps (Phase 2g+):**
-        *   Incrementally refactor any remaining command modules (e.g., `inspect.js`, `testnotify.js`, `systeminfo.js` if found/needed).
+    *   **Completed Phase 2g (Inspect & Testnotify Commands Localization - Current Session):**
+        *   Refactored `inspect.js` and `testnotify.js` command modules to use the localization manager.
+        *   Added new localization keys and English translations to `i18n.js` for these commands, including their static descriptions.
+    *   **Next Steps (Phase 2h+):**
         *   Externalize user-facing strings from all check files (e.g., violation detail messages if any are directly sent from checks) and manager notifications (e.g., `playerDataManager` flag reasons, `automodManager` admin notifications not already covered by command localization).
+        *   Final review of all modules for any missed strings (e.g. `systeminfo.js` if found/needed).
         *   Add translation files/entries for other languages (e.g., "es_ES", "de_DE").
