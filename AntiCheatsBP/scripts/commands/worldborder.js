@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/worldborder.js
  * Manages world border settings via commands.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
 import { world, system } from '@minecraft/server';
@@ -89,6 +89,11 @@ export async function execute(player, args, dependencies) {
     }
 }
 
+/**
+ * Formats milliseconds into a brief human-readable string (e.g., "1h 30m 15s").
+ * @param {number} ms - Duration in milliseconds.
+ * @returns {string} Formatted duration string.
+ */
 function formatDurationBrief(ms) {
     if (ms <= 0) return "0s";
     let seconds = Math.floor(ms / 1000);
@@ -113,7 +118,14 @@ function normalizeDimensionId(player, inputDimId) {
     return null;
 }
 
-
+/**
+ * Handles the 'set' subcommand for the worldborder.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args Remaining arguments after the subcommand.
+ * @param {object} playerUtils Player utilities.
+ * @param {object} logManager Log manager.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
 async function handleSetCommand(player, args, playerUtils, logManager, dependencies) {
     const { config: currentRunTimeConfig, configModule } = dependencies; // config is editableConfigValues
     const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
