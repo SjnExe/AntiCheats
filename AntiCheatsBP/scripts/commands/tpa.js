@@ -7,7 +7,7 @@ import { world, system } from '@minecraft/server';
 import * as config from '../config.js'; // Assuming config still exports prefix and TPARequestTimeoutSeconds directly
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}

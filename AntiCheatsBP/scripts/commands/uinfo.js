@@ -7,7 +7,7 @@
 // AntiCheatsBP/scripts/commands/uinfo.js
 import { permissionLevels } from '../core/rankManager.js';
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Specific UI imports
-import { getString } from '../core/localizationManager.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * Shows the player their anti-cheat statistics.
