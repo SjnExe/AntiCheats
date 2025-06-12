@@ -31,6 +31,7 @@ export const translations = {
         value_permanent: "Permanent",
         value_unknown: "Unknown",
         value_noReasonProvided: "No reason provided.",
+        actionCancelled: "Action cancelled.",
     },
     commands: {
         error: {
