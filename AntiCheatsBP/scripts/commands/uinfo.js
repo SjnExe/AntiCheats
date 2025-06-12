@@ -2,12 +2,11 @@
  * @file AntiCheatsBP/scripts/commands/uinfo.js
  * Defines the !uinfo command, providing a user interface for players to view their
  * AntiCheat statistics, server rules, and other helpful information.
- * @version 1.0.0
+ * @version 1.0.2
  */
-// AntiCheatsBP/scripts/commands/uinfo.js
 import { permissionLevels } from '../core/rankManager.js';
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Specific UI imports
-import { getString } from '../core/localizationManager.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * Shows the player their anti-cheat statistics.
@@ -44,7 +43,7 @@ async function showMyStatsUI(player, dependencies) {
         .title(getString("uinfo.myStats.title"))
         .body(statsOutput.trim())
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showMyStatsUI for ${player.nameTag}: ${e}`, player.nameTag);});
+    await form.show(player).catch(e => { if (dependencies.config.enableDebugLogging && playerUtils.debugLog) playerUtils.debugLog(`Error in showMyStatsUI for ${player.nameTag}: ${e}`, player.nameTag); });
 }
 
 /**
@@ -61,7 +60,7 @@ async function showServerRulesUI(player, dependencies) {
         .title(getString("uinfo.serverRules.title"))
         .body(rulesText && rulesText.trim() !== "" && rulesText !== rulesKey ? rulesText : getString("uinfo.serverRules.noRulesConfigured"))
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showServerRulesUI for ${player.nameTag}: ${e}`, player.nameTag);});
+    await form.show(player).catch(e => { if (dependencies.config.enableDebugLogging && playerUtils.debugLog) playerUtils.debugLog(`Error in showServerRulesUI for ${player.nameTag}: ${e}`, player.nameTag); });
 }
 
 /**
@@ -104,7 +103,7 @@ async function showHelpLinksUI(player, dependencies) {
         .title(getString("uinfo.helpLinks.title"))
         .body(linksBody.trim())
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showHelpLinksUI for ${player.nameTag}: ${e}`, player.nameTag);});
+    await form.show(player).catch(e => { if (dependencies.config.enableDebugLogging && playerUtils.debugLog) playerUtils.debugLog(`Error in showHelpLinksUI for ${player.nameTag}: ${e}`, player.nameTag); });
 }
 
 /**
@@ -125,7 +124,7 @@ async function showGeneralTipsUI(player, dependencies) {
         .title(getString("uinfo.generalTips.title"))
         .body(tips)
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showGeneralTipsUI for ${player.nameTag}: ${e}`, player.nameTag);});
+    await form.show(player).catch(e => { if (dependencies.config.enableDebugLogging && playerUtils.debugLog) playerUtils.debugLog(`Error in showGeneralTipsUI for ${player.nameTag}: ${e}`, player.nameTag); });
 }
 
 /**
@@ -141,11 +140,11 @@ export const definition = {
 /**
  * Executes the uinfo command, showing a UI panel with various info for the player.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
+ * @param {string[]} _args The command arguments (unused in this command).
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-export async function execute(player, args, dependencies) {
-    const { addLog, playerUtils } = dependencies;
+export async function execute(player, _args, dependencies) { // args renamed to _args
+    const { addLog, playerUtils, config: runtimeConfig } = dependencies; // Added runtimeConfig for debug logging check
     const mainPanel = new ActionFormData()
         .title(getString("uinfo.mainPanel.title"))
         .body(getString("uinfo.mainPanel.body", { playerName: player.nameTag }))
@@ -155,12 +154,16 @@ export async function execute(player, args, dependencies) {
         .button(getString("uinfo.mainPanel.button.generalTips"), "textures/ui/lightbulb_idea_color");
 
     const response = await mainPanel.show(player).catch(e => {
-        if(playerUtils.debugLog) playerUtils.debugLog(`Error showing main uinfo panel for ${player.nameTag}: ${e}`, player.nameTag);
+        if (runtimeConfig.enableDebugLogging && playerUtils.debugLog) {
+            playerUtils.debugLog(`Error showing main uinfo panel for ${player.nameTag}: ${e}`, player.nameTag);
+        }
         return { canceled: true, error: true }; // Ensure structure for cancellation check
     });
 
     if (response.canceled) {
-        if(playerUtils.debugLog && !response.error) playerUtils.debugLog(`User ${player.nameTag} cancelled uinfo panel. Reason: ${response.cancelationReason}`, player.nameTag);
+        if (runtimeConfig.enableDebugLogging && playerUtils.debugLog && !response.error) {
+            playerUtils.debugLog(`User ${player.nameTag} cancelled uinfo panel. Reason: ${response.cancelationReason}`, player.nameTag);
+        }
         return;
     }
 
@@ -173,6 +176,8 @@ export async function execute(player, args, dependencies) {
         case 2: await showHelpLinksUI(player, dependencies); break;
         case 3: await showGeneralTipsUI(player, dependencies); break;
         default:
-             if(playerUtils.debugLog) playerUtils.debugLog(`Unexpected selection in uinfo panel for ${player.nameTag}: ${response.selection}`, player.nameTag);
+            if (runtimeConfig.enableDebugLogging && playerUtils.debugLog) {
+                playerUtils.debugLog(`Unexpected selection in uinfo panel for ${player.nameTag}: ${response.selection}`, player.nameTag);
+            }
     }
 }

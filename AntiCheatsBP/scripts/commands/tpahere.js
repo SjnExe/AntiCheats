@@ -1,13 +1,13 @@
 /**
  * @file Script for the !tpahere command, allowing players to request another player to teleport to them.
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 import { world, system } from '@minecraft/server';
-import * as config from '../config.js'; // Assuming config still exports prefix and TPARequestTimeoutSeconds directly
+// Removed direct import of config
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -79,7 +79,9 @@ export async function execute(player, args, dependencies) {
             try {
                 target.onScreenDisplay.setActionBar(getString("command.tpahere.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
             } catch (e) {
-                playerUtils?.debugLog?.(`[TPAHereCommand] Failed to set action bar for target ${target.nameTag}: ${e}`, player.nameTag);
+                if (fullConfig.enableDebugLogging && playerUtils?.debugLog) {
+                    playerUtils.debugLog(`[TPAHereCommand] Failed to set action bar for target ${target.nameTag}: ${e}`, player.nameTag);
+                }
             }
         });
     } else {

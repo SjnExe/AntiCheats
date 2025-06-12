@@ -1,13 +1,13 @@
 /**
  * @file Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 import { world, system } from '@minecraft/server';
 // import * as config from '../config.js'; // No direct config needed here, prefix comes from dependencies
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}

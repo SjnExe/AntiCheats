@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/setlang.js
  * Defines the !setlang command for changing the server's default language for AntiCheat messages.
- * @version 1.0.0
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { getString, setCurrentLanguage, translations as validLangCodesContainer } from '../core/i18n.js';
@@ -19,7 +19,8 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config: configModule, prefix } = dependencies;
+    const { playerUtils, logManager, config: runtimeConfig, configModule } = dependencies;
+    const prefix = runtimeConfig.prefix; // Use prefix from runtimeConfig (editableConfigValues)
 
     if (args.length < 1) {
         playerUtils.warnPlayer(player, getString("command.setlang.usage", { prefix: prefix }));
@@ -41,18 +42,12 @@ export async function execute(player, args, dependencies) {
         playerUtils.notifyPlayer(player, getString("command.setlang.success", { langCode: langCode }));
 
         // Ensure logManager and addLog are correctly accessed based on actual dependencies structure
-        if (dependencies.logManager && typeof dependencies.logManager.addLog === 'function') {
-             dependencies.logManager.addLog({
+        const addLogFunction = dependencies.logManager?.addLog || dependencies.addLog;
+        if (typeof addLogFunction === 'function') {
+            addLogFunction({
                 adminName: player.nameTag,
                 actionType: 'config_change_setlang',
                 targetName: langCode, // Storing the language code as the "target"
-                details: `Server default language changed to ${langCode}.`
-            });
-        } else if (typeof dependencies.addLog === 'function') { // Fallback if addLog is directly in dependencies
-            dependencies.addLog({
-                adminName: player.nameTag,
-                actionType: 'config_change_setlang',
-                targetName: langCode,
                 details: `Server default language changed to ${langCode}.`
             });
         } else {
@@ -63,7 +58,7 @@ export async function execute(player, args, dependencies) {
         // This condition means updateConfigValue returned false.
         // This could be because the value was already set to langCode, or an internal issue in updateConfigValue not throwing an error.
         // If it's just "already set", it's not a failure. We can check the current config value.
-        if (configModule.editableConfigValues.defaultServerLanguage === langCode) {
+        if (runtimeConfig.defaultServerLanguage === langCode) { // Check against runtimeConfig
             // If the language was already set to this, it's not an error, but no change was made.
             // Consider a different message or just notify success if this is acceptable.
             // For now, let's assume it's important to know if a change actually happened.

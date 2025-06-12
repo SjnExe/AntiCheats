@@ -2,10 +2,10 @@
  * @file AntiCheatsBP/scripts/commands/resetflags.js
  * Defines the !resetflags command for administrators to clear a player's accumulated AntiCheat flags
  * and associated violation tracking data. Also aliased by !clearwarnings.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/i18n.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -86,8 +86,10 @@ export async function execute(player, args, dependencies) {
         if (addLog) {
             addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'reset_flags', targetName: targetPlayer.nameTag, details: `Reset flags for ${targetPlayer.nameTag}` });
         }
-        if (playerUtils.debugLog) {
-            playerUtils.debugLog(`Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, player.nameTag);
+        if (config.enableDebugLogging || (pData && pData.isWatched)) {
+            if (playerUtils.debugLog) { // Ensure debugLog itself exists
+                playerUtils.debugLog(`Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, pData.isWatched ? targetPlayer.nameTag : null);
+            }
         }
     } else {
         player.sendMessage(getString("command.resetflags.failNoData", { targetName: targetPlayer.nameTag }));

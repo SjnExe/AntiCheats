@@ -2,11 +2,11 @@
  * @file AntiCheatsBP/scripts/commands/tp.js
  * Defines the !tp (teleport) command for administrators, allowing teleportation of players
  * to other players or to specific coordinates, potentially across dimensions.
- * @version 1.0.1
+ * @version 1.0.3
  */
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 function parseDimensionLocal(dimStr, playerUtils) {
     if (!dimStr || typeof dimStr !== 'string') return null;
@@ -18,10 +18,19 @@ function parseDimensionLocal(dimStr, playerUtils) {
         case "minecraft:the_nether": return mc.world.nether;
         case "minecraft:the_end": return mc.world.theEnd;
         default:
+            // This debugLog is inside a utility function. Ideally, playerUtils.debugLog itself should check enableDebugLogging.
+            // For now, we'll assume it does or note this as needing playerUtils refactor.
             playerUtils?.debugLog?.(`parseDimensionLocal: Invalid dimension string "${dimStr}".`);
             return null;
     }
 }
+
+/**
+ * Parses a dimension string and returns the corresponding Dimension object.
+ * @param {string} dimStr - The dimension string (e.g., "overworld", "nether", "end").
+ * @param {object} playerUtils - Player utilities, including debugLog.
+ * @returns {mc.Dimension | null} The Dimension object or null if invalid.
+ */
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -82,7 +91,7 @@ export async function execute(player, args, dependencies) {
         targetDimension = playerToMove.dimension;
         if (args.length === 4) {
             const parsedDim = parseDimensionLocal(args[3], playerUtils);
-            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = getString("command.tp.dimensionIn", { dimensionName: args[3].toLowerCase()}); }
+            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = getString("command.tp.dimensionIn", { dimensionName: args[3].toLowerCase() }); } // Corrected typo
             else { player.sendMessage(getString("command.tp.error.invalidDimension", { dimensionName: args[3] })); }
         } else {
              dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`;
@@ -98,7 +107,7 @@ export async function execute(player, args, dependencies) {
         targetDimension = playerToMove.dimension;
         if (args.length === 5) {
             const parsedDim = parseDimensionLocal(args[4], playerUtils);
-            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = getString("command.tp.dimensionIn", { dimensionName: args[4].toLowerCase()}); }
+            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = getString("command.tp.dimensionIn", { dimensionName: args[4].toLowerCase() }); } // Corrected typo
             else { player.sendMessage(getString("command.tp.error.invalidDimension", { dimensionName: args[4] })); }
         } else {
             dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`;
@@ -108,7 +117,9 @@ export async function execute(player, args, dependencies) {
 
     if (!playerToMove || !destinationLocation || !targetDimension) {
         player.sendMessage(getString("command.tp.usage", { prefix: prefix }));
-        playerUtils.debugLog?.(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag);
+        if (config.enableDebugLogging) {
+            playerUtils.debugLog?.(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag);
+        }
         return;
     }
 
@@ -140,6 +151,8 @@ export async function execute(player, args, dependencies) {
         }
     } catch (e) {
         player.sendMessage(getString("command.tp.error.failed", { errorMessage: (e.message || e) }));
-        playerUtils.debugLog?.(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag);
+        if (config.enableDebugLogging) {
+            playerUtils.debugLog?.(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag);
+        }
     }
 }

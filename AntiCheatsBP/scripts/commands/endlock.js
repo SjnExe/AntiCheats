@@ -1,11 +1,11 @@
 /**
  * @file AntiCheatsBP/scripts/commands/endlock.js
  * Defines the !endlock command for administrators to manage End dimension access.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
-import { getString } from '../../core/i18n.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}

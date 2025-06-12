@@ -1,10 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/mute.js
  * Defines the !mute command for administrators to prevent a player from sending chat messages.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/i18n.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -18,7 +18,7 @@ export const definition = {
 
 /**
  * Executes the mute command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {import('@minecraft/server').Player | null} player The player issuing the command, or null if system-invoked.
  * @param {string[]} args The command arguments.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  * @param {string} [invokedBy="PlayerCommand"] How the command was invoked.
@@ -37,8 +37,11 @@ export async function execute(
 
     if (args.length < 1) {
         const usageMessage = getString('command.mute.usage', { prefix: config.prefix });
-        if (player) player.sendMessage(usageMessage);
-        else console.warn("Mute command called without player and insufficient args by system.");
+        if (player) {
+            player.sendMessage(usageMessage);
+        } else {
+            console.warn("Mute command called without player and insufficient args by system.");
+        }
         return;
     }
     const targetPlayerName = args[0];
@@ -56,8 +59,11 @@ export async function execute(
 
     if (!foundPlayer) {
         const message = getString('command.mute.notFound', { targetName: targetPlayerName });
-        if (player) player.sendMessage(message);
-        else console.warn(message);
+        if (player) {
+            player.sendMessage(message);
+        } else {
+            console.warn(message);
+        }
         return;
     }
 
@@ -70,16 +76,19 @@ export async function execute(
         const targetPermissionLevel = dependencies.getPlayerPermissionLevel(foundPlayer);
         const issuerPermissionLevel = dependencies.getPlayerPermissionLevel(player);
         if (targetPermissionLevel >= issuerPermissionLevel && player.id !== foundPlayer.id) {
-             player.sendMessage(getString('command.mute.permissionInsufficient'));
-             return;
+            player.sendMessage(getString('command.mute.permissionInsufficient'));
+            return; // Corrected extra space
         }
     }
 
     const durationMs = parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
         const message = getString('command.mute.invalidDuration', { defaultDuration: defaultDuration });
-        if (player) player.sendMessage(message);
-        else console.warn(message + ` (Invoked by ${invokedBy})`);
+        if (player) {
+            player.sendMessage(message);
+        } else {
+            console.warn(message + ` (Invoked by ${invokedBy})`);
+        }
         return;
     }
 
@@ -104,15 +113,21 @@ export async function execute(
             try {
                 foundPlayer.onScreenDisplay.setActionBar(getString(targetNotificationKey, { durationString: durationString, reason: actualReason }));
             } catch (e) {
-                if (playerUtils.debugLog) playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayer.nameTag}: ${e}`, player ? player.nameTag : "System");
+                if (config.enableDebugLogging && playerUtils.debugLog) {
+                    playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayer.nameTag}: ${e}`, player ? player.nameTag : "System");
+                }
             }
 
             const successMessage = getString('command.mute.success', { targetName: foundPlayer.nameTag, durationText: durationText, reason: actualReason });
-            if (player) player.sendMessage(successMessage);
-            else console.log(successMessage.replace(/§[a-f0-9]/g, ''));
+            if (player) {
+                player.sendMessage(successMessage);
+            } else {
+                console.log(successMessage.replace(/§[a-f0-9]/g, ''));
+            }
 
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(getString('command.mute.adminNotification', { targetName: foundPlayer.nameTag, durationText: durationText, mutedBy: actualMutedBy, reason: actualReason }), player, null);
+                const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context
+                playerUtils.notifyAdmins(getString('command.mute.adminNotification', { targetName: foundPlayer.nameTag, durationText: durationText, mutedBy: actualMutedBy, reason: actualReason }), player, targetPData);
             }
             if (addLog) {
                 addLog({
@@ -128,13 +143,21 @@ export async function execute(
             }
         } else {
             const failureMessage = getString('command.mute.fail', { targetName: foundPlayer.nameTag });
-            if (player) player.sendMessage(failureMessage);
-            else console.warn(failureMessage.replace(/§[a-f0-9]/g, ''));
+            if (player) {
+                player.sendMessage(failureMessage);
+            } else {
+                console.warn(failureMessage.replace(/§[a-f0-9]/g, ''));
+            }
         }
     } catch (e) {
         const errorMessage = getString('command.mute.error', { targetName: foundPlayer.nameTag, error: e });
-        if (player) player.sendMessage(errorMessage);
-        else console.error(errorMessage.replace(/§[a-f0-9]/g, ''));
-        if (playerUtils.debugLog) playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayer.nameTag} by ${player ? player.nameTag : invokedBy}: ${e}`, player ? player.nameTag : "System");
+        if (player) {
+            player.sendMessage(errorMessage);
+        } else {
+            console.error(errorMessage.replace(/§[a-f0-9]/g, ''));
+        }
+        if (config.enableDebugLogging && playerUtils.debugLog) {
+            playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayer.nameTag} by ${player ? player.nameTag : invokedBy}: ${e}`, player ? player.nameTag : "System");
+        }
     }
 }

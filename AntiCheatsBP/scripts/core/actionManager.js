@@ -1,12 +1,15 @@
 /**
  * @file AntiCheatsBP/scripts/core/actionManager.js
- * Manages the execution of actions (flagging, logging, notifying) based on cheat detection profiles.
- * @version 1.0.0
+ * @description Manages the execution of actions (flagging, logging, notifying) based on cheat detection profiles.
+ * This module is responsible for interpreting check results and applying configured consequences.
+ * @version 1.1.0
  */
 
 /**
  * Formats a violation details object into a concise string.
- * Example: { "value": 5, "threshold": 2 } becomes "value: 5, threshold: 2".
+ * @description Converts an object containing violation specifics (e.g., counts, thresholds)
+ * into a human-readable string.
+ * Example: `{ "value": 5, "threshold": 2 }` becomes `"value: 5, threshold: 2"`.
  * @param {object} violationDetails - The details of the violation.
  * @returns {string} A string representation of the violation details, or "N/A" if details are empty or invalid.
  */
@@ -15,34 +18,34 @@ function formatViolationDetails(violationDetails) {
         return "N/A";
     }
     return Object.entries(violationDetails)
-        .map(([key, value]) => `${key}: ${String(value)}`) // Ensure value is stringified
+        .map(([key, value]) => `${key}: ${String(value)}`)
         .join(', ');
 }
 
 /**
- * Formats a message template with player, checkType, and violation details.
- * Supports placeholders: {playerName}, {checkType}, {detailsString}, and any key from violationDetails (e.g., {value}).
+ * Formats a message template with player name, checkType, and violation details.
+ * @description Replaces placeholders in a template string with actual values.
+ * Supported placeholders: `{playerName}`, `{checkType}`, `{detailsString}`,
+ * and any key from `violationDetails` (e.g., `{value}`).
  * @param {string} template - The message template string.
- * @param {import('@minecraft/server').Player} player - The player object.
+ * @param {string} playerName - The name of the player involved, or a system identifier (e.g., "System").
  * @param {string} checkType - The type of check (e.g., "fly_hover").
  * @param {object} violationDetails - An object containing specific details of the violation.
  * @returns {string} The formatted message. Returns an empty string if the template is falsy.
  */
-function formatActionMessage(template, player, checkType, violationDetails) {
-    if (!template) return "";
+function formatActionMessage(template, playerName, checkType, violationDetails) {
+    if (!template) {
+        return "";
+    }
 
     let message = template;
-    // Basic placeholders
-    message = message.replace(/{playerName}/g, player.nameTag);
+    message = message.replace(/{playerName}/g, playerName);
     message = message.replace(/{checkType}/g, checkType);
     message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
 
-    // Allow direct access to violationDetails properties like {propertyName}
     if (violationDetails && typeof violationDetails === 'object') {
         for (const key in violationDetails) {
-            // Ensure the property belongs to the object itself, not its prototype
             if (Object.prototype.hasOwnProperty.call(violationDetails, key)) {
-                // Create a RegExp for global replacement of this specific key's placeholder
                 const placeholderRegex = new RegExp(`{${key}}`, 'g');
                 message = message.replace(placeholderRegex, String(violationDetails[key]));
             }
@@ -53,114 +56,115 @@ function formatActionMessage(template, player, checkType, violationDetails) {
 
 /**
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
- * Actions can include flagging the player, logging the event, and notifying administrators.
- *
- * @param {import('@minecraft/server').Player} player - The player who committed the violation.
+ * @description This is the core function for handling consequences of cheat detections.
+ * It checks action profiles, flags players, logs events, and notifies admins based on configuration.
+ * It now handles cases where the `player` object might be null (e.g., for system-level checks
+ * or events not directly tied to a specific player).
+ * @param {import('@minecraft/server').Player | null} player - The player who committed the violation, or null if not player-specific.
  * @param {string} checkType - A unique string identifying the check (e.g., "fly_hover", "speed_ground").
- *                             This key is used to find the corresponding action profile in `config.checkActionProfiles`.
- * @param {object} violationDetails - An object containing specific details about the violation (e.g., { "speed": 10, "maxSpeed": 8 }).
- *                                    These details can be used in formatted messages.
+ * @param {object} violationDetails - An object containing specific details about the violation.
  * @param {import('../types.js').ActionManagerDependencies} dependencies - An object containing necessary dependencies:
- *                                       - `config`: The global configuration object, expected to have `checkActionProfiles`.
- *                                       - `playerDataManager`: Manager for player data operations (e.g., `addFlag`).
- *                                       - `playerUtils`: Utility functions for player interactions (e.g., `debugLog`, `notifyAdmins`).
+ *                                       - `config`: The global configuration object.
+ *                                       - `playerDataManager`: Manager for player data operations.
+ *                                       - `playerUtils`: Utility functions for player interactions.
  *                                       - `logManager`: Manager for logging actions.
- * @returns {Promise<void>}
+ * @returns {Promise<void>} A promise that resolves when all actions are completed.
  */
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { config, playerDataManager, playerUtils, logManager } = dependencies;
+    const playerNameForLog = player ? player.nameTag : "System";
 
     if (!config?.checkActionProfiles) {
-        playerUtils?.debugLog?.(`[ActionManager] checkActionProfiles not found in config. Cannot process action for ${checkType}.`, player.nameTag);
+        playerUtils?.debugLog?.(`[ActionManager] checkActionProfiles not found in config. Cannot process action for ${checkType}. Context: ${playerNameForLog}`);
         return;
     }
 
     const profile = config.checkActionProfiles[checkType];
 
     if (!profile) {
-        playerUtils?.debugLog?.(`[ActionManager] No action profile found for checkType: "${checkType}".`, player.nameTag);
+        playerUtils?.debugLog?.(`[ActionManager] No action profile found for checkType: "${checkType}". Context: ${playerNameForLog}`);
         return;
     }
 
     if (!profile.enabled) {
-        playerUtils?.debugLog?.(`[ActionManager] Actions for checkType "${checkType}" are disabled in its profile.`, player.nameTag);
+        // This debug log is conditional on profile.enabled being false, which is fine.
+        playerUtils?.debugLog?.(`[ActionManager] Actions for checkType "${checkType}" are disabled in its profile. Context: ${playerNameForLog}`);
         return;
     }
 
-    // Default reason, can be overridden by profile.flag.reason
-    let flagReasonMessage = `Violation detected for ${checkType}.`;
+    let flagReasonMessage = `Violation detected for ${checkType}.`; // Default, can be overridden
 
-    // 1. Handle Flagging
-    if (profile.flag && playerDataManager?.addFlag) {
-        const flagType = profile.flag.type || checkType; // Use specific flag type from profile, or default to checkType
+    // Format reason messages early, using playerNameForLog
+    const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
+    flagReasonMessage = formatActionMessage(
+        baseReasonTemplate,
+        playerNameForLog,
+        checkType,
+        violationDetails
+    );
+
+    // 1. Handle Flagging (only if player is not null)
+    if (player && profile.flag && playerDataManager?.addFlag) {
+        const flagType = profile.flag.type || checkType;
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
-
-        // Format the reason message that will be shown to the player and potentially logged
-        flagReasonMessage = formatActionMessage(
-            profile.flag.reason || `Triggered ${checkType}`, // Default reason if not specified in profile
-            player,
-            checkType,
-            violationDetails
-        );
-
-        // The `detailsForNotify` parameter of `addFlag` is for the concise part of the admin notification from `addFlag` itself.
         const flagDetailsForAdminNotify = formatViolationDetails(violationDetails);
 
         for (let i = 0; i < increment; i++) {
-            // `playerDataManager.addFlag` handles its own admin notification part.
             await playerDataManager.addFlag(player, flagType, flagReasonMessage, flagDetailsForAdminNotify, dependencies);
         }
-        playerUtils?.debugLog?.(`[ActionManager] Flagged ${player.nameTag} for ${flagType} (x${increment}). Reason: "${flagReasonMessage}"`, player.nameTag);
+        playerUtils?.debugLog?.(`[ActionManager] Flagged ${playerNameForLog} for ${flagType} (x${increment}). Reason: "${flagReasonMessage}"`);
+    } else if (!player && profile.flag) {
+        playerUtils?.debugLog?.(`[ActionManager] Skipping flagging for checkType "${checkType}" because player is null. Profile had flagging enabled.`);
     }
 
-    // 2. Handle Logging (to logManager)
+    // 2. Handle Logging
     if (profile.log && logManager?.addLog) {
-        const logActionType = profile.log.actionType || `detected_${checkType}`; // e.g., "detected_fly_hover"
+        const logActionType = profile.log.actionType || `detected_${checkType}`;
         let logDetailsString = profile.log.detailsPrefix || "";
 
-        if (profile.log.includeViolationDetails !== false) { // Defaults to true if not specified
+        if (profile.log.includeViolationDetails !== false) {
             logDetailsString += formatViolationDetails(violationDetails);
         }
 
         logManager.addLog({
             adminName: 'System', // Anti-cheat checks are system-detected events
             actionType: logActionType,
-            targetName: player.nameTag,
+            targetName: playerNameForLog, // Use playerNameForLog here
             details: logDetailsString.trim(),
-            // Use the fully formatted flagReasonMessage as the primary reason for the log for consistency.
-            // If a specific log reason was needed, it could be added to profile.log.reason.
-            reason: flagReasonMessage,
-            // Optional: include how many flags were added by this action, if flagging occurred.
-            // This might be redundant if addFlag also logs, but can be useful here.
-            // For now, not adding increment directly to log entry, assuming flagReasonMessage is sufficient.
+            reason: flagReasonMessage, // Use the potentially formatted flagReasonMessage
         });
     }
 
-    // 3. Handle Admin Notification (separate from addFlag's notification, if any)
-    // This allows for a potentially different or more detailed notification specifically from ActionManager.
+    // 3. Handle Admin Notification
     if (profile.notifyAdmins?.message && playerUtils?.notifyAdmins) {
-        const notifyMsg = formatActionMessage(profile.notifyAdmins.message, player, checkType, violationDetails);
-        // The `playerUtils.notifyAdmins` function typically takes (message, playerContext, pDataForContext).
-        // Here, `player` is the context. `pData` could be fetched if needed for the notification.
-        // For a simple system alert, player context might be enough.
-        const pData = playerDataManager?.getPlayerData?.(player.id); // Optionally fetch pData for context
-        playerUtils.notifyAdmins(notifyMsg, player, pData);
+        const notifyMsg = formatActionMessage(
+            profile.notifyAdmins.message,
+            playerNameForLog,
+            checkType,
+            violationDetails
+        );
+        // Pass null for pData if player is null, or attempt to fetch if player exists.
+        const pData = player && playerDataManager?.getPlayerData ? playerDataManager.getPlayerData(player.id) : null;
+        playerUtils.notifyAdmins(notifyMsg, player, pData); // player can be null here
     }
 
-    // Store specific violation details if itemTypeId is present
-    if (playerDataManager && pData && violationDetails?.itemTypeId) {
-        if (!pData.lastViolationDetailsMap) {
-            pData.lastViolationDetailsMap = {};
+    // Store specific violation details if itemTypeId is present (only if player and pData exist)
+    if (player && playerDataManager && violationDetails?.itemTypeId) {
+        const pData = playerDataManager.getPlayerData?.(player.id);
+        if (pData) { // Ensure pData was fetched successfully
+            if (!pData.lastViolationDetailsMap) {
+                pData.lastViolationDetailsMap = {};
+            }
+            pData.lastViolationDetailsMap[checkType] = {
+                itemTypeId: violationDetails.itemTypeId,
+                timestamp: Date.now()
+            };
+            pData.isDirtyForSave = true;
+            playerUtils?.debugLog?.(`[ActionManager] Stored itemTypeId '${violationDetails.itemTypeId}' for check '${checkType}' in pData.lastViolationDetailsMap for ${playerNameForLog}.`);
+        } else {
+            playerUtils?.debugLog?.(`[ActionManager] Could not store itemTypeId for check '${checkType}' because pData could not be retrieved for ${playerNameForLog}.`);
         }
-        pData.lastViolationDetailsMap[checkType] = {
-            itemTypeId: violationDetails.itemTypeId,
-            timestamp: Date.now()
-        };
-        pData.isDirtyForSave = true; // Mark pData as dirty to ensure it's saved
-
-        playerUtils?.debugLog?.(`[ActionManager] Stored itemTypeId '${violationDetails.itemTypeId}' for check '${checkType}' in pData.lastViolationDetailsMap for ${player.nameTag}.`, player.nameTag);
+    } else if (!player && violationDetails?.itemTypeId) {
+        playerUtils?.debugLog?.(`[ActionManager] Skipping storage of itemTypeId for check '${checkType}' because player is null.`);
     }
-
-    // Future actions (e.g., running commands, custom events) could be handled here based on profile.
-    // Example: if (profile.runCommands && Array.isArray(profile.runCommands)) { ... }
 }

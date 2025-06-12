@@ -2,11 +2,11 @@
  * @file AntiCheatsBP/scripts/commands/unban.js
  * Defines the !unban command for administrators to remove a ban from a player.
  * Note: Current version primarily supports unbanning players who are online.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { clearFlagsForCheckType } from '../../core/playerDataManager.js';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -39,7 +39,9 @@ export async function execute(player, args, dependencies) {
         // Using a more specific error message for unban if player must be online.
         // If offline unbanning becomes possible, this might change or use common.error.playerNotFoundOnline.
         player.sendMessage(getString("command.unban.error.offlineNotSupported", { targetName: targetPlayerName }));
-        if (playerUtils.debugLog) playerUtils.debugLog(`Unban attempt for offline player ${targetPlayerName} by ${player.nameTag}. This version primarily handles online players.`, player.nameTag);
+        if (config.enableDebugLogging && playerUtils.debugLog) {
+            playerUtils.debugLog(`Unban attempt for offline player ${targetPlayerName} by ${player.nameTag}. This version primarily handles online players.`, player.nameTag);
+        }
         return;
     }
 
@@ -56,7 +58,8 @@ export async function execute(player, args, dependencies) {
         if (unbanned) {
             player.sendMessage(getString("command.unban.success", { targetName: foundPlayer.nameTag }));
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(getString("command.unban.adminNotify", { targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, null);
+                const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context
+                playerUtils.notifyAdmins(getString("command.unban.adminNotify", { targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPData);
             }
             if (addLog) {
                 addLog({
@@ -73,9 +76,12 @@ export async function execute(player, args, dependencies) {
                 await clearFlagsForCheckType(foundPlayer, oldBanInfo.triggeringCheckType, dependencies);
                 const message = getString("command.unban.automodFlagClear", { checkType: oldBanInfo.triggeringCheckType, targetName: foundPlayer.nameTag });
                 player.sendMessage(message);
-                if (playerUtils.debugLog) playerUtils.debugLog(message.replace(/§[a-f0-9]/g, ''), player.nameTag);
-                 if (playerUtils.notifyAdmins) {
-                    playerUtils.notifyAdmins(getString("command.unban.automodFlagClearAdminNotify", { checkType: oldBanInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, null);
+                const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
+                if (config.enableDebugLogging && playerUtils.debugLog) {
+                    playerUtils.debugLog(message.replace(/§[a-f0-9]/g, ''), targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null);
+                }
+                if (playerUtils.notifyAdmins) { // Corrected extra space
+                    playerUtils.notifyAdmins(getString("command.unban.automodFlagClearAdminNotify", { checkType: oldBanInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPDataForFlagClearLog);
                 }
             }
 
@@ -84,6 +90,8 @@ export async function execute(player, args, dependencies) {
         }
     } catch (e) {
         player.sendMessage(getString("common.error.generic") + `: ${e}`);
-        if (playerUtils.debugLog) playerUtils.debugLog(`Unexpected error during unban command for ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+        if (config.enableDebugLogging && playerUtils.debugLog) {
+            playerUtils.debugLog(`Unexpected error during unban command for ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+        }
     }
 }

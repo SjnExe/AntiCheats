@@ -1,10 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/kick.js
  * Defines the !kick command for administrators to remove a player from the server.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/i18n.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -47,14 +47,15 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(getString('command.kick.success', { targetName: foundPlayer.nameTag, reason: originalReason }));
 
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(getString('command.kick.adminNotification', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: originalReason }), player, null);
+                const targetPData = dependencies.playerDataManager.getPlayerData(foundPlayer.id); // For context
+                playerUtils.notifyAdmins(getString('command.kick.adminNotification', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: originalReason }), player, targetPData);
             }
             if (addLog) {
                 addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: originalReason });
             }
         } catch (e) {
             player.sendMessage(getString('command.kick.error', { targetName: targetPlayerName, error: e }));
-            if (playerUtils.debugLog) {
+            if (dependencies.config.enableDebugLogging && playerUtils.debugLog) {
                 playerUtils.debugLog(`Error kicking player ${targetPlayerName}: ${e}`);
             }
         }

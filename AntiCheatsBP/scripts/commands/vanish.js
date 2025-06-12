@@ -1,11 +1,11 @@
 /**
  * @file AntiCheatsBP/scripts/commands/vanish.js
  * Defines the !vanish command for administrators to toggle their visibility and related effects.
- * @version 1.0.2
+ * @version 1.0.3
  */
 import { world } from "@minecraft/server";
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 const vanishedTag = "vanished";
 const vanishModeNotifyTag = "vanish_mode_notify";
@@ -28,7 +28,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, addLog } = dependencies;
+    const { playerUtils, addLog, config, playerDataManager } = dependencies; // Added config and playerDataManager
 
     let mode = args[0] ? args[0].toLowerCase() : 'silent';
     if (mode !== 'silent' && mode !== 'notify') {
@@ -58,11 +58,14 @@ export async function execute(player, args, dependencies) {
             }
 
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(getString("command.vanish.adminNotify.on", {adminName: player.nameTag, mode: mode }), player, null);
+                const pData = playerDataManager.getPlayerData(player.id); // For context
+                playerUtils.notifyAdmins(getString("command.vanish.adminNotify.on", {adminName: player.nameTag, mode: mode }), player, pData);
             }
         } catch (e) {
             player.sendMessage(getString("command.vanish.error.apply", { error: e }));
-            if (playerUtils.debugLog) playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`, player.nameTag);
+            if (config.enableDebugLogging && playerUtils.debugLog) {
+                playerUtils.debugLog(`Error applying vanish for ${player.nameTag}: ${e}`, player.nameTag);
+            }
         }
     } else {
         try {
@@ -87,11 +90,14 @@ export async function execute(player, args, dependencies) {
             }
 
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(getString("command.vanish.adminNotify.off", {adminName: player.nameTag, mode: (wasNotifyMode ? 'notify' : 'silent') }), player, null);
+                const pData = playerDataManager.getPlayerData(player.id); // For context
+                playerUtils.notifyAdmins(getString("command.vanish.adminNotify.off", {adminName: player.nameTag, mode: (wasNotifyMode ? 'notify' : 'silent') }), player, pData);
             }
         } catch (e) {
             player.sendMessage(getString("command.vanish.error.remove", { error: e }));
-            if (playerUtils.debugLog) playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`, player.nameTag);
+            if (config.enableDebugLogging && playerUtils.debugLog) {
+                playerUtils.debugLog(`Error removing vanish for ${player.nameTag}: ${e}`, player.nameTag);
+            }
         }
     }
 }
