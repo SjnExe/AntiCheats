@@ -5,7 +5,7 @@
  */
 
 import { editableConfigValues as runTimeConfig } from '../config.js';
-import { translations as enUSTranslations } from './locales/en_US.js';
+import { translations as enUSTranslations } from './languages/en_US.js';
 
 const DEFAULT_LANGUAGE = "en_US";
 let currentLanguage = runTimeConfig.defaultServerLanguage || DEFAULT_LANGUAGE;
@@ -26,7 +26,7 @@ function loadLanguage(langCode) {
         return true;
     }
     // In the future, dynamic import logic for other languages could go here:
-    // e.g., try { const module = await import(`./locales/${langCode}.js`); translations[langCode] = module.translations; return true; } catch (e) { ... }
+    // e.g., try { const module = await import(`./languages/${langCode}.js`); translations[langCode] = module.translations; return true; } catch (e) { ... }
     console.warn(`[i18n] Attempted to load language ${langCode}, but no specific loader implemented beyond pre-loaded en_US.`);
     return false;
 }
