@@ -6,7 +6,7 @@
  */
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
-import { getString } from '../../core/localizationManager.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 function parseDimensionLocal(dimStr, playerUtils) {
     if (!dimStr || typeof dimStr !== 'string') return null;

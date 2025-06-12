@@ -22,9 +22,10 @@ export const definition = {
 };
 
 
-export async function execute(player, args, subCommand, config, dependencies) {
-    const { playerUtils, logManager, configModule } = dependencies;
-    const cmdPrefix = configModule.prefix;
+export async function execute(player, args, dependencies) {
+    const { playerUtils, logManager, config, configModule } = dependencies; // config is editableConfigValues, configModule is the full module
+    const subCommand = args.shift()?.toLowerCase();
+    const cmdPrefix = config.prefix; // Use runtime prefix from editableConfigValues
 
     if (!subCommand || subCommand === "help") {
         playerUtils.notifyPlayer(player, getString('command.worldborder.help.header'));
@@ -50,36 +51,38 @@ export async function execute(player, args, subCommand, config, dependencies) {
         return;
     }
 
+    // Note: cmdPrefix is removed from calls to helper functions.
+    // They will use dependencies.config.prefix or dependencies.configModule.prefix as needed.
     switch (subCommand) {
         case "set":
-            await handleSetCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies); // Pass cmdPrefix
+            await handleSetCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "get":
-            await handleGetCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies); // Pass cmdPrefix
+            await handleGetCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "toggle":
-            await handleToggleCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleToggleCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "remove":
-            await handleRemoveCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleRemoveCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "shrink":
-            await handleShrinkCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleShrinkCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "expand":
-            await handleExpandCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleExpandCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "resizepause":
-            await handleResizePauseCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleResizePauseCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "resizeresume":
-            await handleResizeResumeCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleResizeResumeCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "setglobalparticle":
-            await handleSetGlobalParticleCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleSetGlobalParticleCommand(player, args, playerUtils, logManager, dependencies);
             break;
         case "setparticle":
-            await handleSetParticleCommand(player, args, playerUtils, logManager, cmdPrefix, dependencies);
+            await handleSetParticleCommand(player, args, playerUtils, logManager, dependencies);
             break;
         default:
             playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
@@ -111,8 +114,9 @@ function normalizeDimensionId(player, inputDimId) {
 }
 
 
-async function handleSetCommand(player, args, playerUtils, logManager, prefix, dependencies) {
-    const { config: currentRunTimeConfig } = dependencies; // This is editableConfigValues
+async function handleSetCommand(player, args, playerUtils, logManager, dependencies) {
+    const { config: currentRunTimeConfig, configModule } = dependencies; // config is editableConfigValues
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
 
     if (args.length < 4) {
         playerUtils.warnPlayer(player, getString('command.worldborder.set.usage', { prefix: prefix }));
@@ -188,8 +192,9 @@ async function handleSetCommand(player, args, playerUtils, logManager, prefix, d
     }
 }
 
-async function handleGetCommand(player, args, playerUtils, logManager, prefix, dependencies) {
-    const { config: currentRunTimeConfig } = dependencies;
+async function handleGetCommand(player, args, playerUtils, logManager, dependencies) {
+    const { config: currentRunTimeConfig, configModule } = dependencies;
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
@@ -251,7 +256,10 @@ async function handleGetCommand(player, args, playerUtils, logManager, prefix, d
     }
 }
 
-async function handleToggleCommand(player, args, playerUtils, logManager, prefix, dependencies) {
+async function handleToggleCommand(player, args, playerUtils, logManager, dependencies) {
+    const { config: currentRunTimeConfig, configModule } = dependencies;
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
+
     if (args.length < 1) {
         playerUtils.warnPlayer(player, getString('command.worldborder.toggle.usage', { prefix: prefix }));
         return;
@@ -300,7 +308,9 @@ async function handleToggleCommand(player, args, playerUtils, logManager, prefix
     }
 }
 
-async function handleRemoveCommand(player, args, playerUtils, logManager, prefix, dependencies) {
+async function handleRemoveCommand(player, args, playerUtils, logManager, dependencies) {
+    const { config: currentRunTimeConfig, configModule } = dependencies;
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
     let dimensionIdInput;
     let confirmationArg = false;
 
@@ -340,8 +350,10 @@ async function handleRemoveCommand(player, args, playerUtils, logManager, prefix
     }
 }
 
-async function handleResizeCommand(player, args, playerUtils, logManager, prefix, operationType, dependencies) {
-    const { config: currentRunTimeConfig } = dependencies;
+async function handleResizeCommand(player, args, playerUtils, logManager, operationType, dependencies) {
+    const { config: currentRunTimeConfig, configModule } = dependencies;
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
+
     if (args.length < 2) {
         playerUtils.warnPlayer(player, getString('command.worldborder.resize.usage', { prefix: prefix, operationType: operationType }));
         return;
@@ -424,15 +436,15 @@ async function handleResizeCommand(player, args, playerUtils, logManager, prefix
     }
 }
 
-async function handleShrinkCommand(player, args, playerUtils, logManager, prefix, dependencies) {
-    await handleResizeCommand(player, args, playerUtils, logManager, prefix, "shrink", dependencies);
+async function handleShrinkCommand(player, args, playerUtils, logManager, dependencies) {
+    await handleResizeCommand(player, args, playerUtils, logManager, "shrink", dependencies);
 }
 
-async function handleExpandCommand(player, args, playerUtils, logManager, prefix, dependencies) {
-    await handleResizeCommand(player, args, playerUtils, logManager, prefix, "expand", dependencies);
+async function handleExpandCommand(player, args, playerUtils, logManager, dependencies) {
+    await handleResizeCommand(player, args, playerUtils, logManager, "expand", dependencies);
 }
 
-async function handleResizePauseCommand(player, args, playerUtils, logManager, prefix, dependencies) {
+async function handleResizePauseCommand(player, args, playerUtils, logManager, dependencies) {
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
@@ -461,7 +473,7 @@ async function handleResizePauseCommand(player, args, playerUtils, logManager, p
     }
 }
 
-async function handleResizeResumeCommand(player, args, playerUtils, logManager, prefix, dependencies) {
+async function handleResizeResumeCommand(player, args, playerUtils, logManager, dependencies) {
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
@@ -492,8 +504,10 @@ async function handleResizeResumeCommand(player, args, playerUtils, logManager, 
     }
 }
 
-async function handleSetGlobalParticleCommand(player, args, playerUtils, logManager, prefix, dependencies) {
-    const { configModule } = dependencies;
+async function handleSetGlobalParticleCommand(player, args, playerUtils, logManager, dependencies) {
+    const { configModule, config: currentRunTimeConfig } = dependencies;
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
+
     if (args.length < 1) {
         playerUtils.warnPlayer(player, getString('command.worldborder.setglobalparticle.usage', { prefix: prefix }));
         return;
@@ -524,8 +538,9 @@ async function handleSetGlobalParticleCommand(player, args, playerUtils, logMana
     }
 }
 
-async function handleSetParticleCommand(player, args, playerUtils, logManager, prefix, dependencies) {
-    const { config: currentRunTimeConfig } = dependencies; // This is editableConfigValues
+async function handleSetParticleCommand(player, args, playerUtils, logManager, dependencies) {
+    const { config: currentRunTimeConfig, configModule } = dependencies;
+    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
     const globalDefaultParticle = currentRunTimeConfig.worldBorderParticleName;
 
     if (args.length < 1) {

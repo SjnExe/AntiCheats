@@ -5,7 +5,7 @@
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
-import { getString } from '../../core/i18n.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}

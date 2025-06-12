@@ -133,7 +133,26 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
             });
             const modalResponse = await modal.show(adminPlayer);
             if (modalResponse.canceled) {
-                adminPlayer.sendMessage(getString(`ui.playerActions.${commandName}.cancelled`));
+                let cancelledKey = "";
+                if (commandName === 'kick') {
+                    cancelledKey = "ui.playerActions.kick.cancelled";
+                } else if (commandName === 'ban') {
+                    cancelledKey = "ui.playerActions.ban.cancelled";
+                } else if (commandName === 'mute') {
+                    cancelledKey = "ui.playerActions.mute.cancelled";
+                } else {
+                    // Fallback for any other command names, though ideally all should be covered
+                    // Or, if only these three commands use this modal pattern for cancellation,
+                    // this else might not be strictly necessary if showModalAndExecute is only used for them.
+                    // For safety, we can construct a generic (though potentially unlocalized) message or log a warning.
+                    // However, the original code would have produced a bad key anyway.
+                    // Let's assume for now that 'kick', 'ban', and 'mute' are the primary users of this specific cancellation message pattern.
+                    // If other commands use it, they would also need their static keys added and handled here.
+                    // For now, if a key isn't found, getString will return the key itself, which is the old behavior for unhandled commandName.
+                    cancelledKey = `ui.playerActions.${commandName}.cancelled`; // Fallback to old behavior if commandName is unexpected
+                    console.warn(`[uiManager] Unhandled commandName '${commandName}' for cancellation message key in showModalAndExecute. Consider adding a static key.`);
+                }
+                adminPlayer.sendMessage(getString(cancelledKey));
                 return true;
             }
             await cmdExec(adminPlayer, argsTransform([targetPlayer.nameTag, ...modalResponse.formValues]), dependencies);

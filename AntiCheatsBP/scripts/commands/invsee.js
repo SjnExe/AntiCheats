@@ -6,7 +6,7 @@
 import { permissionLevels } from '../core/rankManager.js';
 import { MessageFormData } from '@minecraft/server-ui';
 import { ItemComponentTypes } from '@minecraft/server';
-import { getString } from '../../core/i18n.js'; // Import getString
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}

@@ -4,7 +4,7 @@
  * @version 1.0.1
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../../core/i18n.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
