@@ -38,7 +38,9 @@ function formatDuration(ms) {
  * Internal function to dispatch and execute specific automod actions.
  */
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
-    const { playerUtils, logManager, automodConfig, config, playerDataManager, commandModules } = dependencies;
+    const { playerUtils, logManager, config, playerDataManager, commandModules } = dependencies;
+    // automodConfig is now part of dependencies.config
+    const currentAutomodConfig = dependencies.config.automodConfig;
 
     playerUtils.debugLog(\`AutomodManager: Dispatching action '\${actionType}' for \${player.nameTag} due to \${checkType}. Params: \${JSON.stringify(parameters)}\`, player.nameTag);
 
@@ -50,7 +52,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     switch (actionType) {
         case "WARN":
             const reasonKeyWarn = parameters.reasonKey || 'automod.unknown.warn';
-            const messageWarnUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyWarn] || "automod.action.warnDefaultReason";
+            const messageWarnUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyWarn] || "automod.action.warnDefaultReason";
             const localizedMessageWarn = getString(messageWarnUnlocalized);
 
             if (playerUtils.warnPlayer) {
@@ -63,7 +65,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "KICK":
             const reasonKeyKick = parameters.reasonKey || 'automod.unknown.kick';
-            const kickReasonUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyKick] || "automod.action.kickDefaultReason";
+            const kickReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyKick] || "automod.action.kickDefaultReason";
             const localizedKickReason = getString(kickReasonUnlocalized);
 
             try {
@@ -78,7 +80,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "TEMP_BAN":
             const reasonKeyTempBan = parameters.reasonKey || 'automod.unknown.tempban';
-            const reasonMessageTempBanUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyTempBan] || "automod.action.tempbanDefaultReason";
+            const reasonMessageTempBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTempBan] || "automod.action.tempbanDefaultReason";
             const localizedReasonMsgTempBan = getString(reasonMessageTempBanUnlocalized);
             const durationStringTempBan = parameters.duration || "5m";
 
@@ -115,7 +117,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "PERM_BAN":
             const reasonKeyPermBan = parameters.reasonKey || 'automod.unknown.permban';
-            const reasonMessagePermBanUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyPermBan] || "automod.action.permbanDefaultReason";
+            const reasonMessagePermBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyPermBan] || "automod.action.permbanDefaultReason";
             const localizedReasonMsgPermBan = getString(reasonMessagePermBanUnlocalized);
 
             if (commandModules?.ban?.execute) {
@@ -139,7 +141,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "MUTE":
             const reasonKeyMute = parameters.reasonKey || 'automod.unknown.mute';
-            const reasonMessageMuteUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyMute] || "automod.action.muteDefaultReason";
+            const reasonMessageMuteUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyMute] || "automod.action.muteDefaultReason";
             const localizedReasonMsgMute = getString(reasonMessageMuteUnlocalized);
             const durationStringMute = parameters.duration || "10m";
 
@@ -164,7 +166,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "FREEZE":
             const reasonKeyFreeze = parameters.reasonKey || 'automod.unknown.freeze';
-            const reasonMessageFreezeUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyFreeze] || "automod.action.freezeDefaultReason";
+            const reasonMessageFreezeUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyFreeze] || "automod.action.freezeDefaultReason";
             const localizedReasonMsgFreeze = getString(reasonMessageFreezeUnlocalized);
 
             if (commandModules?.freeze?.execute) {
@@ -213,7 +215,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 }
                 if (removedCount > 0) {
                     let removalMessageKey = parameters.reasonKey || 'automod.unknown.itemRemoved';
-                    let removalMessage = getString(automodConfig?.automodActionMessages?.[removalMessageKey] || "automod.default.itemRemoved",
+                    let removalMessage = getString(currentAutomodConfig?.automodActionMessages?.[removalMessageKey] || "automod.default.itemRemoved",
                                                  { quantity: removedCount.toString(), itemTypeId: itemTypeIdToRemove });
 
                     if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, removalMessage);
@@ -255,7 +257,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
         if (playerUtils && playerUtils.notifyAdmins) {
             const basePrefix = getString("automod.adminNotify.basePrefix");
             // Ensure reasonMessageUnlocalized is the key, not already localized string.
-            const reasonMessageUnlocalized = automodConfig?.automodActionMessages?.[parameters.reasonKey] || parameters.reasonKey || "automod.action.unknownReason";
+            const reasonMessageUnlocalized = currentAutomodConfig?.automodActionMessages?.[parameters.reasonKey] || parameters.reasonKey || "automod.action.unknownReason";
             const localizedReasonForNotification = getString(reasonMessageUnlocalized);
 
             const adminMessage = getString("automod.adminNotify.actionReport", {
@@ -280,25 +282,27 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
  * Processes automated moderation actions for a player based on a specific check type trigger.
  */
 export async function processAutoModActions(player, pData, checkType, dependencies) {
-    const { config, automodConfig, playerUtils } = dependencies;
+    const { config, playerUtils } = dependencies;
+    // automodConfig is now part of dependencies.config
+    const currentAutomodConfig = dependencies.config.automodConfig;
 
     if (!config.enableAutoMod) {
         return;
     }
 
-    if (automodConfig.automodPerCheckTypeToggles &&
-        typeof automodConfig.automodPerCheckTypeToggles[checkType] === 'boolean' &&
-        !automodConfig.automodPerCheckTypeToggles[checkType]) {
+    if (currentAutomodConfig.automodPerCheckTypeToggles &&
+        typeof currentAutomodConfig.automodPerCheckTypeToggles[checkType] === 'boolean' &&
+        !currentAutomodConfig.automodPerCheckTypeToggles[checkType]) {
         playerUtils.debugLog(\`AutomodManager: AutoMod for checkType '\${checkType}' on \${player.nameTag} is disabled via per-check toggle.\`, player.nameTag);
         return;
     }
 
-    if (!automodConfig?.automodRules) {
-        playerUtils.debugLog(\`AutomodManager: automodRules not found in automodConfig for \${player.nameTag}, checkType: \${checkType}\`, player.nameTag);
+    if (!currentAutomodConfig?.automodRules) {
+        playerUtils.debugLog(`AutomodManager: automodRules not found in currentAutomodConfig for ${player.nameTag}, checkType: ${checkType}`, player.nameTag);
         return;
     }
 
-    const rulesForCheck = automodConfig.automodRules[checkType];
+    const rulesForCheck = currentAutomodConfig.automodRules[checkType];
     if (!rulesForCheck || rulesForCheck.length === 0) {
         return;
     }

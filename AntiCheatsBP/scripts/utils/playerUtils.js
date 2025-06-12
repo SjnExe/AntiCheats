@@ -6,7 +6,7 @@
  */
 import * as mc from '@minecraft/server';
 // Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
-import { adminTag, enableDebugLogging, ownerPlayerName, acGlobalNotificationsDefaultOn } from '../config';
+import { editableConfigValues } from '../config.js'; // Import editableConfigValues
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -15,7 +15,7 @@ import { permissionLevels } from '../core/rankManager.js';
  * @returns {boolean} True if the player has the admin tag, false otherwise.
  */
 export function isAdmin(player) {
-    return player.hasTag(adminTag);
+    return player.hasTag(editableConfigValues.adminTag);
 }
 
 /**
@@ -25,10 +25,10 @@ export function isAdmin(player) {
  *                  Returns false if ownerPlayerName is not set or is a placeholder.
  */
 export function isOwner(playerName) {
-    if (!ownerPlayerName || ownerPlayerName === "" || ownerPlayerName === "PlayerNameHere") {
+    if (!editableConfigValues.ownerPlayerName || editableConfigValues.ownerPlayerName === "" || editableConfigValues.ownerPlayerName === "PlayerNameHere") {
         return false;
     }
-    return playerName === ownerPlayerName;
+    return playerName === editableConfigValues.ownerPlayerName;
 }
 
 /**
@@ -143,7 +143,7 @@ export function notifyAdmins(baseMessage, player, pData) {
             const hasExplicitOff = p.hasTag(notificationsOffTag);
 
             // Determine if the admin should receive the message based on tags and global default
-            const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && acGlobalNotificationsDefaultOn);
+            const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && editableConfigValues.acGlobalNotificationsDefaultOn);
 
             if (shouldReceiveMessage) {
                 try {
@@ -167,7 +167,7 @@ export function notifyAdmins(baseMessage, player, pData) {
  * @returns {void}
  */
 export function debugLog(message, contextPlayerNameIfWatched = null) {
-    if (enableDebugLogging) {
+    if (editableConfigValues.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
         console.warn(`${prefix} ${message}`); // console.warn is often used for better visibility in Bedrock consoles
     }

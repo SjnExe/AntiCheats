@@ -4,7 +4,7 @@
  */
 
 import { world, system } from '@minecraft/server';
-import * as config from '../config.js';
+import * as configModule from '../config.js';
 import { getString } from './i18n.js';
 
 /**
@@ -28,11 +28,12 @@ function generateRequestId() {
 
 export function addRequest(requester, target, type) {
     const now = Date.now();
+    const currentConfig = configModule.editableConfigValues;
 
     if (lastPlayerRequestTimestamp.has(requester.name)) {
         const elapsedTime = now - lastPlayerRequestTimestamp.get(requester.name);
-        if (elapsedTime < config.TPARequestCooldownSeconds * 1000) {
-            const remainingSeconds = Math.ceil((config.TPARequestCooldownSeconds * 1000 - elapsedTime) / 1000);
+        if (elapsedTime < currentConfig.TPARequestCooldownSeconds * 1000) {
+            const remainingSeconds = Math.ceil((currentConfig.TPARequestCooldownSeconds * 1000 - elapsedTime) / 1000);
             console.log(`[TPAManager] Cooldown active for ${requester.name}. Remaining: ${remainingSeconds}s`);
             return { error: 'cooldown', remaining: remainingSeconds };
         }
@@ -50,7 +51,7 @@ export function addRequest(requester, target, type) {
         requestType: type,
         status: 'pending_acceptance',
         creationTimestamp: now,
-        expiryTimestamp: now + (config.TPARequestTimeoutSeconds * 1000),
+        expiryTimestamp: now + (currentConfig.TPARequestTimeoutSeconds * 1000),
         warmupExpiryTimestamp: 0,
     };
     activeRequests.set(requestId, request);
@@ -120,19 +121,20 @@ export function acceptRequest(requestId) {
         removeRequest(requestId);
         return false;
     }
+    const currentConfig = configModule.editableConfigValues;
 
     request.status = 'pending_teleport_warmup';
-    request.warmupExpiryTimestamp = Date.now() + (config.TPATeleportWarmupSeconds * 1000);
+    request.warmupExpiryTimestamp = Date.now() + (currentConfig.TPATeleportWarmupSeconds * 1000);
     activeRequests.set(requestId, request);
 
-    const warmupMsgString = getString("tpa.manager.warmupMessage", { warmupSeconds: config.TPATeleportWarmupSeconds });
+    const warmupMsgString = getString("tpa.manager.warmupMessage", { warmupSeconds: currentConfig.TPATeleportWarmupSeconds });
 
     if (request.requestType === 'tpa') {
         requesterPlayer.sendMessage(getString("tpa.manager.requester.accepted", { targetPlayerName: targetPlayer.nameTag, warmupMessage: warmupMsgString }));
-        targetPlayer.sendMessage(getString("tpa.manager.target.acceptedFromRequester", { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: config.TPATeleportWarmupSeconds }));
+        targetPlayer.sendMessage(getString("tpa.manager.target.acceptedFromRequester", { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: currentConfig.TPATeleportWarmupSeconds }));
     } else {
         targetPlayer.sendMessage(getString("tpa.manager.target.acceptedByRequester", { requesterPlayerName: requesterPlayer.nameTag, warmupMessage: warmupMsgString }));
-        requesterPlayer.sendMessage(getString("tpa.manager.requester.acceptedHere", { targetPlayerName: targetPlayer.nameTag, warmupSeconds: config.TPATeleportWarmupSeconds }));
+        requesterPlayer.sendMessage(getString("tpa.manager.requester.acceptedHere", { targetPlayerName: targetPlayer.nameTag, warmupSeconds: currentConfig.TPATeleportWarmupSeconds }));
     }
 
     console.log(`[TPAManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`);
