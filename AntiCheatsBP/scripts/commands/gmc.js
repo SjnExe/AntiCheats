@@ -1,11 +1,11 @@
 /**
  * @file AntiCheatsBP/scripts/commands/gmc.js
  * Defines the !gmc command for administrators to set a player's gamemode to Creative.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/gmc.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,7 +13,7 @@ import * as mc from '@minecraft/server';
 export const definition = {
     name: "gmc",
     syntax: "!gmc [playername]",
-    description: "Sets Creative mode for self or [playername].",
+    description: getString("command.gmc.description"),
     permissionLevel: permissionLevels.admin
 };
 
@@ -25,13 +25,35 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, addLog } = dependencies; // setPlayerGameMode is expected in playerUtils
+    const { playerUtils, config, addLog, findPlayer } = dependencies;
+    const targetPlayerName = args[0];
+    const gamemodeName = "Creative"; // For messaging
 
-    if (playerUtils && typeof playerUtils.setPlayerGameMode === 'function') {
-        // playerUtils.setPlayerGameMode will handle messages, logging, etc.
-        await playerUtils.setPlayerGameMode(player, args[0], mc.GameMode.creative, "Creative", config, addLog);
+    if (targetPlayerName) {
+        const targetPlayer = findPlayer(targetPlayerName, playerUtils);
+        if (targetPlayer) {
+            try {
+                targetPlayer.setGameMode(mc.GameMode.creative);
+                player.sendMessage(getString("command.gmc.success.other", { targetPlayerName: targetPlayer.nameTag, gamemode: gamemodeName }));
+                 if (player.id !== targetPlayer.id) {
+                    targetPlayer.sendMessage(getString("command.gmc.success.self", { gamemode: gamemodeName }));
+                }
+                if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change', targetName: targetPlayer.nameTag, details: `Set to ${gamemodeName}` });
+            } catch (e) {
+                player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: targetPlayer.nameTag }));
+                playerUtils.debugLog?.(`Error setting gamemode for ${targetPlayer.nameTag}: ${e}`, player.nameTag);
+            }
+        } else {
+            player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
+        }
     } else {
-        player.sendMessage("§cError: Game mode setting utility is not available. Please contact an administrator.");
-        console.warn("[gmcCmd] playerUtils.setPlayerGameMode is not available in dependencies.");
+        try {
+            player.setGameMode(mc.GameMode.creative);
+            player.sendMessage(getString("command.gmc.success.self", { gamemode: gamemodeName }));
+            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change_self', targetName: player.nameTag, details: `Set to ${gamemodeName}` });
+        } catch (e) {
+            player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: player.nameTag }));
+            playerUtils.debugLog?.(`Error setting own gamemode: ${e}`, player.nameTag);
+        }
     }
 }

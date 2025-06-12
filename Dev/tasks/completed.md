@@ -1,6 +1,197 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Admin Panel UI Enhancement: Added Server Tick & World Time to System Info:**
+    *   **Summary:** Enhanced the Admin Panel's "System Info" section to provide more real-time server state data.
+    *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to include the current server tick (`mc.system.currentTick`) and world time of day (`mc.world.getTime()`) in the information display. Added new localization keys ("ui.systemInfo.label.currentTick", "ui.systemInfo.label.worldTime") to `AntiCheatsBP/scripts/core/i18n.js` for the labels of these new data points.
+    *   **Purpose:** To give administrators quick access to basic server tick and time information via the in-game panel.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/uiManager.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
+*   **Issue Resolution & Task File Cleanup (User Request):**
+    *   **Summary:** Based on user feedback, the main issue ("Review everything, then check Dev/tasks for ongoing list and todo list, remove completed tasks from them(including unnecessary heading or something like that), after that complete unfinished tasks in them") is considered completed. Performed final cleanup of task files `Dev/tasks/ongoing.md` and `Dev/tasks/todo.md`.
+    *   **Details:**
+        *   The "Localization Implementation" task (code-side work) was moved from `ongoing.md` to `completed.md` with a full summary.
+        *   The "AutoMod System Review" task in `ongoing.md` was updated to note that active AI development is paused pending further feedback.
+        *   `todo.md` was reviewed and confirmed to be in an appropriate state.
+    *   **Files Affected:** `Dev/tasks/ongoing.md`, `Dev/tasks/todo.md`, `Dev/tasks/completed.md`.
+
+*   **Localization System Implementation (Code Base Completion):**
+    *   **Summary:** Completed a multi-phase effort to externalize user-facing strings from the majority of the addon's JavaScript codebase, making it ready for future translation. This involved creating a central `i18n.js` manager, refactoring all command modules, UI components (`uiManager.js`, `panel.js`), key configuration strings (`config.js`), core system messages (`eventHandlers.js`, other managers), and `checkActionProfiles` templates.
+    *   **Phases & Key Changes:**
+        *   **Phase 1 (Core Setup):** Established `AntiCheatsBP/scripts/core/i18n.js` (initially `localizationManager.js`) with `getString()` and initial "en_US" strings for `config.js`, `uinfo.js`, `help.js`, and `eventHandlers.js`.
+        *   **Phase 2a (Commands & Language Switch):** Localized `ban.js`, `kick.js`, `mute.js`. Implemented `!setlang` command and `defaultServerLanguage` config.
+        *   **Phase 2b (UI & Worldborder):** Localized `worldborder.js`, `panel.js`, and all of `uiManager.js`.
+        *   **Phase 2c (Key Admin Commands):** Localized `vanish.js`, `tp.js`, `invsee.js`.
+        *   **Phase 2d (Admin Utility Commands):** Localized gamemode, dimension lock, notification toggle, punishment reversal, and flag clearing commands.
+        *   **Phase 2e (TPA Command Suite):** Localized all TPA-related commands.
+        *   **Phase 2f (Further Utility Commands):** Localized `rules.js`, `version.js`, `copyinv.js`, `myflags.js`.
+        *   **Phase 2g (Inspect & Testnotify):** Localized `inspect.js` and `testnotify.js`.
+        *   **Phase 2h (Check Files & Core Managers):** Localized descriptive strings in `violationDetails` from check files and direct notifications from core managers.
+        *   **Phase 2i (`checkActionProfiles` & Final Review):** Localized `flag.reason` and `notifyAdmins.message` templates in `config.js`'s `checkActionProfiles`. Conducted a final review of key files.
+        *   **File Rename:** Renamed `localizationManager.js` to `i18n.js` and updated all imports.
+    *   **Purpose:** To enable multi-language support by centralizing string management. Next steps involve adding actual translation files for other languages.
+    *   **Primary Files Affected:** All `.js` files in `commands/`, most files in `core/` (especially `i18n.js`, `uiManager.js`, `eventHandlers.js`), `config.js`, and many files in `checks/`.
+
+*   **Localization System - Command Modules Pass Completion (`clearchat`, `warnings`):**
+    *   **Summary:** Completed the localization of the remaining minor command modules, `clearchat.js` and `warnings.js`. This marks the end of the primary localization pass for all command scripts.
+    *   **Details:**
+        *   User-facing strings in `clearchat.js` and `warnings.js` (including static descriptions) were externalized to `i18n.js`.
+        *   The command files were updated to use `getString()`.
+    *   **Purpose:** To ensure all chat commands are fully localizable.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/clearchat.js`, `AntiCheatsBP/scripts/commands/warnings.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
+*   **Localization System - Phase 2i (checkActionProfiles & Final Review):**
+    *   **Summary:** Completed the primary code localization effort by externalizing strings from `checkActionProfiles` in `config.js` and conducting a final review of major files for missed strings.
+    *   **Details:**
+        *   **`config.js` (`checkActionProfiles`):** All `flag.reason` and `notifyAdmins.message` template strings were converted to localization keys. These keys and their original English versions were added to `i18n.js`.
+        *   **Final Review:** Reviewed `eventHandlers.js`, `uiManager.js`, `help.js`, `panel.js`, and `worldborder.js`. Localized a few remaining hardcoded strings and corrected an import path.
+        *   **`i18n.js`:** Updated with all new keys from `checkActionProfiles` and the final review.
+    *   **Purpose:** To make nearly all user-facing strings in the addon manageable via the localization system, preparing for future translation.
+    *   **Files Affected:** `AntiCheatsBP/scripts/config.js`, `AntiCheatsBP/scripts/core/i18n.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/commands/panel.js`, `AntiCheatsBP/scripts/commands/worldborder.js`.
+
+*   **Localization System - Phase 2h (Check Files & Core Manager Notifications):**
+    *   **Summary:** Extended localization to strings originating from individual check files (within `violationDetails`) and core manager modules.
+    *   **Details:**
+        *   **Check Files:** Reviewed all files in `AntiCheatsBP/scripts/checks/`. Identified and localized descriptive strings that were part of `violationDetails` objects in checks like `invalidSprintCheck`, `inventoryModCheck`, `flatRotationBuilding`, `nameSpoofCheck`, etc. Most checks primarily pass raw data, which is preferred.
+        *   **Core Managers:** Reviewed `playerDataManager.js`, `automodManager.js`, and `tpaManager.js`. Localized default reasons, fallback messages, and direct notifications not covered by other localization efforts (e.g., TPA expiry messages, AutoMod admin notification templates). `logManager.js` and `reportManager.js` were confirmed to not require direct localization.
+        *   **`i18n.js`:** Updated with all new keys and their English translations.
+    *   **Purpose:** To ensure that detailed messages and internal system notifications that might be user-facing are also localizable.
+    *   **Files Affected:** Multiple files within `AntiCheatsBP/scripts/checks/`, `AntiCheatsBP/scripts/core/playerDataManager.js`, `AntiCheatsBP/scripts/core/automodManager.js`, `AntiCheatsBP/scripts/core/tpaManager.js`, and `AntiCheatsBP/scripts/core/i18n.js`.
+
+*   **Refactor: Renamed Localization Manager to i18n.js:**
+    *   **Summary:** Renamed the central localization manager file for brevity and to follow a common convention (i18n for internationalization).
+    *   **Details:** The file `AntiCheatsBP/scripts/core/localizationManager.js` was renamed to `AntiCheatsBP/scripts/core/i18n.js`. All import statements across the codebase that previously referenced `localizationManager.js` were updated to point to the new `i18n.js` filename.
+    *   **Purpose:** To use a more standard and concise naming convention for the internationalization utility.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js` (renamed from `localizationManager.js`), and numerous script files across the `commands/` and `core/` directories that had their import paths updated.
+
+*   **Localization System - Phase 2g (Inspect & Testnotify Commands):**
+    *   **Summary:** Continued localization by refactoring the `inspect.js` and `testnotify.js` command modules.
+    *   **Details:**
+        *   All user-facing strings within these command modules, including their static `definition.description`, were externalized.
+        *   New localization keys and corresponding English translations were added to `AntiCheatsBP/scripts/core/i18n.js`.
+        *   The command files were updated to import and use the `getString` function from `i18n.js`.
+    *   **Purpose:** To make these utility/administrative commands fully localizable.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/inspect.js`, `AntiCheatsBP/scripts/commands/testnotify.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
+*   **Localization System - Phase 2f (Utility Commands Refactoring):**
+    *   **Summary:** Continued localization by refactoring several utility command modules: `rules.js`, `version.js`, `copyinv.js`, and `myflags.js`.
+    *   **Details:**
+        *   All user-facing strings within these command modules, including their static `definition.description`, were externalized.
+        *   New localization keys and corresponding English translations were added to `AntiCheatsBP/scripts/core/i18n.js`.
+        *   The command files were updated to import and use the `getString` function from `i18n.js`.
+        *   The `systeminfo.js` command was not found in the codebase during this phase and was therefore skipped.
+    *   **Purpose:** To make these utility commands fully localizable.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/rules.js`, `AntiCheatsBP/scripts/commands/version.js`, `AntiCheatsBP/scripts/commands/copyinv.js`, `AntiCheatsBP/scripts/commands/myflags.js`, `AntiCheatsBP/scripts/core/i18n.js`.
+
+### Localization System - Phase 2e (TPA Commands Refactoring)
+*   **Date:** October 26, 2023
+*   **Details:**
+    *   Refactored the entire TPA command suite (`tpa.js`, `tpahere.js`, `tpaccept.js`, `tpacancel.js`, `tpastatus.js`) to utilize the `i18n.js`.
+    *   Added all required string keys and their "en_US" translations for these commands to `i18n.js`.
+    *   This phase ensures that all teleportation request-related user interactions are now localized.
+*   **Files Modified:**
+    *   `AntiCheatsBP/scripts/commands/tpa.js`
+    *   `AntiCheatsBP/scripts/commands/tpahere.js`
+    *   `AntiCheatsBP/scripts/commands/tpaccept.js`
+    *   `AntiCheatsBP/scripts/commands/tpacancel.js`
+    *   `AntiCheatsBP/scripts/commands/tpastatus.js`
+    *   `AntiCheatsBP/scripts/core/i18n.js`
+
+*   **Localization System - Phase 1 Implementation:**
+    *   **Summary:** Established the core mechanism for localization and refactored key system messages and two command modules (`uinfo`, `help`) to use it.
+    *   **Details:**
+        *   Created `AntiCheatsBP/scripts/core/i18n.js` with `getString(key, args)` for retrieving and formatting localized strings.
+        *   Initialized a `translations` object with "en_US" strings for messages from `config.js` (e.g., welcome, death coords), `uinfo.js`, selected parts of `help.js`, and key `eventHandlers.js` messages.
+        *   Modified `config.js` to use localization keys for its main user-facing string constants.
+        *   Refactored `uinfo.js` fully, and `help.js` and `eventHandlers.js` partially, to utilize the new `getString` function.
+    *   **Purpose:** To enable future translation of the addon into multiple languages by centralizing string management.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js` (new), `AntiCheatsBP/scripts/config.js`, `AntiCheatsBP/scripts/commands/uinfo.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/commands/help.js`.
+*   **`!worldborder` Enhancement: Resize Interpolation Methods:**
+    *   **Summary:** Enhanced the gradual resize functionality (`!wb shrink/expand`) to support different interpolation methods, allowing for smoother visual transitions.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `resizeInterpolationType` (string: "linear", "easeOutQuad", "easeInOutQuad") to `WorldBorderSettings`. Defaults to "linear" if not specified or invalid during resize setup or load.
+        *   **`commands/worldborder.js`:**
+            *   The `!worldborder shrink` and `!worldborder expand` commands now accept an optional final argument for `interpolationType`.
+            *   `!worldborder get` now displays the active interpolation type for an ongoing resize.
+            *   Help text updated to include the new parameter and valid types.
+        *   **`main.js`:**
+            *   Added `easeOutQuad` and `easeInOutQuad` helper functions.
+            *   The border resize logic in the player tick loop now applies the selected `resizeInterpolationType` (or defaults to linear) to the progress calculation, affecting how the border size changes over time.
+    *   **Purpose:** To provide administrators with more control over the aesthetic feel of world border resize operations.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
+*   **`!worldborder` Enhancement: Resize Interpolation Methods:**
+    *   **Summary:** Enhanced the gradual resize functionality (`!wb shrink/expand`) to support different interpolation methods, allowing for smoother visual transitions.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `resizeInterpolationType` (string: "linear", "easeOutQuad", "easeInOutQuad") to `WorldBorderSettings`. Defaults to "linear" if not specified or invalid during resize setup or load.
+        *   **`commands/worldborder.js`:**
+            *   The `!worldborder shrink` and `!worldborder expand` commands now accept an optional final argument for `interpolationType`.
+            *   `!worldborder get` now displays the active interpolation type for an ongoing resize.
+            *   Help text updated to include the new parameter and valid types.
+        *   **`main.js`:**
+            *   Added `easeOutQuad` and `easeInOutQuad` helper functions.
+            *   The border resize logic in the player tick loop now applies the selected `resizeInterpolationType` (or defaults to linear) to the progress calculation, affecting how the border size changes over time.
+    *   **Purpose:** To provide administrators with more control over the aesthetic feel of world border resize operations.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
+*   **World Border Visuals: Per-Dimension Particle Configuration:**
+    *   **Summary:** Enhanced the world border system to allow administrators to set a specific particle effect for each dimension's border, overriding the global default.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `particleNameOverride` to `WorldBorderSettings` to store the per-dimension particle choice. Updated save/get logic.
+        *   **`commands/worldborder.js`:** Implemented the `!worldborder setparticle <particleName|reset> [dimensionId]` command to set or reset this override. The `!worldborder get` command now displays the active particle setting (override or global).
+        *   **`main.js`:** The particle rendering logic for world border visuals now checks for a `particleNameOverride` in the dimension's settings and uses it; otherwise, it falls back to the global `worldBorderParticleName` from `config.editableConfigValues`.
+    *   **Purpose:** To provide more visual customization for world borders across different dimensions.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
+*   **World Border Visuals & Config Management Enhancement:**
+    *   **Summary:** Implemented a command to change the global default particle for world border visuals and ensured the configuration update mechanism is accessible to command modules.
+    *   **Details:**
+        *   **`main.js` Update:** Verified that the full `config.js` module (which includes `updateConfigValue` function and `editableConfigValues` object) is passed to `commandManager.js` within its `dependencies` object (as `dependencies.configModule` and `dependencies.config` respectively). This makes `dependencies.configModule.updateConfigValue()` and `dependencies.config.editableConfigValues` available to all command modules.
+        *   **New Command:** Added `!worldborder setglobalparticle <particleName>` (alias: `!wb setglobalparticle`). This command allows admins to change the global `worldBorderParticleName` configuration value at runtime.
+        *   **Logging:** The command action is logged.
+    *   **Purpose:** To provide administrators with more control over the visual aspect of world borders and to establish a pattern for commands modifying global configurations.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/worldborder.js` (primarily), `AntiCheatsBP/scripts/main.js` (verification of dependency passing).
+*   **`!worldborder` Enhancement: Pause/Resume Gradual Resize:**
+    *   **Summary:** Implemented functionality to pause and resume ongoing gradual world border resize operations.
+    *   **Commands Added:**
+        *   `!worldborder resizepause [dimensionId]`: Pauses the current resize for the specified or current dimension.
+        *   `!worldborder resizeresume [dimensionId]`: Resumes a paused resize for the specified or current dimension.
+    *   **Changes:**
+        *   **`worldBorderManager.js`:** Added `isPaused`, `resizePausedTimeMs` (accumulator), and `resizeLastPauseStartTimeMs` fields to `WorldBorderSettings` to manage pause state and duration.
+        *   **`commands/worldborder.js`:** Added new subcommands and handlers for `resizepause` and `resizeresume`. Updated `!worldborder get` to display pause status and total paused time.
+        *   **`main.js`:** Modified the tick loop's border processing logic to:
+            *   Prevent finalization of paused resizes.
+            *   Correctly calculate effective elapsed time for resize progress by subtracting accumulated paused time.
+            *   Freeze resize progress calculation when a border resize is paused.
+    *   **Purpose:** To provide administrators more control over dynamic world border adjustments during events or server management.
+    *   **Files Affected:** `AntiCheatsBP/scripts/utils/worldBorderManager.js`, `AntiCheatsBP/scripts/commands/worldborder.js`, `AntiCheatsBP/scripts/main.js`.
+*   **AutoMod: Refactor `REMOVE_ILLEGAL_ITEM` Action Logic:**
+    *   **Summary:** Investigated the `REMOVE_ILLEGAL_ITEM` action in `automodManager.js` which depends on `itemTypeId` being present in `pData.lastViolationDetailsMap`.
+    *   **Change:** Modified `actionManager.js` (`executeCheckAction`) to store the `violationDetails` (specifically `itemTypeId` if present) into `pData.lastViolationDetailsMap[checkType]`. This ensures that when `automodManager.js` processes a rule for `REMOVE_ILLEGAL_ITEM`, it can access the correct `itemTypeId`.
+    *   **Verification:** Confirmed that `checkIllegalItems.js` correctly includes `itemTypeId` in the `violationDetails` it passes to `actionManager.js`.
+    *   **Purpose:** To ensure the `REMOVE_ILLEGAL_ITEM` AutoMod action functions correctly by making necessary item details available to the `automodManager`.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/actionManager.js`.
+*   **Command Enhancement: `!worldborder remove` Confirmation:**
+    *   **Summary:** Modified the `!worldborder remove [dimensionId]` command to require an additional "confirm" argument to execute.
+    *   **Purpose:** To prevent accidental removal of world border configurations. If "confirm" is not provided, the command now instructs the user on how to confirm the action.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/worldborder.js`.
+*   **AutoMod: Integration for Self-Hurt Check:**
+    *   **Summary:** Identified the `checkType` for the existing Self-Hurt check as "player_self_hurt".
+    *   **Action Profile:** Added a new entry for "player_self_hurt" in `checkActionProfiles` within `config.js`, configured for flagging, admin notification, and logging.
+    *   **AutoMod Rules:** Implemented new AutoMod rules (WARN, KICK, TEMP_BAN), action messages, and a per-check toggle in `automodConfig` for "player_self_hurt".
+    *   **Purpose:** To enable automated moderation responses for suspicious self-inflicted damage if `enableAutoMod` and `enableSelfHurtCheck` are active.
+*   **AutoMod: Rule Definition for Disabled Checks:**
+    *   **Summary:** Added default AutoMod rules (escalating WARN, KICK, TEMP_BAN), action messages, and per-check AutoMod toggles to `config.js` for a comprehensive list of checks that were previously disabled by default but had defined `checkActionProfiles`.
+    *   **Purpose:** To ensure these checks have baseline AutoMod configurations ready for activation if an administrator chooses to enable them, promoting smoother integration into the AutoMod system.
+    *   **Affected Check Types:** Included `world_nuker`, `world_autotool`, `world_instabreak_unbreakable`, `player_inventory_mod`, `world_tower_build`, `world_flat_rotation_building`, `world_downward_scaffold`, `world_air_place`, `world_fast_place`, `chat_swear_violation`, `world_antigrief_tnt_place`, `world_antigrief_wither_spawn`, `world_antigrief_fire`, `world_antigrief_lava`, `world_antigrief_water`, `world_antigrief_blockspam`, `world_antigrief_entityspam`, and `world_antigrief_blockspam_density`.
+    *   **Details:** Rules were designed to be conservative, with reasonable flag thresholds and initial TEMP_BAN durations (typically "5m" to "30m").
+*   **AutoMod: Conservative Refinement of Existing Rules:**
+    *   **Summary:** Reviewed existing AutoMod rules in `config.js` for already enabled checks and made conservative adjustments to TEMP_BAN durations and, in one case, rule thresholds, to enhance initial tolerance.
+    *   **Purpose:** To reduce the harshness of initial automated temporary bans and align certain rules more closely with general tolerance levels observed in other rules, pending live testing and feedback.
+    *   **Affected Check Types & Changes:**
+        *   `player_namespoof`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `player_antigmc`: TEMP_BAN duration changed from "1d" to "6h".
+        *   `combat_multitarget_aura`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `combat_attack_while_sleeping`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `world_instabreak_speed`: TEMP_BAN duration changed from "1h" to "30m".
+        *   `player_invalid_render_distance`: Rule thresholds adjusted (WARN 3->5, KICK 5->10, TEMP_BAN 10->15) and TEMP_BAN duration changed from "1h" to "30m".
 *   **AutoMod Mute Durations Reduced:**
     *   **Summary:** All MUTE actions within `automodConfig.automodRules` in `config.js` have had their durations changed to "1m".
     *   Corresponding messages in `automodActionMessages` were updated to reflect "1 minute".

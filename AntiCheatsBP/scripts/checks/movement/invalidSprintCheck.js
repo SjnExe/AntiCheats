@@ -49,32 +49,53 @@ export async function checkInvalidSprint(
     // The pData.blindnessTicks field is assumed to be updated by updateTransientPlayerData in main.js
     // No need to call player.getEffects() here if that's the case.
 
-    if (player.isSprinting) {
-        let invalidCondition = null;
-        let conditionDetails = ""; // For more specific logging or details
+import { getString } from '../../../core/i18n.js'; // Adjusted path
 
-        // Check for Blindness effect (assuming pData.blindnessTicks is updated elsewhere)
+/**
+ * @file AntiCheatsBP/scripts/checks/movement/invalidSprintCheck.js
+// ... (rest of the file header)
+ */
+// ... (imports)
+
+// Ensure getString is imported if not already:
+// import { getString } from '../../../core/i18n.js'; // Path might vary
+
+export async function checkInvalidSprint(
+    player,
+    pData,
+    config,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    executeCheckAction,
+    currentTick // Not directly used by this check's core logic
+) {
+    if (!config.enableInvalidSprintCheck || !pData) { // Added null check for pData
+        return;
+    }
+
+    if (player.isSprinting) {
+        let invalidConditionKey = null; // Store the key for localization
+        let conditionDetails = "";
+
         if ((pData.blindnessTicks ?? 0) > 0) {
-            invalidCondition = "Blindness";
+            invalidConditionKey = "check.invalidSprint.condition.blindness";
             conditionDetails = `Blindness Ticks: ${pData.blindnessTicks}`;
         } else if (player.isSneaking) {
-            // Vanilla Minecraft typically prevents sprinting while sneaking.
-            // This check catches if client state desync or cheats allow this combination.
-            invalidCondition = "Sneaking";
+            invalidConditionKey = "check.invalidSprint.condition.sneaking";
             conditionDetails = "Player is sneaking";
         } else if (player.isRiding) {
-            // Player shouldn't be able to sprint while riding most entities.
-            invalidCondition = "Riding Entity";
+            invalidConditionKey = "check.invalidSprint.condition.riding";
             conditionDetails = "Player is riding an entity";
         }
 
-
-        if (invalidCondition) {
+        if (invalidConditionKey) {
+            const localizedCondition = getString(invalidConditionKey);
             const dependencies = { config, playerDataManager, playerUtils, logManager };
             const violationDetails = {
-                condition: invalidCondition,
-                details: conditionDetails, // Add more specific details
-                isSprinting: player.isSprinting.toString(), // Explicitly stringify booleans for details
+                condition: localizedCondition, // Use the localized string here
+                details: conditionDetails,
+                isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
                 isRiding: player.isRiding.toString(),
                 blindnessTicks: (pData.blindnessTicks ?? 0).toString()
@@ -83,11 +104,9 @@ export async function checkInvalidSprint(
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog?.(
-                `InvalidSprint: Flagged ${player.nameTag}. Condition: ${invalidCondition}. Details: ${conditionDetails}`,
+                `InvalidSprint: Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
                 watchedPrefix
             );
         }
     }
-    // This check primarily reads states. If pData.blindnessTicks was set here, it would need isDirtyForSave.
-    // However, per the optimization plan, effect states are read from pData, set by updateTransientPlayerData.
 }

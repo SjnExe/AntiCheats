@@ -1,43 +1,38 @@
 /**
  * @file Script for the !tpaccept command, allowing players to accept incoming TPA requests.
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 import { world, system } from '@minecraft/server';
-import * as config from '../config.js';
+// import * as config from '../config.js'; // config.prefix is used, but should come from dependencies.configModule.prefix
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
-// Assuming sendActionbarMessage is not used, direct ActionBar is fine.
-// import { sendActionbarMessage } from '../utils/playerUtils.js';
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
- * @typedef {import('../types.js').CommandDefinition} CommandDefinition
- * @typedef {import('../types.js').TpaRequest} TpaRequest
- * @typedef {import('@minecraft/server').Player} Player
+ * @type {import('../types.js').CommandDefinition}
  */
-
-/**
- * @type {CommandDefinition}
- */
-const tpacceptCommandDefinition = {
+export const definition = {
     name: 'tpaccept',
-    description: 'Accepts an incoming TPA request. Specify a player name to accept from a specific person, or leave blank to accept the latest request.',
+    description: getString("command.tpaccept.description"),
     aliases: ['tpaaccept'],
     permissionLevel: permissionLevels.normal,
-    syntax: '!tpaccept [playerName]', // Kept for help command consistency
+    syntax: '!tpaccept [playerName]',
 };
 
 /**
  * Executes the !tpaccept command.
- * @param {Player} player The player issuing the command (the one accepting).
+ * @param {import('@minecraft/server').Player} player The player issuing the command (the one accepting).
  * @param {string[]} args The command arguments. args[0] can be the requester's name.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-async function tpacceptCommandExecute(player, args, dependencies) {
-    const { playerUtils } = dependencies; // For debugLog or other utils if needed
+export async function execute(player, args, dependencies) {
+    const { playerUtils, config: fullConfig } = dependencies; // config here is editableConfigValues, fullConfig is the module
+    const prefix = fullConfig.prefix; // Use prefix from the main config module via dependencies
 
-    if (!config.enableTPASystem) {
-        player.sendMessage("§cThe TPA system is currently disabled.");
+
+    if (!fullConfig.enableTPASystem) {
+        player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
 
@@ -49,44 +44,34 @@ async function tpacceptCommandExecute(player, args, dependencies) {
         .filter(req => req.targetName === acceptingPlayerName && Date.now() < req.expiryTimestamp);
 
     if (incomingRequests.length === 0) {
-        player.sendMessage("§cYou have no pending TPA requests.");
+        player.sendMessage(getString("command.tpaccept.error.noPending"));
         return;
     }
 
     if (specificRequesterName) {
         requestToAccept = incomingRequests.find(req => req.requesterName.toLowerCase() === specificRequesterName.toLowerCase());
         if (!requestToAccept) {
-            player.sendMessage(`§cNo pending TPA request found from "${specificRequesterName}".`);
-            player.sendMessage(`§7Pending requests are from: ${incomingRequests.map(r => r.requesterName).join(', ')}`);
+            player.sendMessage(getString("command.tpaccept.error.noRequestFrom", { playerName: specificRequesterName }));
+            player.sendMessage(getString("command.tpaccept.error.pendingFromList", { playerList: incomingRequests.map(r => r.requesterName).join(', ') }));
             return;
         }
     } else {
-        // No specific requester, accept the most recent one (newest first)
         incomingRequests.sort((a, b) => b.creationTimestamp - a.creationTimestamp);
         requestToAccept = incomingRequests[0];
     }
 
     if (!requestToAccept) {
-        player.sendMessage("§cCould not find a suitable TPA request to accept. Type !tpastatus to see your requests.");
+        player.sendMessage(getString("command.tpaccept.error.couldNotFind", { prefix: prefix }));
         return;
     }
 
-    // The tpaManager.acceptRequest function now initiates warm-up and handles notifications.
-    // It returns true if warm-up was initiated, false otherwise.
+    // Pass dependencies to tpaManager.acceptRequest
+    const warmUpInitiated = tpaManager.acceptRequest(requestToAccept.requestId, dependencies);
 
-    const warmUpInitiated = tpaManager.acceptRequest(requestToAccept.requestId);
 
     if (warmUpInitiated) {
-        // The tpaManager.acceptRequest now handles detailed player notifications.
-        // This command can send a simpler confirmation to the player who typed !tpaccept.
-        player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.TPATeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
+        player.sendMessage(getString("command.tpaccept.success", { playerName: requestToAccept.requesterName, warmupSeconds: fullConfig.TPATeleportWarmupSeconds }));
     } else {
-        // This might happen if the request was already cancelled, expired, or the player went offline.
-        // tpaManager.acceptRequest would have logged details.
-        player.sendMessage(`§cCould not accept TPA request from "${requestToAccept.requesterName}". It might have expired or been cancelled.`);
+        player.sendMessage(getString("command.tpaccept.fail", { playerName: requestToAccept.requesterName }));
     }
-    // No need to manually notify the other player here, tpaManager.acceptRequest does it.
 }
-
-export const definition = tpacceptCommandDefinition;
-export const execute = tpacceptCommandExecute;

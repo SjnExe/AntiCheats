@@ -7,6 +7,7 @@
 // AntiCheatsBP/scripts/commands/uinfo.js
 import { permissionLevels } from '../core/rankManager.js';
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Specific UI imports
+import { getString } from '../core/i18n.js';
 
 /**
  * Shows the player their anti-cheat statistics.
@@ -15,30 +16,34 @@ import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Speci
  */
 // Helper UI functions (scoped within this module)
 async function showMyStatsUI(player, dependencies) {
-    const { playerDataManager, config, playerUtils } = dependencies; // config is not used here, but kept for consistency if needed later
+    const { playerDataManager, playerUtils } = dependencies;
     const pData = playerDataManager.getPlayerData(player.id);
-    let statsOutput = `§e--- Your Anti-Cheat Stats ---\n`; // Added newline
+    let statsOutput = getString("uinfo.myStats.header") + "\n";
+
     if (pData && pData.flags) {
-        statsOutput += `§fTotal Flags: §c${pData.flags.totalFlags || 0}\n`; // Added newline
-        statsOutput += `§fLast Flag Type: §7${pData.lastFlagType || "None"}\n\n`; // Added newline
-        statsOutput += `§eBreakdown by Type:\n`; // Added newline
+        statsOutput += getString("uinfo.myStats.totalFlags", { totalFlags: pData.flags.totalFlags || 0 }) + "\n";
+        statsOutput += getString("uinfo.myStats.lastFlagType", { lastFlagType: pData.lastFlagType || "None" }) + "\n\n";
+        statsOutput += getString("uinfo.myStats.breakdownHeader") + "\n";
         let specificFlagsFound = false;
         for (const flagKey in pData.flags) {
             if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                 const flagData = pData.flags[flagKey];
-                statsOutput += `  §f- ${flagKey}: §c${flagData.count} §7(Last: ${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'})\n`; // Added newline
+                statsOutput += getString("uinfo.myStats.flagEntry", { flagKey: flagKey, count: flagData.count, lastDetectionTime: flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A' }) + "\n";
                 specificFlagsFound = true;
             }
         }
         if (!specificFlagsFound && (pData.flags.totalFlags === 0 || !pData.flags.totalFlags)) {
-             statsOutput = "§aYou have no active flags!"; // Simpler message
+             statsOutput = getString("uinfo.myStats.noFlags");
         } else if (!specificFlagsFound && pData.flags.totalFlags > 0) {
-             statsOutput = `§7Your current flags: §eTotal=${pData.flags.totalFlags}§7. Last type: §e${pData.lastFlagType || "None"}§r\n§7(No specific flag type details available with counts > 0).`;
+             statsOutput = getString("uinfo.myStats.noSpecificFlags", { totalFlags: pData.flags.totalFlags, lastFlagType: pData.lastFlagType || "None" });
         }
     } else {
-        statsOutput = "§aNo flag data found for you, or you have no flags."; // Simpler message
+        statsOutput = getString("uinfo.myStats.noData");
     }
-    const form = new MessageFormData().title("My Anti-Cheat Stats").body(statsOutput.trim()).button1("Close"); // trim() body
+    const form = new MessageFormData()
+        .title(getString("uinfo.myStats.title"))
+        .body(statsOutput.trim())
+        .button1(getString("common.button.close"));
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showMyStatsUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
@@ -48,9 +53,14 @@ async function showMyStatsUI(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showServerRulesUI(player, dependencies) {
-    const { config, playerUtils } = dependencies;
-    const rules = (config.serverRules && config.serverRules.trim() !== "") ? config.serverRules : "No server rules configured.";
-    const form = new MessageFormData().title("Server Rules").body(rules).button1("Close");
+    const { config, playerUtils } = dependencies; // config here is editableConfigValues
+    const rulesKey = config.serverRules; // This is now a key e.g., "config.serverRules"
+    const rulesText = getString(rulesKey); // Get the localized string using the key
+
+    const form = new MessageFormData()
+        .title(getString("uinfo.serverRules.title"))
+        .body(rulesText && rulesText.trim() !== "" && rulesText !== rulesKey ? rulesText : getString("uinfo.serverRules.noRulesConfigured"))
+        .button1(getString("common.button.close"));
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showServerRulesUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
@@ -60,37 +70,40 @@ async function showServerRulesUI(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showHelpLinksUI(player, dependencies) {
-    const { config, playerUtils } = dependencies;
-    let linksBody = "§e--- Helpful Links ---\n";
+    const { config, playerUtils } = dependencies; // config here is editableConfigValues
+    let linksBody = getString("uinfo.helpLinks.header") + "\n";
     let hasContent = false;
 
     if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
-        linksBody += `§fDiscord: §7${config.discordLink}\n`;
+        linksBody += getString("uinfo.helpLinks.discord", { discordLink: config.discordLink }) + "\n";
         hasContent = true;
     }
     if (config.websiteLink && config.websiteLink.trim() !== "" && config.websiteLink !== "https://example.com") {
-        linksBody += `§fWebsite: §7${config.websiteLink}\n`;
+        linksBody += getString("uinfo.helpLinks.website", { websiteLink: config.websiteLink }) + "\n";
         hasContent = true;
     }
 
-    // Display other links from helpLinks array, potentially filtering out duplicates if necessary
-    // For this phase, we will list them all, but a more sophisticated approach might be needed
-    // if discordLink/websiteLink are often duplicated in helpLinks.
     if (config.helpLinks && config.helpLinks.length > 0) {
-        if (hasContent) { // If discord/website links were added, add a separator for other links
-            linksBody += "\n§e--- Other Links ---\n";
+        if (hasContent) {
+            linksBody += getString("uinfo.helpLinks.otherLinksHeader") + "\n";
         }
         config.helpLinks.forEach(link => {
-            linksBody += `§f${link.title}: §7${link.url}\n`;
+            // Assuming link.title and link.url are either direct strings or keys for getString
+            // For Phase 1, assuming they are direct strings as per original config structure.
+            // If they were keys, it would be getString(link.title) and getString(link.url)
+            linksBody += getString("uinfo.helpLinks.linkEntry", { title: link.title, url: link.url }) + "\n";
             hasContent = true;
         });
     }
 
     if (!hasContent) {
-        linksBody = "No helpful links are currently configured."; // Reset body if nothing was added
+        linksBody = getString("uinfo.helpLinks.noLinksConfigured");
     }
 
-    const form = new MessageFormData().title("Helpful Links").body(linksBody.trim()).button1("Close");
+    const form = new MessageFormData()
+        .title(getString("uinfo.helpLinks.title"))
+        .body(linksBody.trim())
+        .button1(getString("common.button.close"));
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showHelpLinksUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
@@ -100,9 +113,18 @@ async function showHelpLinksUI(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showGeneralTipsUI(player, dependencies) {
-    const { config, playerUtils } = dependencies;
-    const tips = config.generalHelpMessages && config.generalHelpMessages.length > 0 ? config.generalHelpMessages.join("\n") : "No general tips configured.";
-    const form = new MessageFormData().title("General Tips").body(tips).button1("Close");
+    const { config, playerUtils, configModule } = dependencies; // config is editableConfigValues
+    let tips = "";
+    if (config.generalHelpMessages && config.generalHelpMessages.length > 0) {
+        tips = config.generalHelpMessages.map(key => getString(key, {prefix: configModule.prefix})).join("\n");
+    } else {
+        tips = getString("uinfo.generalTips.noTipsConfigured");
+    }
+
+    const form = new MessageFormData()
+        .title(getString("uinfo.generalTips.title"))
+        .body(tips)
+        .button1(getString("common.button.close"));
     await form.show(player).catch(e => { if(playerUtils.debugLog) playerUtils.debugLog(`Error in showGeneralTipsUI for ${player.nameTag}: ${e}`, player.nameTag);});
 }
 
@@ -123,14 +145,14 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { addLog, playerUtils } = dependencies; // Added playerUtils here for debug logging
+    const { addLog, playerUtils } = dependencies;
     const mainPanel = new ActionFormData()
-        .title("Your Info & Server Help")
-        .body(`Welcome, ${player.nameTag}! Select an option:`)
-        .button("My Anti-Cheat Stats", "textures/ui/WarningGlyph")
-        .button("Server Rules", "textures/ui/book_glyph_color")
-        .button("Helpful Links", "textures/ui/icon_link")
-        .button("General Tips", "textures/ui/lightbulb_idea_color");
+        .title(getString("uinfo.mainPanel.title"))
+        .body(getString("uinfo.mainPanel.body", { playerName: player.nameTag }))
+        .button(getString("uinfo.mainPanel.button.myStats"), "textures/ui/WarningGlyph")
+        .button(getString("uinfo.mainPanel.button.serverRules"), "textures/ui/book_glyph_color")
+        .button(getString("uinfo.mainPanel.button.helpLinks"), "textures/ui/icon_link")
+        .button(getString("uinfo.mainPanel.button.generalTips"), "textures/ui/lightbulb_idea_color");
 
     const response = await mainPanel.show(player).catch(e => {
         if(playerUtils.debugLog) playerUtils.debugLog(`Error showing main uinfo panel for ${player.nameTag}: ${e}`, player.nameTag);

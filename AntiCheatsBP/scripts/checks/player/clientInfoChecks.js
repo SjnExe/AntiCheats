@@ -1,8 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/checks/player/clientInfoChecks.js
  * Implements checks related to player client system information.
+ * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
+import { getString } from '../../../core/i18n.js';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -47,7 +49,10 @@ export async function checkInvalidRenderDistance(player, pData, config, playerUt
             playerName: player.nameTag,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
-            detailsString: `Reported: ${clientRenderDistance}, Max: ${config.maxAllowedClientRenderDistance}`
+            detailsString: getString("check.clientInfo.renderDistance.details", {
+                reportedDistance: clientRenderDistance.toString(),
+                maxAllowed: config.maxAllowedClientRenderDistance.toString()
+            })
         };
 
         let executeActionFn;
@@ -61,8 +66,6 @@ export async function checkInvalidRenderDistance(player, pData, config, playerUt
 
 
         if (executeActionFn) {
-            // The first argument to executeActionFn is typically the player object or null.
-            // The profile name is the second.
             await executeActionFn(player, "player_invalid_render_distance", violationDetails, dependencies);
         } else {
             playerUtils.debugLog("InvalidRenderDistance: executeCheckAction not available.", null);

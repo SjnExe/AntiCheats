@@ -1,10 +1,11 @@
 /**
  * @file AntiCheatsBP/scripts/core/automodManager.js
  * Manages automated moderation actions based on player flags and configured rules.
- * @version 1.0.0
+ * @version 1.0.1
  */
 
-import * as mc from '@minecraft/server'; // Ensure mc is imported for inventory component
+import * as mc from '@minecraft/server';
+import { getString } from './i18n.js';
 
 /**
  * Formats a duration in milliseconds into a human-readable string (e.g., "1d 2h 30m 15s").
@@ -12,7 +13,7 @@ import * as mc from '@minecraft/server'; // Ensure mc is imported for inventory 
  * @returns {string} A human-readable duration string. Returns "Permanent" if ms is Infinity.
  */
 function formatDuration(ms) {
-    if (ms === Infinity) return "Permanent";
+    if (ms === Infinity) return getString("common.value.permanent"); // Localized
     if (ms < 1000) return \`\${ms}ms\`;
 
     let seconds = Math.floor(ms / 1000);
@@ -25,7 +26,7 @@ function formatDuration(ms) {
     hours %= 24;
 
     const parts = [];
-    if (days > 0) parts.push(\`\${days}d\`);
+    if (days > 0) parts.push(\`\${days}d\`); // Assuming d, h, m, s are fine as short units
     if (hours > 0) parts.push(\`\${hours}h\`);
     if (minutes > 0) parts.push(\`\${minutes}m\`);
     if (seconds > 0 || parts.length === 0) parts.push(\`\${seconds}s\`);
@@ -33,16 +34,8 @@ function formatDuration(ms) {
     return parts.join(' ');
 }
 
-
 /**
  * Internal function to dispatch and execute specific automod actions.
- * @param {mc.Player} player The player instance.
- * @param {object} pData The player's anti-cheat data object.
- * @param {string} actionType The type of action to execute.
- * @param {object} parameters Parameters for the action.
- * @param {string} checkType The type of check that triggered this action.
- * @param {object} dependencies An object containing dependencies.
- * @returns {boolean} True if the action was handled, false otherwise.
  */
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
     const { playerUtils, logManager, automodConfig, config, playerDataManager, commandModules } = dependencies;
@@ -52,17 +45,17 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     let actionProcessed = false;
     let logDetails = "";
     let durationForLog = null;
+    let adminNotifyDetails = "";
 
     switch (actionType) {
         case "WARN":
             const reasonKeyWarn = parameters.reasonKey || 'automod.unknown.warn';
-            const messageWarn = (automodConfig?.automodActionMessages?.[reasonKeyWarn])
-                ? automodConfig.automodActionMessages[reasonKeyWarn]
-                : "You have received an automated warning.";
+            const messageWarnUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyWarn] || "automod.action.warnDefaultReason";
+            const localizedMessageWarn = getString(messageWarnUnlocalized);
 
             if (playerUtils.warnPlayer) {
-                playerUtils.warnPlayer(player, messageWarn);
-                logDetails = \`Warned player. Check: \${checkType}, Reason: \${messageWarn}\`;
+                playerUtils.warnPlayer(player, localizedMessageWarn);
+                logDetails = \`Warned player. Check: \${checkType}, Reason: \${localizedMessageWarn}\`;
                 actionProcessed = true;
             } else {
                 playerUtils.debugLog(\`AutomodManager: playerUtils.warnPlayer not found for WARN action.\`, player.nameTag);
@@ -70,65 +63,68 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "KICK":
             const reasonKeyKick = parameters.reasonKey || 'automod.unknown.kick';
-            const kickReason = (automodConfig?.automodActionMessages?.[reasonKeyKick])
-                ? automodConfig.automodActionMessages[reasonKeyKick]
-                : "Kicked by AutoMod due to rule violation.";
+            const kickReasonUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyKick] || "automod.action.kickDefaultReason";
+            const localizedKickReason = getString(kickReasonUnlocalized);
 
             try {
-                player.kick(kickReason);
-                logDetails = \`Kicked player. Check: \${checkType}, Reason: \${kickReason}\`;
+                player.kick(localizedKickReason);
+                logDetails = \`Kicked player. Check: \${checkType}, Reason: \${localizedKickReason}\`;
                 actionProcessed = true;
             } catch (e) {
                 playerUtils.debugLog(\`AutomodManager: Error kicking player \${player.nameTag}: \${e}\`, player.nameTag);
-                logDetails = \`Failed to kick player \${player.nameTag}. Check: \${checkType}, Reason: \${kickReason}, Error: \${e}\`;
+                logDetails = \`Failed to kick player \${player.nameTag}. Check: \${checkType}, Reason: \${localizedKickReason}, Error: \${e}\`;
                 actionProcessed = false;
             }
             break;
         case "TEMP_BAN":
             const reasonKeyTempBan = parameters.reasonKey || 'automod.unknown.tempban';
-            const reasonMessageTempBan = (automodConfig?.automodActionMessages?.[reasonKeyTempBan])
-                ? automodConfig.automodActionMessages[reasonKeyTempBan]
-                : "Temporarily banned by AutoMod for rule violations.";
+            const reasonMessageTempBanUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyTempBan] || "automod.action.tempbanDefaultReason";
+            const localizedReasonMsgTempBan = getString(reasonMessageTempBanUnlocalized);
             const durationStringTempBan = parameters.duration || "5m";
 
             let parsedDurationMsTempBan = playerUtils.parseDuration(durationStringTempBan);
-            if (parsedDurationMsTempBan === null) {
+            if (parsedDurationMsTempBan === null || (parsedDurationMsTempBan <= 0 && parsedDurationMsTempBan !== Infinity)) {
                 playerUtils.debugLog(\`AutomodManager: Invalid duration string "\${durationStringTempBan}" for TEMP_BAN on \${player.nameTag}. Defaulting to 5m.\`, player.nameTag);
-                parsedDurationMsTempBan = 300000; // 5 minutes in ms
+                parsedDurationMsTempBan = 300000;
             }
 
-            if (playerDataManager?.addBan && playerDataManager.addBan(player, parsedDurationMsTempBan, reasonMessageTempBan, "AutoMod", true, checkType)) {
+            if (playerDataManager?.addBan && playerDataManager.addBan(player, parsedDurationMsTempBan, localizedReasonMsgTempBan, "AutoMod", true, checkType)) {
                 durationForLog = parsedDurationMsTempBan;
                 const friendlyDuration = formatDuration(parsedDurationMsTempBan);
-                const kickMsgTempBan = \`You are temporarily banned by AutoMod.\nReason: \${reasonMessageTempBan}\nDuration: \${friendlyDuration}\`;
+
+                const kickMsgHeader = getString("automod.kickMessage.tempban.header");
+                const kickMsgReasonPart = getString("automod.kickMessage.common.reason", { reason: localizedReasonMsgTempBan });
+                const kickMsgDurationPart = getString("automod.kickMessage.common.duration", { duration: friendlyDuration });
+                const kickMsgTempBan = \`\${kickMsgHeader}\n\${kickMsgReasonPart}\n\${kickMsgDurationPart}\`;
+
+                adminNotifyDetails = getString("automod.adminNotify.details.duration", { duration: friendlyDuration });
                 try {
                     player.kick(kickMsgTempBan);
-                    logDetails = \`Temp banned player for \${friendlyDuration}. Check: \${checkType}, Reason: \${reasonMessageTempBan}\`;
+                    logDetails = \`Temp banned player for \${friendlyDuration}. Check: \${checkType}, Reason: \${localizedReasonMsgTempBan}\`;
                     actionProcessed = true;
                 } catch (e) {
                     playerUtils.debugLog(\`AutomodManager: Error kicking player \${player.nameTag} after TEMP_BAN: \${e}\`, player.nameTag);
-                    logDetails = \`Temp banned player (kick failed). Duration: \${friendlyDuration}, Check: \${checkType}, Reason: \${reasonMessageTempBan}, Error: \${e}\`;
+                    logDetails = \`Temp banned player (kick failed). Duration: \${friendlyDuration}, Check: \${checkType}, Reason: \${localizedReasonMsgTempBan}, Error: \${e}\`;
                     actionProcessed = true;
                 }
             } else {
                 playerUtils.debugLog(\`AutomodManager: Failed to apply TEMP_BAN to \${player.nameTag} via playerDataManager.addBan.\`, player.nameTag);
-                logDetails = \`Failed to apply TEMP_BAN. Check: \${checkType}, Reason: \${reasonMessageTempBan}\`;
+                logDetails = \`Failed to apply TEMP_BAN. Check: \${checkType}, Reason: \${localizedReasonMsgTempBan}\`;
                 actionProcessed = false;
             }
             break;
         case "PERM_BAN":
             const reasonKeyPermBan = parameters.reasonKey || 'automod.unknown.permban';
-            const reasonMessagePermBan = (automodConfig?.automodActionMessages?.[reasonKeyPermBan])
-                ? automodConfig.automodActionMessages[reasonKeyPermBan]
-                : "Permanently banned by AutoMod for severe rule violations.";
+            const reasonMessagePermBanUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyPermBan] || "automod.action.permbanDefaultReason";
+            const localizedReasonMsgPermBan = getString(reasonMessagePermBanUnlocalized);
 
             if (commandModules?.ban?.execute) {
                 try {
-                    const args = [player.nameTag, "perm", ...reasonMessagePermBan.split(' ')];
-                    // Call signature: execute(source, args, dependencies, invokedBy = "PlayerCommand", isAutoMod = false, triggeringCheckType = null)
+                    const args = [player.nameTag, "perm", ...localizedReasonMsgPermBan.split(' ')];
                     await commandModules.ban.execute(null, args, dependencies, "AutoMod", true, checkType);
                     durationForLog = Infinity;
-                    logDetails = \`PERM_BAN action delegated to ban command for \${player.nameTag}. Reason: \${reasonMessagePermBan}\`;
+                    adminNotifyDetails = getString("automod.adminNotify.details.duration", { duration: getString("common.value.permanent") });
+                    logDetails = \`PERM_BAN action delegated to ban command for \${player.nameTag}. Reason: \${localizedReasonMsgPermBan}\`;
                     actionProcessed = true;
                 } catch (e) {
                     playerUtils.debugLog(\`AutomodManager: Error delegating PERM_BAN for \${player.nameTag} to ban command: \${e}\`, player.nameTag);
@@ -143,18 +139,17 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "MUTE":
             const reasonKeyMute = parameters.reasonKey || 'automod.unknown.mute';
-            const reasonMessageMute = (automodConfig?.automodActionMessages?.[reasonKeyMute])
-                ? automodConfig.automodActionMessages[reasonKeyMute]
-                : "Muted by AutoMod.";
+            const reasonMessageMuteUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyMute] || "automod.action.muteDefaultReason";
+            const localizedReasonMsgMute = getString(reasonMessageMuteUnlocalized);
             const durationStringMute = parameters.duration || "10m";
 
             if (commandModules?.mute?.execute) {
                 try {
-                    const args = [player.nameTag, durationStringMute, ...reasonMessageMute.split(' ')];
-                    // Call signature: execute(source, args, dependencies, invokedBy = "PlayerCommand", isAutoMod = false, triggeringCheckType = null)
+                    const args = [player.nameTag, durationStringMute, ...localizedReasonMsgMute.split(' ')];
                     await commandModules.mute.execute(null, args, dependencies, "AutoMod", true, checkType);
                     durationForLog = playerUtils.parseDuration(durationStringMute) || 0;
-                    logDetails = \`MUTE action delegated to mute command for \${player.nameTag}. Duration: \${durationStringMute}, Reason: \${reasonMessageMute}\`;
+                    adminNotifyDetails = getString("automod.adminNotify.details.duration", { duration: formatDuration(durationForLog) });
+                    logDetails = \`MUTE action delegated to mute command for \${player.nameTag}. Duration: \${durationStringMute}, Reason: \${localizedReasonMsgMute}\`;
                     actionProcessed = true;
                 } catch (e) {
                     playerUtils.debugLog(\`AutomodManager: Error delegating MUTE for \${player.nameTag} to mute command: \${e}\`, player.nameTag);
@@ -169,16 +164,16 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "FREEZE":
             const reasonKeyFreeze = parameters.reasonKey || 'automod.unknown.freeze';
-            const reasonMessageFreeze = (automodConfig?.automodActionMessages?.[reasonKeyFreeze])
-                ? automodConfig.automodActionMessages[reasonKeyFreeze]
-                : "Player frozen by AutoMod due to rule violation.";
+            const reasonMessageFreezeUnlocalized = automodConfig?.automodActionMessages?.[reasonKeyFreeze] || "automod.action.freezeDefaultReason";
+            const localizedReasonMsgFreeze = getString(reasonMessageFreezeUnlocalized);
 
             if (commandModules?.freeze?.execute) {
                 try {
                     const args = [player.nameTag, "on"];
                     await commandModules.freeze.execute(null, args, dependencies, "AutoMod");
                     durationForLog = null;
-                    logDetails = \`FREEZE action (state: on) delegated to freeze command for \${player.nameTag}. LogReason: \${reasonMessageFreeze}\`;
+                    adminNotifyDetails = "";
+                    logDetails = \`FREEZE action (state: on) delegated to freeze command for \${player.nameTag}. LogReason: \${localizedReasonMsgFreeze}\`;
                     actionProcessed = true;
                 } catch (e) {
                     playerUtils.debugLog(\`AutomodManager: Error delegating FREEZE for \${player.nameTag} to freeze command: \${e}\`, player.nameTag);
@@ -217,15 +212,14 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                     }
                 }
                 if (removedCount > 0) {
-                    const reasonKeyItemRemoval = parameters.reasonKey || 'automod.illegalitem.default_removed';
-                    let removalMessage = (automodConfig?.automodActionMessages?.[reasonKeyItemRemoval])
-                        ? automodConfig.automodActionMessages[reasonKeyItemRemoval]
-                        : "AutoMod removed {quantity}x {itemTypeId} from your inventory.";
-                    removalMessage = removalMessage.replace("{quantity}", removedCount.toString()).replace("{itemTypeId}", itemTypeIdToRemove);
+                    let removalMessageKey = parameters.reasonKey || 'automod.unknown.itemRemoved';
+                    let removalMessage = getString(automodConfig?.automodActionMessages?.[removalMessageKey] || "automod.default.itemRemoved",
+                                                 { quantity: removedCount.toString(), itemTypeId: itemTypeIdToRemove });
 
                     if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, removalMessage);
                     else player.sendMessage(removalMessage);
 
+                    adminNotifyDetails = getString("automod.adminNotify.details.item", { item: itemTypeIdToRemove });
                     logDetails = \`Removed \${removedCount}x \${itemTypeIdToRemove} from \${player.nameTag} (Check: \${checkType}).\`;
                 } else {
                     logDetails = \`No items of type \${itemTypeIdToRemove} found to remove from \${player.nameTag} (Check: \${checkType}).\`;
@@ -233,6 +227,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = true;
             } catch (e) {
                 playerUtils.debugLog(\`AutomodManager: Error during REMOVE_ILLEGAL_ITEM for \${player.nameTag} (\${itemTypeIdToRemove}): \${e}\`, player.nameTag);
+                adminNotifyDetails = getString("common.error.generic") + \`: \${e.message || e}\`;
                 logDetails = \`Error removing item \${itemTypeIdToRemove}: \${e}\`;
                 actionProcessed = false;
             }
@@ -253,46 +248,36 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             adminName: 'AutoMod',
             targetName: player.nameTag,
             duration: durationForLog,
-            reason: parameters?.reasonKey || \`Automated action for \${checkType}\`,
+            reason: parameters?.reasonKey || \`Automated action for \${checkType}\`, // This should be the unlocalized key
             details: logDetails
         });
 
-        // Admin Notification Logic
         if (playerUtils && playerUtils.notifyAdmins) {
-            let adminMessage = \`§7[§cAutoMod§7] Action: \${actionType} on \${player.nameTag} for \${checkType}.\`;
-            const reasonMessage = (automodConfig?.automodActionMessages && parameters.reasonKey && automodConfig.automodActionMessages[parameters.reasonKey])
-                                  ? automodConfig.automodActionMessages[parameters.reasonKey]
-                                  : (parameters.reasonKey || "N/A");
+            const basePrefix = getString("automod.adminNotify.basePrefix");
+            // Ensure reasonMessageUnlocalized is the key, not already localized string.
+            const reasonMessageUnlocalized = automodConfig?.automodActionMessages?.[parameters.reasonKey] || parameters.reasonKey || "automod.action.unknownReason";
+            const localizedReasonForNotification = getString(reasonMessageUnlocalized);
 
-            adminMessage += \` Reason: \${reasonMessage}.\`;
-
-            if (actionType === "TEMP_BAN" || actionType === "MUTE") {
-                const durationString = parameters.duration || "N/A";
-                const friendlyDuration = formatDuration(durationForLog);
-                adminMessage += \` Duration: \${friendlyDuration}.\`;
-            } else if (actionType === "PERM_BAN") {
-                adminMessage += " Duration: Permanent.";
-            } else if (actionType === "REMOVE_ILLEGAL_ITEM" && parameters.itemToRemoveTypeId) {
-                adminMessage += \` Item: \${parameters.itemToRemoveTypeId}.\`;
-            }
+            const adminMessage = getString("automod.adminNotify.actionReport", {
+                basePrefix: basePrefix,
+                actionType: actionType,
+                playerName: player.nameTag,
+                checkType: checkType,
+                reason: localizedReasonForNotification, // Use the localized reason here
+                details: adminNotifyDetails
+            });
             playerUtils.notifyAdmins(adminMessage, player, pData);
         }
     } else if (!actionProcessed) {
         if (actionType !== "FLAG_ONLY" && (actionType === "WARN" || actionType === "KICK" || actionType === "TEMP_BAN" || actionType === "PERM_BAN" || actionType === "MUTE" || actionType === "FREEZE" || actionType === "REMOVE_ILLEGAL_ITEM")) {
-             playerUtils.debugLog(\`AutomodManager: Action '\${actionType}' failed to process correctly for \${player.nameTag}.\`, player.nameTag);
+             playerUtils.debugLog(\`AutomodManager: Action '\${actionType}' failed to process correctly for \${player.nameTag}. Details: \${logDetails}\`, player.nameTag);
         }
     }
-
     return actionProcessed;
 }
 
-
 /**
  * Processes automated moderation actions for a player based on a specific check type trigger.
- * @param {mc.Player} player The player instance.
- * @param {object} pData The player's anti-cheat data object.
- * @param {string} checkType The type of check that was flagged.
- * @param {object} dependencies An object containing dependencies.
  */
 export async function processAutoModActions(player, pData, checkType, dependencies) {
     const { config, automodConfig, playerUtils } = dependencies;
@@ -301,13 +286,11 @@ export async function processAutoModActions(player, pData, checkType, dependenci
         return;
     }
 
-    // Check per-checkType toggle
     if (automodConfig.automodPerCheckTypeToggles &&
         typeof automodConfig.automodPerCheckTypeToggles[checkType] === 'boolean' &&
         !automodConfig.automodPerCheckTypeToggles[checkType]) {
-
         playerUtils.debugLog(\`AutomodManager: AutoMod for checkType '\${checkType}' on \${player.nameTag} is disabled via per-check toggle.\`, player.nameTag);
-        return; // AutoMod for this specific checkType is disabled
+        return;
     }
 
     if (!automodConfig?.automodRules) {

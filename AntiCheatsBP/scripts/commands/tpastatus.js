@@ -1,91 +1,86 @@
 /**
  * @file Script for the !tpastatus command, allowing players to manage their TPA request availability.
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 import { world, system } from '@minecraft/server';
-import * as config from '../config.js';
+// import * as config from '../config.js'; // No direct config needed here, prefix comes from dependencies
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
- * @typedef {import('../types.js').CommandDefinition} CommandDefinition
- * @typedef {import('@minecraft/server').Player} Player
+ * @type {import('../types.js').CommandDefinition}
  */
-
-/**
- * @type {CommandDefinition}
- */
-const tpastatusCommandDefinition = {
+export const definition = {
     name: 'tpastatus',
-    description: 'Manage or view your TPA request availability. Use "on" to accept, "off" to decline, or "status" (or no argument) to check.',
+    description: getString("command.tpastatus.description"),
     aliases: ['tpatoggle'],
-    permissionLevel: permissionLevels.normal, // Accessible to everyone
+    permissionLevel: permissionLevels.normal,
     syntax: '!tpastatus [on|off|status]',
 };
 
 /**
  * Executes the !tpastatus command.
- * @param {Player} player The player issuing the command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments. args[0] can be 'on', 'off', or 'status'.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-async function tpastatusCommandExecute(player, args, dependencies) {
-    // const { playerUtils } = dependencies; // For debugLog, if needed
+export async function execute(player, args, dependencies) {
+    const { playerUtils, config: fullConfig } = dependencies;
+    const prefix = fullConfig.prefix;
 
-    if (!config.enableTPASystem) {
-        player.sendMessage("§cThe TPA system is currently disabled.");
+    if (!fullConfig.enableTPASystem) {
+        player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
 
-    const option = args[0] ? args[0].toLowerCase() : 'status'; // Default to 'status' if no arg
+    const option = args[0] ? args[0].toLowerCase() : 'status';
 
     switch (option) {
         case 'on':
             tpaManager.setPlayerTpaStatus(player.name, true);
-            player.sendMessage("§aYou are now accepting TPA requests.");
+            player.sendMessage(getString("command.tpastatus.nowEnabled"));
             break;
         case 'off':
             tpaManager.setPlayerTpaStatus(player.name, false);
-            player.sendMessage("§cYou are no longer accepting TPA requests.");
+            player.sendMessage(getString("command.tpastatus.nowDisabled"));
 
-            // Decline all pending incoming requests for the player
             const incomingRequests = tpaManager.findRequestsForPlayer(player.name)
                 .filter(req => req.targetName === player.name && Date.now() < req.expiryTimestamp);
 
             if (incomingRequests.length > 0) {
                 let declinedCount = 0;
                 for (const req of incomingRequests) {
-                    tpaManager.declineRequest(req.requestId); // This also removes the request
+                    // Pass dependencies to declineRequest if it needs them (e.g., for logging or notifications within declineRequest)
+                    tpaManager.declineRequest(req.requestId, dependencies);
                     const requesterPlayer = world.getAllPlayers().find(p => p.name === req.requesterName);
                     if (requesterPlayer) {
-                        system.run(() => { // Run in a separate tick for action bar reliability
+                        system.run(() => {
                             try {
-                                requesterPlayer.onScreenDisplay.setActionBar(`§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`);
+                                requesterPlayer.onScreenDisplay.setActionBar(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
                             } catch (e) { console.warn(`[TPAStatusCmd] Failed to set action bar for ${req.requesterName}: ${e}`); }
                         });
-                         requesterPlayer.sendMessage(`§e${player.nameTag} is no longer accepting TPA requests; your TPA request was automatically declined.`);
+                         // Also send a chat message as action bar can be missed
+                         requesterPlayer.sendMessage(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
                     }
                     declinedCount++;
                 }
                 if (declinedCount > 0) {
-                     player.sendMessage(`§e${declinedCount} pending incoming TPA request(s) were automatically declined.`);
+                     player.sendMessage(getString("command.tpastatus.nowDisabledDeclined", {count: declinedCount}));
                 }
             }
             break;
         case 'status':
             const currentStatus = tpaManager.getPlayerTpaStatus(player.name);
             if (currentStatus.acceptsTpaRequests) {
-                player.sendMessage("§aYou are currently accepting TPA requests.");
+                player.sendMessage(getString("command.tpastatus.current.enabled"));
             } else {
-                player.sendMessage("§cYou are currently not accepting TPA requests.");
+                player.sendMessage(getString("command.tpastatus.current.disabled"));
             }
             break;
         default:
-            player.sendMessage(`§cInvalid option. Usage: ${config.prefix}${tpastatusCommandDefinition.name} ${tpastatusCommandDefinition.syntax.split(' ')[1]}`);
+            player.sendMessage(getString("command.tpastatus.error.invalidOption", { prefix: prefix }));
             break;
     }
 }
-
-export const definition = tpastatusCommandDefinition;
-export const execute = tpastatusCommandExecute;

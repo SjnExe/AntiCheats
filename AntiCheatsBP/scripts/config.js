@@ -20,6 +20,9 @@ export const enableAutoMod = false;
 /** @type {string} The prefix used for chat-based commands (e.g., "!ac version"). */
 export const prefix = "!";
 
+/** @type {string} The default language code for server messages (e.g., "en_US"). */
+export const defaultServerLanguage = "en_US";
+
 // --- General Check Toggles ---
 
 /** @type {boolean} If true, the Reach check is active. */
@@ -385,7 +388,7 @@ export const combatLogReason = "Disconnected shortly after combat.";
  * @type {string} Template for admin notification message for combat logging.
  * Placeholders: {playerName}, {timeSinceCombat}, {incrementAmount}.
  */
-export const combatLogMessage = "§cCombat Log: {playerName} disconnected {timeSinceCombat}s after combat. Flagged +{incrementAmount}.";
+export const combatLogMessage = "message.combatLogAdminNotify"; // Key for localizationManager
 
 
 /** @type {boolean} If true, admins receive all AntiCheat notifications by default, unless individually overridden by specific check settings or admin preferences. */
@@ -398,7 +401,7 @@ export const enableWelcomerMessage = true;
  * @type {string} The welcome message template. Use {playerName} as a placeholder for the player's name.
  * Example: "Welcome, {playerName}, to the server! Enjoy your stay."
  */
-export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
+export const welcomeMessage = "message.welcome"; // Key for localizationManager
 /** @type {boolean} If true, admins will be notified when a new player joins for the first time. */
 export const notifyAdminOnNewPlayerJoin = true;
 
@@ -410,7 +413,7 @@ export const enableDeathCoordsMessage = true;
  * Placeholders: {x}, {y}, {z}, {dimensionId}.
  * Example: "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}."
  */
-export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
+export const deathCoordsMessage = "message.deathCoords"; // Key for localizationManager
 
 // --- Death Effects ---
 /** @type {boolean} If true, cosmetic effects (particle and sound) are shown when a player dies. */
@@ -586,7 +589,7 @@ export const maxAllowedClientRenderDistance = 64;
 export const enableWorldBorderSystem = false; // This was from previous subtask, ensure it's here
 
 /** @type {string} Message sent to players when they are teleported back by the world border. */
-export const worldBorderWarningMessage = "§cYou have reached the world border!"; // This was from previous subtask
+export const worldBorderWarningMessage = "message.worldBorderWarning"; // Key for localizationManager
 
 /** @type {boolean} Default for enabling damage when a new border is set or damage is toggled on. */
 export const worldBorderDefaultEnableDamage = false;
@@ -655,7 +658,7 @@ export const enableDetailedJoinLeaveLogging = true;
  * Use newline characters `\n` for line breaks.
  * This is a single string to allow easier editing via in-game commands if such a feature is added.
  */
-export const serverRules = "1. Be respectful to all players and staff.\n2. No X-Ray or resource exploitation cheats.\n3. No hacking, combat advantages, or unfair modifications.\n4. No item duplication or exploiting game bugs for personal gain.\n5. Keep chat respectful and constructive.";
+export const serverRules = "config.serverRules"; // Key for localizationManager
 
 /**
  * @type {string}
@@ -679,11 +682,11 @@ export const helpLinks = [
 ];
 /** @type {string[]} General help messages or tips to display in the UI (e.g., in a general info panel). */
 export const generalHelpMessages = [
-    "Welcome to the server! We hope you have a great time.",
-    "For a list of commands, type !help in chat.",
-    "If you suspect a player of cheating, please use the report link or contact staff.",
-    "Please be familiar with our server rules, available via !uinfo."
-];
+    "message.generalHelp.welcome",
+    "message.generalHelp.helpCommandPrompt",
+    "message.generalHelp.reportPrompt",
+    "message.generalHelp.rulesPrompt"
+]; // Array of keys for localizationManager
 
 // --- System ---
 /**
@@ -754,7 +757,7 @@ export const automodConfig = {
         "player_namespoof": [
             { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.namespoof.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "KICK", parameters: { reasonKey: "automod.namespoof.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "example_reach_attack": [
             { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.reach.warn1" }, resetFlagsAfterAction: false },
@@ -773,12 +776,12 @@ export const automodConfig = {
         ],
         "player_antigmc": [
             { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.antigmc.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.antigmc.tempban1", duration: "1d" }, resetFlagsAfterAction: true }
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.antigmc.tempban1", duration: "6h" }, resetFlagsAfterAction: true }
         ],
         "combat_multitarget_aura": [
             { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.multitarget.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.multitarget.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.multitarget.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.multitarget.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "world_illegal_item_place": [
             { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.illegalplace.warn1" }, resetFlagsAfterAction: false },
@@ -803,12 +806,12 @@ export const automodConfig = {
         "combat_attack_while_sleeping": [
             { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.attacksleep.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "KICK", parameters: { reasonKey: "automod.attacksleep.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 25, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attacksleep.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 25, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attacksleep.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "world_instabreak_speed": [
             { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.instabreak.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.instabreak.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.instabreak.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.instabreak.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "chat_spam_max_words": [
             { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatmaxwords.warn1" }, resetFlagsAfterAction: false },
@@ -831,9 +834,9 @@ export const automodConfig = {
             { flagThreshold: 18, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.attackconsume.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "player_invalid_render_distance": [
-            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.renderdistance.warn1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 5, actionType: "KICK", parameters: { reasonKey: "automod.renderdistance.kick1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 10, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.renderdistance.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.renderdistance.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.renderdistance.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.renderdistance.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
         "combat_attack_while_bow_charging": [
             { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.attackbow.warn1" }, resetFlagsAfterAction: false },
@@ -854,6 +857,101 @@ export const automodConfig = {
             { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.chatitemuse.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chatitemuse.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "MUTE", parameters: { reasonKey: "automod.chatitemuse.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_nuker": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.nuker.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.nuker.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.nuker.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
+        ],
+        "world_autotool": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.autotool.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.autotool.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.autotool.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_instabreak_unbreakable": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.instabreakunbreakable.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.instabreakunbreakable.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.instabreakunbreakable.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "player_inventory_mod": [
+            { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.inventorymod.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.inventorymod.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.inventorymod.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "world_tower_build": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.tower.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.tower.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.tower.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
+        ],
+        "world_flat_rotation_building": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.flatrotation.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.flatrotation.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.flatrotation.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_downward_scaffold": [
+            { flagThreshold: 9, actionType: "WARN", parameters: { reasonKey: "automod.downscaffold.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 18, actionType: "KICK", parameters: { reasonKey: "automod.downscaffold.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 27, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.downscaffold.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_air_place": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.airplace.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "KICK", parameters: { reasonKey: "automod.airplace.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 45, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.airplace.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
+        ],
+        "world_fast_place": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.fastplace.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "KICK", parameters: { reasonKey: "automod.fastplace.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 45, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fastplace.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_swear_violation": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.swear.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 5, actionType: "MUTE", parameters: { reasonKey: "automod.swear.mute1", duration: "10m" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.swear.mute2", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_tnt_place": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.tnt.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.tnt.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.tnt.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_wither_spawn": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.wither.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.wither.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.wither.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_fire": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.fire.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.fire.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fire.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_lava": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.lava.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.lava.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.lava.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_water": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.water.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "KICK", parameters: { reasonKey: "automod.water.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 45, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.water.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_blockspam": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.blockspam.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "KICK", parameters: { reasonKey: "automod.blockspam.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 45, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.blockspam.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_entityspam": [
+            { flagThreshold: 15, actionType: "WARN", parameters: { reasonKey: "automod.entityspam.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "KICK", parameters: { reasonKey: "automod.entityspam.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 45, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.entityspam.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_blockspam_density": [
+            { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.densityspam.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.densityspam.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.densityspam.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "player_self_hurt": [
+            { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.selfhurt.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.selfhurt.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.selfhurt.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -942,7 +1040,64 @@ export const automodConfig = {
         "automod.chatcombat.mute2": "AutoMod: Muted for 15 minutes for persistently chatting during combat cooldown.",
         "automod.chatitemuse.warn1": "AutoMod: Please avoid chatting while using items.",
         "automod.chatitemuse.mute1": "AutoMod: Muted for 5 minutes for chatting while using items.",
-        "automod.chatitemuse.mute2": "AutoMod: Muted for 15 minutes for persistently chatting while using items."
+        "automod.chatitemuse.mute2": "AutoMod: Muted for 15 minutes for persistently chatting while using items.",
+        "automod.nuker.warn1": "AutoMod: Nuker (rapid/wide-area block breaking) activity detected.",
+        "automod.nuker.kick1": "AutoMod: Kicked for persistent Nuker activity.",
+        "automod.nuker.tempban1": "AutoMod: Temporarily banned for excessive Nuker activity.",
+        "automod.autotool.warn1": "AutoMod: Suspicious tool switching (AutoTool) detected.",
+        "automod.autotool.kick1": "AutoMod: Kicked for persistent AutoTool activity.",
+        "automod.autotool.tempban1": "AutoMod: Temporarily banned for excessive AutoTool activity.",
+        "automod.instabreakunbreakable.warn1": "AutoMod: Attempted to break an unbreakable block.",
+        "automod.instabreakunbreakable.kick1": "AutoMod: Kicked for attempting to break unbreakable blocks.",
+        "automod.instabreakunbreakable.tempban1": "AutoMod: Temporarily banned for persistent attempts to break unbreakable blocks.",
+        "automod.inventorymod.warn1": "AutoMod: Suspicious inventory manipulation detected.",
+        "automod.inventorymod.kick1": "AutoMod: Kicked for persistent inventory manipulation.",
+        "automod.inventorymod.tempban1": "AutoMod: Temporarily banned for excessive inventory manipulation.",
+        "automod.tower.warn1": "AutoMod: Rapid tower building detected.",
+        "automod.tower.kick1": "AutoMod: Kicked for persistent tower building.",
+        "automod.tower.tempban1": "AutoMod: Temporarily banned for excessive tower building.",
+        "automod.flatrotation.warn1": "AutoMod: Unnatural building rotation detected.",
+        "automod.flatrotation.kick1": "AutoMod: Kicked for persistent unnatural building rotation.",
+        "automod.flatrotation.tempban1": "AutoMod: Temporarily banned for excessive unnatural building rotation.",
+        "automod.downscaffold.warn1": "AutoMod: Downward scaffolding detected.",
+        "automod.downscaffold.kick1": "AutoMod: Kicked for persistent downward scaffolding.",
+        "automod.downscaffold.tempban1": "AutoMod: Temporarily banned for excessive downward scaffolding.",
+        "automod.airplace.warn1": "AutoMod: Placing blocks in air detected.",
+        "automod.airplace.kick1": "AutoMod: Kicked for persistent air placement.",
+        "automod.airplace.tempban1": "AutoMod: Temporarily banned for excessive air placement.",
+        "automod.fastplace.warn1": "AutoMod: Placing blocks too quickly detected.",
+        "automod.fastplace.kick1": "AutoMod: Kicked for persistent fast placement.",
+        "automod.fastplace.tempban1": "AutoMod: Temporarily banned for excessive fast placement.",
+        "automod.swear.warn1": "AutoMod: Swear word detected in chat. Please be respectful.",
+        "automod.swear.mute1": "AutoMod: Muted for 10 minutes for using inappropriate language.",
+        "automod.swear.mute2": "AutoMod: Muted for 1 hour for persistent use of inappropriate language.",
+        "automod.tnt.warn1": "AutoMod: Unauthorized TNT placement detected.",
+        "automod.tnt.kick1": "AutoMod: Kicked for persistent unauthorized TNT placement.",
+        "automod.tnt.tempban1": "AutoMod: Temporarily banned for excessive unauthorized TNT placement.",
+        "automod.wither.warn1": "AutoMod: Unauthorized Wither spawning activity detected.",
+        "automod.wither.kick1": "AutoMod: Kicked for persistent unauthorized Wither spawning.",
+        "automod.wither.tempban1": "AutoMod: Temporarily banned for excessive unauthorized Wither spawning.",
+        "automod.fire.warn1": "AutoMod: Unauthorized fire placement detected.",
+        "automod.fire.kick1": "AutoMod: Kicked for persistent unauthorized fire placement.",
+        "automod.fire.tempban1": "AutoMod: Temporarily banned for excessive unauthorized fire placement.",
+        "automod.lava.warn1": "AutoMod: Unauthorized lava placement detected.",
+        "automod.lava.kick1": "AutoMod: Kicked for persistent unauthorized lava placement.",
+        "automod.lava.tempban1": "AutoMod: Temporarily banned for excessive unauthorized lava placement.",
+        "automod.water.warn1": "AutoMod: Unauthorized water placement detected.",
+        "automod.water.kick1": "AutoMod: Kicked for persistent unauthorized water placement.",
+        "automod.water.tempban1": "AutoMod: Temporarily banned for excessive unauthorized water placement.",
+        "automod.blockspam.warn1": "AutoMod: Block spamming detected.",
+        "automod.blockspam.kick1": "AutoMod: Kicked for persistent block spamming.",
+        "automod.blockspam.tempban1": "AutoMod: Temporarily banned for excessive block spamming.",
+        "automod.entityspam.warn1": "AutoMod: Entity spamming detected.",
+        "automod.entityspam.kick1": "AutoMod: Kicked for persistent entity spamming.",
+        "automod.entityspam.tempban1": "AutoMod: Temporarily banned for excessive entity spamming.",
+        "automod.densityspam.warn1": "AutoMod: High-density block spamming detected.",
+        "automod.densityspam.kick1": "AutoMod: Kicked for persistent high-density block spamming.",
+        "automod.densityspam.tempban1": "AutoMod: Temporarily banned for excessive high-density block spamming.",
+        "automod.selfhurt.warn1": "AutoMod: Suspicious self-inflicted damage detected.",
+        "automod.selfhurt.kick1": "AutoMod: Kicked for repeated suspicious self-inflicted damage.",
+        "automod.selfhurt.tempban1": "AutoMod: Temporarily banned for excessive self-inflicted damage."
         // Add more messages here
     },
 
@@ -976,7 +1131,26 @@ export const automodConfig = {
         "combat_attack_while_bow_charging": true,
         "combat_attack_while_shielding": true,
         "player_chat_during_combat": true,
-        "player_chat_during_item_use": true
+        "player_chat_during_item_use": true,
+        "world_nuker": true,
+        "world_autotool": true,
+        "world_instabreak_unbreakable": true,
+        "player_inventory_mod": true,
+        "world_tower_build": true,
+        "world_flat_rotation_building": true,
+        "world_downward_scaffold": true,
+        "world_air_place": true,
+        "world_fast_place": true,
+        "chat_swear_violation": true,
+        "world_antigrief_tnt_place": true,
+        "world_antigrief_wither_spawn": true,
+        "world_antigrief_fire": true,
+        "world_antigrief_lava": true,
+        "world_antigrief_water": true,
+        "world_antigrief_blockspam": true,
+        "world_antigrief_entityspam": true,
+        "world_antigrief_blockspam_density": true,
+        "player_self_hurt": true
         // Add more checkTypes here
     }
 };
@@ -1010,11 +1184,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected Fly (Hover).",
+            reason: "profile.example_fly_hover.flagReason",
             type: "fly"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}"
+            message: "profile.example_fly_hover.notifyMessage"
         },
         log: {
             actionType: "detected_fly_hover",
@@ -1025,11 +1199,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected excessive ground speed.",
+            reason: "profile.example_speed_ground.flagReason",
             type: "speed"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})"
+            message: "profile.example_speed_ground.notifyMessage"
         },
         log: {
             actionType: "detected_speed_ground",
@@ -1040,11 +1214,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected excessive reach during combat.",
+            reason: "profile.example_reach_attack.flagReason",
             type: "reach"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Reach. Distance: {actualDistance} (Max: {allowedDistance})"
+            message: "profile.example_reach_attack.notifyMessage"
         },
         log: {
             actionType: "detected_reach_attack",
@@ -1055,11 +1229,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious fall damage negation (NoFall).",
+            reason: "profile.movement_nofall.flagReason",
             type: "movement_violation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}"
+            message: "profile.movement_nofall.notifyMessage"
         },
         log: {
             actionType: "detected_movement_nofall",
@@ -1070,11 +1244,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected Nuker activity (rapid/wide-area block breaking).",
+            reason: "profile.world_nuker.flagReason",
             type: "world_violation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}"
+            message: "profile.world_nuker.notifyMessage"
         },
         log: {
             actionType: "detected_world_nuker",
@@ -1085,11 +1259,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected abnormally high CPS (Clicks Per Second).",
+            reason: "profile.combat_cps_high.flagReason",
             type: "combat_cps"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}"
+            message: "profile.combat_cps_high.notifyMessage"
         },
         log: {
             actionType: "detected_combat_cps_high",
@@ -1100,11 +1274,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected suspicious pitch snap after attack.",
+            reason: "profile.combat_viewsnap_pitch.flagReason",
             type: "combat_viewsnap"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+            message: "profile.combat_viewsnap_pitch.notifyMessage"
         },
         log: {
             actionType: "detected_viewsnap_pitch",
@@ -1115,11 +1289,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected suspicious yaw snap after attack.",
+            reason: "profile.combat_viewsnap_yaw.flagReason",
             type: "combat_viewsnap"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+            message: "profile.combat_viewsnap_yaw.notifyMessage"
         },
         log: {
             actionType: "detected_viewsnap_yaw",
@@ -1130,11 +1304,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected invalid view pitch (e.g., looking straight up/down).",
+            reason: "profile.combat_invalid_pitch.flagReason",
             type: "combat_view_violation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)"
+            message: "profile.combat_invalid_pitch.notifyMessage"
         },
         log: {
             actionType: "detected_invalid_pitch",
@@ -1145,11 +1319,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected Multi-Target Aura (hitting multiple entities rapidly).",
+            reason: "profile.combat_multitarget_aura.flagReason",
             type: "combat_aura"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})"
+            message: "profile.combat_multitarget_aura.notifyMessage"
         },
         log: {
             actionType: "detected_multitarget_aura",
@@ -1160,11 +1334,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected player attacking while sleeping.",
+            reason: "profile.combat_attack_while_sleeping.flagReason",
             type: "combat_state_conflict"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntity}"
+            message: "profile.combat_attack_while_sleeping.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_sleeping",
@@ -1175,11 +1349,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected player attacking while consuming an item.",
+            reason: "profile.combat_attack_while_consuming.flagReason",
             type: "combat_state_conflict_consuming"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemUsed}"
+            message: "profile.combat_attack_while_consuming.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_consuming",
@@ -1190,11 +1364,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected player attacking while charging a bow.",
+            reason: "profile.combat_attack_while_bow_charging.flagReason",
             type: "combat_state_conflict_bow"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemUsed}"
+            message: "profile.combat_attack_while_bow_charging.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_bow_charging",
@@ -1205,11 +1379,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected player attacking while actively using a shield.",
+            reason: "profile.combat_attack_while_shielding.flagReason",
             type: "combat_state_conflict_shield"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemUsed}"
+            message: "profile.combat_attack_while_shielding.notifyMessage"
         },
         log: {
             actionType: "detected_attack_while_shielding",
@@ -1220,11 +1394,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected use of a banned item: {itemTypeId}.",
+            reason: "profile.world_illegal_item_use.flagReason",
             type: "world_illegal_item"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}"
+            message: "profile.world_illegal_item_use.notifyMessage"
         },
         log: {
             actionType: "detected_illegal_item_use",
@@ -1235,11 +1409,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected placement of a banned item: {itemTypeId}.",
+            reason: "profile.world_illegal_item_place.flagReason",
             type: "world_illegal_item"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}"
+            message: "profile.world_illegal_item_place.notifyMessage"
         },
         log: {
             actionType: "detected_illegal_item_place",
@@ -1250,11 +1424,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected suspicious tower-like building.",
+            reason: "profile.world_tower_build.flagReason",
             type: "world_scaffold_tower"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)"
+            message: "profile.world_tower_build.notifyMessage"
         },
         log: {
             actionType: "detected_world_tower_build",
@@ -1265,11 +1439,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected unnatural (flat or static) head rotation while building.",
+            reason: "profile.world_flat_rotation_building.flagReason",
             type: "world_scaffold_rotation"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Variance: {pitchVariance}, Yaw Variance: {yawVariance}, Details: {details}"
+            message: "profile.world_flat_rotation_building.notifyMessage"
         },
         log: {
             actionType: "detected_world_flat_rotation_building",
@@ -1280,11 +1454,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious downward scaffolding while airborne.",
+            reason: "profile.world_downward_scaffold.flagReason",
             type: "world_scaffold_downward"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {hSpeed}bps (MinSpeed: {minHSpeed}bps)"
+            message: "profile.world_downward_scaffold.notifyMessage"
         },
         log: {
             actionType: "detected_world_downward_scaffold",
@@ -1295,11 +1469,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected block placed against air/liquid without solid support.",
+            reason: "profile.world_air_place.flagReason",
             type: "world_scaffold_airplace"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting air/liquid."
+            message: "profile.world_air_place.notifyMessage"
         },
         log: {
             actionType: "detected_world_air_place",
@@ -1310,11 +1484,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected item being used too quickly: {itemType}.",
+            reason: "profile.action_fast_use.flagReason",
             type: "action_fast_use"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldown}ms, Actual: {actualTime}ms"
+            message: "profile.action_fast_use.notifyMessage"
         },
         log: {
             actionType: "detected_fast_use",
@@ -1325,11 +1499,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected blocks being placed too quickly.",
+            reason: "profile.world_fast_place.flagReason",
             type: "world_fast_place"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {window}ms (Max: {maxBlocks})"
+            message: "profile.world_fast_place.notifyMessage"
         },
         log: {
             actionType: "detected_world_fast_place",
@@ -1340,11 +1514,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).",
+            reason: "profile.movement_noslow.flagReason",
             type: "movement_noslow"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxSpeed}bps)"
+            message: "profile.movement_noslow.notifyMessage"
         },
         log: {
             actionType: "detected_movement_noslow",
@@ -1355,11 +1529,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected sprinting under invalid conditions (e.g., blind, sneaking, riding).",
+            reason: "profile.movement_invalid_sprint.flagReason",
             type: "movement_invalid_sprint"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}"
+            message: "profile.movement_invalid_sprint.notifyMessage"
         },
         log: {
             actionType: "detected_movement_invalid_sprint",
@@ -1370,11 +1544,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected suspicious tool switching before/after breaking a block (AutoTool).",
+            reason: "profile.world_autotool.flagReason",
             type: "world_autotool"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolType}, Switched: {switchPattern}"
+            message: "profile.world_autotool.notifyMessage"
         },
         log: {
             actionType: "detected_world_autotool",
@@ -1385,11 +1559,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 10,
-            reason: "Attempted to break an unbreakable block: {blockType}.",
+            reason: "profile.world_instabreak_unbreakable.flagReason",
             type: "world_instabreak_unbreakable"
         },
         notifyAdmins: {
-            message: "§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled."
+            message: "profile.world_instabreak_unbreakable.notifyMessage"
         },
         log: {
             actionType: "detected_instabreak_unbreakable",
@@ -1400,11 +1574,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected block broken significantly faster than possible: {blockType}.",
+            reason: "profile.world_instabreak_speed.flagReason",
             type: "world_instabreak_speed"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t"
+            message: "profile.world_instabreak_speed.notifyMessage"
         },
         log: {
             actionType: "detected_instabreak_speed",
@@ -1415,11 +1589,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected an invalid or suspicious player nameTag ({reasonDetail}).",
+            reason: "profile.player_namespoof.flagReason",
             type: "player_namespoof"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: '{nameTag}'"
+            message: "profile.player_namespoof.notifyMessage"
         },
         log: {
             actionType: "detected_player_namespoof",
@@ -1430,11 +1604,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 10,
-            reason: "System detected unauthorized Creative Mode.",
+            reason: "profile.player_antigmc.flagReason",
             type: "player_antigmc"
         },
         notifyAdmins: {
-            message: "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}"
+            message: "profile.player_antigmc.notifyMessage"
         },
         log: {
             actionType: "detected_player_antigmc",
@@ -1445,11 +1619,11 @@ export const checkActionProfiles = {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious inventory/hotbar manipulation ({reasonDetail}).",
+            reason: "profile.player_inventory_mod.flagReason",
             type: "player_inventory_mod"
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for InventoryMod. Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}"
+            message: "profile.player_inventory_mod.notifyMessage"
         },
         log: {
             actionType: "detected_player_inventory_mod",
@@ -1461,7 +1635,7 @@ export const checkActionProfiles = {
         flag: {
             type: "chat_spam_fast",
             increment: 1,
-            reason: "Sent messages too quickly ({timeSinceLastMsgMs}ms apart)"
+            reason: "profile.chat_spam_fast_message.flagReason"
         },
         log: {
             actionType: "detected_fast_message_spam",
@@ -1469,7 +1643,7 @@ export const checkActionProfiles = {
             includeViolationDetails: false
         },
         notifyAdmins: {
-            message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
+            message: "profile.chat_spam_fast_message.notifyMessage"
         },
         cancelMessage: true
     },
@@ -1478,7 +1652,7 @@ export const checkActionProfiles = {
         flag: {
             type: "chat_spam_max_words",
             increment: 1,
-            reason: "Message too long ({wordCount} words, max: {maxWords})"
+            reason: "profile.chat_spam_max_words.flagReason"
         },
         log: {
             actionType: "detected_max_words_spam",
@@ -1486,7 +1660,7 @@ export const checkActionProfiles = {
             includeViolationDetails: false
         },
         notifyAdmins: {
-            message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
+            message: "profile.chat_spam_max_words.notifyMessage"
         },
         cancelMessage: true
     },
@@ -1494,11 +1668,11 @@ export const checkActionProfiles = {
         enabled: true, // This will be controlled by enableTntAntiGrief at a higher level
         flag: {
             increment: 1,
-            reason: "Player attempted to place TNT without authorization.",
+            reason: "profile.world_antigrief_tnt_place.flagReason",
             type: "antigrief_tnt"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}."
+            message: "profile.world_antigrief_tnt_place.notifyMessage"
         },
         log: {
             actionType: "antigrief_tnt_placement",
@@ -1509,11 +1683,11 @@ export const checkActionProfiles = {
         enabled: true, // This will be effectively controlled by enableWitherAntiGrief at a higher level
         flag: {
             increment: 5, // Wither griefing is severe
-            reason: "Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.",
+            reason: "profile.world_antigrief_wither_spawn.flagReason",
             type: "antigrief_wither"
         },
         notifyAdmins: {
-            message: "§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}."
+            message: "profile.world_antigrief_wither_spawn.notifyMessage"
         },
         log: {
             actionType: "antigrief_wither_spawn",
@@ -1524,11 +1698,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableFireAntiGrief
         flag: {
             increment: 2,
-            reason: "Player involved in unauthorized or excessive fire incident.",
+            reason: "profile.world_antigrief_fire.flagReason",
             type: "antigrief_fire"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: "profile.world_antigrief_fire.notifyMessage"
         },
         log: {
             actionType: "antigrief_fire_incident",
@@ -1539,11 +1713,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableLavaAntiGrief
         flag: {
             increment: 2,
-            reason: "Player involved in unauthorized lava placement.",
+            reason: "profile.world_antigrief_lava.flagReason",
             type: "antigrief_lava"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: "profile.world_antigrief_lava.notifyMessage"
         },
         log: {
             actionType: "antigrief_lava_placement",
@@ -1554,11 +1728,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableWaterAntiGrief
         flag: {
             increment: 1, // Water grief is often less permanent than lava/TNT
-            reason: "Player involved in unauthorized water placement.",
+            reason: "profile.world_antigrief_water.flagReason",
             type: "antigrief_water"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: "profile.world_antigrief_water.notifyMessage"
         },
         log: {
             actionType: "antigrief_water_placement",
@@ -1569,11 +1743,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableBlockSpamAntiGrief
         flag: {
             increment: 1,
-            reason: "Player suspected of block spamming.",
+            reason: "profile.world_antigrief_blockspam.flagReason",
             type: "antigrief_blockspam"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}."
+            message: "profile.world_antigrief_blockspam.notifyMessage"
         },
         log: {
             actionType: "antigrief_blockspam_detected",
@@ -1584,11 +1758,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableEntitySpamAntiGrief
         flag: {
             increment: 1,
-            reason: "Player suspected of entity spamming.",
+            reason: "profile.world_antigrief_entityspam.flagReason",
             type: "antigrief_entityspam"
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}."
+            message: "profile.world_antigrief_entityspam.notifyMessage"
         },
         log: {
             actionType: "antigrief_entityspam_detected",
@@ -1599,11 +1773,11 @@ export const checkActionProfiles = {
         enabled: true, // Effectively controlled by enableBlockSpamDensityCheck
         flag: {
             increment: 2, // Potentially more severe than just rate
-            reason: "Player suspected of block spamming (high density).",
+            reason: "profile.world_antigrief_blockspam_density.flagReason",
             type: "antigrief_blockspam_density" // Distinct flag type
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}."
+            message: "profile.world_antigrief_blockspam_density.notifyMessage"
         },
         log: {
             actionType: "antigrief_blockspam_density_detected",
@@ -1614,7 +1788,7 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": null,
         "notifyAdmins": {
-            "message": "§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)"
+            "message": "profile.world_antigrief_piston_lag.notifyMessage"
         },
         "log": {
             "actionType": "antigrief_piston_lag_detected",
@@ -1625,11 +1799,11 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": {
             "increment": 1,
-            "reason": "Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).",
+            "reason": "profile.player_invalid_render_distance.flagReason",
             "type": "player_client_anomaly"
         },
         "notifyAdmins": {
-            "message": "§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification."
+            "message": "profile.player_invalid_render_distance.notifyMessage"
         },
         "log": {
             "actionType": "detected_invalid_render_distance",
@@ -1640,11 +1814,11 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": {
             "increment": 1,
-            "reason": "Attempted to chat too soon after combat ({timeSinceCombat}s ago).",
+            "reason": "profile.player_chat_during_combat.flagReason",
             "type": "player_chat_state_violation"
         },
         "notifyAdmins": {
-            "message": "§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled."
+            "message": "profile.player_chat_during_combat.notifyMessage"
         },
         "cancelMessage": true,
         "log": {
@@ -1656,11 +1830,11 @@ export const checkActionProfiles = {
         "enabled": true,
         "flag": {
             "increment": 1,
-            "reason": "Attempted to chat while actively using an item ({itemUseState}).",
+            "reason": "profile.player_chat_during_item_use.flagReason",
             "type": "player_chat_state_violation"
         },
         "notifyAdmins": {
-            "message": "§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled."
+            "message": "profile.player_chat_during_item_use.notifyMessage"
         },
         "cancelMessage": true,
         "log": {
@@ -1672,11 +1846,11 @@ export const checkActionProfiles = {
         enabled: true, // The check itself is controlled by enableSwearCheck
         flag: {
             increment: 1,
-            reason: "Swear word detected in message: {detectedWord}",
+            reason: "profile.chat_swear_violation.flagReason",
             type: "chat_language_violation" // A more general type for language issues
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}"
+            message: "profile.chat_swear_violation.notifyMessage"
         },
         log: {
             actionType: "detected_swear_word",
@@ -1685,6 +1859,21 @@ export const checkActionProfiles = {
         },
         cancelMessage: true, // Cancel the message containing the swear word
         customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
+    },
+    "player_self_hurt": {
+        enabled: true,
+        flag: {
+            increment: 2, // Moderate flagging
+            reason: "profile.player_self_hurt.flagReason",
+            type: "player_self_damage" // Specific type for this flag
+        },
+        notifyAdmins: {
+            message: "profile.player_self_hurt.notifyMessage"
+        },
+        log: {
+            actionType: "detected_player_self_hurt",
+            detailsPrefix: "Self-Hurt Violation: "
+        }
     }
 };
 
@@ -1709,7 +1898,7 @@ export const commandAliases = {
  * Use `updateConfigValue(key, newValue)` to modify these values safely.
  */
 export let editableConfigValues = {
-    adminTag, ownerPlayerName, enableDebugLogging, prefix, enableAutoMod,
+    adminTag, ownerPlayerName, enableDebugLogging, prefix, defaultServerLanguage, enableAutoMod,
     enableReachCheck, enableCPSCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck,
     enableNukerCheck, enableIllegalItemCheck, enableSelfHurtCheck, enableNetherRoofCheck,
@@ -1728,7 +1917,7 @@ export let editableConfigValues = {
     antiGMCSwitchToGameMode,
     antiGmcAutoSwitch,
     enableInventoryModCheck,
-    enableSelfHurtCheck,
+    // enableSelfHurtCheck, // Already included above
     enableNoSlowCheck,
     noSlowMaxSpeedEating,
     noSlowMaxSpeedChargingBow,
@@ -1975,5 +2164,3 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
     return true;
 }
-
-[end of AntiCheatsBP/scripts/config.js]

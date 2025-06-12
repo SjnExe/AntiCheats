@@ -1,11 +1,11 @@
 /**
  * @file AntiCheatsBP/scripts/commands/gmsp.js
  * Defines the !gmsp command for administrators to set a player's gamemode to Spectator.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/gmsp.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,7 +13,7 @@ import * as mc from '@minecraft/server';
 export const definition = {
     name: "gmsp",
     syntax: "!gmsp [playername]",
-    description: "Sets Spectator mode for self or [playername].",
+    description: getString("command.gmsp.description"),
     permissionLevel: permissionLevels.admin
 };
 
@@ -24,12 +24,35 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, addLog } = dependencies;
+    const { playerUtils, config, addLog, findPlayer } = dependencies;
+    const targetPlayerName = args[0];
+    const gamemodeName = "Spectator"; // For messaging
 
-    if (playerUtils && typeof playerUtils.setPlayerGameMode === 'function') {
-        await playerUtils.setPlayerGameMode(player, args[0], mc.GameMode.spectator, "Spectator", config, addLog);
+    if (targetPlayerName) {
+        const targetPlayer = findPlayer(targetPlayerName, playerUtils);
+        if (targetPlayer) {
+            try {
+                targetPlayer.setGameMode(mc.GameMode.spectator);
+                player.sendMessage(getString("command.gmsp.success.other", { targetPlayerName: targetPlayer.nameTag, gamemode: gamemodeName }));
+                if (player.id !== targetPlayer.id) {
+                    targetPlayer.sendMessage(getString("command.gmsp.success.self", { gamemode: gamemodeName }));
+                }
+                if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change', targetName: targetPlayer.nameTag, details: `Set to ${gamemodeName}` });
+            } catch (e) {
+                player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: targetPlayer.nameTag }));
+                playerUtils.debugLog?.(`Error setting gamemode for ${targetPlayer.nameTag}: ${e}`, player.nameTag);
+            }
+        } else {
+            player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
+        }
     } else {
-        player.sendMessage("§cError: Game mode setting utility is not available. Please contact an administrator.");
-        console.warn("[gmspCmd] playerUtils.setPlayerGameMode is not available in dependencies.");
+        try {
+            player.setGameMode(mc.GameMode.spectator);
+            player.sendMessage(getString("command.gmsp.success.self", { gamemode: gamemodeName }));
+            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change_self', targetName: player.nameTag, details: `Set to ${gamemodeName}` });
+        } catch (e) {
+            player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: player.nameTag }));
+            playerUtils.debugLog?.(`Error setting own gamemode: ${e}`, player.nameTag);
+        }
     }
 }

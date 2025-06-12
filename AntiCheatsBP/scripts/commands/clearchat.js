@@ -6,6 +6,7 @@
 // AntiCheatsBP/scripts/commands/clearchat.js
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server'; // For world.sendMessage
+import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,7 +14,7 @@ import * as mc from '@minecraft/server'; // For world.sendMessage
 export const definition = {
     name: "clearchat",
     syntax: "!clearchat",
-    description: "Clears the chat for all players.",
+    description: "command.clearchat.description",
     permissionLevel: permissionLevels.admin
 };
 
@@ -30,9 +31,9 @@ export async function execute(player, args, dependencies) {
         mc.world.sendMessage("");
     }
     // mc.world.sendMessage("§7Chat cleared by an Administrator."); // Optional public message
-    player.sendMessage("§aChat has been cleared.");
+    player.sendMessage(getString("command.clearchat.success"));
     if (playerUtils.notifyAdmins) {
-        playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, player, null);
+        playerUtils.notifyAdmins(getString("command.clearchat.notifyAdmins", { playerName: player.nameTag }), player, null);
     }
     if (addLog) {
         addLog({

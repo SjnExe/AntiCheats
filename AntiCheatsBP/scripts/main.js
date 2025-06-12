@@ -18,6 +18,25 @@ import { executeCheckAction } from './core/actionManager.js';
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
 import { getBorderSettings } from './utils/worldBorderManager.js'; // For World Border
+
+/**
+ * Quadratic easing out function: decelerates to zero velocity.
+ * @param {number} t - Input progress (0 to 1).
+ * @returns {number} Eased progress.
+ */
+function easeOutQuad(t) {
+    return t * (2 - t);
+}
+
+/**
+ * Quadratic easing in and out function: accelerates until halfway, then decelerates.
+ * @param {number} t - Input progress (0 to 1).
+ * @returns {number} Eased progress.
+ */
+function easeInOutQuad(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
 import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
@@ -545,10 +564,15 @@ mc.system.runInterval(async () => {
                 continue;
             }
 
-            const elapsedMs = currentTimeMs - dimBorderSettings.resizeStartTimeMs;
+            const accumulatedPausedMs = dimBorderSettings.resizePausedTimeMs || 0;
+            const effectiveElapsedMs = (currentTimeMs - dimBorderSettings.resizeStartTimeMs) - accumulatedPausedMs;
             const durationMs = dimBorderSettings.resizeDurationMs;
 
-            if (elapsedMs >= durationMs) { // Resize finished
+            if (dimBorderSettings.isPaused) {
+                continue; // Skip finalization if paused
+            }
+
+            if (effectiveElapsedMs >= durationMs) { // Resize finished
                 const targetSize = dimBorderSettings.targetSize;
                 if (dimBorderSettings.shape === "square") {
                     dimBorderSettings.halfSize = targetSize;
@@ -721,20 +745,41 @@ mc.system.runInterval(async () => {
                         typeof borderSettings.originalSize === 'number' &&
                         typeof borderSettings.targetSize === 'number' &&
                         typeof borderSettings.resizeStartTimeMs === 'number' &&
-                        typeof borderSettings.resizeDurationMs === 'number') { // durationMs can be 0 for instant, but check other fields
+                        typeof borderSettings.resizeDurationMs === 'number') {
 
                         const currentTimeMs = Date.now();
-                        const elapsedMs = currentTimeMs - borderSettings.resizeStartTimeMs;
+                        const accumulatedPausedMs = borderSettings.resizePausedTimeMs || 0;
+                        let elapsedMs;
+
+                        if (borderSettings.isPaused) {
+                            // If paused, use the time elapsed until the pause started
+                            const lastPauseStart = borderSettings.resizeLastPauseStartTimeMs || currentTimeMs; // Fallback
+                            elapsedMs = (lastPauseStart - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+                        } else {
+                            // If not paused, use current time minus start time, adjusted for total paused duration
+                            elapsedMs = (currentTimeMs - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+                        }
+                        elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
+
+                        elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
+
                         const durationMs = borderSettings.resizeDurationMs;
-                        let progress = 0;
+                        let rawProgress = 0;
 
                         if (durationMs > 0) {
-                             progress = Math.min(1, elapsedMs / durationMs);
-                        } else { // If duration is 0 or negative, snap to target (already past start time)
-                             progress = 1;
+                             rawProgress = Math.min(1, elapsedMs / durationMs);
+                        } else {
+                             rawProgress = 1;
                         }
 
-                        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * progress;
+                        let easedProgress = rawProgress; // Default to linear
+                        if (borderSettings.resizeInterpolationType === "easeOutQuad") {
+                            easedProgress = easeOutQuad(rawProgress);
+                        } else if (borderSettings.resizeInterpolationType === "easeInOutQuad") {
+                            easedProgress = easeInOutQuad(rawProgress);
+                        }
+
+                        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * easedProgress;
 
                         if (borderSettings.shape === "square") {
                             currentEffectiveHalfSize = interpolatedSize;
@@ -742,7 +787,7 @@ mc.system.runInterval(async () => {
                             currentEffectiveRadius = interpolatedSize;
                         }
                     } else if (borderSettings.isResizing && borderSettings.enabled) {
-                        // Fallback or if resize fields are somehow incomplete after validation in dimension loop
+                        // Fallback or if resize fields are somehow incomplete
                         // This indicates an issue, ideally the dimension loop should have cleaned/finalized it.
                         // For safety, use targetSize if isResizing is still true but params seem off.
                         if (typeof borderSettings.targetSize === 'number') {
@@ -894,11 +939,12 @@ mc.system.runInterval(async () => {
                     // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
 
                     const playerLoc = player.location; // playerLoc is already defined earlier in the player loop
-                    const particleName = config.worldBorderParticleName;
-                    const visualRange = config.worldBorderVisualRange;
-                    const density = Math.max(0.1, config.worldBorderParticleDensity);
-                    const wallHeight = config.worldBorderParticleWallHeight;
-                    const segmentLength = config.worldBorderParticleSegmentLength;
+                    // Use per-dimension override if available, otherwise global default
+                    const particleNameToUse = currentBorderSettings.particleNameOverride || config.editableConfigValues.worldBorderParticleName;
+                    const visualRange = config.editableConfigValues.worldBorderVisualRange;
+                    const density = Math.max(0.1, config.editableConfigValues.worldBorderParticleDensity);
+                    const wallHeight = config.editableConfigValues.worldBorderParticleWallHeight;
+                    const segmentLength = config.editableConfigValues.worldBorderParticleSegmentLength;
                     const yBase = Math.floor(playerLoc.y);
 
                     // Use currentEffectiveHalfSize/Radius from the enforcement section
@@ -923,7 +969,7 @@ mc.system.runInterval(async () => {
                                 for (let h = 0; h < wallHeight; h++) {
                                     try {
                                         const particleLoc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
-                                        player.dimension.spawnParticle(particleName, particleLoc);
+                                        player.dimension.spawnParticle(particleNameToUse, particleLoc);
                                     } catch (e) { /* Silently ignore */ }
                                 }
                             }
@@ -953,7 +999,7 @@ mc.system.runInterval(async () => {
                                 const particleZ = centerZ + radiusToUse * Math.sin(angle);
                                 for (let h = 0; h < wallHeight; h++) {
                                     try {
-                                        player.dimension.spawnParticle(particleName, { x: particleX, y: yBase + h, z: particleZ });
+                                        player.dimension.spawnParticle(particleNameToUse, { x: particleX, y: yBase + h, z: particleZ });
                                     } catch (e) { /* Silently ignore */ }
                                 }
                             }

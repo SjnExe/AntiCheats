@@ -1,25 +1,20 @@
 /**
  * @file Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
- * @version 1.0.0
+ * @version 1.0.1
  */
 
 import { world, system } from '@minecraft/server';
-import * as config from '../config.js';
+// import * as config from '../config.js'; // No direct config needed here, prefix comes from dependencies
 import * as tpaManager from '../core/tpaManager.js';
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
- * @typedef {import('../types.js').CommandDefinition} CommandDefinition
- * @typedef {import('../types.js').TpaRequest} TpaRequest
- * @typedef {import('@minecraft/server').Player} Player
+ * @type {import('../types.js').CommandDefinition}
  */
-
-/**
- * @type {CommandDefinition}
- */
-const tpacancelCommandDefinition = {
+export const definition = {
     name: 'tpacancel',
-    description: 'Cancels your outgoing TPA request to a player, or declines an incoming request from a player. If no player name is given, cancels all your outgoing and declines all incoming TPA requests.',
+    description: getString("command.tpacancel.description"),
     aliases: ['tpadeny', 'tpcancel'],
     permissionLevel: permissionLevels.normal,
     syntax: '!tpacancel [playerName]',
@@ -27,19 +22,21 @@ const tpacancelCommandDefinition = {
 
 /**
  * Executes the !tpacancel command.
- * @param {Player} player The player issuing the command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments. args[0] can be the other player's name.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-async function tpacancelCommandExecute(player, args, dependencies) {
-    // const { playerUtils } = dependencies; // For debugLog, if needed
+export async function execute(player, args, dependencies) {
+    const { playerUtils, config: fullConfig } = dependencies; // config is editableConfigValues, fullConfig is the module
+    const prefix = fullConfig.prefix;
 
-    if (!config.enableTPASystem) {
-        player.sendMessage("§cThe TPA system is currently disabled.");
+
+    if (!fullConfig.enableTPASystem) { // Check against the main config module
+        player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
 
-    const commandUserName = player.name; // The one cancelling/declining
+    const commandUserName = player.name;
     const specificPlayerName = args[0];
     let cancelledRequestCount = 0;
 
@@ -48,49 +45,43 @@ async function tpacancelCommandExecute(player, args, dependencies) {
 
         if (request && (request.status === 'pending_acceptance' || request.status === 'pending_teleport_warmup')) {
             const otherPlayerName = request.requesterName === commandUserName ? request.targetName : request.requesterName;
-            const reasonMsgPlayer = `§eTPA request involving "${otherPlayerName}" was cancelled by ${player.nameTag}.`;
+            const reasonMsgPlayer = getString("command.tpacancel.notifyOther.cancelled", { otherPlayerName: otherPlayerName, cancellingPlayerName: player.nameTag });
             const reasonLog = `Request ${request.requestId} between ${request.requesterName} and ${request.targetName} cancelled by ${commandUserName}. Status was: ${request.status}.`;
 
-            // tpaManager.cancelTeleport handles notifications and removal.
-            // We use cancelTeleport for both declining pending_acceptance and cancelling pending_teleport_warmup for unified handling.
-            tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonLog);
+            // Pass dependencies to cancelTeleport
+            tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonLog, dependencies);
 
-            player.sendMessage(`§aSuccessfully cancelled/declined TPA request involving "${otherPlayerName}".`);
+            player.sendMessage(getString("command.tpacancel.success.specific", { playerName: otherPlayerName }));
             cancelledRequestCount++;
         } else {
-            player.sendMessage(`§cNo active or pending TPA request found with "${specificPlayerName}" that can be cancelled.`);
+            player.sendMessage(getString("command.tpacancel.error.noSpecificRequest", { playerName: specificPlayerName }));
             return;
         }
     } else {
-        // No specific player, cancel/decline all for commandUser
         const allPlayerRequests = tpaManager.findRequestsForPlayer(commandUserName);
         if (allPlayerRequests.length === 0) {
-            player.sendMessage("§cYou have no active TPA requests to cancel or decline.");
+            player.sendMessage(getString("command.tpacancel.error.noRequests"));
             return;
         }
 
         for (const req of allPlayerRequests) {
-            // Only cancel requests that are pending acceptance or in warmup.
             if (req.status === 'pending_acceptance' || req.status === 'pending_teleport_warmup') {
                 const otherPlayerName = req.requesterName === commandUserName ? req.targetName : req.requesterName;
-                const reasonMsgPlayer = `§eTPA request involving "${otherPlayerName}" was cancelled by ${player.nameTag}.`;
+                const reasonMsgPlayer = getString("command.tpacancel.notifyOther.cancelled", { otherPlayerName: otherPlayerName, cancellingPlayerName: player.nameTag });
                 const reasonLog = `Request ${req.requestId} between ${req.requesterName} and ${req.targetName} cancelled by ${commandUserName}. Status was: ${req.status}.`;
 
-                tpaManager.cancelTeleport(req.requestId, reasonMsgPlayer, reasonLog);
+                // Pass dependencies to cancelTeleport
+                tpaManager.cancelTeleport(req.requestId, reasonMsgPlayer, reasonLog, dependencies);
                 cancelledRequestCount++;
             }
         }
 
-        let summaryMessage = "§a";
+        let summaryMessage;
         if (cancelledRequestCount > 0) {
-            summaryMessage += `Cancelled/declined ${cancelledRequestCount} TPA request(s).`;
+            summaryMessage = getString("command.tpacancel.success.all", { count: cancelledRequestCount });
         } else {
-            summaryMessage = "§cNo active requests were found in a state that could be cancelled/declined.";
+            summaryMessage = getString("command.tpacancel.error.noneCancellable");
         }
-
         player.sendMessage(summaryMessage.trim());
     }
 }
-
-export const definition = tpacancelCommandDefinition;
-export const execute = tpacancelCommandExecute;

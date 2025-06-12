@@ -3,10 +3,11 @@
  * Implements checks for suspicious inventory manipulations, such as:
  * 1. Using an item in the same game tick as a hotbar slot change.
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating).
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 import * as mc from '@minecraft/server';
+import { getString } from '../../../core/i18n.js';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -45,18 +46,16 @@ export async function checkSwitchAndUseInSameTick(
     executeCheckAction,
     currentTick
 ) {
-    if (!config.enableInventoryModCheck || !pData) { // Added null check for pData
+    if (!config.enableInventoryModCheck || !pData) {
         return;
     }
 
-    // pData.lastSelectedSlotChangeTick is updated by updateTransientPlayerData in main.js
-    // It reflects the tick when the selectedSlotIndex was *first observed* to be different.
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const dependencies = { config, playerDataManager, playerUtils, logManager };
         const violationDetails = {
-            reasonDetail: "Item used in the same tick as hotbar slot change",
+            reasonDetail: getString("check.inventoryMod.details.switchAndUseSameTick"),
             itemType: itemStack.typeId,
-            slot: player.selectedSlotIndex.toString(), // The slot the item is being used from (the new slot)
+            slot: player.selectedSlotIndex.toString(),
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
             currentTick: currentTick.toString()
         };
@@ -95,39 +94,36 @@ export async function checkInventoryMoveWhileActionLocked(
     playerDataManager,
     logManager,
     executeCheckAction,
-    currentTick // currentTick might be useful for context or if action duration matters
+    currentTick
 ) {
-    if (!config.enableInventoryModCheck || !pData) { // Added null check for pData
+    if (!config.enableInventoryModCheck || !pData) {
         return;
     }
 
-    let lockingAction = null;
+    let lockingActionKey = null;
     if (pData.isUsingConsumable) {
-        lockingAction = "using consumable";
+        lockingActionKey = "check.inventoryMod.action.usingConsumable";
     } else if (pData.isChargingBow) {
-        lockingAction = "charging bow";
+        lockingActionKey = "check.inventoryMod.action.chargingBow";
     }
-    // Note: isUsingShield is not typically an inventory-locking action in vanilla Minecraft.
-    // Other actions like opening a chest, trading with villagers, etc., inherently lock inventory
-    // and might not need this specific check, as the game prevents item changes.
 
-    if (lockingAction) {
+    if (lockingActionKey) {
+        const localizedLockingAction = getString(lockingActionKey);
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        // Determine item type involved, preferring new item stack, fallback to old, then "unknown"
         const changedItemType = eventData.itemStack?.typeId ?? eventData.oldItemStack?.typeId ?? "unknown";
 
         const violationDetails = {
-            reasonDetail: `Inventory item moved/changed (slot ${eventData.slot}) while ${lockingAction}`,
+            reasonDetail: getString("check.inventoryMod.details.movedWhileLocked", { slotNum: eventData.slot.toString(), action: localizedLockingAction }),
             itemTypeInvolved: changedItemType,
             slotChanged: eventData.slot.toString(),
-            actionInProgress: lockingAction,
-            changeType: eventData.change // e.g., "Added", "Removed", "ModifiedAmount"
+            actionInProgress: localizedLockingAction,
+            changeType: eventData.change
         };
         await executeCheckAction(player, "player_inventory_mod", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog?.(
-            `InventoryMod (MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${eventData.slot}, Item: ${changedItemType}) while ${lockingAction}.`,
+            `InventoryMod (MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${eventData.slot}, Item: ${changedItemType}) while ${localizedLockingAction}.`,
             watchedPrefix
         );
     }

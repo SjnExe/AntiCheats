@@ -1,10 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/xraynotify.js
  * Defines the !xraynotify command for administrators to manage their X-Ray mining notifications.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/xraynotify.js
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/i18n.js'; // Import getString
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +12,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: "xraynotify",
     syntax: "!xraynotify <on|off|status>",
-    description: "Manage X-Ray ore mining notifications for yourself.",
+    description: getString("command.xraynotify.description"),
     permissionLevel: permissionLevels.admin
 };
 
@@ -27,42 +27,41 @@ export async function execute(player, args, dependencies) {
     const subCommand = args[0] ? args[0].toLowerCase() : "status";
     const notifyOnTag = "xray_notify_on";
     const notifyOffTag = "xray_notify_off";
+    const prefix = config.prefix;
 
     switch (subCommand) {
         case "on":
             try { player.removeTag(notifyOffTag); } catch (e) {}
             player.addTag(notifyOnTag);
-            player.sendMessage("§aX-Ray ore mining notifications enabled for you.");
+            player.sendMessage(getString("command.xraynotify.status.enabled"));
             if (playerUtils.debugLog) playerUtils.debugLog(`Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
             if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_on', details: 'X-Ray notifications ON' });
             break;
         case "off":
             try { player.removeTag(notifyOnTag); } catch (e) {}
             player.addTag(notifyOffTag);
-            player.sendMessage("§cX-Ray ore mining notifications disabled for you.");
+            player.sendMessage(getString("command.xraynotify.status.disabled"));
             if (playerUtils.debugLog) playerUtils.debugLog(`Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
             if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_off', details: 'X-Ray notifications OFF' });
             break;
         case "status":
             const isOn = player.hasTag(notifyOnTag);
             const isOff = player.hasTag(notifyOffTag);
-            let statusMessage = "§eYour X-Ray notification status: ";
+            let statusMessageKey;
+
             if (isOn) {
-                statusMessage += "§aON (explicitly).";
+                statusMessageKey = "command.xraynotify.currentStatus.onExplicit";
             } else if (isOff) {
-                statusMessage += "§cOFF (explicitly).";
+                statusMessageKey = "command.xraynotify.currentStatus.offExplicit";
             } else {
-                // Assuming xrayDetectionAdminNotifyByDefault is a boolean in config
-                if (config.xrayDetectionAdminNotifyByDefault) {
-                    statusMessage += `§aON (by server default). §7Use '${config.prefix}xraynotify off' to disable.`;
-                } else {
-                    statusMessage += `§cOFF (by server default). §7Use '${config.prefix}xraynotify on' to enable.`;
-                }
+                statusMessageKey = config.xrayDetectionAdminNotifyByDefault ?
+                                   "command.xraynotify.currentStatus.onDefault" :
+                                   "command.xraynotify.currentStatus.offDefault";
             }
-            player.sendMessage(statusMessage);
-            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_status', details: `Checked X-Ray notifications status` }); // Removed statusMessage from log details for brevity
+            player.sendMessage(getString(statusMessageKey, { prefix: prefix }));
+            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_status', details: `Checked X-Ray notifications status` });
             break;
         default:
-            player.sendMessage(`§cUsage: ${config.prefix}${definition.name} <on|off|status>`);
+            player.sendMessage(getString("command.xraynotify.usage", { prefix: prefix }));
     }
 }
