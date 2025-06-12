@@ -360,7 +360,12 @@ export const translations = {
         "command.warnings.usage": "§cUsage: {prefix}warnings <playername>",
         "command.warnings.header": "§e--- Warnings for {playerName} ---",
         "command.warnings.individualFlagsHeader": "§eIndividual Flags:",
-        "command.warnings.noData": "§cNo warning data found for {playerName}."
+        "command.warnings.noData": "§cNo warning data found for {playerName}.",
+
+        // === UI Player Actions ===
+        "ui.playerActions.kick.cancelled": "Kick action cancelled.",
+        "ui.playerActions.ban.cancelled": "Ban action cancelled.",
+        "ui.playerActions.mute.cancelled": "Mute action cancelled."
     }
 };
 

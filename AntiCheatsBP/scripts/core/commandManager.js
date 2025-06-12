@@ -5,6 +5,7 @@
  * @version 1.1.0
  */
 import * as mc from '@minecraft/server';
+import * as configModule from '../config.js'; // Import the entire config module
 import { permissionLevels } from './rankManager.js';
 import { getPlayerPermissionLevel, findPlayer, parseDuration } from '../utils/playerUtils.js';
 import { addLog } from './logManager.js';
@@ -121,7 +122,8 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         mc, // Minecraft server module
         playerDataManager,
         uiManager,
-        config,
+        config, // This is editableConfigValues
+        configModule: configModule, // Add the full config module
         playerUtils,
         logManager, // Pass the full logManager object
         // getPlayerPermissionLevel is already available in playerUtils
