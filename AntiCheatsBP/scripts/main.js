@@ -12,6 +12,7 @@ import * as commandManager from './core/commandManager.js';
 import * as uiManager from './core/uiManager.js';
 import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js'; // Ensure logManager is imported for addLog
+import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
 import { executeCheckAction } from './core/actionManager.js';
 
@@ -1115,6 +1116,13 @@ mc.system.runInterval(async () => {
                     logManager.addLog('error', `DeferredSaveFail: ${player.nameTag}, ${error}`);
                 }
             }
+        }
+        // Persist logs and reports if they are dirty
+        if (logManager.persistLogCacheToDisk) {
+            logManager.persistLogCacheToDisk();
+        }
+        if (reportManager.persistReportsToDisk) {
+            reportManager.persistReportsToDisk();
         }
     }
 }, 1);

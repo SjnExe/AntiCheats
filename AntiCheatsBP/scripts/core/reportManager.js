@@ -144,7 +144,6 @@ export function addReport(reporterPlayer, reportedPlayer, reason) {
     console.log(`[ReportManager] Added report by ${newReport.reporterName} against ${newReport.reportedName}. Cache size: ${reportsInMemory.length}.`);
 
     // Strategy: Save immediately. For high frequency, this should be deferred.
-    persistReportsToDisk();
     return newReport;
 }
 
