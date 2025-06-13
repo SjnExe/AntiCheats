@@ -1,6 +1,6 @@
 /**
  * @file Script for the !tpaccept command, allowing players to accept incoming TPA requests.
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 import { world, system } from '@minecraft/server';

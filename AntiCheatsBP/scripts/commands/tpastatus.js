@@ -1,6 +1,6 @@
 /**
  * @file Script for the !tpastatus command, allowing players to manage their TPA request availability.
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 import { world, system } from '@minecraft/server';
@@ -59,15 +59,21 @@ export async function execute(player, args, dependencies) {
                         system.run(() => {
                             try {
                                 requesterPlayer.onScreenDisplay.setActionBar(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
-                            } catch (e) { console.warn(`[TPAStatusCmd] Failed to set action bar for ${req.requesterName}: ${e}`); }
+                            } catch (e) {
+                                if (fullConfig.enableDebugLogging && playerUtils?.debugLog) {
+                                    playerUtils.debugLog(`[TPAStatusCmd] Failed to set action bar for ${req.requesterName}: ${e}`, player.nameTag);
+                                } else {
+                                    console.warn(`[TPAStatusCmd] Failed to set action bar for ${req.requesterName}: ${e}`);
+                                }
+                            }
                         });
-                         // Also send a chat message as action bar can be missed
-                         requesterPlayer.sendMessage(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
+                        // Also send a chat message as action bar can be missed
+                        requesterPlayer.sendMessage(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
                     }
                     declinedCount++;
                 }
                 if (declinedCount > 0) {
-                     player.sendMessage(getString("command.tpastatus.nowDisabledDeclined", {count: declinedCount}));
+                    player.sendMessage(getString("command.tpastatus.nowDisabledDeclined", {count: declinedCount})); // Corrected potential extra space
                 }
             }
             break;

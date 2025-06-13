@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/unmute.js
  * Defines the !unmute command for administrators to allow a previously muted player to chat again.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { clearFlagsForCheckType } from '../../core/playerDataManager.js';
@@ -53,11 +53,14 @@ export async function execute(player, args, dependencies) {
             try {
                 foundPlayer.onScreenDisplay.setActionBar(getString("command.unmute.targetNotification"));
             } catch (e) {
-                if (playerUtils.debugLog) playerUtils.debugLog(`Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e}`, player.nameTag);
+                if (config.enableDebugLogging && playerUtils.debugLog) {
+                    playerUtils.debugLog(`Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e}`, player.nameTag);
+                }
             }
             player.sendMessage(getString("command.unmute.success", { targetName: foundPlayer.nameTag }));
             if (playerUtils.notifyAdmins) {
-                playerUtils.notifyAdmins(getString("command.unmute.adminNotify", { targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, null);
+                const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context
+                playerUtils.notifyAdmins(getString("command.unmute.adminNotify", { targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPData);
             }
             if (addLog) {
                 addLog({
@@ -74,9 +77,12 @@ export async function execute(player, args, dependencies) {
                 await clearFlagsForCheckType(foundPlayer, oldMuteInfo.triggeringCheckType, dependencies);
                 const message = getString("command.unmute.automodFlagClear", { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag });
                 player.sendMessage(message);
-                if (playerUtils.debugLog) playerUtils.debugLog(message.replace(/§[a-f0-9]/g, ''), player.nameTag);
+                const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
+                if (config.enableDebugLogging && playerUtils.debugLog) {
+                    playerUtils.debugLog(message.replace(/§[a-f0-9]/g, ''), targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null);
+                }
                 if (playerUtils.notifyAdmins) {
-                    playerUtils.notifyAdmins(getString("command.unmute.automodFlagClearAdminNotify", { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, null);
+                    playerUtils.notifyAdmins(getString("command.unmute.automodFlagClearAdminNotify", { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPDataForFlagClearLog);
                 }
             }
         } else {
@@ -84,6 +90,8 @@ export async function execute(player, args, dependencies) {
         }
     } catch (e) {
         player.sendMessage(getString("common.error.generic") + `: ${e}`);
-        if (playerUtils.debugLog) playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+        if (config.enableDebugLogging && playerUtils.debugLog) {
+            playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+        }
     }
 }

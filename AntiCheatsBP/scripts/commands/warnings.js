@@ -1,9 +1,8 @@
 /**
  * @file AntiCheatsBP/scripts/commands/warnings.js
  * Defines the !warnings command for administrators to view a player's AntiCheat flags.
- * @version 1.0.0
+ * @version 1.0.2
  */
-// AntiCheatsBP/scripts/commands/warnings.js
 import { permissionLevels } from '../core/rankManager.js';
 import { getString } from '../core/i18n.js';
 

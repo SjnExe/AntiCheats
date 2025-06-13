@@ -18,7 +18,7 @@ export const definition = {
 
 /**
  * Executes the ban command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {import('@minecraft/server').Player | null} player The player issuing the command, or null if system-invoked.
  * @param {string[]} args The command arguments.
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  * @param {string} [invokedBy="PlayerCommand"] How the command was invoked (e.g., "PlayerCommand", "AutoMod").
@@ -37,8 +37,11 @@ export async function execute(
 
     if (args.length < 1) {
         const usageMessage = getString('command.ban.usage', { prefix: config.prefix });
-        if (player) player.sendMessage(usageMessage);
-        else console.warn("Ban command called without player and insufficient args by system.");
+        if (player) {
+            player.sendMessage(usageMessage);
+        } else {
+            console.warn("Ban command called without player and insufficient args by system.");
+        }
         return;
     }
     const targetPlayerName = args[0];
@@ -55,8 +58,11 @@ export async function execute(
 
     if (!foundPlayer) {
         const message = getString('command.ban.notFoundOffline', { targetName: targetPlayerName });
-        if (player) player.sendMessage(message);
-        else console.warn(message);
+        if (player) {
+            player.sendMessage(message);
+        } else {
+            console.warn(message);
+        }
         return;
     }
 
@@ -86,8 +92,11 @@ export async function execute(
     const durationMs = parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
         const message = getString('command.ban.invalidDuration');
-        if (player) player.sendMessage(message);
-        else console.warn(message + ` (Invoked by ${invokedBy})`);
+        if (player) {
+            player.sendMessage(message);
+        } else {
+            console.warn(message + ` (Invoked by ${invokedBy})`);
+        }
         return;
     }
 
@@ -124,22 +133,32 @@ export async function execute(
         try {
             foundPlayer.kick(kickMessage);
         } catch (e) {
-            if (playerUtils.debugLog) playerUtils.debugLog(`Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e}`, player ? player.nameTag : "System");
+            // Debug log for this specific error context
+            if (config.enableDebugLogging) {
+                playerUtils.debugLog(`Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e}`, player ? player.nameTag : "System");
+            }
         }
 
         const successMessage = getString('command.ban.success', { targetName: foundPlayer.nameTag, durationString: durationString, reason: actualReason });
-        if (player) player.sendMessage(successMessage);
-        else console.log(successMessage.replace(/§[a-f0-9]/g, ''));
+        if (player) {
+            player.sendMessage(successMessage);
+        } else {
+            console.log(successMessage.replace(/§[a-f0-9]/g, ''));
+        }
 
         if (playerUtils.notifyAdmins) {
-            playerUtils.notifyAdmins(getString('command.ban.adminNotification', { targetName: foundPlayer.nameTag, bannedBy: actualBannedBy, durationString: durationString, reason: actualReason }), player, null);
+            const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context in notifyAdmins
+            playerUtils.notifyAdmins(getString('command.ban.adminNotification', { targetName: foundPlayer.nameTag, bannedBy: actualBannedBy, durationString: durationString, reason: actualReason }), player, targetPData);
         }
         if (addLog) {
             addLog({ timestamp: Date.now(), adminName: actualBannedBy, actionType: 'ban', targetName: foundPlayer.nameTag, duration: durationString, reason: actualReason, isAutoMod: isAutoModAction, checkType: autoModCheckType });
         }
     } else {
         const failureMessage = getString('command.ban.fail', { targetName: foundPlayer.nameTag });
-        if (player) player.sendMessage(failureMessage);
-        else console.warn(failureMessage.replace(/§[a-f0-9]/g, ''));
+        if (player) {
+            player.sendMessage(failureMessage);
+        } else {
+            console.warn(failureMessage.replace(/§[a-f0-9]/g, ''));
+        }
     }
 }

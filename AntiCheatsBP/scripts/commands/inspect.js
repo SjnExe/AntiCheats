@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/inspect.js
  * Defines the !inspect command for administrators to view a player's AntiCheat data.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { getString } from '../core/i18n.js';

@@ -2,7 +2,7 @@
  * @file AntiCheatsBP/scripts/commands/panel.js
  * Defines the !panel command, which serves as the entry point to the main AntiCheat Admin UI Panel.
  * Also aliased as !ui.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { getString } from '../core/i18n.js'; // Import getString
@@ -20,10 +20,10 @@ export const definition = {
 /**
  * Executes the panel command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
+ * @param {string[]} _args The command arguments (unused in this command).
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-export async function execute(player, args, dependencies) {
+export async function execute(player, _args, dependencies) { // args renamed to _args
     const { uiManager, playerDataManager, config, addLog, playerUtils } = dependencies;
 
     // Add getString to dependencies for uiManager if it expects it,

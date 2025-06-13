@@ -1,6 +1,6 @@
 /**
  * @file Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
- * @version 1.0.1
+ * @version 1.0.2
  */
 
 import { world, system } from '@minecraft/server';

@@ -1,9 +1,8 @@
 /**
  * @file AntiCheatsBP/scripts/commands/freeze.js
  * Defines the !freeze command for administrators to immobilize or release players.
- * @version 1.0.0
+ * @version 1.0.1
  */
-// AntiCheatsBP/scripts/commands/freeze.js
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -73,7 +72,9 @@ export async function execute(player, args, dependencies) {
             }
         } catch (e) {
             player.sendMessage(`§cError freezing ${foundPlayer.nameTag}: ${e}`);
-            if (playerUtils.debugLog) playerUtils.debugLog(`Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            if (config.enableDebugLogging) {
+                playerUtils.debugLog(`Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            }
         }
     } else if (targetFreezeState === false && currentFreezeState) {
         try {
@@ -89,7 +90,9 @@ export async function execute(player, args, dependencies) {
             }
         } catch (e) {
             player.sendMessage(`§cError unfreezing ${foundPlayer.nameTag}: ${e}`);
-            if (playerUtils.debugLog) playerUtils.debugLog(`Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            if (config.enableDebugLogging) {
+                playerUtils.debugLog(`Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
+            }
         }
     } else {
         player.sendMessage(targetFreezeState ? `§7Player ${foundPlayer.nameTag} is already frozen.` : `§7Player ${foundPlayer.nameTag} is already unfrozen.`);

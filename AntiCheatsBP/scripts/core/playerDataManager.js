@@ -468,7 +468,8 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
     notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${notifyString}`, player, pData);
     debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${fullReasonForLog}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag);
 
-    if (dependencies && dependencies.config && dependencies.config.enableAutoMod && dependencies.automodConfig) {
+    // Access automodConfig via dependencies.config.automodConfig
+    if (dependencies && dependencies.config && dependencies.config.enableAutoMod && dependencies.config.automodConfig) {
         try {
             // Ensure playerUtils is available in dependencies for debugLog within processAutoModActions
             if (dependencies.playerUtils && dependencies.playerUtils.debugLog && pData.isWatched) {
@@ -483,7 +484,7 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         }
     } else if (dependencies && dependencies.playerUtils && dependencies.playerUtils.debugLog && pData.isWatched) {
         const autoModEnabled = dependencies.config ? dependencies.config.enableAutoMod : 'N/A (no config in deps)';
-        const autoModConfigPresent = !!dependencies.automodConfig;
+        const autoModConfigPresent = !!dependencies.config?.automodConfig; // Check nested automodConfig
         dependencies.playerUtils.debugLog(`addFlag: Skipping processAutoModActions for ${player.nameTag} (checkType: ${flagType}). enableAutoMod: ${autoModEnabled}, automodConfig present: ${autoModConfigPresent}.`, player.nameTag);
     }
 }

@@ -2,9 +2,9 @@
  * @file AntiCheatsBP/scripts/commands/help.js
  * Defines the !help command, which provides players with a list of available commands
  * or detailed information about a specific command based on their permission level.
- * @version 1.0.0
+ * @version 1.0.1
  */
-import * as config from '../config.js';
+// Removed direct import of config
 import { permissionLevels } from '../core/rankManager.js';
 import { getString } from '../core/i18n.js';
 
@@ -25,20 +25,18 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include `allCommands` list.
  */
 export async function execute(player, args, dependencies) {
-    // config is now directly imported, not from dependencies for this command's direct use.
-    // However, other parts of dependencies.config might be used by other commands, so keep it in destructuring.
-    // config is now directly imported. permissionLevels is also directly imported.
-    const { getPlayerPermissionLevel, allCommands, config: depConfig } = dependencies; // depConfig for commandAliases
+    const { getPlayerPermissionLevel, allCommands, config: runtimeConfig } = dependencies; // runtimeConfig is editableConfigValues
     const userPermissionLevel = getPlayerPermissionLevel(player);
+    const prefix = runtimeConfig.prefix; // Get prefix from runtime config
 
     if (args[0]) {
-        const specificCommandName = args[0].toLowerCase().replace(config.prefix, "");
+        const specificCommandName = args[0].toLowerCase().replace(prefix, "");
         let foundCmdDef = allCommands.find(cmd => cmd.name === specificCommandName);
 
-        if (!foundCmdDef && depConfig.commandAliases) {
-            const aliasTarget = Object.keys(depConfig.commandAliases).find(alias => alias === specificCommandName && depConfig.commandAliases[alias]);
+        if (!foundCmdDef && runtimeConfig.commandAliases) {
+            const aliasTarget = Object.keys(runtimeConfig.commandAliases).find(alias => alias === specificCommandName && runtimeConfig.commandAliases[alias]);
             if (aliasTarget) {
-                const targetCmdName = depConfig.commandAliases[aliasTarget];
+                const targetCmdName = runtimeConfig.commandAliases[aliasTarget];
                 foundCmdDef = allCommands.find(cmd => cmd.name === targetCmdName);
             }
         }
@@ -47,26 +45,26 @@ export async function execute(player, args, dependencies) {
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
                 const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
                 let permLevelName = "Unknown";
-                for (const key in permissionLevels) { // Use imported permissionLevels
+                for (const key in permissionLevels) {
                     if (permissionLevels[key] === foundCmdDef.permissionLevel) {
                         permLevelName = key.charAt(0).toUpperCase() + key.slice(1);
                         break;
                     }
                 }
                 player.sendMessage(
-                    getString("help.specific.header", { prefix: config.prefix, commandName: foundCmdDef.name }) + "\n" +
-                    getString("help.specific.syntax", { prefix: config.prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" +
-                    getString("help.specific.description", { description: getString(foundCmdDef.description) }) + "\n" + // Use getString for cmdDef.description
+                    getString("help.specific.header", { prefix: prefix, commandName: foundCmdDef.name }) + "\n" +
+                    getString("help.specific.syntax", { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" +
+                    getString("help.specific.description", { description: getString(foundCmdDef.description) }) + "\n" +
                     getString("help.specific.permission", { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel })
                 );
             } else {
-                player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: config.prefix }));
+                player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: prefix }));
             }
         } else {
-            player.sendMessage(getString("help.error.unknownCommand", { prefix: config.prefix, commandName: specificCommandName }));
+            player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName }));
         }
     } else {
-        let helpMessage = getString("help.list.header", { prefix: config.prefix }) + "\n"; // Added prefix arg
+        let helpMessage = getString("help.list.header", { prefix: prefix }) + "\n";
         let commandsListed = 0;
 
         const categories = [
@@ -77,7 +75,7 @@ export async function execute(player, args, dependencies) {
             {
                 nameKey: "help.list.category.tpa",
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
-                condition: () => config.enableTpaSystem
+                condition: () => runtimeConfig.enableTPASystem // Use runtimeConfig
             },
             {
                 nameKey: "help.list.category.moderation",
@@ -120,7 +118,7 @@ export async function execute(player, args, dependencies) {
                         description = getString(cmdDef.description); // All command definitions should have description as a key
                     }
 
-                    categoryHelp += `§e${config.prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
+                    categoryHelp += `§e${prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
                     commandsListed++;
                 }
             });

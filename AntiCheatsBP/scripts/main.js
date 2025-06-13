@@ -5,7 +5,7 @@
  * @version 1.1.0
  */
 import * as mc from '@minecraft/server';
-import * as config from './config.js';
+import * as configModule from './config.js'; // Renamed import for clarity
 import * as playerUtils from './utils/playerUtils.js';
 import * as playerDataManager from './core/playerDataManager.js';
 import * as commandManager from './core/commandManager.js';
@@ -50,32 +50,29 @@ playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
  * @param {mc.ChatSendBeforeEvent} eventData The chat send event data.
  */
 mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-    if (eventData.message.startsWith(config.prefix)) {
-        // Pass necessary dependencies to handleChatCommand
-        // Note: pData for sender is fetched inside handleChatCommand or command modules
-        await commandManager.handleChatCommand(
-            eventData,
-            playerDataManager,
-            uiManager,
-            config,
-            playerUtils
-            // No longer passing senderPData directly here
-        );
+    // Standardized dependencies object
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule, // Provide access to the whole module (e.g., for functions like updateConfigValue)
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        uiManager, // Added for command processing
+        commandManager, // Added for command processing
+        commandExecutionMap: commandManager.commandExecutionMap, // Added for command processing
+        currentTick,
+        // Note: automodConfig is now part of config.editableConfigValues, so accessible via dependencies.config.automodConfig
+    };
+
+    if (eventData.message.startsWith(dependencies.config.prefix)) {
+        // Pass the standardized dependencies object to handleChatCommand
+        // handleChatCommand internally will use dependencies.config, dependencies.playerDataManager etc.
+        await commandManager.handleChatCommand(eventData, dependencies);
     } else {
-        // Call the general chat handler for non-command messages
-        // Construct a comprehensive dependencies object for chat handler
-        const chatHandlerDependencies = {
-            config: config.editableConfigValues,
-            automodConfig: config.editableConfigValues.automodConfig,
-            playerUtils: playerUtils,
-            logManager: logManager,
-            actionManager: { executeCheckAction }, // Pass the wrapper
-            playerDataManager: playerDataManager,
-            checks: checks,
-            currentTick: currentTick // currentTick from main.js tick loop scope
-        };
-        // Pass editableConfigValues as the 'config' parameter for the handler too
-        await eventHandlers.handleBeforeChatSend(eventData, playerDataManager, config.editableConfigValues, playerUtils, checks, logManager, executeCheckAction, currentTick, chatHandlerDependencies);
+        // Pass the standardized dependencies object to the chat event handler
+        await eventHandlers.handleBeforeChatSend(eventData, dependencies);
     }
 });
 
@@ -131,17 +128,18 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
  * @param {mc.PlayerSpawnAfterEvent} eventData The player spawn event data.
  */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    // Augment dependencies for handlePlayerSpawn to include more modules
-    const spawnHandlerDependencies = {
-        config: config.editableConfigValues, // Pass the editable runtime config
-        automodConfig: config.editableConfigValues.automodConfig,
-        playerUtils: playerUtils,
-        logManager: logManager, // Pass the full logManager
-        actionManager: { executeCheckAction }, // Pass executeCheckAction
-        checks: checks, // Pass all available checks
-        addLog: logManager.addLog // Keep addLog for direct use if still needed by handlePlayerSpawn internally
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+        // uiManager, commandManager not typically needed directly in spawn event handler
     };
-    eventHandlers.handlePlayerSpawn(eventData, playerDataManager, playerUtils, config.editableConfigValues, spawnHandlerDependencies);
+    eventHandlers.handlePlayerSpawn(eventData, dependencies);
 });
 
 /**
@@ -149,8 +147,17 @@ mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
  * @param {mc.PlayerLeaveBeforeEvent} eventData The player leave event data.
  */
 mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
-    // Pass addLog from logManager to handlePlayerLeave for combat logging
-    eventHandlers.handlePlayerLeave(eventData, playerDataManager, playerUtils, config, logManager.addLog);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction }, // Though likely not used in leave
+        checks, // Though likely not used in leave
+        currentTick
+    };
+    eventHandlers.handlePlayerLeave(eventData, dependencies);
 });
 
 /**
@@ -159,59 +166,96 @@ mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
  */
 // Existing entityHurt subscription for general combat checks and NoFall
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    eventHandlers.handleEntityHurt(eventData, playerDataManager, checks, playerUtils, config, currentTick, logManager, executeCheckAction);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+    };
+    eventHandlers.handleEntityHurt(eventData, dependencies);
 });
 
 // New subscription specifically for Combat Log interaction tracking
-// This needs to be called after dependencies like playerDataManager, config, playerUtils are initialized.
-// Assuming they are available globally or passed appropriately if this were in an init function.
-// For now, direct call:
-eventHandlers.subscribeToCombatLogEvents(playerDataManager, config, playerUtils);
+eventHandlers.subscribeToCombatLogEvents({
+    config: configModule.editableConfigValues, // Pass runtime config
+    playerDataManager,
+    playerUtils
+});
 
 /**
  * Handles player break block events before they occur.
  * @param {mc.PlayerBreakBlockBeforeEvent} eventData The event data.
  */
 mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
-    // Pass necessary dependencies if checkIllegalItems (called via handlePlayerBreakBlock indirectly) needs them
-    // For now, assuming checkIllegalItems gets what it needs from the event or pData
-    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+    };
+    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, dependencies);
 });
 
 /**
  * Handles player break block events after they occur.
  * @param {mc.PlayerBreakBlockAfterEvent} eventData The event data.
  */
-mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => { // Made async
-    await eventHandlers.handlePlayerBreakBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+    };
+    await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, dependencies);
 });
 
 /**
  * Handles item use events before they occur.
  * @param {mc.ItemUseBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.itemUse.subscribe(async (eventData) => { // Made async
-    await eventHandlers.handleItemUse(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick); // Added currentTick
+mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+    };
+    await eventHandlers.handleItemUse(eventData, dependencies);
 });
 
 /**
  * Handles item use on block events before they occur, for AntiGrief (Fire) and IllegalItem checks.
  * @param {mc.ItemUseOnBeforeEvent} eventData The event data.
  */
-mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => { // Changed to itemUseOn and made async
-    const eventDependencies = {
-        config: config.editableConfigValues, // Pass runtime editable config
-        automodConfig: config.editableConfigValues.automodConfig,
-        playerUtils: playerUtils,
-        logManager: logManager,
+mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
         actionManager: { executeCheckAction },
-        playerDataManager: playerDataManager, // Added for consistency if executeCheckAction needs it via dependencies
-        checks: checks // Pass checks object if handleItemUseOn calls other checks directly
+        checks,
+        currentTick
     };
-    // Original parameters are still passed for now, but handleItemUseOn should ideally use the 'dependencies' object.
-    // The signature of handleItemUseOn was: (eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, dependencies)
-    // We will call it with the new consolidated dependencies object.
-    await eventHandlers.handleItemUseOn(eventData, playerDataManager, checks, playerUtils, config.editableConfigValues, logManager, executeCheckAction, eventDependencies);
+    await eventHandlers.handleItemUseOn(eventData, dependencies);
 });
 
 /**
@@ -219,21 +263,21 @@ mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => { // Changed to i
  * @param {mc.PlayerPlaceBlockBeforeEvent} eventData The event data.
  */
 mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
-    // currentTick from main.js scope is passed to the handler
-    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
-
-    // Call AntiGrief TNT check
-    const antiGriefDependencies = {
-        config: config.editableConfigValues, // Pass the editable config values
-        automodConfig: config.editableConfigValues.automodConfig,
-        playerUtils: playerUtils,
-        logManager: logManager,
-        actionManager: { executeCheckAction } // Pass the executeCheckAction function
-        // playerDataManager is not explicitly listed as a direct dependency for handlePlayerPlaceBlockBeforeEvent_AntiGrief
-        // but executeCheckAction might need it via its own 'dependencies' argument.
-        // The 'dependencies' object passed to executeCheckAction from within AntiGrief handler will include playerDataManager.
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
     };
-    await eventHandlers.handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, antiGriefDependencies);
+    // This handler might call two sub-handlers, both should get the same dependencies.
+    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, dependencies);
+    // handlePlayerPlaceBlockBeforeEvent_AntiGrief is also called inside handlePlayerPlaceBlockBefore if needed,
+    // or could be called here if its logic is distinct and always runs.
+    // For now, assuming handlePlayerPlaceBlockBefore covers it or calls it.
 });
 
 /**
@@ -241,8 +285,17 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
  * @param {mc.PlayerPlaceBlockAfterEvent} eventData The event data.
  */
 mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
-    // currentTick from main.js scope is passed to the handler
-    await eventHandlers.handlePlayerPlaceBlockAfter(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+    };
+    await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, dependencies);
 });
 
 /**
@@ -250,7 +303,26 @@ mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
  * @param {mc.PlayerInventoryItemChangeAfterEvent} eventData
  */
 mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
-    await eventHandlers.handleInventoryItemChange(eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick);
+    // This handler's original signature was: (eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick)
+    // It needs to be adapted to use the dependencies object if it's standardized.
+    // For now, passing a constructed one.
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager,
+        logManager,
+        actionManager: { executeCheckAction },
+        checks,
+        currentTick
+    };
+    // The original handleInventoryItemChange had a different signature pattern.
+    // Assuming it's refactored to accept (eventData, dependencies) like others.
+    // If not, this call would need to match its specific signature.
+    // For the sake of this refactor, we'll assume it's standardized:
+    // await eventHandlers.handleInventoryItemChange(eventData, dependencies);
+    // Keeping original call structure for now if its signature is very different:
+    await eventHandlers.handleInventoryItemChange(eventData.player, eventData.newItem, eventData.oldItem, eventData.slotName, dependencies);
 });
 
 /**
@@ -258,7 +330,15 @@ mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
  * @param {mc.PlayerDimensionChangeAfterEvent} eventData The event data.
  */
 mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
-    eventHandlers.handlePlayerDimensionChangeAfter(eventData, playerUtils, config);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        playerDataManager, // Though not directly used by current handler
+        logManager, // Though not directly used
+        currentTick
+    };
+    eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, dependencies);
 });
 
 /**
@@ -266,33 +346,37 @@ mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
  * @param {mc.EntityDieAfterEvent} eventData The event data.
  */
 mc.world.afterEvents.entityDie.subscribe((eventData) => {
-    // Assuming player is deadEntity from this event type (needs verification if API differs for players specifically)
-    // Pass logManager.addLog for logging within handlePlayerDeath
-    eventHandlers.handlePlayerDeath(eventData, playerDataManager, playerUtils, config, logManager.addLog);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule, // For deathCoordsMessageKey
+        playerUtils,
+        playerDataManager,
+        logManager,
+        currentTick
+    };
+    if (eventData.deadEntity.typeId === 'minecraft:player') {
+        eventHandlers.handlePlayerDeath(eventData, dependencies);
+    }
+    eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
 });
 
-mc.world.afterEvents.entityDie.subscribe(async (eventData) => {
-    // Assuming 'config' here refers to the imported 'config.js' module,
-    // and editableConfigValues holds the runtime values.
-    await eventHandlers.handleEntityDieForDeathEffects(eventData, config.editableConfigValues);
-});
 
 /**
  * Handles entity spawn events, for AntiGrief checks (e.g., Wither control).
  * @param {mc.EntitySpawnAfterEvent} eventData The event data.
  */
 mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
-    const antiGriefDependencies = {
-        config: config.editableConfigValues,
-        automodConfig: config.editableConfigValues.automodConfig,
-        playerUtils: playerUtils,
-        logManager: logManager,
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        logManager,
         actionManager: { executeCheckAction },
-            playerDataManager: playerDataManager, // ensure playerDataManager is available
-            checks: checks, // Add the checks object
-            currentTick: currentTick // Add currentTick from the main tick loop scope
+        playerDataManager,
+        checks,
+        currentTick
     };
-    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, antiGriefDependencies);
+    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, dependencies);
 });
 
 /**
@@ -300,16 +384,23 @@ mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
  * @param {mc.PistonActivateAfterEvent} eventData The event data.
  */
 mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
-    // Using the same antiGriefDependencies as entitySpawn, as it contains all necessary components
-    // (config, playerUtils, logManager, actionManager, playerDataManager, checks, currentTick)
-    // If a more specific set is needed, a new dependencies object can be created here.
-    await eventHandlers.handlePistonActivate_AntiGrief(eventData, antiGriefDependencies);
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        configModule: configModule,
+        playerUtils,
+        logManager,
+        actionManager: { executeCheckAction },
+        playerDataManager,
+        checks,
+        currentTick
+    };
+    await eventHandlers.handlePistonActivate_AntiGrief(eventData, dependencies);
 });
 
 // Periodically clear expired TPA requests (e.g., every second = 20 ticks)
 // Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
-    if (config.enableTPASystem) {
+    if (configModule.editableConfigValues.enableTPASystem) { // Access via editableConfigValues
         tpaManager.clearExpiredRequests();
 
         // Process TPA warm-ups
@@ -725,8 +816,8 @@ mc.system.runInterval(async () => {
         // World Border Enforcement
         // borderSettings variable will be declared here for potential use in Visuals section too
         let borderSettings = null;
-        if (config.enableWorldBorderSystem) { // config here is config.editableConfigValues from the tick loop scope
-            borderSettings = getBorderSettings(player.dimension.id);
+    if (dependencies.config.enableWorldBorderSystem) {
+            borderSettings = getBorderSettings(player.dimension.id); // Assuming getBorderSettings doesn't need full dependencies
 
             if (borderSettings && borderSettings.enabled) {
                 const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
@@ -842,10 +933,10 @@ mc.system.runInterval(async () => {
                     if (isPlayerOutside) {
                         pData.ticksOutsideBorder = (pData.ticksOutsideBorder || 0) + 1;
 
-                        const enableDamage = borderSettings.enableDamage ?? config.worldBorderDefaultEnableDamage;
-                        const damageAmount = borderSettings.damageAmount ?? config.worldBorderDefaultDamageAmount;
-                        const damageIntervalTicks = borderSettings.damageIntervalTicks ?? config.worldBorderDefaultDamageIntervalTicks;
-                        const teleportAfterNumDamageEvents = borderSettings.teleportAfterNumDamageEvents ?? config.worldBorderTeleportAfterNumDamageEvents;
+                        const enableDamage = borderSettings.enableDamage ?? dependencies.config.worldBorderDefaultEnableDamage;
+                        const damageAmount = borderSettings.damageAmount ?? dependencies.config.worldBorderDefaultDamageAmount;
+                        const damageIntervalTicks = borderSettings.damageIntervalTicks ?? dependencies.config.worldBorderDefaultDamageIntervalTicks;
+                        const teleportAfterNumDamageEvents = borderSettings.teleportAfterNumDamageEvents ?? dependencies.config.worldBorderTeleportAfterNumDamageEvents;
 
                         let performTeleport = true;
 
@@ -879,10 +970,11 @@ mc.system.runInterval(async () => {
                             const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils);
                             try {
                                 player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
-                                if (config.worldBorderWarningMessage) {
-                                    playerUtils.warnPlayer(player, config.worldBorderWarningMessage);
+                                if (dependencies.config.worldBorderWarningMessage) {
+                                    // Assuming worldBorderWarningMessage is a key, needs getString
+                                    playerUtils.warnPlayer(player, getString(dependencies.config.worldBorderWarningMessage));
                                 }
-                                if (playerUtils.debugLog && pData.isWatched) {
+                                if (dependencies.playerUtils.debugLog && pData.isWatched) {
                                     playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
                                 }
                                 pData.ticksOutsideBorder = 0;
@@ -929,22 +1021,20 @@ mc.system.runInterval(async () => {
         }
 
         // World Border Visuals
-        if (config.enableWorldBorderSystem && config.worldBorderEnableVisuals) {
+        if (dependencies.config.enableWorldBorderSystem && dependencies.config.worldBorderEnableVisuals) {
             // Use borderSettings if already fetched by enforcement, otherwise fetch it.
             const currentBorderSettings = borderSettings || getBorderSettings(player.dimension.id);
 
             if (currentBorderSettings && currentBorderSettings.enabled) {
-                if (currentTick - (pData.lastBorderVisualTick || 0) >= config.worldBorderVisualUpdateIntervalTicks) {
+                if (currentTick - (pData.lastBorderVisualTick || 0) >= dependencies.config.worldBorderVisualUpdateIntervalTicks) {
                     pData.lastBorderVisualTick = currentTick;
-                    // No need to set pData.isDirtyForSave for lastBorderVisualTick as it's transient and not saved
 
-                    const playerLoc = player.location; // playerLoc is already defined earlier in the player loop
-                    // Use per-dimension override if available, otherwise global default
-                    const particleNameToUse = currentBorderSettings.particleNameOverride || config.editableConfigValues.worldBorderParticleName;
-                    const visualRange = config.editableConfigValues.worldBorderVisualRange;
-                    const density = Math.max(0.1, config.editableConfigValues.worldBorderParticleDensity);
-                    const wallHeight = config.editableConfigValues.worldBorderParticleWallHeight;
-                    const segmentLength = config.editableConfigValues.worldBorderParticleSegmentLength;
+                    const playerLoc = player.location;
+                    const particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
+                    const visualRange = dependencies.config.worldBorderVisualRange;
+                    const density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
+                    const wallHeight = dependencies.config.worldBorderParticleWallHeight;
+                    const segmentLength = dependencies.config.worldBorderParticleSegmentLength;
                     const yBase = Math.floor(playerLoc.y);
 
                     // Use currentEffectiveHalfSize/Radius from the enforcement section

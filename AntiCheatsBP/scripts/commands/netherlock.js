@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/netherlock.js
  * Defines the !netherlock command for administrators to manage Nether dimension access.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
@@ -48,7 +48,7 @@ export async function execute(player, args, dependencies) {
                 if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'nether_lock_off', details: 'Nether unlocked' });
                 if (playerUtils.notifyAdmins) playerUtils.notifyAdmins(getString("command.netherlock.adminNotify.unlocked", { adminName: player.nameTag }), player, null);
             } else {
-                 player.sendMessage(getString("command.netherlock.fail"));
+                player.sendMessage(getString("command.netherlock.fail"));
             }
             break;
         case "status":

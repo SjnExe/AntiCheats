@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/xraynotify.js
  * Defines the !xraynotify command for administrators to manage their X-Ray mining notifications.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { getString } from '../core/i18n.js'; // Import getString
@@ -34,14 +34,18 @@ export async function execute(player, args, dependencies) {
             try { player.removeTag(notifyOffTag); } catch (e) {}
             player.addTag(notifyOnTag);
             player.sendMessage(getString("command.xraynotify.status.enabled"));
-            if (playerUtils.debugLog) playerUtils.debugLog(`Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
+            if (config.enableDebugLogging && playerUtils.debugLog) {
+                playerUtils.debugLog(`Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
+            }
             if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_on', details: 'X-Ray notifications ON' });
             break;
         case "off":
             try { player.removeTag(notifyOnTag); } catch (e) {}
             player.addTag(notifyOffTag);
             player.sendMessage(getString("command.xraynotify.status.disabled"));
-            if (playerUtils.debugLog) playerUtils.debugLog(`Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
+            if (config.enableDebugLogging && playerUtils.debugLog) {
+                playerUtils.debugLog(`Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
+            }
             if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_off', details: 'X-Ray notifications OFF' });
             break;
         case "status":

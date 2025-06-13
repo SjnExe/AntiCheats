@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/gmc.js
  * Defines the !gmc command for administrators to set a player's gamemode to Creative.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, addLog, findPlayer } = dependencies;
+    const { playerUtils, addLog, findPlayer, config: runtimeConfig } = dependencies; // Use runtimeConfig for enableDebugLogging
     const targetPlayerName = args[0];
     const gamemodeName = "Creative"; // For messaging
 
@@ -35,13 +35,15 @@ export async function execute(player, args, dependencies) {
             try {
                 targetPlayer.setGameMode(mc.GameMode.creative);
                 player.sendMessage(getString("command.gmc.success.other", { targetPlayerName: targetPlayer.nameTag, gamemode: gamemodeName }));
-                 if (player.id !== targetPlayer.id) {
+                if (player.id !== targetPlayer.id) {
                     targetPlayer.sendMessage(getString("command.gmc.success.self", { gamemode: gamemodeName }));
                 }
                 if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change', targetName: targetPlayer.nameTag, details: `Set to ${gamemodeName}` });
             } catch (e) {
                 player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: targetPlayer.nameTag }));
-                playerUtils.debugLog?.(`Error setting gamemode for ${targetPlayer.nameTag}: ${e}`, player.nameTag);
+                if (runtimeConfig.enableDebugLogging) {
+                    playerUtils.debugLog?.(`Error setting gamemode for ${targetPlayer.nameTag}: ${e}`, player.nameTag);
+                }
             }
         } else {
             player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
@@ -53,7 +55,9 @@ export async function execute(player, args, dependencies) {
             if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change_self', targetName: player.nameTag, details: `Set to ${gamemodeName}` });
         } catch (e) {
             player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: player.nameTag }));
-            playerUtils.debugLog?.(`Error setting own gamemode: ${e}`, player.nameTag);
+            if (runtimeConfig.enableDebugLogging) {
+                playerUtils.debugLog?.(`Error setting own gamemode: ${e}`, player.nameTag);
+            }
         }
     }
 }

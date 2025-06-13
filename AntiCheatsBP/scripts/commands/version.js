@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/version.js
  * Defines the !version command to display the AntiCheat addon version.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { getString } from '../core/i18n.js';
@@ -19,10 +19,10 @@ export const definition = {
 /**
  * Executes the version command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
+ * @param {string[]} _args The command arguments (unused in this command).
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-export async function execute(player, args, dependencies) {
+export async function execute(player, _args, dependencies) { // args renamed to _args
     const { config } = dependencies;
     player.sendMessage(getString("command.version.message", { version: config.acVersion || getString("command.myflags.value.notApplicable") })); // Used N/A for version not set
 }

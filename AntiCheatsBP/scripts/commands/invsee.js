@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/invsee.js
  * Defines the !invsee command for administrators to view a player's inventory.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { MessageFormData } from '@minecraft/server-ui';
@@ -100,11 +100,17 @@ export async function execute(player, args, dependencies) {
         inventoryDetails += getString("command.invsee.form.emptyInventory");
     }
 
-    if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'invsee', targetName: foundPlayer.nameTag, details: `Viewed inventory of ${foundPlayer.nameTag}` });
+    if (addLog) {
+        addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'invsee', targetName: foundPlayer.nameTag, details: `Viewed inventory of ${foundPlayer.nameTag}` });
+    }
 
     const invForm = new MessageFormData();
     invForm.title(getString("command.invsee.form.title", { playerName: foundPlayer.nameTag }));
     invForm.body(inventoryDetails.trim());
     invForm.button1(getString("common.button.close"));
-    invForm.show(player).catch(e => playerUtils.debugLog(`Error showing invsee form: ${e}`, player.nameTag));
+    invForm.show(player).catch(e => {
+        if (config.enableDebugLogging) {
+            playerUtils.debugLog(`Error showing invsee form: ${e}`, player.nameTag);
+        }
+    });
 }

@@ -62,7 +62,9 @@ export async function execute(player, args, dependencies) {
         .toggle(getString("command.copyinv.confirm.toggle"), false);
 
     const response = await form.show(player).catch(e => {
-        if(playerUtils.debugLog) playerUtils.debugLog(`copyinv confirmation form cancelled or failed for ${player.nameTag}: ${e}`, player.nameTag);
+        if (config.enableDebugLogging) {
+            playerUtils.debugLog(`copyinv confirmation form cancelled or failed for ${player.nameTag}: ${e}`, player.nameTag);
+        }
         return { canceled: true };
     });
 
@@ -79,23 +81,32 @@ export async function execute(player, args, dependencies) {
         for (let i = 0; i < targetInvComp.container.size; i++) {
             const item = targetInvComp.container.getItem(i);
             adminInvComp.container.setItem(i, item);
-            if (item) itemsCopied++;
+            if (item) {
+                itemsCopied++;
+            }
         }
         player.sendMessage(getString("command.copyinv.success", { targetPlayerName: targetPlayer.nameTag, itemCount: itemsCopied }));
-        if (addLog) addLog({
-            timestamp: Date.now(),
-            adminName: player.nameTag,
-            actionType: 'copy_inventory',
-            targetName: targetPlayer.nameTag,
-            details: getString("command.copyinv.log", { itemCount: itemsCopied })
-        });
-        if (playerUtils.notifyAdmins) playerUtils.notifyAdmins(
-            getString("command.copyinv.notifyAdmins", { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag }),
-            player,
-            null
-        );
+        if (addLog) {
+            addLog({
+                timestamp: Date.now(),
+                adminName: player.nameTag,
+                actionType: 'copy_inventory',
+                targetName: targetPlayer.nameTag,
+                details: getString("command.copyinv.log", { itemCount: itemsCopied })
+            });
+        }
+        if (playerUtils.notifyAdmins) {
+            const targetPData = dependencies.playerDataManager.getPlayerData(targetPlayer.id); // For context
+            playerUtils.notifyAdmins(
+                getString("command.copyinv.notifyAdmins", { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag }),
+                player,
+                targetPData
+            );
+        }
     } catch (e) {
         player.sendMessage(getString("common.error.generic") + `: ${e}`); // Keep specific error for debug, but generic for user
-        if (playerUtils.debugLog) playerUtils.debugLog(`copyinv error for ${player.nameTag} from ${targetPlayer.nameTag}: ${e}`, player.nameTag);
+        if (config.enableDebugLogging) {
+            playerUtils.debugLog(`copyinv error for ${player.nameTag} from ${targetPlayer.nameTag}: ${e}`, player.nameTag);
+        }
     }
 }

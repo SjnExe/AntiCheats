@@ -1,7 +1,7 @@
 /**
  * @file AntiCheatsBP/scripts/commands/notify.js
  * Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
- * @version 1.0.1
+ * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 import { playerDataManager } from '../core/playerDataManager.js';
@@ -64,6 +64,8 @@ export async function execute(player, args, dependencies) {
     player.sendMessage(getString(messageKey));
 
     const logMessageAction = newPreference ? "enabled" : "disabled";
-    if(playerUtils.debugLog) playerUtils.debugLog(`Admin ${player.nameTag} ${logMessageAction} notifications. Current pref: ${newPreference}`, player.nameTag);
+    if (config.enableDebugLogging && playerUtils.debugLog) {
+        playerUtils.debugLog(`Admin ${player.nameTag} ${logMessageAction} notifications. Current pref: ${newPreference}`, player.nameTag);
+    }
     if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: `notify_${logMessageAction}`, details: `Notifications ${logMessageAction}` });
 }
