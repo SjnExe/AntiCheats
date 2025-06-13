@@ -55,12 +55,12 @@ Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scr
 
 ## Configuration
 
-Fine-tune addon behavior by editing ``AntiCheatsBP/scripts/config.js``. Options include:
-*   Enabling or disabling specific cheat detections.
-*   Adjusting sensitivity thresholds for checks like speed, reach, CPS, etc.
-*   Changing the admin tag.
+Configuration is primarily managed through ``AntiCheatsBP/scripts/userSettings.js`` for common adjustments. More advanced settings are split into specialized files:
 
-Please refer to the comments within ``AntiCheatsBP/scripts/config.js`` for details on each option.
+*   **``AntiCheatsBP/scripts/userSettings.js``**: This is the main file for server administrators to customize common settings like command prefix, default language, feature toggles (e.g., welcomer, TPA, AntiGrief features), and basic thresholds. Refer to the comments within this file for details on each option.
+*   **``AntiCheatsBP/scripts/core/actionProfiles.js``**: Defines how the AntiCheat system reacts to specific cheat detections (e.g., flagging, admin notifications). Intended for advanced users or developers.
+*   **``AntiCheatsBP/scripts/core/automodConfig.js``**: Contains detailed rules, messages, and per-check toggles for the Automated Moderation (AutoMod) system. See the 'Automated Moderation (AutoMod)' section for more details.
+*   **``AntiCheatsBP/scripts/config.js``**: This file loads and manages all configuration components. It also contains more advanced or internal system settings. Generally, users should prefer editing `userSettings.js` for common needs.
 
 ## Versioning
 
@@ -111,10 +111,10 @@ The AutoMod system is designed to automatically take action against players who 
 When a player triggers a specific cheat detection (e.g., for flying, speeding), they accumulate flags for that particular type of cheat (`checkType`). The AutoMod system monitors these flag counts. If a player's flag count for a `checkType` reaches a predefined threshold, AutoMod will execute a configured sequence of actions.
 
 ### Configuration
-AutoMod is configured through two main files: `AntiCheatsBP/scripts/config.js` (for global settings) and `AntiCheatsBP/scripts/automodConfig.js` (for specific rules and messages).
+AutoMod is configured through ``AntiCheatsBP/scripts/userSettings.js`` (for the global ``enableAutoMod`` toggle) and primarily through ``AntiCheatsBP/scripts/core/automodConfig.js`` (for specific rules, messages, and per-check type toggles).
 
 #### 1. Global AutoMod Toggle
-- **File:** `AntiCheatsBP/scripts/config.js`
+- **File:** `AntiCheatsBP/scripts/userSettings.js`
 - **Setting:** `enableAutoMod`
 - **Usage:** Set to `true` to enable the entire AutoMod system, or `false` to disable it globally.
   ```javascript
@@ -122,7 +122,7 @@ AutoMod is configured through two main files: `AntiCheatsBP/scripts/config.js` (
   ```
 
 #### 2. Per-CheckType AutoMod Toggles
-- **File:** `AntiCheatsBP/scripts/automodConfig.js`
+- **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodPerCheckTypeToggles`
 - **Usage:** This object allows you to enable or disable AutoMod for specific `checkType`s. If a `checkType` is not listed in this object, or if its value is `true`, AutoMod will be active for it (assuming the global `enableAutoMod` is also `true`). To disable AutoMod for a particular check, set its value to `false`.
   ```javascript
@@ -134,7 +134,7 @@ AutoMod is configured through two main files: `AntiCheatsBP/scripts/config.js` (
   ```
 
 #### 3. AutoMod Rules (`automodRules`)
-- **File:** `AntiCheatsBP/scripts/automodConfig.js`
+- **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodRules`
 - **Structure:** This is an object where each key is a `checkType` string (e.g., `"fly_y_velocity"`, `"nuker_break_speed"`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
 - **`actionStep` Object Properties:**
@@ -181,7 +181,7 @@ The following `actionType` strings can be used in your `automodRules`:
 - `REMOVE_ILLEGAL_ITEM`: Removes all instances of a specific illegal item from the player's inventory. The item type is determined by the `violationDetails` of the flag that triggered this action.
 
 #### 5. Action Messages (`automodActionMessages`)
-- **File:** `AntiCheatsBP/scripts/automodConfig.js`
+- **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodActionMessages`
 - **Usage:** This is an object mapping `reasonKey` strings (used in `automodRules`) to the actual text messages that will be shown to players or used in logs. This allows for easy customization and potential localization of messages.
   ```javascript
