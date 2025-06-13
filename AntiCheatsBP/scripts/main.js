@@ -38,6 +38,19 @@ function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
+/**
+ * Maps a value from one range to another.
+ * @param {number} value The input value to map.
+ * @param {number} inMin The minimum of the input range.
+ * @param {number} inMax The maximum of the input range.
+ * @param {number} outMin The minimum of the output range.
+ * @param {number} outMax The maximum of the output range.
+ * @returns {number} The mapped value.
+ */
+function mapRange(value, inMin, inMax, outMin, outMax) {
+    return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
 import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
@@ -1042,7 +1055,19 @@ mc.system.runInterval(async () => {
                         particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
                     }
                     const visualRange = dependencies.config.worldBorderVisualRange;
-                    const density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
+                    let density;
+                    if (dependencies.config.worldBorderEnablePulsingDensity) {
+                        const pulseSpeed = dependencies.config.worldBorderPulseSpeed > 0 ? dependencies.config.worldBorderPulseSpeed : 1.0;
+                        const pulseTime = (currentTick * pulseSpeed) / 20.0; // Assuming 20 TPS for a cycle related to pulseSpeed = 1.0 per ~6.28s
+                        const sineWave = Math.sin(pulseTime); // Oscillates between -1 and 1
+                        const minDensity = dependencies.config.worldBorderPulseDensityMin > 0 ? dependencies.config.worldBorderPulseDensityMin : 0.1;
+                        const maxDensity = dependencies.config.worldBorderPulseDensityMax > minDensity ? dependencies.config.worldBorderPulseDensityMax : minDensity + 1.0;
+
+                        density = mapRange(sineWave, -1, 1, minDensity, maxDensity);
+                        density = Math.max(0.1, density); // Ensure density is at least 0.1
+                    } else {
+                        density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
+                    }
                     const wallHeight = dependencies.config.worldBorderParticleWallHeight;
                     const segmentLength = dependencies.config.worldBorderParticleSegmentLength;
                     const yBase = Math.floor(playerLoc.y);

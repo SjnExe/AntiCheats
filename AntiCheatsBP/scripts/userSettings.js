@@ -130,6 +130,26 @@ export const userSettings = {
      * If empty, the single `worldBorderParticleName` will be used.
      */
     worldBorderParticleSequence: [],
+    /**
+     * @type {boolean} If true, enables the pulsing density effect for world border visuals.
+     * Requires `worldBorderEnableVisuals` to also be true.
+     */
+    worldBorderEnablePulsingDensity: false,
+    /**
+     * @type {number} The minimum particle density for the pulsing effect.
+     * Represents a multiplier on the base particle spawning logic.
+     */
+    worldBorderPulseDensityMin: 0.5,
+    /**
+     * @type {number} The maximum particle density for the pulsing effect.
+     * Represents a multiplier on the base particle spawning logic.
+     */
+    worldBorderPulseDensityMax: 1.5,
+    /**
+     * @type {number} Controls the speed of the pulsing effect. Higher values are faster.
+     * A value of 1.0 results in a cycle roughly every 6.28 seconds at 20 TPS.
+     */
+    worldBorderPulseSpeed: 1.0,
 
     // X-Ray Detection Notifications
     xrayDetectionNotifyOnOreMineEnabled: true,
