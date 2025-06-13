@@ -71,6 +71,25 @@ export const userSettings = {
      */
     antiAdvertisingActionProfileName: "chat_advertising_detected",
 
+    /**
+     * @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat.
+     */
+    enableCapsCheck: true,
+    /**
+     * @type {number} The minimum message length for the CAPS abuse check to apply.
+     * Helps avoid flagging short acronyms or exclamations.
+     */
+    capsCheckMinLength: 10,
+    /**
+     * @type {number} The percentage (0-100) of uppercase letters in a message (meeting min length)
+     * that will trigger a CAPS abuse flag.
+     */
+    capsCheckUpperCasePercentage: 70,
+    /**
+     * @type {string} The action profile name (from checkActionProfiles.js) to use for CAPS abuse violations.
+     */
+    capsCheckActionProfileName: "chat_caps_abuse_detected",
+
     // AntiGrief - TNT
     enableTntAntiGrief: false,
     allowAdminTntPlacement: true,

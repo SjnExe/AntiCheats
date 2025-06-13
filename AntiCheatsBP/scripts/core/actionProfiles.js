@@ -704,6 +704,23 @@ export const checkActionProfiles = {
         }
         // No cancelMessage or customAction by default
     },
+    chat_caps_abuse_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_caps_abuse",
+            reason: "profile.chat_caps_abuse_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_caps_abuse",
+            detailsPrefix: "CAPS Abuse: ", // ViolationDetails will include percentage, message
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_caps_abuse_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage by default
+    },
     "player_self_hurt": {
         enabled: true,
         flag: {

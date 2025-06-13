@@ -818,6 +818,14 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         // if (eventData.cancel) return;
     }
 
+    // CAPS Abuse Check
+    if (!eventData.cancel && checks?.checkCapsAbuse && config.enableCapsCheck) {
+        await checks.checkCapsAbuse(player, originalMessage, pData, dependencies);
+        // The default action profile for CAPS abuse does not cancel the message.
+        // If it were configured to cancel, this would be important:
+        // if (eventData.cancel) return;
+    }
+
     // Rank Formatting (if message not cancelled by now)
     if (!eventData.cancel) {
         const rankElements = getPlayerRankFormattedChatElements(player, config);

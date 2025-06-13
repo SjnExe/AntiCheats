@@ -457,6 +457,10 @@ export const translations = {
             flagReason: "Potential advertisement detected in chat: {matchedPattern}",
             notifyMessage: "§eAC: {playerName} may have advertised. Matched: '{matchedPattern}'. Message: §f{originalMessage}"
         },
+        chat_caps_abuse_detected: {
+            flagReason: "Message contained excessive capitalization ({percentage}% CAPS).",
+            notifyMessage: "§eAC: {playerName} flagged for CAPS abuse ({percentage}% CAPS). Message: §f{originalMessage}"
+        },
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",
