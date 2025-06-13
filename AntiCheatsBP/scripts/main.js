@@ -1031,7 +1031,16 @@ mc.system.runInterval(async () => {
                     pData.lastBorderVisualTick = currentTick;
 
                     const playerLoc = player.location;
-                    const particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
+                    let particleNameToUse;
+                    const particleSequence = dependencies.config.worldBorderParticleSequence;
+
+                    if (Array.isArray(particleSequence) && particleSequence.length > 0) {
+                        const visualUpdateInterval = dependencies.config.worldBorderVisualUpdateIntervalTicks > 0 ? dependencies.config.worldBorderVisualUpdateIntervalTicks : 20; // Default to 20 if interval is 0 to prevent division by zero
+                        const sequenceIndex = Math.floor(currentTick / visualUpdateInterval) % particleSequence.length;
+                        particleNameToUse = particleSequence[sequenceIndex];
+                    } else {
+                        particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
+                    }
                     const visualRange = dependencies.config.worldBorderVisualRange;
                     const density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
                     const wallHeight = dependencies.config.worldBorderParticleWallHeight;

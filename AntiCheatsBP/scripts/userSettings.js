@@ -124,6 +124,12 @@ export const userSettings = {
     worldBorderParticleWallHeight: 4,
     worldBorderParticleSegmentLength: 32,
     worldBorderVisualUpdateIntervalTicks: 10,
+    /**
+     * @type {string[]} An array of particle type ID strings (e.g., ["minecraft:end_rod", "minecraft:totem_particle"]).
+     * If populated, world border visuals will cycle through these particles.
+     * If empty, the single `worldBorderParticleName` will be used.
+     */
+    worldBorderParticleSequence: [],
 
     // X-Ray Detection Notifications
     xrayDetectionNotifyOnOreMineEnabled: true,
