@@ -453,6 +453,10 @@ export const translations = {
             flagReason: "Swear word detected in message: {detectedWord}",
             notifyMessage: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}",
         },
+        chat_advertising_detected: {
+            flagReason: "Potential advertisement detected in chat: {matchedPattern}",
+            notifyMessage: "§eAC: {playerName} may have advertised. Matched: '{matchedPattern}'. Message: §f{originalMessage}"
+        },
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",

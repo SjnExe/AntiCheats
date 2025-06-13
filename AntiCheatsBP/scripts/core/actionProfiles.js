@@ -687,6 +687,23 @@ export const checkActionProfiles = {
         cancelMessage: true, // Cancel the message containing the swear word
         customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
     },
+    chat_advertising_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_advertising",
+            reason: "profile.chat_advertising_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_advertising",
+            detailsPrefix: "Matched patterns: ", // Matched pattern will be in violationDetails
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_advertising_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage or customAction by default
+    },
     "player_self_hurt": {
         enabled: true,
         flag: {

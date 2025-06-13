@@ -810,6 +810,14 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         if (eventData.cancel) return; // Spam check might cancel
     }
 
+    // Anti-Advertising Check
+    if (!eventData.cancel && checks?.checkAntiAdvertising && config.enableAntiAdvertisingCheck) {
+        await checks.checkAntiAdvertising(player, originalMessage, pData, dependencies);
+        // The action profile for advertising does not cancel by default,
+        // but if it were configured to, this check would be useful:
+        // if (eventData.cancel) return;
+    }
+
     // Rank Formatting (if message not cancelled by now)
     if (!eventData.cancel) {
         const rankElements = getPlayerRankFormattedChatElements(player, config);

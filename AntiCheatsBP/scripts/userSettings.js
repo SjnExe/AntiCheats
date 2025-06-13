@@ -55,7 +55,21 @@ export const userSettings = {
     // Chat Checks
     enableSwearCheck: false,
     swearWordList: [], // Empty by default
-    swearCheckMuteDuration: "30s",
+    swearCheckMuteDuration: "30s", // Ensure comma if it was missing
+
+    /**
+     * @type {boolean} If true, enables the basic anti-advertising check in chat.
+     */
+    enableAntiAdvertisingCheck: true,
+    /**
+     * @type {string[]} List of string patterns to detect potential advertisements.
+     * Matched case-insensitively. Examples: "http://", ".com", ".gg".
+     */
+    antiAdvertisingPatterns: ["http://", "https://", "www.", ".com", ".net", ".org", ".gg", ".tk", ".co", ".uk", ".biz", ".info", ".io", ".me", ".tv", ".us", ".ws", ".club", ".store", ".online", ".site", ".xyz", ".shop", "discord.gg/", "joinmc.", "playmc.", "server."],
+    /**
+     * @type {string} The action profile name (from checkActionProfiles.js) to use for advertising violations.
+     */
+    antiAdvertisingActionProfileName: "chat_advertising_detected",
 
     // AntiGrief - TNT
     enableTntAntiGrief: false,

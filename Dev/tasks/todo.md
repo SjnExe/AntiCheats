@@ -12,8 +12,8 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
-        *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, gradual resize, pause/resume, interpolation methods, and per-dimension particle types are complete. `!wb remove` now requires confirmation). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
-            *   - Further investigation for dynamic particle patterns or effects for world border visuals.
+        *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, gradual resize, pause/resume, interpolation methods, per-dimension static particle types, alternating particle sequence, and pulsing density effects are complete. `!wb remove` now requires confirmation). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
+            *   - Advanced dynamic particle effects (e.g., color/scale changes via custom particle JSONs) investigated; deferred for now.
             *   - (Consider more complex shape support - if still relevant beyond square/circle).
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched, Player Actions, Server Management, Config Editor)*

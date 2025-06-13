@@ -41,3 +41,4 @@ export { checkInvalidRenderDistance } from './player/clientInfoChecks.js';
 export { checkMessageRate } from './chat/messageRateCheck.js';
 export { checkMessageWordCount } from './chat/messageWordCountCheck.js';
 export * from './chat/swearCheck.js';
+export * from './chat/antiAdvertisingCheck.js';
