@@ -4,7 +4,6 @@
  * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { playerDataManager } from '../core/playerDataManager.js';
 import { getString } from '../core/i18n.js'; // Import getString
 
 /**
@@ -24,7 +23,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, addLog, config } = dependencies;
+    const { playerUtils, addLog, config, playerDataManager } = dependencies;
     const notifKey = 'notificationsEnabled'; // Stored in playerDataManager
     const subCommand = args[0] ? args[0].toLowerCase() : "toggle";
 
