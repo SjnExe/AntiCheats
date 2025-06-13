@@ -90,6 +90,23 @@ export const userSettings = {
      */
     capsCheckActionProfileName: "chat_caps_abuse_detected",
 
+    /**
+     * @type {boolean} If true, enables the check for excessive character repetition (e.g., "aaaaaa", "!!!") in chat.
+     */
+    enableCharRepeatCheck: true,
+    /**
+     * @type {number} The minimum message length for the character repeat check to apply.
+     */
+    charRepeatMinLength: 10,
+    /**
+     * @type {number} The minimum number of identical consecutive characters to trigger a flag.
+     */
+    charRepeatThreshold: 6,
+    /**
+     * @type {string} The action profile name (from checkActionProfiles.js) to use for character repeat violations.
+     */
+    charRepeatActionProfileName: "chat_char_repeat_detected",
+
     // AntiGrief - TNT
     enableTntAntiGrief: false,
     allowAdminTntPlacement: true,

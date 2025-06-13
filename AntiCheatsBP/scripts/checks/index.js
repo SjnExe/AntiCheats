@@ -43,3 +43,4 @@ export { checkMessageWordCount } from './chat/messageWordCountCheck.js';
 export * from './chat/swearCheck.js';
 export * from './chat/antiAdvertisingCheck.js';
 export * from './chat/capsAbuseCheck.js';
+export * from './chat/charRepeatCheck.js';

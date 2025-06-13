@@ -461,6 +461,10 @@ export const translations = {
             flagReason: "Message contained excessive capitalization ({percentage}% CAPS).",
             notifyMessage: "§eAC: {playerName} flagged for CAPS abuse ({percentage}% CAPS). Message: §f{originalMessage}"
         },
+        chat_char_repeat_detected: {
+            flagReason: "Message contained repeated characters: '{char}' x{count}.",
+            notifyMessage: "§eAC: {playerName} flagged for Char Repeat: '{char}' x{count}. Message: §f{originalMessage}"
+        },
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",

@@ -721,6 +721,23 @@ export const checkActionProfiles = {
         }
         // No cancelMessage by default
     },
+    chat_char_repeat_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_char_repeat",
+            reason: "profile.chat_char_repeat_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_char_repeat",
+            detailsPrefix: "Char Repeat: ", // ViolationDetails will include char, count, message
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_char_repeat_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage by default
+    },
     "player_self_hurt": {
         enabled: true,
         flag: {

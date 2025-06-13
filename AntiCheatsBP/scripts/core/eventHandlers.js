@@ -826,6 +826,14 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         // if (eventData.cancel) return;
     }
 
+    // Character Repeat Check
+    if (!eventData.cancel && checks?.checkCharRepeat && config.enableCharRepeatCheck) {
+        await checks.checkCharRepeat(player, originalMessage, pData, dependencies);
+        // The default action profile for char repeat does not cancel the message.
+        // If it were configured to cancel, this would be important:
+        // if (eventData.cancel) return;
+    }
+
     // Rank Formatting (if message not cancelled by now)
     if (!eventData.cancel) {
         const rankElements = getPlayerRankFormattedChatElements(player, config);
