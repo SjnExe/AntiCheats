@@ -11,6 +11,7 @@ import { permissionLevels } from './rankManager.js';
 import * as logManagerFile from './logManager.js'; // Use specific import name to avoid conflict
 import { editableConfigValues, updateConfigValue } from '../config.js';
 import { getString } from './i18n.js';
+import { formatSessionDuration } from '../utils/playerUtils.js'; // Added import
 
 // Forward declarations
 let showAdminPanelMain;
@@ -99,10 +100,34 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
     }
 }
 
-async function showMyStats(player, _playerDataManager, _config, _dependencies) {
-    // _playerDataManager, _config, _dependencies marked as unused if specific logic doesn't need them directly here.
-    playerUtils.debugLog(`UI: showMyStats for ${player.nameTag}`, player.nameTag); // Global playerUtils for simple log
-    player.sendMessage(getString("ui.normalPanel.info.useUinfo", { option: "My Anti-Cheat Stats" }));
+async function showMyStats(player, dependencies) { // Signature changed
+    const { playerDataManager, config, playerUtils: depPlayerUtils } = dependencies; // Destructure from dependencies
+    depPlayerUtils.debugLog(`UI: showMyStats for ${player.nameTag}`, player.nameTag);
+
+    const pData = playerDataManager.getPlayerData(player.id);
+    let sessionPlaytimeFormatted = getString("common.value.notAvailable");
+
+    if (pData && typeof pData.joinTime === 'number' && pData.joinTime > 0) {
+        const durationMs = Date.now() - pData.joinTime;
+        sessionPlaytimeFormatted = formatSessionDuration(durationMs);
+    }
+
+    const statsForm = new MessageFormData();
+    statsForm.title(getString("ui.myStats.title")); // New key: "My Stats"
+    statsForm.body(getString("ui.myStats.body", { sessionPlaytime: sessionPlaytimeFormatted })); // New key: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+    statsForm.button1(getString("common.button.back")); // New key: "Back"
+
+    try {
+        await statsForm.show(player);
+        // After the form is closed (button pressed or escaped), show the normal user panel again.
+        // Pass the original dependencies object which contains playerDataManager and config.
+        await showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
+    } catch (error) {
+        depPlayerUtils.debugLog(`Error in showMyStats for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
+        player.sendMessage(getString("common.error.genericForm"));
+        // Attempt to return to normal user panel even on error
+        await showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
+    }
 }
 
 async function showServerRules(player, _config, _playerDataManager, _dependencies) {
@@ -356,54 +381,57 @@ showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependen
     }
 };
 
-showAdminPanelMain = async function (adminPlayer, playerDataManager, config, dependencies) {
+showAdminPanelMain = async function (player, playerDataManager, config, dependencies) { // Renamed adminPlayer to player
     const { playerUtils: depPlayerUtils } = dependencies;
-    depPlayerUtils.debugLog(`UI: Admin Panel Main requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Admin Panel Main requested by ${player.nameTag}`, player.nameTag); // Changed adminPlayer to player
     const form = new ActionFormData();
-    const userPermLevel = depPlayerUtils.getPlayerPermissionLevel(adminPlayer);
+    const userPermLevel = depPlayerUtils.getPlayerPermissionLevel(player); // Changed adminPlayer to player
 
     try {
-        if (userPermLevel > permissionLevels.member) { // Configurable permission level for panel access
-            await showNormalUserPanelMain(adminPlayer, playerDataManager, config, dependencies);
-            return;
-        }
+        // --- ADJUSTED PERMISSION ROUTING LOGIC START ---
+        if (userPermLevel <= permissionLevels.admin) { // Owner or Admin
+            // Existing admin panel logic
+            form.title(getString("ui.adminPanel.title"));
+            form.body(getString("ui.adminPanel.body", { playerName: player.nameTag })); // Changed adminPlayer to player
+            form.button(getString("ui.adminPanel.button.viewPlayers"), "textures/ui/icon_multiplayer");
+            form.button(getString("ui.adminPanel.button.inspectPlayerText"), "textures/ui/spyglass");
+            form.button(getString("ui.adminPanel.button.resetFlagsText"), "textures/ui/refresh");
+            form.button(getString("ui.adminPanel.button.listWatched"), "textures/ui/magnifying_glass");
+            form.button(getString("ui.adminPanel.button.serverManagement"), "textures/ui/icon_graph");
 
-        form.title(getString("ui.adminPanel.title"));
-        form.body(getString("ui.adminPanel.body", { playerName: adminPlayer.nameTag }));
-        form.button(getString("ui.adminPanel.button.viewPlayers"), "textures/ui/icon_multiplayer");
-        form.button(getString("ui.adminPanel.button.inspectPlayerText"), "textures/ui/spyglass");
-        form.button(getString("ui.adminPanel.button.resetFlagsText"), "textures/ui/refresh");
-        form.button(getString("ui.adminPanel.button.listWatched"), "textures/ui/magnifying_glass");
-        form.button(getString("ui.adminPanel.button.serverManagement"), "textures/ui/icon_graph");
+            let closeButtonIndex = 5;
+            if (userPermLevel === permissionLevels.owner) {
+                form.button(getString("ui.adminPanel.button.editConfig"), "textures/ui/gear");
+                closeButtonIndex = 6;
+            }
+            form.button(getString("common.button.close"), "textures/ui/cancel");
 
-        let closeButtonIndex = 5;
-        if (userPermLevel === permissionLevels.owner) {
-            form.button(getString("ui.adminPanel.button.editConfig"), "textures/ui/gear");
-            closeButtonIndex = 6;
+            const response = await form.show(player); // Changed adminPlayer to player
+            if (response.canceled || response.selection === closeButtonIndex) {
+                depPlayerUtils.debugLog(`Admin Panel Main cancelled or closed by ${player.nameTag}.`, player.nameTag); // Changed adminPlayer to player
+                return;
+            }
+            switch (response.selection) {
+                case 0: await showOnlinePlayersList(player, playerDataManager, dependencies); break; // Changed adminPlayer to player
+                case 1: await showInspectPlayerForm(player, playerDataManager, dependencies); break; // Changed adminPlayer to player
+                case 2: await showResetFlagsForm(player, playerDataManager, dependencies); break; // Changed adminPlayer to player
+                case 3: await showWatchedPlayersList(player, playerDataManager, dependencies); break; // Changed adminPlayer to player
+                case 4: await showServerManagementForm(player, playerDataManager, config, dependencies); break; // Changed adminPlayer to player
+                case 5:
+                    if (userPermLevel === permissionLevels.owner) {
+                        await showEditConfigForm(player, playerDataManager, editableConfigValues, dependencies); // Changed adminPlayer to player
+                    }
+                    break;
+            }
+        } else { // Normal user
+            await showNormalUserPanelMain(player, playerDataManager, config, dependencies); // Changed adminPlayer to player
+            return; // Important to return after showing the normal user panel
         }
-        form.button(getString("common.button.close"), "textures/ui/cancel");
+        // --- ADJUSTED PERMISSION ROUTING LOGIC END ---
 
-        const response = await form.show(adminPlayer);
-        if (response.canceled || response.selection === closeButtonIndex) {
-            depPlayerUtils.debugLog(`Admin Panel Main cancelled or closed by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
-            return;
-        }
-        switch (response.selection) {
-            case 0: await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies); break;
-            case 1: await showInspectPlayerForm(adminPlayer, playerDataManager, dependencies); break;
-            case 2: await showResetFlagsForm(adminPlayer, playerDataManager, dependencies); break;
-            case 3: await showWatchedPlayersList(adminPlayer, playerDataManager, dependencies); break;
-            case 4: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
-            case 5:
-                if (userPermLevel === permissionLevels.owner) {
-                    await showEditConfigForm(adminPlayer, playerDataManager, editableConfigValues, dependencies);
-                } // Else, it was the close button (handled above)
-                break;
-            // No default needed if close button index is handled correctly
-        }
     } catch (error) {
-        depPlayerUtils.debugLog(`Error in showAdminPanelMain for ${adminPlayer.nameTag}: ${error.stack || error}`, adminPlayer.nameTag);
-        adminPlayer.sendMessage(getString("ui.adminPanel.error.generic"));
+        depPlayerUtils.debugLog(`Error in showAdminPanelMain for ${player.nameTag}: ${error.stack || error}`, player.nameTag); // Changed adminPlayer to player
+        player.sendMessage(getString("ui.adminPanel.error.generic")); // Changed adminPlayer to player
     }
 };
 
@@ -422,7 +450,7 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
         const response = await form.show(player);
         if (response.canceled || response.selection === 3) { return; } // Close button
         switch (response.selection) {
-            case 0: await showMyStats(player, playerDataManager, config, dependencies); break;
+            case 0: await showMyStats(player, dependencies); break; // Updated call site
             case 1: await showServerRules(player, config, playerDataManager, dependencies); break;
             case 2: await showHelpAndLinks(player, config, playerDataManager, dependencies); break;
         }

@@ -494,6 +494,10 @@ export const translations = {
             ban_cancelled: "Ban action cancelled.",
             mute_cancelled: "Mute action cancelled.",
         },
+        myStats: {
+            title: "My Stats",
+            body: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+        },
         // Other UI keys like "ui.adminPanel.title" etc. would go here, potentially nested further.
         // For brevity, I will not list all of them but apply the pattern.
         // Example:

@@ -9,28 +9,7 @@ import * as mc from '@minecraft/server';
 import { getPlayerRankFormattedChatElements, updatePlayerNametag, permissionLevels } from './rankManager.js';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js'; // playerUtils is expected via dependencies
 import { getString } from './i18n.js';
-
-/**
- * Formats a duration in milliseconds into a human-readable string (e.g., "1h 23m 45s").
- * @param {number} ms - The duration in milliseconds.
- * @returns {string} A formatted string representing the duration, or "N/A" if ms is non-positive.
- */
-function formatSessionDuration(ms) {
-    if (ms <= 0) {
-        return "N/A";
-    }
-    let seconds = Math.floor(ms / 1000);
-    let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(minutes / 60);
-    seconds %= 60;
-    minutes %= 60;
-
-    const parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-    return parts.join(' ');
-}
+import { formatSessionDuration } from '../utils/playerUtils.js';
 
 /**
  * Handles player leave events, saving data and checking for combat logging.
