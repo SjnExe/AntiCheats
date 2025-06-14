@@ -186,6 +186,10 @@ export const translations = {
             individualFlagsHeader": "§eIndividual Flags:",
             noData: "§cNo warning data found for {playerName}.",
         },
+        mycoords: {
+            description: "Shows your current coordinates and dimension.",
+            message: "§7Your location: §eX={x}, Y={y}, Z={z} §7in dimension §e{dimensionId}§7."
+        },
     },
     checks: {
         invalidSprint: {
