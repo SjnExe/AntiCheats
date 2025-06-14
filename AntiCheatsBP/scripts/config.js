@@ -692,24 +692,26 @@ export function updateConfigValue(key, newValue) {
             return false;
         }
     } else if (Array.isArray(oldValue) && typeof newValue === 'string') {
-        // Special handling for stringified arrays for config editing, if needed.
-        // For now, assume arrays are passed as actual arrays.
-        // If string input for arrays is a requirement from UI:
-        // try {
-        //     const parsedArray = JSON.parse(newValue);
-        //     if (!Array.isArray(parsedArray)) {
-        //         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got non-array JSON string "${newValue}". Update rejected.`);
-        //         return false;
-        //     }
-        //     coercedNewValue = parsedArray;
-        // } catch (e) {
-        //     console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got unparsable JSON string "${newValue}". Update rejected.`);
-        //     return false;
-        // }
-        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got string. Update rejected.`);
+        // MODIFIED LOGIC FOR STRING ARRAY FROM COMMA-SEPARATED STRING
+        if (newValue.trim() === "") {
+            coercedNewValue = [];
+        } else {
+            coercedNewValue = newValue.split(',').map(item => item.trim());
+        }
+        // No longer rejecting here, coercedNewValue is now an array.
+        // The function will proceed to the general type check.
+    }
+
+    // --- NEW STRICT ARRAY CHECK START ---
+    // This check is after all coercions. If oldValue was array, coercedNewValue must also be an array.
+    if (Array.isArray(oldValue) && !Array.isArray(coercedNewValue)) {
+        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, but received incompatible type ${typeof newValue} (which resolved to type ${typeof coercedNewValue} after coercion attempts). Update rejected.`);
         return false;
     }
+    // --- NEW STRICT ARRAY CHECK END ---
      else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
+        // This check should correctly skip if oldValue was an array and coercedNewValue is now also an array.
+        // It primarily handles cases where oldValue was not an array, but there's still a type mismatch.
         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${typeof coercedNewValue}. Update rejected.`);
         return false;
     }
