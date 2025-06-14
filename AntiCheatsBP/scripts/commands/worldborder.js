@@ -18,6 +18,7 @@ export const definition = {
     permissionLevel: permissionLevels.admin,
     requiresCheats: false,
     syntax: "!wb <set|get|toggle|remove|shrink|expand|resizepause|resizeresume|setglobalparticle|setparticle> [args...]",
+    enabled: true,
     // Subcommand details will be shown in the dynamic help message
 };
 

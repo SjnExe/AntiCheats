@@ -15,7 +15,8 @@ export const definition = {
     name: "invsee",
     syntax: "!invsee <playername>",
     description: getString("command.invsee.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

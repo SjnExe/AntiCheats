@@ -13,7 +13,8 @@ export const definition = {
     name: "mute",
     syntax: "!mute <playername> [duration] [reason]",
     description: "Mutes a player for a specified duration (e.g., 5m, 1h, 1d, perm).",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

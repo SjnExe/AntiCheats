@@ -13,7 +13,8 @@ export const definition = {
     name: "version",
     syntax: "!version",
     description: getString("command.version.description"),
-    permissionLevel: permissionLevels.admin // Changed from normal to admin as per typical usage
+    permissionLevel: permissionLevels.admin, // Changed from normal to admin as per typical usage
+    enabled: true,
 };
 
 /**

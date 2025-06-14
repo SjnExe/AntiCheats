@@ -14,7 +14,8 @@ export const definition = {
     name: "netherlock",
     syntax: "!netherlock <on|off|status>",
     description: getString("command.netherlock.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

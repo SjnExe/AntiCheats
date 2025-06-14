@@ -18,6 +18,7 @@ export const definition = {
     aliases: ['tpaaccept'],
     permissionLevel: permissionLevels.normal,
     syntax: '!tpaccept [playerName]',
+    enabled: true,
 };
 
 /**

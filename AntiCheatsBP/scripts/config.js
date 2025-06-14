@@ -3,6 +3,45 @@ import { userSettings } from './userSettings.js';
 import { checkActionProfiles } from '../core/actionProfiles.js';
 import { automodConfig as importedAutoModConfig } from '../core/automodConfig.js';
 
+export const commandSettings = {
+    version: { enabled: true },
+    myflags: { enabled: true },
+    testnotify: { enabled: true },
+    kick: { enabled: true },
+    clearchat: { enabled: true },
+    inspect: { enabled: true },
+    warnings: { enabled: true },
+    resetflags: { enabled: true },
+    rules: { enabled: true },
+    vanish: { enabled: true },
+    freeze: { enabled: true },
+    mute: { enabled: true },
+    unmute: { enabled: true },
+    ban: { enabled: true },
+    unban: { enabled: true },
+    gmc: { enabled: true },
+    gms: { enabled: true },
+    gma: { enabled: true },
+    gmsp: { enabled: true },
+    help: { enabled: true },
+    invsee: { enabled: true },
+    panel: { enabled: true },
+    notify: { enabled: true },
+    xraynotify: { enabled: true },
+    tpa: { enabled: true },
+    tpaccept: { enabled: true },
+    tpacancel: { enabled: true },
+    tpahere: { enabled: true },
+    tpastatus: { enabled: true },
+    tp: { enabled: true },
+    copyinv: { enabled: true },
+    uinfo: { enabled: true },
+    netherlock: { enabled: true },
+    endlock: { enabled: true },
+    worldborder: { enabled: true },
+    setlang: { enabled: true }
+};
+
 /** @type {boolean} If true, the Automated Moderation system is active. */
 export const enableAutoMod = false;
 
@@ -482,6 +521,7 @@ export const commandAliases = {
  */
 export let editableConfigValues = {
     ...userSettings, // Load all defaults from user_settings.js
+    commandSettings: commandSettings,
 
     // Settings NOT in user_settings.js but still part of editableConfigValues:
     enableAutoMod,

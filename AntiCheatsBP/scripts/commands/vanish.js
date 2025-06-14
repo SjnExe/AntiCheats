@@ -18,7 +18,8 @@ export const definition = {
     name: "vanish",
     syntax: "!vanish [silent|notify]",
     description: getString("command.vanish.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

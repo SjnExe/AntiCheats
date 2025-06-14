@@ -14,7 +14,8 @@ export const definition = {
     name: "clearchat",
     syntax: "!clearchat",
     description: "command.clearchat.description",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

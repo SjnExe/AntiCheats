@@ -14,7 +14,8 @@ export const definition = {
     name: "gma",
     syntax: "!gma [playername]",
     description: getString("command.gma.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

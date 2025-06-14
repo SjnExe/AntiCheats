@@ -13,7 +13,8 @@ export const definition = {
     name: "notify",
     syntax: "!notify [on|off|toggle|status]",
     description: getString("command.notify.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

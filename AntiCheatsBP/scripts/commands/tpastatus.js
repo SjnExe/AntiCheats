@@ -18,6 +18,7 @@ export const definition = {
     aliases: ['tpatoggle'],
     permissionLevel: permissionLevels.normal,
     syntax: '!tpastatus [on|off|status]',
+    enabled: true,
 };
 
 /**

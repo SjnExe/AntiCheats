@@ -14,7 +14,8 @@ export const definition = {
     name: "resetflags",
     syntax: "!resetflags <playername>", // Localized usage will be based on this name
     description: getString("command.resetflags.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

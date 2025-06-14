@@ -14,7 +14,8 @@ export const definition = {
     name: "gmc",
     syntax: "!gmc [playername]",
     description: getString("command.gmc.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

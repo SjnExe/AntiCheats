@@ -13,7 +13,8 @@ export const definition = {
     name: "xraynotify",
     syntax: "!xraynotify <on|off|status>",
     description: getString("command.xraynotify.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

@@ -93,6 +93,24 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     }
 
+    // --- NEW LOGIC TO BE INSERTED START ---
+    let isEffectivelyEnabled = commandDef.enabled; // Default from command's own definition file
+    // 'config' here is the 'config' parameter of handleChatCommand, which is editableConfigValues.
+    // It gives access to config.commandSettings (the object we added to config.js).
+    if (config.commandSettings && typeof config.commandSettings[finalCommandName]?.enabled === 'boolean') {
+        isEffectivelyEnabled = config.commandSettings[finalCommandName].enabled;
+    }
+
+    if (!isEffectivelyEnabled) {
+        player.sendMessage(`§cUnknown command: ${config.prefix}${finalCommandName}§r. Type ${config.prefix}help for assistance.`); // Use the same "Unknown command" message
+        eventData.cancel = true;
+        if (playerUtils?.debugLog) { // Check playerUtils and debugLog exist
+            playerUtils.debugLog(`Command '${finalCommandName}' is disabled. Access denied for ${player.nameTag}.`, player.nameTag);
+        }
+        return; // Stop processing for disabled command
+    }
+    // --- NEW LOGIC TO BE INSERTED END ---
+
     const userPermissionLevel = getPlayerPermissionLevel(player);
     if (userPermissionLevel > commandDef.permissionLevel) {
         playerUtils.warnPlayer(player, "You do not have permission to use this command.");

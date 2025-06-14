@@ -14,7 +14,8 @@ export const definition = {
     name: "endlock",
     syntax: "!endlock <on|off|status>",
     description: getString("command.endlock.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

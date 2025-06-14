@@ -13,7 +13,8 @@ export const definition = {
     name: "ban",
     syntax: "!ban <playername> [duration] [reason]",
     description: "Bans a player for a specified duration (e.g., 7d, 2h, perm).",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

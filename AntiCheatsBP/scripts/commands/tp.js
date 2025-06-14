@@ -39,7 +39,8 @@ export const definition = {
     name: "tp",
     syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]",
     description: getString("command.tp.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**
