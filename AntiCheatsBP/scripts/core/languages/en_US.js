@@ -482,6 +482,7 @@ export const translations = {
         systemInfo: { // From ui.systemInfo...
             label_currentTick: "Current Server Tick:",
             label_worldTime": "World Time (ticks):",
+            label_defaultServerLanguage: "Default Server Language:",
         },
         playerActions: { // From ui.playerActions...
             kick_cancelled: "Kick action cancelled.",
