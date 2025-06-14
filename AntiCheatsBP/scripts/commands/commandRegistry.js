@@ -37,7 +37,6 @@ import * as tpastatusCmd from './tpastatus.js';
 import * as tpCmd from './tp.js';
 import * as copyinvCmd from './copyinv.js';
 import * as uinfoCmd from './uinfo.js';
-import * as mycoordsCmd from './mycoords.js';
 import * as netherlockCmd from './netherlock.js';
 import * as endlockCmd from './endlock.js';
 import * as worldborderCmd from './worldborder.js';
@@ -75,7 +74,6 @@ export const commandModules = [
     tpCmd,
     copyinvCmd,
     uinfoCmd,
-    mycoordsCmd, // Added new command
     netherlockCmd,
     endlockCmd,
     rulesCmd,
