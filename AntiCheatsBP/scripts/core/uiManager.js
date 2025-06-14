@@ -130,9 +130,36 @@ async function showMyStats(player, dependencies) { // Signature changed
     }
 }
 
-async function showServerRules(player, _config, _playerDataManager, _dependencies) {
-    playerUtils.debugLog(`UI: showServerRules for ${player.nameTag}`, player.nameTag);
-    player.sendMessage(getString("ui.normalPanel.info.useUinfo", { option: "Server Rules" }));
+async function showServerRules(player, dependencies) {
+    const { config, playerUtils: depPlayerUtils, playerDataManager } = dependencies; // Destructure needed parts
+    depPlayerUtils.debugLog(`UI: showServerRules for ${player.nameTag}`, player.nameTag);
+
+    const rules = config.serverRules; // Get rules from the runtime config
+    let rulesBody = "";
+
+    if (Array.isArray(rules) && rules.length > 0) {
+        rulesBody = rules.join("\n"); // Join rules with newline
+    } else {
+        rulesBody = getString("ui.serverRules.noRulesDefined"); // Localization key for no rules
+    }
+
+    const rulesForm = new MessageFormData();
+    rulesForm.title(getString("ui.serverRules.title")); // Localization key for title
+    rulesForm.body(rulesBody);
+    rulesForm.button1(getString("common.button.back")); // Localization key for back button
+
+    try {
+        await rulesForm.show(player);
+        // After the form is closed, navigate back to the normal user panel.
+        // showNormalUserPanelMain expects (player, playerDataManager, config, dependencies)
+        // We have 'player' and 'dependencies'. 'playerDataManager' and 'config' are on 'dependencies'.
+        await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+    } catch (error) {
+        depPlayerUtils.debugLog(`Error in showServerRules for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
+        player.sendMessage(getString("common.error.genericForm"));
+        // Attempt to return to normal user panel even on error
+        await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+    }
 }
 
 async function showHelpAndLinks(player, _config, _playerDataManager, _dependencies) {
@@ -451,7 +478,7 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
         if (response.canceled || response.selection === 3) { return; } // Close button
         switch (response.selection) {
             case 0: await showMyStats(player, dependencies); break; // Updated call site
-            case 1: await showServerRules(player, config, playerDataManager, dependencies); break;
+            case 1: await showServerRules(player, dependencies); break; // Updated call site
             case 2: await showHelpAndLinks(player, config, playerDataManager, dependencies); break;
         }
     } catch (error) {

@@ -45,6 +45,18 @@ export const commandSettings = {
 /** @type {boolean} If true, the Automated Moderation system is active. */
 export const enableAutoMod = false;
 
+/**
+ * @type {string[]} Defines the server rules to be displayed to players.
+ */
+export const serverRules = [
+    "Rule 1: Be respectful to all players and staff.",
+    "Rule 2: No cheating, exploiting, or using unauthorized modifications.",
+    "Rule 3: Do not spam chat or use excessive caps/symbols.",
+    "Rule 4: Follow instructions from server administrators and moderators.",
+    "Rule 5: Keep chat appropriate and avoid offensive language.",
+    "Rule 6: Have fun and contribute to a positive community!"
+];
+
 // --- General Check Toggles ---
 
 /** @type {boolean} If true, the Reach check is active. */
@@ -522,6 +534,7 @@ export const commandAliases = {
 export let editableConfigValues = {
     ...userSettings, // Load all defaults from user_settings.js
     commandSettings: commandSettings,
+    serverRules: serverRules, // Added serverRules
 
     // Settings NOT in user_settings.js but still part of editableConfigValues:
     enableAutoMod,

@@ -498,6 +498,10 @@ export const translations = {
             title: "My Stats",
             body: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
         },
+        serverRules: {
+            title: "Server Rules",
+            noRulesDefined: "No server rules are currently defined."
+        },
         // Other UI keys like "ui.adminPanel.title" etc. would go here, potentially nested further.
         // For brevity, I will not list all of them but apply the pattern.
         // Example:
