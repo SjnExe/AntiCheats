@@ -738,6 +738,23 @@ export const checkActionProfiles = {
         }
         // No cancelMessage by default
     },
+    chat_symbol_spam_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_symbol_spam",
+            reason: "profile.chat_symbol_spam_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_symbol_spam",
+            detailsPrefix: "Symbol Spam: ", // ViolationDetails will include percentage, message
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_symbol_spam_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage by default
+    },
     "player_self_hurt": {
         enabled: true,
         flag: {

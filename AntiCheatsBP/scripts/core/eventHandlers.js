@@ -834,6 +834,14 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         // if (eventData.cancel) return;
     }
 
+    // Symbol Spam Check
+    if (!eventData.cancel && checks?.checkSymbolSpam && config.enableSymbolSpamCheck) {
+        await checks.checkSymbolSpam(player, originalMessage, pData, dependencies);
+        // The default action profile for symbol spam does not cancel the message.
+        // If it were configured to cancel, this would be important:
+        // if (eventData.cancel) return;
+    }
+
     // Rank Formatting (if message not cancelled by now)
     if (!eventData.cancel) {
         const rankElements = getPlayerRankFormattedChatElements(player, config);

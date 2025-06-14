@@ -465,6 +465,11 @@ export const translations = {
             flagReason: "Message contained repeated characters: '{char}' x{count}.",
             notifyMessage: "§eAC: {playerName} flagged for Char Repeat: '{char}' x{count}. Message: §f{originalMessage}"
         },
+        chat_symbol_spam_detected: {
+            message: "§cPlease avoid using excessive symbols in your message.",
+            flagReason: "Sent a message with a high percentage of symbols.",
+            notifyMessage: "Player {playerName} triggered symbol spam check. Message: {originalMessage}"
+        },
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",
