@@ -107,6 +107,24 @@ export const userSettings = {
      */
     charRepeatActionProfileName: "chat_char_repeat_detected",
 
+    /**
+     * @type {boolean} If true, enables the check for excessive symbol usage (non-alphanumeric) in chat.
+     */
+    enableSymbolSpamCheck: true,
+    /**
+     * @type {number} The minimum message length for the symbol spam check to apply.
+     */
+    symbolSpamMinLength: 10,
+    /**
+     * @type {number} The percentage (0-100) of non-alphanumeric characters (excluding spaces)
+     * in a message (meeting min length) that will trigger a symbol spam flag.
+     */
+    symbolSpamPercentage: 50,
+    /**
+     * @type {string} The action profile name (from checkActionProfiles.js) to use for symbol spam violations.
+     */
+    symbolSpamActionProfileName: "chat_symbol_spam_detected",
+
     // AntiGrief - TNT
     enableTntAntiGrief: false,
     allowAdminTntPlacement: true,
