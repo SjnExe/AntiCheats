@@ -55,12 +55,20 @@ Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scr
 
 ## Configuration
 
-Configuration is primarily managed through ``AntiCheatsBP/scripts/userSettings.js`` for common adjustments. More advanced settings are split into specialized files:
+All addon configuration is centralized in the **``AntiCheatsBP/scripts/config.js``** file. This single file is designed to be the primary place for server administrators to customize all aspects of the AntiCheat system. Settings previously found in `userSettings.js` have been merged into `config.js`.
 
-*   **``AntiCheatsBP/scripts/userSettings.js``**: This is the main file for server administrators to customize common settings like command prefix, default language, feature toggles (e.g., welcomer, TPA, AntiGrief features), and basic thresholds. Refer to the comments within this file for details on each option.
-*   **``AntiCheatsBP/scripts/core/actionProfiles.js``**: Defines how the AntiCheat system reacts to specific cheat detections (e.g., flagging, admin notifications). Intended for advanced users or developers.
-*   **``AntiCheatsBP/scripts/core/automodConfig.js``**: Contains detailed rules, messages, and per-check toggles for the Automated Moderation (AutoMod) system. See the 'Automated Moderation (AutoMod)' section for more details.
-*   **``AntiCheatsBP/scripts/config.js``**: This file loads and manages all configuration components. It also contains more advanced or internal system settings. Generally, users should prefer editing `userSettings.js` for common needs.
+Within `config.js`, you will find various sections to control:
+*   Common settings like command prefix, default language, and feature toggles (e.g., welcomer, TPA, AntiGrief features).
+*   Detection thresholds for various cheats.
+*   Automated Moderation (AutoMod) behavior, including its global toggle.
+*   Action profiles that define how the system reacts to cheat detections.
+*   And other advanced system settings.
+
+While `config.js` is the main configuration file, it may internally reference or load settings from other specialized modules for organization, such as:
+*   **``AntiCheatsBP/scripts/core/actionProfiles.js``**: Defines detailed action sequences (e.g., flagging, notifications, punishments) triggered by cheat detections. These profiles are selected and configured within `config.js`.
+*   **``AntiCheatsBP/scripts/core/automodConfig.js``**: Contains specific rules, messages, and per-check toggles for the Automated Moderation (AutoMod) system. Its overall behavior and enablement are managed via `config.js`.
+
+Refer to the extensive comments within ``config.js`` for detailed explanations of each available option.
 
 ## Versioning
 
@@ -111,14 +119,19 @@ The AutoMod system is designed to automatically take action against players who 
 When a player triggers a specific cheat detection (e.g., for flying, speeding), they accumulate flags for that particular type of cheat (`checkType`). The AutoMod system monitors these flag counts. If a player's flag count for a `checkType` reaches a predefined threshold, AutoMod will execute a configured sequence of actions.
 
 ### Configuration
-AutoMod is configured through ``AntiCheatsBP/scripts/userSettings.js`` (for the global ``enableAutoMod`` toggle) and primarily through ``AntiCheatsBP/scripts/core/automodConfig.js`` (for specific rules, messages, and per-check type toggles).
+AutoMod is configured through **``AntiCheatsBP/scripts/config.js``** (for the global ``enableAutoMod`` toggle and overall settings) and primarily through **``AntiCheatsBP/scripts/core/automodConfig.js``** (for specific rules, messages, and per-check type toggles, which are then utilized by the main settings in `config.js`).
 
 #### 1. Global AutoMod Toggle
-- **File:** `AntiCheatsBP/scripts/userSettings.js`
-- **Setting:** `enableAutoMod`
+- **File:** `AntiCheatsBP/scripts/config.js`
+- **Setting:** Look for `enableAutoMod` (or a similarly named variable) within this file.
 - **Usage:** Set to `true` to enable the entire AutoMod system, or `false` to disable it globally.
   ```javascript
-  export const enableAutoMod = true; // or false
+  // Example structure within config.js
+  export const someConfigObject = {
+      // ... other settings
+      enableAutoMod: true, // or false
+      // ... other settings
+  };
   ```
 
 #### 2. Per-CheckType AutoMod Toggles

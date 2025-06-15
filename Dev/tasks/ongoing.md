@@ -2,27 +2,6 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: "Code Cleanup - Batch 2" (In Progress)
-
-The following files are pending analysis and cleanup as part of this batch:
-
-*   **Core Files:**
-    *   `AntiCheatsBP/scripts/core/logManager.js` (Analysis was next)
-    *   `AntiCheatsBP/scripts/core/reportManager.js`
-    *   `AntiCheatsBP/scripts/core/tpaManager.js`
-*   **Checks Barrel File:**
-    *   `AntiCheatsBP/scripts/checks/index.js`
-*   **Specific Check Files:**
-    *   `AntiCheatsBP/scripts/checks/chat/capsAbuseCheck.js`
-    *   `AntiCheatsBP/scripts/checks/movement/flyCheck.js`
-*   **Commands Barrel File:**
-    *   `AntiCheatsBP/scripts/commands/commandRegistry.js`
-*   **Specific Command Files:**
-    *   `AntiCheatsBP/scripts/commands/kick.js`
-    *   `AntiCheatsBP/scripts/commands/version.js`
-
-**Note:** Upon completion of Batch 2, all changes from this batch should be committed.
-
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
 These are higher-level features and areas for future development:
@@ -46,7 +25,6 @@ These are higher-level features and areas for future development:
 
 ## III. Recent User Feedback & Context for Future Work
 
-*   **Documentation:** Update `README.md` to accurately reflect that `config.js` is now the single central configuration file (following the merge of `userSettings.js`).
 *   **UI Command Design:** For future UI-based commands (e.g., a potential `!admin` command or enhancements to `!panel`), design them to be accessible by various permission levels, showing different information/buttons contextually (similar to the recent `!panel` refactor for player vs. admin views).
 *   **Development Workflow:** Continue applying cleanup and refactoring "in batches" where appropriate.
 

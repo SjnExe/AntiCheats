@@ -1,6 +1,29 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Code Cleanup - Batch 2:**
+    *   **Summary:** Completed the second batch of code cleanup and refactoring tasks, focusing on improving code clarity, consistency, JSDoc documentation, and minor logical refinements across various modules.
+    *   **Details:** Reviewed and applied cleanups to the following files:
+        *   `AntiCheatsBP/scripts/core/logManager.js`
+        *   `AntiCheatsBP/scripts/core/reportManager.js`
+        *   `AntiCheatsBP/scripts/core/tpaManager.js`
+        *   `AntiCheatsBP/scripts/checks/index.js`
+        *   `AntiCheatsBP/scripts/checks/chat/capsAbuseCheck.js`
+        *   `AntiCheatsBP/scripts/checks/movement/flyCheck.js`
+        *   `AntiCheatsBP/scripts/commands/commandRegistry.js`
+        *   `AntiCheatsBP/scripts/commands/kick.js`
+        *   `AntiCheatsBP/scripts/commands/version.js`
+    *   **Common Changes:** Included removal of unused variables/imports, correction/enhancement of comments and JSDoc, consistent formatting, optimization of logic where applicable (e.g., parameter handling, default values), and ensuring adherence to project coding standards.
+    *   **Files Affected:** Listed above.
+
+*   **Documentation: `README.md` Update for `config.js` Centralization:**
+    *   **Summary:** Updated the main `README.md` file to accurately reflect that `config.js` is now the single, central configuration file for the addon.
+    *   **Details:**
+        *   Modified the "Configuration" section to remove references to `userSettings.js` and clearly state that all settings are managed within `AntiCheatsBP/scripts/config.js`.
+        *   Updated the "Automated Moderation (AutoMod)" configuration subsection to point to `config.js` for the global `enableAutoMod` toggle.
+        *   Ensured overall consistency in the README regarding `config.js` being the primary configuration point.
+    *   **Files Affected:** `README.md`.
+
 *   **Admin Panel UI Enhancement: Added Server Tick & World Time to System Info:**
     *   **Summary:** Enhanced the Admin Panel's "System Info" section to provide more real-time server state data.
     *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to include the current server tick (`mc.system.currentTick`) and world time of day (`mc.world.getTime()`) in the information display. Added new localization keys ("ui.systemInfo.label.currentTick", "ui.systemInfo.label.worldTime") to `AntiCheatsBP/scripts/core/i18n.js` for the labels of these new data points.
