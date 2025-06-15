@@ -39,7 +39,7 @@ export const automodConfig = {
      * Example: "fly_hover": [ { flagThreshold: 5, actionType: "WARN", ... }, { flagThreshold: 10, actionType: "KICK", ... } ]
      */
     automodRules: {
-        "example_fly_hover": [
+        "movement_hover_fly": [
             { flagThreshold: 10, actionType: "WARN", parameters: { reasonKey: "automod.fly.hover.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "KICK", parameters: { reasonKey: "automod.fly.hover.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fly.hover.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
@@ -296,6 +296,12 @@ export const automodConfig = {
             { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.chat.repeatspam.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 5, actionType: "MUTE", parameters: { reasonKey: "automod.chat.repeatspam.mute1", duration: "10m" }, resetFlagsAfterAction: true },
             { flagThreshold: 8, actionType: "MUTE", parameters: { reasonKey: "automod.chat.repeatspam.mute2", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_nether_roof": [
+            { flagThreshold: 1, actionType: "WARN", parameters: { reasonKey: "automod.netherroof.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 1, actionType: "TELEPORT_SAFE", parameters: { reasonKey: "automod.netherroof.teleport1", coordinates: { y: 120 } }, resetFlagsAfterAction: false },
+            { flagThreshold: 3, actionType: "KICK", parameters: { reasonKey: "automod.netherroof.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 5, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.netherroof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -461,7 +467,11 @@ export const automodConfig = {
         "automod.chat.maxlength.mute1": "AutoMod: Muted for 5 minutes for sending overly long messages.",
         "automod.chat.repeatspam.warn1": "AutoMod: Please do not repeat messages.",
         "automod.chat.repeatspam.mute1": "AutoMod: Muted for 10 minutes for repeating messages.",
-        "automod.chat.repeatspam.mute2": "AutoMod: Muted for 30 minutes for persistent message repetition."
+        "automod.chat.repeatspam.mute2": "AutoMod: Muted for 30 minutes for persistent message repetition.",
+        "automod.netherroof.warn1": "AutoMod: Detected on the Nether roof. This area is restricted.",
+        "automod.netherroof.teleport1": "AutoMod: Teleporting you down from the Nether roof.",
+        "automod.netherroof.kick1": "AutoMod: Kicked for repeatedly accessing the Nether roof.",
+        "automod.netherroof.tempban1": "AutoMod: Temporarily banned for persistent Nether roof violations."
         // Add more messages here
     },
 
@@ -473,7 +483,7 @@ export const automodConfig = {
      * depending on `automodManager.js` logic (current logic implies it would skip if not found or if no rules).
      */
     automodPerCheckTypeToggles: {
-        "example_fly_hover": true, // Renamed from fly_hover
+        "movement_hover_fly": true,
         "example_speed_ground": true, // Renamed from speed_ground
         "combat_cps_high": true,
         "movement_nofall": true,
@@ -521,7 +531,8 @@ export const automodConfig = {
         "chat_symbol_spam_detected": true,
         "chat_newline": true,
         "chat_maxlength": true,
-        "chat_repeat_spam": true
+        "chat_repeat_spam": true,
+        "movement_nether_roof": true
         // Add more checkTypes here
     }
 };

@@ -8,6 +8,10 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   Identified available check types from `config.js` and check modules.
 *   Determined checks lacking AutoMod rules, noting those needing key verification (e.g., 'example_' prefixes).
 *   Implemented initial AutoMod rules for 7 chat-related checks (AntiAdvertising, Caps, CharRepeat, SymbolSpam, Newline, MaxMessageLength, SpamRepeat).
+*   Verified/Corrected `checkType` key for `fly_hover` to `movement_hover_fly` in `automodConfig.js`.
+*   Noted `chat_newline` and `chat_maxlength` rules require `eventHandlers.js` changes to be functional.
+*   Noted `chat_repeat_spam` `checkType` needs further verification of the `checks.checkSpam` implementation and `eventHandlers.js` config key usage.
+*   Implemented AutoMod rules (Warn, Teleport, Kick, TempBan) for `NetherRoofCheck` (checkType: `movement_nether_roof`).
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
@@ -26,7 +30,7 @@ These are higher-level features and areas for future development:
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
 *   **AutoMod System:**
-    *   Continue implementing and refining AutoMod rules for remaining uncovered checks (e.g., NetherRoof) and review/verify existing 'example_' prefixed rules.
+    *   Continue implementing and refining AutoMod rules: review/verify `example_speed_ground` & `example_reach_attack` keys; expand Fly/Speed rules if needed; address PistonLagCheck.
 
 ## III. Recent User Feedback & Context for Future Work
 
