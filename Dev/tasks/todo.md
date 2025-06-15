@@ -28,6 +28,9 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
 
+## AutoMod System
+*   Activate the AutoMod system (`enableAutoMod` is currently `false`).
+
 ## AutoMod Enhancements
 *(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*
 

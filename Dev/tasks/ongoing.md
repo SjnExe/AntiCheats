@@ -20,7 +20,6 @@ These are higher-level features and areas for future development:
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
 *   **AutoMod System:**
-    *   Activate the AutoMod system (`enableAutoMod` is currently `false`).
     *   Implement and refine AutoMod rules for existing and new check types.
 
 ## III. Recent User Feedback & Context for Future Work
