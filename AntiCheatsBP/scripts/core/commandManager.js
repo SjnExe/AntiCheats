@@ -42,7 +42,6 @@ if (commandModules && Array.isArray(commandModules)) {
             commandDefinitionMap.set(cmdName, cmdModule.definition);
             commandExecutionMap.set(cmdName, cmdModule.execute);
         } else {
-            // console.warn(`[CommandManager] A module in commandRegistry is missing a valid definition, name, or execute function.`);
         }
     }
     console.log(`[CommandManager] Dynamically loaded ${commandDefinitionMap.size} command definitions.`);
@@ -63,10 +62,10 @@ if (commandModules && Array.isArray(commandModules)) {
 export async function handleChatCommand(eventData, playerDataManager, uiManager, config, playerUtils) {
     const { sender: player, message } = eventData;
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
-    let commandNameInput = args.shift()?.toLowerCase(); // Normalize to lowercase immediately
+    let commandNameInput = args.shift()?.toLowerCase();
 
     const senderPDataForLog = playerDataManager.getPlayerData(player.id);
-    if (playerUtils.debugLog) { // Check if debugLog itself exists
+    if (playerUtils.debugLog) {
         playerUtils.debugLog(`Player ${player.nameTag} issued command attempt: "${commandNameInput || ''}" with args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? player.nameTag : null);
     }
 
@@ -76,7 +75,6 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     }
 
-    // Resolve alias if it exists
     const aliasTarget = config.commandAliases?.[commandNameInput];
     const finalCommandName = aliasTarget ? aliasTarget.toLowerCase() : commandNameInput;
 
@@ -93,23 +91,19 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     }
 
-    // --- NEW LOGIC TO BE INSERTED START ---
-    let isEffectivelyEnabled = commandDef.enabled; // Default from command's own definition file
-    // 'config' here is the 'config' parameter of handleChatCommand, which is editableConfigValues.
-    // It gives access to config.commandSettings (the object we added to config.js).
+    let isEffectivelyEnabled = commandDef.enabled;
     if (config.commandSettings && typeof config.commandSettings[finalCommandName]?.enabled === 'boolean') {
         isEffectivelyEnabled = config.commandSettings[finalCommandName].enabled;
     }
 
     if (!isEffectivelyEnabled) {
-        player.sendMessage(`§cUnknown command: ${config.prefix}${finalCommandName}§r. Type ${config.prefix}help for assistance.`); // Use the same "Unknown command" message
+        player.sendMessage(`§cUnknown command: ${config.prefix}${finalCommandName}§r. Type ${config.prefix}help for assistance.`);
         eventData.cancel = true;
-        if (playerUtils?.debugLog) { // Check playerUtils and debugLog exist
+        if (playerUtils?.debugLog) {
             playerUtils.debugLog(`Command '${finalCommandName}' is disabled. Access denied for ${player.nameTag}.`, player.nameTag);
         }
-        return; // Stop processing for disabled command
+        return;
     }
-    // --- NEW LOGIC TO BE INSERTED END ---
 
     const userPermissionLevel = getPlayerPermissionLevel(player);
     if (userPermissionLevel > commandDef.permissionLevel) {
@@ -121,7 +115,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     }
 
-    eventData.cancel = true; // Command is being handled, cancel original chat message
+    eventData.cancel = true;
 
     // Log admin command usage
     if (userPermissionLevel <= permissionLevels.admin) {
@@ -137,23 +131,21 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     }
 
     const dependencies = {
-        mc, // Minecraft server module
+        mc,
         playerDataManager,
         uiManager,
         config, // This is editableConfigValues
         configModule: configModule, // Add the full config module
         playerUtils,
-        logManager, // Pass the full logManager object
-        // getPlayerPermissionLevel is already available in playerUtils
-        permissionLevels, // permissionLevels enum/object
-        // findPlayer and parseDuration are part of playerUtils
-        ActionFormData, // UI Class
-        MessageFormData, // UI Class
-        ModalFormData, // UI Class
+        logManager,
+        permissionLevels,
+        ActionFormData,
+        MessageFormData,
+        ModalFormData,
         reportManager,
-        allCommands: Array.from(commandDefinitionMap.values()), // Provide array of definitions for help commands etc.
-        commandDefinitionMap, // Provide the map for more direct lookups if needed by commands
-        ItemComponentTypes // Provide ItemComponentTypes if commands might need it
+        allCommands: Array.from(commandDefinitionMap.values()),
+        commandDefinitionMap,
+        ItemComponentTypes
     };
 
     try {
