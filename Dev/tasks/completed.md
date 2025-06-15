@@ -1,6 +1,15 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **World Border Resize - Pause/Resume Functionality:**
+    *   **Summary:** Implemented and documented the ability to pause and resume gradual world border resizing.
+    *   **Details:**
+        *   Designed the core logic, including new border settings fields (`resizePaused`, `pauseStartTimeMs`, `totalPausedTimeMs` - implemented as `resizePausedTimeMs` and `resizeLastPauseStartTimeMs` in existing command code).
+        *   Verified that `!worldborder pause` (aliased as `resizepause`) and `!worldborder resume` (aliased as `resizeresume`) commands in `worldborder.js` already existed and largely aligned with the design for setting/clearing pause state and accumulating paused time.
+        *   Updated the `!worldborder get` command in `worldborder.js` to accurately calculate and display resize progress, remaining time, and current size when a resize is paused or has been paused.
+        *   Documented the necessary logic changes for the `main.js` tick loop (developer task) to correctly handle the `isPaused` state and use `totalPausedTimeMs` for accurate resize progression and completion.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/worldborder.js`, `Dev/tasks/ongoing.md`.
+
 *   **AutoMod Rule Refinement and Implementation - Batch 3:**
     *   **Summary:** Completed a significant batch of AutoMod rule implementations, verifications, and prerequisite fixes.
     *   **Details:**

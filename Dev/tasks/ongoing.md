@@ -4,11 +4,7 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 ## I. Current Active Plan: World Border Resize - Pause/Resume Functionality
 
-*   Designed logic for pausing/resuming border resizes, including new settings fields (`resizePaused`, `pauseStartTimeMs`, `totalPausedTimeMs`).
-*   Verified `!worldborder pause` command (`resizepause`) already exists and correctly sets pause state and `resizeLastPauseStartTimeMs`.
-*   Verified `!worldborder resume` command (`resizeresume`) already exists and correctly updates `resizePausedTimeMs` (total paused time) and clears pause state.
-*   Documented required logic changes for `main.js` tick loop to handle paused resizes by adjusting elapsed time calculations and freezing size updates when paused.
-*   Updated `!worldborder get` command to accurately display resize progress and remaining time when a resize is paused, using adjusted time calculations.
+*   World Border Pause/Resume functionality (command updates, main.js logic documentation) completed. Details moved to `completed.md`.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
