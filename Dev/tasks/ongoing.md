@@ -4,13 +4,7 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 (Core Files)
 
-*   - Corrected `DEFAULT_LANGUAGE` to `defaultLanguage` in `AntiCheatsBP/scripts/core/i18n.js` and updated its usages.
-*   - Refactored `actionType` for logging in `AntiCheatsBP/scripts/core/eventHandlers.js` to `camelCase` (e.g., 'player_leave' to 'playerLeave').
-*   - Refactored `actionType` for logging in `AntiCheatsBP/scripts/core/uiManager.js` to `camelCase` (e.g., 'config_update' to 'configUpdate').
-*   - Updated JSDoc example for `ActionLogEntry.actionType` in `AntiCheatsBP/scripts/core/logManager.js` to reflect `camelCase` log types.
-*   - Refactored logging in `AntiCheatsBP/scripts/core/reportManager.js` to use `playerUtils.debugLog` instead of `console.*` calls.
-*   - Verified `AntiCheatsBP/scripts/core/tpaManager.js` already uses `playerUtils.debugLog` for its logging.
-*   - Reviewed `actionManager.js`, `automodManager.js`, `commandManager.js`, `rankManager.js` and found them highly compliant with no new changes needed for general JS style (noting `automodManager.js`'s dependency on developer action for its internal `actionType` switch).
+*   - Coding style review and corrections for core files completed (including `i18n.js` constant rename, `camelCase` for log `actionType`s in `eventHandlers.js` & `uiManager.js`, `logManager.js` JSDoc update, `reportManager.js` logging refactor). Details moved to `completed.md`.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 

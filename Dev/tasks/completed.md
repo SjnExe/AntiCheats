@@ -1,6 +1,19 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+
+### Coding Style Review & Corrections - Batch 1 (Core Files)
+- **Summary:** Reviewed core script files for adherence to `Dev/CodingStyle.md` and applied necessary corrections.
+- **Details:**
+    - Corrected `DEFAULT_LANGUAGE` to `defaultLanguage` in `AntiCheatsBP/scripts/core/i18n.js` and updated its usages.
+    - Refactored `actionType` strings in `logManager.addLog()` calls to `camelCase` in `AntiCheatsBP/scripts/core/eventHandlers.js` (e.g., 'player_leave' to 'playerLeave').
+    - Refactored `actionType` strings in `logManager.addLog()` calls to `camelCase` in `AntiCheatsBP/scripts/core/uiManager.js` (e.g., 'config_update' to 'configUpdate').
+    - Updated JSDoc example for `ActionLogEntry.actionType` in `AntiCheatsBP/scripts/core/logManager.js` to reflect `camelCase` log types.
+    - Refactored logging in `AntiCheatsBP/scripts/core/reportManager.js` to use `playerUtils.debugLog` instead of `console.*` calls.
+    - Verified `AntiCheatsBP/scripts/core/tpaManager.js` already uses `playerUtils.debugLog`.
+    - Reviewed `actionManager.js`, `automodManager.js` (noting its dev dependency for `actionType` switch update), `commandManager.js`, and `rankManager.js`; found them highly compliant with no new style changes needed in this batch.
+- **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/core/uiManager.js`, `AntiCheatsBP/scripts/core/logManager.js`, `AntiCheatsBP/scripts/core/reportManager.js`, `Dev/tasks/ongoing.md`.
+
 *   **Refactor `actionType` Strings to `camelCase`:**
     *   **Summary:** Refactored `actionType` string literals to use `camelCase` across relevant configuration files and documentation for improved coding style consistency.
     *   **Details:**
