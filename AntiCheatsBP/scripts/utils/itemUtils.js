@@ -225,7 +225,7 @@ export function getOptimalToolForBlock(player, blockPermutation) {
     let maxPower = 0;
     let bestToolStack = undefined;
 
-    for (let i = 0; i < 9; i++) { // Iterate through hotbar slots 0-8
+    for (let i = 0; i < 9; i++) {
         const itemStack = inventory.container.getItem(i);
         const currentPower = calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack);
 

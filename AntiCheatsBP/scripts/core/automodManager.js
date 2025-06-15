@@ -4,7 +4,7 @@
  * @version 1.0.1
  */
 
-import * as mc from '@minecraft/server';
+// import * as mc from '@minecraft/server'; // REMOVED - Unused
 import { getString } from './i18n.js';
 
 /**
@@ -13,7 +13,7 @@ import { getString } from './i18n.js';
  * @returns {string} A human-readable duration string. Returns "Permanent" if ms is Infinity.
  */
 function formatDuration(ms) {
-    if (ms === Infinity) return getString("common.value.permanent"); // Localized
+    if (ms === Infinity) return getString("common.value.permanent");
     if (ms < 1000) return \`\${ms}ms\`;
 
     let seconds = Math.floor(ms / 1000);
@@ -39,7 +39,6 @@ function formatDuration(ms) {
  */
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
     const { playerUtils, logManager, config, playerDataManager, commandModules } = dependencies;
-    // automodConfig is now part of dependencies.config
     const currentAutomodConfig = dependencies.config.automodConfig;
 
     playerUtils.debugLog(\`AutomodManager: Dispatching action '\${actionType}' for \${player.nameTag} due to \${checkType}. Params: \${JSON.stringify(parameters)}\`, player.nameTag);

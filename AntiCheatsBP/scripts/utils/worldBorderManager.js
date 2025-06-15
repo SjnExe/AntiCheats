@@ -83,7 +83,6 @@ export function getBorderSettings(dimensionId) {
     } catch (error) {
         // This can happen if JSON.parse fails or if the property is not a string.
         // It's also possible for getDynamicProperty to throw if the key is invalid, though unlikely with prefixing.
-        // console.warn(`[WorldBorderManager] Error parsing border settings for ${dimensionId}: ${error}`);
     }
     return null;
 }
@@ -190,7 +189,6 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
 
     try {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));
-        // console.log(`[WorldBorderManager] Saved border settings for ${dimensionId}.`);
         return true;
     } catch (error) {
         console.error(`[WorldBorderManager] Error saving border settings for ${dimensionId}: ${error}`);
@@ -212,7 +210,6 @@ export function clearBorderSettings(dimensionId) {
     const propertyKey = WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX + dimensionId.replace("minecraft:", "");
     try {
         mc.world.setDynamicProperty(propertyKey, undefined); // Setting to undefined removes the property
-        // console.log(\`[WorldBorderManager] Cleared border settings for \${dimensionId}.\`);
         return true;
     } catch (error) {
         console.error(\`[WorldBorderManager] Error clearing border settings for \${dimensionId}: \${error}\`);
