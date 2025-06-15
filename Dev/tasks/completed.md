@@ -1,6 +1,17 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **AutoMod Rule Refinement and Implementation - Batch 3:**
+    *   **Summary:** Completed a significant batch of AutoMod rule implementations, verifications, and prerequisite fixes.
+    *   **Details:**
+        *   Verified and corrected `checkType` key for Fly check's hover detection to `movement_hover_fly` in `automodConfig.js`.
+        *   Verified that `example_speed_ground` (for SpeedCheck) and `example_reach_attack` (for ReachCheck) are the `checkType` keys currently hardcoded in their respective check scripts. Noted that these scripts ideally should be refactored for configurable profile names.
+        *   Implemented new AutoMod rules (including messages and toggles) for additional `flyCheck.js` types: `movement_high_y_velocity` and `movement_sustained_fly`.
+        *   Modified `eventHandlers.js` in `handleBeforeChatSend` to add calls to `playerDataManager.addFlag()` for `chat_newline` and `chat_maxlength` violations, enabling their AutoMod rules (dependent on `config.flagOnNewline` and `config.flagOnMaxMessageLength`).
+        *   Investigated `chat_repeat_spam` rule: Confirmed `eventHandlers.js` likely corrected to use `config.spamRepeatCheckEnabled`. However, the exact `checkType` string used by the underlying `checks.checkSpam` function for repeat violations remains unconfirmed and requires developer review to ensure the `automodConfig.js` key `"chat_repeat_spam"` is accurate.
+        *   Implemented a `FLAG_ONLY` AutoMod rule, message, and toggle for `PistonLagCheck` (using `checkType: "world_antigrief_piston_lag"`).
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/automodConfig.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `Dev/tasks/ongoing.md`.
+
 *   **Implemented 'Helpful Links' in Player Panel:**
     *   **Summary:** Added a 'Helpful Links' section to the normal user view of the `!panel` command.
     *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to display links configured in `config.js` (via `dependencies.config.helpLinks`). The UI uses an `ActionFormData` for link selection. When a player clicks a link, its title and URL are displayed in chat. The system gracefully handles cases where no links are configured by showing an informative message. New localization strings were added to `AntiCheatsBP/scripts/core/languages/en_US.js` for the UI elements. Task file documentation was also updated during development to reflect progress.

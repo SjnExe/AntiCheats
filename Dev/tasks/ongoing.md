@@ -4,19 +4,7 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 ## I. Current Active Plan: AutoMod Rule Refinement and Implementation
 
-*   Investigated current AutoMod configuration in `automodConfig.js`.
-*   Identified available check types from `config.js` and check modules.
-*   Determined checks lacking AutoMod rules, noting those needing key verification (e.g., 'example_' prefixes).
-*   Implemented initial AutoMod rules for 7 chat-related checks (AntiAdvertising, Caps, CharRepeat, SymbolSpam, Newline, MaxMessageLength, SpamRepeat).
-*   Verified/Corrected `checkType` key for `fly_hover` to `movement_hover_fly` in `automodConfig.js`.
-*   Analyzed `flyCheck.js`: Identified `movement_high_y_velocity` and `movement_sustained_fly` as additional `checkType`s.
-*   Implemented AutoMod rules for `movement_high_y_velocity` and `movement_sustained_fly`.
-*   Analyzed `speedCheck.js`: Confirmed `example_speed_ground` is the current `checkType`; no other types implemented in script.
-*   Analyzed `reachCheck.js`: Confirmed `example_reach_attack` is the current `checkType`.
-*   Modified `eventHandlers.js` to add flagging for `chat_newline` and `chat_maxlength` (dependent on config flags `flagOnNewline`, `flagOnMaxMessageLength`).
-*   Investigated `chat_repeat_spam`: Believed `eventHandlers.js` config key was corrected; actual `checkType` from `checks.checkSpam` implementation still needs developer verification.
-*   Implemented AutoMod rules (Warn, Teleport, Kick, TempBan) for `NetherRoofCheck` (checkType: `movement_nether_roof`).
-*   Implemented `FLAG_ONLY` AutoMod rule for `PistonLagCheck` (checkType: `world_antigrief_piston_lag`).
+*   Batch 3 of AutoMod rules (including Fly type expansions, PistonLag rule, chat flag fixes, and `checkType` verifications) has been completed. Details moved to `completed.md`.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
@@ -35,7 +23,20 @@ These are higher-level features and areas for future development:
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
 *   **AutoMod System:**
-    *   Continue AutoMod refinement: Verify/Update `example_speed_ground` & `example_reach_attack` keys (and refactor checks if desired). Clarify/Verify `chat_repeat_spam` `checkType` and `checks.checkSpam` implementation. Review thresholds and actions for all rules. Implement rules for any other minor/uncovered checks if deemed necessary.
+    - **Developer Action Required for `chat_repeat_spam`:**
+        - Identify the module/function for `checks.checkSpam` (referenced in `eventHandlers.js`).
+        - Determine the exact `checkType` string this function uses when flagging for *repeat message spam*.
+        - Verify `eventHandlers.js` correctly uses `config.spamRepeatCheckEnabled` (or another appropriate key if `checks.checkSpam` is a general spam handler) for the condition to call `checks.checkSpam`.
+        - Update the `automodConfig.js` key (currently `"chat_repeat_spam"`) to the actual `checkType` if it differs.
+    - **Developer Decision Required for 'example_' `checkType`s:**
+        - For `speedCheck.js` (currently using `"example_speed_ground"`) and `reachCheck.js` (currently using `"example_reach_attack"`):
+            - Decide whether to refactor these check scripts to use configurable action profile names from `config.js` (e.g., `config.groundSpeedActionProfileName || "movement_speed_ground"`).
+            - If refactored, update the corresponding `checkType` keys in `automodConfig.js` (`automodRules` and `automodPerCheckTypeToggles`).
+            - If not refactored, the current keys in `automodConfig.js` are technically correct based on current script usage, but remain non-standard.
+    - **Post-Developer Review & General Refinement:**
+        - Review all AutoMod rule thresholds and actions for balance and effectiveness.
+        - Implement AutoMod rules for any other minor or uncovered checks if deemed necessary.
+        - Consider if `flyCheck.js` and `speedCheck.js` need more granular AutoMod rules for different sub-types of violations beyond what's currently implemented (e.g., if they generate more specific `checkType`s that aren't yet covered).
 
 ## III. Recent User Feedback & Context for Future Work
 
