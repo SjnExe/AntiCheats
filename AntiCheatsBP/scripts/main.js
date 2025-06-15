@@ -51,7 +51,7 @@ function mapRange(value, inMin, inMax, outMin, outMax) {
     return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
-import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
+// import { permissionLevels } from './core/rankManager.js'; // REMOVED - Unused in main.js
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 
@@ -348,8 +348,8 @@ mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
         config: configModule.editableConfigValues,
         configModule: configModule,
         playerUtils,
-        playerDataManager, // Though not directly used by current handler
-        logManager, // Though not directly used
+        playerDataManager,
+        // logManager, // REMOVED - Not directly used by handlePlayerDimensionChangeAfterEvent
         currentTick
     };
     eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, dependencies);
@@ -460,21 +460,13 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
             if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
                 if (blockBelowFeet && blockBelowFeet.isSolid) {
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //     playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
                     return checkY;
-                } else if (blockFeet.isAir && blockHead.isAir) { // If below is not solid, but current spot is air (e.g. on a torch)
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //     playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
+                } else if (blockFeet.isAir && blockHead.isAir) {
                     return checkY;
                 }
             }
         } catch (e) {
-            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (down) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
-            // }
+            // Error during block check, continue
         }
     }
 
@@ -492,27 +484,16 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
              if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
                 if (blockBelowFeet && blockBelowFeet.isSolid) {
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //    playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (up, solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
                     return checkY;
-                } else if (blockFeet.isAir && blockHead.isAir) { // Air gap, even if not solid below, is better than inside unknown block
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //    playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (up, below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
+                } else if (blockFeet.isAir && blockHead.isAir) {
                     return checkY;
                 }
             }
         } catch(e) {
-            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (up) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
-            // }
+            // Error during block check, continue
         }
     }
 
-    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-    //     playerUtilsForDebug.debugLog(`SafeY: No ideal safe Y found for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}). Defaulting to ${Math.floor(initialY)}`, playerForDebug.nameTag);
-    // }
     return Math.floor(initialY);
 }
 
@@ -570,59 +551,6 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
 
 
 let currentTick = 0;
-
-// Helper function for finding a safe Y level for teleportation
-function findSafeY(player, dimension, x, z, startY, playerUtilsInstance) {
-    const maxSearchDown = 3;
-    const maxSearchUp = 5;
-    const worldMinY = dimension.heightRange.min;
-    const worldMaxY = dimension.heightRange.max;
-
-    let currentY = Math.max(worldMinY, Math.min(Math.floor(startY), worldMaxY - 2));
-
-    // Search down
-    for (let i = 0; i <= maxSearchDown; i++) {
-        const checkY = currentY - i;
-        if (checkY < worldMinY) break;
-
-        try {
-            const blockBelow = dimension.getBlock({ x: x, y: checkY -1, z: z });
-            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
-            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
-
-            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
-                blockAtFeet && blockAtFeet.isAir &&
-                blockAtHead && blockAtHead.isAir) {
-                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} downwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
-                return checkY;
-            }
-        } catch (e) { /* getBlock can fail */ }
-    }
-
-    // Search up from original startY
-    currentY = Math.floor(startY); // Start search from original Y upwards
-    for (let i = 0; i <= maxSearchUp; i++) {
-        const checkY = currentY + i;
-        if (checkY > worldMaxY - 2) break;
-
-        try {
-            const blockBelow = dimension.getBlock({ x: x, y: checkY - 1, z: z });
-            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
-            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
-
-            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
-                blockAtFeet && blockAtFeet.isAir &&
-                blockAtHead && blockAtHead.isAir) {
-                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} upwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
-                return checkY;
-            }
-        } catch (e) { /* getBlock can fail */ }
-    }
-
-    if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: No safe Y found for (${x},${z}) near ${startY} for player ${player.nameTag}, using original Y.`, player.nameTag);
-    return Math.floor(startY);
-}
-
 
 /**
  * Main tick loop for the Anti-Cheat system.

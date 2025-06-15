@@ -9,8 +9,6 @@ import * as mc from '@minecraft/server';
 import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
 import { processAutoModActions } from './automodManager.js';
 import { getString } from './i18n.js';
-// import * as config from '../config.js'; // Dependencies will pass config.editableConfigValues
-// import * as automodConfig from '../automodConfig.js'; // This was incorrect
 
 const playerData = new Map();
 
@@ -21,7 +19,7 @@ const persistedPlayerDataKeys = [
     "attackEvents", "lastAttackTime", "blockBreakEvents",
     "consecutiveOffGroundTicks", "fallDistance",
     "consecutiveOnGroundSpeedingTicks", "muteInfo", "banInfo",
-    "lastCombatInteractionTime", "lastViolationDetailsMap", "automodState" // Added automodState and lastViolationDetailsMap
+    "lastCombatInteractionTime", "lastViolationDetailsMap", "automodState"
 ];
 
 /**
@@ -226,11 +224,11 @@ export function initializeDefaultPlayerData(player, currentTick) {
         muteInfo: null,
         banInfo: null,
         joinTime: 0,
-        lastGameMode: player.gameMode, // Initialize with current game mode
-        lastDimensionId: player.dimension.id, // Initialize with current dimension
+        lastGameMode: player.gameMode,
+        lastDimensionId: player.dimension.id,
         isDirtyForSave: false,
-        lastViolationDetailsMap: {}, // Initialize the new map
-        automodState: {} // Initialize automodState
+        lastViolationDetailsMap: {},
+        automodState: {}
     };
 }
 
@@ -425,7 +423,7 @@ export function updateTransientPlayerData(player, pData, currentTick) {
  * @param {string} reasonMessage - The reason for the flag, often shown to the player.
  * @param {string | object} [detailsForNotify=""] - Additional details for notifications or logs.
  *                                                 If an object with itemTypeId, it's stored in lastViolationDetailsMap.
- * @param {object | null} [dependencies=null] - Optional dependencies object, expected to contain config, automodConfig, playerUtils, logManager, etc.
+ * @param {import('../../types.js').Dependencies | null} [dependencies=null] - Optional dependencies object, expected to contain config, automodConfig, playerUtils, logManager, etc.
  * @returns {Promise<void>}
  */
 export async function addFlag(player, flagType, reasonMessage, detailsForNotify = "", dependencies = null) {
@@ -723,7 +721,7 @@ export async function saveDirtyPlayerData(player) {
  */
 export async function clearFlagsForCheckType(player, checkType, dependencies) {
     if (!player || !checkType) return;
-    const pData = getPlayerData(player.id); // Assuming getPlayerData is available
+    const pData = getPlayerData(player.id);
     if (!pData) return;
 
     let clearedCount = 0;
