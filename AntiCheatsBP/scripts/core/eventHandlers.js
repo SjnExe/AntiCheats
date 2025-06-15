@@ -780,9 +780,42 @@ export async function handleBeforeChatSend(eventData, dependencies) {
     }
 
     // Spam Check (delegated to AutoMod via actionManager profile)
-    if (!eventData.cancel && checks?.checkSpam && config.enableSpamCheck) {
-        await checks.checkSpam(player, originalMessage, pData, dependencies);
-        if (eventData.cancel) return; // Spam check might cancel
+    // Note: This was 'enableSpamCheck', assuming it refers to the repeat spam check.
+    // The checkType used in automodConfig was 'chat_repeat_spam'.
+    // If 'checks.checkSpam' is the correct function for repeat spam:
+    if (!eventData.cancel && checks?.checkSpam && config.spamRepeatCheckEnabled) { // Assuming config.spamRepeatCheckEnabled is the correct toggle
+        await checks.checkSpam(player, originalMessage, pData, dependencies); // This function would internally use "chat_repeat_spam" or similar checkType
+        // If checkSpam itself doesn't handle cancellation via action profile, and a specific cancel config exists:
+        // if (config.spamRepeatCancelMessage) eventData.cancel = true;
+        if (eventData.cancel) return;
+    }
+
+    // Newline Check (Adding flag logic here)
+    if (!eventData.cancel && config.enableNewlineCheck) {
+        if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
+            playerUtils.warnPlayer(player, getString("chat.error.newline")); // Assuming a generic warning key
+            if (config.flagOnNewline) {
+                playerDataManager.addFlag(player, "chat_newline", "Newline character detected in chat message.", { message: originalMessage }, dependencies);
+            }
+            if (config.cancelMessageOnNewline) {
+                eventData.cancel = true;
+            }
+            if (eventData.cancel) return;
+        }
+    }
+
+    // Max Message Length Check (Adding flag logic here)
+    if (!eventData.cancel && config.enableMaxMessageLengthCheck) {
+        if (originalMessage.length > config.maxMessageLength) {
+            playerUtils.warnPlayer(player, getString("chat.error.maxLength", { maxLength: config.maxMessageLength })); // Assuming a generic warning key
+            if (config.flagOnMaxMessageLength) {
+                playerDataManager.addFlag(player, "chat_maxlength", "Message exceeded maximum configured length.", { message: originalMessage, maxLength: config.maxMessageLength }, dependencies);
+            }
+            if (config.cancelOnMaxMessageLength) {
+                eventData.cancel = true;
+            }
+            if (eventData.cancel) return;
+        }
     }
 
     // Anti-Advertising Check

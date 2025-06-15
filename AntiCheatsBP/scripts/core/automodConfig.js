@@ -302,6 +302,19 @@ export const automodConfig = {
             { flagThreshold: 1, actionType: "TELEPORT_SAFE", parameters: { reasonKey: "automod.netherroof.teleport1", coordinates: { y: 120 } }, resetFlagsAfterAction: false },
             { flagThreshold: 3, actionType: "KICK", parameters: { reasonKey: "automod.netherroof.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 5, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.netherroof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
+        ],
+        "movement_high_y_velocity": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.fly.high_y_velocity.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 6, actionType: "KICK", parameters: { reasonKey: "automod.fly.high_y_velocity.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fly.high_y_velocity.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
+        ],
+        "movement_sustained_fly": [
+            { flagThreshold: 5, actionType: "WARN", parameters: { reasonKey: "automod.fly.sustained_fly.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 10, actionType: "KICK", parameters: { reasonKey: "automod.fly.sustained_fly.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 15, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.fly.sustained_fly.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "world_antigrief_piston_lag": [
+            { flagThreshold: 1, actionType: "FLAG_ONLY", parameters: { reasonKey: "automod.pistonlag.flag1" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -471,7 +484,14 @@ export const automodConfig = {
         "automod.netherroof.warn1": "AutoMod: Detected on the Nether roof. This area is restricted.",
         "automod.netherroof.teleport1": "AutoMod: Teleporting you down from the Nether roof.",
         "automod.netherroof.kick1": "AutoMod: Kicked for repeatedly accessing the Nether roof.",
-        "automod.netherroof.tempban1": "AutoMod: Temporarily banned for persistent Nether roof violations."
+        "automod.netherroof.tempban1": "AutoMod: Temporarily banned for persistent Nether roof violations.",
+        "automod.fly.high_y_velocity.warn1": "AutoMod: Excessive vertical acceleration detected.",
+        "automod.fly.high_y_velocity.kick1": "AutoMod: Kicked for excessive vertical acceleration.",
+        "automod.fly.high_y_velocity.tempban1": "AutoMod: Temporarily banned for excessive vertical acceleration.",
+        "automod.fly.sustained_fly.warn1": "AutoMod: Sustained flight detected. Please land.",
+        "automod.fly.sustained_fly.kick1": "AutoMod: Kicked for sustained flight.",
+        "automod.fly.sustained_fly.tempban1": "AutoMod: Temporarily banned for sustained flight.",
+        "automod.pistonlag.flag1": "AutoMod: Potential piston lag machine detected and logged."
         // Add more messages here
     },
 
@@ -532,7 +552,10 @@ export const automodConfig = {
         "chat_newline": true,
         "chat_maxlength": true,
         "chat_repeat_spam": true,
-        "movement_nether_roof": true
+        "movement_nether_roof": true,
+        "movement_high_y_velocity": true,
+        "movement_sustained_fly": true,
+        "world_antigrief_piston_lag": true
         // Add more checkTypes here
     }
 };
