@@ -2,6 +2,13 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
+## I. Current Active Plan: AutoMod Rule Refinement and Implementation
+
+*   Investigated current AutoMod configuration in `automodConfig.js`.
+*   Identified available check types from `config.js` and check modules.
+*   Determined checks lacking AutoMod rules, noting those needing key verification (e.g., 'example_' prefixes).
+*   Implemented initial AutoMod rules for 7 chat-related checks (AntiAdvertising, Caps, CharRepeat, SymbolSpam, Newline, MaxMessageLength, SpamRepeat).
+
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
 These are higher-level features and areas for future development:
@@ -19,7 +26,7 @@ These are higher-level features and areas for future development:
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
 *   **AutoMod System:**
-    *   Implement and refine AutoMod rules for existing and new check types.
+    *   Continue implementing and refining AutoMod rules for remaining uncovered checks (e.g., NetherRoof) and review/verify existing 'example_' prefixed rules.
 
 ## III. Recent User Feedback & Context for Future Work
 

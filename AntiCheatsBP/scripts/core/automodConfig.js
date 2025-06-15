@@ -262,6 +262,40 @@ export const automodConfig = {
             { flagThreshold: 6, actionType: "WARN", parameters: { reasonKey: "automod.selfhurt.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "KICK", parameters: { reasonKey: "automod.selfhurt.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.selfhurt.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_advertising_detected": [
+            { flagThreshold: 2, actionType: "WARN", parameters: { reasonKey: "automod.chat.advertising.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 4, actionType: "MUTE", parameters: { reasonKey: "automod.chat.advertising.mute1", duration: "10m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 6, actionType: "KICK", parameters: { reasonKey: "automod.chat.advertising.kick1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 8, actionType: "TEMP_BAN", parameters: { reasonKey: "automod.chat.advertising.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_caps_abuse_detected": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.chat.caps.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 6, actionType: "MUTE", parameters: { reasonKey: "automod.chat.caps.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chat.caps.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_char_repeat_detected": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.chat.charrepeat.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 6, actionType: "MUTE", parameters: { reasonKey: "automod.chat.charrepeat.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chat.charrepeat.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_symbol_spam_detected": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.chat.symbolspam.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 6, actionType: "MUTE", parameters: { reasonKey: "automod.chat.symbolspam.mute1", duration: "5m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 10, actionType: "MUTE", parameters: { reasonKey: "automod.chat.symbolspam.mute2", duration: "15m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_newline": [
+            { flagThreshold: 2, actionType: "WARN", parameters: { reasonKey: "automod.chat.newline.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 4, actionType: "MUTE", parameters: { reasonKey: "automod.chat.newline.mute1", duration: "5m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_maxlength": [
+            { flagThreshold: 2, actionType: "WARN", parameters: { reasonKey: "automod.chat.maxlength.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 4, actionType: "MUTE", parameters: { reasonKey: "automod.chat.maxlength.mute1", duration: "5m" }, resetFlagsAfterAction: true }
+        ],
+        "chat_repeat_spam": [
+            { flagThreshold: 3, actionType: "WARN", parameters: { reasonKey: "automod.chat.repeatspam.warn1" }, resetFlagsAfterAction: false },
+            { flagThreshold: 5, actionType: "MUTE", parameters: { reasonKey: "automod.chat.repeatspam.mute1", duration: "10m" }, resetFlagsAfterAction: true },
+            { flagThreshold: 8, actionType: "MUTE", parameters: { reasonKey: "automod.chat.repeatspam.mute2", duration: "30m" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
     },
@@ -407,7 +441,27 @@ export const automodConfig = {
         "automod.densityspam.tempban1": "AutoMod: Temporarily banned for excessive high-density block spamming.",
         "automod.selfhurt.warn1": "AutoMod: Suspicious self-inflicted damage detected.",
         "automod.selfhurt.kick1": "AutoMod: Kicked for repeated suspicious self-inflicted damage.",
-        "automod.selfhurt.tempban1": "AutoMod: Temporarily banned for excessive self-inflicted damage."
+        "automod.selfhurt.tempban1": "AutoMod: Temporarily banned for excessive self-inflicted damage.",
+        "automod.chat.advertising.warn1": "AutoMod: Advertising is not allowed. Please review server rules.",
+        "automod.chat.advertising.mute1": "AutoMod: Muted for 10 minutes for advertising.",
+        "automod.chat.advertising.kick1": "AutoMod: Kicked for persistent advertising.",
+        "automod.chat.advertising.tempban1": "AutoMod: Temporarily banned for excessive advertising.",
+        "automod.chat.caps.warn1": "AutoMod: Excessive capitalization detected. Please disable caps lock.",
+        "automod.chat.caps.mute1": "AutoMod: Muted for 5 minutes for excessive caps.",
+        "automod.chat.caps.mute2": "AutoMod: Muted for 15 minutes for persistent caps abuse.",
+        "automod.chat.charrepeat.warn1": "AutoMod: Excessive character repetition detected.",
+        "automod.chat.charrepeat.mute1": "AutoMod: Muted for 5 minutes for character repetition.",
+        "automod.chat.charrepeat.mute2": "AutoMod: Muted for 15 minutes for persistent character repetition.",
+        "automod.chat.symbolspam.warn1": "AutoMod: Excessive symbol usage detected.",
+        "automod.chat.symbolspam.mute1": "AutoMod: Muted for 5 minutes for symbol spam.",
+        "automod.chat.symbolspam.mute2": "AutoMod: Muted for 15 minutes for persistent symbol spam.",
+        "automod.chat.newline.warn1": "AutoMod: Newlines in chat are not allowed.",
+        "automod.chat.newline.mute1": "AutoMod: Muted for 5 minutes for using newlines in chat.",
+        "automod.chat.maxlength.warn1": "AutoMod: Message is too long.",
+        "automod.chat.maxlength.mute1": "AutoMod: Muted for 5 minutes for sending overly long messages.",
+        "automod.chat.repeatspam.warn1": "AutoMod: Please do not repeat messages.",
+        "automod.chat.repeatspam.mute1": "AutoMod: Muted for 10 minutes for repeating messages.",
+        "automod.chat.repeatspam.mute2": "AutoMod: Muted for 30 minutes for persistent message repetition."
         // Add more messages here
     },
 
@@ -460,7 +514,14 @@ export const automodConfig = {
         "world_antigrief_blockspam": true,
         "world_antigrief_entityspam": true,
         "world_antigrief_blockspam_density": true,
-        "player_self_hurt": true
+        "player_self_hurt": true,
+        "chat_advertising_detected": true,
+        "chat_caps_abuse_detected": true,
+        "chat_char_repeat_detected": true,
+        "chat_symbol_spam_detected": true,
+        "chat_newline": true,
+        "chat_maxlength": true,
+        "chat_repeat_spam": true
         // Add more checkTypes here
     }
 };
