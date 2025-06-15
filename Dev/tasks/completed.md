@@ -1,6 +1,16 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Refactor `actionType` Strings to `camelCase`:**
+    *   **Summary:** Refactored `actionType` string literals to use `camelCase` across relevant configuration files and documentation for improved coding style consistency.
+    *   **Details:**
+        *   Updated `Dev/CodingStyle.md` to specify `camelCase` for `actionType` string literals used in AutoMod rules and `log.actionType` in action profiles, providing examples like `tempBan` and `detectedFlyHover`.
+        *   Refactored all `actionType` values in `AntiCheatsBP/scripts/core/automodConfig.js` (within `automodRules`) to `camelCase` (e.g., 'WARN' to 'warn', 'TEMP_BAN' to 'tempBan').
+        *   Refactored all `log.actionType` values in `AntiCheatsBP/scripts/core/actionProfiles.js` (within `checkActionProfiles`) to `camelCase` (e.g., 'detected_fly_hover' to 'detectedFlyHover').
+        *   Updated `README.md` in the 'Automated Moderation (AutoMod)' section to reflect `camelCase` for `actionType` examples and the list of supported types.
+        *   Added a critical developer task to `Dev/tasks/ongoing.md` highlighting that `actionManager.js` MUST be updated by a developer to handle these new `camelCase` `actionType`s for AutoMod to function correctly.
+    *   **Files Affected:** `Dev/CodingStyle.md`, `AntiCheatsBP/scripts/core/automodConfig.js`, `AntiCheatsBP/scripts/core/actionProfiles.js`, `README.md`, `Dev/tasks/ongoing.md`.
+
 *   **Documentation Review and Update (README, Command Help):**
     *   **Summary:** Reviewed and updated `README.md` to reflect recent feature additions and changes. Command help messages were verified as current.
     *   **Details:**

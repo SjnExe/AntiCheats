@@ -4,11 +4,7 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 ## I. Current Active Plan: Refactor `actionType` Strings to `camelCase`
 
-*   Updated `Dev/CodingStyle.md` to specify `camelCase` for `actionType` string literals (used in AutoMod rules and action profile logs), with examples.
-*   Refactored all `actionType` values in `automodConfig.js` (within `automodRules`) to `camelCase` (e.g., 'WARN' to 'warn').
-*   Refactored all `log.actionType` values in `actionProfiles.js` (within `checkActionProfiles`) to `camelCase` (e.g., 'detected_fly_hover' to 'detectedFlyHover').
-*   Updated `README.md` (AutoMod section) to reflect `camelCase` for `actionType` examples and the list of supported types.
-*   Added a critical developer task to `Dev/tasks/ongoing.md` for updating `actionManager.js` to handle the new `camelCase` `actionType`s from `automodConfig.js`.
+*   Refactoring of `actionType` strings to camelCase (in `CodingStyle.md`, `automodConfig.js`, `actionProfiles.js`, `README.md`) completed. Critical dependency on developer update to `actionManager.js` noted. Details moved to `completed.md`.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
