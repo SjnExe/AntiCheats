@@ -317,7 +317,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     adminPlayer.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.toPlayerSuccess", { targetPlayerName: targetPlayer.nameTag }));
                     if (depLogManager?.addLog) {
-                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleport_self_to_player', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag}` });
+                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleportSelfToPlayer', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag}` });
                     }
                 } catch (e) {
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.error", { errorMessage: e.message }));
@@ -329,7 +329,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.playerToAdminSuccess", { targetPlayerName: targetPlayer.nameTag }));
                     targetPlayer.sendMessage(getString("ui.playerActions.teleport.playerToAdminNotifyTarget"));
                     if (depLogManager?.addLog) {
-                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleport_player_to_admin', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to them.` });
+                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleportPlayerToAdmin', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to them.` });
                     }
                 } catch (e) {
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.error", { errorMessage: e.message }));
@@ -388,7 +388,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                             }
                             adminPlayer.sendMessage(getString("ui.playerActions.clearInventory.success", { targetPlayerName: targetPlayer.nameTag }));
                             if (depLogManager?.addLog) {
-                                depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'clear_inventory', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}` });
+                                depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'clearInventory', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}` });
                             }
                         } else {
                             adminPlayer.sendMessage(getString("ui.playerActions.clearInventory.fail", { targetPlayerName: targetPlayer.nameTag }));
@@ -709,7 +709,7 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
                 if (success) {
                     adminPlayer.sendMessage(getString("ui.configEditor.valueInput.success", { keyName: keyName, newValue: (typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)) }));
                     if (depLogManager?.addLog) {
-                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'config_update', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` });
+                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'configUpdate', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` });
                     }
                 } else {
                     adminPlayer.sendMessage(getString("ui.configEditor.valueInput.error.updateFailedInternal", { keyName: keyName }));

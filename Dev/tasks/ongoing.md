@@ -2,9 +2,15 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: Refactor `actionType` Strings to `camelCase`
+## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 (Core Files)
 
-*   Refactoring of `actionType` strings to camelCase (in `CodingStyle.md`, `automodConfig.js`, `actionProfiles.js`, `README.md`) completed. Critical dependency on developer update to `actionManager.js` noted. Details moved to `completed.md`.
+*   - Corrected `DEFAULT_LANGUAGE` to `defaultLanguage` in `AntiCheatsBP/scripts/core/i18n.js` and updated its usages.
+*   - Refactored `actionType` for logging in `AntiCheatsBP/scripts/core/eventHandlers.js` to `camelCase` (e.g., 'player_leave' to 'playerLeave').
+*   - Refactored `actionType` for logging in `AntiCheatsBP/scripts/core/uiManager.js` to `camelCase` (e.g., 'config_update' to 'configUpdate').
+*   - Updated JSDoc example for `ActionLogEntry.actionType` in `AntiCheatsBP/scripts/core/logManager.js` to reflect `camelCase` log types.
+*   - Refactored logging in `AntiCheatsBP/scripts/core/reportManager.js` to use `playerUtils.debugLog` instead of `console.*` calls.
+*   - Verified `AntiCheatsBP/scripts/core/tpaManager.js` already uses `playerUtils.debugLog` for its logging.
+*   - Reviewed `actionManager.js`, `automodManager.js`, `commandManager.js`, `rankManager.js` and found them highly compliant with no new changes needed for general JS style (noting `automodManager.js`'s dependency on developer action for its internal `actionType` switch).
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 

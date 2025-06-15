@@ -22,7 +22,7 @@ const maxLogEntriesCount = 200;
  * @typedef {object} ActionLogEntry
  * @property {number} timestamp - Unix timestamp (ms) of when the action occurred.
  * @property {string} adminName - Name of the admin or system component that performed the action.
- * @property {string} actionType - Type of action (e.g., 'ban', 'mute', 'kick', 'warn_flag', 'system_message').
+ * @property {string} actionType - Type of action (e.g., 'warnFlag', 'systemMessage', 'playerKick', 'playerTempBan', 'playerPermBan', 'mutePlayer', 'unmutePlayer', 'clearMessages', 'sendMessageToPlayer', 'executeCommand', 'playerJoin', 'playerLeave', 'configUpdate', 'worldBorderUpdate', 'tpaRequest', 'tpaAccept', 'tpaDeny', 'tpaSend', 'tpaCancel', 'reportCreated', 'reportHandled').
  * @property {string} [targetName] - Optional: Name of the target player, if applicable.
  * @property {string} [duration] - Optional: Duration of the ban/mute (e.g., "5m", "perm").
  * @property {string} [reason] - Optional: Reason for the action.
@@ -73,15 +73,15 @@ function initializeLogCache() {
 
 
 /**
- * Persists the current in-memory log cache to dynamic properties if changes have been made.
- * This is the actual I/O operation. It avoids writing if `logsAreDirty` is false
- * and the dynamic property already exists (implying it was saved previously).
- * @returns {boolean} True if saving was successful, not needed, or if logs were successfully cleared. False on error during saving.
+ * Persists the current in-memory log cache to dynamic properties if `logsAreDirty` is true,
+ * or if the dynamic property doesn't exist yet (to ensure initial creation).
+ * This is the actual I/O operation.
+ * @returns {boolean} True if saving was successful or not strictly needed (already saved and not dirty), false on error during saving.
  */
 export function persistLogCacheToDisk() {
     if (!logsAreDirty && mc.world.getDynamicProperty(logPropertyKeyName) !== undefined) {
         // No changes in memory, and logs are already on disk (or were intentionally cleared and saved as empty).
-        // Avoids unnecessary writes.
+        // Avoids unnecessary writes if already persisted and not dirty.
         return true;
     }
     try {
