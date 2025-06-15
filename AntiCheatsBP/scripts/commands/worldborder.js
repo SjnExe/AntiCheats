@@ -239,11 +239,35 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
         }
 
         if (settings.isResizing && settings.resizeDurationMs > 0) {
-            const elapsedMs = Date.now() - (settings.resizeStartTimeMs || Date.now());
-            const progressPercent = Math.min(100, (elapsedMs / settings.resizeDurationMs) * 100);
-            const remainingSec = Math.max(0, (settings.resizeDurationMs - elapsedMs) / 1000);
-            let currentInterpolatedSize = settings.originalSize + (settings.targetSize - settings.originalSize) * Math.min(1, elapsedMs / settings.resizeDurationMs);
-            if (elapsedMs >= settings.resizeDurationMs) currentInterpolatedSize = settings.targetSize;
+            const accumulatedPausedTime = settings.resizePausedTimeMs || 0;
+            let actualElapsedResizingMs;
+
+            if (settings.isPaused && typeof settings.resizeLastPauseStartTimeMs === 'number') {
+                // If paused, calculate elapsed time up to the point of pausing
+                actualElapsedResizingMs = (settings.resizeLastPauseStartTimeMs - (settings.resizeStartTimeMs || settings.resizeLastPauseStartTimeMs)) - accumulatedPausedTime;
+            } else {
+                // If not paused, calculate elapsed time normally
+                actualElapsedResizingMs = (Date.now() - (settings.resizeStartTimeMs || Date.now())) - accumulatedPausedTime;
+            }
+            actualElapsedResizingMs = Math.max(0, actualElapsedResizingMs); // Ensure it's not negative
+
+            const progressPercent = Math.min(100, (actualElapsedResizingMs / settings.resizeDurationMs) * 100);
+            const remainingSec = Math.max(0, (settings.resizeDurationMs - actualElapsedResizingMs) / 1000);
+
+            let currentInterpolatedSize = settings.originalSize + (settings.targetSize - settings.originalSize) * Math.min(1, actualElapsedResizingMs / settings.resizeDurationMs);
+            // Ensure currentInterpolatedSize doesn't exceed targetSize if progress is 100% or more
+            if (actualElapsedResizingMs >= settings.resizeDurationMs) {
+                currentInterpolatedSize = settings.targetSize;
+            }
+            // Also ensure it doesn't go beyond originalSize if shrinking and progress is 0%
+            if (actualElapsedResizingMs <= 0 && settings.targetSize < settings.originalSize) {
+                 currentInterpolatedSize = settings.originalSize;
+            }
+             // And ensure it doesn't go below originalSize if expanding and progress is 0%
+            if (actualElapsedResizingMs <= 0 && settings.targetSize > settings.originalSize) {
+                 currentInterpolatedSize = settings.originalSize;
+            }
+
 
             playerUtils.notifyPlayer(player, getString('command.worldborder.get.resizingYes', { originalSize: settings.originalSize, targetSize: settings.targetSize }));
             playerUtils.notifyPlayer(player, getString('command.worldborder.get.resizingProgress', { progressPercent: progressPercent.toFixed(1), remainingTime: remainingSec.toFixed(1) + 's' }));
@@ -251,7 +275,13 @@ async function handleGetCommand(player, args, playerUtils, logManager, dependenc
             playerUtils.notifyPlayer(player, getString('command.worldborder.get.resizingInterpolation', { interpolationType: (settings.resizeInterpolationType || 'linear') }));
             if (settings.isPaused) {
                 playerUtils.notifyPlayer(player, getString('command.worldborder.get.resizingStatusPaused'));
-                playerUtils.notifyPlayer(player, getString('command.worldborder.get.resizingPausedTime', { pausedTime: formatDurationBrief(settings.resizePausedTimeMs || 0) }));
+                // For total accumulated paused time, resizePausedTimeMs is correct if continuously updated.
+                // If only updated on resume, and currently paused, add current pause duration.
+                let displayPausedTime = accumulatedPausedTime;
+                if (settings.isPaused && typeof settings.resizeLastPauseStartTimeMs === 'number') {
+                    displayPausedTime += (Date.now() - settings.resizeLastPauseStartTimeMs);
+                }
+                playerUtils.notifyPlayer(player, getString('command.worldborder.get.resizingPausedTime', { pausedTime: formatDurationBrief(displayPausedTime) }));
             }
         }
 

@@ -2,9 +2,13 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: AutoMod Rule Refinement and Implementation
+## I. Current Active Plan: World Border Resize - Pause/Resume Functionality
 
-*   Batch 3 of AutoMod rules (including Fly type expansions, PistonLag rule, chat flag fixes, and `checkType` verifications) has been completed. Details moved to `completed.md`.
+*   Designed logic for pausing/resuming border resizes, including new settings fields (`resizePaused`, `pauseStartTimeMs`, `totalPausedTimeMs`).
+*   Verified `!worldborder pause` command (`resizepause`) already exists and correctly sets pause state and `resizeLastPauseStartTimeMs`.
+*   Verified `!worldborder resume` command (`resizeresume`) already exists and correctly updates `resizePausedTimeMs` (total paused time) and clears pause state.
+*   Documented required logic changes for `main.js` tick loop to handle paused resizes by adjusting elapsed time calculations and freezing size updates when paused.
+*   Updated `!worldborder get` command to accurately display resize progress and remaining time when a resize is paused, using adjusted time calculations.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
