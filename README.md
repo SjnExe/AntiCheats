@@ -57,7 +57,7 @@ Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scr
 
 ## Configuration
 
-All addon configuration is centralized in the **``AntiCheatsBP/scripts/config.js``** file. This single file is designed to be the primary place for server administrators to customize all aspects of the AntiCheat system. Settings previously found in `userSettings.js` have been merged into `config.js`.
+All addon configuration is centralized in the **``AntiCheatsBP/scripts/config.js``** file. This single file is designed to be the primary place for server administrators to customize all aspects of the AntiCheat system.
 
 Within `config.js`, you will find various sections to control:
 *   Common settings like command prefix, default language, and feature toggles (e.g., welcomer, TPA, AntiGrief features).
