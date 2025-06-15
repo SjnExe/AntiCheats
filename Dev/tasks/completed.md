@@ -1,6 +1,11 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Implemented 'Helpful Links' in Player Panel:**
+    *   **Summary:** Added a 'Helpful Links' section to the normal user view of the `!panel` command.
+    *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to display links configured in `config.js` (via `dependencies.config.helpLinks`). The UI uses an `ActionFormData` for link selection. When a player clicks a link, its title and URL are displayed in chat. The system gracefully handles cases where no links are configured by showing an informative message. New localization strings were added to `AntiCheatsBP/scripts/core/languages/en_US.js` for the UI elements. Task file documentation was also updated during development to reflect progress.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/uiManager.js`, `AntiCheatsBP/scripts/core/languages/en_US.js`, `Dev/tasks/ongoing.md`, `Dev/tasks/todo.md`.
+
 *   **Code Cleanup - Batch 2:**
     *   **Summary:** Completed the second batch of code cleanup and refactoring tasks, focusing on improving code clarity, consistency, JSDoc documentation, and minor logical refinements across various modules.
     *   **Details:** Reviewed and applied cleanups to the following files:

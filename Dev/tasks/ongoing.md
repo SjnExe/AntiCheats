@@ -2,10 +2,6 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: Implement 'Helpful Links' in Player Panel
-
-*   Implemented UI for 'Helpful Links' in `!panel` using `config.js`.
-
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
 These are higher-level features and areas for future development:
