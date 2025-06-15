@@ -4,9 +4,7 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 ## I. Current Active Plan: Documentation Review and Update (README, Command Help)
 
-*   Reviewed `README.md` for outdated information based on recent features (AutoMod, World Border, Helpful Links).
-*   Updated `README.md` with a new 'World Border System' section, expanded 'Features' list, updated 'Admin Commands & UI', 'Configuration', and 'AutoMod' examples.
-*   Reviewed command help messages, confirming `!worldborder` help already includes `resizepause` and `resizeresume` subcommands. No changes were needed for command help strings.
+*   Documentation review and `README.md` updates completed (new World Border section, expanded Features, updated AutoMod examples, etc.). Command help messages were found to be current. Details moved to `completed.md`.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 

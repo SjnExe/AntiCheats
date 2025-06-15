@@ -1,6 +1,18 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+*   **Documentation Review and Update (README, Command Help):**
+    *   **Summary:** Reviewed and updated `README.md` to reflect recent feature additions and changes. Command help messages were verified as current.
+    *   **Details:**
+        *   Updated `README.md` to include a new 'World Border System' section.
+        *   Expanded the 'Features' list in `README.md` to include more details on Fly checks, other world/player behavior checks, and the World Border system.
+        *   Updated 'Admin Commands & UI' in `README.md` to mention `!worldborder`.
+        *   Added a note about World Border default settings to the 'Configuration' section in `README.md`.
+        *   Corrected `checkType` examples in the 'Automated Moderation (AutoMod)' section of `README.md` (e.g., using `movement_hover_fly`).
+        *   Added `TELEPORT_SAFE` to the list of supported AutoMod action types in `README.md`.
+        *   Reviewed command help messages, particularly for `!worldborder`, confirming they are up-to-date with subcommands like `resizepause` and `resizeresume`. No changes to help strings were needed.
+    *   **Files Affected:** `README.md`, `Dev/tasks/ongoing.md`.
+
 *   **World Border Resize - Pause/Resume Functionality:**
     *   **Summary:** Implemented and documented the ability to pause and resume gradual world border resizing.
     *   **Details:**
