@@ -509,6 +509,12 @@ export const translations = {
             title: "AntiCheat Admin Panel", // Assuming this was ui.adminPanel.title
             // ... other adminPanel keys
         },
+        helpfulLinks: {
+            title: "Helpful Links",
+            body: "Select a link to view its URL:",
+            noLinks: "No helpful links are currently configured.",
+            linkMessageFormat: "§e{title}: §b{url}"
+        },
         // ... more UI domains
     },
     // Note: Some keys like "command.clearchat.description" are used in `definition` objects.

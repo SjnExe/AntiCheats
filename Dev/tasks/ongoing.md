@@ -2,6 +2,10 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
+## I. Current Active Plan: Implement 'Helpful Links' in Player Panel
+
+*   Implemented UI for 'Helpful Links' in `!panel` using `config.js`.
+
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
 These are higher-level features and areas for future development:
@@ -15,7 +19,6 @@ These are higher-level features and areas for future development:
     *   System Features.
     *   World Management & Protection.
     *   Normal Player Panel Features (`!panel`):
-        *   The "Helpful Links" section in the player panel is currently a placeholder and needs implementation.
 *   **Specific Deferred/Considered Features:**
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
