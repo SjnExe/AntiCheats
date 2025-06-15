@@ -24,6 +24,7 @@ export const definition = {
     syntax: '!rules',
     aliases: ['rule'],
     permissionLevel: permissionLevels.normal, // Accessible to everyone
+    enabled: true,
 };
 
 /**

@@ -13,7 +13,8 @@ export const definition = {
     name: "kick",
     syntax: "!kick <playername> [reason]",
     description: "Kicks a player from the server.",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

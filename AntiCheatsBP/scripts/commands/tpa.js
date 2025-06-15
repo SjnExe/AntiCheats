@@ -18,6 +18,7 @@ export const definition = {
     aliases: [],
     permissionLevel: permissionLevels.normal,
     syntax: '!tpa <playerName>',
+    enabled: true,
 };
 
 /**

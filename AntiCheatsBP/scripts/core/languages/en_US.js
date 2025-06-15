@@ -185,7 +185,7 @@ export const translations = {
             header: "§e--- Warnings for {playerName} ---",
             individualFlagsHeader": "§eIndividual Flags:",
             noData: "§cNo warning data found for {playerName}.",
-        },
+        }
     },
     checks: {
         invalidSprint: {
@@ -453,6 +453,23 @@ export const translations = {
             flagReason: "Swear word detected in message: {detectedWord}",
             notifyMessage: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}",
         },
+        chat_advertising_detected: {
+            flagReason: "Potential advertisement detected in chat: {matchedPattern}",
+            notifyMessage: "§eAC: {playerName} may have advertised. Matched: '{matchedPattern}'. Message: §f{originalMessage}"
+        },
+        chat_caps_abuse_detected: {
+            flagReason: "Message contained excessive capitalization ({percentage}% CAPS).",
+            notifyMessage: "§eAC: {playerName} flagged for CAPS abuse ({percentage}% CAPS). Message: §f{originalMessage}"
+        },
+        chat_char_repeat_detected: {
+            flagReason: "Message contained repeated characters: '{char}' x{count}.",
+            notifyMessage: "§eAC: {playerName} flagged for Char Repeat: '{char}' x{count}. Message: §f{originalMessage}"
+        },
+        chat_symbol_spam_detected: {
+            message: "§cPlease avoid using excessive symbols in your message.",
+            flagReason: "Sent a message with a high percentage of symbols.",
+            notifyMessage: "Player {playerName} triggered symbol spam check. Message: {originalMessage}"
+        },
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",
@@ -470,11 +487,20 @@ export const translations = {
         systemInfo: { // From ui.systemInfo...
             label_currentTick: "Current Server Tick:",
             label_worldTime": "World Time (ticks):",
+            label_defaultServerLanguage: "Default Server Language:",
         },
         playerActions: { // From ui.playerActions...
             kick_cancelled: "Kick action cancelled.",
             ban_cancelled: "Ban action cancelled.",
             mute_cancelled: "Mute action cancelled.",
+        },
+        myStats: {
+            title: "My Stats",
+            body: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+        },
+        serverRules: {
+            title: "Server Rules",
+            noRulesDefined: "No server rules are currently defined."
         },
         // Other UI keys like "ui.adminPanel.title" etc. would go here, potentially nested further.
         // For brevity, I will not list all of them but apply the pattern.

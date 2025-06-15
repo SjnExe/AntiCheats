@@ -13,7 +13,8 @@ export const definition = {
     name: "myflags",
     syntax: "!myflags",
     description: getString("command.myflags.description"),
-    permissionLevel: permissionLevels.normal // Accessible by all players
+    permissionLevel: permissionLevels.normal, // Accessible by all players
+    enabled: true,
 };
 
 /**

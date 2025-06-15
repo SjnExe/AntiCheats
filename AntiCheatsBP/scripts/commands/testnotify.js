@@ -14,7 +14,8 @@ export const definition = {
     name: "testnotify",
     syntax: "!testnotify",
     description: getString("command.testnotify.description"),
-    permissionLevel: permissionLevels.owner // Restricted to owner for system testing
+    permissionLevel: permissionLevels.owner, // Restricted to owner for system testing
+    enabled: true,
 };
 
 /**

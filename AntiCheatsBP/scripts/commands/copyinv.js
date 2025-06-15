@@ -14,7 +14,8 @@ export const definition = {
     name: "copyinv",
     syntax: "!copyinv <playername>",
     description: getString("command.copyinv.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

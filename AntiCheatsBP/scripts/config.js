@@ -1,10 +1,324 @@
 // Anti-Cheat Configuration File
-import { userSettings } from './userSettings.js';
 import { checkActionProfiles } from '../core/actionProfiles.js';
 import { automodConfig as importedAutoModConfig } from '../core/automodConfig.js';
 
+// Settings migrated from userSettings.js
+
+// General Admin & System
+/** @type {string} The tag for identifying admin players. */
+export const adminTag = "admin";
+/** @type {string} The exact name of the server owner. Required for owner-level commands/features. */
+export const ownerPlayerName = "PlayerNameHere"; // TODO: Replace with actual owner name
+/** @type {boolean} If true, enables detailed debug logging to console. */
+export const enableDebugLogging = true;
+/** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
+export const prefix = "!";
+/** @type {string} Default language code for server messages if player's language is not set or translation missing. */
+export const defaultServerLanguage = "en_US";
+
+// Welcomer & Player Info
+/** @type {boolean} If true, a welcome message is sent to players when they join. */
+export const enableWelcomerMessage = true;
+/** @type {string} Localization key for the welcome message. */
+export const welcomeMessage = "message.welcome";
+/** @type {boolean} If true, admins are notified when a new player joins for the first time. */
+export const notifyAdminOnNewPlayerJoin = true;
+/** @type {boolean} If true, players are sent their death coordinates upon respawning. */
+export const enableDeathCoordsMessage = true;
+/** @type {string} Localization key for the death coordinates message. */
+export const deathCoordsMessage = "message.deathCoords";
+
+// Combat Log
+/** @type {boolean} If true, enables detection of players leaving shortly after combat. */
+export const enableCombatLogDetection = false;
+/** @type {number} Seconds after last combat interaction within which leaving is considered combat logging. */
+export const combatLogThresholdSeconds = 15;
+/** @type {number} Number of flags to add for a combat log violation. */
+export const combatLogFlagIncrement = 1;
+/** @type {string} Localization key for the admin notification message on combat log detection. */
+export const combatLogMessage = "message.combatLogAdminNotify";
+
+// TPA System
+/** @type {boolean} If true, the TPA (Teleport Ask) system is enabled. */
+export const enableTPASystem = false;
+/** @type {number} Seconds a TPA request remains valid before automatically expiring. */
+export const TPARequestTimeoutSeconds = 60;
+/** @type {number} Seconds a player must wait between sending TPA requests. */
+export const TPARequestCooldownSeconds = 10;
+/** @type {number} Seconds of warmup before a player is teleported after a TPA request is accepted. Movement or damage cancels it. */
+export const TPATeleportWarmupSeconds = 10;
+
+// Server Info & Links
+/** @type {string} Link to the server's Discord. Displayed in help or server info commands. */
+export const discordLink = "https://discord.gg/example";
+/** @type {string} Link to the server's website. */
+export const websiteLink = "https://example.com";
+/** @type {Array<{title: string, url: string}>} Array of objects defining helpful links (e.g., for rules, reporting). */
+export const helpLinks = [
+    { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
+    { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
+    { title: "Report a Player", url: "https://yourwebsite.com/report" }
+];
+/** @type {string[]} Array of localization keys for general help messages. */
+export const generalHelpMessages = [
+    "message.generalHelp.welcome",
+    "message.generalHelp.helpCommandPrompt",
+    "message.generalHelp.reportPrompt",
+    "message.generalHelp.rulesPrompt"
+];
+
+// Logging
+/** @type {boolean} If true, enables detailed logging of player join and leave events to the console. */
+export const enableDetailedJoinLeaveLogging = true;
+
+// Chat Checks
+/** @type {boolean} If true, enables the Swear Word detection check. */
+export const enableSwearCheck = false;
+/** @type {string[]} List of swear words to detect (case-insensitive, whole word). */
+export const swearWordList = [];
+/** @type {string} Duration for the mute applied on swear word detection (e.g., "30s", "5m", "1h"). */
+export const swearCheckMuteDuration = "30s";
+
+/** @type {boolean} If true, enables the basic anti-advertising check in chat. */
+export const enableAntiAdvertisingCheck = true;
+/** @type {string[]} List of string patterns to detect potential advertisements. */
+export const antiAdvertisingPatterns = ["http://", "https://", "www.", ".com", ".net", ".org", ".gg", ".tk", ".co", ".uk", ".biz", ".info", ".io", ".me", ".tv", ".us", ".ws", ".club", ".store", ".online", ".site", ".xyz", ".shop", "discord.gg/", "joinmc.", "playmc.", "server."];
+/** @type {string} The action profile name for advertising violations. */
+export const antiAdvertisingActionProfileName = "chat_advertising_detected";
+
+/** @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat. */
+export const enableCapsCheck = true;
+/** @type {number} The minimum message length for the CAPS abuse check to apply. */
+export const capsCheckMinLength = 10;
+/** @type {number} The percentage (0-100) of uppercase letters to trigger a CAPS abuse flag. */
+export const capsCheckUpperCasePercentage = 70;
+/** @type {string} The action profile name for CAPS abuse violations. */
+export const capsCheckActionProfileName = "chat_caps_abuse_detected";
+
+/** @type {boolean} If true, enables the check for excessive character repetition in chat. */
+export const enableCharRepeatCheck = true;
+/** @type {number} The minimum message length for the character repeat check to apply. */
+export const charRepeatMinLength = 10;
+/** @type {number} The minimum number of identical consecutive characters to trigger a flag. */
+export const charRepeatThreshold = 6;
+/** @type {string} The action profile name for character repeat violations. */
+export const charRepeatActionProfileName = "chat_char_repeat_detected";
+
+/** @type {boolean} If true, enables the check for excessive symbol usage in chat. */
+export const enableSymbolSpamCheck = true;
+/** @type {number} The minimum message length for the symbol spam check to apply. */
+export const symbolSpamMinLength = 10;
+/** @type {number} The percentage (0-100) of non-alphanumeric characters to trigger a symbol spam flag. */
+export const symbolSpamPercentage = 50;
+/** @type {string} The action profile name for symbol spam violations. */
+export const symbolSpamActionProfileName = "chat_symbol_spam_detected";
+
+// AntiGrief - TNT
+/** @type {boolean} If true, enables anti-grief measures for TNT placement. */
+export const enableTntAntiGrief = false;
+/** @type {boolean} If true, admins (identified by `adminTag`) can place TNT without restriction. */
+export const allowAdminTntPlacement = true;
+/** @type {string} Action to take when unauthorized TNT placement is detected ("remove", "warn", "flag_only"). */
+export const tntPlacementAction = "remove"; // This was not in userSettings, but related to AntiGrief
+
+// AntiGrief - Wither
+/** @type {boolean} If true, enables anti-grief measures for Wither spawning. */
+export const enableWitherAntiGrief = false;
+/** @type {boolean} If true, admins can spawn Withers without restriction. */
+export const allowAdminWitherSpawn = true;
+/** @type {string} Action for unauthorized Wither spawn ("prevent", "kill", "warn", "flag_only"). */
+export const witherSpawnAction = "prevent";
+
+// AntiGrief - Fire
+/** @type {boolean} If true, enables anti-grief measures for fire spread/placement. */
+export const enableFireAntiGrief = false;
+/** @type {boolean} If true, admins can create fire without restriction. */
+export const allowAdminFire = true;
+/** @type {string} Action for unauthorized fire ("extinguish", "warn", "flag_only"). */
+export const fireControlAction = "extinguish"; // This was not in userSettings, but related
+
+// AntiGrief - Lava
+/** @type {boolean} If true, enables anti-grief measures for lava placement. */
+export const enableLavaAntiGrief = false;
+/** @type {boolean} If true, admins can place lava without restriction. */
+export const allowAdminLava = true;
+/** @type {string} Action for unauthorized lava placement ("remove", "warn", "flag_only"). */
+export const lavaPlacementAction = "remove";
+
+// AntiGrief - Water
+/** @type {boolean} If true, enables anti-grief measures for water placement. */
+export const enableWaterAntiGrief = false;
+/** @type {boolean} If true, admins can place water without restriction. */
+export const allowAdminWater = true;
+/** @type {string} Action for unauthorized water placement ("remove", "warn", "flag_only"). */
+export const waterPlacementAction = "remove";
+
+// AntiGrief - Block Spam (Rate)
+/** @type {boolean} If true, enables detection of rapid block placement (block spam by rate). */
+export const enableBlockSpamAntiGrief = false;
+/** @type {boolean} If true, players in Creative mode bypass the block spam (rate) check. */
+export const blockSpamBypassInCreative = true;
+/** @type {number} Time window in milliseconds to count blocks for rate-based spam detection. */
+export const blockSpamTimeWindowMs = 1000;
+/** @type {number} Maximum number of blocks allowed to be placed within `blockSpamTimeWindowMs`. */
+export const blockSpamMaxBlocksInWindow = 8;
+/** @type {string[]} Specific block types to monitor for rate-based spam. Empty array means all blocks. */
+export const blockSpamMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
+/** @type {string} Action for block spam (rate) violation ("warn", "flag_only", "kick"). */
+export const blockSpamAction = "warn";
+
+// AntiGrief - Entity Spam
+/** @type {boolean} If true, enables detection of rapid entity spawning. */
+export const enableEntitySpamAntiGrief = false;
+/** @type {boolean} If true, players in Creative mode bypass the entity spam check. */
+export const entitySpamBypassInCreative = true;
+/** @type {number} Time window in milliseconds to count entities for spam detection. */
+export const entitySpamTimeWindowMs = 2000;
+/** @type {number} Maximum number of specified entities allowed to be spawned within `entitySpamTimeWindowMs`. */
+export const entitySpamMaxSpawnsInWindow = 5;
+/** @type {string[]} Specific entity types to monitor for spam. */
+export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart", "minecraft:snow_golem", "minecraft:iron_golem"];
+/** @type {string} Action for entity spam violation ("kill", "warn", "flag_only"). */
+export const entitySpamAction = "kill";
+
+// AntiGrief - Block Spam (Density)
+/** @type {boolean} If true, enables detection of high-density block placement. */
+export const enableBlockSpamDensityCheck = false;
+/** @type {string[]} Specific block types to monitor for density-based spam. Empty means all. */
+export const blockSpamDensityMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
+/** @type {string} Action for block spam (density) violation ("warn", "flag_only"). */
+export const blockSpamDensityAction = "warn";
+
+// Piston Lag Check
+/** @type {boolean} If true, enables monitoring of rapid piston activations to detect potential lag machines. */
+export const enablePistonLagCheck = false;
+/** @type {number} Activations per second of a single piston to trigger logging/alert. */
+export const pistonActivationLogThresholdPerSecond = 15;
+/** @type {number} Duration in seconds piston activity must be sustained above threshold to trigger. */
+export const pistonActivationSustainedDurationSeconds = 3;
+/** @type {number} Cooldown in seconds before logging/alerting for the same piston again. */
+export const pistonLagLogCooldownSeconds = 60;
+
+// World Border System (User-Facing Parts)
+/** @type {boolean} Master switch for the entire World Border feature. */
+export const enableWorldBorderSystem = false;
+/** @type {string} Localization key for the warning message shown to players approaching the border. */
+export const worldBorderWarningMessage = "message.worldBorderWarning";
+/** @type {boolean} Default setting for whether players take damage when outside the world border. */
+export const worldBorderDefaultEnableDamage = false;
+/** @type {number} Default damage amount per interval for players outside the border. */
+export const worldBorderDefaultDamageAmount = 0.5;
+/** @type {number} Default interval in game ticks at which damage is applied. */
+export const worldBorderDefaultDamageIntervalTicks = 20;
+/** @type {number} Number of damage events after which a player is teleported back inside. */
+export const worldBorderTeleportAfterNumDamageEvents = 30;
+/** @type {boolean} If true, enables visual particle effects for the world border. */
+export const worldBorderEnableVisuals = false;
+/** @type {string} Default particle type ID for the world border visual effect. */
+export const worldBorderParticleName = "minecraft:end_rod";
+/** @type {number} Visual range in blocks from the border where particles may appear. */
+export const worldBorderVisualRange = 24;
+/** @type {number} Density of particles for the visual effect. Higher is denser. */
+export const worldBorderParticleDensity = 1;
+/** @type {number} Height in blocks of the particle wall visual. */
+export const worldBorderParticleWallHeight = 4;
+/** @type {number} Length in blocks of each segment of the particle wall. */
+export const worldBorderParticleSegmentLength = 32;
+/** @type {number} Interval in game ticks at which world border visuals are updated. */
+export const worldBorderVisualUpdateIntervalTicks = 10;
+/** @type {string[]} If populated, visuals cycle through these particles. Overrides `worldBorderParticleName`. */
+export const worldBorderParticleSequence = [];
+/** @type {boolean} If true, enables pulsing density effect for border visuals. */
+export const worldBorderEnablePulsingDensity = false;
+/** @type {number} Minimum particle density multiplier for pulsing effect. */
+export const worldBorderPulseDensityMin = 0.5;
+/** @type {number} Maximum particle density multiplier for pulsing effect. */
+export const worldBorderPulseDensityMax = 1.5;
+/** @type {number} Speed of the pulsing effect. Higher is faster. */
+export const worldBorderPulseSpeed = 1.0;
+
+// X-Ray Detection Notifications
+/** @type {boolean} If true, admins are notified when players mine valuable ores. */
+export const xrayDetectionNotifyOnOreMineEnabled = true;
+/** @type {string[]} List of block type IDs monitored for X-Ray mining notifications. */
+export const xrayDetectionMonitoredOres = ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"];
+/** @type {boolean} If true, admins receive X-Ray notifications by default (can be toggled per admin). */
+export const xrayDetectionAdminNotifyByDefault = true;
+
+// Chat Formatting
+/** @type {string} Chat prefix color for Owner rank. */
+export const chatFormatOwnerPrefixColor = "§c";
+/** @type {string} Name color for Owner rank. */
+export const chatFormatOwnerNameColor = "§c";
+/** @type {string} Message color for Owner rank. */
+export const chatFormatOwnerMessageColor = "§f";
+/** @type {string} Chat prefix color for Admin rank. */
+export const chatFormatAdminPrefixColor = "§b";
+/** @type {string} Name color for Admin rank. */
+export const chatFormatAdminNameColor = "§b";
+/** @type {string} Message color for Admin rank. */
+export const chatFormatAdminMessageColor = "§f";
+/** @type {string} Chat prefix color for Member rank. */
+export const chatFormatMemberPrefixColor = "§7";
+/** @type {string} Name color for Member rank. */
+export const chatFormatMemberNameColor = "§7";
+/** @type {string} Message color for Member rank. */
+export const chatFormatMemberMessageColor = "§f";
+
+
+export const commandSettings = {
+    version: { enabled: true },
+    myflags: { enabled: true },
+    testnotify: { enabled: true },
+    kick: { enabled: true },
+    clearchat: { enabled: true },
+    inspect: { enabled: true },
+    warnings: { enabled: true },
+    resetflags: { enabled: true },
+    rules: { enabled: true },
+    vanish: { enabled: true },
+    freeze: { enabled: true },
+    mute: { enabled: true },
+    unmute: { enabled: true },
+    ban: { enabled: true },
+    unban: { enabled: true },
+    gmc: { enabled: true },
+    gms: { enabled: true },
+    gma: { enabled: true },
+    gmsp: { enabled: true },
+    help: { enabled: true },
+    invsee: { enabled: true },
+    panel: { enabled: true },
+    notify: { enabled: true },
+    xraynotify: { enabled: true },
+    tpa: { enabled: true },
+    tpaccept: { enabled: true },
+    tpacancel: { enabled: true },
+    tpahere: { enabled: true },
+    tpastatus: { enabled: true },
+    tp: { enabled: true },
+    copyinv: { enabled: true },
+    uinfo: { enabled: true },
+    netherlock: { enabled: true },
+    endlock: { enabled: true },
+    worldborder: { enabled: true },
+    setlang: { enabled: true }
+};
+
 /** @type {boolean} If true, the Automated Moderation system is active. */
 export const enableAutoMod = false;
+
+/**
+ * @type {string[]} Defines the server rules to be displayed to players.
+ */
+export const serverRules = [
+    "Rule 1: Be respectful to all players and staff.",
+    "Rule 2: No cheating, exploiting, or using unauthorized modifications.",
+    "Rule 3: Do not spam chat or use excessive caps/symbols.",
+    "Rule 4: Follow instructions from server administrators and moderators.",
+    "Rule 5: Keep chat appropriate and avoid offensive language.",
+    "Rule 6: Have fun and contribute to a positive community!"
+];
 
 // --- General Check Toggles ---
 
@@ -481,9 +795,118 @@ export const commandAliases = {
  * Use `updateConfigValue(key, newValue)` to modify these values safely.
  */
 export let editableConfigValues = {
-    ...userSettings, // Load all defaults from user_settings.js
+    // ...userSettings, // REMOVED SPREAD
+    commandSettings: commandSettings,
+    serverRules: serverRules,
 
-    // Settings NOT in user_settings.js but still part of editableConfigValues:
+    // Properties from former userSettings, now defined as constants above
+    adminTag: adminTag,
+    ownerPlayerName: ownerPlayerName,
+    enableDebugLogging: enableDebugLogging,
+    prefix: prefix,
+    defaultServerLanguage: defaultServerLanguage,
+    enableWelcomerMessage: enableWelcomerMessage,
+    welcomeMessage: welcomeMessage,
+    notifyAdminOnNewPlayerJoin: notifyAdminOnNewPlayerJoin,
+    enableDeathCoordsMessage: enableDeathCoordsMessage,
+    deathCoordsMessage: deathCoordsMessage,
+    enableCombatLogDetection: enableCombatLogDetection,
+    combatLogThresholdSeconds: combatLogThresholdSeconds,
+    combatLogFlagIncrement: combatLogFlagIncrement,
+    combatLogMessage: combatLogMessage,
+    enableTPASystem: enableTPASystem,
+    TPARequestTimeoutSeconds: TPARequestTimeoutSeconds,
+    TPARequestCooldownSeconds: TPARequestCooldownSeconds,
+    TPATeleportWarmupSeconds: TPATeleportWarmupSeconds,
+    discordLink: discordLink,
+    websiteLink: websiteLink,
+    helpLinks: helpLinks,
+    generalHelpMessages: generalHelpMessages,
+    enableDetailedJoinLeaveLogging: enableDetailedJoinLeaveLogging,
+    enableSwearCheck: enableSwearCheck,
+    swearWordList: swearWordList,
+    swearCheckMuteDuration: swearCheckMuteDuration,
+    enableAntiAdvertisingCheck: enableAntiAdvertisingCheck,
+    antiAdvertisingPatterns: antiAdvertisingPatterns,
+    antiAdvertisingActionProfileName: antiAdvertisingActionProfileName,
+    enableCapsCheck: enableCapsCheck,
+    capsCheckMinLength: capsCheckMinLength,
+    capsCheckUpperCasePercentage: capsCheckUpperCasePercentage,
+    capsCheckActionProfileName: capsCheckActionProfileName,
+    enableCharRepeatCheck: enableCharRepeatCheck,
+    charRepeatMinLength: charRepeatMinLength,
+    charRepeatThreshold: charRepeatThreshold,
+    charRepeatActionProfileName: charRepeatActionProfileName,
+    enableSymbolSpamCheck: enableSymbolSpamCheck,
+    symbolSpamMinLength: symbolSpamMinLength,
+    symbolSpamPercentage: symbolSpamPercentage,
+    symbolSpamActionProfileName: symbolSpamActionProfileName,
+    enableTntAntiGrief: enableTntAntiGrief,
+    allowAdminTntPlacement: allowAdminTntPlacement,
+    tntPlacementAction: tntPlacementAction,
+    enableWitherAntiGrief: enableWitherAntiGrief,
+    allowAdminWitherSpawn: allowAdminWitherSpawn,
+    witherSpawnAction: witherSpawnAction,
+    enableFireAntiGrief: enableFireAntiGrief,
+    allowAdminFire: allowAdminFire,
+    fireControlAction: fireControlAction,
+    enableLavaAntiGrief: enableLavaAntiGrief,
+    allowAdminLava: allowAdminLava,
+    lavaPlacementAction: lavaPlacementAction,
+    enableWaterAntiGrief: enableWaterAntiGrief,
+    allowAdminWater: allowAdminWater,
+    waterPlacementAction: waterPlacementAction,
+    enableBlockSpamAntiGrief: enableBlockSpamAntiGrief,
+    blockSpamBypassInCreative: blockSpamBypassInCreative,
+    blockSpamTimeWindowMs: blockSpamTimeWindowMs,
+    blockSpamMaxBlocksInWindow: blockSpamMaxBlocksInWindow,
+    blockSpamMonitoredBlockTypes: blockSpamMonitoredBlockTypes,
+    blockSpamAction: blockSpamAction,
+    enableEntitySpamAntiGrief: enableEntitySpamAntiGrief,
+    entitySpamBypassInCreative: entitySpamBypassInCreative,
+    entitySpamTimeWindowMs: entitySpamTimeWindowMs,
+    entitySpamMaxSpawnsInWindow: entitySpamMaxSpawnsInWindow,
+    entitySpamMonitoredEntityTypes: entitySpamMonitoredEntityTypes,
+    entitySpamAction: entitySpamAction,
+    enableBlockSpamDensityCheck: enableBlockSpamDensityCheck,
+    blockSpamDensityMonitoredBlockTypes: blockSpamDensityMonitoredBlockTypes,
+    blockSpamDensityAction: blockSpamDensityAction,
+    enablePistonLagCheck: enablePistonLagCheck,
+    pistonActivationLogThresholdPerSecond: pistonActivationLogThresholdPerSecond,
+    pistonActivationSustainedDurationSeconds: pistonActivationSustainedDurationSeconds,
+    pistonLagLogCooldownSeconds: pistonLagLogCooldownSeconds,
+    enableWorldBorderSystem: enableWorldBorderSystem,
+    worldBorderWarningMessage: worldBorderWarningMessage,
+    worldBorderDefaultEnableDamage: worldBorderDefaultEnableDamage,
+    worldBorderDefaultDamageAmount: worldBorderDefaultDamageAmount,
+    worldBorderDefaultDamageIntervalTicks: worldBorderDefaultDamageIntervalTicks,
+    worldBorderTeleportAfterNumDamageEvents: worldBorderTeleportAfterNumDamageEvents,
+    worldBorderEnableVisuals: worldBorderEnableVisuals,
+    worldBorderParticleName: worldBorderParticleName,
+    worldBorderVisualRange: worldBorderVisualRange,
+    worldBorderParticleDensity: worldBorderParticleDensity,
+    worldBorderParticleWallHeight: worldBorderParticleWallHeight,
+    worldBorderParticleSegmentLength: worldBorderParticleSegmentLength,
+    worldBorderVisualUpdateIntervalTicks: worldBorderVisualUpdateIntervalTicks,
+    worldBorderParticleSequence: worldBorderParticleSequence,
+    worldBorderEnablePulsingDensity: worldBorderEnablePulsingDensity,
+    worldBorderPulseDensityMin: worldBorderPulseDensityMin,
+    worldBorderPulseDensityMax: worldBorderPulseDensityMax,
+    worldBorderPulseSpeed: worldBorderPulseSpeed,
+    xrayDetectionNotifyOnOreMineEnabled: xrayDetectionNotifyOnOreMineEnabled,
+    xrayDetectionMonitoredOres: xrayDetectionMonitoredOres,
+    xrayDetectionAdminNotifyByDefault: xrayDetectionAdminNotifyByDefault,
+    chatFormatOwnerPrefixColor: chatFormatOwnerPrefixColor,
+    chatFormatOwnerNameColor: chatFormatOwnerNameColor,
+    chatFormatOwnerMessageColor: chatFormatOwnerMessageColor,
+    chatFormatAdminPrefixColor: chatFormatAdminPrefixColor,
+    chatFormatAdminNameColor: chatFormatAdminNameColor,
+    chatFormatAdminMessageColor: chatFormatAdminMessageColor,
+    chatFormatMemberPrefixColor: chatFormatMemberPrefixColor,
+    chatFormatMemberNameColor: chatFormatMemberNameColor,
+    chatFormatMemberMessageColor: chatFormatMemberMessageColor,
+
+    // Settings previously defined directly in config.js and still part of editableConfigValues:
     enableAutoMod,
     enableReachCheck,
     enableCPSCheck,
@@ -652,24 +1075,26 @@ export function updateConfigValue(key, newValue) {
             return false;
         }
     } else if (Array.isArray(oldValue) && typeof newValue === 'string') {
-        // Special handling for stringified arrays for config editing, if needed.
-        // For now, assume arrays are passed as actual arrays.
-        // If string input for arrays is a requirement from UI:
-        // try {
-        //     const parsedArray = JSON.parse(newValue);
-        //     if (!Array.isArray(parsedArray)) {
-        //         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got non-array JSON string "${newValue}". Update rejected.`);
-        //         return false;
-        //     }
-        //     coercedNewValue = parsedArray;
-        // } catch (e) {
-        //     console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got unparsable JSON string "${newValue}". Update rejected.`);
-        //     return false;
-        // }
-        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, got string. Update rejected.`);
+        // MODIFIED LOGIC FOR STRING ARRAY FROM COMMA-SEPARATED STRING
+        if (newValue.trim() === "") {
+            coercedNewValue = [];
+        } else {
+            coercedNewValue = newValue.split(',').map(item => item.trim());
+        }
+        // No longer rejecting here, coercedNewValue is now an array.
+        // The function will proceed to the general type check.
+    }
+
+    // --- NEW STRICT ARRAY CHECK START ---
+    // This check is after all coercions. If oldValue was array, coercedNewValue must also be an array.
+    if (Array.isArray(oldValue) && !Array.isArray(coercedNewValue)) {
+        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, but received incompatible type ${typeof newValue} (which resolved to type ${typeof coercedNewValue} after coercion attempts). Update rejected.`);
         return false;
     }
+    // --- NEW STRICT ARRAY CHECK END ---
      else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
+        // This check should correctly skip if oldValue was an array and coercedNewValue is now also an array.
+        // It primarily handles cases where oldValue was not an array, but there's still a type mismatch.
         console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${typeof coercedNewValue}. Update rejected.`);
         return false;
     }

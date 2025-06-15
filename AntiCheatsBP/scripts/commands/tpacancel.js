@@ -18,6 +18,7 @@ export const definition = {
     aliases: ['tpadeny', 'tpcancel'],
     permissionLevel: permissionLevels.normal,
     syntax: '!tpacancel [playerName]',
+    enabled: true,
 };
 
 /**

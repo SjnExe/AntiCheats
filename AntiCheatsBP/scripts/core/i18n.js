@@ -31,7 +31,6 @@ translations[DEFAULT_LANGUAGE] = enUSTranslations; // Populate with imported en_
  */
 function loadLanguage(langCode) {
     if (translations[langCode]) {
-        // console.log(`[i18n] Language ${langCode} is already loaded.`);
         return true;
     }
     // Placeholder for future dynamic language loading:
@@ -64,11 +63,9 @@ export function setCurrentLanguage(langCode) {
 
     if (translations[langCode]) {
         currentLanguage = langCode;
-        // console.log(`[i18n] Runtime language set to: ${langCode}`);
     } else {
         if (loadLanguage(langCode)) {
             currentLanguage = langCode;
-            // console.log(`[i18n] Runtime language set to: ${langCode} after attempted load.`);
         } else {
             console.warn(`[i18n] Failed to set runtime language to "${langCode}". It's not available. Current language remains "${currentLanguage}".`);
         }
@@ -120,7 +117,6 @@ export function getString(key, args) {
 
     // If not found in current language, try fallback to DEFAULT_LANGUAGE
     if (retrievedString === null && currentLanguage !== DEFAULT_LANGUAGE) {
-        // console.warn(`[i18n] Key "${key}" not found in "${currentLanguage}". Trying "${DEFAULT_LANGUAGE}".`);
         targetTranslationStore = translations[DEFAULT_LANGUAGE];
         if (targetTranslationStore) {
             let tempValue = targetTranslationStore;

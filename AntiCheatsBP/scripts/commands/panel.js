@@ -14,7 +14,8 @@ export const definition = {
     name: "panel",
     syntax: "!panel",
     description: getString("help.descriptionOverride.panel"), // Get description from localization
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.normal,
+    enabled: true,
 };
 
 /**

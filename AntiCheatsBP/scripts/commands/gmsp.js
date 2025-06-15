@@ -14,7 +14,8 @@ export const definition = {
     name: "gmsp",
     syntax: "!gmsp [playername]",
     description: getString("command.gmsp.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

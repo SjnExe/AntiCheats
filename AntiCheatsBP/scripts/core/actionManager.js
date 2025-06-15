@@ -1,13 +1,13 @@
 /**
  * @file AntiCheatsBP/scripts/core/actionManager.js
- * @description Manages the execution of actions (flagging, logging, notifying) based on cheat detection profiles.
+ * Manages the execution of actions (flagging, logging, notifying) based on cheat detection profiles.
  * This module is responsible for interpreting check results and applying configured consequences.
  * @version 1.1.0
  */
 
 /**
  * Formats a violation details object into a concise string.
- * @description Converts an object containing violation specifics (e.g., counts, thresholds)
+ * Converts an object containing violation specifics (e.g., counts, thresholds)
  * into a human-readable string.
  * Example: `{ "value": 5, "threshold": 2 }` becomes `"value: 5, threshold: 2"`.
  * @param {object} violationDetails - The details of the violation.
@@ -24,7 +24,7 @@ function formatViolationDetails(violationDetails) {
 
 /**
  * Formats a message template with player name, checkType, and violation details.
- * @description Replaces placeholders in a template string with actual values.
+ * Replaces placeholders in a template string with actual values.
  * Supported placeholders: `{playerName}`, `{checkType}`, `{detailsString}`,
  * and any key from `violationDetails` (e.g., `{value}`).
  * @param {string} template - The message template string.
@@ -56,7 +56,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
 
 /**
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
- * @description This is the core function for handling consequences of cheat detections.
+ * This is the core function for handling consequences of cheat detections.
  * It checks action profiles, flags players, logs events, and notifies admins based on configuration.
  * It now handles cases where the `player` object might be null (e.g., for system-level checks
  * or events not directly tied to a specific player).

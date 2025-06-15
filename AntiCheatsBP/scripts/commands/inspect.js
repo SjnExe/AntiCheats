@@ -13,7 +13,8 @@ export const definition = {
     name: "inspect",
     syntax: "!inspect <playername>",
     description: getString("command.inspect.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

@@ -15,7 +15,8 @@ export const definition = {
     syntax: "!setlang <language_code>",
     parameters: [
         { name: "language_code", type: "string", description: "The language code to set (e.g., en_US)." }
-    ]
+    ],
+    enabled: true,
 };
 
 export async function execute(player, args, dependencies) {

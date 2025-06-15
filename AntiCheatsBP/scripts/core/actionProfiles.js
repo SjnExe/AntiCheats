@@ -687,6 +687,74 @@ export const checkActionProfiles = {
         cancelMessage: true, // Cancel the message containing the swear word
         customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
     },
+    chat_advertising_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_advertising",
+            reason: "profile.chat_advertising_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_advertising",
+            detailsPrefix: "Matched patterns: ", // Matched pattern will be in violationDetails
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_advertising_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage or customAction by default
+    },
+    chat_caps_abuse_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_caps_abuse",
+            reason: "profile.chat_caps_abuse_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_caps_abuse",
+            detailsPrefix: "CAPS Abuse: ", // ViolationDetails will include percentage, message
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_caps_abuse_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage by default
+    },
+    chat_char_repeat_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_char_repeat",
+            reason: "profile.chat_char_repeat_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_char_repeat",
+            detailsPrefix: "Char Repeat: ", // ViolationDetails will include char, count, message
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_char_repeat_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage by default
+    },
+    chat_symbol_spam_detected: {
+        enabled: true,
+        flag: {
+            type: "chat_symbol_spam",
+            reason: "profile.chat_symbol_spam_detected.flagReason", // Localization key
+            increment: 1
+        },
+        log: {
+            actionType: "detected_chat_symbol_spam",
+            detailsPrefix: "Symbol Spam: ", // ViolationDetails will include percentage, message
+            includeViolationDetails: true
+        },
+        notifyAdmins: {
+            message: "profile.chat_symbol_spam_detected.notifyMessage" // Localization key
+        }
+        // No cancelMessage by default
+    },
     "player_self_hurt": {
         enabled: true,
         flag: {

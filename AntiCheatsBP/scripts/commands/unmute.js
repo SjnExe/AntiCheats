@@ -14,7 +14,8 @@ export const definition = {
     name: "unmute",
     syntax: "!unmute <playername>",
     description: getString("command.unmute.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

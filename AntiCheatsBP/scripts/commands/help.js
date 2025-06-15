@@ -15,7 +15,8 @@ export const definition = {
     name: "help",
     syntax: "!help [command_name]",
     description: "Shows available commands or help for a specific command.",
-    permissionLevel: permissionLevels.normal // Accessible by all players
+    permissionLevel: permissionLevels.normal, // Accessible by all players
+    enabled: true,
 };
 
 /**
@@ -42,6 +43,16 @@ export async function execute(player, args, dependencies) {
         }
 
         if (foundCmdDef) {
+            let isEffectivelyEnabled = foundCmdDef.enabled;
+            if (runtimeConfig.commandSettings && typeof runtimeConfig.commandSettings[foundCmdDef.name]?.enabled === 'boolean') {
+                isEffectivelyEnabled = runtimeConfig.commandSettings[foundCmdDef.name].enabled;
+            }
+
+            if (!isEffectivelyEnabled) {
+                player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName }));
+                return;
+            }
+
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
                 const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
                 let permLevelName = "Unknown";
@@ -107,6 +118,14 @@ export async function execute(player, args, dependencies) {
             category.commands.forEach(commandName => {
                 const cmdDef = allCommands.find(cmd => cmd.name === commandName);
                 if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) {
+                    let isEffectivelyEnabled = cmdDef.enabled;
+                    if (runtimeConfig.commandSettings && typeof runtimeConfig.commandSettings[cmdDef.name]?.enabled === 'boolean') {
+                        isEffectivelyEnabled = runtimeConfig.commandSettings[cmdDef.name].enabled;
+                    }
+                    if (!isEffectivelyEnabled) {
+                        return; // Skips this command in the list
+                    }
+
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
                     // Get localized description for each command
                     let description;

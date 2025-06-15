@@ -12,6 +12,7 @@ import * as commandManager from './core/commandManager.js';
 import * as uiManager from './core/uiManager.js';
 import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js'; // Ensure logManager is imported for addLog
+import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
 import { executeCheckAction } from './core/actionManager.js';
 
@@ -37,7 +38,20 @@ function easeInOutQuad(t) {
     return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
 }
 
-import { permissionLevels } from './core/rankManager.js'; // For World Border (used by playerUtils.getPlayerPermissionLevel)
+/**
+ * Maps a value from one range to another.
+ * @param {number} value The input value to map.
+ * @param {number} inMin The minimum of the input range.
+ * @param {number} inMax The maximum of the input range.
+ * @param {number} outMin The minimum of the output range.
+ * @param {number} outMax The maximum of the output range.
+ * @returns {number} The mapped value.
+ */
+function mapRange(value, inMin, inMax, outMin, outMax) {
+    return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+}
+
+// import { permissionLevels } from './core/rankManager.js'; // REMOVED - Unused in main.js
 
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 
@@ -334,8 +348,8 @@ mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
         config: configModule.editableConfigValues,
         configModule: configModule,
         playerUtils,
-        playerDataManager, // Though not directly used by current handler
-        logManager, // Though not directly used
+        playerDataManager,
+        // logManager, // REMOVED - Not directly used by handlePlayerDimensionChangeAfterEvent
         currentTick
     };
     eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, dependencies);
@@ -446,21 +460,13 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
             if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
                 if (blockBelowFeet && blockBelowFeet.isSolid) {
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //     playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
                     return checkY;
-                } else if (blockFeet.isAir && blockHead.isAir) { // If below is not solid, but current spot is air (e.g. on a torch)
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //     playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
+                } else if (blockFeet.isAir && blockHead.isAir) {
                     return checkY;
                 }
             }
         } catch (e) {
-            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (down) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
-            // }
+            // Error during block check, continue
         }
     }
 
@@ -478,27 +484,16 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
              if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
                 if (blockBelowFeet && blockBelowFeet.isSolid) {
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //    playerUtilsForDebug.debugLog(`SafeY: Found safe Y=${checkY} (up, solid below) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
                     return checkY;
-                } else if (blockFeet.isAir && blockHead.isAir) { // Air gap, even if not solid below, is better than inside unknown block
-                    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-                    //    playerUtilsForDebug.debugLog(`SafeY: Found air Y=${checkY} (up, below not solid) for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)})`, playerForDebug.nameTag);
-                    // }
+                } else if (blockFeet.isAir && blockHead.isAir) {
                     return checkY;
                 }
             }
         } catch(e) {
-            // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-            //     playerUtilsForDebug.debugLog(`SafeY: Error checking Y=${checkY} (up) for ${playerForDebug.nameTag}: ${e}`, playerForDebug.nameTag);
-            // }
+            // Error during block check, continue
         }
     }
 
-    // if (playerForDebug && playerUtilsForDebug && playerUtilsForDebug.debugLog && playerUtilsForDebug.isWatched(playerForDebug.nameTag)) {
-    //     playerUtilsForDebug.debugLog(`SafeY: No ideal safe Y found for ${playerForDebug.nameTag} at XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}). Defaulting to ${Math.floor(initialY)}`, playerForDebug.nameTag);
-    // }
     return Math.floor(initialY);
 }
 
@@ -556,59 +551,6 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
 
 
 let currentTick = 0;
-
-// Helper function for finding a safe Y level for teleportation
-function findSafeY(player, dimension, x, z, startY, playerUtilsInstance) {
-    const maxSearchDown = 3;
-    const maxSearchUp = 5;
-    const worldMinY = dimension.heightRange.min;
-    const worldMaxY = dimension.heightRange.max;
-
-    let currentY = Math.max(worldMinY, Math.min(Math.floor(startY), worldMaxY - 2));
-
-    // Search down
-    for (let i = 0; i <= maxSearchDown; i++) {
-        const checkY = currentY - i;
-        if (checkY < worldMinY) break;
-
-        try {
-            const blockBelow = dimension.getBlock({ x: x, y: checkY -1, z: z });
-            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
-            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
-
-            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
-                blockAtFeet && blockAtFeet.isAir &&
-                blockAtHead && blockAtHead.isAir) {
-                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} downwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
-                return checkY;
-            }
-        } catch (e) { /* getBlock can fail */ }
-    }
-
-    // Search up from original startY
-    currentY = Math.floor(startY); // Start search from original Y upwards
-    for (let i = 0; i <= maxSearchUp; i++) {
-        const checkY = currentY + i;
-        if (checkY > worldMaxY - 2) break;
-
-        try {
-            const blockBelow = dimension.getBlock({ x: x, y: checkY - 1, z: z });
-            const blockAtFeet = dimension.getBlock({ x: x, y: checkY, z: z });
-            const blockAtHead = dimension.getBlock({ x: x, y: checkY + 1, z: z });
-
-            if (blockBelow && !blockBelow.isAir && !blockBelow.isLiquid &&
-                blockAtFeet && blockAtFeet.isAir &&
-                blockAtHead && blockAtHead.isAir) {
-                if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: Found safe Y=${checkY} upwards for (${x},${z}) for player ${player.nameTag}`, player.nameTag);
-                return checkY;
-            }
-        } catch (e) { /* getBlock can fail */ }
-    }
-
-    if (playerUtilsInstance.debugLog) playerUtilsInstance.debugLog(`SafeY: No safe Y found for (${x},${z}) near ${startY} for player ${player.nameTag}, using original Y.`, player.nameTag);
-    return Math.floor(startY);
-}
-
 
 /**
  * Main tick loop for the Anti-Cheat system.
@@ -1030,9 +972,30 @@ mc.system.runInterval(async () => {
                     pData.lastBorderVisualTick = currentTick;
 
                     const playerLoc = player.location;
-                    const particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
+                    let particleNameToUse;
+                    const particleSequence = dependencies.config.worldBorderParticleSequence;
+
+                    if (Array.isArray(particleSequence) && particleSequence.length > 0) {
+                        const visualUpdateInterval = dependencies.config.worldBorderVisualUpdateIntervalTicks > 0 ? dependencies.config.worldBorderVisualUpdateIntervalTicks : 20; // Default to 20 if interval is 0 to prevent division by zero
+                        const sequenceIndex = Math.floor(currentTick / visualUpdateInterval) % particleSequence.length;
+                        particleNameToUse = particleSequence[sequenceIndex];
+                    } else {
+                        particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
+                    }
                     const visualRange = dependencies.config.worldBorderVisualRange;
-                    const density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
+                    let density;
+                    if (dependencies.config.worldBorderEnablePulsingDensity) {
+                        const pulseSpeed = dependencies.config.worldBorderPulseSpeed > 0 ? dependencies.config.worldBorderPulseSpeed : 1.0;
+                        const pulseTime = (currentTick * pulseSpeed) / 20.0; // Assuming 20 TPS for a cycle related to pulseSpeed = 1.0 per ~6.28s
+                        const sineWave = Math.sin(pulseTime); // Oscillates between -1 and 1
+                        const minDensity = dependencies.config.worldBorderPulseDensityMin > 0 ? dependencies.config.worldBorderPulseDensityMin : 0.1;
+                        const maxDensity = dependencies.config.worldBorderPulseDensityMax > minDensity ? dependencies.config.worldBorderPulseDensityMax : minDensity + 1.0;
+
+                        density = mapRange(sineWave, -1, 1, minDensity, maxDensity);
+                        density = Math.max(0.1, density); // Ensure density is at least 0.1
+                    } else {
+                        density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
+                    }
                     const wallHeight = dependencies.config.worldBorderParticleWallHeight;
                     const segmentLength = dependencies.config.worldBorderParticleSegmentLength;
                     const yBase = Math.floor(playerLoc.y);
@@ -1115,6 +1078,13 @@ mc.system.runInterval(async () => {
                     logManager.addLog('error', `DeferredSaveFail: ${player.nameTag}, ${error}`);
                 }
             }
+        }
+        // Persist logs and reports if they are dirty
+        if (logManager.persistLogCacheToDisk) {
+            logManager.persistLogCacheToDisk();
+        }
+        if (reportManager.persistReportsToDisk) {
+            reportManager.persistReportsToDisk();
         }
     }
 }, 1);

@@ -218,3 +218,25 @@ export function parseDuration(durationString) {
     }
     return null; // Invalid format
 }
+
+/**
+ * Formats a duration in milliseconds into a human-readable string (e.g., "1h 23m 45s").
+ * @param {number} ms - The duration in milliseconds.
+ * @returns {string} A formatted string representing the duration, or "N/A" if ms is non-positive.
+ */
+export function formatSessionDuration(ms) {
+    if (ms <= 0) {
+        return "N/A";
+    }
+    let seconds = Math.floor(ms / 1000);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    seconds %= 60;
+    minutes %= 60;
+
+    const parts = [];
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+    return parts.join(' ');
+}

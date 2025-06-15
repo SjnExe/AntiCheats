@@ -18,6 +18,7 @@ export const definition = {
     aliases: ['tpask', 'tph'],
     permissionLevel: permissionLevels.normal,
     syntax: '!tpahere <playerName>',
+    enabled: true,
 };
 
 /**

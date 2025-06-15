@@ -123,7 +123,6 @@ export function addLog(logEntry) {
     // For higher frequency logging, a deferred save (e.g., via system.runInterval in main.js) would be better.
     // If this `addLog` is called extremely rapidly, this immediate save could be an issue.
     // For now, keeping it simple. If performance issues arise, make persistLogCacheToDisk explicitly called by main.
-    persistLogCacheToDisk();
 }
 
 /**

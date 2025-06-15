@@ -13,7 +13,8 @@ export const definition = {
     name: "warnings",
     syntax: "!warnings <playername>",
     description: "command.warnings.description",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

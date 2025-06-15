@@ -15,7 +15,8 @@ export const definition = {
     name: "unban",
     syntax: "!unban <playername>",
     description: getString("command.unban.description"),
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**

@@ -123,18 +123,6 @@ export function getPlayerRankId(player) {
     return 'member';
 }
 
-// Old constants and function are removed/commented out as per instructions.
-// /**
-//  * Display properties for the Owner rank.
-//  * @type {RankDisplayProperties}
-//  */
-// export const ownerRank = {
-//     name: "Owner",
-//     chatPrefix: "§c[Owner] §f",
-//     nametagPrefix: "§cOwner§f\n"
-// };
-// // ... (adminRank, memberRank, getPlayerRankDisplay commented or removed) ...
-
 /**
  * Retrieves the formatted chat elements (prefix, name color, message color) for a player based on their rank
  * and configurable color settings.

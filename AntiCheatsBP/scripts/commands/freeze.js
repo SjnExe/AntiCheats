@@ -12,7 +12,8 @@ export const definition = {
     name: "freeze",
     syntax: "!freeze <playername> [on|off]",
     description: "Freezes or unfreezes a player, preventing movement.",
-    permissionLevel: permissionLevels.admin
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**
