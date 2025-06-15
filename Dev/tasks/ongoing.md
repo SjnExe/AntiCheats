@@ -2,9 +2,11 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: World Border Resize - Pause/Resume Functionality
+## I. Current Active Plan: Documentation Review and Update (README, Command Help)
 
-*   World Border Pause/Resume functionality (command updates, main.js logic documentation) completed. Details moved to `completed.md`.
+*   Reviewed `README.md` for outdated information based on recent features (AutoMod, World Border, Helpful Links).
+*   Updated `README.md` with a new 'World Border System' section, expanded 'Features' list, updated 'Admin Commands & UI', 'Configuration', and 'AutoMod' examples.
+*   Reviewed command help messages, confirming `!worldborder` help already includes `resizepause` and `resizeresume` subcommands. No changes were needed for command help strings.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 

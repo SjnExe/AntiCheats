@@ -9,6 +9,7 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 *   [Setup](#setup)
 *   [Admin Commands & UI](#admin-commands--ui)
 *   [Configuration](#configuration)
+*   [World Border System](#world-border-system)
 *   [Versioning](#versioning)
 *   [Owner and Rank System](#owner-and-rank-system)
 *   [General Player Commands](#general-player-commands)
@@ -18,9 +19,9 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 ## Features
 
 *   **Comprehensive Cheat Detections:**
-    *   **Movement:** Fly (sustained & hover), Speed, NoFall.
+    *   **Movement:** Fly (sustained, hover, high Y-velocity), Speed, NoFall.
     *   **Combat:** Reach, CPS (Clicks Per Second / AutoClicker).
-    *   **World:** Nuker (rapid block breaking), Illegal Item usage/placement.
+    *   **World:** Nuker (rapid block breaking), Illegal Item usage/placement. Includes various other player behavior and world interaction checks (e.g., AntiGMC, NameSpoof, InstaBreak, Tower, AirPlace, FastUse, SelfHurt).
     *   **Nether Roof Detection**: Identifies players who access the top of the Nether (above a configurable Y-level). AutoMod is typically configured to kick players for this. Configurable via `enableNetherRoofCheck` and `netherRoofYLevelThreshold` in `config.js`.
     *   **Combat Log:** Flags players disconnecting shortly after PvP (disabled by default).
 *   **Admin Tools:** Text-based commands and a UI (``!panel`` or ``!ui``) for admin actions and management.
@@ -28,6 +29,7 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 *   **Data Persistence:** Player flags and violation data are saved and persist across server restarts and player sessions.
 *   **Player Flagging System:** Players accumulate flags for violations, with notifications to admins.
 *   **Automated Moderation (AutoMod):** System to automatically apply actions (warn, kick, ban, mute, etc.) based on configurable flag thresholds.
+*   **Advanced World Border:** Per-dimension configurable borders (square/circle) with optional damage outside border, particle visuals, gradual resizing (including pause/resume capabilities), and safe player teleportation.
 
 ## Required Experimental Toggles
 
@@ -51,7 +53,7 @@ Administrators (players with the `admin` tag, configurable in ``AntiCheatsBP/scr
 
 ### Admin UI (Recommended)
 
-*   ``!panel`` (or ``!ui`` alias): Opens the main AntiCheat Admin Menu for player inspection, flag management, and monitoring. All text-based admin commands are also accessible via buttons and forms within this UI. For details on specific command functionalities available through the UI (like kick, mute, ban, inspect, resetflags, etc.), please refer to the `!help` command in-game which provides up-to-date information based on your permission level.
+*   ``!panel`` (or ``!ui`` alias): Opens the main AntiCheat Admin Menu for player inspection, flag management, and monitoring. All text-based admin commands are also accessible via buttons and forms within this UI. For details on specific command functionalities available through the UI (like kick, mute, ban, inspect, resetflags, etc.), please refer to the `!help` command in-game which provides up-to-date information based on your permission level. Key admin commands include `!worldborder` (or `!wb`) for managing per-dimension world borders. The `!help` command provides comprehensive details on all commands and subcommands available to your permission level.
 
 ## Configuration
 
@@ -62,6 +64,7 @@ Within `config.js`, you will find various sections to control:
 *   Detection thresholds for various cheats.
 *   Automated Moderation (AutoMod) behavior, including its global toggle.
 *   Action profiles that define how the system reacts to cheat detections.
+*   Default settings for features like the World Border system (e.g., particle types, damage defaults).
 *   And other advanced system settings.
 
 While `config.js` is the main configuration file, it may internally reference or load settings from other specialized modules for organization, such as:
@@ -97,6 +100,19 @@ These commands are available to all players.
 *   ``!myflags``: Allows any player to check their own current flag status.
 *   ``!uinfo``: Shows your anti-cheat stats, server rules, and help links in a UI.
 *   ``!report <playername> <reason...>``: Reports a player for admin review. Reason is required.
+
+## World Border System
+
+The addon includes a powerful World Border system to define playable areas per dimension.
+Key features:
+- **Per-Dimension Borders:** Configure unique borders for the Overworld, Nether, and The End.
+- **Shapes:** Supports 'square' (center, half-size) and 'circle' (center, radius) borders.
+- **Damage & Teleport:** Optionally configure damage for players outside the border, with eventual safe teleportation back.
+- **Visuals:** Display configurable particle effects to indicate border proximity.
+- **Gradual Resize:** Admin commands allow borders to shrink or expand over a defined time period.
+- **Pause/Resume Resize:** Ongoing resizes can be paused and resumed.
+- **Admin Control:** Manage all aspects via the `!worldborder` command (or `!wb`). Use `!wb help` for detailed subcommand information.
+Default settings are in `config.js`, while active border configurations are stored in world dynamic properties.
 
 ## Contributing
 
@@ -140,8 +156,8 @@ AutoMod is configured through **``AntiCheatsBP/scripts/config.js``** (for the gl
 - **Usage:** This object allows you to enable or disable AutoMod for specific `checkType`s. If a `checkType` is not listed in this object, or if its value is `true`, AutoMod will be active for it (assuming the global `enableAutoMod` is also `true`). To disable AutoMod for a particular check, set its value to `false`.
   ```javascript
   export const automodPerCheckTypeToggles = {
-    "fly_y_velocity": true,  // AutoMod enabled for this check
-    "reach_combat": false, // AutoMod disabled for this check
+    "movement_hover_fly": true,  // AutoMod enabled for this check
+    "combat_cps_high": false, // AutoMod disabled for this check
     // ... other check types
   };
   ```
@@ -149,7 +165,7 @@ AutoMod is configured through **``AntiCheatsBP/scripts/config.js``** (for the gl
 #### 3. AutoMod Rules (`automodRules`)
 - **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodRules`
-- **Structure:** This is an object where each key is a `checkType` string (e.g., `"fly_y_velocity"`, `"nuker_break_speed"`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
+- **Structure:** This is an object where each key is a `checkType` string (e.g., `"movement_hover_fly"`, `"nuker_break_speed"`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
 - **`actionStep` Object Properties:**
   - `flagThreshold` (number): The number of flags for this `checkType` at which this action step is triggered.
   - `actionType` (string): The type of action to take. See "Supported Action Types" below.
@@ -162,21 +178,21 @@ AutoMod is configured through **``AntiCheatsBP/scripts/config.js``** (for the gl
 - **Example Rule:**
   ```javascript
   // In automodRules
-  "fly_y_velocity": [
+  "movement_hover_fly": [
     {
       "flagThreshold": 3,
       "actionType": "WARN",
-      "parameters": { "reasonKey": "automod.fly.warn1" }
+      "parameters": { "reasonKey": "automod.fly.hover.warn1" }
     },
     {
       "flagThreshold": 5,
       "actionType": "KICK",
-      "parameters": { "reasonKey": "automod.fly.kick1" }
+      "parameters": { "reasonKey": "automod.fly.hover.kick1" }
     },
     {
       "flagThreshold": 10,
       "actionType": "TEMP_BAN",
-      "parameters": { "duration": "1h", "reasonKey": "automod.fly.tempban1" },
+      "parameters": { "duration": "1h", "reasonKey": "automod.fly.hover.tempban1" },
       "resetFlagsAfterAction": true
     }
   ],
@@ -192,6 +208,7 @@ The following `actionType` strings can be used in your `automodRules`:
 - `MUTE`: Temporarily mutes the player for a configurable duration and reason. Player receives an in-game notification.
 - `FREEZE`: Freezes the player (prevents movement). Player receives an in-game notification. This action is delegated to the `!freeze` command logic.
 - `REMOVE_ILLEGAL_ITEM`: Removes all instances of a specific illegal item from the player's inventory. The item type is determined by the `violationDetails` of the flag that triggered this action.
+- `TELEPORT_SAFE`: Teleports the player to a safe location (e.g., inside a world border, or to specific coordinates defined in parameters). Behavior depends on context and parameters.
 
 #### 5. Action Messages (`automodActionMessages`)
 - **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
@@ -199,7 +216,7 @@ The following `actionType` strings can be used in your `automodRules`:
 - **Usage:** This is an object mapping `reasonKey` strings (used in `automodRules`) to the actual text messages that will be shown to players or used in logs. This allows for easy customization and potential localization of messages.
   ```javascript
   export const automodActionMessages = {
-    "automod.fly.warn1": "Automated Warning: Unusual flight activity detected.",
+    "automod.fly.hover.warn1": "Automated Warning: Unusual flight activity detected.", // Example updated
     "automod.default.kick": "You have been kicked by AutoMod.",
     // ... other messages
   };
