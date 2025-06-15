@@ -181,17 +181,17 @@ AutoMod is configured through **``AntiCheatsBP/scripts/config.js``** (for the gl
   "movement_hover_fly": [
     {
       "flagThreshold": 3,
-      "actionType": "WARN",
+      "actionType": "warn",
       "parameters": { "reasonKey": "automod.fly.hover.warn1" }
     },
     {
       "flagThreshold": 5,
-      "actionType": "KICK",
+      "actionType": "kick",
       "parameters": { "reasonKey": "automod.fly.hover.kick1" }
     },
     {
       "flagThreshold": 10,
-      "actionType": "TEMP_BAN",
+      "actionType": "tempBan",
       "parameters": { "duration": "1h", "reasonKey": "automod.fly.hover.tempban1" },
       "resetFlagsAfterAction": true
     }
@@ -200,15 +200,15 @@ AutoMod is configured through **``AntiCheatsBP/scripts/config.js``** (for the gl
 
 #### 4. Supported Action Types (`actionType`)
 The following `actionType` strings can be used in your `automodRules`:
-- `FLAG_ONLY`: Takes no direct punitive action. Useful for sensitive checks or as an initial step. Logs that the rule was processed.
-- `WARN`: Sends a configurable warning message to the player's chat.
-- `KICK`: Kicks the player from the server with a configurable reason.
-- `TEMP_BAN`: Temporarily bans the player for a configurable duration and reason. The player is also kicked.
-- `PERM_BAN`: Permanently bans the player with a configurable reason. The player is also kicked.
-- `MUTE`: Temporarily mutes the player for a configurable duration and reason. Player receives an in-game notification.
-- `FREEZE`: Freezes the player (prevents movement). Player receives an in-game notification. This action is delegated to the `!freeze` command logic.
-- `REMOVE_ILLEGAL_ITEM`: Removes all instances of a specific illegal item from the player's inventory. The item type is determined by the `violationDetails` of the flag that triggered this action.
-- `TELEPORT_SAFE`: Teleports the player to a safe location (e.g., inside a world border, or to specific coordinates defined in parameters). Behavior depends on context and parameters.
+- `flagOnly`: Takes no direct punitive action. Useful for sensitive checks or as an initial step. Logs that the rule was processed.
+- `warn`: Sends a configurable warning message to the player's chat.
+- `kick`: Kicks the player from the server with a configurable reason.
+- `tempBan`: Temporarily bans the player for a configurable duration and reason. The player is also kicked.
+- `permBan`: Permanently bans the player with a configurable reason. The player is also kicked.
+- `mute`: Temporarily mutes the player for a configurable duration and reason. Player receives an in-game notification.
+- `freeze`: Freezes the player (prevents movement). Player receives an in-game notification. This action is delegated to the `!freeze` command logic.
+- `removeIllegalItem`: Removes all instances of a specific illegal item from the player's inventory. The item type is determined by the `violationDetails` of the flag that triggered this action.
+- `teleportSafe`: Teleports the player to a safe location (e.g., inside a world border, or to specific coordinates defined in parameters). Behavior depends on context and parameters.
 
 #### 5. Action Messages (`automodActionMessages`)
 - **File:** `AntiCheatsBP/scripts/core/automodConfig.js`

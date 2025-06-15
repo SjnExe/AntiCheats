@@ -2,9 +2,13 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: Documentation Review and Update (README, Command Help)
+## I. Current Active Plan: Refactor `actionType` Strings to `camelCase`
 
-*   Documentation review and `README.md` updates completed (new World Border section, expanded Features, updated AutoMod examples, etc.). Command help messages were found to be current. Details moved to `completed.md`.
+*   Updated `Dev/CodingStyle.md` to specify `camelCase` for `actionType` string literals (used in AutoMod rules and action profile logs), with examples.
+*   Refactored all `actionType` values in `automodConfig.js` (within `automodRules`) to `camelCase` (e.g., 'WARN' to 'warn').
+*   Refactored all `log.actionType` values in `actionProfiles.js` (within `checkActionProfiles`) to `camelCase` (e.g., 'detected_fly_hover' to 'detectedFlyHover').
+*   Updated `README.md` (AutoMod section) to reflect `camelCase` for `actionType` examples and the list of supported types.
+*   Added a critical developer task to `Dev/tasks/ongoing.md` for updating `actionManager.js` to handle the new `camelCase` `actionType`s from `automodConfig.js`.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
@@ -23,6 +27,9 @@ These are higher-level features and areas for future development:
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
 *   **AutoMod System:**
+    - **CRITICAL Developer Action Required for AutoMod Functionality:**
+        - `actionManager.js` (specifically the `executeAutomodAction` function or its equivalent) MUST be updated to handle `camelCase` `actionType` strings from `automodConfig.js` (e.g., expect 'tempBan' instead of 'TEMP_BAN' or 'TempBan').
+        - **AutoMod will NOT function correctly and may break if `actionManager.js` is not updated to match the new `camelCase` `actionType` convention in `automodConfig.js`.**
     - **Developer Action Required for `chat_repeat_spam`:**
         - Identify the module/function for `checks.checkSpam` (referenced in `eventHandlers.js`).
         - Determine the exact `checkType` string this function uses when flagging for *repeat message spam*.

@@ -26,6 +26,11 @@ This document outlines coding style conventions to be followed for this project 
 ### Command Naming:
 *   User-facing commands (e.g., those typed in chat like `!gmc`, `!help`) should remain in their existing lowercase format. The uppercase acronym convention described for JavaScript variables and functions does not apply to these command identifiers.
 
+### `actionType` String Literals
+String literals used for `actionType` values (e.g., in `automodConfig.js` for AutoMod rule actions, and for `log.actionType` in `actionProfiles.js` for log categorization) should use **`camelCase`**.
+    - Examples for AutoMod rule actions: `warn`, `kick`, `tempBan`, `mute`, `flagOnly`, `teleportSafe`.
+    - Examples for `log.actionType` in action profiles: `detectedFlyHover`, `antigriefTntPlacement`, `detectedSpeedGround`.
+
 ## JSDoc
 *   Use JSDoc comments for all functions, especially exported ones, detailing their purpose, parameters, and return values.
 *   Use JSDoc typedefs for complex object structures (e.g., `PlayerAntiCheatData`) and consider placing these in a central `types.js` file in the future to avoid circular dependencies.
