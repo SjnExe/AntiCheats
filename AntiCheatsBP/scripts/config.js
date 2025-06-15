@@ -1,5 +1,4 @@
 // Anti-Cheat Configuration File
-// import { userSettings } from './userSettings.js'; // REMOVED
 import { checkActionProfiles } from '../core/actionProfiles.js';
 import { automodConfig as importedAutoModConfig } from '../core/automodConfig.js';
 

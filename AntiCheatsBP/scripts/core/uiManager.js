@@ -6,9 +6,9 @@
  */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
-import * as playerUtils from '../utils/playerUtils.js'; // Keep for direct use if any, though dependencies is preferred
+// import * as playerUtils from '../utils/playerUtils.js'; // REMOVED as no longer directly used
 import { permissionLevels } from './rankManager.js';
-import * as logManagerFile from './logManager.js'; // Use specific import name to avoid conflict
+// import * as logManagerFile from './logManager.js'; // REMOVED
 import { editableConfigValues, updateConfigValue } from '../config.js';
 import { getString } from './i18n.js';
 import { formatSessionDuration } from '../utils/playerUtils.js'; // Added import
@@ -84,7 +84,7 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
         const targetPlayerName = response.formValues[0];
         if (!targetPlayerName || targetPlayerName.trim() === "") {
             adminPlayer.sendMessage(getString("common.error.nameEmpty"));
-            await showInspectPlayerForm(adminPlayer, playerDataManager, dependencies); // Re-show form
+            await showInspectPlayerForm(adminPlayer, playerDataManager, dependencies);
             return;
         }
 
@@ -162,8 +162,9 @@ async function showServerRules(player, dependencies) {
     }
 }
 
-async function showHelpAndLinks(player, _config, _playerDataManager, _dependencies) {
-    playerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
+async function showHelpAndLinks(player, dependencies) {
+    const { playerUtils: depPlayerUtils } = dependencies;
+    depPlayerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
     player.sendMessage(getString("ui.normalPanel.info.useUinfo", { option: "Helpful Links or General Tips" }));
 }
 
@@ -233,7 +234,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                 if (commandName === 'kick') cancelledKey = "ui.playerActions.kick.cancelled";
                 else if (commandName === 'ban') cancelledKey = "ui.playerActions.ban.cancelled";
                 else if (commandName === 'mute') cancelledKey = "ui.playerActions.mute.cancelled";
-                else console.warn(`[uiManager] Unhandled commandName '${commandName}' for specific cancellation message key in showModalAndExecute.`);
+                // else console.warn(`[uiManager] Unhandled commandName '${commandName}' for specific cancellation message key in showModalAndExecute.`); // REMOVED
 
                 adminPlayer.sendMessage(getString(cancelledKey)); // getString will return key if not found
                 return true; // Indicate modal was handled (cancelled)
@@ -479,7 +480,7 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
         switch (response.selection) {
             case 0: await showMyStats(player, dependencies); break; // Updated call site
             case 1: await showServerRules(player, dependencies); break; // Updated call site
-            case 2: await showHelpAndLinks(player, config, playerDataManager, dependencies); break;
+            case 2: await showHelpAndLinks(player, dependencies); break; // Updated call site
         }
     } catch (error) {
         depPlayerUtils.debugLog(`Error in showNormalUserPanelMain for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
