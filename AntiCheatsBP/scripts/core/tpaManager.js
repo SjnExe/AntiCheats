@@ -3,7 +3,16 @@
  * @version 1.0.1
  */
 
-import { world, system } from '@minecraft/server';
+// IMPORTANT NOTE ON PLAYER IDENTIFIERS:
+// This module currently uses `player.name` (assumed to be the unique gamertag/username)
+// as the primary identifier for players in maps and request objects (e.g., `requesterName`, `targetName`).
+// In standard @minecraft/server, `player.id` is the persistent unique identifier, while `player.nameTag`
+// is the display name that can change. If `player.name` is not guaranteed to be unique and persistent
+// in the environment this script runs, it should be refactored to use `player.id` for all internal
+// tracking and lookups, reserving `player.nameTag` for display purposes only.
+// This change would affect `lastPlayerRequestTimestamp`, `playerTpaStatuses`, and parts of `activeRequests`.
+
+import { world } from '@minecraft/server';
 import * as configModule from '../config.js';
 import { getString } from './i18n.js';
 
@@ -43,10 +52,10 @@ export function addRequest(requester, target, type) {
     const requestId = generateRequestId();
     const request = {
         requestId,
-        requesterName: requester.name,
+        requesterName: requester.name, // See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
         requesterLocation: requester.location,
         requesterDimensionId: requester.dimension.id,
-        targetName: target.name,
+        targetName: target.name, // See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
         targetLocation: target.location,
         targetDimensionId: target.dimension.id,
         requestType: type,
@@ -61,15 +70,29 @@ export function addRequest(requester, target, type) {
     return request;
 }
 
+/**
+ * Finds an active TPA request.
+ * - If `playerBname` is provided, it looks for a request specifically between `playerAname` and `playerBname` (in either direction).
+ * - If `playerBname` is null or undefined, it looks for *any* request where `playerAname` is either the requester or the target.
+ * @param {string} playerAname - The name of the first player. (See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file)
+ * @param {string} [playerBname] - Optional. The name of the second player. (See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file)
+ * @returns {TpaRequest | undefined} The found request, or undefined if no matching request is found.
+ */
 export function findRequest(playerAname, playerBname) {
     for (const request of activeRequests.values()) {
+        const isRequesterA = request.requesterName === playerAname;
+        const isTargetA = request.targetName === playerAname;
+        const isRequesterB = playerBname ? request.requesterName === playerBname : false;
+        const isTargetB = playerBname ? request.targetName === playerBname : false;
+
         if (playerBname) {
-            if ((request.requesterName === playerAname && request.targetName === playerBname) ||
-                (request.requesterName === playerBname && request.targetName === playerAname)) {
+            // Looking for a specific pair: (A to B) or (B to A)
+            if ((isRequesterA && isTargetB) || (isRequesterB && isTargetA)) {
                 return request;
             }
         } else {
-            if (request.requesterName === playerAname || request.targetName === playerAname) {
+            // Looking for any request involving playerA
+            if (isRequesterA || isTargetA) {
                 return request;
             }
         }
@@ -77,6 +100,11 @@ export function findRequest(playerAname, playerBname) {
     return undefined;
 }
 
+/**
+ * Finds all active TPA requests involving a specific player (either as requester or target).
+ * @param {string} playerName - The name of the player. (See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file)
+ * @returns {TpaRequest[]} An array of matching TPA requests.
+ */
 export function findRequestsForPlayer(playerName) {
     const results = [];
     for (const request of activeRequests.values()) {
@@ -108,16 +136,17 @@ export function acceptRequest(requestId) {
         return false;
     }
 
+    // Note: Player lookups use .name, see IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
 
     if (!requesterPlayer || !targetPlayer) {
-        const offlinePlayerName = !requesterPlayer ? request.requesterName : request.targetName;
-        const onlinePlayer = !requesterPlayer ? targetPlayer : requesterPlayer;
+        const offlinePlayerName = !requesterPlayer ? request.requesterName : (!targetPlayer ? request.targetName : "Unknown"); // Handle if both are somehow null based on names
+        const onlinePlayer = requesterPlayer || targetPlayer; // The one that is not null
         if (onlinePlayer) {
             onlinePlayer.sendMessage(getString("tpa.manager.error.targetOfflineOnAccept", { offlinePlayerName: offlinePlayerName }));
         }
-        console.log(`[TPAManager] Player ${offlinePlayerName} not found for accepted request ${requestId}. Cancelling.`);
+        console.log(`[TPAManager] Player ${offlinePlayerName} (or target) not found for accepted request ${requestId}. Cancelling.`);
         request.status = 'cancelled';
         removeRequest(requestId);
         return false;
@@ -151,15 +180,16 @@ export function executeTeleport(requestId) {
         return;
     }
 
+    // Note: Player lookups use .name, see IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
 
     if (!requesterPlayer || !targetPlayer) {
-        const offlinePlayerName = !requesterPlayer ? request.requesterName : request.targetName;
-        const onlinePlayer = !requesterPlayer ? targetPlayer : requesterPlayer;
+        const offlinePlayerName = !requesterPlayer ? request.requesterName : (!targetPlayer ? request.targetName : "Unknown"); // Handle if both are somehow null
+        const onlinePlayer = requesterPlayer || targetPlayer; // The one that is not null
         const message = getString("tpa.manager.error.teleportTargetOffline", { offlinePlayerName: offlinePlayerName });
         if (onlinePlayer) { onlinePlayer.sendMessage(message); }
-        console.log(`[TPAManager] ExecuteTeleport: Player ${offlinePlayerName} not found for request ${requestId}. ${message}`);
+        console.log(`[TPAManager] ExecuteTeleport: Player ${offlinePlayerName} (or target) not found for request ${requestId}. ${message}`);
         request.status = 'cancelled';
         removeRequest(requestId);
         return;
@@ -213,39 +243,47 @@ export function executeTeleport(requestId) {
 export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog) {
     const request = activeRequests.get(requestId);
     if (!request || request.status === 'cancelled' || request.status === 'completed') {
-        return;
+        return; // Already processed or doesn't exist
     }
     request.status = 'cancelled';
+    // Note: Player lookups use .name, see IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
-    if (requesterPlayer) { requesterPlayer.sendMessage(reasonMessagePlayer); }
-    if (targetPlayer) { targetPlayer.sendMessage(reasonMessagePlayer); }
+    if (requesterPlayer && requesterPlayer.isValid()) { requesterPlayer.sendMessage(reasonMessagePlayer); }
+    if (targetPlayer && targetPlayer.isValid()) { targetPlayer.sendMessage(reasonMessagePlayer); }
     console.log(`[TPAManager] Teleport for request ${requestId} cancelled: ${reasonMessageLog}`);
     removeRequest(requestId);
 }
 
 export function declineRequest(requestId) {
     const request = activeRequests.get(requestId);
-    if (!request) { return; }
+    if (!request) { return; } // Request already removed or never existed
+
+    // Note: Player lookups use .name, see IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
 
+    // It's possible players logged off, use nameTag if player object exists, otherwise fallback to stored name.
+    const targetDisplayName = targetPlayer ? targetPlayer.nameTag : request.targetName;
+    const requesterDisplayName = requesterPlayer ? requesterPlayer.nameTag : request.requesterName;
+
     if (request.status === 'pending_acceptance') {
-        if (requesterPlayer) {
-            requesterPlayer.sendMessage(getString("tpa.manager.decline.requesterNotified", { targetPlayerName: (targetPlayer ? targetPlayer.nameTag : request.targetName) }));
+        if (requesterPlayer && requesterPlayer.isValid()) {
+            requesterPlayer.sendMessage(getString("tpa.manager.decline.requesterNotified", { targetPlayerName: targetDisplayName }));
         }
-        if (targetPlayer) {
-            targetPlayer.sendMessage(getString("tpa.manager.decline.targetNotified", { requesterPlayerName: (requesterPlayer ? requesterPlayer.nameTag : request.requesterName) }));
+        if (targetPlayer && targetPlayer.isValid()) {
+            targetPlayer.sendMessage(getString("tpa.manager.decline.targetNotified", { requesterPlayerName: requesterDisplayName }));
         }
-        console.log(`[TPAManager] Request ${requestId} declined by target.`);
+        console.log(`[TPAManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} declined.`);
     } else {
-        if (requesterPlayer) {
-            requesterPlayer.sendMessage(getString("tpa.manager.decline.otherCancelledRequester", { targetPlayerName: (targetPlayer ? targetPlayer.nameTag : request.targetName) }));
+        // This case handles cancellation of requests that were, for example, in warmup
+        if (requesterPlayer && requesterPlayer.isValid()) {
+            requesterPlayer.sendMessage(getString("tpa.manager.decline.otherCancelledRequester", { targetPlayerName: targetDisplayName }));
         }
-        if (targetPlayer) {
-            targetPlayer.sendMessage(getString("tpa.manager.decline.otherCancelledTarget", { requesterPlayerName: (requesterPlayer ? requesterPlayer.nameTag : request.requesterName) }));
+        if (targetPlayer && targetPlayer.isValid()) {
+            targetPlayer.sendMessage(getString("tpa.manager.decline.otherCancelledTarget", { requesterPlayerName: requesterDisplayName }));
         }
-         console.log(`[TPAManager] Request ${requestId} cancelled (was in state: ${request.status}).`);
+         console.log(`[TPAManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} cancelled (was in state: ${request.status}).`);
     }
     request.status = 'cancelled';
     removeRequest(requestId);
@@ -261,18 +299,26 @@ export function clearExpiredRequests() {
     }
     for (const requestId of requestIdsToExpire) {
         const request = activeRequests.get(requestId);
-        if (!request || request.status !== 'pending_acceptance') continue;
-        request.status = 'cancelled';
+        if (!request || request.status !== 'pending_acceptance') continue; // Already processed or not in correct state
+
+        request.status = 'cancelled'; // Mark as cancelled before attempting to notify
         console.log(`[TPAManager] Request ${request.requestId} between ${request.requesterName} and ${request.targetName} expired while pending acceptance.`);
+
+        // Note: Player lookups use .name, see IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file.
         const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
         const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
-        if (requesterPlayer) {
-            requesterPlayer.sendMessage(getString("tpa.manager.expired.requesterNotified", { targetName: request.targetName }));
+
+        // It's possible players logged off, use nameTag if player object exists, otherwise fallback to stored name.
+        const targetDisplayName = targetPlayer ? targetPlayer.nameTag : request.targetName;
+        const requesterDisplayName = requesterPlayer ? requesterPlayer.nameTag : request.requesterName;
+
+        if (requesterPlayer && requesterPlayer.isValid()) {
+            requesterPlayer.sendMessage(getString("tpa.manager.expired.requesterNotified", { targetName: targetDisplayName }));
         }
-        if (targetPlayer) {
-            targetPlayer.sendMessage(getString("tpa.manager.expired.targetNotified", { requesterName: request.requesterName }));
+        if (targetPlayer && targetPlayer.isValid()) {
+            targetPlayer.sendMessage(getString("tpa.manager.expired.targetNotified", { requesterName: requesterDisplayName }));
         }
-        removeRequest(request.requestId);
+        removeRequest(request.requestId); // Remove after notifications
     }
 }
 

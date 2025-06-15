@@ -6,17 +6,16 @@
  * @version 1.0.1
  */
 import { world } from '@minecraft/server';
-import * as playerUtils from '../utils/playerUtils.js'; // For console logging consistency if needed
 
 /**
  * @const {string} reportsPropertyKeyName - The dynamic property key used for storing player reports.
  */
-const reportsPropertyKeyName = "anticheat:reports_v1"; // Changed to camelCase, added version
+const reportsPropertyKeyName = "anticheat:reports_v1";
 
 /**
  * @const {number} maxReportsCount - Maximum number of report entries to keep in memory and persisted storage.
  */
-const maxReportsCount = 100; // Changed to camelCase
+const maxReportsCount = 100;
 
 /**
  * @typedef {object} ReportEntry
@@ -85,7 +84,6 @@ function initializeReportCache() {
  */
 export function persistReportsToDisk() {
     if (!reportsAreDirty && world.getDynamicProperty(reportsPropertyKeyName) !== undefined) {
-        // console.log("[ReportManager] persistReportsToDisk: No changes to save.");
         return true;
     }
     try {
@@ -143,7 +141,9 @@ export function addReport(reporterPlayer, reportedPlayer, reason) {
     reportsAreDirty = true;
     console.log(`[ReportManager] Added report by ${newReport.reporterName} against ${newReport.reportedName}. Cache size: ${reportsInMemory.length}.`);
 
-    // Strategy: Save immediately. For high frequency, this should be deferred.
+    // Note: `addReport` only marks reports as dirty. Actual persistence to disk
+    // should be managed externally by calling `persistReportsToDisk` periodically
+    // or during specific game events.
     return newReport;
 }
 
