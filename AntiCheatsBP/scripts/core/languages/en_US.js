@@ -243,6 +243,7 @@ export const translations = {
         action_permbanDefaultReason: "Permanently banned by AutoMod for severe rule violations.",
         action_muteDefaultReason: "Muted by AutoMod.",
         action_freezeDefaultReason: "Player frozen by AutoMod due to rule violation.",
+        action_teleportDefaultReason": "AutoMod: You have been teleported to a safe location.",
         kickMessage_tempban_header: "You are temporarily banned by AutoMod.",
         kickMessage_common_reason: "Reason: {reason}",
         kickMessage_common_duration: "Duration: {duration}",
@@ -250,6 +251,7 @@ export const translations = {
         adminNotify_basePrefix": "§7[§cAutoMod§7]",
         adminNotify_details_duration: ". Duration: {duration}",
         adminNotify_details_item": ". Item: {item}",
+        adminNotify_details_teleport": "Teleported to: X:{x} Y:{y} Z:{z}",
         default_itemRemoved: "AutoMod removed {quantity}x {itemTypeId} from your inventory.",
     },
     tpaManager: { // Keys starting with "tpa.manager."

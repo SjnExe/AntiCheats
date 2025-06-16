@@ -6,7 +6,7 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 *   - Coding style review and corrections for core files completed (including `i18n.js` constant rename, `camelCase` for log `actionType`s in `eventHandlers.js` & `uiManager.js`, `logManager.js` JSDoc update, `reportManager.js` logging refactor). Details moved to `completed.md`.
 *   - Reviewed all files in `AntiCheatsBP/scripts/checks/` subdirectories for style compliance.
-*   - Noted consistent use of `snake_case` for `checkType` identifiers throughout all `checks` files (e.g., 'movement_fly_hover', 'player_antigmc').
+*   - Further review indicates that `checkType` identifiers used by the AutoMod system (originating from `executeCheckAction` calls in check files) are consistently `camelCase`, aligning with `automodConfig.js`. The previous note regarding `snake_case` might have referred to a different internal context or was outdated.
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
@@ -24,11 +24,6 @@ These are higher-level features and areas for future development:
 *   **Specific Deferred/Considered Features:**
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
-*   **AutoMod System:**
-    - **Post-Developer Review & General Refinement:**
-        - Review all AutoMod rule thresholds and actions for balance and effectiveness.
-        - Implement AutoMod rules for any other minor or uncovered checks if deemed necessary.
-        - Consider if `flyCheck.js` and `speedCheck.js` need more granular AutoMod rules for different sub-types of violations beyond what's currently implemented (e.g., if they generate more specific `checkType`s that aren't yet covered).
 
 ## III. Project-Wide Conventions / Refactoring
 
