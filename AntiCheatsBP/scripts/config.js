@@ -323,27 +323,27 @@ export const serverRules = [
 // --- General Check Toggles ---
 
 /** @type {boolean} If true, the Reach check is active. */
-export const enableReachCheck = true;
+export const enableReachCheck = false;
 /** @type {boolean} If true, the CPS (Clicks Per Second) check is active. */
-export const enableCPSCheck = true;
+export const enableCPSCheck = false;
 /** @type {boolean} If true, the View Snap / Invalid Pitch check is active. */
-export const enableViewSnapCheck = true;
+export const enableViewSnapCheck = false;
 /** @type {boolean} If true, the Multi-Target Killaura check is active. */
-export const enableMultiTargetCheck = true;
+export const enableMultiTargetCheck = false;
 /** @type {boolean} If true, various state conflict checks (e.g., attack while sleeping) are active. */
-export const enableStateConflictCheck = true;
+export const enableStateConflictCheck = false;
 /** @type {boolean} If true, the Fly check (both sustained and hover) is active. */
 export const enableFlyCheck = false;
 /** @type {boolean} If true, the Speed check is active. */
 export const enableSpeedCheck = false;
 /** @type {boolean} If true, the NoFall check is active. */
-export const enableNofallCheck = true;
+export const enableNofallCheck = false;
 /** @type {boolean} If true, the Nuker check is active. */
 export const enableNukerCheck = false;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
-export const enableIllegalItemCheck = true;
+export const enableIllegalItemCheck = false;
 /** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
-export const enableSelfHurtCheck = true;
+export const enableSelfHurtCheck = false;
 
 /** @type {boolean} If true, the Nether Roof Check is active and will flag players found on the Nether roof. */
 export const enableNetherRoofCheck = false;
@@ -533,7 +533,7 @@ export const bannedItemsUse = [];
 // --- Chat Checks ---
 
 /** @type {boolean} If true, enables the Swear Word detection check. */
-export const enableSwearCheck = false; // Disabled by default as per user request
+export const enableSwearCheck = false;
 
 /** @type {string[]} List of swear words to detect (case-insensitive, whole word). Empty by default. */
 export const swearWordList = [];
@@ -545,43 +545,48 @@ export const swearCheckActionProfileName = "chat_swear_violation";
 export const swearCheckMuteDuration = "30s";
 
 /** @type {boolean} If true, the Fast Message Spam check is active. */
-export const enableFastMessageSpamCheck = true;
+export const enableFastMessageSpamCheck = false;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for fast message spam violations. */
 export const fastMessageSPAMActionProfileName = "chatSpamFastMessage";
 
 /** @type {boolean} If true, the Max Words Spam check (preventing overly long messages) is active. */
-export const enableMaxWordsSpamCheck = true;
+export const enableMaxWordsSpamCheck = false;
 /** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for max words spam violations. */
 export const maxWordsSPAMActionProfileName = "chat_spam_max_words";
 
 /** @type {boolean} If true, checks for newline or carriage return characters in chat messages. */
-export const enableNewlineCheck = true;
+export const enableNewlineCheck = false;
 /** @type {boolean} If true, sending a message containing newlines/carriage returns will flag the player. */
-export const flagOnNewline = true;
+export const flagOnNewline = false;
 /** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
-export const cancelMessageOnNewline = true;
+export const cancelMessageOnNewline = false;
 /** @type {boolean} If true, checks if chat messages exceed the `maxMessageLength`. */
-export const enableMaxMessageLengthCheck = true;
+export const enableMaxMessageLengthCheck = false;
 /** @type {number} Maximum allowed character length for a single chat message. */
 export const maxMessageLength = 256;
 /** @type {boolean} If true, sending a message exceeding `maxMessageLength` will flag the player. */
-export const flagOnMaxMessageLength = true;
+export const flagOnMaxMessageLength = false;
 /** @type {boolean} If true, messages exceeding `maxMessageLength` will be cancelled. */
-export const cancelOnMaxMessageLength = true;
+export const cancelOnMaxMessageLength = false;
 /** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
-export const spamRepeatCheckEnabled = true;
+export const spamRepeatCheckEnabled = false; // This relates to message rate, not content. Content repeat is new.
 /** @type {number} Number of identical or similar messages within `spamRepeatTimeWindowSeconds` to trigger a spam flag. */
 export const spamRepeatMessageCount = 3;
 /** @type {number} Time window in seconds to monitor for repeated messages. */
 export const spamRepeatTimeWindowSeconds = 5;
 /** @type {boolean} If true, flags the player for repeated message spam. */
-export const spamRepeatFlagPlayer = true;
+export const spamRepeatFlagPlayer = false;
 /** @type {boolean} If true, cancels the message that triggers repeated spam detection. */
 export const spamRepeatCancelMessage = false;
+
+/** @type {boolean} If true, the Chat Content Repeat check is active. */
+export const enableChatContentRepeatCheck = false;
+/** @type {boolean} If true, the Unicode Abuse (Zalgo/diacritics) check is active. */
+export const enableUnicodeAbuseCheck = false;
 
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
@@ -1032,6 +1037,8 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    enableChatContentRepeatCheck, // Added
+    enableUnicodeAbuseCheck,     // Added
     // Swear Check specific (action profile name is advanced)
     swearCheckActionProfileName, // swearCheckMuteDuration is in user_settings
     // AutoMod Configuration (complex object, now imported)

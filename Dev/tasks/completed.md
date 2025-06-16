@@ -2,6 +2,15 @@
 
 This document lists significant tasks that have been completed.
 
+## Global Configuration: Checks Disabled by Default (Session 2024-07-26)
+*   **Modified `AntiCheatsBP/scripts/core/automodConfig.js`**:
+    *   Set all boolean values in the `automodPerCheckTypeToggles` object to `false`. This ensures that AutoMod actions for all checks are disabled by default.
+*   **Modified `AntiCheatsBP/scripts/config.js`**:
+    *   Changed all `export const enable[CheckName]Check = true;` (and similar patterns like `enable...AntiGrief`, `enable...Detection`) constant declarations for specific cheat checks to `false`.
+    *   Added new toggles `enableChatContentRepeatCheck = false;` and `enableUnicodeAbuseCheck = false;` for recently implemented checks.
+    *   Ensured the master `enableAutoMod` flag is also `false` by default.
+    *   These changes ensure that individual checks and the AutoMod system's responses are off by default, requiring explicit configuration to enable them.
+
 ## AutoMod System Review and `checkType` Verification (Session 2024-07-26)
 -   **Verified `checkType` Case Consistency:** Confirmed that all check files use `camelCase` for `checkType`s passed to the action/AutoMod system, consistent with `automodConfig.js`. No code changes were needed for this.
 -   **Reviewed `automodConfig.js` Structure and Basic Logic:** Verified `reasonKey`s and `actionType`s. Corrected a rule precedence issue for `movementNetherRoof` (teleportSafe threshold adjusted). Noted that the `teleportSafe` actionType itself needs proper implementation in `automodManager.js`.
