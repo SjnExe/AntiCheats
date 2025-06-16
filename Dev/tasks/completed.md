@@ -38,6 +38,15 @@ This document lists significant tasks that have been completed.
     - Added new configuration flags (`enableSwearCheckNormalization`, `enableSwearCheckLeetSpeak`, `enableSwearCheckLevenshtein`, `swearCheckLevenshteinDistance`) to `config.js` and `editableConfigValues` to control these enhancements.
     - Updated `violationDetails` to include more context about the match.
 -   **Reviewed Newline Spam Handling:** Investigated the existing `chatNewline` check and its associated configurations. Concluded that the current per-message detection, when combined with `flagOnNewline` (for AutoMod escalation) and/or `cancelMessageOnNewline` (for direct prevention), is largely sufficient for handling spam or floods that specifically use newline characters. No new check or significant enhancement for newline-specific floods was deemed immediately necessary.
+-   **Implemented `checkGibberish` Detection (V1):** Added an initial version of a chat check (`checkGibberish.js`) to detect gibberish or keyboard-mashed messages. This version focuses on:
+    - Analyzing vowel-to-consonant ratios within the alphabetic portion of messages.
+    - Detecting excessive consecutive consonants.
+    - Requiring a minimum alphabetic content ratio for the check to apply.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatGibberish` checkType.
+    - New i18n strings in `en_US.js`.
+    - New configuration options in `config.js` (e.g., `enableGibberishCheck`, thresholds), defaulted to `false`.
+    - Exporting the new check from `checks/index.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 
