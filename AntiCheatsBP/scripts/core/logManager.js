@@ -11,18 +11,18 @@ import * as playerUtils from '../utils/playerUtils.js'; // For debugLog
 /**
  * @const {string} logPropertyKeyName - The dynamic property key used for storing action logs.
  */
-const logPropertyKeyName = "anticheat:action_logs_v1"; // Changed to camelCase
+const logPropertyKeyName = "anticheat:action_logs_v1";
 
 /**
  * @const {number} maxLogEntriesCount - Maximum number of log entries to keep in memory and persisted storage.
  */
-const maxLogEntriesCount = 200; // Changed to camelCase
+const maxLogEntriesCount = 200;
 
 /**
  * @typedef {object} ActionLogEntry
  * @property {number} timestamp - Unix timestamp (ms) of when the action occurred.
  * @property {string} adminName - Name of the admin or system component that performed the action.
- * @property {string} actionType - Type of action (e.g., 'ban', 'mute', 'kick', 'warn_flag', 'system_message').
+ * @property {string} actionType - Type of action (e.g., 'warnFlag', 'systemMessage', 'playerKick', 'playerTempBan', 'playerPermBan', 'mutePlayer', 'unmutePlayer', 'clearMessages', 'sendMessageToPlayer', 'executeCommand', 'playerJoin', 'playerLeave', 'configUpdate', 'worldBorderUpdate', 'tpaRequest', 'tpaAccept', 'tpaDeny', 'tpaSend', 'tpaCancel', 'reportCreated', 'reportHandled').
  * @property {string} [targetName] - Optional: Name of the target player, if applicable.
  * @property {string} [duration] - Optional: Duration of the ban/mute (e.g., "5m", "perm").
  * @property {string} [reason] - Optional: Reason for the action.
@@ -73,16 +73,15 @@ function initializeLogCache() {
 
 
 /**
- * Persists the current in-memory log cache to dynamic properties.
+ * Persists the current in-memory log cache to dynamic properties if `logsAreDirty` is true,
+ * or if the dynamic property doesn't exist yet (to ensure initial creation).
  * This is the actual I/O operation.
- * @returns {boolean} True if saving was successful or not needed, false on error.
+ * @returns {boolean} True if saving was successful or not strictly needed (already saved and not dirty), false on error during saving.
  */
 export function persistLogCacheToDisk() {
     if (!logsAreDirty && mc.world.getDynamicProperty(logPropertyKeyName) !== undefined) {
-        // If not dirty and logs already exist on disk (from a previous save or init), no need to save.
-        // This check helps avoid unnecessary writes if persistLogCacheToDisk is called frequently
-        // without new logs being added.
-        // playerUtils.debugLog(`LogManager: persistLogCacheToDisk - No changes to save.`, "System");
+        // No changes in memory, and logs are already on disk (or were intentionally cleared and saved as empty).
+        // Avoids unnecessary writes if already persisted and not dirty.
         return true;
     }
     try {
@@ -117,12 +116,9 @@ export function addLog(logEntry) {
         logsInMemory.length = maxLogEntriesCount; // Truncate array to max size (keeps newest)
     }
     logsAreDirty = true;
-    // playerUtils.debugLog(`LogManager: Added log - ${logEntry.actionType} by ${logEntry.adminName} on ${logEntry.targetName || 'N/A'}. Cache size: ${logsInMemory.length}. Dirty: ${logsAreDirty}`, "System");
-
-    // Simple strategy: save immediately after adding a log.
-    // For higher frequency logging, a deferred save (e.g., via system.runInterval in main.js) would be better.
-    // If this `addLog` is called extremely rapidly, this immediate save could be an issue.
-    // For now, keeping it simple. If performance issues arise, make persistLogCacheToDisk explicitly called by main.
+    // Note: `addLog` only marks logs as dirty. Actual persistence to disk
+    // should be managed externally by calling `persistLogCacheToDisk` periodically
+    // or during specific game events (e.g., world save, player leave).
 }
 
 /**

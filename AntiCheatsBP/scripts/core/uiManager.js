@@ -163,9 +163,65 @@ async function showServerRules(player, dependencies) {
 }
 
 async function showHelpAndLinks(player, dependencies) {
-    const { playerUtils: depPlayerUtils } = dependencies;
+    const { config, playerUtils: depPlayerUtils, playerDataManager } = dependencies; // Added config, playerDataManager
     depPlayerUtils.debugLog(`UI: showHelpAndLinks for ${player.nameTag}`, player.nameTag);
-    player.sendMessage(getString("ui.normalPanel.info.useUinfo", { option: "Helpful Links or General Tips" }));
+
+    const form = new ActionFormData();
+    form.title(getString("ui.helpfulLinks.title"));
+    form.body(getString("ui.helpfulLinks.body"));
+
+    const helpLinksArray = config.helpLinks;
+
+    if (!Array.isArray(helpLinksArray) || helpLinksArray.length === 0) {
+        const msgForm = new MessageFormData();
+        msgForm.title(getString("ui.helpfulLinks.title"));
+        msgForm.body(getString("ui.helpfulLinks.noLinks"));
+        msgForm.button1(getString("common.button_back")); // Assuming "common.button_back"
+
+        try {
+            await msgForm.show(player);
+            await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+        } catch (error) {
+            depPlayerUtils.debugLog(`Error showing noLinks form in showHelpAndLinks for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
+            // Attempt to return to normal user panel even on error
+            await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+        }
+        return;
+    }
+
+    helpLinksArray.forEach(link => {
+        if (link && typeof link.title === 'string') {
+            form.button(link.title); // No icons specified
+        }
+    });
+    form.button(getString("common.button_back")); // Back button
+
+    try {
+        const response = await form.show(player);
+
+        if (response.canceled || response.selection === helpLinksArray.length) { // Last button is Back
+            await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+            return;
+        }
+
+        const selectedLink = helpLinksArray[response.selection];
+        if (selectedLink && typeof selectedLink.url === 'string' && typeof selectedLink.title === 'string') {
+            player.sendMessage(getString("ui.helpfulLinks.linkMessageFormat", { title: selectedLink.title, url: selectedLink.url }));
+            // Re-show the links form
+            await showHelpAndLinks(player, dependencies);
+        } else {
+            // This case should ideally not be reached if helpLinksArray is well-formed
+            depPlayerUtils.debugLog(`Error: Invalid link item at index ${response.selection} in showHelpAndLinks.`, player.nameTag);
+            player.sendMessage(getString("common.error.genericForm")); // Generic error
+            await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+        }
+
+    } catch (error) {
+        depPlayerUtils.debugLog(`Error in showHelpAndLinks for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
+        player.sendMessage(getString("common.error.genericForm"));
+        // Attempt to return to normal user panel even on error
+        await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+    }
 }
 
 showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataManager, dependencies) {
@@ -261,7 +317,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     adminPlayer.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.toPlayerSuccess", { targetPlayerName: targetPlayer.nameTag }));
                     if (depLogManager?.addLog) {
-                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleport_self_to_player', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag}` });
+                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleportSelfToPlayer', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag}` });
                     }
                 } catch (e) {
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.error", { errorMessage: e.message }));
@@ -273,7 +329,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.playerToAdminSuccess", { targetPlayerName: targetPlayer.nameTag }));
                     targetPlayer.sendMessage(getString("ui.playerActions.teleport.playerToAdminNotifyTarget"));
                     if (depLogManager?.addLog) {
-                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleport_player_to_admin', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to them.` });
+                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleportPlayerToAdmin', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to them.` });
                     }
                 } catch (e) {
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.error", { errorMessage: e.message }));
@@ -332,7 +388,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                             }
                             adminPlayer.sendMessage(getString("ui.playerActions.clearInventory.success", { targetPlayerName: targetPlayer.nameTag }));
                             if (depLogManager?.addLog) {
-                                depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'clear_inventory', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}` });
+                                depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'clearInventory', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}` });
                             }
                         } else {
                             adminPlayer.sendMessage(getString("ui.playerActions.clearInventory.fail", { targetPlayerName: targetPlayer.nameTag }));
@@ -653,7 +709,7 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
                 if (success) {
                     adminPlayer.sendMessage(getString("ui.configEditor.valueInput.success", { keyName: keyName, newValue: (typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)) }));
                     if (depLogManager?.addLog) {
-                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'config_update', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` });
+                        depLogManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'configUpdate', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` });
                     }
                 } else {
                     adminPlayer.sendMessage(getString("ui.configEditor.valueInput.error.updateFailedInternal", { keyName: keyName }));

@@ -29,7 +29,7 @@ export { checkAutoTool } from './world/autoToolCheck.js';
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
 export { checkNameSpoof } from './world/nameSpoofCheck.js';
 export { checkAntiGMC } from './world/antiGMCCheck.js';
-export * from './world/entityChecks.js'; // Exporting checkEntitySpam
+export { checkEntitySpam } from './world/entityChecks.js';
 export { checkPistonLag } from './world/pistonChecks.js';
 
 // Player Behavior Checks

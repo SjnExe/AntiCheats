@@ -72,7 +72,7 @@ export async function checkInvalidRenderDistance(player, pData, config, playerUt
             if (logManager && typeof logManager.addLog === 'function') {
                 logManager.addLog({
                     adminName: "System (AntiCheat)",
-                    actionType: "error_missing_action_manager",
+                    actionType: "errorMissingActionManager",
                     targetName: player.nameTag,
                     details: "executeCheckAction was not available for InvalidRenderDistance check."
                 });

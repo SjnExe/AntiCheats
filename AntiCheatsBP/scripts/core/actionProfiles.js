@@ -18,7 +18,7 @@ export const checkActionProfiles = {
             message: "profile.example_fly_hover.notifyMessage"
         },
         log: {
-            actionType: "detected_fly_hover",
+            actionType: "detectedFlyHover",
             detailsPrefix: "Fly (Hover Violation): "
         }
     },
@@ -33,7 +33,7 @@ export const checkActionProfiles = {
             message: "profile.example_speed_ground.notifyMessage"
         },
         log: {
-            actionType: "detected_speed_ground",
+            actionType: "detectedSpeedGround",
             detailsPrefix: "Speed (Ground Violation): "
         }
     },
@@ -48,7 +48,7 @@ export const checkActionProfiles = {
             message: "profile.example_reach_attack.notifyMessage"
         },
         log: {
-            actionType: "detected_reach_attack",
+            actionType: "detectedReachAttack",
             detailsPrefix: "Reach (Attack Violation): "
         }
     },
@@ -63,7 +63,7 @@ export const checkActionProfiles = {
             message: "profile.movement_nofall.notifyMessage"
         },
         log: {
-            actionType: "detected_movement_nofall",
+            actionType: "detectedMovementNofall",
             detailsPrefix: "NoFall Violation: "
         }
     },
@@ -78,7 +78,7 @@ export const checkActionProfiles = {
             message: "profile.world_nuker.notifyMessage"
         },
         log: {
-            actionType: "detected_world_nuker",
+            actionType: "detectedWorldNuker",
             detailsPrefix: "Nuker Violation: "
         }
     },
@@ -93,7 +93,7 @@ export const checkActionProfiles = {
             message: "profile.combat_cps_high.notifyMessage"
         },
         log: {
-            actionType: "detected_combat_cps_high",
+            actionType: "detectedCombatCpsHigh",
             detailsPrefix: "High CPS Violation: "
         }
     },
@@ -108,7 +108,7 @@ export const checkActionProfiles = {
             message: "profile.combat_viewsnap_pitch.notifyMessage"
         },
         log: {
-            actionType: "detected_viewsnap_pitch",
+            actionType: "detectedViewsnapPitch",
             detailsPrefix: "Pitch Snap Violation: "
         }
     },
@@ -123,7 +123,7 @@ export const checkActionProfiles = {
             message: "profile.combat_viewsnap_yaw.notifyMessage"
         },
         log: {
-            actionType: "detected_viewsnap_yaw",
+            actionType: "detectedViewsnapYaw",
             detailsPrefix: "Yaw Snap Violation: "
         }
     },
@@ -138,7 +138,7 @@ export const checkActionProfiles = {
             message: "profile.combat_invalid_pitch.notifyMessage"
         },
         log: {
-            actionType: "detected_invalid_pitch",
+            actionType: "detectedInvalidPitch",
             detailsPrefix: "Invalid Pitch Violation: "
         }
     },
@@ -153,7 +153,7 @@ export const checkActionProfiles = {
             message: "profile.combat_multitarget_aura.notifyMessage"
         },
         log: {
-            actionType: "detected_multitarget_aura",
+            actionType: "detectedMultitargetAura",
             detailsPrefix: "Multi-Target Aura Violation: "
         }
     },
@@ -168,7 +168,7 @@ export const checkActionProfiles = {
             message: "profile.combat_attack_while_sleeping.notifyMessage"
         },
         log: {
-            actionType: "detected_attack_while_sleeping",
+            actionType: "detectedAttackWhileSleeping",
             detailsPrefix: "Attack While Sleeping Violation: "
         }
     },
@@ -183,7 +183,7 @@ export const checkActionProfiles = {
             message: "profile.combat_attack_while_consuming.notifyMessage"
         },
         log: {
-            actionType: "detected_attack_while_consuming",
+            actionType: "detectedAttackWhileConsuming",
             detailsPrefix: "Attack While Consuming Violation: "
         }
     },
@@ -198,7 +198,7 @@ export const checkActionProfiles = {
             message: "profile.combat_attack_while_bow_charging.notifyMessage"
         },
         log: {
-            actionType: "detected_attack_while_bow_charging",
+            actionType: "detectedAttackWhileBowCharging",
             detailsPrefix: "Attack While Charging Bow Violation: "
         }
     },
@@ -213,7 +213,7 @@ export const checkActionProfiles = {
             message: "profile.combat_attack_while_shielding.notifyMessage"
         },
         log: {
-            actionType: "detected_attack_while_shielding",
+            actionType: "detectedAttackWhileShielding",
             detailsPrefix: "Attack While Shielding Violation: "
         }
     },
@@ -228,7 +228,7 @@ export const checkActionProfiles = {
             message: "profile.world_illegal_item_use.notifyMessage"
         },
         log: {
-            actionType: "detected_illegal_item_use",
+            actionType: "detectedIllegalItemUse",
             detailsPrefix: "Illegal Item Use Violation: "
         }
     },
@@ -243,7 +243,7 @@ export const checkActionProfiles = {
             message: "profile.world_illegal_item_place.notifyMessage"
         },
         log: {
-            actionType: "detected_illegal_item_place",
+            actionType: "detectedIllegalItemPlace",
             detailsPrefix: "Illegal Item Placement Violation: "
         }
     },
@@ -258,7 +258,7 @@ export const checkActionProfiles = {
             message: "profile.world_tower_build.notifyMessage"
         },
         log: {
-            actionType: "detected_world_tower_build",
+            actionType: "detectedWorldTowerBuild",
             detailsPrefix: "Tower Building Violation: "
         }
     },
@@ -273,7 +273,7 @@ export const checkActionProfiles = {
             message: "profile.world_flat_rotation_building.notifyMessage"
         },
         log: {
-            actionType: "detected_world_flat_rotation_building",
+            actionType: "detectedWorldFlatRotationBuilding",
             detailsPrefix: "Flat/Static Rotation Building Violation: "
         }
     },
@@ -288,7 +288,7 @@ export const checkActionProfiles = {
             message: "profile.world_downward_scaffold.notifyMessage"
         },
         log: {
-            actionType: "detected_world_downward_scaffold",
+            actionType: "detectedWorldDownwardScaffold",
             detailsPrefix: "Downward Scaffold Violation: "
         }
     },
@@ -303,7 +303,7 @@ export const checkActionProfiles = {
             message: "profile.world_air_place.notifyMessage"
         },
         log: {
-            actionType: "detected_world_air_place",
+            actionType: "detectedWorldAirPlace",
             detailsPrefix: "Air Placement Violation: "
         }
     },
@@ -318,7 +318,7 @@ export const checkActionProfiles = {
             message: "profile.action_fast_use.notifyMessage"
         },
         log: {
-            actionType: "detected_fast_use",
+            actionType: "detectedFastUse",
             detailsPrefix: "Fast Use Violation: "
         }
     },
@@ -333,7 +333,7 @@ export const checkActionProfiles = {
             message: "profile.world_fast_place.notifyMessage"
         },
         log: {
-            actionType: "detected_world_fast_place",
+            actionType: "detectedWorldFastPlace",
             detailsPrefix: "Fast Place Violation: "
         }
     },
@@ -348,7 +348,7 @@ export const checkActionProfiles = {
             message: "profile.movement_noslow.notifyMessage"
         },
         log: {
-            actionType: "detected_movement_noslow",
+            actionType: "detectedMovementNoslow",
             detailsPrefix: "NoSlow Violation: "
         }
     },
@@ -363,7 +363,7 @@ export const checkActionProfiles = {
             message: "profile.movement_invalid_sprint.notifyMessage"
         },
         log: {
-            actionType: "detected_movement_invalid_sprint",
+            actionType: "detectedMovementInvalidSprint",
             detailsPrefix: "Invalid Sprint Violation: "
         }
     },
@@ -378,7 +378,7 @@ export const checkActionProfiles = {
             message: "profile.world_autotool.notifyMessage"
         },
         log: {
-            actionType: "detected_world_autotool",
+            actionType: "detectedWorldAutotool",
             detailsPrefix: "AutoTool Violation: "
         }
     },
@@ -393,7 +393,7 @@ export const checkActionProfiles = {
             message: "profile.world_instabreak_unbreakable.notifyMessage"
         },
         log: {
-            actionType: "detected_instabreak_unbreakable",
+            actionType: "detectedInstabreakUnbreakable",
             detailsPrefix: "InstaBreak (Unbreakable) Violation: "
         }
     },
@@ -408,7 +408,7 @@ export const checkActionProfiles = {
             message: "profile.world_instabreak_speed.notifyMessage"
         },
         log: {
-            actionType: "detected_instabreak_speed",
+            actionType: "detectedInstabreakSpeed",
             detailsPrefix: "InstaBreak (Speed) Violation: "
         }
     },
@@ -423,7 +423,7 @@ export const checkActionProfiles = {
             message: "profile.player_namespoof.notifyMessage"
         },
         log: {
-            actionType: "detected_player_namespoof",
+            actionType: "detectedPlayerNamespoof",
             detailsPrefix: "NameSpoof Violation: "
         }
     },
@@ -438,7 +438,7 @@ export const checkActionProfiles = {
             message: "profile.player_antigmc.notifyMessage"
         },
         log: {
-            actionType: "detected_player_antigmc",
+            actionType: "detectedPlayerAntigmc",
             detailsPrefix: "Anti-GMC Violation: "
         }
     },
@@ -453,7 +453,7 @@ export const checkActionProfiles = {
             message: "profile.player_inventory_mod.notifyMessage"
         },
         log: {
-            actionType: "detected_player_inventory_mod",
+            actionType: "detectedPlayerInventoryMod",
             detailsPrefix: "InventoryMod Violation: "
         }
     },
@@ -465,7 +465,7 @@ export const checkActionProfiles = {
             reason: "profile.chat_spam_fast_message.flagReason"
         },
         log: {
-            actionType: "detected_fast_message_spam",
+            actionType: "detectedFastMessageSpam",
             detailsPrefix: "Msg: '{messageContent}'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ",
             includeViolationDetails: false
         },
@@ -482,7 +482,7 @@ export const checkActionProfiles = {
             reason: "profile.chat_spam_max_words.flagReason"
         },
         log: {
-            actionType: "detected_max_words_spam",
+            actionType: "detectedMaxWordsSpam",
             detailsPrefix: "Words: {wordCount}, Max: {maxWords}. Msg (truncated): '{messageContent}'. ",
             includeViolationDetails: false
         },
@@ -502,7 +502,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_tnt_place.notifyMessage"
         },
         log: {
-            actionType: "antigrief_tnt_placement",
+            actionType: "antigriefTntPlacement",
             detailsPrefix: "AntiGrief TNT: "
         }
     },
@@ -517,7 +517,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_wither_spawn.notifyMessage"
         },
         log: {
-            actionType: "antigrief_wither_spawn",
+            actionType: "antigriefWitherSpawn",
             detailsPrefix: "AntiGrief Wither: "
         }
     },
@@ -532,7 +532,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_fire.notifyMessage"
         },
         log: {
-            actionType: "antigrief_fire_incident",
+            actionType: "antigriefFireIncident",
             detailsPrefix: "AntiGrief Fire: "
         }
     },
@@ -547,7 +547,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_lava.notifyMessage"
         },
         log: {
-            actionType: "antigrief_lava_placement",
+            actionType: "antigriefLavaPlacement",
             detailsPrefix: "AntiGrief Lava: "
         }
     },
@@ -562,7 +562,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_water.notifyMessage"
         },
         log: {
-            actionType: "antigrief_water_placement",
+            actionType: "antigriefWaterPlacement",
             detailsPrefix: "AntiGrief Water: "
         }
     },
@@ -577,7 +577,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_blockspam.notifyMessage"
         },
         log: {
-            actionType: "antigrief_blockspam_detected",
+            actionType: "antigriefBlockspamDetected",
             detailsPrefix: "AntiGrief BlockSpam: "
         }
     },
@@ -592,7 +592,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_entityspam.notifyMessage"
         },
         log: {
-            actionType: "antigrief_entityspam_detected",
+            actionType: "antigriefEntityspamDetected",
             detailsPrefix: "AntiGrief EntitySpam: "
         }
     },
@@ -607,7 +607,7 @@ export const checkActionProfiles = {
             message: "profile.world_antigrief_blockspam_density.notifyMessage"
         },
         log: {
-            actionType: "antigrief_blockspam_density_detected",
+            actionType: "antigriefBlockspamDensityDetected",
             detailsPrefix: "AntiGrief BlockSpam (Density): "
         }
     },
@@ -618,7 +618,7 @@ export const checkActionProfiles = {
             "message": "profile.world_antigrief_piston_lag.notifyMessage"
         },
         "log": {
-            "actionType": "antigrief_piston_lag_detected",
+            "actionType": "antigriefPistonLagDetected",
             "detailsPrefix": "AntiGrief Piston Lag: "
         }
     },
@@ -633,7 +633,7 @@ export const checkActionProfiles = {
             "message": "profile.player_invalid_render_distance.notifyMessage"
         },
         "log": {
-            "actionType": "detected_invalid_render_distance",
+            "actionType": "detectedInvalidRenderDistance",
             "detailsPrefix": "Invalid Render Distance: "
         }
     },
@@ -649,7 +649,7 @@ export const checkActionProfiles = {
         },
         "cancelMessage": true,
         "log": {
-            "actionType": "detected_chat_during_combat",
+            "actionType": "detectedChatDuringCombat",
             "detailsPrefix": "Chat During Combat: "
         }
     },
@@ -665,7 +665,7 @@ export const checkActionProfiles = {
         },
         "cancelMessage": true,
         "log": {
-            "actionType": "detected_chat_during_item_use",
+            "actionType": "detectedChatDuringItemUse",
             "detailsPrefix": "Chat During Item Use: "
         }
     },
@@ -680,7 +680,7 @@ export const checkActionProfiles = {
             message: "profile.chat_swear_violation.notifyMessage"
         },
         log: {
-            actionType: "detected_swear_word",
+            actionType: "detectedSwearWord",
             detailsPrefix: "Swear Word Violation: ",
             includeViolationDetails: true // To include detectedWord and messageContent
         },
@@ -695,7 +695,7 @@ export const checkActionProfiles = {
             increment: 1
         },
         log: {
-            actionType: "detected_chat_advertising",
+            actionType: "detectedChatAdvertising",
             detailsPrefix: "Matched patterns: ", // Matched pattern will be in violationDetails
             includeViolationDetails: true
         },
@@ -712,7 +712,7 @@ export const checkActionProfiles = {
             increment: 1
         },
         log: {
-            actionType: "detected_chat_caps_abuse",
+            actionType: "detectedChatCapsAbuse",
             detailsPrefix: "CAPS Abuse: ", // ViolationDetails will include percentage, message
             includeViolationDetails: true
         },
@@ -729,7 +729,7 @@ export const checkActionProfiles = {
             increment: 1
         },
         log: {
-            actionType: "detected_chat_char_repeat",
+            actionType: "detectedChatCharRepeat",
             detailsPrefix: "Char Repeat: ", // ViolationDetails will include char, count, message
             includeViolationDetails: true
         },
@@ -746,7 +746,7 @@ export const checkActionProfiles = {
             increment: 1
         },
         log: {
-            actionType: "detected_chat_symbol_spam",
+            actionType: "detectedChatSymbolSpam",
             detailsPrefix: "Symbol Spam: ", // ViolationDetails will include percentage, message
             includeViolationDetails: true
         },
@@ -766,8 +766,10 @@ export const checkActionProfiles = {
             message: "profile.player_self_hurt.notifyMessage"
         },
         log: {
-            actionType: "detected_player_self_hurt",
+            actionType: "detectedPlayerSelfHurt",
             detailsPrefix: "Self-Hurt Violation: "
         }
     }
 };
+
+[end of AntiCheatsBP/scripts/core/actionProfiles.js]

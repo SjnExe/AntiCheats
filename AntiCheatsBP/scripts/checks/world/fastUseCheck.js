@@ -52,7 +52,7 @@ export async function checkFastUse(
     const cooldown = config.fastUseItemCooldowns?.[itemTypeId];
 
     if (typeof cooldown !== 'number') { // Item not tracked or cooldown not a number
-        // playerUtils.debugLog?.(`FastUseCheck: Item ${itemTypeId} not tracked or invalid cooldown.`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog?.(`FastUseCheck: Item ${itemTypeId} not tracked or invalid cooldown.`, pData.isWatched ? player.nameTag : null);
         return;
     }
 

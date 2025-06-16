@@ -23,7 +23,7 @@ export const definition = {
  * @param {string[]} _args The command arguments (unused in this command).
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-export async function execute(player, _args, dependencies) { // args renamed to _args
+export async function execute(player, _args, dependencies) {
     const { config } = dependencies;
-    player.sendMessage(getString("command.version.message", { version: config.acVersion || getString("command.myflags.value.notApplicable") })); // Used N/A for version not set
+    player.sendMessage(getString("command.version.message", { version: config.acVersion || getString("command.myflags.value.notApplicable") }));
 }

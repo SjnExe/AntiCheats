@@ -10,8 +10,8 @@
 import { editableConfigValues as runTimeConfig } from '../config.js';
 import { translations as enUSTranslations } from './languages/en_US.js'; // Default language pack
 
-const DEFAULT_LANGUAGE = "en_US";
-let currentLanguage = runTimeConfig.defaultServerLanguage || DEFAULT_LANGUAGE;
+const defaultLanguage = "en_US";
+let currentLanguage = runTimeConfig.defaultServerLanguage || defaultLanguage;
 
 /**
  * Stores all loaded translations. The keys are language codes (e.g., "en_US"),
@@ -19,7 +19,7 @@ let currentLanguage = runTimeConfig.defaultServerLanguage || DEFAULT_LANGUAGE;
  * @type {Object.<string, object>}
  */
 const translations = {};
-translations[DEFAULT_LANGUAGE] = enUSTranslations; // Populate with imported en_US translations
+translations[defaultLanguage] = enUSTranslations; // Populate with imported en_US translations
 
 /**
  * Attempts to load a language pack.
@@ -44,7 +44,7 @@ function loadLanguage(langCode) {
     // } catch (error) {
     //     console.warn(`[i18n] Failed to load language pack for ${langCode}:`, error);
     // }
-    console.warn(`[i18n] Language pack for "${langCode}" is not pre-loaded, and dynamic loading is not yet implemented. Only "${DEFAULT_LANGUAGE}" is available.`);
+    console.warn(`[i18n] Language pack for "${langCode}" is not pre-loaded, and dynamic loading is not yet implemented. Only "${defaultLanguage}" is available.`);
     return false;
 }
 
@@ -115,9 +115,9 @@ export function getString(key, args) {
         }
     }
 
-    // If not found in current language, try fallback to DEFAULT_LANGUAGE
-    if (retrievedString === null && currentLanguage !== DEFAULT_LANGUAGE) {
-        targetTranslationStore = translations[DEFAULT_LANGUAGE];
+    // If not found in current language, try fallback to defaultLanguage
+    if (retrievedString === null && currentLanguage !== defaultLanguage) {
+        targetTranslationStore = translations[defaultLanguage];
         if (targetTranslationStore) {
             let tempValue = targetTranslationStore;
             for (const part of keyParts) {
@@ -136,7 +136,7 @@ export function getString(key, args) {
 
     // If still not found, warn and return the key
     if (retrievedString === null) {
-        console.warn(`[i18n] Localization key "${key}" not found in "${currentLanguage}" or fallback "${DEFAULT_LANGUAGE}". Returning key.`);
+        console.warn(`[i18n] Localization key "${key}" not found in "${currentLanguage}" or fallback "${defaultLanguage}". Returning key.`);
         return key;
     }
 

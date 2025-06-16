@@ -60,7 +60,7 @@ export async function checkIllegalItems(
 
     if (!itemStack) {
         // This case might occur if the event doesn't involve an item or hand is empty.
-        // playerUtils.debugLog?.(`IllegalItemCheck: No itemStack provided for ${player.nameTag}, action: ${actionType}.`, watchedPrefix);
+        playerUtils.debugLog?.(`IllegalItemCheck: No itemStack provided for ${player.nameTag}, action: ${actionType}.`, watchedPrefix);
         return;
     }
 

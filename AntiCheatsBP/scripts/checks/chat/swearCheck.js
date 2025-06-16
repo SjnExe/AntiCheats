@@ -53,7 +53,7 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
             if (dependencies && dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
                 await dependencies.actionManager.executeCheckAction(player, config.swearCheckActionProfileName, violationDetails, dependencies);
             } else {
-                 console.warn("[SwearCheck] actionManager.executeCheckAction is not available in dependencies.");
+                 playerUtils.debugLog("SwearCheck: actionManager.executeCheckAction is not available in dependencies.", null);
                  // Fallback or simpler flagging if actionManager is missing (though it shouldn't be)
                  if (dependencies && dependencies.playerDataManager && dependencies.playerDataManager.addFlag) {
                     dependencies.playerDataManager.addFlag(player, config.swearCheckActionProfileName, `Swear word detected: \${swearWord}`);

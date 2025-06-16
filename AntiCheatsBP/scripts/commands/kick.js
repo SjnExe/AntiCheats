@@ -31,7 +31,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
     const targetPlayerName = args[0];
-    const reason = args.slice(1).join(" ") || "Kicked by an administrator."; // Default reason, potentially not directly localized if admin-provided
+    const reason = args.slice(1).join(" ") || getString('command.kick.defaultReason');
 
     const foundPlayer = findPlayer(targetPlayerName, playerUtils);
 
@@ -48,7 +48,8 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(getString('command.kick.success', { targetName: foundPlayer.nameTag, reason: originalReason }));
 
             if (playerUtils.notifyAdmins) {
-                const targetPData = dependencies.playerDataManager.getPlayerData(foundPlayer.id); // For context
+                // Retrieve player data for potential additional context in notifications
+                const targetPData = dependencies.playerDataManager ? dependencies.playerDataManager.getPlayerData(foundPlayer.id) : undefined;
                 playerUtils.notifyAdmins(getString('command.kick.adminNotification', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: originalReason }), player, targetPData);
             }
             if (addLog) {

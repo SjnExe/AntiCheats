@@ -8,11 +8,11 @@
  * Checks a chat message for excessive capitalization.
  * @param {import('@minecraft/server').Player} player The player who sent the message.
  * @param {string} message The raw chat message content.
- * @param {import('../../types.js').PlayerAntiCheatData} pData The player's anti-cheat data.
+ * @param {object} _pData The player's anti-cheat data (currently unused in this check).
  * @param {import('../../types.js').CommandDependencies} dependencies Shared command dependencies (includes config, actionManager, etc.).
  * @returns {Promise<void>}
  */
-export async function checkCapsAbuse(player, message, pData, dependencies) {
+export async function checkCapsAbuse(player, message, _pData, dependencies) { // pData marked as unused
     const { config, actionManager, playerUtils } = dependencies;
 
     if (!config.enableCapsCheck) {
@@ -29,9 +29,9 @@ export async function checkCapsAbuse(player, message, pData, dependencies) {
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
         // Consider only alphabetic characters for the ratio
-        if (char.match(/[a-zA-Z]/)) {
+        if (char.match(/[a-zA-Z]/)) { // Check if it's an English alphabet letter
             totalLetters++;
-            if (char === char.toUpperCase() && char !== char.toLowerCase()) { // Check if it's an uppercase letter
+            if (char.match(/[A-Z]/)) { // Check if it's an uppercase English alphabet letter
                 upperCaseLetters++;
             }
         }

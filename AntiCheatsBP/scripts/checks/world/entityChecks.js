@@ -46,7 +46,7 @@ export async function checkEntitySpam(
     if (!potentialPlayer) {
         // If player is unknown, we can't do player-specific rate limiting with the current pData structure.
         // Future: Could implement a global rate limit for certain anonymous spawns if needed.
-        // playerUtils.debugLog?.("EntitySpam: Check skipped, potentialPlayer is null.", null);
+        playerUtils.debugLog?.("EntitySpam: Check skipped, potentialPlayer is null.", null);
         return false;
     }
 
@@ -56,17 +56,17 @@ export async function checkEntitySpam(
     }
 
     if (config.entitySpamBypassInCreative && potentialPlayer.gameMode === mc.GameMode.creative) {
-        // playerUtils.debugLog?.(`EntitySpam: Check bypassed for ${potentialPlayer.nameTag} (Creative mode).`, potentialPlayer.nameTag);
+        playerUtils.debugLog?.(`EntitySpam: Check bypassed for ${potentialPlayer.nameTag} (Creative mode).`, potentialPlayer.nameTag);
         return false;
     }
 
     if (!config.entitySpamMonitoredEntityTypes || config.entitySpamMonitoredEntityTypes.length === 0) {
-        // playerUtils.debugLog?.("EntitySpam: Check skipped, no monitored entity types configured.", null);
+        playerUtils.debugLog?.("EntitySpam: Check skipped, no monitored entity types configured.", null);
         return false; // No types to monitor
     }
 
     if (!config.entitySpamMonitoredEntityTypes.includes(entityType)) {
-        // playerUtils.debugLog?.(`EntitySpam: Entity type ${entityType} not monitored for spam.`, null);
+        playerUtils.debugLog?.(`EntitySpam: Entity type ${entityType} not monitored for spam.`, null);
         return false; // Not a monitored entity type
     }
 

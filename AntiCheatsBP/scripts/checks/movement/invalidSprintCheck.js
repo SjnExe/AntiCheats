@@ -8,6 +8,7 @@
  */
 
 import * as mc from '@minecraft/server';
+import { getString } from '../../../core/i18n.js';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -48,31 +49,6 @@ export async function checkInvalidSprint(
 
     // The pData.blindnessTicks field is assumed to be updated by updateTransientPlayerData in main.js
     // No need to call player.getEffects() here if that's the case.
-
-import { getString } from '../../../core/i18n.js'; // Adjusted path
-
-/**
- * @file AntiCheatsBP/scripts/checks/movement/invalidSprintCheck.js
-// ... (rest of the file header)
- */
-// ... (imports)
-
-// Ensure getString is imported if not already:
-// import { getString } from '../../../core/i18n.js'; // Path might vary
-
-export async function checkInvalidSprint(
-    player,
-    pData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick // Not directly used by this check's core logic
-) {
-    if (!config.enableInvalidSprintCheck || !pData) { // Added null check for pData
-        return;
-    }
 
     if (player.isSprinting) {
         let invalidConditionKey = null; // Store the key for localization

@@ -1,6 +1,89 @@
 # Completed Tasks Documentation
 
 ## Recently Completed
+
+### Coding Style Review & Corrections - Batch 1 (Core Files)
+- **Summary:** Reviewed core script files for adherence to `Dev/CodingStyle.md` and applied necessary corrections.
+- **Details:**
+    - Corrected `DEFAULT_LANGUAGE` to `defaultLanguage` in `AntiCheatsBP/scripts/core/i18n.js` and updated its usages.
+    - Refactored `actionType` strings in `logManager.addLog()` calls to `camelCase` in `AntiCheatsBP/scripts/core/eventHandlers.js` (e.g., 'player_leave' to 'playerLeave').
+    - Refactored `actionType` strings in `logManager.addLog()` calls to `camelCase` in `AntiCheatsBP/scripts/core/uiManager.js` (e.g., 'config_update' to 'configUpdate').
+    - Updated JSDoc example for `ActionLogEntry.actionType` in `AntiCheatsBP/scripts/core/logManager.js` to reflect `camelCase` log types.
+    - Refactored logging in `AntiCheatsBP/scripts/core/reportManager.js` to use `playerUtils.debugLog` instead of `console.*` calls.
+    - Verified `AntiCheatsBP/scripts/core/tpaManager.js` already uses `playerUtils.debugLog`.
+    - Reviewed `actionManager.js`, `automodManager.js` (noting its dev dependency for `actionType` switch update), `commandManager.js`, and `rankManager.js`; found them highly compliant with no new style changes needed in this batch.
+- **Files Affected:** `AntiCheatsBP/scripts/core/i18n.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `AntiCheatsBP/scripts/core/uiManager.js`, `AntiCheatsBP/scripts/core/logManager.js`, `AntiCheatsBP/scripts/core/reportManager.js`, `Dev/tasks/ongoing.md`.
+
+*   **Refactor `actionType` Strings to `camelCase`:**
+    *   **Summary:** Refactored `actionType` string literals to use `camelCase` across relevant configuration files and documentation for improved coding style consistency.
+    *   **Details:**
+        *   Updated `Dev/CodingStyle.md` to specify `camelCase` for `actionType` string literals used in AutoMod rules and `log.actionType` in action profiles, providing examples like `tempBan` and `detectedFlyHover`.
+        *   Refactored all `actionType` values in `AntiCheatsBP/scripts/core/automodConfig.js` (within `automodRules`) to `camelCase` (e.g., 'WARN' to 'warn', 'TEMP_BAN' to 'tempBan').
+        *   Refactored all `log.actionType` values in `AntiCheatsBP/scripts/core/actionProfiles.js` (within `checkActionProfiles`) to `camelCase` (e.g., 'detected_fly_hover' to 'detectedFlyHover').
+        *   Updated `README.md` in the 'Automated Moderation (AutoMod)' section to reflect `camelCase` for `actionType` examples and the list of supported types.
+        *   Added a critical developer task to `Dev/tasks/ongoing.md` highlighting that `actionManager.js` MUST be updated by a developer to handle these new `camelCase` `actionType`s for AutoMod to function correctly.
+    *   **Files Affected:** `Dev/CodingStyle.md`, `AntiCheatsBP/scripts/core/automodConfig.js`, `AntiCheatsBP/scripts/core/actionProfiles.js`, `README.md`, `Dev/tasks/ongoing.md`.
+
+*   **Documentation Review and Update (README, Command Help):**
+    *   **Summary:** Reviewed and updated `README.md` to reflect recent feature additions and changes. Command help messages were verified as current.
+    *   **Details:**
+        *   Updated `README.md` to include a new 'World Border System' section.
+        *   Expanded the 'Features' list in `README.md` to include more details on Fly checks, other world/player behavior checks, and the World Border system.
+        *   Updated 'Admin Commands & UI' in `README.md` to mention `!worldborder`.
+        *   Added a note about World Border default settings to the 'Configuration' section in `README.md`.
+        *   Corrected `checkType` examples in the 'Automated Moderation (AutoMod)' section of `README.md` (e.g., using `movement_hover_fly`).
+        *   Added `TELEPORT_SAFE` to the list of supported AutoMod action types in `README.md`.
+        *   Reviewed command help messages, particularly for `!worldborder`, confirming they are up-to-date with subcommands like `resizepause` and `resizeresume`. No changes to help strings were needed.
+    *   **Files Affected:** `README.md`, `Dev/tasks/ongoing.md`.
+
+*   **World Border Resize - Pause/Resume Functionality:**
+    *   **Summary:** Implemented and documented the ability to pause and resume gradual world border resizing.
+    *   **Details:**
+        *   Designed the core logic, including new border settings fields (`resizePaused`, `pauseStartTimeMs`, `totalPausedTimeMs` - implemented as `resizePausedTimeMs` and `resizeLastPauseStartTimeMs` in existing command code).
+        *   Verified that `!worldborder pause` (aliased as `resizepause`) and `!worldborder resume` (aliased as `resizeresume`) commands in `worldborder.js` already existed and largely aligned with the design for setting/clearing pause state and accumulating paused time.
+        *   Updated the `!worldborder get` command in `worldborder.js` to accurately calculate and display resize progress, remaining time, and current size when a resize is paused or has been paused.
+        *   Documented the necessary logic changes for the `main.js` tick loop (developer task) to correctly handle the `isPaused` state and use `totalPausedTimeMs` for accurate resize progression and completion.
+    *   **Files Affected:** `AntiCheatsBP/scripts/commands/worldborder.js`, `Dev/tasks/ongoing.md`.
+
+*   **AutoMod Rule Refinement and Implementation - Batch 3:**
+    *   **Summary:** Completed a significant batch of AutoMod rule implementations, verifications, and prerequisite fixes.
+    *   **Details:**
+        *   Verified and corrected `checkType` key for Fly check's hover detection to `movement_hover_fly` in `automodConfig.js`.
+        *   Verified that `example_speed_ground` (for SpeedCheck) and `example_reach_attack` (for ReachCheck) are the `checkType` keys currently hardcoded in their respective check scripts. Noted that these scripts ideally should be refactored for configurable profile names.
+        *   Implemented new AutoMod rules (including messages and toggles) for additional `flyCheck.js` types: `movement_high_y_velocity` and `movement_sustained_fly`.
+        *   Modified `eventHandlers.js` in `handleBeforeChatSend` to add calls to `playerDataManager.addFlag()` for `chat_newline` and `chat_maxlength` violations, enabling their AutoMod rules (dependent on `config.flagOnNewline` and `config.flagOnMaxMessageLength`).
+        *   Investigated `chat_repeat_spam` rule: Confirmed `eventHandlers.js` likely corrected to use `config.spamRepeatCheckEnabled`. However, the exact `checkType` string used by the underlying `checks.checkSpam` function for repeat violations remains unconfirmed and requires developer review to ensure the `automodConfig.js` key `"chat_repeat_spam"` is accurate.
+        *   Implemented a `FLAG_ONLY` AutoMod rule, message, and toggle for `PistonLagCheck` (using `checkType: "world_antigrief_piston_lag"`).
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/automodConfig.js`, `AntiCheatsBP/scripts/core/eventHandlers.js`, `Dev/tasks/ongoing.md`.
+
+*   **Implemented 'Helpful Links' in Player Panel:**
+    *   **Summary:** Added a 'Helpful Links' section to the normal user view of the `!panel` command.
+    *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to display links configured in `config.js` (via `dependencies.config.helpLinks`). The UI uses an `ActionFormData` for link selection. When a player clicks a link, its title and URL are displayed in chat. The system gracefully handles cases where no links are configured by showing an informative message. New localization strings were added to `AntiCheatsBP/scripts/core/languages/en_US.js` for the UI elements. Task file documentation was also updated during development to reflect progress.
+    *   **Files Affected:** `AntiCheatsBP/scripts/core/uiManager.js`, `AntiCheatsBP/scripts/core/languages/en_US.js`, `Dev/tasks/ongoing.md`, `Dev/tasks/todo.md`.
+
+*   **Code Cleanup - Batch 2:**
+    *   **Summary:** Completed the second batch of code cleanup and refactoring tasks, focusing on improving code clarity, consistency, JSDoc documentation, and minor logical refinements across various modules.
+    *   **Details:** Reviewed and applied cleanups to the following files:
+        *   `AntiCheatsBP/scripts/core/logManager.js`
+        *   `AntiCheatsBP/scripts/core/reportManager.js`
+        *   `AntiCheatsBP/scripts/core/tpaManager.js`
+        *   `AntiCheatsBP/scripts/checks/index.js`
+        *   `AntiCheatsBP/scripts/checks/chat/capsAbuseCheck.js`
+        *   `AntiCheatsBP/scripts/checks/movement/flyCheck.js`
+        *   `AntiCheatsBP/scripts/commands/commandRegistry.js`
+        *   `AntiCheatsBP/scripts/commands/kick.js`
+        *   `AntiCheatsBP/scripts/commands/version.js`
+    *   **Common Changes:** Included removal of unused variables/imports, correction/enhancement of comments and JSDoc, consistent formatting, optimization of logic where applicable (e.g., parameter handling, default values), and ensuring adherence to project coding standards.
+    *   **Files Affected:** Listed above.
+
+*   **Documentation: `README.md` Update for `config.js` Centralization:**
+    *   **Summary:** Updated the main `README.md` file to accurately reflect that `config.js` is now the single, central configuration file for the addon.
+    *   **Details:**
+        *   Modified the "Configuration" section to remove references to `userSettings.js` and clearly state that all settings are managed within `AntiCheatsBP/scripts/config.js`.
+        *   Updated the "Automated Moderation (AutoMod)" configuration subsection to point to `config.js` for the global `enableAutoMod` toggle.
+        *   Ensured overall consistency in the README regarding `config.js` being the primary configuration point.
+    *   **Files Affected:** `README.md`.
+
 *   **Admin Panel UI Enhancement: Added Server Tick & World Time to System Info:**
     *   **Summary:** Enhanced the Admin Panel's "System Info" section to provide more real-time server state data.
     *   **Details:** Modified `AntiCheatsBP/scripts/core/uiManager.js` to include the current server tick (`mc.system.currentTick`) and world time of day (`mc.world.getTime()`) in the information display. Added new localization keys ("ui.systemInfo.label.currentTick", "ui.systemInfo.label.worldTime") to `AntiCheatsBP/scripts/core/i18n.js` for the labels of these new data points.
