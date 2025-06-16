@@ -76,7 +76,7 @@ export async function checkInvalidSprint(
                 isRiding: player.isRiding.toString(),
                 blindnessTicks: (pData.blindnessTicks ?? 0).toString()
             };
-            await executeCheckAction(player, "movement_invalid_sprint", violationDetails, dependencies);
+            await executeCheckAction(player, "movementInvalidSprint", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog?.(

@@ -62,7 +62,7 @@ export async function checkBreakUnbreakable(
                 playerName: player.nameTag
             };
             // Action profile name: config.instaBreakUnbreakableActionProfileName ?? "world_instabreak_unbreakable"
-            await executeCheckAction(player, "world_instabreak_unbreakable", violationDetails, dependencies);
+            await executeCheckAction(player, "worldInstabreakUnbreakable", violationDetails, dependencies);
             eventData.cancel = true; // Prevent the block from being broken
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
@@ -154,7 +154,7 @@ export async function checkBreakSpeed(
                 toolUsed: pData.toolUsedForBreakAttempt ?? "unknown"
             };
             // Action profile name: config.instaBreakSpeedActionProfileName ?? "world_instabreak_speed"
-            await executeCheckAction(player, "world_instabreak_speed", violationDetails, dependencies);
+            await executeCheckAction(player, "worldInstabreakSpeed", violationDetails, dependencies);
             playerUtils.debugLog?.(`InstaBreak (Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, watchedPrefix);
         }
     }

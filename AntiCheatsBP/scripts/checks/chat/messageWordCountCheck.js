@@ -52,7 +52,7 @@ export async function checkMessageWordCount(
     const wordCount = message.split(/\s+/).filter(str => str.length > 0).length;
 
     const threshold = config.maxWordsSpamThreshold ?? 50;
-    const actionProfileName = config.maxWordsSPAMActionProfileName ?? "chat_spam_max_words";
+    const actionProfileName = config.maxWordsSPAMActionProfileName ?? "chatSpamMaxWords";
     const actionProfile = config.checkActionProfiles?.[actionProfileName];
 
     let shouldCancel = false;

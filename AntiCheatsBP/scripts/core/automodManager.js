@@ -49,7 +49,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     let adminNotifyDetails = "";
 
     switch (actionType) {
-        case "WARN":
+        case "warn":
             const reasonKeyWarn = parameters.reasonKey || 'automod.unknown.warn';
             const messageWarnUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyWarn] || "automod.action.warnDefaultReason";
             const localizedMessageWarn = getString(messageWarnUnlocalized);
@@ -62,7 +62,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 playerUtils.debugLog(\`AutomodManager: playerUtils.warnPlayer not found for WARN action.\`, player.nameTag);
             }
             break;
-        case "KICK":
+        case "kick":
             const reasonKeyKick = parameters.reasonKey || 'automod.unknown.kick';
             const kickReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyKick] || "automod.action.kickDefaultReason";
             const localizedKickReason = getString(kickReasonUnlocalized);
@@ -77,7 +77,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
-        case "TEMP_BAN":
+        case "tempBan":
             const reasonKeyTempBan = parameters.reasonKey || 'automod.unknown.tempban';
             const reasonMessageTempBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTempBan] || "automod.action.tempbanDefaultReason";
             const localizedReasonMsgTempBan = getString(reasonMessageTempBanUnlocalized);
@@ -114,7 +114,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
-        case "PERM_BAN":
+        case "permBan":
             const reasonKeyPermBan = parameters.reasonKey || 'automod.unknown.permban';
             const reasonMessagePermBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyPermBan] || "automod.action.permbanDefaultReason";
             const localizedReasonMsgPermBan = getString(reasonMessagePermBanUnlocalized);
@@ -138,7 +138,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
-        case "MUTE":
+        case "mute":
             const reasonKeyMute = parameters.reasonKey || 'automod.unknown.mute';
             const reasonMessageMuteUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyMute] || "automod.action.muteDefaultReason";
             const localizedReasonMsgMute = getString(reasonMessageMuteUnlocalized);
@@ -163,7 +163,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
-        case "FREEZE":
+        case "freeze":
             const reasonKeyFreeze = parameters.reasonKey || 'automod.unknown.freeze';
             const reasonMessageFreezeUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyFreeze] || "automod.action.freezeDefaultReason";
             const localizedReasonMsgFreeze = getString(reasonMessageFreezeUnlocalized);
@@ -187,7 +187,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
-        case "REMOVE_ILLEGAL_ITEM":
+        case "removeIllegalItem":
             const itemTypeIdToRemove = parameters.itemToRemoveTypeId;
             if (!itemTypeIdToRemove) {
                 playerUtils.debugLog(\`AutomodManager: itemToRemoveTypeId not provided for REMOVE_ILLEGAL_ITEM on \${player.nameTag}.\`, player.nameTag);
@@ -233,7 +233,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
-        case "FLAG_ONLY":
+        case "flagOnly":
             logDetails = \`FLAG_ONLY rule processed for check: \${checkType}. No punitive action taken by design. ReasonKey: \${parameters.reasonKey || 'N/A'}\`;
             actionProcessed = true;
             break;

@@ -66,7 +66,7 @@ export async function checkInvalidRenderDistance(player, pData, config, playerUt
 
 
         if (executeActionFn) {
-            await executeActionFn(player, "player_invalid_render_distance", violationDetails, dependencies);
+            await executeActionFn(player, "playerInvalidRenderDistance", violationDetails, dependencies);
         } else {
             playerUtils.debugLog("InvalidRenderDistance: executeCheckAction not available.", null);
             if (logManager && typeof logManager.addLog === 'function') {

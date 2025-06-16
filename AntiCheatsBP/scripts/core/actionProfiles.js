@@ -7,7 +7,7 @@
  */
 
 export const checkActionProfiles = {
-    "example_fly_hover": {
+    "exampleFlyHover": {
         enabled: true,
         flag: {
             increment: 2,
@@ -22,7 +22,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Fly (Hover Violation): "
         }
     },
-    "example_speed_ground": {
+    "movementSpeedGround": {
         enabled: true,
         flag: {
             increment: 1,
@@ -37,7 +37,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Speed (Ground Violation): "
         }
     },
-    "example_reach_attack": {
+    "combatReachAttack": {
         enabled: true,
         flag: {
             increment: 1,
@@ -52,7 +52,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Reach (Attack Violation): "
         }
     },
-    "movement_nofall": {
+    "movementNofall": {
         enabled: true,
         flag: {
             increment: 3,
@@ -67,7 +67,7 @@ export const checkActionProfiles = {
             detailsPrefix: "NoFall Violation: "
         }
     },
-    "world_nuker": {
+    "worldNuker": {
         enabled: true,
         flag: {
             increment: 5,
@@ -82,7 +82,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Nuker Violation: "
         }
     },
-    "combat_cps_high": {
+    "combatCpsHigh": {
         enabled: true,
         flag: {
             increment: 1,
@@ -97,7 +97,7 @@ export const checkActionProfiles = {
             detailsPrefix: "High CPS Violation: "
         }
     },
-    "combat_viewsnap_pitch": {
+    "combatViewsnapPitch": {
         enabled: true,
         flag: {
             increment: 1,
@@ -112,7 +112,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Pitch Snap Violation: "
         }
     },
-    "combat_viewsnap_yaw": {
+    "combatViewsnapYaw": {
         enabled: true,
         flag: {
             increment: 1,
@@ -127,7 +127,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Yaw Snap Violation: "
         }
     },
-    "combat_invalid_pitch": {
+    "combatInvalidPitch": {
         enabled: true,
         flag: {
             increment: 2,
@@ -142,7 +142,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Invalid Pitch Violation: "
         }
     },
-    "combat_multitarget_aura": {
+    "combatMultitargetAura": {
         enabled: true,
         flag: {
             increment: 3,
@@ -157,7 +157,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Multi-Target Aura Violation: "
         }
     },
-    "combat_attack_while_sleeping": {
+    "combatAttackWhileSleeping": {
         enabled: true,
         flag: {
             increment: 5,
@@ -172,7 +172,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Attack While Sleeping Violation: "
         }
     },
-    "combat_attack_while_consuming": {
+    "combatAttackWhileConsuming": {
         enabled: true,
         flag: {
             increment: 3,
@@ -187,7 +187,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Attack While Consuming Violation: "
         }
     },
-    "combat_attack_while_bow_charging": {
+    "combatAttackWhileBowCharging": {
         enabled: true,
         flag: {
             increment: 3,
@@ -202,7 +202,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Attack While Charging Bow Violation: "
         }
     },
-    "combat_attack_while_shielding": {
+    "combatAttackWhileShielding": {
         enabled: true,
         flag: {
             increment: 2,
@@ -217,7 +217,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Attack While Shielding Violation: "
         }
     },
-    "world_illegal_item_use": {
+    "worldIllegalItemUse": {
         enabled: true,
         flag: {
             increment: 2,
@@ -232,7 +232,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Illegal Item Use Violation: "
         }
     },
-    "world_illegal_item_place": {
+    "worldIllegalItemPlace": {
         enabled: true,
         flag: {
             increment: 2,
@@ -247,7 +247,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Illegal Item Placement Violation: "
         }
     },
-    "world_tower_build": {
+    "worldTowerBuild": {
         enabled: true,
         flag: {
             increment: 2,
@@ -262,7 +262,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Tower Building Violation: "
         }
     },
-    "world_flat_rotation_building": {
+    "worldFlatRotationBuilding": {
         enabled: true,
         flag: {
             increment: 2,
@@ -277,7 +277,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Flat/Static Rotation Building Violation: "
         }
     },
-    "world_downward_scaffold": {
+    "worldDownwardScaffold": {
         enabled: true,
         flag: {
             increment: 3,
@@ -292,7 +292,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Downward Scaffold Violation: "
         }
     },
-    "world_air_place": {
+    "worldAirPlace": {
         enabled: true,
         flag: {
             increment: 1,
@@ -307,7 +307,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Air Placement Violation: "
         }
     },
-    "action_fast_use": {
+    "actionFastUse": {
         enabled: true,
         flag: {
             increment: 1,
@@ -322,7 +322,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Fast Use Violation: "
         }
     },
-    "world_fast_place": {
+    "worldFastPlace": {
         enabled: true,
         flag: {
             increment: 1,
@@ -337,7 +337,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Fast Place Violation: "
         }
     },
-    "movement_noslow": {
+    "movementNoslow": {
         enabled: true,
         flag: {
             increment: 2,
@@ -352,7 +352,7 @@ export const checkActionProfiles = {
             detailsPrefix: "NoSlow Violation: "
         }
     },
-    "movement_invalid_sprint": {
+    "movementInvalidSprint": {
         enabled: true,
         flag: {
             increment: 2,
@@ -367,7 +367,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Invalid Sprint Violation: "
         }
     },
-    "world_autotool": {
+    "worldAutotool": {
         enabled: true,
         flag: {
             increment: 2,
@@ -382,7 +382,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AutoTool Violation: "
         }
     },
-    "world_instabreak_unbreakable": {
+    "worldInstabreakUnbreakable": {
         enabled: true,
         flag: {
             increment: 10,
@@ -397,7 +397,7 @@ export const checkActionProfiles = {
             detailsPrefix: "InstaBreak (Unbreakable) Violation: "
         }
     },
-    "world_instabreak_speed": {
+    "worldInstabreakSpeed": {
         enabled: true,
         flag: {
             increment: 3,
@@ -412,7 +412,7 @@ export const checkActionProfiles = {
             detailsPrefix: "InstaBreak (Speed) Violation: "
         }
     },
-    "player_namespoof": {
+    "playerNamespoof": {
         enabled: true,
         flag: {
             increment: 5,
@@ -427,7 +427,7 @@ export const checkActionProfiles = {
             detailsPrefix: "NameSpoof Violation: "
         }
     },
-    "player_antigmc": {
+    "playerAntiGMC": {
         enabled: true,
         flag: {
             increment: 10,
@@ -442,7 +442,7 @@ export const checkActionProfiles = {
             detailsPrefix: "Anti-GMC Violation: "
         }
     },
-    "player_inventory_mod": {
+    "playerInventoryMod": {
         enabled: true,
         flag: {
             increment: 3,
@@ -457,7 +457,7 @@ export const checkActionProfiles = {
             detailsPrefix: "InventoryMod Violation: "
         }
     },
-    "chat_spam_fast_message": {
+    "chatSpamFastMessage": {
         enabled: true,
         flag: {
             type: "chat_spam_fast",
@@ -474,7 +474,7 @@ export const checkActionProfiles = {
         },
         cancelMessage: true
     },
-    "chat_spam_max_words": {
+    "chatSpamMaxWords": {
         enabled: true,
         flag: {
             type: "chat_spam_max_words",
@@ -491,7 +491,7 @@ export const checkActionProfiles = {
         },
         cancelMessage: true
     },
-    "world_antigrief_tnt_place": {
+    "worldAntigriefTntPlace": {
         enabled: true, // This will be controlled by enableTntAntiGrief at a higher level
         flag: {
             increment: 1,
@@ -506,7 +506,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief TNT: "
         }
     },
-    "world_antigrief_wither_spawn": {
+    "worldAntigriefWitherSpawn": {
         enabled: true, // This will be effectively controlled by enableWitherAntiGrief at a higher level
         flag: {
             increment: 5, // Wither griefing is severe
@@ -521,7 +521,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief Wither: "
         }
     },
-    "world_antigrief_fire": {
+    "worldAntigriefFire": {
         enabled: true, // Effectively controlled by enableFireAntiGrief
         flag: {
             increment: 2,
@@ -536,7 +536,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief Fire: "
         }
     },
-    "world_antigrief_lava": {
+    "worldAntigriefLava": {
         enabled: true, // Effectively controlled by enableLavaAntiGrief
         flag: {
             increment: 2,
@@ -551,7 +551,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief Lava: "
         }
     },
-    "world_antigrief_water": {
+    "worldAntigriefWater": {
         enabled: true, // Effectively controlled by enableWaterAntiGrief
         flag: {
             increment: 1, // Water grief is often less permanent than lava/TNT
@@ -566,7 +566,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief Water: "
         }
     },
-    "world_antigrief_blockspam": {
+    "worldAntigriefBlockspam": {
         enabled: true, // Effectively controlled by enableBlockSpamAntiGrief
         flag: {
             increment: 1,
@@ -581,7 +581,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief BlockSpam: "
         }
     },
-    "world_antigrief_entityspam": {
+    "worldAntigriefEntityspam": {
         enabled: true, // Effectively controlled by enableEntitySpamAntiGrief
         flag: {
             increment: 1,
@@ -596,7 +596,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief EntitySpam: "
         }
     },
-    "world_antigrief_blockspam_density": {
+    "worldAntigriefBlockspamDensity": {
         enabled: true, // Effectively controlled by enableBlockSpamDensityCheck
         flag: {
             increment: 2, // Potentially more severe than just rate
@@ -611,7 +611,7 @@ export const checkActionProfiles = {
             detailsPrefix: "AntiGrief BlockSpam (Density): "
         }
     },
-    "world_antigrief_piston_lag": {
+    "worldAntigriefPistonLag": {
         "enabled": true,
         "flag": null,
         "notifyAdmins": {
@@ -622,7 +622,7 @@ export const checkActionProfiles = {
             "detailsPrefix": "AntiGrief Piston Lag: "
         }
     },
-    "player_invalid_render_distance": {
+    "playerInvalidRenderDistance": {
         "enabled": true,
         "flag": {
             "increment": 1,
@@ -637,7 +637,7 @@ export const checkActionProfiles = {
             "detailsPrefix": "Invalid Render Distance: "
         }
     },
-    "player_chat_during_combat": {
+    "playerChatDuringCombat": {
         "enabled": true,
         "flag": {
             "increment": 1,
@@ -653,7 +653,7 @@ export const checkActionProfiles = {
             "detailsPrefix": "Chat During Combat: "
         }
     },
-    "player_chat_during_item_use": {
+    "playerChatDuringItemUse": {
         "enabled": true,
         "flag": {
             "increment": 1,
@@ -669,7 +669,7 @@ export const checkActionProfiles = {
             "detailsPrefix": "Chat During Item Use: "
         }
     },
-    "chat_swear_violation": {
+    "chatSwearViolation": {
         enabled: true, // The check itself is controlled by enableSwearCheck
         flag: {
             increment: 1,
@@ -687,7 +687,7 @@ export const checkActionProfiles = {
         cancelMessage: true, // Cancel the message containing the swear word
         customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
     },
-    chat_advertising_detected: {
+    "chatAdvertisingDetected": {
         enabled: true,
         flag: {
             type: "chat_advertising",
@@ -704,7 +704,7 @@ export const checkActionProfiles = {
         }
         // No cancelMessage or customAction by default
     },
-    chat_caps_abuse_detected: {
+    "chatCapsAbuseDetected": {
         enabled: true,
         flag: {
             type: "chat_caps_abuse",
@@ -721,7 +721,7 @@ export const checkActionProfiles = {
         }
         // No cancelMessage by default
     },
-    chat_char_repeat_detected: {
+    "chatCharRepeatDetected": {
         enabled: true,
         flag: {
             type: "chat_char_repeat",
@@ -738,7 +738,7 @@ export const checkActionProfiles = {
         }
         // No cancelMessage by default
     },
-    chat_symbol_spam_detected: {
+    "chatSymbolSpamDetected": {
         enabled: true,
         flag: {
             type: "chat_symbol_spam",
@@ -755,7 +755,7 @@ export const checkActionProfiles = {
         }
         // No cancelMessage by default
     },
-    "player_self_hurt": {
+    "playerSelfHurt": {
         enabled: true,
         flag: {
             increment: 2, // Moderate flagging

@@ -549,7 +549,7 @@ export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for fast message spam violations. */
-export const fastMessageSPAMActionProfileName = "chat_spam_fast_message";
+export const fastMessageSPAMActionProfileName = "chatSpamFastMessage";
 
 /** @type {boolean} If true, the Max Words Spam check (preventing overly long messages) is active. */
 export const enableMaxWordsSpamCheck = true;

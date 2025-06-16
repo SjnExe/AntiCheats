@@ -26,6 +26,11 @@ This document outlines coding style conventions to be followed for this project 
 ### Command Naming:
 *   User-facing commands (e.g., those typed in chat like `!gmc`, `!help`) should remain in their existing lowercase format. The uppercase acronym convention described for JavaScript variables and functions does not apply to these command identifiers.
 
+### `checkType` String Identifiers
+*   `checkType` string identifiers (used in check scripts, `actionProfiles.js`, `automodConfig.js`) should use **`camelCase`**.
+*   Specified acronyms (GMC, GMS, GMSP, GMA, TPA, TPS) must be preserved in ALL CAPS within the `camelCase` identifier (e.g., `playerAntiGMC`, `chatTpaSpam`).
+*   Examples: `movementFlyHover`, `playerAntiGMC`, `worldIllegalItemPlaceGMA`.
+
 ### `actionType` String Literals
 String literals used for `actionType` values (e.g., in `automodConfig.js` for AutoMod rule actions, and for `log.actionType` in `actionProfiles.js` for log categorization) should use **`camelCase`**.
     - Examples for AutoMod rule actions: `warn`, `kick`, `tempBan`, `mute`, `flagOnly`, `teleportSafe`.

@@ -68,9 +68,9 @@ export async function checkPistonLag(pistonBlock, dimensionId, config, playerUti
             };
 
             if (dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
-                 await dependencies.actionManager.executeCheckAction("world_antigrief_piston_lag", null, violationDetails, dependencies);
+                 await dependencies.actionManager.executeCheckAction("worldAntigriefPistonLag", null, violationDetails, dependencies);
             } else if (typeof actionManager === 'function') {
-                 await actionManager("world_antigrief_piston_lag", null, violationDetails, dependencies);
+                 await actionManager("worldAntigriefPistonLag", null, violationDetails, dependencies);
             }
 
             playerUtils.debugLog(`PistonLag: Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, null);

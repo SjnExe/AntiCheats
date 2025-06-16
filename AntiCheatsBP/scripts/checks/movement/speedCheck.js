@@ -80,7 +80,7 @@ export async function checkSpeed(
     );
 
     const dependencies = { config, playerDataManager, playerUtils, logManager };
-    const groundActionProfileKey = "example_speed_ground";
+    const groundActionProfileKey = "movementSpeedGround";
 
     if (player.isOnGround) {
         if (hSpeedBPS > maxAllowedSpeedBPS) {

@@ -74,7 +74,7 @@ export async function checkSelfHurt(
             playerHealth: playerHealthString
         };
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        await executeCheckAction(player, "player_self_hurt", violationDetails, dependencies);
+        await executeCheckAction(player, "playerSelfHurt", violationDetails, dependencies);
 
     } else if (pData.isWatched && damagingEntity && damagingEntity.id === player.id) {
         // Log other types of self-damage for watched players, for observation, but don't flag.

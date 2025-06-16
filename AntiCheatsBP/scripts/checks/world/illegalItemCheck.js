@@ -78,7 +78,7 @@ export async function checkIllegalItems(
     if (actionType === "place" && bannedItemsForPlace.includes(itemId)) {
         isBanned = true;
         // Action Profile Name: config.illegalItemPlaceActionProfileName ?? "world_illegal_item_place"
-        checkProfileKey = "world_illegal_item_place";
+        checkProfileKey = "worldIllegalItemPlace";
         violationDetails = {
             itemTypeId: itemId,
             action: "place",
@@ -90,7 +90,7 @@ export async function checkIllegalItems(
     } else if (actionType === "use" && bannedItemsForUse.includes(itemId)) {
         isBanned = true;
         // Action Profile Name: config.illegalItemUseActionProfileName ?? "world_illegal_item_use"
-        checkProfileKey = "world_illegal_item_use";
+        checkProfileKey = "worldIllegalItemUse";
         violationDetails = {
             itemTypeId: itemId,
             action: "use",

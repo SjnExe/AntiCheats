@@ -126,7 +126,7 @@ export async function checkFly(
                 hasSlowFalling: pData.hasSlowFalling?.toString() ?? "false",
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            await executeCheckAction(player, config.highYVelocityActionProfileName || "movement_high_y_velocity", violationDetails, actionDependencies);
+            await executeCheckAction(player, config.highYVelocityActionProfileName || "movementHighYVelocity", violationDetails, actionDependencies);
             if (playerUtils && playerUtils.debugLog) {
                 playerUtils.debugLog(`HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix);
             }
@@ -172,7 +172,7 @@ export async function checkFly(
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
             // Use a specific action profile name from config if available, otherwise fallback
-            await executeCheckAction(player, config.sustainedFlyActionProfileName || "movement_sustained_fly", violationDetails, actionDependencies);
+            await executeCheckAction(player, config.sustainedFlyActionProfileName || "movementSustainedFly", violationDetails, actionDependencies);
         }
     }
 
@@ -209,7 +209,7 @@ export async function checkFly(
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
             // Use a specific action profile name from config if available, otherwise fallback
-            await executeCheckAction(player, config.hoverFlyActionProfileName || "movement_hover_fly", violationDetails, actionDependencies);
+            await executeCheckAction(player, config.hoverFlyActionProfileName || "movementFlyHover", violationDetails, actionDependencies);
         }
     }
 }

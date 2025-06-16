@@ -79,6 +79,6 @@ export async function checkCPS(
         };
 
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        await executeCheckAction(player, "combat_cps_high", violationDetails, dependencies);
+        await executeCheckAction(player, "combatCpsHigh", violationDetails, dependencies);
     }
 }
