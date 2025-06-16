@@ -47,6 +47,13 @@ This document lists significant tasks that have been completed.
     - New i18n strings in `en_US.js`.
     - New configuration options in `config.js` (e.g., `enableGibberishCheck`, thresholds), defaulted to `false`.
     - Exporting the new check from `checks/index.js`.
+-   **Implemented `checkExcessiveMentions` Detection:** Added a new chat check (`checkExcessiveMentions.js`) to detect spamming via excessive user mentions in a single message. This includes:
+    - Logic to count total unique mentions and maximum repetitions of a single user mention.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatExcessiveMentions` checkType.
+    - New i18n strings in `en_US.js`.
+    - New configuration options in `config.js` (e.g., `enableExcessiveMentionsCheck`, thresholds), defaulted to `false`.
+    - Exporting the new check from `checks/index.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

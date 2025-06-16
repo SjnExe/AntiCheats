@@ -48,3 +48,4 @@ export * from './chat/symbolSpamCheck.js';
 export * from './chat/checkChatContentRepeat.js';
 export * from './chat/checkUnicodeAbuse.js';
 export * from './chat/checkGibberish.js';
+export * from './chat/checkExcessiveMentions.js';

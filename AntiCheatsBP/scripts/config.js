@@ -323,27 +323,27 @@ export const serverRules = [
 // --- General Check Toggles ---
 
 /** @type {boolean} If true, the Reach check is active. */
-export const enableReachCheck = false;
+export const enableReachCheck = true;
 /** @type {boolean} If true, the CPS (Clicks Per Second) check is active. */
-export const enableCPSCheck = false;
+export const enableCPSCheck = true;
 /** @type {boolean} If true, the View Snap / Invalid Pitch check is active. */
-export const enableViewSnapCheck = false;
+export const enableViewSnapCheck = true;
 /** @type {boolean} If true, the Multi-Target Killaura check is active. */
-export const enableMultiTargetCheck = false;
+export const enableMultiTargetCheck = true;
 /** @type {boolean} If true, various state conflict checks (e.g., attack while sleeping) are active. */
-export const enableStateConflictCheck = false;
+export const enableStateConflictCheck = true;
 /** @type {boolean} If true, the Fly check (both sustained and hover) is active. */
 export const enableFlyCheck = false;
 /** @type {boolean} If true, the Speed check is active. */
 export const enableSpeedCheck = false;
 /** @type {boolean} If true, the NoFall check is active. */
-export const enableNofallCheck = false;
+export const enableNofallCheck = true;
 /** @type {boolean} If true, the Nuker check is active. */
 export const enableNukerCheck = false;
 /** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
-export const enableIllegalItemCheck = false;
+export const enableIllegalItemCheck = true;
 /** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
-export const enableSelfHurtCheck = false;
+export const enableSelfHurtCheck = true;
 
 /** @type {boolean} If true, the Nether Roof Check is active and will flag players found on the Nether roof. */
 export const enableNetherRoofCheck = false;
@@ -533,7 +533,7 @@ export const bannedItemsUse = [];
 // --- Chat Checks ---
 
 /** @type {boolean} If true, enables the Swear Word detection check. */
-export const enableSwearCheck = false;
+export const enableSwearCheck = false; // Disabled by default as per user request
 
 /** @type {string[]} List of swear words to detect (case-insensitive, whole word). Empty by default. */
 export const swearWordList = [];
@@ -544,51 +544,42 @@ export const swearCheckActionProfileName = "chat_swear_violation";
 /** @type {string} Duration for the mute applied on swear word detection. */
 export const swearCheckMuteDuration = "30s";
 
-/** @type {boolean} If true, enables advanced normalization (ignored char removal, repeat collapse) for swear checking. Assumed true if other enhancements are on. */
-export const enableSwearCheckNormalization = true; // Defaulting to true as it's a base for others
-/** @type {boolean} If true, enables Leet speak conversion as part of swear word normalization. */
-export const enableSwearCheckLeetSpeak = true; // Defaulting to true as it's a common obfuscation
-/** @type {boolean} If true, enables Levenshtein distance matching for swear words (catches typos/minor variations). */
-export const enableSwearCheckLevenshtein = false; // Defaulting to false as it can have more false positives
-/** @type {number} Maximum Levenshtein distance allowed for a word to be considered a match to a swear word. Only active if enableSwearCheckLevenshtein is true. */
-export const swearCheckLevenshteinDistance = 1; // Default to 1 if Levenshtein is enabled
-
 /** @type {boolean} If true, the Fast Message Spam check is active. */
-export const enableFastMessageSpamCheck = false;
+export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for fast message spam violations. */
 export const fastMessageSPAMActionProfileName = "chatSpamFastMessage";
 
 /** @type {boolean} If true, the Max Words Spam check (preventing overly long messages) is active. */
-export const enableMaxWordsSpamCheck = false;
+export const enableMaxWordsSpamCheck = true;
 /** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
 /** @type {string} The action profile name (from `checkActionProfiles`) to use for max words spam violations. */
 export const maxWordsSPAMActionProfileName = "chat_spam_max_words";
 
 /** @type {boolean} If true, checks for newline or carriage return characters in chat messages. */
-export const enableNewlineCheck = false;
+export const enableNewlineCheck = true;
 /** @type {boolean} If true, sending a message containing newlines/carriage returns will flag the player. */
-export const flagOnNewline = false;
+export const flagOnNewline = true;
 /** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
-export const cancelMessageOnNewline = false;
+export const cancelMessageOnNewline = true;
 /** @type {boolean} If true, checks if chat messages exceed the `maxMessageLength`. */
-export const enableMaxMessageLengthCheck = false;
+export const enableMaxMessageLengthCheck = true;
 /** @type {number} Maximum allowed character length for a single chat message. */
 export const maxMessageLength = 256;
 /** @type {boolean} If true, sending a message exceeding `maxMessageLength` will flag the player. */
-export const flagOnMaxMessageLength = false;
+export const flagOnMaxMessageLength = true;
 /** @type {boolean} If true, messages exceeding `maxMessageLength` will be cancelled. */
-export const cancelOnMaxMessageLength = false;
+export const cancelOnMaxMessageLength = true;
 /** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
-export const spamRepeatCheckEnabled = false; // This relates to message rate, not content. Content repeat is new.
+export const spamRepeatCheckEnabled = true;
 /** @type {number} Number of identical or similar messages within `spamRepeatTimeWindowSeconds` to trigger a spam flag. */
 export const spamRepeatMessageCount = 3;
 /** @type {number} Time window in seconds to monitor for repeated messages. */
 export const spamRepeatTimeWindowSeconds = 5;
 /** @type {boolean} If true, flags the player for repeated message spam. */
-export const spamRepeatFlagPlayer = false;
+export const spamRepeatFlagPlayer = false; // Changed to false as per new policy
 /** @type {boolean} If true, cancels the message that triggers repeated spam detection. */
 export const spamRepeatCancelMessage = false;
 
@@ -611,6 +602,17 @@ export const gibberishVowelRatioUpperBound = 0.80;
 export const gibberishMaxConsecutiveConsonants = 5;
 /** @type {string} Action profile name for gibberish violations. */
 export const gibberishActionProfileName = "chatGibberish";
+
+/** @type {boolean} If true, the Excessive Mentions chat check is active. */
+export const enableExcessiveMentionsCheck = false;
+/** @type {number} Minimum message length to apply excessive mentions check. */
+export const mentionsMinMessageLength = 10;
+/** @type {number} Maximum number of unique users that can be mentioned in a single message. */
+export const mentionsMaxUniquePerMessage = 4;
+/** @type {number} Maximum number of times a single user can be mentioned in a single message. */
+export const mentionsMaxRepeatedPerMessage = 3;
+/** @type {string} Action profile name for excessive mention violations. */
+export const mentionsActionProfileName = "chatExcessiveMentions";
 
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
@@ -855,10 +857,6 @@ export let editableConfigValues = {
     enableSwearCheck: enableSwearCheck,
     swearWordList: swearWordList,
     swearCheckMuteDuration: swearCheckMuteDuration,
-    enableSwearCheckNormalization: enableSwearCheckNormalization,
-    enableSwearCheckLeetSpeak: enableSwearCheckLeetSpeak,
-    enableSwearCheckLevenshtein: enableSwearCheckLevenshtein,
-    swearCheckLevenshteinDistance: swearCheckLevenshteinDistance,
     enableAntiAdvertisingCheck: enableAntiAdvertisingCheck,
     antiAdvertisingPatterns: antiAdvertisingPatterns,
     antiAdvertisingActionProfileName: antiAdvertisingActionProfileName,
@@ -1074,6 +1072,11 @@ export let editableConfigValues = {
     gibberishVowelRatioUpperBound,
     gibberishMaxConsecutiveConsonants,
     gibberishActionProfileName,
+    enableExcessiveMentionsCheck,
+    mentionsMinMessageLength,
+    mentionsMaxUniquePerMessage,
+    mentionsMaxRepeatedPerMessage,
+    mentionsActionProfileName,
     // Swear Check specific (action profile name is advanced)
     swearCheckActionProfileName, // swearCheckMuteDuration is in user_settings
     // AutoMod Configuration (complex object, now imported)

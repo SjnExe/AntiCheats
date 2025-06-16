@@ -138,6 +138,11 @@ export const automodConfig = {
             { "flagThreshold": 4, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.unicodeabuse.mute1", "duration": "10m" }, "resetFlagsAfterAction": true },
             { "flagThreshold": 6, "actionType": "kick", "parameters": { "reasonKey": "automod.chat.unicodeabuse.kick1" }, "resetFlagsAfterAction": true }
         ],
+        "chatExcessiveMentions": [
+            { "flagThreshold": 2, "actionType": "warn", "parameters": { "reasonKey": "automod.chat.excessivementions.warn1" }, "resetFlagsAfterAction": false },
+            { "flagThreshold": 4, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.excessivementions.mute1", "duration": "5m" }, "resetFlagsAfterAction": true },
+            { "flagThreshold": 6, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.excessivementions.mute2", "duration": "15m" }, "resetFlagsAfterAction": true }
+        ],
         "chatGibberish": [
             { "flagThreshold": 3, "actionType": "warn", "parameters": { "reasonKey": "automod.chat.gibberish.warn1" }, "resetFlagsAfterAction": false },
             { "flagThreshold": 6, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.gibberish.mute1", "duration": "5m" }, "resetFlagsAfterAction": true },
@@ -484,6 +489,9 @@ export const automodConfig = {
         "automod.chat.unicodeabuse.warn1": "AutoMod: Please avoid using excessive special characters or text effects that disrupt chat.",
         "automod.chat.unicodeabuse.mute1": "AutoMod: Muted for 10 minutes for disruptive text patterns.",
         "automod.chat.unicodeabuse.kick1": "AutoMod: Kicked for persistent use of disruptive text patterns.",
+        "automod.chat.excessivementions.warn1": "AutoMod: Please avoid mentioning too many users or the same user repeatedly in a single message.",
+        "automod.chat.excessivementions.mute1": "AutoMod: Muted for 5 minutes for excessive user mentions.",
+        "automod.chat.excessivementions.mute2": "AutoMod: Muted for 15 minutes for persistent excessive user mentions.",
         "automod.chat.gibberish.warn1": "AutoMod: Please ensure your messages are readable and contribute to the conversation.",
         "automod.chat.gibberish.mute1": "AutoMod: Muted for 5 minutes due to unreadable message patterns.",
         "automod.chat.gibberish.kick1": "AutoMod: Kicked for persistent unreadable or gibberish messages.",
@@ -564,6 +572,7 @@ export const automodConfig = {
         "chatAdvertisingDetected": false,
         "chatCapsAbuseDetected": false,
         "chatContentRepeat": false,
+        "chatExcessiveMentions": false,
         "chatUnicodeAbuse": false,
         "chatGibberish": false,
         "chatCharRepeatDetected": false,

@@ -809,6 +809,12 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         // No immediate 'if (eventData.cancel) return;' unless checkGibberish can set it.
     }
 
+    // Excessive Mentions Check
+    if (!eventData.cancel && checks?.checkExcessiveMentions && config.enableExcessiveMentionsCheck) {
+        await checks.checkExcessiveMentions(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkExcessiveMentions can set it.
+    }
+
     // Newline Check (Adding flag logic here)
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {

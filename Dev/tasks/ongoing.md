@@ -9,7 +9,8 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   Completed: Enhanced Swear Check (Obfuscation Resistance).
 *   Completed: Review of Newline Spam Handling (concluded existing system is sufficient when configured).
 *   Completed: Gibberish Detection Check (`checkGibberish` - V1 focusing on ratios/consonants).
-*   Next: All primary proposed 'Further Chat Violations' have been addressed. Consider moving to other tasks or more complex/lower priority chat items if desired.
+*   Completed: Excessive Mentions Check (`checkExcessiveMentions` - V1 per-message).
+*   Next: All primary proposed 'Further Chat Violations' have been addressed. Consider 'Packet Anomalies' or other categories, or more complex/lower priority chat items if desired.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -34,7 +35,8 @@ This list contains planned features, improvements, and areas for future investig
         *   [COMPLETED] Enhanced Swear Check (Obfuscation Resistance).
         *   [REVIEWED - SUFFICIENT] Review Newline Spam Handling (if current `chatNewline` check is insufficient for flood scenarios).
         *   [COMPLETED - V1] Gibberish Detection (V1 focusing on ratios/consonants).
-        *   (Lower Priority/More Complex remaining: Simple Impersonation, Excessive Mentions, Refined External Link Patterns) - *Consider next if continuing with chat violations.*
+        *   [COMPLETED - V1] Excessive Mentions Check (per-message unique/repeat counts).
+        *   (Lower Priority/More Complex remaining: Simple Impersonation, Refined External Link Patterns) - *Consider next if continuing with chat violations.*
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
