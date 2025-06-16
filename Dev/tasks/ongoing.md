@@ -11,7 +11,8 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   Completed: Gibberish Detection Check (`checkGibberish` - V1).
 *   Completed: Excessive Mentions Check (`checkExcessiveMentions` - V1 per-message).
 *   Completed: Enhanced Anti-Advertising Check (Regex and Whitelisting).
-*   Next: All currently planned 'Further Chat Violations' items from the initial brainstorming are addressed. Consider 'Packet Anomalies' or other task categories.
+*   Completed: Simple Impersonation Check (`checkSimpleImpersonation` - V1 for server/staff messages).
+*   Next: All identified 'Further Chat Violations' tasks from the recent brainstorming/review are now addressed. Consider moving to 'Packet Anomalies' or other major task categories.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -38,7 +39,8 @@ This list contains planned features, improvements, and areas for future investig
         *   [COMPLETED - V1] Gibberish Detection (V1 focusing on ratios/consonants).
         *   [COMPLETED - V1] Excessive Mentions Check (per-message unique/repeat counts).
         *   [COMPLETED] Refined External Link Patterns (Enhanced `antiAdvertisingCheck.js` with Regex and Whitelisting).
-        *   (Lower Priority/More Complex remaining: Simple Impersonation) - *Consider next if continuing with minor chat violations.*
+        *   [COMPLETED - V1] Simple Impersonation (server/staff message patterns).
+        *   (No further specific chat sub-tasks identified from current review cycle).
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**

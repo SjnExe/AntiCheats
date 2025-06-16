@@ -626,16 +626,20 @@ export const mentionsMaxRepeatedPerMessage = 3;
 /** @type {string} Action profile name for excessive mention violations. */
 export const mentionsActionProfileName = "chatExcessiveMentions";
 
-/** @type {boolean} If true, the Excessive Mentions chat check is active. */
-export const enableExcessiveMentionsCheck = false;
-/** @type {number} Minimum message length to apply excessive mentions check. */
-export const mentionsMinMessageLength = 10;
-/** @type {number} Maximum number of unique users that can be mentioned in a single message. */
-export const mentionsMaxUniquePerMessage = 4;
-/** @type {number} Maximum number of times a single user can be mentioned in a single message. */
-export const mentionsMaxRepeatedPerMessage = 3;
-/** @type {string} Action profile name for excessive mention violations. */
-export const mentionsActionProfileName = "chatExcessiveMentions";
+/** @type {boolean} If true, the Simple Impersonation (mimicking server/staff messages) check is active. */
+export const enableSimpleImpersonationCheck = false;
+/** @type {string[]} Regex patterns to identify server/staff message impersonation attempts. */
+export const impersonationServerMessagePatterns = [
+    "^\[(Server|Admin|System|Mod|Staff|Broadcast|Announcement|Alert)\]",
+    "^§[4c][\\s\\S]*?(Warning|Critical|Error)",
+    "^§[b9ea][\\s\\S]*?(Notice|Info|Server|System)"
+];
+/** @type {number} Permission level at or below which players are exempt from impersonation checks. */
+export const impersonationExemptPermissionLevel = 1; // Assuming 1 is Admin or similar, adjust if needed based on rankManager.permissionLevels
+/** @type {number} Minimum message length for impersonation pattern matching to apply. */
+export const impersonationMinMessageLengthForPatternMatch = 10;
+/** @type {string} Action profile name for impersonation attempt violations. */
+export const impersonationActionProfileName = "chatImpersonationAttempt";
 
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */

@@ -61,6 +61,14 @@ This document lists significant tasks that have been completed.
     - Fallback to existing simple pattern matching if advanced detection is disabled.
     - Corrected `antiAdvertisingActionProfileName` in `config.js` to `chatAdvertisingDetected` (camelCase) for consistency with `automodConfig.js`.
     - Updated `violationDetails` to include match method and pattern used.
+-   **Implemented `checkSimpleImpersonation` Detection (V1):** Added an initial version of a chat check (`checkSimpleImpersonation.js`) to detect players attempting to mimic server/staff announcements. This version includes:
+    - Logic to match messages against a configurable list of regex patterns for announcement formats.
+    - Exemption for players at or above a configurable permission level.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatImpersonationAttempt` checkType.
+    - New i18n strings in `en_US.js`.
+    - New configuration options in `config.js` (e.g., `enableSimpleImpersonationCheck`, patterns, exempt level), defaulted to `false`.
+    - Exporting the new check from `checks/index.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

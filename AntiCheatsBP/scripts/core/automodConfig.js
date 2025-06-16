@@ -575,6 +575,7 @@ export const automodConfig = {
         "chatExcessiveMentions": false,
         "chatUnicodeAbuse": false,
         "chatGibberish": false,
+        "chatImpersonationAttempt": false,
         "chatCharRepeatDetected": false,
         "chatSymbolSpamDetected": false,
         "chatNewline": false,

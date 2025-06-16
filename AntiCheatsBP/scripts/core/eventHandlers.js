@@ -815,6 +815,12 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         // No immediate 'if (eventData.cancel) return;' unless checkExcessiveMentions can set it.
     }
 
+    // Simple Impersonation Check
+    if (!eventData.cancel && checks?.checkSimpleImpersonation && config.enableSimpleImpersonationCheck) {
+        await checks.checkSimpleImpersonation(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkSimpleImpersonation can set it.
+    }
+
     // Newline Check (Adding flag logic here)
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
