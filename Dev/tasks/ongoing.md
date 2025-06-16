@@ -6,10 +6,6 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 *   - Coding style review and corrections for core files completed (including `i18n.js` constant rename, `camelCase` for log `actionType`s in `eventHandlers.js` & `uiManager.js`, `logManager.js` JSDoc update, `reportManager.js` logging refactor). Details moved to `completed.md`.
 *   - Reviewed all files in `AntiCheatsBP/scripts/checks/` subdirectories for style compliance.
-*   - Corrected `console.warn` to `playerUtils.debugLog` in `checks/chat/swearCheck.js`.
-*   - Removed duplicated code block in `checks/movement/invalidSprintCheck.js`.
-*   - Refactored `logManager.addLog` `actionType` to `camelCase` in `checks/player/clientInfoChecks.js`.
-*   - Uncommented useful `debugLog` calls in `checks/world/entityChecks.js`, `fastUseCheck.js`, and `illegalItemCheck.js`.
 *   - Noted consistent use of `snake_case` for `checkType` identifiers throughout all `checks` files (e.g., 'movement_fly_hover', 'player_antigmc').
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
