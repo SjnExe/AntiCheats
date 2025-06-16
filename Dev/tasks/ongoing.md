@@ -8,9 +8,10 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   Completed: Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
 *   Completed: Enhanced Swear Check (Obfuscation Resistance).
 *   Completed: Review of Newline Spam Handling (concluded existing system is sufficient when configured).
-*   Completed: Gibberish Detection Check (`checkGibberish` - V1 focusing on ratios/consonants).
+*   Completed: Gibberish Detection Check (`checkGibberish` - V1).
 *   Completed: Excessive Mentions Check (`checkExcessiveMentions` - V1 per-message).
-*   Next: All primary proposed 'Further Chat Violations' have been addressed. Consider 'Packet Anomalies' or other categories, or more complex/lower priority chat items if desired.
+*   Completed: Enhanced Anti-Advertising Check (Regex and Whitelisting).
+*   Next: All currently planned 'Further Chat Violations' items from the initial brainstorming are addressed. Consider 'Packet Anomalies' or other task categories.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -29,14 +30,15 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies:** (Investigate and implement detections)
-    *   **Further Chat Violations:** (Investigation in progress)
+    *   **Further Chat Violations:** (Investigation and primary enhancements complete)
         *   [COMPLETED] Message Content Repetition/Flood Check (`checkChatContentRepeat`).
         *   [COMPLETED] Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
         *   [COMPLETED] Enhanced Swear Check (Obfuscation Resistance).
-        *   [REVIEWED - SUFFICIENT] Review Newline Spam Handling (if current `chatNewline` check is insufficient for flood scenarios).
+        *   [REVIEWED - SUFFICIENT] Review Newline Spam Handling.
         *   [COMPLETED - V1] Gibberish Detection (V1 focusing on ratios/consonants).
         *   [COMPLETED - V1] Excessive Mentions Check (per-message unique/repeat counts).
-        *   (Lower Priority/More Complex remaining: Simple Impersonation, Refined External Link Patterns) - *Consider next if continuing with chat violations.*
+        *   [COMPLETED] Refined External Link Patterns (Enhanced `antiAdvertisingCheck.js` with Regex and Whitelisting).
+        *   (Lower Priority/More Complex remaining: Simple Impersonation) - *Consider next if continuing with minor chat violations.*
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**

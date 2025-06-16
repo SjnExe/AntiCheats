@@ -54,6 +54,13 @@ This document lists significant tasks that have been completed.
     - New i18n strings in `en_US.js`.
     - New configuration options in `config.js` (e.g., `enableExcessiveMentionsCheck`, thresholds), defaulted to `false`.
     - Exporting the new check from `checks/index.js`.
+-   **Enhanced Anti-Advertising Check:** Modified `AntiCheatsBP/scripts/checks/chat/antiAdvertisingCheck.js` to improve link detection. This includes:
+    - Option for advanced regex-based link detection (`enableAdvancedLinkDetection` in `config.js`).
+    - A configurable list of regex patterns (`advancedLinkRegexList` in `config.js`) for matching various URL formats.
+    - A configurable whitelist (`advertisingWhitelistPatterns` in `config.js`) to prevent flagging specific domains/patterns.
+    - Fallback to existing simple pattern matching if advanced detection is disabled.
+    - Corrected `antiAdvertisingActionProfileName` in `config.js` to `chatAdvertisingDetected` (camelCase) for consistency with `automodConfig.js`.
+    - Updated `violationDetails` to include match method and pattern used.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 
