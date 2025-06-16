@@ -6,7 +6,8 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   Currently implementing new chat violation checks.
 *   Completed: Message Content Repetition/Flood Check (`checkChatContentRepeat`).
 *   Completed: Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
-*   Next: Considering Enhanced Swear Check (Obfuscation Resistance).
+*   Completed: Enhanced Swear Check (Obfuscation Resistance).
+*   Next: Considering Review of Newline Spam Handling.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -28,8 +29,8 @@ This list contains planned features, improvements, and areas for future investig
     *   **Further Chat Violations:** (Investigation in progress)
         *   [COMPLETED] Message Content Repetition/Flood Check (`checkChatContentRepeat`).
         *   [COMPLETED] Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
-        *   Enhanced Swear Check (Obfuscation Resistance) - *Next up for consideration.*
-        *   Review Newline Spam Handling (if current `chatNewline` check is insufficient for flood scenarios).
+        *   [COMPLETED] Enhanced Swear Check (Obfuscation Resistance).
+        *   Review Newline Spam Handling (if current `chatNewline` check is insufficient for flood scenarios) - *Next up for consideration.*
         *   (Lower Priority/More Complex: Gibberish Detection, Simple Impersonation, Excessive Mentions, Refined External Link Patterns).
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.

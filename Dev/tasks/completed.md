@@ -30,6 +30,13 @@ This document lists significant tasks that have been completed.
     - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatUnicodeAbuse` checkType.
     - New i18n strings in `en_US.js` for the new AutoMod messages.
     - Exporting the new check from `checks/index.js`.
+-   **Enhanced Swear Check for Obfuscation Resistance:** Modified `AntiCheatsBP/scripts/checks/chat/swearCheck.js` to improve detection of obfuscated swear words. This includes:
+    - Implementation of a word normalization function (lowercase, remove common separators, collapse character repetitions).
+    - Optional Leet speak conversion as part of normalization.
+    - Logic to match normalized input words against a pre-normalized swear word list.
+    - Placeholder for Levenshtein distance matching (functionality can be fully implemented later).
+    - Added new configuration flags (`enableSwearCheckNormalization`, `enableSwearCheckLeetSpeak`, `enableSwearCheckLevenshtein`, `swearCheckLevenshteinDistance`) to `config.js` and `editableConfigValues` to control these enhancements.
+    - Updated `violationDetails` to include more context about the match.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

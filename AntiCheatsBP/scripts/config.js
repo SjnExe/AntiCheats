@@ -544,6 +544,15 @@ export const swearCheckActionProfileName = "chat_swear_violation";
 /** @type {string} Duration for the mute applied on swear word detection. */
 export const swearCheckMuteDuration = "30s";
 
+/** @type {boolean} If true, enables advanced normalization (ignored char removal, repeat collapse) for swear checking. Assumed true if other enhancements are on. */
+export const enableSwearCheckNormalization = true; // Defaulting to true as it's a base for others
+/** @type {boolean} If true, enables Leet speak conversion as part of swear word normalization. */
+export const enableSwearCheckLeetSpeak = true; // Defaulting to true as it's a common obfuscation
+/** @type {boolean} If true, enables Levenshtein distance matching for swear words (catches typos/minor variations). */
+export const enableSwearCheckLevenshtein = false; // Defaulting to false as it can have more false positives
+/** @type {number} Maximum Levenshtein distance allowed for a word to be considered a match to a swear word. Only active if enableSwearCheckLevenshtein is true. */
+export const swearCheckLevenshteinDistance = 1; // Default to 1 if Levenshtein is enabled
+
 /** @type {boolean} If true, the Fast Message Spam check is active. */
 export const enableFastMessageSpamCheck = false;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
@@ -831,6 +840,10 @@ export let editableConfigValues = {
     enableSwearCheck: enableSwearCheck,
     swearWordList: swearWordList,
     swearCheckMuteDuration: swearCheckMuteDuration,
+    enableSwearCheckNormalization: enableSwearCheckNormalization,
+    enableSwearCheckLeetSpeak: enableSwearCheckLeetSpeak,
+    enableSwearCheckLevenshtein: enableSwearCheckLevenshtein,
+    swearCheckLevenshteinDistance: swearCheckLevenshteinDistance,
     enableAntiAdvertisingCheck: enableAntiAdvertisingCheck,
     antiAdvertisingPatterns: antiAdvertisingPatterns,
     antiAdvertisingActionProfileName: antiAdvertisingActionProfileName,
