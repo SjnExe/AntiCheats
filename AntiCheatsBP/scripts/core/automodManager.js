@@ -233,6 +233,65 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = false;
             }
             break;
+
+        case "teleportSafe":
+            const reasonKeyTeleport = parameters.reasonKey || 'automod.unknown.teleport';
+            const teleportReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTeleport] || "automod.action.teleportDefaultReason";
+            const localizedTeleportReason = getString(teleportReasonUnlocalized);
+            const targetCoordinates = parameters.coordinates; // Expected format: { x?: number, y: number, z?: number }
+
+            if (!targetCoordinates || typeof targetCoordinates.y !== 'number') {
+                playerUtils.debugLog(`AutomodManager: Invalid or missing coordinates for TELEPORT_SAFE on ${player.nameTag}. Y-coordinate is mandatory.`, player.nameTag);
+                logDetails = `Invalid coordinates for TELEPORT_SAFE. Y-coordinate missing. Check: ${checkType}`;
+                actionProcessed = false;
+                break;
+            }
+
+            // Use player's current X and Z if not provided in parameters
+            const targetX = typeof targetCoordinates.x === 'number' ? targetCoordinates.x : player.location.x;
+            const targetZ = typeof targetCoordinates.z === 'number' ? targetCoordinates.z : player.location.z;
+            const targetY = targetCoordinates.y;
+
+            const teleportLocation = { x: targetX, y: targetY, z: targetZ };
+
+            try {
+                // Attempt to find a safe location near the target.
+                // Adjust searchDistance and maxHeightDifference as needed.
+                const safeLocation = player.dimension.findClosestSafeLocation(teleportLocation, { maxHeightDifference: 5, searchDistance: 5 });
+
+                if (safeLocation) {
+                    player.teleport(safeLocation, { dimension: player.dimension });
+                    if (playerUtils.warnPlayer) {
+                        playerUtils.warnPlayer(player, localizedTeleportReason);
+                    } else {
+                        player.sendMessage(localizedTeleportReason);
+                    }
+                    logDetails = `Teleported player to safe location near ${JSON.stringify(teleportLocation)}. Reason: ${localizedTeleportReason}`;
+                    adminNotifyDetails = getString("automod.adminNotify.details.teleport", { x: safeLocation.x.toFixed(1), y: safeLocation.y.toFixed(1), z: safeLocation.z.toFixed(1) });
+                    actionProcessed = true;
+                } else {
+                    // Fallback: try teleporting to the exact location if no clearly safe spot is found nearby.
+                    // This might be okay for specific use cases like Nether Roof where Y is the primary concern.
+                    playerUtils.debugLog(`AutomodManager: No ideal safe location found for TELEPORT_SAFE near ${JSON.stringify(teleportLocation)} for ${player.nameTag}. Attempting direct teleport.`, player.nameTag);
+                    player.teleport(teleportLocation, { dimension: player.dimension });
+                     if (playerUtils.warnPlayer) {
+                        playerUtils.warnPlayer(player, localizedTeleportReason);
+                    } else {
+                        player.sendMessage(localizedTeleportReason);
+                    }
+                    logDetails = `Teleported player directly to ${JSON.stringify(teleportLocation)} (safe location search failed). Reason: ${localizedTeleportReason}`;
+                    adminNotifyDetails = getString("automod.adminNotify.details.teleport", { x: teleportLocation.x.toFixed(1), y: teleportLocation.y.toFixed(1), z: teleportLocation.z.toFixed(1) });
+                    actionProcessed = true; // Still considered processed if direct teleport is acceptable fallback
+                }
+
+            } catch (e) {
+                playerUtils.debugLog(`AutomodManager: Error teleporting player ${player.nameTag} for TELEPORT_SAFE: ${e}`, player.nameTag);
+                logDetails = `Failed to teleport player ${player.nameTag} to ${JSON.stringify(teleportLocation)}. Reason: ${localizedTeleportReason}, Error: ${e}`;
+                adminNotifyDetails = getString("common.error.generic") + `: ${e.message || e}`;
+                actionProcessed = false;
+            }
+            break;
+
         case "flagOnly":
             logDetails = \`FLAG_ONLY rule processed for check: \${checkType}. No punitive action taken by design. ReasonKey: \${parameters.reasonKey || 'N/A'}\`;
             actionProcessed = true;
