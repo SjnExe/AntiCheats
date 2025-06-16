@@ -2,9 +2,15 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 (Core Files)
+## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
 *   - Coding style review and corrections for core files completed (including `i18n.js` constant rename, `camelCase` for log `actionType`s in `eventHandlers.js` & `uiManager.js`, `logManager.js` JSDoc update, `reportManager.js` logging refactor). Details moved to `completed.md`.
+*   - Reviewed all files in `AntiCheatsBP/scripts/checks/` subdirectories for style compliance.
+*   - Corrected `console.warn` to `playerUtils.debugLog` in `checks/chat/swearCheck.js`.
+*   - Removed duplicated code block in `checks/movement/invalidSprintCheck.js`.
+*   - Refactored `logManager.addLog` `actionType` to `camelCase` in `checks/player/clientInfoChecks.js`.
+*   - Uncommented useful `debugLog` calls in `checks/world/entityChecks.js`, `fastUseCheck.js`, and `illegalItemCheck.js`.
+*   - Noted consistent use of `snake_case` for `checkType` identifiers throughout all `checks` files (e.g., 'movement_fly_hover', 'player_antigmc').
 
 ## II. General Pending Tasks (from `Dev/tasks/todo.md`)
 
@@ -41,7 +47,15 @@ These are higher-level features and areas for future development:
         - Implement AutoMod rules for any other minor or uncovered checks if deemed necessary.
         - Consider if `flyCheck.js` and `speedCheck.js` need more granular AutoMod rules for different sub-types of violations beyond what's currently implemented (e.g., if they generate more specific `checkType`s that aren't yet covered).
 
-## III. Recent User Feedback & Context for Future Work
+## III. Project-Wide Conventions / Refactoring
+
+*   **Developer Decision Required: `checkType` Identifier Casing:**
+    - Most `checkType` string identifiers (used in check files when calling `executeCheckAction`, as keys in `actionProfiles.js`, and as keys in `automodConfig.js`) are currently `snake_case` (e.g., `movement_fly_hover`, `player_antigmc`).
+    - **Decision:** Should these be refactored to `camelCase` (e.g., `movementFlyHover`, `playerAntiGmc`) for project-wide consistency with other identifier naming conventions and recent `actionType` refactoring?
+    - This would be a significant cross-file refactoring task affecting all check scripts, `actionProfiles.js`, and `automodConfig.js`.
+    - If yes, `Dev/CodingStyle.md` should also be updated to document this convention for `checkType` identifiers.
+
+## IV. Recent User Feedback & Context for Future Work
 
 *   **UI Command Design:** For future UI-based commands (e.g., a potential `!admin` command or enhancements to `!panel`), design them to be accessible by various permission levels, showing different information/buttons contextually (similar to the recent `!panel` refactor for player vs. admin views).
 *   **Development Workflow:** Continue applying cleanup and refactoring "in batches" where appropriate.
