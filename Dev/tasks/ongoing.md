@@ -25,12 +25,9 @@ These are higher-level features and areas for future development:
     *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
     *   `!worldborder`: Support for more complex shapes (currently a consideration).
 
-## III. Current Task: Cleanup Orphaned chatRepeatSpam Strings (Session 2024-07-26)
-*   Investigating and cleaning up orphaned `automod.chat.repeatspam.*` localization strings from `automodConfig.js` and language files if present. This follows from a TDOO item noting their existence despite `chat_repeat_spam` functionality being consolidated previously.
+## III. Project-Wide Conventions / Refactoring
 
-## IV. Project-Wide Conventions / Refactoring
-
-## V. Recent User Feedback & Context for Future Work
+## IV. Recent User Feedback & Context for Future Work
 
 *   **UI Command Design:** For future UI-based commands (e.g., a potential `!admin` command or enhancements to `!panel`), design them to be accessible by various permission levels, showing different information/buttons contextually (similar to the recent `!panel` refactor for player vs. admin views).
 *   **Development Workflow:** Continue applying cleanup and refactoring "in batches" where appropriate.
