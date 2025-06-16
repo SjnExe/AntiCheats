@@ -7,6 +7,7 @@ This document lists significant tasks that have been completed.
 -   **Reviewed `automodConfig.js` Structure and Basic Logic:** Verified `reasonKey`s and `actionType`s. Corrected a rule precedence issue for `movementNetherRoof` (teleportSafe threshold adjusted). Noted that the `teleportSafe` actionType itself needs proper implementation in `automodManager.js`.
 -   **Identified and Add Rules for Uncovered Checks:** Confirmed that all `checkType`s from existing check files are already covered by rules in `automodConfig.js`. No new rules were needed for uncovered checks.
 -   **Evaluated Granularity for `flyCheck.js` and `speedCheck.js`:** Concluded that current `checkType` granularity is adequate for existing AutoMod functionality. Further granularity would be a new feature.
+-   **Implemented `teleportSafe` AutoMod Action:** Added the `teleportSafe` actionType to `automodManager.js` to handle teleporting players, including logic for finding a safe location. Also added required i18n strings (`automod.action.teleportDefaultReason`, `automod.adminNotify.details.teleport`) to `en_US.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

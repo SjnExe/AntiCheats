@@ -7,8 +7,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Medium Priority
 
-*   **Implement `teleportSafe` actionType in `automodManager.js`**: The `teleportSafe` actionType (used by `movementNetherRoof` rule in `automodConfig.js`) is not fully handled in `_executeAutomodAction` in `automodManager.js`. This needs to be implemented to ensure the action functions correctly.
-
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
 
