@@ -128,6 +128,11 @@ export const automodConfig = {
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chatmaxwords.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "mute", parameters: { reasonKey: "automod.chatmaxwords.mute2", duration: "30m" }, resetFlagsAfterAction: true }
         ],
+        "chatContentRepeat": [
+            { "flagThreshold": 3, "actionType": "warn", "parameters": { "reasonKey": "automod.chat.contentrepeat.warn1" }, "resetFlagsAfterAction": false },
+            { "flagThreshold": 6, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.contentrepeat.mute1", "duration": "5m" }, "resetFlagsAfterAction": true },
+            { "flagThreshold": 9, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.contentrepeat.mute2", "duration": "30m" }, "resetFlagsAfterAction": true }
+        ],
         "combatViewsnapPitch": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.viewsnap.pitch.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.viewsnap.pitch.kick1" }, resetFlagsAfterAction: false },
@@ -463,6 +468,9 @@ export const automodConfig = {
         "automod.chat.caps.warn1": "AutoMod: Excessive capitalization detected. Please disable caps lock.",
         "automod.chat.caps.mute1": "AutoMod: Muted for 5 minutes for excessive caps.",
         "automod.chat.caps.mute2": "AutoMod: Muted for 15 minutes for persistent caps abuse.",
+        "automod.chat.contentrepeat.warn1": "AutoMod: Please avoid repeating the same message content.",
+        "automod.chat.contentrepeat.mute1": "AutoMod: Muted for 5 minutes for repeating message content.",
+        "automod.chat.contentrepeat.mute2": "AutoMod: Muted for 30 minutes for persistent message content repetition.",
         "automod.chat.charrepeat.warn1": "AutoMod: Excessive character repetition detected.",
         "automod.chat.charrepeat.mute1": "AutoMod: Muted for 5 minutes for character repetition.",
         "automod.chat.charrepeat.mute2": "AutoMod: Muted for 15 minutes for persistent character repetition.",
@@ -539,6 +547,7 @@ export const automodConfig = {
         "playerSelfHurt": true,
         "chatAdvertisingDetected": true,
         "chatCapsAbuseDetected": true,
+        "chatContentRepeat": true,
         "chatCharRepeatDetected": true,
         "chatSymbolSpamDetected": true,
         "chatNewline": true,

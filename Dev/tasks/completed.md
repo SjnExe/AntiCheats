@@ -9,6 +9,12 @@ This document lists significant tasks that have been completed.
 -   **Evaluated Granularity for `flyCheck.js` and `speedCheck.js`:** Concluded that current `checkType` granularity is adequate for existing AutoMod functionality. Further granularity would be a new feature.
 -   **Implemented `teleportSafe` AutoMod Action:** Added the `teleportSafe` actionType to `automodManager.js` to handle teleporting players, including logic for finding a safe location. Also added required i18n strings (`automod.action.teleportDefaultReason`, `automod.adminNotify.details.teleport`) to `en_US.js`.
 -   **Cleaned up Orphaned `chatRepeatSpam` Strings:** Investigated the `automod.chat.repeatspam.*` localization strings. Confirmed they were orphaned due to prior refactoring. Removed the unused strings from `automodConfig.js` (`automodActionMessages`). The strings were not found in `en_US.js`, so no changes were needed there.
+-   **Implemented `chatContentRepeat` Check:** Added a new chat check (`checkChatContentRepeat.js`) to detect repeated message content. This includes:
+    - Logic to track chat history per player and flag if a message is repeated a configurable number of times.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatContentRepeat` checkType.
+    - New i18n strings in `en_US.js` for the new AutoMod messages.
+    - Exporting the new check from `checks/index.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

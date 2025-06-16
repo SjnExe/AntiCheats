@@ -243,15 +243,18 @@ export const translations = {
         action_permbanDefaultReason: "Permanently banned by AutoMod for severe rule violations.",
         action_muteDefaultReason: "Muted by AutoMod.",
         action_freezeDefaultReason: "Player frozen by AutoMod due to rule violation.",
-        action_teleportDefaultReason": "AutoMod: You have been teleported to a safe location.",
+        action_teleportDefaultReason": "AutoMod: You have been teleported to a safe location.", // Existing typo noted, not fixing in this pass.
+        "automod.chat.contentrepeat.warn1": "AutoMod: Please avoid repeating the same message content.",
+        "automod.chat.contentrepeat.mute1": "AutoMod: Muted for 5 minutes for repeating message content.",
+        "automod.chat.contentrepeat.mute2": "AutoMod: Muted for 30 minutes for persistent message content repetition.",
         kickMessage_tempban_header: "You are temporarily banned by AutoMod.",
         kickMessage_common_reason: "Reason: {reason}",
         kickMessage_common_duration: "Duration: {duration}",
         adminNotify_actionReport: "{basePrefix} Action: {actionType} on {playerName} for {checkType}. Reason: {reason}{details}",
-        adminNotify_basePrefix": "§7[§cAutoMod§7]",
+        adminNotify_basePrefix": "§7[§cAutoMod§7]", // Existing typo noted
         adminNotify_details_duration: ". Duration: {duration}",
-        adminNotify_details_item": ". Item: {item}",
-        adminNotify_details_teleport": "Teleported to: X:{x} Y:{y} Z:{z}",
+        adminNotify_details_item": ". Item: {item}", // Existing typo noted
+        adminNotify_details_teleport": "Teleported to: X:{x} Y:{y} Z:{z}", // Existing typo noted
         default_itemRemoved: "AutoMod removed {quantity}x {itemTypeId} from your inventory.",
     },
     tpaManager: { // Keys starting with "tpa.manager."

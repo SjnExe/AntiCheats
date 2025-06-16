@@ -2,6 +2,11 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
+## Current Focus: Advanced Cheat Detections - Further Chat Violations (Session 2024-07-26)
+*   Currently implementing new chat violation checks.
+*   Completed: Message Content Repetition/Flood Check (`checkChatContentRepeat`).
+*   Next: Considering Unicode Abuse Check.
+
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
 *   - Coding style review and corrections for core files completed (including `i18n.js` constant rename, `camelCase` for log `actionType`s in `eventHandlers.js` & `uiManager.js`, `logManager.js` JSDoc update, `reportManager.js` logging refactor). Details moved to `completed.md`.
@@ -18,7 +23,13 @@ This list contains planned features, improvements, and areas for future investig
 ### Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   **Packet Anomalies / Chat Violations:**
+    *   **Packet Anomalies:** (Investigate and implement detections)
+    *   **Further Chat Violations:** (Investigation in progress)
+        *   [COMPLETED] Message Content Repetition/Flood Check (`checkChatContentRepeat`).
+        *   Unicode Abuse Check (Zalgo/Excessive Diacritics) - *Next up for consideration.*
+        *   Enhanced Swear Check (Obfuscation Resistance) - *Consider after Unicode Abuse.*
+        *   Review Newline Spam Handling (if current `chatNewline` check is insufficient for flood scenarios).
+        *   (Lower Priority/More Complex: Gibberish Detection, Simple Impersonation, Excessive Mentions, Refined External Link Patterns).
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**

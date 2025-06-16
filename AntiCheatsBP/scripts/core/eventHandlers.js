@@ -790,6 +790,13 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         if (eventData.cancel) return;
     }
 
+    // Chat Content Repeat Check
+    if (!eventData.cancel && checks?.checkChatContentRepeat && config.enableChatContentRepeatCheck) {
+        // Assuming checkChatContentRepeat does not directly cancel, but flags for AutoMod
+        await checks.checkChatContentRepeat(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkChatContentRepeat can set it.
+    }
+
     // Newline Check (Adding flag logic here)
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
