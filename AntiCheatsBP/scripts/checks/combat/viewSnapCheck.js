@@ -63,7 +63,7 @@ export async function checkViewSnap(
             minLimit: invalidPitchMin.toFixed(2),
             maxLimit: invalidPitchMax.toFixed(2)
         };
-        await executeCheckAction(player, "combat_invalid_pitch", violationDetails, dependencies);
+        await executeCheckAction(player, "combatInvalidPitch", violationDetails, dependencies);
     }
 
     // 2. Check for view snaps (rapid rotation changes) after an attack
@@ -90,7 +90,7 @@ export async function checkViewSnap(
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
-            await executeCheckAction(player, "combat_viewsnap_pitch", violationDetails, dependencies);
+            await executeCheckAction(player, "combatViewsnapPitch", violationDetails, dependencies);
             playerUtils.debugLog?.(`ViewSnap (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
         }
 
@@ -103,7 +103,7 @@ export async function checkViewSnap(
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
-            await executeCheckAction(player, "combat_viewsnap_yaw", violationDetails, dependencies);
+            await executeCheckAction(player, "combatViewsnapYaw", violationDetails, dependencies);
             playerUtils.debugLog?.(`ViewSnap (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
         }
     }

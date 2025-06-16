@@ -101,7 +101,7 @@ export async function checkNameSpoof(
             disallowedCharRegexConfig: config.nameSpoofDisallowedCharsRegex ?? "N/A",
             minChangeIntervalConfig: (config.nameSpoofMinChangeIntervalTicks ?? 0).toString()
         };
-        const nameSpoofActionProfile = config.nameSpoofActionProfileName ?? "player_namespoof";
+        const nameSpoofActionProfile = config.nameSpoofActionProfileName ?? "playerNamespoof";
         await executeCheckAction(player, nameSpoofActionProfile, violationDetails, dependencies);
 
         // Use the more detailed internal log message for debugLog

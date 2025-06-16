@@ -59,7 +59,7 @@ export async function checkSwitchAndUseInSameTick(
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
             currentTick: currentTick.toString()
         };
-        await executeCheckAction(player, "player_inventory_mod", violationDetails, dependencies);
+        await executeCheckAction(player, "playerInventoryMod", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog?.(
@@ -119,7 +119,7 @@ export async function checkInventoryMoveWhileActionLocked(
             actionInProgress: localizedLockingAction,
             changeType: eventData.change
         };
-        await executeCheckAction(player, "player_inventory_mod", violationDetails, dependencies);
+        await executeCheckAction(player, "playerInventoryMod", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog?.(

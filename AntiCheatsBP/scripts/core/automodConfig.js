@@ -39,281 +39,276 @@ export const automodConfig = {
      * Example: "movement_hover_fly": [ { flagThreshold: 5, actionType: "warn", ... }, { flagThreshold: 10, actionType: "kick", ... } ]
      */
     automodRules: {
-        "movement_hover_fly": [
+        "movementFlyHover": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.fly.hover.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.fly.hover.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.fly.hover.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "example_speed_ground": [
+        "movementSpeedGround": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.speed.ground.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 25, actionType: "kick", parameters: { reasonKey: "automod.speed.ground.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 35, actionType: "tempBan", parameters: { reasonKey: "automod.speed.ground.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
         ],
-        "combat_cps_high": [
+        "combatCpsHigh": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.cps.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.cps.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.cps.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "movement_nofall": [
+        "movementNofall": [
             { flagThreshold: 9, actionType: "warn", parameters: { reasonKey: "automod.nofall.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "kick", parameters: { reasonKey: "automod.nofall.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 27, actionType: "tempBan", parameters: { reasonKey: "automod.nofall.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "world_illegal_item_use": [
+        "worldIllegalItemUse": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.illegalitem.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.illegalitem.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "tempBan", parameters: { reasonKey: "automod.illegalitem.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "player_namespoof": [
+        "playerNamespoof": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.namespoof.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "kick", parameters: { reasonKey: "automod.namespoof.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "tempBan", parameters: { reasonKey: "automod.namespoof.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "example_reach_attack": [
+        "combatReachAttack": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.reach.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 25, actionType: "kick", parameters: { reasonKey: "automod.reach.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 40, actionType: "tempBan", parameters: { reasonKey: "automod.reach.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "movement_noslow": [
+        "movementNoslow": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.noslow.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.noslow.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.noslow.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "action_fast_use": [
+        "actionFastUse": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.fastuse.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 25, actionType: "kick", parameters: { reasonKey: "automod.fastuse.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 40, actionType: "tempBan", parameters: { reasonKey: "automod.fastuse.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "player_antigmc": [
+        "playerAntiGMC": [
             { flagThreshold: 10, actionType: "kick", parameters: { reasonKey: "automod.antigmc.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "tempBan", parameters: { reasonKey: "automod.antigmc.tempban1", duration: "6h" }, resetFlagsAfterAction: true }
         ],
-        "combat_multitarget_aura": [
+        "combatMultitargetAura": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.multitarget.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.multitarget.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "tempBan", parameters: { reasonKey: "automod.multitarget.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "world_illegal_item_place": [
+        "worldIllegalItemPlace": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.illegalplace.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.illegalplace.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "tempBan", parameters: { reasonKey: "automod.illegalplace.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "movement_invalid_sprint": [
+        "movementInvalidSprint": [
             { flagThreshold: 8, actionType: "warn", parameters: { reasonKey: "automod.invalidsprint.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 16, actionType: "kick", parameters: { reasonKey: "automod.invalidsprint.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 24, actionType: "tempBan", parameters: { reasonKey: "automod.invalidsprint.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "chat_spam_fast_message": [
+        "chatSpamFastMessage": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.chatfast.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chatfast.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "mute", parameters: { reasonKey: "automod.chatfast.mute2", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "combat_invalid_pitch": [
+        "combatInvalidPitch": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.invalidpitch.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.invalidpitch.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "tempBan", parameters: { reasonKey: "automod.invalidpitch.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "combat_attack_while_sleeping": [
+        "combatAttackWhileSleeping": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.attacksleep.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "kick", parameters: { reasonKey: "automod.attacksleep.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 25, actionType: "tempBan", parameters: { reasonKey: "automod.attacksleep.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "world_instabreak_speed": [
+        "worldInstabreakSpeed": [
             { flagThreshold: 9, actionType: "warn", parameters: { reasonKey: "automod.instabreak.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "kick", parameters: { reasonKey: "automod.instabreak.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 27, actionType: "tempBan", parameters: { reasonKey: "automod.instabreak.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "chat_spam_max_words": [
+        "chatSpamMaxWords": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.chatmaxwords.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chatmaxwords.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "mute", parameters: { reasonKey: "automod.chatmaxwords.mute2", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "combat_viewsnap_pitch": [
+        "combatViewsnapPitch": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.viewsnap.pitch.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.viewsnap.pitch.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.viewsnap.pitch.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "combat_viewsnap_yaw": [
+        "combatViewsnapYaw": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.viewsnap.yaw.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.viewsnap.yaw.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.viewsnap.yaw.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "combat_attack_while_consuming": [
+        "combatAttackWhileConsuming": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.attackconsume.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.attackconsume.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "tempBan", parameters: { reasonKey: "automod.attackconsume.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "player_invalid_render_distance": [
+        "playerInvalidRenderDistance": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.renderdistance.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "kick", parameters: { reasonKey: "automod.renderdistance.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "tempBan", parameters: { reasonKey: "automod.renderdistance.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "combat_attack_while_bow_charging": [
+        "combatAttackWhileBowCharging": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.attackbow.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.attackbow.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "tempBan", parameters: { reasonKey: "automod.attackbow.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "combat_attack_while_shielding": [
+        "combatAttackWhileShielding": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.attackshield.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.attackshield.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "tempBan", parameters: { reasonKey: "automod.attackshield.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "player_chat_during_combat": [
+        "playerChatDuringCombat": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.chatcombat.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chatcombat.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "mute", parameters: { reasonKey: "automod.chatcombat.mute2", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "player_chat_during_item_use": [
+        "playerChatDuringItemUse": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.chatitemuse.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chatitemuse.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 15, actionType: "mute", parameters: { reasonKey: "automod.chatitemuse.mute2", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_nuker": [
+        "worldNuker": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.nuker.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.nuker.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.nuker.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
         ],
-        "world_autotool": [
+        "worldAutotool": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.autotool.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.autotool.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.autotool.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_instabreak_unbreakable": [
+        "worldInstabreakUnbreakable": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.instabreakunbreakable.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.instabreakunbreakable.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.instabreakunbreakable.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
         ],
-        "player_inventory_mod": [
+        "playerInventoryMod": [
             { flagThreshold: 9, actionType: "warn", parameters: { reasonKey: "automod.inventorymod.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "kick", parameters: { reasonKey: "automod.inventorymod.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 27, actionType: "tempBan", parameters: { reasonKey: "automod.inventorymod.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "world_tower_build": [
+        "worldTowerBuild": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.tower.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.tower.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.tower.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
         ],
-        "world_flat_rotation_building": [
+        "worldFlatRotationBuilding": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.flatrotation.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.flatrotation.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.flatrotation.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_downward_scaffold": [
+        "worldDownwardScaffold": [
             { flagThreshold: 9, actionType: "warn", parameters: { reasonKey: "automod.downscaffold.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: "kick", parameters: { reasonKey: "automod.downscaffold.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 27, actionType: "tempBan", parameters: { reasonKey: "automod.downscaffold.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_air_place": [
+        "worldAirPlace": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.airplace.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "kick", parameters: { reasonKey: "automod.airplace.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: "tempBan", parameters: { reasonKey: "automod.airplace.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
         ],
-        "world_fast_place": [
+        "worldFastPlace": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.fastplace.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "kick", parameters: { reasonKey: "automod.fastplace.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: "tempBan", parameters: { reasonKey: "automod.fastplace.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
         ],
-        "chat_swear_violation": [
+        "chatSwearViolation": [
             { flagThreshold: 3, actionType: "warn", parameters: { reasonKey: "automod.swear.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 5, actionType: "mute", parameters: { reasonKey: "automod.swear.mute1", duration: "10m" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.swear.mute2", duration: "1h" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_tnt_place": [
+        "worldAntigriefTntPlace": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.tnt.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "kick", parameters: { reasonKey: "automod.tnt.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "tempBan", parameters: { reasonKey: "automod.tnt.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_wither_spawn": [
+        "worldAntigriefWitherSpawn": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.wither.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "kick", parameters: { reasonKey: "automod.wither.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "tempBan", parameters: { reasonKey: "automod.wither.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_fire": [
+        "worldAntigriefFire": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.fire.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.fire.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.fire.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_lava": [
+        "worldAntigriefLava": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.lava.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.lava.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.lava.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_water": [
+        "worldAntigriefWater": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.water.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "kick", parameters: { reasonKey: "automod.water.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: "tempBan", parameters: { reasonKey: "automod.water.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_blockspam": [
+        "worldAntigriefBlockspam": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.blockspam.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "kick", parameters: { reasonKey: "automod.blockspam.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: "tempBan", parameters: { reasonKey: "automod.blockspam.tempban1", duration: "5m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_entityspam": [
+        "worldAntigriefEntityspam": [
             { flagThreshold: 15, actionType: "warn", parameters: { reasonKey: "automod.entityspam.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "kick", parameters: { reasonKey: "automod.entityspam.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: "tempBan", parameters: { reasonKey: "automod.entityspam.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_blockspam_density": [
+        "worldAntigriefBlockspamDensity": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.densityspam.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.densityspam.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: "tempBan", parameters: { reasonKey: "automod.densityspam.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "player_self_hurt": [
+        "playerSelfHurt": [
             { flagThreshold: 6, actionType: "warn", parameters: { reasonKey: "automod.selfhurt.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: "kick", parameters: { reasonKey: "automod.selfhurt.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "tempBan", parameters: { reasonKey: "automod.selfhurt.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "chat_advertising_detected": [
+        "chatAdvertisingDetected": [
             { flagThreshold: 2, actionType: "warn", parameters: { reasonKey: "automod.chat.advertising.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 4, actionType: "mute", parameters: { reasonKey: "automod.chat.advertising.mute1", duration: "10m" }, resetFlagsAfterAction: true },
             { flagThreshold: 6, actionType: "kick", parameters: { reasonKey: "automod.chat.advertising.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 8, actionType: "tempBan", parameters: { reasonKey: "automod.chat.advertising.tempban1", duration: "30m" }, resetFlagsAfterAction: true }
         ],
-        "chat_caps_abuse_detected": [
+        "chatCapsAbuseDetected": [
             { flagThreshold: 3, actionType: "warn", parameters: { reasonKey: "automod.chat.caps.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 6, actionType: "mute", parameters: { reasonKey: "automod.chat.caps.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chat.caps.mute2", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "chat_char_repeat_detected": [
+        "chatCharRepeatDetected": [
             { flagThreshold: 3, actionType: "warn", parameters: { reasonKey: "automod.chat.charrepeat.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 6, actionType: "mute", parameters: { reasonKey: "automod.chat.charrepeat.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chat.charrepeat.mute2", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "chat_symbol_spam_detected": [
+        "chatSymbolSpamDetected": [
             { flagThreshold: 3, actionType: "warn", parameters: { reasonKey: "automod.chat.symbolspam.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 6, actionType: "mute", parameters: { reasonKey: "automod.chat.symbolspam.mute1", duration: "5m" }, resetFlagsAfterAction: true },
             { flagThreshold: 10, actionType: "mute", parameters: { reasonKey: "automod.chat.symbolspam.mute2", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "chat_newline": [
+        "chatNewline": [
             { flagThreshold: 2, actionType: "warn", parameters: { reasonKey: "automod.chat.newline.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 4, actionType: "mute", parameters: { reasonKey: "automod.chat.newline.mute1", duration: "5m" }, resetFlagsAfterAction: true }
         ],
-        "chat_maxlength": [
+        "chatMaxlength": [
             { flagThreshold: 2, actionType: "warn", parameters: { reasonKey: "automod.chat.maxlength.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 4, actionType: "mute", parameters: { reasonKey: "automod.chat.maxlength.mute1", duration: "5m" }, resetFlagsAfterAction: true }
         ],
-        "chat_repeat_spam": [
-            { flagThreshold: 3, actionType: "warn", parameters: { reasonKey: "automod.chat.repeatspam.warn1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 5, actionType: "mute", parameters: { reasonKey: "automod.chat.repeatspam.mute1", duration: "10m" }, resetFlagsAfterAction: true },
-            { flagThreshold: 8, actionType: "mute", parameters: { reasonKey: "automod.chat.repeatspam.mute2", duration: "30m" }, resetFlagsAfterAction: true }
-        ],
-        "movement_nether_roof": [
+        "movementNetherRoof": [
             { flagThreshold: 1, actionType: "warn", parameters: { reasonKey: "automod.netherroof.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 1, actionType: "teleportSafe", parameters: { reasonKey: "automod.netherroof.teleport1", coordinates: { y: 120 } }, resetFlagsAfterAction: false },
             { flagThreshold: 3, actionType: "kick", parameters: { reasonKey: "automod.netherroof.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 5, actionType: "tempBan", parameters: { reasonKey: "automod.netherroof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
         ],
-        "movement_high_y_velocity": [
+        "movementHighYVelocity": [
             { flagThreshold: 3, actionType: "warn", parameters: { reasonKey: "automod.fly.high_y_velocity.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 6, actionType: "kick", parameters: { reasonKey: "automod.fly.high_y_velocity.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "tempBan", parameters: { reasonKey: "automod.fly.high_y_velocity.tempban1", duration: "10m" }, resetFlagsAfterAction: true }
         ],
-        "movement_sustained_fly": [
+        "movementSustainedFly": [
             { flagThreshold: 5, actionType: "warn", parameters: { reasonKey: "automod.fly.sustained_fly.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: "kick", parameters: { reasonKey: "automod.fly.sustained_fly.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: "tempBan", parameters: { reasonKey: "automod.fly.sustained_fly.tempban1", duration: "15m" }, resetFlagsAfterAction: true }
         ],
-        "world_antigrief_piston_lag": [
+        "worldAntigriefPistonLag": [
             { flagThreshold: 1, actionType: "flagOnly", parameters: { reasonKey: "automod.pistonlag.flag1" }, resetFlagsAfterAction: true }
         ]
         // Add more checkTypes here in the future
@@ -503,59 +498,58 @@ export const automodConfig = {
      * depending on `automodManager.js` logic (current logic implies it would skip if not found or if no rules).
      */
     automodPerCheckTypeToggles: {
-        "movement_hover_fly": true,
-        "example_speed_ground": true, // Renamed from speed_ground
-        "combat_cps_high": true,
-        "movement_nofall": true,
-        "world_illegal_item_use": true,
-        "player_namespoof": true,
-        "player_antigmc": true,
-        "combat_multitarget_aura": true,
-        "world_illegal_item_place": true,
-        "movement_invalid_sprint": true,
-        "chat_spam_fast_message": true,
-        "combat_invalid_pitch": true,
-        "combat_attack_while_sleeping": true,
-        "world_instabreak_speed": true,
-        "chat_spam_max_words": true,
-        "combat_viewsnap_pitch": true,
-        "combat_viewsnap_yaw": true,
-        "combat_attack_while_consuming": true,
-        "player_invalid_render_distance": true,
-        "combat_attack_while_bow_charging": true,
-        "combat_attack_while_shielding": true,
-        "player_chat_during_combat": true,
-        "player_chat_during_item_use": true,
-        "world_nuker": true,
-        "world_autotool": true,
-        "world_instabreak_unbreakable": true,
-        "player_inventory_mod": true,
-        "world_tower_build": true,
-        "world_flat_rotation_building": true,
-        "world_downward_scaffold": true,
-        "world_air_place": true,
-        "world_fast_place": true,
-        "chat_swear_violation": true,
-        "world_antigrief_tnt_place": true,
-        "world_antigrief_wither_spawn": true,
-        "world_antigrief_fire": true,
-        "world_antigrief_lava": true,
-        "world_antigrief_water": true,
-        "world_antigrief_blockspam": true,
-        "world_antigrief_entityspam": true,
-        "world_antigrief_blockspam_density": true,
-        "player_self_hurt": true,
-        "chat_advertising_detected": true,
-        "chat_caps_abuse_detected": true,
-        "chat_char_repeat_detected": true,
-        "chat_symbol_spam_detected": true,
-        "chat_newline": true,
-        "chat_maxlength": true,
-        "chat_repeat_spam": true,
-        "movement_nether_roof": true,
-        "movement_high_y_velocity": true,
-        "movement_sustained_fly": true,
-        "world_antigrief_piston_lag": true
+        "movementFlyHover": true,
+        "movementSpeedGround": true, // Renamed from speed_ground
+        "combatCpsHigh": true,
+        "movementNofall": true,
+        "worldIllegalItemUse": true,
+        "playerNamespoof": true,
+        "playerAntiGMC": true,
+        "combatMultitargetAura": true,
+        "worldIllegalItemPlace": true,
+        "movementInvalidSprint": true,
+        "chatSpamFastMessage": true,
+        "combatInvalidPitch": true,
+        "combatAttackWhileSleeping": true,
+        "worldInstabreakSpeed": true,
+        "chatSpamMaxWords": true,
+        "combatViewsnapPitch": true,
+        "combatViewsnapYaw": true,
+        "combatAttackWhileConsuming": true,
+        "playerInvalidRenderDistance": true,
+        "combatAttackWhileBowCharging": true,
+        "combatAttackWhileShielding": true,
+        "playerChatDuringCombat": true,
+        "playerChatDuringItemUse": true,
+        "worldNuker": true,
+        "worldAutotool": true,
+        "worldInstabreakUnbreakable": true,
+        "playerInventoryMod": true,
+        "worldTowerBuild": true,
+        "worldFlatRotationBuilding": true,
+        "worldDownwardScaffold": true,
+        "worldAirPlace": true,
+        "worldFastPlace": true,
+        "chatSwearViolation": true,
+        "worldAntigriefTntPlace": true,
+        "worldAntigriefWitherSpawn": true,
+        "worldAntigriefFire": true,
+        "worldAntigriefLava": true,
+        "worldAntigriefWater": true,
+        "worldAntigriefBlockspam": true,
+        "worldAntigriefEntityspam": true,
+        "worldAntigriefBlockspamDensity": true,
+        "playerSelfHurt": true,
+        "chatAdvertisingDetected": true,
+        "chatCapsAbuseDetected": true,
+        "chatCharRepeatDetected": true,
+        "chatSymbolSpamDetected": true,
+        "chatNewline": true,
+        "chatMaxlength": true,
+        "movementNetherRoof": true,
+        "movementHighYVelocity": true,
+        "movementSustainedFly": true,
+        "worldAntigriefPistonLag": true
         // Add more checkTypes here
     }
 };

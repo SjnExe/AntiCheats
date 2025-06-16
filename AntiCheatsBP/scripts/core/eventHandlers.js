@@ -44,7 +44,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
         if (timeSinceLastCombatMs < combatLogThresholdMs) {
             const timeSinceLastCombatSeconds = (timeSinceLastCombatMs / 1000).toFixed(1);
-            const flagType = 'combat_log';
+            const flagType = 'combatLog';
             const incrementAmount = currentConfig.combatLogFlagIncrement || 1;
             const baseFlagReason = `Disconnected ${timeSinceLastCombatSeconds}s after combat.`;
 
@@ -267,7 +267,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
         playerUtils.debugLog(`AntiGrief: Wither spawned (ID: ${entity.id}). Config action: ${config.witherSpawnAction}.`, null);
         const violationDetails = { entityId: entity.id, entityType: entity.typeId };
         // For Wither spawns, player is null as it's a world event potentially not tied to a specific player.
-        await actionManager.executeCheckAction("world_antigrief_wither_spawn", null, violationDetails, dependencies);
+        await actionManager.executeCheckAction("worldAntigriefWitherSpawn", null, violationDetails, dependencies);
         if (config.witherSpawnAction === "kill") {
             entity.kill();
             playerUtils.debugLog(`AntiGrief: Wither (ID: ${entity.id}) killed due to witherSpawnAction config.`, null);
@@ -314,7 +314,7 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         }
 
         const violationDetails = { itemTypeId: itemStack.typeId, location: block.location };
-        await actionManager.executeCheckAction("world_antigrief_tnt_place", player, violationDetails, dependencies);
+        await actionManager.executeCheckAction("worldAntigriefTntPlace", player, violationDetails, dependencies);
 
         // The action profile for "world_antigrief_tnt_place" should define if eventData.cancel is set.
         // Example profile might have: "cancelEvent": true
@@ -750,7 +750,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
             if (profile?.enabled) {
                 if (profile.cancelMessage) eventData.cancel = true;
                 playerUtils.warnPlayer(player, getString(profile.messageKey || "chat.error.combatCooldown", { seconds: config.chatDuringCombatCooldownSeconds }));
-                actionManager?.executeCheckAction?.("player_chat_during_combat", player, { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
+                actionManager?.executeCheckAction?.("playerChatDuringCombat", player, { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
                 if (eventData.cancel) return;
             }
         }
@@ -762,7 +762,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         if (profile?.enabled) {
             if (profile.cancelMessage) eventData.cancel = true;
             playerUtils.warnPlayer(player, getString(profile.messageKey || "chat.error.itemUse", { itemUseState: itemUseState }));
-            actionManager?.executeCheckAction?.("player_chat_during_item_use", player, { itemUseState }, dependencies);
+            actionManager?.executeCheckAction?.("playerChatDuringItemUse", player, { itemUseState }, dependencies);
             if (eventData.cancel) return;
         }
     }
@@ -783,8 +783,8 @@ export async function handleBeforeChatSend(eventData, dependencies) {
     // Note: This was 'enableSpamCheck', assuming it refers to the repeat spam check.
     // The checkType used in automodConfig was 'chat_repeat_spam'.
     // If 'checks.checkSpam' is the correct function for repeat spam:
-    if (!eventData.cancel && checks?.checkSpam && config.spamRepeatCheckEnabled) { // Assuming config.spamRepeatCheckEnabled is the correct toggle
-        await checks.checkSpam(player, originalMessage, pData, dependencies); // This function would internally use "chat_repeat_spam" or similar checkType
+    if (!eventData.cancel && checks?.checkMessageRate && config.spamRepeatCheckEnabled) { // Assuming config.spamRepeatCheckEnabled is the correct toggle
+        await checks.checkMessageRate(player, pData, eventData, config, playerUtils, playerDataManager, logManager, actionManager.executeCheckAction, dependencies.currentTick); // This function would internally use "chat_repeat_spam" or similar checkType
         // If checkSpam itself doesn't handle cancellation via action profile, and a specific cancel config exists:
         // if (config.spamRepeatCancelMessage) eventData.cancel = true;
         if (eventData.cancel) return;
@@ -795,7 +795,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
             playerUtils.warnPlayer(player, getString("chat.error.newline")); // Assuming a generic warning key
             if (config.flagOnNewline) {
-                playerDataManager.addFlag(player, "chat_newline", "Newline character detected in chat message.", { message: originalMessage }, dependencies);
+                playerDataManager.addFlag(player, "chatNewline", "Newline character detected in chat message.", { message: originalMessage }, dependencies);
             }
             if (config.cancelMessageOnNewline) {
                 eventData.cancel = true;
@@ -809,7 +809,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         if (originalMessage.length > config.maxMessageLength) {
             playerUtils.warnPlayer(player, getString("chat.error.maxLength", { maxLength: config.maxMessageLength })); // Assuming a generic warning key
             if (config.flagOnMaxMessageLength) {
-                playerDataManager.addFlag(player, "chat_maxlength", "Message exceeded maximum configured length.", { message: originalMessage, maxLength: config.maxMessageLength }, dependencies);
+                playerDataManager.addFlag(player, "chatMaxlength", "Message exceeded maximum configured length.", { message: originalMessage, maxLength: config.maxMessageLength }, dependencies);
             }
             if (config.cancelOnMaxMessageLength) {
                 eventData.cancel = true;

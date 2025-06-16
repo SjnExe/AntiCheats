@@ -71,7 +71,7 @@ export async function checkFastUse(
             actualTimeMs: timeSinceLastUse.toString()
         };
         // Action profile name: config.fastUseActionProfileName ?? "action_fast_use"
-        await executeCheckAction(player, "action_fast_use", violationDetails, dependencies);
+        await executeCheckAction(player, "actionFastUse", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog?.(

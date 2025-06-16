@@ -101,7 +101,7 @@ export async function checkEntitySpam(
             actionTaken: config.entitySpamAction
         };
 
-        await executeCheckAction(potentialPlayer, "world_antigrief_entityspam", violationDetails, actionDependencies);
+        await executeCheckAction(potentialPlayer, "worldAntigriefEntityspam", violationDetails, actionDependencies);
 
         playerUtils.debugLog?.(`EntitySpam: Flagged ${potentialPlayer.nameTag} for spawning ${entityType}. Count: ${pData.recentEntitySpamTimestamps[entityType].length}/${maxSpawns}`, pData.isWatched ? potentialPlayer.nameTag : null);
 

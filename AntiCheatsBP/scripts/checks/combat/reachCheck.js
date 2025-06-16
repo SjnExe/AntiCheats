@@ -98,6 +98,6 @@ export async function checkReach(
         const dependencies = { config, playerDataManager, playerUtils, logManager };
         // The action profile name "example_reach_attack" seems like a placeholder.
         // It should ideally be configurable, e.g., config.reachCheckActionProfileName ?? "combat_reach"
-        await executeCheckAction(player, "example_reach_attack", violationDetails, dependencies);
+        await executeCheckAction(player, "combatReachAttack", violationDetails, dependencies);
     }
 }

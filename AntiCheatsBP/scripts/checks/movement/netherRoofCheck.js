@@ -45,7 +45,7 @@ export function checkNetherRoof(player, pData, dependencies) {
             };
             playerDataManager.addFlag(
                 player,
-                "movement_nether_roof",
+                "movementNetherRoof",
                 "Player detected on Nether roof.", // This specific reason is for internal flagging, not typically directly shown to users.
                                                   // User-facing messages come from action profiles.
                 detailsForNotify

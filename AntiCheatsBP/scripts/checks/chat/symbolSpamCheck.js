@@ -57,7 +57,7 @@ export async function checkSymbolSpam(player, message, pData, dependencies) {
         }
 
         // Use the action profile name from the config
-        const profileName = config.symbolSpamActionProfileName || "chat_symbol_spam_detected";
+        const profileName = config.symbolSpamActionProfileName || "chatSymbolSpamDetected";
 
         await actionManager.executeCheckAction(
             player,

@@ -104,7 +104,7 @@ export async function checkMultiTarget(
             targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', ') // Sample of involved entity IDs
         };
         const dependencies = { config, playerDataManager, playerUtils, logManager };
-        await executeCheckAction(player, "combat_multitarget_aura", violationDetails, dependencies);
+        await executeCheckAction(player, "combatMultitargetAura", violationDetails, dependencies);
 
         playerUtils.debugLog?.(`Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix);
 

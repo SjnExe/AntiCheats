@@ -108,7 +108,7 @@ export async function checkNoFall(
                 activeEffects: activeEffectsString
             };
             const dependencies = { config, playerDataManager, playerUtils, logManager };
-            await executeCheckAction(player, "movement_nofall", violationDetails, dependencies);
+            await executeCheckAction(player, "movementNofall", violationDetails, dependencies);
         }
         // pData.fallDistance is reset in main.js tick loop when player is onGround and not pData.isTakingFallDamage.
         // pData.isTakingFallDamage is also reset in main.js tick loop after checks if player is onGround.
