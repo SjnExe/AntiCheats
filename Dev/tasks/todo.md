@@ -7,6 +7,8 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Medium Priority
 
+*   **Implement `teleportSafe` actionType in `automodManager.js`**: The `teleportSafe` actionType (used by `movementNetherRoof` rule in `automodConfig.js`) is not fully handled in `_executeAutomodAction` in `automodManager.js`. This needs to be implemented to ensure the action functions correctly.
+
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies / Chat Violations:**
 
@@ -30,6 +32,7 @@ This list contains planned features, improvements, and areas for future investig
 
 ## AutoMod Enhancements
 *(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*
+*   **Review `chatRepeatSpam`:** `automodActionMessages` contains messages for `automod.chat.repeatspam.*`, but no corresponding `automodRules` or check file actively uses a `chatRepeatSpam` checkType. If this check is intended for the future, rules will be needed.
 
 ## Chat Moderation Features
 *(Tasks related to chat content filtering, spam control, etc.)*

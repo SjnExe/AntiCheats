@@ -2,6 +2,12 @@
 
 This document lists significant tasks that have been completed.
 
+## AutoMod System Review and `checkType` Verification (Session 2024-07-26)
+-   **Verified `checkType` Case Consistency:** Confirmed that all check files use `camelCase` for `checkType`s passed to the action/AutoMod system, consistent with `automodConfig.js`. No code changes were needed for this.
+-   **Reviewed `automodConfig.js` Structure and Basic Logic:** Verified `reasonKey`s and `actionType`s. Corrected a rule precedence issue for `movementNetherRoof` (teleportSafe threshold adjusted). Noted that the `teleportSafe` actionType itself needs proper implementation in `automodManager.js`.
+-   **Identified and Add Rules for Uncovered Checks:** Confirmed that all `checkType`s from existing check files are already covered by rules in `automodConfig.js`. No new rules were needed for uncovered checks.
+-   **Evaluated Granularity for `flyCheck.js` and `speedCheck.js`:** Concluded that current `checkType` granularity is adequate for existing AutoMod functionality. Further granularity would be a new feature.
+
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 
 This large refactoring effort aimed to standardize `checkType` identifiers across the project to `camelCaseWithAcronyms` and resolve several related critical issues.

@@ -294,7 +294,7 @@ export const automodConfig = {
         ],
         "movementNetherRoof": [
             { flagThreshold: 1, actionType: "warn", parameters: { reasonKey: "automod.netherroof.warn1" }, resetFlagsAfterAction: false },
-            { flagThreshold: 1, actionType: "teleportSafe", parameters: { reasonKey: "automod.netherroof.teleport1", coordinates: { y: 120 } }, resetFlagsAfterAction: false },
+            { flagThreshold: 2, actionType: "teleportSafe", parameters: { reasonKey: "automod.netherroof.teleport1", coordinates: { y: 120 } }, resetFlagsAfterAction: false },
             { flagThreshold: 3, actionType: "kick", parameters: { reasonKey: "automod.netherroof.kick1" }, resetFlagsAfterAction: false },
             { flagThreshold: 5, actionType: "tempBan", parameters: { reasonKey: "automod.netherroof.tempban1", duration: "1h" }, resetFlagsAfterAction: true }
         ],
