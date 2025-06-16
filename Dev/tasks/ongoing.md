@@ -8,22 +8,44 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   - Reviewed all files in `AntiCheatsBP/scripts/checks/` subdirectories for style compliance.
 *   - Further review indicates that `checkType` identifiers used by the AutoMod system (originating from `executeCheckAction` calls in check files) are consistently `camelCase`, aligning with `automodConfig.js`. The previous note regarding `snake_case` might have referred to a different internal context or was outdated.
 
-## II. General Pending Tasks (from `Dev/tasks/todo.md`)
+## II. Full Pending Task List (Moved from todo.md)
 
-These are higher-level features and areas for future development:
+This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
+
+### High Priority / Next Up
+*No high priority tasks currently identified.*
+
+### Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   Packet Anomalies: Investigate and implement detections.
-    *   Further Chat Violations (if any specific ones are identified beyond current checks).
-*   **SjnExe Parity Goals (Broad Categories):**
-    *   Admin Tools & Management Expansion.
-    *   UI Enhancements (Admin Panel).
-    *   System Features.
-    *   World Management & Protection.
-    *   Normal Player Panel Features (`!panel`):
-*   **Specific Deferred/Considered Features:**
-    *   `!worldborder`: Advanced dynamic particle effects (previously deferred).
-    *   `!worldborder`: Support for more complex shapes (currently a consideration).
+    *   **Packet Anomalies / Chat Violations:**
+
+*   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
+    *   **Enhanced Commands:**
+        *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, gradual resize, pause/resume, interpolation methods, per-dimension static particle types, alternating particle sequence, and pulsing density effects are complete. `!wb remove` now requires confirmation). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
+            *   - Advanced dynamic particle effects (e.g., color/scale changes via custom particle JSONs) investigated; deferred for now.
+            *   - (Consider more complex shape support - if still relevant beyond square/circle).
+    *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
+        *   *(Existing: Base UI with Inspect, Reset Flags, List Watched, Player Actions, Server Management, Config Editor)*
+        *   - Added Server Tick & World Time to System Info panel - Implemented.
+    *   **System Features:** SjnExe parity goal.
+
+*   **World Management & Protection:** SjnExe parity goal.
+
+*   **Normal Player Panel Features (`!panel`):**
+
+### Low Priority / Ideas
+
+*   **Player Utilities & Experience:** SjnExe parity goal.
+
+### AutoMod Enhancements
+*(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*
+
+### Chat Moderation Features
+*(Tasks related to chat content filtering, spam control, etc.)*
+
+### Documentation & Workflow
+*   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
 
 ## III. Project-Wide Conventions / Refactoring
 
