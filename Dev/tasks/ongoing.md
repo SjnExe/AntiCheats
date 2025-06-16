@@ -2,7 +2,7 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: Advanced Cheat Detections - Further Chat Violations (Session 2024-07-26)
+## Current Focus: Advanced Cheat Detections - Further Chat Violations
 *   Currently implementing and reviewing chat violation checks.
 *   Completed: Message Content Repetition/Flood Check (`checkChatContentRepeat`).
 *   Completed: Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
