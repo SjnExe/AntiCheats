@@ -15,6 +15,12 @@ This document lists significant tasks that have been completed.
     - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatContentRepeat` checkType.
     - New i18n strings in `en_US.js` for the new AutoMod messages.
     - Exporting the new check from `checks/index.js`.
+-   **Implemented `chatUnicodeAbuse` Check:** Added a new chat check (`checkUnicodeAbuse.js`) to detect Unicode abuse (e.g., excessive diacritics). This includes:
+    - Logic to count diacritics and base characters, flagging based on ratio or absolute count.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatUnicodeAbuse` checkType.
+    - New i18n strings in `en_US.js` for the new AutoMod messages.
+    - Exporting the new check from `checks/index.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

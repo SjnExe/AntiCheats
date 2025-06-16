@@ -5,7 +5,8 @@ This document summarizes the current work-in-progress and pending tasks for the 
 ## Current Focus: Advanced Cheat Detections - Further Chat Violations (Session 2024-07-26)
 *   Currently implementing new chat violation checks.
 *   Completed: Message Content Repetition/Flood Check (`checkChatContentRepeat`).
-*   Next: Considering Unicode Abuse Check.
+*   Completed: Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
+*   Next: Considering Enhanced Swear Check (Obfuscation Resistance).
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -26,8 +27,8 @@ This list contains planned features, improvements, and areas for future investig
     *   **Packet Anomalies:** (Investigate and implement detections)
     *   **Further Chat Violations:** (Investigation in progress)
         *   [COMPLETED] Message Content Repetition/Flood Check (`checkChatContentRepeat`).
-        *   Unicode Abuse Check (Zalgo/Excessive Diacritics) - *Next up for consideration.*
-        *   Enhanced Swear Check (Obfuscation Resistance) - *Consider after Unicode Abuse.*
+        *   [COMPLETED] Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
+        *   Enhanced Swear Check (Obfuscation Resistance) - *Next up for consideration.*
         *   Review Newline Spam Handling (if current `chatNewline` check is insufficient for flood scenarios).
         *   (Lower Priority/More Complex: Gibberish Detection, Simple Impersonation, Excessive Mentions, Refined External Link Patterns).
 
