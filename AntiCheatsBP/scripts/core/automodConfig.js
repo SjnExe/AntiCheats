@@ -138,6 +138,11 @@ export const automodConfig = {
             { "flagThreshold": 4, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.unicodeabuse.mute1", "duration": "10m" }, "resetFlagsAfterAction": true },
             { "flagThreshold": 6, "actionType": "kick", "parameters": { "reasonKey": "automod.chat.unicodeabuse.kick1" }, "resetFlagsAfterAction": true }
         ],
+        "chatGibberish": [
+            { "flagThreshold": 3, "actionType": "warn", "parameters": { "reasonKey": "automod.chat.gibberish.warn1" }, "resetFlagsAfterAction": false },
+            { "flagThreshold": 6, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.gibberish.mute1", "duration": "5m" }, "resetFlagsAfterAction": true },
+            { "flagThreshold": 9, "actionType": "kick", "parameters": { "reasonKey": "automod.chat.gibberish.kick1" }, "resetFlagsAfterAction": true }
+        ],
         "combatViewsnapPitch": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.viewsnap.pitch.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.viewsnap.pitch.kick1" }, resetFlagsAfterAction: false },
@@ -479,6 +484,9 @@ export const automodConfig = {
         "automod.chat.unicodeabuse.warn1": "AutoMod: Please avoid using excessive special characters or text effects that disrupt chat.",
         "automod.chat.unicodeabuse.mute1": "AutoMod: Muted for 10 minutes for disruptive text patterns.",
         "automod.chat.unicodeabuse.kick1": "AutoMod: Kicked for persistent use of disruptive text patterns.",
+        "automod.chat.gibberish.warn1": "AutoMod: Please ensure your messages are readable and contribute to the conversation.",
+        "automod.chat.gibberish.mute1": "AutoMod: Muted for 5 minutes due to unreadable message patterns.",
+        "automod.chat.gibberish.kick1": "AutoMod: Kicked for persistent unreadable or gibberish messages.",
         "automod.chat.charrepeat.warn1": "AutoMod: Excessive character repetition detected.",
         "automod.chat.charrepeat.mute1": "AutoMod: Muted for 5 minutes for character repetition.",
         "automod.chat.charrepeat.mute2": "AutoMod: Muted for 15 minutes for persistent character repetition.",
@@ -557,6 +565,7 @@ export const automodConfig = {
         "chatCapsAbuseDetected": false,
         "chatContentRepeat": false,
         "chatUnicodeAbuse": false,
+        "chatGibberish": false,
         "chatCharRepeatDetected": false,
         "chatSymbolSpamDetected": false,
         "chatNewline": false,

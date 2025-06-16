@@ -597,6 +597,21 @@ export const enableChatContentRepeatCheck = false;
 /** @type {boolean} If true, the Unicode Abuse (Zalgo/diacritics) check is active. */
 export const enableUnicodeAbuseCheck = false;
 
+/** @type {boolean} If true, the Gibberish Chat check is active. */
+export const enableGibberishCheck = false;
+/** @type {number} Minimum message length to apply gibberish check. */
+export const gibberishMinMessageLength = 10;
+/** @type {number} Minimum ratio of alphabetic characters (0-1) for gibberish check to apply. */
+export const gibberishMinAlphaRatio = 0.6;
+/** @type {number} Lower bound for vowel ratio (0-1) to flag as gibberish. */
+export const gibberishVowelRatioLowerBound = 0.15;
+/** @type {number} Upper bound for vowel ratio (0-1) to flag as gibberish. */
+export const gibberishVowelRatioUpperBound = 0.80;
+/** @type {number} Maximum number of consecutive consonants to flag as gibberish. */
+export const gibberishMaxConsecutiveConsonants = 5;
+/** @type {string} Action profile name for gibberish violations. */
+export const gibberishActionProfileName = "chatGibberish";
+
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
 export const enableTowerCheck = false;
@@ -1050,8 +1065,15 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
-    enableChatContentRepeatCheck, // Added
-    enableUnicodeAbuseCheck,     // Added
+    enableChatContentRepeatCheck,
+    enableUnicodeAbuseCheck,
+    enableGibberishCheck,
+    gibberishMinMessageLength,
+    gibberishMinAlphaRatio,
+    gibberishVowelRatioLowerBound,
+    gibberishVowelRatioUpperBound,
+    gibberishMaxConsecutiveConsonants,
+    gibberishActionProfileName,
     // Swear Check specific (action profile name is advanced)
     swearCheckActionProfileName, // swearCheckMuteDuration is in user_settings
     // AutoMod Configuration (complex object, now imported)

@@ -803,6 +803,12 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         // No immediate 'if (eventData.cancel) return;' unless checkUnicodeAbuse can set it.
     }
 
+    // Gibberish Check
+    if (!eventData.cancel && checks?.checkGibberish && config.enableGibberishCheck) {
+        await checks.checkGibberish(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkGibberish can set it.
+    }
+
     // Newline Check (Adding flag logic here)
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {

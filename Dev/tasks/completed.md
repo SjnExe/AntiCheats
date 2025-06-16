@@ -37,6 +37,7 @@ This document lists significant tasks that have been completed.
     - Placeholder for Levenshtein distance matching (functionality can be fully implemented later).
     - Added new configuration flags (`enableSwearCheckNormalization`, `enableSwearCheckLeetSpeak`, `enableSwearCheckLevenshtein`, `swearCheckLevenshteinDistance`) to `config.js` and `editableConfigValues` to control these enhancements.
     - Updated `violationDetails` to include more context about the match.
+-   **Reviewed Newline Spam Handling:** Investigated the existing `chatNewline` check and its associated configurations. Concluded that the current per-message detection, when combined with `flagOnNewline` (for AutoMod escalation) and/or `cancelMessageOnNewline` (for direct prevention), is largely sufficient for handling spam or floods that specifically use newline characters. No new check or significant enhancement for newline-specific floods was deemed immediately necessary.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 
