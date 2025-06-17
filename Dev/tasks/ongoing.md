@@ -2,9 +2,9 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: Admin Tool - `!listwatched` Command (Completed)
-*   Implemented the `!listwatched` command.
-*   Next: Select next major task category or specific task from the pending list.
+## Current Focus: General Code Cleanup (In Progress)
+*   Completed cleanup (empty lines, comments, obvious unused code) for Batch 1 (Core Chat Checks).
+*   Next: Proceed with Batch 2 (Core Manager files).
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 

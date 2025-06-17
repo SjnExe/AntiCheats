@@ -3,14 +3,12 @@
  * Implements swear word detection in chat messages with obfuscation resistance.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 // Placeholder - NOT a correct Levenshtein algorithm.
 // Assume calculateLevenshtein(a,b) function is available from utils or will be added/replaced with a proper one.
 function calculateLevenshtein(s1, s2) {
@@ -26,7 +24,6 @@ function calculateLevenshtein(s1, s2) {
     }
     return diff;
 }
-
 /**
  * Normalizes a word for swear checking, including leet speak conversion and character collapsing.
  * @param {string} word The word to normalize.
@@ -37,18 +34,14 @@ function normalizeWordForSwearCheck(word, config) {
     if (typeof word !== 'string' || word.trim() === '') {
         return '';
     }
-
     let normalized = word.toLowerCase();
 
     // Remove common ignored characters (spaces, dots, underscores, hyphens)
     normalized = normalized.replace(/[\s._-]+/g, '');
     if (!normalized) return ''; // Return if empty after removing ignored chars
-
     // Collapse sequences of identical characters to a single character (e.g., "heelloo" -> "helo")
     normalized = normalized.replace(/(.)\1+/g, '$1');
     if (!normalized) return '';
-
-
     if (config.swearCheckEnableLeetSpeak) {
         const leetMap = config.swearCheckLeetSpeakMap || {
             '@': 'a', '4': 'a', '8': 'b', '3': 'e', '1': 'l', '!': 'i', '0': 'o', '5': 's', '7': 't', '$': 's',
@@ -61,15 +54,12 @@ function normalizeWordForSwearCheck(word, config) {
             leetConverted += leetMap[char] || char;
         }
         normalized = leetConverted;
-
         // Collapse repeated characters again after leet conversion (e.g., "s$$" -> "s" -> "s")
         normalized = normalized.replace(/(.)\1+/g, '$1');
         if (!normalized) return '';
     }
-
     return normalized;
 }
-
 /**
  * Checks a chat message for swear words based on a configurable list,
  * with options for normalization, leet speak, and Levenshtein distance.
@@ -86,14 +76,11 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
     if (!config.enableSwearCheck) {
         return false;
     }
-
     const originalMessage = eventData.message; // Use eventData.message as per type hint
-
     if (!config.swearWordList || config.swearWordList.length === 0) {
         playerUtils.debugLog?.(\`SwearCheck: Skipped for \${player.nameTag} as swearWordList is empty or undefined.\`, pData.isWatched ? player.nameTag : null);
         return false;
     }
-
     // Pre-normalize the swear word list (can be cached in a real scenario if config doesn't change often)
     const normalizedSwearWordList = config.swearWordList
         .map(sw => ({
@@ -101,7 +88,6 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
             normalized: normalizeWordForSwearCheck(sw, config)
         }))
         .filter(item => item.normalized.length > 0); // Filter out swear words that become empty after normalization
-
     if (normalizedSwearWordList.length === 0) {
         playerUtils.debugLog?.(\`SwearCheck: Skipped for \${player.nameTag} as normalizedSwearWordList is empty.\`, pData.isWatched ? player.nameTag : null);
         return false;
@@ -109,17 +95,13 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
 
     const wordsInMessage = originalMessage.split(/\s+/);
     const actionProfileName = config.swearCheckActionProfileName || "chatSwearViolation"; // Default profile name
-
     for (const wordInMessage of wordsInMessage) {
         if (wordInMessage.trim() === '') continue;
-
         const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config);
         if (normalizedInputWord.length === 0) continue;
-
         for (const swearItem of normalizedSwearWordList) {
             let matchType = null;
             let detectedDistance = -1;
-
             // Exact Normalized Match
             if (normalizedInputWord === swearItem.normalized) {
                 matchType = "exact_normalized";
@@ -133,7 +115,6 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
                     detectedDistance = distance;
                 }
             }
-
             if (matchType) {
                 const violationDetails = {
                     detectedSwear: swearItem.original,
@@ -144,7 +125,6 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
                     levenshteinDistance: matchType === "levenshtein" ? detectedDistance.toString() : "N/A",
                     originalMessage: originalMessage,
                 };
-
                 playerUtils.debugLog?.(\`SwearCheck: \${player.nameTag} triggered swear check. Word: "\${wordInMessage}" (normalized: "\${normalizedInputWord}") matched "\${swearItem.original}" (normalized: "\${swearItem.normalized}") by \${matchType}. Distance: \${detectedDistance}\`, pData.isWatched ? player.nameTag : null);
 
                 // Ensure actionManager and executeCheckAction are available
@@ -163,6 +143,5 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
             }
         }
     }
-
     return false; // No swear words found
 }

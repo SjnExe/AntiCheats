@@ -3,14 +3,12 @@
  * Implements a check to detect potential advertising in chat messages.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks a message for potential advertising links or patterns.
  * @param {import('@minecraft/server').Player} player
@@ -21,27 +19,21 @@
  */
 export async function checkAntiAdvertising(player, message, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
-
     // Use the action profile name from config. This will be 'chatAdvertisingDetected' after config update.
     // It's CRITICAL that config.antiAdvertisingActionProfileName holds the CAMEL_CASE version.
     const actionProfileName = config.antiAdvertisingActionProfileName || "chatAdvertisingDetected";
-
     if (!config.enableAntiAdvertisingCheck) {
         return;
     }
-
     const watchedPlayerName = pData?.isWatched ? player.nameTag : null;
-
     if (config.enableAdvancedLinkDetection && config.advancedLinkRegexList && config.advancedLinkRegexList.length > 0) {
         for (const regexString of config.advancedLinkRegexList) {
             try {
                 const regex = new RegExp(regexString, 'i'); // Case-insensitive, find first match in message
                 const match = regex.exec(message);
-
                 if (match) {
                     const detectedLink = match[0];
                     let isWhitelisted = false;
-
                     if (config.advertisingWhitelistPatterns && config.advertisingWhitelistPatterns.length > 0) {
                         for (const wlPattern of config.advertisingWhitelistPatterns) {
                             // Attempt to treat wlPattern as regex first for flexibility
@@ -61,14 +53,12 @@ export async function checkAntiAdvertising(player, message, pData, dependencies)
                             }
                         }
                     }
-
                     if (isWhitelisted) {
                         // If whitelisted, this specific link is allowed.
                         // Continue to the next regex in advancedLinkRegexList to check for other potential non-whitelisted links in the same message.
                         playerUtils.debugLog?.(\`AntiAdv: Whitelisted link "\${detectedLink}" found. Continuing scan with other regex patterns.\`, watchedPlayerName);
                         continue;
                     }
-
                     // Not whitelisted, proceed to flag
                     playerUtils.debugLog?.(\`AntiAdv: Player \${player.nameTag} triggered regex pattern '\${regexString}' with link: "\${detectedLink}" in message: "\${message}"\`, watchedPlayerName);
                     const violationDetails = {

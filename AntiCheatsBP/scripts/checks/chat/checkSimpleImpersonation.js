@@ -3,9 +3,6 @@
  * Implements a check to detect simple impersonation attempts in chat.
  * @version 1.0.0
  */
-
-// import { permissionLevels } from '../../core/rankManager.js'; // Assuming static import if not in dependencies
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
@@ -14,7 +11,6 @@
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../core/rankManager.js').PermissionLevel} PermissionLevel // If using named import for permissionLevels
  */
-
 /**
  * Checks a message for simple impersonation patterns (e.g., mimicking server announcements).
  * @param {import('@minecraft/server').Player} player
@@ -31,7 +27,6 @@ export async function checkSimpleImpersonation(player, pData, rawMessageContent,
     if (!enableSimpleImpersonationCheck) {
         return;
     }
-
     if (!pData) {
         playerUtils.debugLog?.("SimpleImpersonation: pData is null, skipping check.", player.nameTag);
         return;
@@ -41,30 +36,23 @@ export async function checkSimpleImpersonation(player, pData, rawMessageContent,
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
-
     // Resolve permission levels: Prefer from dependencies.rankManager, then dependencies.permissionLevels, then default.
     // This assumes rankManager is passed in dependencies if it contains permissionLevels.
     const adminPermissionLevelDefault = 1; // A common default for admin level if not found.
     const exemptPermissionLevel = config.impersonationExemptPermissionLevel ??
                                   (dependencies.rankManager?.permissionLevels?.admin ??
                                   (dependencies.permissionLevels?.admin ?? adminPermissionLevelDefault));
-
-
     const playerPermission = playerUtils.getPlayerPermissionLevel(player);
-
     if (playerPermission <= exemptPermissionLevel) {
         playerUtils.debugLog?.(\`SimpleImpersonation: Player \${player.nameTag} (perm: \${playerPermission}) is exempt (threshold: \${exemptPermissionLevel}).\`, player.nameTag);
         return; // Player is exempt
     }
-
     const serverMessagePatterns = config.impersonationServerMessagePatterns ?? [];
     if (serverMessagePatterns.length === 0) {
         return;
     }
-
     const actionProfileName = config.impersonationActionProfileName ?? "chatImpersonationAttempt";
     const watchedPlayerName = pData.isWatched ? player.nameTag : null;
-
     for (const patternString of serverMessagePatterns) {
         if (typeof patternString !== 'string' || patternString.trim() === '') {
             playerUtils.debugLog?.("SimpleImpersonation: Encountered empty or invalid pattern string in config.", watchedPlayerName);

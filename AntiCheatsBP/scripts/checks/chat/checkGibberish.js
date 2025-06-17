@@ -3,16 +3,12 @@
  * Implements a check to detect gibberish or keyboard-mashed messages.
  * @version 1.0.0
  */
-
-// Imports if needed (e.g., for types or specific mc server modules)
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks a message for gibberish patterns.
  * @param {import('@minecraft/server').Player} player
@@ -23,28 +19,23 @@
  */
 export async function checkGibberish(player, pData, rawMessageContent, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
-
     const enableGibberishCheck = config.enableGibberishCheck ?? false;
     if (!enableGibberishCheck) {
         return;
     }
-
     if (!pData) {
         playerUtils.debugLog?.("GibberishCheck: pData is null, skipping check.", player.nameTag);
         return;
     }
-
     const minMessageLength = config.gibberishMinMessageLength ?? 10;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
-
     const minAlphaRatio = config.gibberishMinAlphaRatio ?? 0.6;
     const vowelRatioLowerBound = config.gibberishVowelRatioLowerBound ?? 0.15;
     const vowelRatioUpperBound = config.gibberishVowelRatioUpperBound ?? 0.80;
     const maxConsecutiveConsonants = config.gibberishMaxConsecutiveConsonants ?? 5;
     const actionProfileName = config.gibberishActionProfileName ?? "chatGibberish";
-
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?]/g, '');
 
     let totalAlphaChars = 0;
@@ -54,12 +45,10 @@ export async function checkGibberish(player, pData, rawMessageContent, dependenc
     let currentConsecutiveConsonants = 0;
     let overallMaxConsecutiveConsonants = 0;
     const vowels = "aeiou";
-
     for (const char of cleanedMessage) {
         if (char !== ' ') {
             totalNonSpaceChars++;
         }
-
         if (char >= 'a' && char <= 'z') { // Basic check for English alphabet
             totalAlphaChars++;
             if (vowels.includes(char)) {
@@ -77,18 +66,15 @@ export async function checkGibberish(player, pData, rawMessageContent, dependenc
             currentConsecutiveConsonants = 0;
         }
     }
-
     if (totalNonSpaceChars === 0 || totalAlphaChars === 0) {
         // Message is empty, all spaces, or no alphabetic characters
         return;
     }
-
     const actualAlphaRatio = totalAlphaChars / totalNonSpaceChars;
     if (actualAlphaRatio < minAlphaRatio) {
         // Not enough alphabetic content to be considered for gibberish based on vowel/consonant patterns
         return;
     }
-
     // Vowel ratio calculation should only use actual alphabetic characters
     if ((totalVowels + totalConsonants) === 0) {
         // This case should ideally be caught by actualAlphaRatio < minAlphaRatio if minAlphaRatio > 0
@@ -96,7 +82,6 @@ export async function checkGibberish(player, pData, rawMessageContent, dependenc
         return;
     }
     const actualVowelRatio = totalVowels / (totalVowels + totalConsonants); // Ratio within alphabetic characters
-
     let flagReason = [];
     // Only flag for low vowel ratio if there are consonants to compare against.
     // A message of "aeiouaeiou" has 1.0 vowel ratio but isn't necessarily "low vowel ratio" gibberish.
@@ -112,7 +97,6 @@ export async function checkGibberish(player, pData, rawMessageContent, dependenc
     if (overallMaxConsecutiveConsonants >= maxConsecutiveConsonants) {
         flagReason.push("excessive consecutive consonants");
     }
-
     if (flagReason.length > 0) {
         const violationDetails = {
             messageSnippet: rawMessageContent.substring(0, 50),
