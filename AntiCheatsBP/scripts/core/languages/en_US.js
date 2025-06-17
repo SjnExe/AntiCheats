@@ -185,6 +185,11 @@ export const translations = {
             header: "§e--- Warnings for {playerName} ---",
             individualFlagsHeader": "§eIndividual Flags:",
             noData: "§cNo warning data found for {playerName}.",
+        },
+        listwatched: {
+            description: "Lists all currently online players who are being watched.",
+            noPlayers: "No players are currently being watched.",
+            header: "Currently watched players: "
         }
     },
     checks: {
@@ -243,15 +248,30 @@ export const translations = {
         action_permbanDefaultReason: "Permanently banned by AutoMod for severe rule violations.",
         action_muteDefaultReason: "Muted by AutoMod.",
         action_freezeDefaultReason: "Player frozen by AutoMod due to rule violation.",
-        action_teleportDefaultReason": "AutoMod: You have been teleported to a safe location.",
+        action_teleportDefaultReason": "AutoMod: You have been teleported to a safe location.", // Existing typo noted, not fixing in this pass.
+        "automod.chat.contentrepeat.warn1": "AutoMod: Please avoid repeating the same message content.",
+        "automod.chat.contentrepeat.mute1": "AutoMod: Muted for 5 minutes for repeating message content.",
+        "automod.chat.contentrepeat.mute2": "AutoMod: Muted for 30 minutes for persistent message content repetition.",
+        "automod.chat.unicodeabuse.warn1": "AutoMod: Please avoid using excessive special characters or text effects that disrupt chat.",
+        "automod.chat.unicodeabuse.mute1": "AutoMod: Muted for 10 minutes for disruptive text patterns.",
+        "automod.chat.unicodeabuse.kick1": "AutoMod: Kicked for persistent use of disruptive text patterns.",
+        "automod.chat.gibberish.warn1": "AutoMod: Please ensure your messages are readable and contribute to the conversation.",
+        "automod.chat.gibberish.mute1": "AutoMod: Muted for 5 minutes due to unreadable message patterns.",
+        "automod.chat.gibberish.kick1": "AutoMod: Kicked for persistent unreadable or gibberish messages.",
+        "automod.chat.excessivementions.warn1": "AutoMod: Please avoid mentioning too many users or the same user repeatedly in a single message.",
+        "automod.chat.excessivementions.mute1": "AutoMod: Muted for 5 minutes for excessive user mentions.",
+        "automod.chat.excessivementions.mute2": "AutoMod: Muted for 15 minutes for persistent excessive user mentions.",
+        "automod.chat.impersonation.warn1": "AutoMod: Your message format appears to mimic server or staff announcements. Please avoid this.",
+        "automod.chat.impersonation.kick1": "AutoMod: Kicked for attempting to impersonate server or staff messages.",
+        "automod.chat.impersonation.tempban1": "AutoMod: Temporarily banned for persistent attempts to impersonate server or staff messages.",
         kickMessage_tempban_header: "You are temporarily banned by AutoMod.",
         kickMessage_common_reason: "Reason: {reason}",
         kickMessage_common_duration: "Duration: {duration}",
         adminNotify_actionReport: "{basePrefix} Action: {actionType} on {playerName} for {checkType}. Reason: {reason}{details}",
-        adminNotify_basePrefix": "§7[§cAutoMod§7]",
+        adminNotify_basePrefix": "§7[§cAutoMod§7]", // Existing typo noted
         adminNotify_details_duration: ". Duration: {duration}",
-        adminNotify_details_item": ". Item: {item}",
-        adminNotify_details_teleport": "Teleported to: X:{x} Y:{y} Z:{z}",
+        adminNotify_details_item": ". Item: {item}", // Existing typo noted
+        adminNotify_details_teleport": "Teleported to: X:{x} Y:{y} Z:{z}", // Existing typo noted
         default_itemRemoved: "AutoMod removed {quantity}x {itemTypeId} from your inventory.",
     },
     tpaManager: { // Keys starting with "tpa.manager."
@@ -276,9 +296,9 @@ export const translations = {
         expired_targetNotified": "§cThe TPA request from \"{requesterName}\" has expired.",
     },
     profiles: { // Keys starting with "profile."
-        example_fly_hover: {
-            flagReason: "System detected Fly (Hover).",
-            notifyMessage: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}",
+        movementFlyHover: { // Key renamed from example_fly_hover
+            flagReason: "System detected Fly (Hover).", // Value preserved
+            notifyMessage: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}", // Value preserved
         },
         example_speed_ground: {
             flagReason: "System detected excessive ground speed.",
@@ -472,6 +492,16 @@ export const translations = {
             flagReason: "Sent a message with a high percentage of symbols.",
             notifyMessage: "Player {playerName} triggered symbol spam check. Message: {originalMessage}"
         },
+        "profile.chatContentRepeat.flagReason": "Repeated message content detected.",
+        "profile.chatContentRepeat.notifyMessage": "{playerName} flagged for Chat Content Repeat. Details: {detailsString}",
+        "profile.chatUnicodeAbuse.flagReason": "Unicode (e.g., Zalgo) abuse detected.",
+        "profile.chatUnicodeAbuse.notifyMessage": "{playerName} flagged for Unicode Abuse. Details: {detailsString}",
+        "profile.chatGibberish.flagReason": "Gibberish or unreadable message detected.",
+        "profile.chatGibberish.notifyMessage": "{playerName} flagged for Gibberish. Details: {detailsString}",
+        "profile.chatExcessiveMentions.flagReason": "Excessive user mentions in message.",
+        "profile.chatExcessiveMentions.notifyMessage": "{playerName} flagged for Excessive Mentions. Details: {detailsString}",
+        "profile.chatImpersonationAttempt.flagReason": "Attempt to impersonate server/staff message.",
+        "profile.chatImpersonationAttempt.notifyMessage": "{playerName} flagged for Impersonation Attempt. Details: {detailsString}",
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",
@@ -490,6 +520,9 @@ export const translations = {
             label_currentTick: "Current Server Tick:",
             label_worldTime": "World Time (ticks):",
             label_defaultServerLanguage: "Default Server Language:",
+            entry: {
+                acVersion: "AntiCheat Version: {version}",
+            }
         },
         playerActions: { // From ui.playerActions...
             kick_cancelled: "Kick action cancelled.",
@@ -498,7 +531,9 @@ export const translations = {
         },
         myStats: {
             title: "My Stats",
-            body: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+            body: "Session Playtime: {sessionPlaytime}",
+            labelLocation: "Location: X:{x}, Y:{y}, Z:{z}",
+            labelDimension: "Dimension: {dimensionName}",
         },
         serverRules: {
             title: "Server Rules",
