@@ -24,17 +24,8 @@ This list contains planned features, improvements, and areas for future investig
 *   **Advanced Cheat Detections:**
     *   **Packet Anomalies:** (Research Phase on 'Force Criticals' complete; deemed not feasible. Other anomaly types like 'Blink Detection' were noted as high risk for false positives. Full research notes in `Dev/notes/PacketAnomalyResearch.md`. Re-evaluate if other specific anomaly detection strategies are viable.)
     *   **Further Chat Violations:** [ALL PRIMARY ITEMS COMPLETED]
-        *   [COMPLETED] Message Content Repetition/Flood Check (`checkChatContentRepeat`).
-        *   [COMPLETED] Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
-        *   [COMPLETED] Enhanced Swear Check (Obfuscation Resistance).
-        *   [REVIEWED - SUFFICIENT] Review Newline Spam Handling.
-        *   [COMPLETED - V1] Gibberish Detection (V1 focusing on ratios/consonants).
-        *   [COMPLETED - V1] Excessive Mentions Check (per-message unique/repeat counts).
-        *   [COMPLETED] Refined External Link Patterns (Enhanced `antiAdvertisingCheck.js` with Regex and Whitelisting).
-        *   [COMPLETED - V1] Simple Impersonation (server/staff message patterns).
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
-    *   [COMPLETED] Added `!listwatched` command to list online watched players.
     *   (Further enhancements or specific SjnExe parity features for Admin Tools can be listed here as they are identified).
     *   **Enhanced Commands:**
         *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, gradual resize, pause/resume, interpolation methods, per-dimension static particle types, alternating particle sequence, and pulsing density effects are complete. `!wb remove` now requires confirmation). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
@@ -43,13 +34,11 @@ This list contains planned features, improvements, and areas for future investig
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched, Player Actions, Server Management, Config Editor)*
         *   - Added Server Tick & World Time to System Info panel - Implemented.
-        *   - [COMPLETED] Verified and corrected AC Version display in System Info panel.
     *   **System Features:** SjnExe parity goal.
 
 *   **World Management & Protection:** SjnExe parity goal.
 
 *   **Normal Player Panel Features (`!panel`):** SjnExe parity goal.
-    *   [COMPLETED] Added coordinates and dimension display to 'My Stats'.
     *   (Further enhancements or specific SjnExe parity features for `!panel` can be listed here as they are identified).
 
 ### Low Priority / Ideas
