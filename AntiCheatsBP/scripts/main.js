@@ -15,6 +15,9 @@ import * as logManager from './core/logManager.js'; // Ensure logManager is impo
 import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
 import { executeCheckAction } from './core/actionManager.js';
+import { permissionLevels as importedPermissionLevels } from './core/rankManager.js';
+import { ActionFormData as ImportedActionFormData, MessageFormData as ImportedMessageFormData, ModalFormData as ImportedModalFormData } from '@minecraft/server-ui';
+import { ItemComponentTypes as ImportedItemComponentTypes } from '@minecraft/server';
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
@@ -51,11 +54,7 @@ function mapRange(value, inMin, inMax, outMin, outMax) {
     return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
 }
 
-// import { permissionLevels } from './core/rankManager.js'; // REMOVED - Unused in main.js
-
 playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
-
-// --- Event Subscriptions ---
 
 /**
  * Handles chat messages before they are sent.
@@ -64,29 +63,38 @@ playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
  * @param {mc.ChatSendBeforeEvent} eventData The chat send event data.
  */
 mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-    // Standardized dependencies object
-    const dependencies = {
+    const baseDependencies = {
         config: configModule.editableConfigValues,
-        configModule: configModule, // Provide access to the whole module (e.g., for functions like updateConfigValue)
+        configModule: configModule,
         playerUtils,
         playerDataManager,
         logManager,
         actionManager: { executeCheckAction },
         checks,
-        uiManager, // Added for command processing
-        commandManager, // Added for command processing
-        commandExecutionMap: commandManager.commandExecutionMap, // Added for command processing
+        uiManager,
+        reportManager, // Added for command processing if not already general
         currentTick,
-        // Note: automodConfig is now part of config.editableConfigValues, so accessible via dependencies.config.automodConfig
+        // Note: automodConfig is now part of config.editableConfigValues, so accessible via baseDependencies.config.automodConfig
     };
 
-    if (eventData.message.startsWith(dependencies.config.prefix)) {
-        // Pass the standardized dependencies object to handleChatCommand
-        // handleChatCommand internally will use dependencies.config, dependencies.playerDataManager etc.
-        await commandManager.handleChatCommand(eventData, dependencies);
+    if (eventData.message.startsWith(baseDependencies.config.prefix)) {
+        const commandHandlingDependencies = {
+            ...baseDependencies,
+            mc, // Minecraft server module
+            permissionLevels: importedPermissionLevels,
+            ActionFormData: ImportedActionFormData,
+            MessageFormData: ImportedMessageFormData,
+            ModalFormData: ImportedModalFormData,
+            ItemComponentTypes: ImportedItemComponentTypes,
+            commandManager: commandManager, // The commandManager module itself
+            commandDefinitionMap: commandManager.commandDefinitionMap,
+            commandExecutionMap: commandManager.commandExecutionMap,
+            // Pass allCommands if any command actually needs it for iterating all command definitions
+            // allCommands: Array.from(commandManager.commandDefinitionMap.values()),
+        };
+        await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
     } else {
-        // Pass the standardized dependencies object to the chat event handler
-        await eventHandlers.handleBeforeChatSend(eventData, dependencies);
+        await eventHandlers.handleBeforeChatSend(eventData, baseDependencies); // Chat handler might not need command specific deps
     }
 });
 
@@ -96,15 +104,8 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
  * @param {mc.PlayerJoinBeforeEvent} eventData
  */
 mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
-    const player = eventData.player; // Player object is directly available on eventData for playerJoin
-    // Ensure player data is loaded or initialized early, especially for ban checks.
-    // ensurePlayerDataInitialized might be too late if it relies on player being fully in world for some ops.
-    // For bans, we might need a more direct check if getBanInfo can work with just player.id or nameTag.
-    // Assuming getBanInfo can work with the player object from this event.
-
-    // It's crucial to initialize or at least load minimal data for ban checks *before* player fully spawns.
-    // Let's try to initialize player data here. This might need careful handling if player is not fully "valid" yet for all ops.
-    await playerDataManager.ensurePlayerDataInitialized(player, currentTick); // Use currentTick from global scope
+    const player = eventData.player;
+    await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
 
     if (playerDataManager.isBanned(player)) {
         eventData.cancel = true;
@@ -117,23 +118,18 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
             detailedKickMessage += `§fReason: §e${banInfo.reason || "No reason provided."}\n`;
             detailedKickMessage += `§fExpires: §e${banInfo.unbanTime === Infinity ? "Permanent" : new Date(banInfo.unbanTime).toLocaleString()}\n`;
         } else {
-            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`; // Fallback
+            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`;
         }
 
-        if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
-            detailedKickMessage += `§fDiscord: §b${config.discordLink}`;
+        if (configModule.editableConfigValues.discordLink && configModule.editableConfigValues.discordLink.trim() !== "" && configModule.editableConfigValues.discordLink !== "https://discord.gg/example") {
+            detailedKickMessage += `§fDiscord: §b${configModule.editableConfigValues.discordLink}`;
         }
 
-        // Log the detailed ban info to console/admin chat
         const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Ban details: By ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}, Expires: ${banInfo?.unbanTime === Infinity ? "Permanent" : new Date(banInfo?.unbanTime).toLocaleString()}`;
         console.warn(logMessage);
-        if (playerUtils.notifyAdmins) { // Check if notifyAdmins is available
+        if (playerUtils.notifyAdmins) {
             playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. Banned by: ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}`, null);
         }
-
-        // As discussed, player.kick() might not work here to display a custom message.
-        // The eventData.cancel = true; will prevent join. The game shows a generic message.
-        // The detailed message is logged for admins.
     }
 });
 
@@ -151,7 +147,6 @@ mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
         actionManager: { executeCheckAction },
         checks,
         currentTick
-        // uiManager, commandManager not typically needed directly in spawn event handler
     };
     eventHandlers.handlePlayerSpawn(eventData, dependencies);
 });
@@ -167,8 +162,8 @@ mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
         playerUtils,
         playerDataManager,
         logManager,
-        actionManager: { executeCheckAction }, // Though likely not used in leave
-        checks, // Though likely not used in leave
+        actionManager: { executeCheckAction },
+        checks,
         currentTick
     };
     eventHandlers.handlePlayerLeave(eventData, dependencies);
@@ -178,7 +173,6 @@ mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
  * Handles entity hurt events, primarily for combat-related checks.
  * @param {mc.EntityHurtAfterEvent} eventData The entity hurt event data.
  */
-// Existing entityHurt subscription for general combat checks and NoFall
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
     const dependencies = {
         config: configModule.editableConfigValues,
@@ -193,7 +187,6 @@ mc.world.afterEvents.entityHurt.subscribe((eventData) => {
     eventHandlers.handleEntityHurt(eventData, dependencies);
 });
 
-// New subscription specifically for Combat Log interaction tracking
 eventHandlers.subscribeToCombatLogEvents({
     config: configModule.editableConfigValues, // Pass runtime config
     playerDataManager,
@@ -287,11 +280,7 @@ mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
         checks,
         currentTick
     };
-    // This handler might call two sub-handlers, both should get the same dependencies.
     await eventHandlers.handlePlayerPlaceBlockBefore(eventData, dependencies);
-    // handlePlayerPlaceBlockBeforeEvent_AntiGrief is also called inside handlePlayerPlaceBlockBefore if needed,
-    // or could be called here if its logic is distinct and always runs.
-    // For now, assuming handlePlayerPlaceBlockBefore covers it or calls it.
 });
 
 /**
@@ -317,9 +306,6 @@ mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
  * @param {mc.PlayerInventoryItemChangeAfterEvent} eventData
  */
 mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
-    // This handler's original signature was: (eventData, playerDataManager, checks, playerUtils, config, logManager, executeCheckAction, currentTick)
-    // It needs to be adapted to use the dependencies object if it's standardized.
-    // For now, passing a constructed one.
     const dependencies = {
         config: configModule.editableConfigValues,
         configModule: configModule,
@@ -330,12 +316,6 @@ mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
         checks,
         currentTick
     };
-    // The original handleInventoryItemChange had a different signature pattern.
-    // Assuming it's refactored to accept (eventData, dependencies) like others.
-    // If not, this call would need to match its specific signature.
-    // For the sake of this refactor, we'll assume it's standardized:
-    // await eventHandlers.handleInventoryItemChange(eventData, dependencies);
-    // Keeping original call structure for now if its signature is very different:
     await eventHandlers.handleInventoryItemChange(eventData.player, eventData.newItem, eventData.oldItem, eventData.slotName, dependencies);
 });
 
@@ -346,10 +326,8 @@ mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
 mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
     const dependencies = {
         config: configModule.editableConfigValues,
-        configModule: configModule,
         playerUtils,
         playerDataManager,
-        // logManager, // REMOVED - Not directly used by handlePlayerDimensionChangeAfterEvent
         currentTick
     };
     eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, dependencies);
@@ -411,13 +389,9 @@ mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
     await eventHandlers.handlePistonActivate_AntiGrief(eventData, dependencies);
 });
 
-// Periodically clear expired TPA requests (e.g., every second = 20 ticks)
-// Also process TPA warmups in this interval or a similar one.
 mc.system.runInterval(() => {
-    if (configModule.editableConfigValues.enableTPASystem) { // Access via editableConfigValues
+    if (configModule.editableConfigValues.enableTPASystem) {
         tpaManager.clearExpiredRequests();
-
-        // Process TPA warm-ups
         const requestsInWarmup = tpaManager.getRequestsInWarmup();
         for (const request of requestsInWarmup) {
             if (Date.now() >= request.warmupExpiryTimestamp) {
@@ -425,8 +399,7 @@ mc.system.runInterval(() => {
             }
         }
     }
-}, 20); // Run this check every 20 ticks (1 second)
-
+}, 20);
 
 /**
  * Attempts to find a safe Y coordinate for teleportation at a given X, Z.
@@ -466,12 +439,9 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
                 }
             }
         } catch (e) {
-            // Error during block check, continue
         }
     }
 
-    // If no spot found searching down, try searching up a little from initialY
-    // Start from initialY + 1 because currentY might have been adjusted down by the loop above
     let searchUpStartY = Math.floor(initialY);
     searchUpStartY = Math.max(minDimensionHeight, Math.min(searchUpStartY, maxDimensionHeight));
 
@@ -490,44 +460,34 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
                 }
             }
         } catch(e) {
-            // Error during block check, continue
         }
     }
 
     return Math.floor(initialY);
 }
 
-
 /**
  * Handles entity hurt events, for TPA warm-up cancellation.
  * @param {mc.EntityHurtBeforeEvent} eventData The entity hurt event data.
  */
 mc.world.beforeEvents.entityHurt.subscribe(eventData => {
-    if (!config.enableTPASystem) return;
+    if (!configModule.editableConfigValues.enableTPASystem) return;
 
     const { hurtEntity, damageSource } = eventData;
-    // Ensure hurtEntity is a Player. For some reason, instanceof Player doesn't work directly with Player objects from events in some contexts.
-    // Using a try-catch or checking for a unique player property like 'nameTag' or 'id' is safer.
     let playerNameTag;
     try {
-        playerNameTag = hurtEntity.nameTag; // This will throw if hurtEntity is not a Player-like object
+        playerNameTag = hurtEntity.nameTag;
         if (typeof playerNameTag !== 'string') return;
     } catch (e) {
         return;
     }
 
-
-    // Iterate all active requests that are in warmup
-    // tpaManager.findRequestsForPlayer might be too broad if it gets all requests ever,
-    // better to use getRequestsInWarmup and then filter by player.
     const requestsInWarmup = tpaManager.getRequestsInWarmup();
     const playerActiveWarmupRequests = requestsInWarmup.filter(
         req => req.requesterName === playerNameTag || req.targetName === playerNameTag
     );
 
     for (const request of playerActiveWarmupRequests) {
-        // No need to check request.status here as getRequestsInWarmup should only return 'pending_teleport_warmup'
-        // but double-checking won't hurt if getRequestsInWarmup changes.
         if (request.status === 'pending_teleport_warmup') {
             let playerIsTeleporting = false;
             if (request.requestType === 'tpa' && request.requesterName === playerNameTag) {
@@ -542,13 +502,11 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
                 const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
 
                 tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog);
-                // eventData.cancel = true; // Usually, do NOT cancel the damage itself.
-                break; // Stop checking further requests for this player for this damage event
+                break;
             }
         }
     }
 });
-
 
 let currentTick = 0;
 
@@ -567,12 +525,10 @@ let currentTick = 0;
 mc.system.runInterval(async () => {
     currentTick++;
 
-    // --- Process Active Border Resizes (Dimension-based, runs once per server tick) ---
     const knownBorderDimensions = ["minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"];
     for (const dimId of knownBorderDimensions) {
         let dimBorderSettings = null;
         try {
-            // Ensure getBorderSettings and saveBorderSettings are in scope. They are imported at the top of main.js.
             dimBorderSettings = getBorderSettings(dimId);
         } catch (e) {
             console.warn(`[WB Resize] Error getting border settings for ${dimId} during resize check: ${e}`);
@@ -605,7 +561,7 @@ mc.system.runInterval(async () => {
                 continue; // Skip finalization if paused
             }
 
-            if (effectiveElapsedMs >= durationMs) { // Resize finished
+            if (effectiveElapsedMs >= durationMs) {
                 const targetSize = dimBorderSettings.targetSize;
                 if (dimBorderSettings.shape === "square") {
                     dimBorderSettings.halfSize = targetSize;
@@ -620,7 +576,6 @@ mc.system.runInterval(async () => {
 
                 if (saveBorderSettings(dimId, dimBorderSettings)) {
                      console.warn(`[AntiCheat][WorldBorder] Border resize in ${dimId.replace("minecraft:","")} completed. New size parameter: ${targetSize}.`);
-                     // Ensure logManager is imported and available if this line is uncommented
                      if (logManager && typeof logManager.addLog === 'function') {
                         logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` });
                      }
@@ -630,7 +585,6 @@ mc.system.runInterval(async () => {
             }
         }
     }
-    // --- End of Processing Active Border Resizes ---
 
     const allPlayers = mc.world.getAllPlayers();
     playerDataManager.cleanupActivePlayerData(allPlayers);
@@ -642,26 +596,22 @@ mc.system.runInterval(async () => {
             continue;
         }
 
-        // Initialize World Border Visuals pData field if it doesn't exist
         pData.lastBorderVisualTick = pData.lastBorderVisualTick || 0;
-
-        // Initialize World Border pData fields if they don't exist (moved up for clarity)
         pData.ticksOutsideBorder = pData.ticksOutsideBorder || 0;
         pData.borderDamageApplications = pData.borderDamageApplications || 0;
 
-        if (!pData) { // This check is redundant now due to the earlier one, but kept for safety if code moves
+        if (!pData) {
             if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData somehow became null for ${player.nameTag} before transient update.`, player.nameTag);
             continue;
         }
 
         playerDataManager.updateTransientPlayerData(player, pData, currentTick);
 
-        // Reset item usage states based on timeout
         if (pData.isUsingConsumable && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) {
             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingConsumable for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
             pData.isUsingConsumable = false;
         }
-        if (pData.isChargingBow && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) { // Potentially a different timeout for bows later
+        if (pData.isChargingBow && (currentTick - pData.lastItemUseTick > config.itemUseStateClearTicks)) {
             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isChargingBow for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
             pData.isChargingBow = false;
         }
@@ -670,43 +620,38 @@ mc.system.runInterval(async () => {
             pData.isUsingShield = false;
         }
 
-        // --- Call All Checks ---
-        // Pass executeCheckAction and logManager to all checks called in the tick loop
-        if (config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
-        if (config.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
-        if (config.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableCPSCheck && checks.checkCPS) await checks.checkCPS(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (config.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (configModule.editableConfigValues.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (configModule.editableConfigValues.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (configModule.editableConfigValues.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (configModule.editableConfigValues.enableCPSCheck && checks.checkCPS) await checks.checkCPS(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (configModule.editableConfigValues.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
+        if (configModule.editableConfigValues.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, configModule.editableConfigValues, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
 
-        // ViewSnap check might need config and currentTick directly if not passed via dependencies object to all checks
-        if (config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, config, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
-
-        if (config.enableNoSlowCheck && checks.checkNoSlow) {
-            await checks.checkNoSlow(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (configModule.editableConfigValues.enableNoSlowCheck && checks.checkNoSlow) {
+            await checks.checkNoSlow(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        if (config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
-            await checks.checkInvalidSprint(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (configModule.editableConfigValues.enableInvalidSprintCheck && checks.checkInvalidSprint) {
+            await checks.checkInvalidSprint(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        if (config.enableAutoToolCheck && checks.checkAutoTool) {
-            await checks.checkAutoTool(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick, player.dimension);
+        if (configModule.editableConfigValues.enableAutoToolCheck && checks.checkAutoTool) {
+            await checks.checkAutoTool(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick, player.dimension);
         }
 
-        if (config.enableNameSpoofCheck && checks.checkNameSpoof) {
-            await checks.checkNameSpoof(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (configModule.editableConfigValues.enableNameSpoofCheck && checks.checkNameSpoof) {
+            await checks.checkNameSpoof(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        if (config.enableAntiGMCCheck && checks.checkAntiGMC) {
-            await checks.checkAntiGMC(player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+        if (configModule.editableConfigValues.enableAntiGMCCheck && checks.checkAntiGMC) {
+            await checks.checkAntiGMC(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
         }
 
-        // Periodic Invalid Render Distance Check
-        if (config.enableInvalidRenderDistanceCheck && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= 400)) { // 400 ticks = 20 seconds
+        if (configModule.editableConfigValues.enableInvalidRenderDistanceCheck && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= 400)) {
             if (checks.checkInvalidRenderDistance) {
                 const renderDistDependencies = {
-                    config: config.editableConfigValues, // Ensure this is the editable one
-                    automodConfig: config.editableConfigValues.automodConfig,
+                    config: configModule.editableConfigValues,
+                    automodConfig: configModule.editableConfigValues.automodConfig,
                     playerDataManager,
                     playerUtils,
                     logManager,
@@ -717,7 +662,7 @@ mc.system.runInterval(async () => {
                 await checks.checkInvalidRenderDistance(
                     player,
                     pData,
-                    config.editableConfigValues, // Pass editableConfigValues explicitly
+                    configModule.editableConfigValues, // Pass editableConfigValues explicitly
                     playerUtils,
                     logManager,
                     { executeCheckAction },
@@ -727,50 +672,43 @@ mc.system.runInterval(async () => {
             pData.lastRenderDistanceCheckTick = currentTick;
         }
 
-        // Construct dependencies specifically for checkNetherRoof as its signature expects a 'dependencies' object
         const netherRoofDependencies = {
-            config: config.editableConfigValues, // Ensure this is the editable one
-            automodConfig: config.editableConfigValues.automodConfig,
+            config: configModule.editableConfigValues,
+            automodConfig: configModule.editableConfigValues.automodConfig,
             playerDataManager: playerDataManager,
             playerUtils: playerUtils
-            // logManager and executeCheckAction are not expected by checkNetherRoof's current signature
         };
-        if (config.enableNetherRoofCheck && checks.checkNetherRoof) {
-            // Note: checkNetherRoof is not async currently, so no await
+        if (configModule.editableConfigValues.enableNetherRoofCheck && checks.checkNetherRoof) {
             checks.checkNetherRoof(player, pData, netherRoofDependencies);
         }
 
-        // Fall distance accumulation and isTakingFallDamage reset
         if (!player.isOnGround) {
-            if (pData.velocity.y < -0.07 && pData.previousPosition) { // Ensure previousPosition exists
-                const deltaY = pData.previousPosition.y - pData.lastPosition.y; // Ensure lastPosition exists
+            if (pData.velocity.y < -0.07 && pData.previousPosition) {
+                const deltaY = pData.previousPosition.y - pData.lastPosition.y;
                 if (deltaY > 0) {
                     pData.fallDistance += deltaY;
                 }
             }
-        } else { // Player is on ground
-            if (!pData.isTakingFallDamage) { // Only reset fallDistance if not currently processing fall damage
+        } else {
+            if (!pData.isTakingFallDamage) {
                  pData.fallDistance = 0;
             }
-            pData.isTakingFallDamage = false; // Reset this flag once player is on ground
+            pData.isTakingFallDamage = false;
         }
 
-        // World Border Enforcement
-        // borderSettings variable will be declared here for potential use in Visuals section too
         let borderSettings = null;
-    if (dependencies.config.enableWorldBorderSystem) {
-            borderSettings = getBorderSettings(player.dimension.id); // Assuming getBorderSettings doesn't need full dependencies
+    if (configModule.editableConfigValues.enableWorldBorderSystem) { // Changed dependencies.config to configModule.editableConfigValues
+            borderSettings = getBorderSettings(player.dimension.id);
 
             if (borderSettings && borderSettings.enabled) {
                 const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
 
-                if (playerPermLevel > permissionLevels.admin) { // Apply to non-admins/owners
+                if (playerPermLevel > permissionLevels.admin) {
                     const loc = player.location;
                     let isPlayerOutside = false;
-                    let targetX = loc.x; // Default to current location, will be updated if outside
+                    let targetX = loc.x;
                     let targetZ = loc.z;
 
-                    // Calculate effective size if resizing
                     let currentEffectiveHalfSize = borderSettings.halfSize;
                     let currentEffectiveRadius = borderSettings.radius;
 
@@ -785,16 +723,13 @@ mc.system.runInterval(async () => {
                         let elapsedMs;
 
                         if (borderSettings.isPaused) {
-                            // If paused, use the time elapsed until the pause started
-                            const lastPauseStart = borderSettings.resizeLastPauseStartTimeMs || currentTimeMs; // Fallback
+                            const lastPauseStart = borderSettings.resizeLastPauseStartTimeMs || currentTimeMs;
                             elapsedMs = (lastPauseStart - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
                         } else {
-                            // If not paused, use current time minus start time, adjusted for total paused duration
                             elapsedMs = (currentTimeMs - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
                         }
-                        elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
-
-                        elapsedMs = Math.max(0, elapsedMs); // Ensure elapsedMs is not negative
+                        elapsedMs = Math.max(0, elapsedMs);
+                        elapsedMs = Math.max(0, elapsedMs);
 
                         const durationMs = borderSettings.resizeDurationMs;
                         let rawProgress = 0;
@@ -805,7 +740,7 @@ mc.system.runInterval(async () => {
                              rawProgress = 1;
                         }
 
-                        let easedProgress = rawProgress; // Default to linear
+                        let easedProgress = rawProgress;
                         if (borderSettings.resizeInterpolationType === "easeOutQuad") {
                             easedProgress = easeOutQuad(rawProgress);
                         } else if (borderSettings.resizeInterpolationType === "easeInOutQuad") {
@@ -820,9 +755,6 @@ mc.system.runInterval(async () => {
                             currentEffectiveRadius = interpolatedSize;
                         }
                     } else if (borderSettings.isResizing && borderSettings.enabled) {
-                        // Fallback or if resize fields are somehow incomplete
-                        // This indicates an issue, ideally the dimension loop should have cleaned/finalized it.
-                        // For safety, use targetSize if isResizing is still true but params seem off.
                         if (typeof borderSettings.targetSize === 'number') {
                             if (borderSettings.shape === "square") {
                                 currentEffectiveHalfSize = borderSettings.targetSize;
@@ -875,10 +807,10 @@ mc.system.runInterval(async () => {
                     if (isPlayerOutside) {
                         pData.ticksOutsideBorder = (pData.ticksOutsideBorder || 0) + 1;
 
-                        const enableDamage = borderSettings.enableDamage ?? dependencies.config.worldBorderDefaultEnableDamage;
-                        const damageAmount = borderSettings.damageAmount ?? dependencies.config.worldBorderDefaultDamageAmount;
-                        const damageIntervalTicks = borderSettings.damageIntervalTicks ?? dependencies.config.worldBorderDefaultDamageIntervalTicks;
-                        const teleportAfterNumDamageEvents = borderSettings.teleportAfterNumDamageEvents ?? dependencies.config.worldBorderTeleportAfterNumDamageEvents;
+                        const enableDamage = borderSettings.enableDamage ?? configModule.editableConfigValues.worldBorderDefaultEnableDamage;
+                        const damageAmount = borderSettings.damageAmount ?? configModule.editableConfigValues.worldBorderDefaultDamageAmount;
+                        const damageIntervalTicks = borderSettings.damageIntervalTicks ?? configModule.editableConfigValues.worldBorderDefaultDamageIntervalTicks;
+                        const teleportAfterNumDamageEvents = borderSettings.teleportAfterNumDamageEvents ?? configModule.editableConfigValues.worldBorderTeleportAfterNumDamageEvents;
 
                         let performTeleport = true;
 
@@ -908,15 +840,13 @@ mc.system.runInterval(async () => {
                         }
 
                         if (performTeleport) {
-                            // const safeY = findSafeY(player, player.dimension, targetX, targetZ, loc.y, playerUtils); // Old call
                             const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils);
                             try {
                                 player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
-                                if (dependencies.config.worldBorderWarningMessage) {
-                                    // Assuming worldBorderWarningMessage is a key, needs getString
-                                    playerUtils.warnPlayer(player, getString(dependencies.config.worldBorderWarningMessage));
+                                if (configModule.editableConfigValues.worldBorderWarningMessage) { // Changed dependencies.config to configModule.editableConfigValues
+                                    playerUtils.warnPlayer(player, getString(configModule.editableConfigValues.worldBorderWarningMessage)); // Changed dependencies.config to configModule.editableConfigValues
                                 }
-                                if (dependencies.playerUtils.debugLog && pData.isWatched) {
+                                if (playerUtils.debugLog && pData.isWatched) { // Changed dependencies.playerUtils to playerUtils
                                     playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
                                 }
                                 pData.ticksOutsideBorder = 0;
@@ -924,15 +854,15 @@ mc.system.runInterval(async () => {
                                 pData.isDirtyForSave = true;
                             } catch (e) {
                                 console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
-                                 if (playerUtils.debugLog && pData.isWatched) { // Check pData.isWatched for contextual logging
+                                 if (playerUtils.debugLog && pData.isWatched) {
                                      playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
                                  }
                             }
                         }
 
-                    } else { // Player is inside the border
+                    } else {
                         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
-                             if (playerUtils.debugLog && pData.isWatched) { // Check pData.isWatched for contextual logging
+                             if (playerUtils.debugLog && pData.isWatched) {
                                 playerUtils.debugLog(`WorldBorder: Player ${player.nameTag} re-entered border. Resetting counters.`, player.nameTag);
                             }
                             pData.ticksOutsideBorder = 0;
@@ -962,46 +892,42 @@ mc.system.runInterval(async () => {
             }
         }
 
-        // World Border Visuals
-        if (dependencies.config.enableWorldBorderSystem && dependencies.config.worldBorderEnableVisuals) {
-            // Use borderSettings if already fetched by enforcement, otherwise fetch it.
+        if (configModule.editableConfigValues.enableWorldBorderSystem && configModule.editableConfigValues.worldBorderEnableVisuals) { // Changed dependencies.config to configModule.editableConfigValues
             const currentBorderSettings = borderSettings || getBorderSettings(player.dimension.id);
 
             if (currentBorderSettings && currentBorderSettings.enabled) {
-                if (currentTick - (pData.lastBorderVisualTick || 0) >= dependencies.config.worldBorderVisualUpdateIntervalTicks) {
+                if (currentTick - (pData.lastBorderVisualTick || 0) >= configModule.editableConfigValues.worldBorderVisualUpdateIntervalTicks) { // Changed dependencies.config to configModule.editableConfigValues
                     pData.lastBorderVisualTick = currentTick;
 
                     const playerLoc = player.location;
                     let particleNameToUse;
-                    const particleSequence = dependencies.config.worldBorderParticleSequence;
+                    const particleSequence = configModule.editableConfigValues.worldBorderParticleSequence; // Changed dependencies.config to configModule.editableConfigValues
 
                     if (Array.isArray(particleSequence) && particleSequence.length > 0) {
-                        const visualUpdateInterval = dependencies.config.worldBorderVisualUpdateIntervalTicks > 0 ? dependencies.config.worldBorderVisualUpdateIntervalTicks : 20; // Default to 20 if interval is 0 to prevent division by zero
+                        const visualUpdateInterval = configModule.editableConfigValues.worldBorderVisualUpdateIntervalTicks > 0 ? configModule.editableConfigValues.worldBorderVisualUpdateIntervalTicks : 20; // Changed dependencies.config to configModule.editableConfigValues
                         const sequenceIndex = Math.floor(currentTick / visualUpdateInterval) % particleSequence.length;
                         particleNameToUse = particleSequence[sequenceIndex];
                     } else {
-                        particleNameToUse = currentBorderSettings.particleNameOverride || dependencies.config.worldBorderParticleName;
+                        particleNameToUse = currentBorderSettings.particleNameOverride || configModule.editableConfigValues.worldBorderParticleName; // Changed dependencies.config to configModule.editableConfigValues
                     }
-                    const visualRange = dependencies.config.worldBorderVisualRange;
+                    const visualRange = configModule.editableConfigValues.worldBorderVisualRange; // Changed dependencies.config to configModule.editableConfigValues
                     let density;
-                    if (dependencies.config.worldBorderEnablePulsingDensity) {
-                        const pulseSpeed = dependencies.config.worldBorderPulseSpeed > 0 ? dependencies.config.worldBorderPulseSpeed : 1.0;
-                        const pulseTime = (currentTick * pulseSpeed) / 20.0; // Assuming 20 TPS for a cycle related to pulseSpeed = 1.0 per ~6.28s
-                        const sineWave = Math.sin(pulseTime); // Oscillates between -1 and 1
-                        const minDensity = dependencies.config.worldBorderPulseDensityMin > 0 ? dependencies.config.worldBorderPulseDensityMin : 0.1;
-                        const maxDensity = dependencies.config.worldBorderPulseDensityMax > minDensity ? dependencies.config.worldBorderPulseDensityMax : minDensity + 1.0;
+                    if (configModule.editableConfigValues.worldBorderEnablePulsingDensity) { // Changed dependencies.config to configModule.editableConfigValues
+                        const pulseSpeed = configModule.editableConfigValues.worldBorderPulseSpeed > 0 ? configModule.editableConfigValues.worldBorderPulseSpeed : 1.0; // Changed dependencies.config to configModule.editableConfigValues
+                        const pulseTime = (currentTick * pulseSpeed) / 20.0;
+                        const sineWave = Math.sin(pulseTime);
+                        const minDensity = configModule.editableConfigValues.worldBorderPulseDensityMin > 0 ? configModule.editableConfigValues.worldBorderPulseDensityMin : 0.1; // Changed dependencies.config to configModule.editableConfigValues
+                        const maxDensity = configModule.editableConfigValues.worldBorderPulseDensityMax > minDensity ? configModule.editableConfigValues.worldBorderPulseDensityMax : minDensity + 1.0; // Changed dependencies.config to configModule.editableConfigValues
 
                         density = mapRange(sineWave, -1, 1, minDensity, maxDensity);
-                        density = Math.max(0.1, density); // Ensure density is at least 0.1
+                        density = Math.max(0.1, density);
                     } else {
-                        density = Math.max(0.1, dependencies.config.worldBorderParticleDensity);
+                        density = Math.max(0.1, configModule.editableConfigValues.worldBorderParticleDensity); // Changed dependencies.config to configModule.editableConfigValues
                     }
-                    const wallHeight = dependencies.config.worldBorderParticleWallHeight;
-                    const segmentLength = dependencies.config.worldBorderParticleSegmentLength;
+                    const wallHeight = configModule.editableConfigValues.worldBorderParticleWallHeight; // Changed dependencies.config to configModule.editableConfigValues
+                    const segmentLength = configModule.editableConfigValues.worldBorderParticleSegmentLength; // Changed dependencies.config to configModule.editableConfigValues
                     const yBase = Math.floor(playerLoc.y);
 
-                    // Use currentEffectiveHalfSize/Radius from the enforcement section
-                    // currentBorderSettings is the same as borderSettings from the enforcement section in this player loop iteration
 
                     if (currentBorderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
                         const { centerX, centerZ } = currentBorderSettings;
@@ -1023,7 +949,7 @@ mc.system.runInterval(async () => {
                                     try {
                                         const particleLoc = isXPlane ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
                                         player.dimension.spawnParticle(particleNameToUse, particleLoc);
-                                    } catch (e) { /* Silently ignore */ }
+                                    } catch (e) {  }
                                 }
                             }
                         };
@@ -1053,7 +979,7 @@ mc.system.runInterval(async () => {
                                 for (let h = 0; h < wallHeight; h++) {
                                     try {
                                         player.dimension.spawnParticle(particleNameToUse, { x: particleX, y: yBase + h, z: particleZ });
-                                    } catch (e) { /* Silently ignore */ }
+                                    } catch (e) {  }
                                 }
                             }
                         }
@@ -1063,13 +989,12 @@ mc.system.runInterval(async () => {
         }
     }
 
-    // Deferred player data saving
-    if (currentTick % 600 === 0) { // Approx every 30 seconds (600 ticks / 20 ticks_per_second)
+    if (currentTick % 600 === 0) {
         for (const player of allPlayers) {
-            const pData = playerDataManager.getPlayerData(player.id); // Assuming getPlayerData takes playerId
+            const pData = playerDataManager.getPlayerData(player.id);
             if (pData && pData.isDirtyForSave) {
                 try {
-                    await playerDataManager.saveDirtyPlayerData(player); // Assuming saveDirtyPlayerData takes player object
+                    await playerDataManager.saveDirtyPlayerData(player);
                     if (playerUtils.debugLog && pData.isWatched) {
                         playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, player.nameTag);
                     }
@@ -1079,7 +1004,6 @@ mc.system.runInterval(async () => {
                 }
             }
         }
-        // Persist logs and reports if they are dirty
         if (logManager.persistLogCacheToDisk) {
             logManager.persistLogCacheToDisk();
         }

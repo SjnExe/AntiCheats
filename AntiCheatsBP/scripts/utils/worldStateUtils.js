@@ -6,8 +6,8 @@
  */
 import { world } from '@minecraft/server';
 
-const netherLockedProp = 'anticheat:netherLocked'; // Renamed to camelCase
-const endLockedProp = 'anticheat:endLocked';     // Renamed to camelCase
+const netherLockedProp = 'anticheat:netherLocked';
+const endLockedProp = 'anticheat:endLocked';
 
 /**
  * Checks if the Nether dimension is currently locked.
@@ -16,11 +16,11 @@ const endLockedProp = 'anticheat:endLocked';     // Renamed to camelCase
  */
 export function isNetherLocked() {
     try {
-        const locked = world.getDynamicProperty(netherLockedProp); // Updated usage
+        const locked = world.getDynamicProperty(netherLockedProp);
         return typeof locked === 'boolean' ? locked : false;
     } catch (e) {
         console.warn(`[worldStateUtils] Error reading Nether lock state: ${e}. Defaulting to false.`);
-        return false; // Default to not locked on error
+        return false;
     }
 }
 
@@ -31,7 +31,7 @@ export function isNetherLocked() {
  */
 export function setNetherLocked(isLocked) {
     try {
-        world.setDynamicProperty(netherLockedProp, isLocked); // Updated usage
+        world.setDynamicProperty(netherLockedProp, isLocked);
     } catch (e) {
         console.error(`[worldStateUtils] Error setting Nether lock state: ${e}`);
     }
@@ -44,11 +44,11 @@ export function setNetherLocked(isLocked) {
  */
 export function isEndLocked() {
     try {
-        const locked = world.getDynamicProperty(endLockedProp); // Updated usage
+        const locked = world.getDynamicProperty(endLockedProp);
         return typeof locked === 'boolean' ? locked : false;
     } catch (e) {
         console.warn(`[worldStateUtils] Error reading End lock state: ${e}. Defaulting to false.`);
-        return false; // Default to not locked on error
+        return false;
     }
 }
 
@@ -59,7 +59,7 @@ export function isEndLocked() {
  */
 export function setEndLocked(isLocked) {
     try {
-        world.setDynamicProperty(endLockedProp, isLocked); // Updated usage
+        world.setDynamicProperty(endLockedProp, isLocked);
     } catch (e) {
         console.error(`[worldStateUtils] Error setting End lock state: ${e}`);
     }
