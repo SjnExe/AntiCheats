@@ -505,6 +505,9 @@ export const translations = {
             label_currentTick: "Current Server Tick:",
             label_worldTime": "World Time (ticks):",
             label_defaultServerLanguage: "Default Server Language:",
+            entry: {
+                acVersion: "AntiCheat Version: {version}",
+            }
         },
         playerActions: { // From ui.playerActions...
             kick_cancelled: "Kick action cancelled.",

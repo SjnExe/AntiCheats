@@ -2,17 +2,9 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: Advanced Cheat Detections - Further Chat Violations
-*   Currently implementing and reviewing chat violation checks.
-*   Completed: Message Content Repetition/Flood Check (`checkChatContentRepeat`).
-*   Completed: Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
-*   Completed: Enhanced Swear Check (Obfuscation Resistance).
-*   Completed: Review of Newline Spam Handling (concluded existing system is sufficient when configured).
-*   Completed: Gibberish Detection Check (`checkGibberish` - V1).
-*   Completed: Excessive Mentions Check (`checkExcessiveMentions` - V1 per-message).
-*   Completed: Enhanced Anti-Advertising Check (Regex and Whitelisting).
-*   Completed: Simple Impersonation Check (`checkSimpleImpersonation` - V1 for server/staff messages).
-*   Next: All identified 'Further Chat Violations' tasks from the recent brainstorming/review are now addressed. Consider moving to 'Packet Anomalies' or other major task categories.
+## Current Focus: UI Enhancement - Admin Panel AC Version (Completed)
+*   Verified and corrected display of AC Version in Admin Panel System Info.
+*   Next: Consider 'Packet Anomalies' or other major task categories.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -50,6 +42,7 @@ This list contains planned features, improvements, and areas for future investig
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched, Player Actions, Server Management, Config Editor)*
         *   - Added Server Tick & World Time to System Info panel - Implemented.
+        *   - [COMPLETED] Verified and corrected AC Version display in System Info panel.
     *   **System Features:** SjnExe parity goal.
 
 *   **World Management & Protection:** SjnExe parity goal.

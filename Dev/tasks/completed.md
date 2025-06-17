@@ -69,6 +69,10 @@ This document lists significant tasks that have been completed.
     - New i18n strings in `en_US.js`.
     - New configuration options in `config.js` (e.g., `enableSimpleImpersonationCheck`, patterns, exempt level), defaulted to `false`.
     - Exporting the new check from `checks/index.js`.
+-   **Admin Panel UI Enhancement (AC Version):** Verified and corrected the display of the AntiCheat version in the Admin Panel's System Info section.
+    - Added the i18n string `ui.systemInfo.entry.acVersion` to `en_US.js`.
+    - Updated `uiManager.js` in the `showSystemInfo` function to correctly use `config.acVersion` for displaying the version.
+    - The underlying mechanism to show the version was already partially present.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

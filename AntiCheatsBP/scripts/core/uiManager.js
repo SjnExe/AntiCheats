@@ -547,9 +547,9 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
 export { showAdminPanelMain };
 
 showSystemInfo = async function (adminPlayer, config, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager: depLogManager, reportManager, configModule } = dependencies;
+    const { playerUtils: depPlayerUtils, logManager: depLogManager, reportManager } = dependencies; // Removed configModule from destructuring
     depPlayerUtils.debugLog(`UI: System Info requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const { version } = configModule; // Get version from main config module
+    // const { version } = configModule; // REMOVED - version will come from config.acVersion
     const onlinePlayers = mc.world.getAllPlayers();
     const pDataEntries = playerDataManager.getAllPlayerDataEntries ? playerDataManager.getAllPlayerDataEntries().length : getString("common.value.notApplicable");
     const watchedPlayersCount = onlinePlayers.filter(p => playerDataManager.getPlayerData(p.id)?.isWatched).length;
@@ -576,7 +576,7 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
     const form = new MessageFormData()
         .title(getString("ui.systemInfo.title"))
         .body(
-            `${getString("ui.systemInfo.entry.acVersion", { version: version })}\n` +
+            `${getString("ui.systemInfo.entry.acVersion", { version: config.acVersion || "N/A" })}\n` +
             `${getString("ui.systemInfo.entry.mcVersion", { version: mc.game.version })}\n` +
             `${getString("ui.systemInfo.entry.serverTime", { time: new Date().toLocaleTimeString() })}\n` +
             `${getString("ui.systemInfo.label.currentTick")}§r §e${mc.system.currentTick}\n` +
