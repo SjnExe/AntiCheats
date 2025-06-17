@@ -7,15 +7,15 @@
  */
 
 export const checkActionProfiles = {
-    "exampleFlyHover": {
+    "movementFlyHover": {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "profile.example_fly_hover.flagReason",
-            type: "fly"
+            reason: "profile.movementFlyHover.flagReason", // Updated key
+            type: "movementFlyHover"
         },
         notifyAdmins: {
-            message: "profile.example_fly_hover.notifyMessage"
+            message: "profile.movementFlyHover.notifyMessage" // Updated key
         },
         log: {
             actionType: "detectedFlyHover",
@@ -438,7 +438,7 @@ export const checkActionProfiles = {
             message: "profile.player_antigmc.notifyMessage"
         },
         log: {
-            actionType: "detectedPlayerAntigmc",
+            actionType: "detectedPlayerAntiGMC", // Corrected case
             detailsPrefix: "Anti-GMC Violation: "
         }
     },
@@ -754,6 +754,86 @@ export const checkActionProfiles = {
             message: "profile.chat_symbol_spam_detected.notifyMessage" // Localization key
         }
         // No cancelMessage by default
+    },
+    "chatContentRepeat": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "profile.chatContentRepeat.flagReason",
+            type: "chat_content_repeat"
+        },
+        notifyAdmins: {
+            message: "profile.chatContentRepeat.notifyMessage"
+        },
+        log: {
+            actionType: "detectedChatContentRepeat",
+            detailsPrefix: "Chat Content Repeat: ",
+            includeViolationDetails: true
+        }
+    },
+    "chatUnicodeAbuse": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "profile.chatUnicodeAbuse.flagReason",
+            type: "chat_unicode_abuse"
+        },
+        notifyAdmins: {
+            message: "profile.chatUnicodeAbuse.notifyMessage"
+        },
+        log: {
+            actionType: "detectedChatUnicodeAbuse",
+            detailsPrefix: "Unicode Abuse: ",
+            includeViolationDetails: true
+        }
+    },
+    "chatGibberish": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "profile.chatGibberish.flagReason",
+            type: "chat_gibberish"
+        },
+        notifyAdmins: {
+            message: "profile.chatGibberish.notifyMessage"
+        },
+        log: {
+            actionType: "detectedChatGibberish",
+            detailsPrefix: "Gibberish Chat: ",
+            includeViolationDetails: true
+        }
+    },
+    "chatExcessiveMentions": {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: "profile.chatExcessiveMentions.flagReason",
+            type: "chat_excessive_mentions"
+        },
+        notifyAdmins: {
+            message: "profile.chatExcessiveMentions.notifyMessage"
+        },
+        log: {
+            actionType: "detectedChatExcessiveMentions",
+            detailsPrefix: "Excessive Mentions: ",
+            includeViolationDetails: true
+        }
+    },
+    "chatImpersonationAttempt": {
+        enabled: true,
+        flag: {
+            increment: 2, // Slightly higher increment due to potential severity
+            reason: "profile.chatImpersonationAttempt.flagReason",
+            type: "chat_impersonation_attempt"
+        },
+        notifyAdmins: {
+            message: "profile.chatImpersonationAttempt.notifyMessage"
+        },
+        log: {
+            actionType: "detectedChatImpersonationAttempt",
+            detailsPrefix: "Impersonation Attempt: ",
+            includeViolationDetails: true
+        }
     },
     "playerSelfHurt": {
         enabled: true,

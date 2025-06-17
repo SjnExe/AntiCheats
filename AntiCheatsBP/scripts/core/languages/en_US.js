@@ -296,9 +296,9 @@ export const translations = {
         expired_targetNotified": "§cThe TPA request from \"{requesterName}\" has expired.",
     },
     profiles: { // Keys starting with "profile."
-        example_fly_hover: {
-            flagReason: "System detected Fly (Hover).",
-            notifyMessage: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}",
+        movementFlyHover: { // Key renamed from example_fly_hover
+            flagReason: "System detected Fly (Hover).", // Value preserved
+            notifyMessage: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}", // Value preserved
         },
         example_speed_ground: {
             flagReason: "System detected excessive ground speed.",
@@ -492,6 +492,16 @@ export const translations = {
             flagReason: "Sent a message with a high percentage of symbols.",
             notifyMessage: "Player {playerName} triggered symbol spam check. Message: {originalMessage}"
         },
+        "profile.chatContentRepeat.flagReason": "Repeated message content detected.",
+        "profile.chatContentRepeat.notifyMessage": "{playerName} flagged for Chat Content Repeat. Details: {detailsString}",
+        "profile.chatUnicodeAbuse.flagReason": "Unicode (e.g., Zalgo) abuse detected.",
+        "profile.chatUnicodeAbuse.notifyMessage": "{playerName} flagged for Unicode Abuse. Details: {detailsString}",
+        "profile.chatGibberish.flagReason": "Gibberish or unreadable message detected.",
+        "profile.chatGibberish.notifyMessage": "{playerName} flagged for Gibberish. Details: {detailsString}",
+        "profile.chatExcessiveMentions.flagReason": "Excessive user mentions in message.",
+        "profile.chatExcessiveMentions.notifyMessage": "{playerName} flagged for Excessive Mentions. Details: {detailsString}",
+        "profile.chatImpersonationAttempt.flagReason": "Attempt to impersonate server/staff message.",
+        "profile.chatImpersonationAttempt.notifyMessage": "{playerName} flagged for Impersonation Attempt. Details: {detailsString}",
         player_self_hurt: {
             flagReason: "System detected suspicious self-inflicted damage.",
             notifyMessage: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}",
