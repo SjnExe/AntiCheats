@@ -2,9 +2,10 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: General Code Cleanup (In Progress)
-*   Completed cleanup (empty lines, comments, obvious unused code) for Batch 1 (Core Chat Checks).
-*   Next: Proceed with Batch 2 (Core Manager files).
+## Current Focus: General Code Cleanup
+*   Starting general code cleanup from scratch.
+*   Goal: Remove unnecessary empty lines, comments, and unused code.
+*   Approach: Will be done in batches.
 
 ### High Priority / Next Up
 *No high priority tasks currently identified.*
