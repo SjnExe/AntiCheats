@@ -6,10 +6,6 @@ This document summarizes the current work-in-progress and pending tasks for the 
 *   Completed cleanup (empty lines, comments, obvious unused code) for Batch 1 (Core Chat Checks).
 *   Next: Proceed with Batch 2 (Core Manager files).
 
-## II. Full Pending Task List (Moved from todo.md)
-
-This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
-
 ### High Priority / Next Up
 *No high priority tasks currently identified.*
 
@@ -43,8 +39,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ### Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
-
-## III. Project-Wide Conventions / Refactoring
 
 ## IV. Recent User Feedback & Context for Future Work
 
