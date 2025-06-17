@@ -13,6 +13,15 @@ import { editableConfigValues, updateConfigValue } from '../config.js';
 import { getString } from './i18n.js';
 import { formatSessionDuration } from '../utils/playerUtils.js'; // Added import
 
+// Helper function to format dimension names
+function formatDimensionName(dimensionId) {
+    if (typeof dimensionId !== 'string') return "Unknown";
+    let name = dimensionId.replace("minecraft:", "");
+    name = name.replace(/_/g, " ");
+    name = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return name;
+}
+
 // Forward declarations
 let showAdminPanelMain;
 let showEditConfigForm;
@@ -114,7 +123,22 @@ async function showMyStats(player, dependencies) { // Signature changed
 
     const statsForm = new MessageFormData();
     statsForm.title(getString("ui.myStats.title")); // New key: "My Stats"
-    statsForm.body(getString("ui.myStats.body", { sessionPlaytime: sessionPlaytimeFormatted })); // New key: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+
+    // Get location and dimension
+    const location = player.location;
+    const locX = Math.floor(location.x);
+    const locY = Math.floor(location.y);
+    const locZ = Math.floor(location.z);
+    const dimensionId = player.dimension.id;
+    const friendlyDimensionName = formatDimensionName(dimensionId);
+
+    let bodyLines = [];
+    bodyLines.push(getString("ui.myStats.body", { sessionPlaytime: sessionPlaytimeFormatted }));
+    bodyLines.push(""); // For a blank line
+    bodyLines.push(getString("ui.myStats.labelLocation", { x: locX, y: locY, z: locZ }));
+    bodyLines.push(getString("ui.myStats.labelDimension", { dimensionName: friendlyDimensionName }));
+
+    statsForm.body(bodyLines.join('\n'));
     statsForm.button1(getString("common.button.back")); // New key: "Back"
 
     try {

@@ -74,6 +74,18 @@ This document lists significant tasks that have been completed.
     - Updated `uiManager.js` in the `showSystemInfo` function to correctly use `config.acVersion` for displaying the version.
     - The underlying mechanism to show the version was already partially present.
 
+## Packet Anomaly Detection - Research Phase (Session 2024-07-29)
+*   Researched common types of packet anomalies in Minecraft and their potential manifestations at the scripting API level.
+*   Assessed scripting API capabilities and limitations for detecting these anomalies by inference.
+*   Designed conceptual detection strategies for potentially feasible checks (e.g., Force Criticals, Blink/Short-Range Teleport).
+*   Documented detailed findings and proposals in `Dev/notes/PacketAnomalyResearch.md`.
+*   Updated `Dev/tasks/ongoing.md` to reflect completion of the chat violation tasks and the current focus on packet anomaly research.
+*   Investigated the feasibility of a 'Force Criticals Detection' check. Concluded that reliably identifying critical hits (especially melee) via the current scripting API is not feasible due to lack of explicit flags and complexity of damage-based inference. Recommended not to proceed with this specific check at this time, which was accepted.
+-   **Enhanced 'My Stats' Panel:** Added current coordinates (X, Y, Z) and dimension display to the `!panel` -> 'My Stats' UI for players.
+    - Modified `uiManager.js` (`showMyStats` function) to fetch and format this information.
+    - Added a `formatDimensionName` helper function in `uiManager.js`.
+    - Updated `en_US.js` with new i18n keys (`ui.myStats.labelLocation`, `ui.myStats.labelDimension`) and adjusted `ui.myStats.body`.
+
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 
 This large refactoring effort aimed to standardize `checkType` identifiers across the project to `camelCaseWithAcronyms` and resolve several related critical issues.

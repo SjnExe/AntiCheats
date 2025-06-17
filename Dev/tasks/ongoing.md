@@ -2,9 +2,9 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: UI Enhancement - Admin Panel AC Version (Completed)
-*   Verified and corrected display of AC Version in Admin Panel System Info.
-*   Next: Consider 'Packet Anomalies' or other major task categories.
+## Current Focus: Player Panel Enhancement - 'My Stats' (Completed)
+*   Added coordinates and dimension display to the 'My Stats' section of the player panel.
+*   Next: Select next major task category or specific task from the pending list.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
 
@@ -22,8 +22,8 @@ This list contains planned features, improvements, and areas for future investig
 ### Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   **Packet Anomalies:** (Investigate and implement detections)
-    *   **Further Chat Violations:** (Investigation and primary enhancements complete)
+    *   **Packet Anomalies:** (Research Phase on 'Force Criticals' complete; deemed not feasible. Other anomaly types like 'Blink Detection' were noted as high risk for false positives. Full research notes in `Dev/notes/PacketAnomalyResearch.md`. Re-evaluate if other specific anomaly detection strategies are viable.)
+    *   **Further Chat Violations:** [ALL PRIMARY ITEMS COMPLETED]
         *   [COMPLETED] Message Content Repetition/Flood Check (`checkChatContentRepeat`).
         *   [COMPLETED] Unicode Abuse Check (Zalgo/Excessive Diacritics) (`checkUnicodeAbuse`).
         *   [COMPLETED] Enhanced Swear Check (Obfuscation Resistance).
@@ -32,7 +32,6 @@ This list contains planned features, improvements, and areas for future investig
         *   [COMPLETED - V1] Excessive Mentions Check (per-message unique/repeat counts).
         *   [COMPLETED] Refined External Link Patterns (Enhanced `antiAdvertisingCheck.js` with Regex and Whitelisting).
         *   [COMPLETED - V1] Simple Impersonation (server/staff message patterns).
-        *   (No further specific chat sub-tasks identified from current review cycle).
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   **Enhanced Commands:**
@@ -47,7 +46,9 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **World Management & Protection:** SjnExe parity goal.
 
-*   **Normal Player Panel Features (`!panel`):**
+*   **Normal Player Panel Features (`!panel`):** SjnExe parity goal.
+    *   [COMPLETED] Added coordinates and dimension display to 'My Stats'.
+    *   (Further enhancements or specific SjnExe parity features for `!panel` can be listed here as they are identified).
 
 ### Low Priority / Ideas
 

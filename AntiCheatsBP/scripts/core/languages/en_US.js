@@ -516,7 +516,9 @@ export const translations = {
         },
         myStats: {
             title: "My Stats",
-            body: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+            body: "Session Playtime: {sessionPlaytime}",
+            labelLocation: "Location: X:{x}, Y:{y}, Z:{z}",
+            labelDimension: "Dimension: {dimensionName}",
         },
         serverRules: {
             title: "Server Rules",
