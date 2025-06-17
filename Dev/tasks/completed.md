@@ -2,12 +2,101 @@
 
 This document lists significant tasks that have been completed.
 
+## Global Configuration: Checks Disabled by Default (Session 2024-07-26)
+*   **Modified `AntiCheatsBP/scripts/core/automodConfig.js`**:
+    *   Set all boolean values in the `automodPerCheckTypeToggles` object to `false`. This ensures that AutoMod actions for all checks are disabled by default.
+*   **Modified `AntiCheatsBP/scripts/config.js`**:
+    *   Changed all `export const enable[CheckName]Check = true;` (and similar patterns like `enable...AntiGrief`, `enable...Detection`) constant declarations for specific cheat checks to `false`.
+    *   Added new toggles `enableChatContentRepeatCheck = false;` and `enableUnicodeAbuseCheck = false;` for recently implemented checks.
+    *   Ensured the master `enableAutoMod` flag is also `false` by default.
+    *   These changes ensure that individual checks and the AutoMod system's responses are off by default, requiring explicit configuration to enable them.
+
 ## AutoMod System Review and `checkType` Verification (Session 2024-07-26)
 -   **Verified `checkType` Case Consistency:** Confirmed that all check files use `camelCase` for `checkType`s passed to the action/AutoMod system, consistent with `automodConfig.js`. No code changes were needed for this.
 -   **Reviewed `automodConfig.js` Structure and Basic Logic:** Verified `reasonKey`s and `actionType`s. Corrected a rule precedence issue for `movementNetherRoof` (teleportSafe threshold adjusted). Noted that the `teleportSafe` actionType itself needs proper implementation in `automodManager.js`.
 -   **Identified and Add Rules for Uncovered Checks:** Confirmed that all `checkType`s from existing check files are already covered by rules in `automodConfig.js`. No new rules were needed for uncovered checks.
 -   **Evaluated Granularity for `flyCheck.js` and `speedCheck.js`:** Concluded that current `checkType` granularity is adequate for existing AutoMod functionality. Further granularity would be a new feature.
 -   **Implemented `teleportSafe` AutoMod Action:** Added the `teleportSafe` actionType to `automodManager.js` to handle teleporting players, including logic for finding a safe location. Also added required i18n strings (`automod.action.teleportDefaultReason`, `automod.adminNotify.details.teleport`) to `en_US.js`.
+-   **Cleaned up Orphaned `chatRepeatSpam` Strings:** Investigated the `automod.chat.repeatspam.*` localization strings. Confirmed they were orphaned due to prior refactoring. Removed the unused strings from `automodConfig.js` (`automodActionMessages`). The strings were not found in `en_US.js`, so no changes were needed there.
+-   **Implemented `chatContentRepeat` Check:** Added a new chat check (`checkChatContentRepeat.js`) to detect repeated message content. This includes:
+    - Logic to track chat history per player and flag if a message is repeated a configurable number of times.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatContentRepeat` checkType.
+    - New i18n strings in `en_US.js` for the new AutoMod messages.
+    - Exporting the new check from `checks/index.js`.
+-   **Implemented `chatUnicodeAbuse` Check:** Added a new chat check (`checkUnicodeAbuse.js`) to detect Unicode abuse (e.g., excessive diacritics). This includes:
+    - Logic to count diacritics and base characters, flagging based on ratio or absolute count.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatUnicodeAbuse` checkType.
+    - New i18n strings in `en_US.js` for the new AutoMod messages.
+    - Exporting the new check from `checks/index.js`.
+-   **Enhanced Swear Check for Obfuscation Resistance:** Modified `AntiCheatsBP/scripts/checks/chat/swearCheck.js` to improve detection of obfuscated swear words. This includes:
+    - Implementation of a word normalization function (lowercase, remove common separators, collapse character repetitions).
+    - Optional Leet speak conversion as part of normalization.
+    - Logic to match normalized input words against a pre-normalized swear word list.
+    - Placeholder for Levenshtein distance matching (functionality can be fully implemented later).
+    - Added new configuration flags (`enableSwearCheckNormalization`, `enableSwearCheckLeetSpeak`, `enableSwearCheckLevenshtein`, `swearCheckLevenshteinDistance`) to `config.js` and `editableConfigValues` to control these enhancements.
+    - Updated `violationDetails` to include more context about the match.
+-   **Reviewed Newline Spam Handling:** Investigated the existing `chatNewline` check and its associated configurations. Concluded that the current per-message detection, when combined with `flagOnNewline` (for AutoMod escalation) and/or `cancelMessageOnNewline` (for direct prevention), is largely sufficient for handling spam or floods that specifically use newline characters. No new check or significant enhancement for newline-specific floods was deemed immediately necessary.
+-   **Implemented `checkGibberish` Detection (V1):** Added an initial version of a chat check (`checkGibberish.js`) to detect gibberish or keyboard-mashed messages. This version focuses on:
+    - Analyzing vowel-to-consonant ratios within the alphabetic portion of messages.
+    - Detecting excessive consecutive consonants.
+    - Requiring a minimum alphabetic content ratio for the check to apply.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatGibberish` checkType.
+    - New i18n strings in `en_US.js`.
+    - New configuration options in `config.js` (e.g., `enableGibberishCheck`, thresholds), defaulted to `false`.
+    - Exporting the new check from `checks/index.js`.
+-   **Implemented `checkExcessiveMentions` Detection:** Added a new chat check (`checkExcessiveMentions.js`) to detect spamming via excessive user mentions in a single message. This includes:
+    - Logic to count total unique mentions and maximum repetitions of a single user mention.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatExcessiveMentions` checkType.
+    - New i18n strings in `en_US.js`.
+    - New configuration options in `config.js` (e.g., `enableExcessiveMentionsCheck`, thresholds), defaulted to `false`.
+    - Exporting the new check from `checks/index.js`.
+-   **Enhanced Anti-Advertising Check:** Modified `AntiCheatsBP/scripts/checks/chat/antiAdvertisingCheck.js` to improve link detection. This includes:
+    - Option for advanced regex-based link detection (`enableAdvancedLinkDetection` in `config.js`).
+    - A configurable list of regex patterns (`advancedLinkRegexList` in `config.js`) for matching various URL formats.
+    - A configurable whitelist (`advertisingWhitelistPatterns` in `config.js`) to prevent flagging specific domains/patterns.
+    - Fallback to existing simple pattern matching if advanced detection is disabled.
+    - Corrected `antiAdvertisingActionProfileName` in `config.js` to `chatAdvertisingDetected` (camelCase) for consistency with `automodConfig.js`.
+    - Updated `violationDetails` to include match method and pattern used.
+-   **Implemented `checkSimpleImpersonation` Detection (V1):** Added an initial version of a chat check (`checkSimpleImpersonation.js`) to detect players attempting to mimic server/staff announcements. This version includes:
+    - Logic to match messages against a configurable list of regex patterns for announcement formats.
+    - Exemption for players at or above a configurable permission level.
+    - Integration into `eventHandlers.js` (`handleBeforeChatSend`).
+    - New AutoMod rules, action messages, and toggle in `automodConfig.js` for the `chatImpersonationAttempt` checkType.
+    - New i18n strings in `en_US.js`.
+    - New configuration options in `config.js` (e.g., `enableSimpleImpersonationCheck`, patterns, exempt level), defaulted to `false`.
+    - Exporting the new check from `checks/index.js`.
+-   **Admin Panel UI Enhancement (AC Version):** Verified and corrected the display of the AntiCheat version in the Admin Panel's System Info section.
+    - Added the i18n string `ui.systemInfo.entry.acVersion` to `en_US.js`.
+    - Updated `uiManager.js` in the `showSystemInfo` function to correctly use `config.acVersion` for displaying the version.
+    - The underlying mechanism to show the version was already partially present.
+
+## Packet Anomaly Detection - Research Phase (Session 2024-07-29)
+*   Researched common types of packet anomalies in Minecraft and their potential manifestations at the scripting API level.
+*   Assessed scripting API capabilities and limitations for detecting these anomalies by inference.
+*   Designed conceptual detection strategies for potentially feasible checks (e.g., Force Criticals, Blink/Short-Range Teleport).
+*   Documented detailed findings and proposals in `Dev/notes/PacketAnomalyResearch.md`.
+*   Updated `Dev/tasks/ongoing.md` to reflect completion of the chat violation tasks and the current focus on packet anomaly research.
+*   Investigated the feasibility of a 'Force Criticals Detection' check. Concluded that reliably identifying critical hits (especially melee) via the current scripting API is not feasible due to lack of explicit flags and complexity of damage-based inference. Recommended not to proceed with this specific check at this time, which was accepted.
+-   **Enhanced 'My Stats' Panel:** Added current coordinates (X, Y, Z) and dimension display to the `!panel` -> 'My Stats' UI for players.
+    - Modified `uiManager.js` (`showMyStats` function) to fetch and format this information.
+    - Added a `formatDimensionName` helper function in `uiManager.js`.
+    - Updated `en_US.js` with new i18n keys (`ui.myStats.labelLocation`, `ui.myStats.labelDimension`) and adjusted `ui.myStats.body`.
+-   **Added `!listwatched` Admin Command:** Implemented a new chat command `!listwatched` (aliases: `!lw`, `!watchedlist`) for administrators.
+    - The command lists all currently online players who have the `isWatched` flag set to true in their player data.
+    - Added new command module `commands/listwatched.js`.
+    - Registered the command in `commands/commandRegistry.js`.
+    - Added i18n strings for command description and output messages to `en_US.js`.
+
+## Code Cleanup (Phase 1 - Batch 1: Chat Checks) (Session 2024-07-29)
+*   **Performed initial cleanup pass on core chat check files:**
+    *   Files reviewed: `checkChatContentRepeat.js`, `checkUnicodeAbuse.js`, `swearCheck.js`, `checkGibberish.js`, `checkExcessiveMentions.js`, `checkSimpleImpersonation.js`, `antiAdvertisingCheck.js`.
+    *   Removed unnecessary empty lines (leading/trailing, excessive consecutive lines).
+    *   Removed commented-out old code blocks and some unused import statements.
+    *   No obvious unused local variables or non-exported helper functions were identified for safe removal in this pass.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 
