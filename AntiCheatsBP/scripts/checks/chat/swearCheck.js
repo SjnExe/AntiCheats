@@ -66,38 +66,39 @@ function normalizeWordForSwearCheck(word, config) {
  *
  * @param {import('@minecraft/server').Player} player The player sending the message.
  * @param {PlayerAntiCheatData} pData Player-specific data from playerDataManager.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data. // eventData.message is the one to use
- * @param {Config} config The server configuration object.
- * @param {import('../../utils/playerUtils.js').PlayerUtils} playerUtils Utility functions.
- * @param {CommandDependencies} dependencies Full dependencies object.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {CommandDependencies} dependenciesFull Full dependencies object.
  * @returns {Promise<boolean>} True if a violation is detected and action taken, false otherwise.
  */
-export async function checkSwear(player, pData, eventData, config, playerUtils, dependencies) {
+export async function checkSwear(player, eventData, pData, dependenciesFull) { // Standardized signature
+    const { config, playerUtils, actionManager, playerDataManager } = dependenciesFull; // Destructure from dependenciesFull
+
     if (!config.enableSwearCheck) {
         return false;
     }
-    const originalMessage = eventData.message; // Use eventData.message as per type hint
+    const originalMessage = eventData.message;
     if (!config.swearWordList || config.swearWordList.length === 0) {
         playerUtils.debugLog?.(\`SwearCheck: Skipped for \${player.nameTag} as swearWordList is empty or undefined.\`, pData.isWatched ? player.nameTag : null);
         return false;
     }
-    // Pre-normalize the swear word list (can be cached in a real scenario if config doesn't change often)
+
     const normalizedSwearWordList = config.swearWordList
         .map(sw => ({
             original: sw,
-            normalized: normalizeWordForSwearCheck(sw, config)
+            normalized: normalizeWordForSwearCheck(sw, config) // Pass config from dependenciesFull
         }))
-        .filter(item => item.normalized.length > 0); // Filter out swear words that become empty after normalization
+        .filter(item => item.normalized.length > 0);
+
     if (normalizedSwearWordList.length === 0) {
         playerUtils.debugLog?.(\`SwearCheck: Skipped for \${player.nameTag} as normalizedSwearWordList is empty.\`, pData.isWatched ? player.nameTag : null);
         return false;
     }
 
     const wordsInMessage = originalMessage.split(/\s+/);
-    const actionProfileName = config.swearCheckActionProfileName || "chatSwearViolation"; // Default profile name
+    const actionProfileName = config.swearCheckActionProfileName || "chatSwearViolation";
     for (const wordInMessage of wordsInMessage) {
         if (wordInMessage.trim() === '') continue;
-        const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config);
+        const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config); // Pass config from dependenciesFull
         if (normalizedInputWord.length === 0) continue;
         for (const swearItem of normalizedSwearWordList) {
             let matchType = null;
@@ -127,18 +128,15 @@ export async function checkSwear(player, pData, eventData, config, playerUtils, 
                 };
                 playerUtils.debugLog?.(\`SwearCheck: \${player.nameTag} triggered swear check. Word: "\${wordInMessage}" (normalized: "\${normalizedInputWord}") matched "\${swearItem.original}" (normalized: "\${swearItem.normalized}") by \${matchType}. Distance: \${detectedDistance}\`, pData.isWatched ? player.nameTag : null);
 
-                // Ensure actionManager and executeCheckAction are available
-                if (dependencies && dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
-                     await dependencies.actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
+                if (actionManager && typeof actionManager.executeCheckAction === 'function') {
+                     await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependenciesFull);
                 } else {
                     playerUtils.debugLog?.("SwearCheck: actionManager.executeCheckAction is not available in dependencies.", null);
-                     if (dependencies && dependencies.playerDataManager && dependencies.playerDataManager.addFlag) {
-                         dependencies.playerDataManager.addFlag(player, actionProfileName, `Swear word detected: \${swearItem.original} (matched: \${wordInMessage})`);
+                     // Fallback to direct flagging if actionManager is not set up as expected in dependencies
+                     if (playerDataManager && playerDataManager.addFlag) {
+                         playerDataManager.addFlag(player, actionProfileName, `Swear word detected: \${swearItem.original} (matched: \${wordInMessage})`, violationDetails, dependenciesFull); // Pass full dependencies to addFlag
                      }
                 }
-                // Typically, a swear check profile might cancel the message.
-                // If executeCheckAction handles eventData.cancel based on profile, this return is fine.
-                // If not, and cancellation is desired, eventData.cancel = true would be needed here.
                 return true; // Violation detected and handled
             }
         }

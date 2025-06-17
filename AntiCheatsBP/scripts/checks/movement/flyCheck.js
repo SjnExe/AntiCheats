@@ -46,67 +46,56 @@ export async function checkFly(
     currentTick
 ) {
     const { config, playerUtils, executeCheckAction, ...restOfDependencies } = dependenciesFull;
-     // For executeCheckAction, we pass a slightly modified dependencies object that doesn't re-contain executeCheckAction itself
+    // For executeCheckAction, we pass a slightly modified dependencies object that doesn't re-contain executeCheckAction itself
     const actionDependencies = { config, playerUtils, ...restOfDependencies };
 
-
-    // Primary guard: if neither major check type is enabled, or pData is missing, exit.
     if ((!config.enableFlyCheck && !config.enableHighYVelocityCheck) || !pData) {
         return;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Update elytra state in pData if player is gliding
     if (player.isGliding) {
         pData.lastUsedElytraTick = currentTick;
-        pData.isDirtyForSave = true; // Mark dirty as a pData field changed
-        if (playerUtils && playerUtils.debugLog) {
+        pData.isDirtyForSave = true;
+        if (playerUtils?.debugLog) {
             playerUtils.debugLog(`FlyCheck: ${player.nameTag} is gliding. lastUsedElytraTick updated. Standard fly checks bypassed.`, watchedPrefix);
         }
-        return; // Bypass other fly/hover checks if gliding
+        return; // Bypass other fly/hover checks
     }
 
-    // Bypass checks if player is in a game mode that allows flight.
-    if (player.isFlying) { // Creative or Spectator mode flight
-        if (playerUtils && playerUtils.debugLog) {
+    if (player.isFlying) { // Creative or Spectator mode
+        if (playerUtils?.debugLog) {
             playerUtils.debugLog(`FlyCheck: ${player.nameTag} is legitimately flying (Creative/Spectator). Standard fly checks bypassed.`, watchedPrefix);
         }
         return;
     }
 
     // --- High Y-Velocity Check ---
-    // This check should run if enabled, regardless of the main enableFlyCheck for hover/sustained.
-    if (config.enableHighYVelocityCheck && !pData.hasLevitation) { // Don't run if levitating, as that's a specific upward force
+    if (config.enableHighYVelocityCheck && !pData.hasLevitation) { // Don't run if levitating
         const currentYVelocity = pData.velocity.y;
         const jumpBoostAmplifierValue = pData.jumpBoostAmplifier ?? 0;
-        const jumpBoostYVelocityBonusValue = config.jumpBoostYVelocityBonus ?? 0.0; // Example: 0.2 per level
+        const jumpBoostYVelocityBonusValue = config.jumpBoostYVelocityBonus ?? 0.0;
         const jumpBoostBonus = jumpBoostAmplifierValue * jumpBoostYVelocityBonusValue;
-        const baseYVelocityPositive = config.maxYVelocityPositive ?? 2.0; // Example: Max normal jump + some buffer
+        const baseYVelocityPositive = config.maxYVelocityPositive ?? 2.0;
         const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
 
-        if (pData.isWatched && playerUtils && playerUtils.debugLog) {
+        if (pData.isWatched && playerUtils?.debugLog) {
             playerUtils.debugLog(`FlyCheck ${player.nameTag}: BaseMaxYVel: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMaxYVel: ${effectiveMaxYVelocity.toFixed(3)}`, player.nameTag);
         }
 
-        // Grace conditions evaluation
         const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
         const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
-        // Add other grace conditions like Riptide, Slime Block if those pData fields are implemented:
-        // const ticksSinceLastRiptide = currentTick - (pData.lastUsedRiptideTick ?? -Infinity);
-        // const ticksSinceLastSlime = currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity);
 
-        const graceTicks = config.yVelocityGraceTicks ?? 10; // Default grace period
+        const graceTicks = config.yVelocityGraceTicks ?? 10;
         const underGraceCondition = (
             ticksSinceLastDamage <= graceTicks ||
             ticksSinceLastElytra <= graceTicks ||
-            // (currentTick - (pData.lastUsedRiptideTick ?? -Infinity)) <= graceTicks || // Example for future extension
-            // (currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity)) <= graceTicks || // Example for future extension
             player.isClimbing ||
             (pData.hasSlowFalling && currentYVelocity < 0)
         );
 
-        if (underGraceCondition && pData.isWatched && playerUtils && playerUtils.debugLog) {
+        if (underGraceCondition && pData.isWatched && playerUtils?.debugLog) {
             if (ticksSinceLastDamage <= graceTicks) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to recent damage (Ticks: ${ticksSinceLastDamage})`, player.nameTag);
             if (ticksSinceLastElytra <= graceTicks) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to recent elytra use (Ticks: ${ticksSinceLastElytra})`, player.nameTag);
             if (player.isClimbing) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to climbing.`, player.nameTag);
@@ -118,7 +107,7 @@ export async function checkFly(
                 yVelocity: currentYVelocity.toFixed(3),
                 effectiveMaxYVelocity: effectiveMaxYVelocity.toFixed(3),
                 jumpBoostLevel: pData.jumpBoostAmplifier ?? 0,
-                onGround: player.isOnGround.toString(), // Consistent string conversion
+                onGround: player.isOnGround.toString(),
                 gracePeriodActive: underGraceCondition.toString(),
                 ticksSinceDamage: ticksSinceLastDamage > graceTicks ? "N/A" : ticksSinceLastDamage.toString(),
                 ticksSinceElytra: ticksSinceLastElytra > graceTicks ? "N/A" : ticksSinceLastElytra.toString(),

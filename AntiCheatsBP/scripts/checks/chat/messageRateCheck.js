@@ -25,30 +25,27 @@ import * as mc from '@minecraft/server';
  * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
  * @param {PlayerDataManager} playerDataManager - Manager for player data.
  * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick (not directly used in this check but part of standard signature).
+ * @param {CommandDependencies} dependencies - The full dependencies object.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the message should be cancelled due to spam, `false` otherwise.
  */
 export async function checkMessageRate(
     player,
+    eventData, // eventData is now the second parameter
     pData,
-    eventData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick // currentTick is not used here but kept for consistent check signature
+    dependencies
 ) {
+    const { config, playerUtils, playerDataManager, logManager, actionManager } = dependencies;
+
     if (!config.enableFastMessageSpamCheck) {
-        return false; // Check is disabled, so message should not be cancelled by it.
+        return false; // Check is disabled.
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
-    // Use nullish coalescing for robust default values, in case config values could be 0 or false.
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
     const actionProfileName = config.fastMessageSPAMActionProfileName ?? "chatSpamFastMessage";
+    // Action profile is typically fetched within executeCheckAction or actionManager itself.
+    // If needed directly for `cancelMessage` logic before calling executeCheckAction:
     const actionProfile = config.checkActionProfiles?.[actionProfileName];
 
     let shouldCancel = false;
@@ -57,22 +54,27 @@ export async function checkMessageRate(
         const timeSinceLastMsgMs = currentTime - pData.lastChatMessageTimestamp;
 
         if (timeSinceLastMsgMs < threshold) {
-            if (playerUtils.debugLog) { // Ensure debugLog exists before calling
+            if (playerUtils.debugLog) {
                 playerUtils.debugLog(`MessageRateCheck: ${player.nameTag} sent message too fast. Diff: ${timeSinceLastMsgMs}ms, Threshold: ${threshold}ms`, watchedPrefix);
             }
 
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
-                messageContent: eventData.message // Include message content for context in logs/notifications
+                messageContent: eventData.message
             };
-            // Construct dependencies for executeCheckAction consistently
-            const dependencies = { config, playerDataManager, playerUtils, logManager };
-            await executeCheckAction(player, actionProfileName, violationDetails, dependencies);
+            // Pass the main dependencies object to executeCheckAction
+            await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
-            if (actionProfile?.cancelMessage) {
+            // Check if the action profile (fetched from config or determined by actionManager) resulted in cancellation.
+            // This assumes executeCheckAction might modify eventData.cancel or the profile dictates cancellation.
+            // For explicit control here, we check the profile.
+            if (actionProfile?.cancelMessage) { // This logic might be redundant if executeCheckAction handles cancellation
                 shouldCancel = true;
             }
+            // If executeCheckAction directly modifies eventData.cancel, then this `shouldCancel` variable might not be needed,
+            // and the function could simply not return a boolean, relying on eventData.cancel being set by the action.
+            // However, sticking to the requirement of returning boolean for now.
         }
     }
 

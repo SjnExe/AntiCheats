@@ -2,13 +2,11 @@
 import { checkActionProfiles } from '../core/actionProfiles.js';
 import { automodConfig as importedAutoModConfig } from '../core/automodConfig.js';
 
-// Settings migrated from userSettings.js
-
 // General Admin & System
 /** @type {string} The tag for identifying admin players. */
 export const adminTag = "admin";
 /** @type {string} The exact name of the server owner. Required for owner-level commands/features. */
-export const ownerPlayerName = "PlayerNameHere"; // TODO: Replace with actual owner name
+export const ownerPlayerName = "PlayerNameHere";
 /** @type {boolean} If true, enables detailed debug logging to console. */
 export const enableDebugLogging = true;
 /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
@@ -131,7 +129,7 @@ export const enableTntAntiGrief = false;
 /** @type {boolean} If true, admins (identified by `adminTag`) can place TNT without restriction. */
 export const allowAdminTntPlacement = true;
 /** @type {string} Action to take when unauthorized TNT placement is detected ("remove", "warn", "flag_only"). */
-export const tntPlacementAction = "remove"; // This was not in userSettings, but related to AntiGrief
+export const tntPlacementAction = "remove";
 
 // AntiGrief - Wither
 /** @type {boolean} If true, enables anti-grief measures for Wither spawning. */
@@ -147,7 +145,7 @@ export const enableFireAntiGrief = false;
 /** @type {boolean} If true, admins can create fire without restriction. */
 export const allowAdminFire = true;
 /** @type {string} Action for unauthorized fire ("extinguish", "warn", "flag_only"). */
-export const fireControlAction = "extinguish"; // This was not in userSettings, but related
+export const fireControlAction = "extinguish";
 
 // AntiGrief - Lava
 /** @type {boolean} If true, enables anti-grief measures for lava placement. */
@@ -544,17 +542,8 @@ export const bannedItemsUse = [];
 
 // --- Chat Checks ---
 
-/** @type {boolean} If true, enables the Swear Word detection check. */
-export const enableSwearCheck = false; // Disabled by default as per user request
-
-/** @type {string[]} List of swear words to detect (case-insensitive, whole word). Empty by default. */
-export const swearWordList = [];
-
 /** @type {string} The action profile name for swear word violations. */
 export const swearCheckActionProfileName = "chat_swear_violation";
-
-/** @type {string} Duration for the mute applied on swear word detection. */
-export const swearCheckMuteDuration = "30s";
 
 /** @type {boolean} If true, the Fast Message Spam check is active. */
 export const enableFastMessageSpamCheck = true;
@@ -720,16 +709,6 @@ export const fastPlaceTimeWindowMs = 1000; // 1 second
 /** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
 export const fastPlaceMaxBlocksInWindow = 10;
 
-// --- X-Ray Detection ---
-/** @type {boolean} If true, enables admin notifications for mining of valuable ores (as defined in `xrayDetectionMonitoredOres`). */
-export const xrayDetectionNotifyOnOreMineEnabled = true;
-/** @type {string[]} List of block type IDs to monitor for X-Ray mining notifications. */
-export const xrayDetectionMonitoredOres = [
-    "minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"
-];
-/** @type {boolean} If true, admins (users with `adminTag`) will receive X-Ray mining notifications by default, unless they explicitly disable them. */
-export const xrayDetectionAdminNotifyByDefault = true;
-
 // --- Combat Log Detection ---
 /** @type {boolean} If true, enables detection of players leaving the game shortly after engaging in combat. */
 export const acGlobalNotificationsDefaultOn = true;
@@ -758,12 +737,6 @@ export const defaultDeathEffect = {
     }
 };
 
-// --- TPA System Settings ---
-/**
- * @type {boolean}
- * Enable or disable the player TPA (teleport request) system.
- * If false, TPA commands will not be usable.
- */
 // Anti-Grief Settings
 /** @type {number} Radius for the density check cube (e.g., 1 means 3x3x3 cube). */
 export const blockSpamDensityCheckRadius = 1;
@@ -778,8 +751,7 @@ export const enableInvalidRenderDistanceCheck = true;
 /** @type {number} Maximum allowed client-reported render distance in chunks. */
 export const maxAllowedClientRenderDistance = 64;
 
-// --- World Border System --- (Already existing section, adding more to it)
-/** @type {boolean} Master switch for the entire World Border feature. */
+// --- World Border System ---
 // --- Chat Behavior Checks ---
 /** @type {boolean} If true, the Chat During Combat check is active. */
 export const enableChatDuringCombatCheck = true;
@@ -794,7 +766,6 @@ export const enableChatDuringItemUseCheck = true;
 /**
  * @type {string}
  * The current version of the AntiCheat system.
- * (This might be updated by a build process or during packaging).
  */
 export const acVersion = "v__VERSION_STRING__";
 
@@ -829,9 +800,6 @@ export const acVersion = "v__VERSION_STRING__";
 // However, since `editableConfigValues` is the main export for runtime values,
 // we will just assign the imported `automodConfig` to a key within it.
 
-// Placeholder for where automodConfig was, to be clear it's removed from here.
-// export const automodConfig = { /* ...definition moved... */ };
-
 // --- Command Aliases ---
 /**
  * @type {Object.<string, string>}
@@ -853,11 +821,8 @@ export const commandAliases = {
  * Use `updateConfigValue(key, newValue)` to modify these values safely.
  */
 export let editableConfigValues = {
-    // ...userSettings, // REMOVED SPREAD
     commandSettings: commandSettings,
     serverRules: serverRules,
-
-    // Properties from former userSettings, now defined as constants above
     adminTag: adminTag,
     ownerPlayerName: ownerPlayerName,
     enableDebugLogging: enableDebugLogging,
@@ -966,8 +931,6 @@ export let editableConfigValues = {
     chatFormatMemberPrefixColor: chatFormatMemberPrefixColor,
     chatFormatMemberNameColor: chatFormatMemberNameColor,
     chatFormatMemberMessageColor: chatFormatMemberMessageColor,
-
-    // Settings previously defined directly in config.js and still part of editableConfigValues:
     enableAutoMod,
     enableReachCheck,
     enableCPSCheck,
@@ -1077,19 +1040,16 @@ export let editableConfigValues = {
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
     acGlobalNotificationsDefaultOn,
-    enableDeathEffects, // This was in user_settings.js, but defaultDeathEffect is not, so keeping enableDeathEffects here too for the object below.
-    deathEffectParticleName, // This was in user_settings.js, but defaultDeathEffect is not.
-    deathEffectSoundId, // This was in user_settings.js, but defaultDeathEffect is not.
+    enableDeathEffects,
+    deathEffectParticleName,
+    deathEffectSoundId,
     defaultDeathEffect,
-    // AntiGrief specific settings not in user_settings.js
     maxPlayerStartedFires,
     fireSpreadDurationLimit,
-    blockSpamDensityCheckRadius, // This was NOT in user_settings.js
-    blockSpamDensityTimeWindowTicks, // This was NOT in user_settings.js
-    blockSpamDensityThresholdPercentage, // This was NOT in user_settings.js
-    // Client Behavior Checks not in user_settings.js
+    blockSpamDensityCheckRadius,
+    blockSpamDensityTimeWindowTicks,
+    blockSpamDensityThresholdPercentage,
     maxAllowedClientRenderDistance,
-    // Chat Behavior Checks not in user_settings.js
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
@@ -1107,11 +1067,8 @@ export let editableConfigValues = {
     mentionsMaxUniquePerMessage,
     mentionsMaxRepeatedPerMessage,
     mentionsActionProfileName,
-    // Swear Check specific (action profile name is advanced)
-    swearCheckActionProfileName, // swearCheckMuteDuration is in user_settings
-    // AutoMod Configuration (complex object, now imported)
+    swearCheckActionProfileName,
     automodConfig: importedAutoModConfig,
-    // Imported Action Profiles
     checkActionProfiles,
 };
 

@@ -5,7 +5,6 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-// Corrected import path for config, assuming config.js is at AntiCheatsBP/scripts/config.js
 import { editableConfigValues } from '../config.js'; // Import editableConfigValues
 import { permissionLevels } from '../core/rankManager.js';
 
@@ -40,7 +39,6 @@ export function isOwner(playerName) {
 export function getPlayerPermissionLevel(player) {
     if (!(player instanceof mc.Player)) {
         console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
-        // Fallback to the lowest permission level if player object is not valid.
         return permissionLevels.normal;
     }
 
@@ -182,9 +180,6 @@ export function debugLog(message, contextPlayerNameIfWatched = null) {
 export function findPlayer(playerName) {
     if (!playerName || typeof playerName !== 'string') return null;
     const nameToFind = playerName.toLowerCase();
-    // world.getAllPlayers() is preferable to world.getPlayers() if available and suitable,
-    // as getPlayers() often requires EntityQueryOptions.
-    // Assuming getAllPlayers() is the modern standard.
     return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
 
@@ -196,8 +191,8 @@ export function findPlayer(playerName) {
  *                                     or `null` if the format is invalid.
  */
 export function parseDuration(durationString) {
-    if (!durationString || typeof durationString !== 'string') return null; // Added type check
-    const lowerDurationString = durationString.toLowerCase(); // Use a new var for lowercase
+    if (!durationString || typeof durationString !== 'string') return null;
+    const lowerDurationString = durationString.toLowerCase();
     if (lowerDurationString === "perm" || lowerDurationString === "permanent") return Infinity;
 
     const regex = /^(\d+)([smhd])$/;
@@ -212,11 +207,11 @@ export function parseDuration(durationString) {
             case 'h': return value * 60 * 60 * 1000;
             case 'd': return value * 24 * 60 * 60 * 1000;
         }
-    } else if (/^\d+$/.test(lowerDurationString)) { // If only a number
+    } else if (/^\d+$/.test(lowerDurationString)) {
         const value = parseInt(lowerDurationString);
         if (!isNaN(value)) return value * 60 * 1000; // Assume minutes
     }
-    return null; // Invalid format
+    return null;
 }
 
 /**

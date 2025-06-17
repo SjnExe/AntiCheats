@@ -4,16 +4,11 @@
  * It dynamically loads command modules and handles permission checking and alias resolution.
  * @version 1.1.0
  */
-import * as mc from '@minecraft/server';
-import * as configModule from '../config.js'; // Import the entire config module
-import { permissionLevels } from './rankManager.js';
-import { getPlayerPermissionLevel, findPlayer, parseDuration } from '../utils/playerUtils.js';
-import { addLog } from './logManager.js';
-import * as reportManager from './reportManager.js';
-import { ActionFormData, MessageFormData, ModalFormData } from '@minecraft/server-ui';
-// ItemComponentTypes is not directly used in this file, consider removing if not needed by commands via dependencies.
-// For now, keeping it as it might be part of the `dependencies` object passed to commands.
-import { ItemComponentTypes } from '@minecraft/server';
+import * as mc from '@minecraft/server'; // mc is used for e.g. world, system. Commands also get it via dependencies.
+// Imports for permissionLevels, specific UI modules, reportManager, ItemComponentTypes, addLog, and configModule
+// are removed as they are now expected to be part of the 'dependencies' object passed to handleChatCommand.
+// findPlayer and parseDuration are not used in this file; commands can import them from playerUtils if needed.
+import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // getPlayerPermissionLevel still used directly
 
 // Import command modules from the commandRegistry
 import { commandModules } from '../commands/commandRegistry.js';
@@ -54,13 +49,12 @@ if (commandModules && Array.isArray(commandModules)) {
  * It parses the message, checks for command validity and permissions, and then executes the command.
  * Also logs admin command usage to the console.
  * @param {mc.ChatSendBeforeEvent} eventData - The chat send event data.
- * @param {import('./playerDataManager.js')} playerDataManager - Manager for player data operations.
- * @param {import('./uiManager.js')} uiManager - Manager for UI forms.
- * @param {import('../config.js').editableConfigValues} config - The server configuration object.
- * @param {import('../utils/playerUtils.js')} playerUtils - Utility functions for player interactions.
+ * @param {object} dependencies - The comprehensive dependencies object passed from main.js, providing access to various managers, utilities, and configurations.
  */
-export async function handleChatCommand(eventData, playerDataManager, uiManager, config, playerUtils) {
+export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels: importedPermissionLevels } = dependencies; // Destructure needed parts for local use
+
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     let commandNameInput = args.shift()?.toLowerCase();
 
@@ -105,7 +99,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         return;
     }
 
-    const userPermissionLevel = getPlayerPermissionLevel(player);
+    const userPermissionLevel = getPlayerPermissionLevel(player); // Uses global getPlayerPermissionLevel
     if (userPermissionLevel > commandDef.permissionLevel) {
         playerUtils.warnPlayer(player, "You do not have permission to use this command.");
         if (playerUtils.debugLog) {
@@ -118,7 +112,8 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
     eventData.cancel = true;
 
     // Log admin command usage
-    if (userPermissionLevel <= permissionLevels.admin) {
+    // importedPermissionLevels is from dependencies
+    if (userPermissionLevel <= importedPermissionLevels.admin) {
         const timestamp = new Date().toISOString();
         // 'message' from eventData contains the raw command string including prefix.
         console.warn(`[AdminCommandLog] ${timestamp} - Player: ${player.name} - Command: ${message}`);
@@ -130,25 +125,12 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, player.nameTag);
     }
 
-    const dependencies = {
-        mc,
-        playerDataManager,
-        uiManager,
-        config, // This is editableConfigValues
-        configModule: configModule, // Add the full config module
-        playerUtils,
-        logManager,
-        permissionLevels,
-        ActionFormData,
-        MessageFormData,
-        ModalFormData,
-        reportManager,
-        allCommands: Array.from(commandDefinitionMap.values()),
-        commandDefinitionMap,
-        ItemComponentTypes
-    };
+    // The `dependencies` object received from main.js is passed directly to commandExecute
+    // It should already contain everything needed by commands, including mc, uiManager, specific config values etc.
+    // And also specific command-related items like commandDefinitionMap, allCommands (if added in main.js)
 
     try {
+        // Pass the comprehensive dependencies object directly to the command
         await commandExecute(player, args, dependencies);
         if (playerUtils.debugLog) {
             playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, senderPDataForLog?.isWatched ? player.nameTag : null);
@@ -159,7 +141,7 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
         if (playerUtils.debugLog) {
             playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error}`, null); // Context already known
         }
-        // Optionally, log to logManager as well
-        addLog('commandError', `Cmd: ${finalCommandName}, Player: ${player.nameTag}, Args: [${args.join(', ')}], Error: ${error.message}`);
+        // Use logManager from the destructured dependencies
+        logManager.addLog('command_execution_error', `Cmd: ${finalCommandName}, Player: ${player.nameTag}, Args: [${args.join(', ')}], Error: ${error.message}`);
     }
 }
