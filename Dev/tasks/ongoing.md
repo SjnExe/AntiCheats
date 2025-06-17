@@ -2,19 +2,10 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: General Code Cleanup (In Progress)
-*   Completed cleanup (empty lines, comments, obvious unused code) for Batch 1 (Core Chat Checks).
-*   Next: Proceed with Batch 2 (Core Manager files).
-
-## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
-
-*   - Coding style review and corrections for core files completed (including `i18n.js` constant rename, `camelCase` for log `actionType`s in `eventHandlers.js` & `uiManager.js`, `logManager.js` JSDoc update, `reportManager.js` logging refactor). Details moved to `completed.md`.
-*   - Reviewed all files in `AntiCheatsBP/scripts/checks/` subdirectories for style compliance.
-*   - Further review indicates that `checkType` identifiers used by the AutoMod system (originating from `executeCheckAction` calls in check files) are consistently `camelCase`, aligning with `automodConfig.js`. The previous note regarding `snake_case` might have referred to a different internal context or was outdated.
-
-## II. Full Pending Task List (Moved from todo.md)
-
-This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
+## Current Focus: General Code Cleanup
+*   Starting general code cleanup from scratch.
+*   Goal: Remove unnecessary empty lines, comments, and unused code.
+*   Approach: Will be done in batches.
 
 ### High Priority / Next Up
 *No high priority tasks currently identified.*
@@ -22,18 +13,14 @@ This list contains planned features, improvements, and areas for future investig
 ### Medium Priority
 
 *   **Advanced Cheat Detections:**
-    *   **Packet Anomalies:** (Research Phase on 'Force Criticals' complete; deemed not feasible. Other anomaly types like 'Blink Detection' were noted as high risk for false positives. Full research notes in `Dev/notes/PacketAnomalyResearch.md`. Re-evaluate if other specific anomaly detection strategies are viable.)
-    *   **Further Chat Violations:** [ALL PRIMARY ITEMS COMPLETED]
+    *   **Packet Anomalies:** (Research Phase complete; 'Force Criticals' deemed not feasible. Full research notes in `Dev/notes/PacketAnomalyResearch.md`. Re-evaluate if other specific anomaly detection strategies are viable.)
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
     *   (Further enhancements or specific SjnExe parity features for Admin Tools can be listed here as they are identified).
     *   **Enhanced Commands:**
-        *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, gradual resize, pause/resume, interpolation methods, per-dimension static particle types, alternating particle sequence, and pulsing density effects are complete. `!wb remove` now requires confirmation). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
-            *   - Advanced dynamic particle effects (e.g., color/scale changes via custom particle JSONs) investigated; deferred for now.
-            *   - (Consider more complex shape support - if still relevant beyond square/circle).
+        *   `!worldborder` Enhancements: (Initial features complete. Further enhancements to consider, see `Dev/notes/WorldBorderDesign.md`):
     *   **UI Enhancements (Admin Panel Concept):** SjnExe parity goal.
         *   *(Existing: Base UI with Inspect, Reset Flags, List Watched, Player Actions, Server Management, Config Editor)*
-        *   - Added Server Tick & World Time to System Info panel - Implemented.
     *   **System Features:** SjnExe parity goal.
 
 *   **World Management & Protection:** SjnExe parity goal.
@@ -45,18 +32,10 @@ This list contains planned features, improvements, and areas for future investig
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
 
-### AutoMod Enhancements
-*(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*
-
-### Chat Moderation Features
-*(Tasks related to chat content filtering, spam control, etc.)*
-
 ### Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
 
-## III. Project-Wide Conventions / Refactoring
-
-## IV. Recent User Feedback & Context for Future Work
+## Recent User Feedback & Context for Future Work
 
 *   **UI Command Design:** For future UI-based commands (e.g., a potential `!admin` command or enhancements to `!panel`), design them to be accessible by various permission levels, showing different information/buttons contextually (similar to the recent `!panel` refactor for player vs. admin views).
 *   **Development Workflow:** Continue applying cleanup and refactoring "in batches" where appropriate.
