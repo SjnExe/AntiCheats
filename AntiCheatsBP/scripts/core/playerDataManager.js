@@ -747,3 +747,5 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
 
     logFunction(`Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, playerContext);
 }
+
+[end of AntiCheatsBP/scripts/core/playerDataManager.js]

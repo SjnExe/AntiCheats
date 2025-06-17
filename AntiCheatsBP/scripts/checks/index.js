@@ -45,3 +45,8 @@ export * from './chat/antiAdvertisingCheck.js';
 export * from './chat/capsAbuseCheck.js';
 export * from './chat/charRepeatCheck.js';
 export * from './chat/symbolSpamCheck.js';
+export * from './chat/checkChatContentRepeat.js';
+export * from './chat/checkUnicodeAbuse.js';
+export * from './chat/checkGibberish.js';
+export * from './chat/checkExcessiveMentions.js';
+export * from './chat/checkSimpleImpersonation.js';

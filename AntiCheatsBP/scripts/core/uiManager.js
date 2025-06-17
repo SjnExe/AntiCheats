@@ -13,6 +13,15 @@ import { editableConfigValues, updateConfigValue } from '../config.js';
 import { getString } from './i18n.js';
 import { formatSessionDuration } from '../utils/playerUtils.js'; // Added import
 
+// Helper function to format dimension names
+function formatDimensionName(dimensionId) {
+    if (typeof dimensionId !== 'string') return "Unknown";
+    let name = dimensionId.replace("minecraft:", "");
+    name = name.replace(/_/g, " ");
+    name = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return name;
+}
+
 // Forward declarations
 let showAdminPanelMain;
 let showEditConfigForm;
@@ -114,7 +123,22 @@ async function showMyStats(player, dependencies) { // Signature changed
 
     const statsForm = new MessageFormData();
     statsForm.title(getString("ui.myStats.title")); // New key: "My Stats"
-    statsForm.body(getString("ui.myStats.body", { sessionPlaytime: sessionPlaytimeFormatted })); // New key: "Session Playtime: {sessionPlaytime}\n\nMore stats coming soon!"
+
+    // Get location and dimension
+    const location = player.location;
+    const locX = Math.floor(location.x);
+    const locY = Math.floor(location.y);
+    const locZ = Math.floor(location.z);
+    const dimensionId = player.dimension.id;
+    const friendlyDimensionName = formatDimensionName(dimensionId);
+
+    let bodyLines = [];
+    bodyLines.push(getString("ui.myStats.body", { sessionPlaytime: sessionPlaytimeFormatted }));
+    bodyLines.push(""); // For a blank line
+    bodyLines.push(getString("ui.myStats.labelLocation", { x: locX, y: locY, z: locZ }));
+    bodyLines.push(getString("ui.myStats.labelDimension", { dimensionName: friendlyDimensionName }));
+
+    statsForm.body(bodyLines.join('\n'));
     statsForm.button1(getString("common.button.back")); // New key: "Back"
 
     try {
@@ -547,9 +571,9 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
 export { showAdminPanelMain };
 
 showSystemInfo = async function (adminPlayer, config, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager: depLogManager, reportManager, configModule } = dependencies;
+    const { playerUtils: depPlayerUtils, logManager: depLogManager, reportManager } = dependencies; // Removed configModule from destructuring
     depPlayerUtils.debugLog(`UI: System Info requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
-    const { version } = configModule; // Get version from main config module
+    // const { version } = configModule; // REMOVED - version will come from config.acVersion
     const onlinePlayers = mc.world.getAllPlayers();
     const pDataEntries = playerDataManager.getAllPlayerDataEntries ? playerDataManager.getAllPlayerDataEntries().length : getString("common.value.notApplicable");
     const watchedPlayersCount = onlinePlayers.filter(p => playerDataManager.getPlayerData(p.id)?.isWatched).length;
@@ -576,7 +600,7 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
     const form = new MessageFormData()
         .title(getString("ui.systemInfo.title"))
         .body(
-            `${getString("ui.systemInfo.entry.acVersion", { version: version })}\n` +
+            `${getString("ui.systemInfo.entry.acVersion", { version: config.acVersion || "N/A" })}\n` +
             `${getString("ui.systemInfo.entry.mcVersion", { version: mc.game.version })}\n` +
             `${getString("ui.systemInfo.entry.serverTime", { time: new Date().toLocaleTimeString() })}\n` +
             `${getString("ui.systemInfo.label.currentTick")}§r §e${mc.system.currentTick}\n` +
@@ -926,9 +950,9 @@ showActionLogsForm = async function (adminPlayer, config, playerDataManager, dep
                 adminNameOrPlayer: logEntry.adminName || logEntry.playerName || 'SYSTEM',
                 actionType: logEntry.actionType,
                 targetNameOrEmpty: logEntry.targetName || '',
-                duration: logEntry.duration ? `${getString("ui.actionLogs.logEntry.durationPrefix")}${logEntry.duration}${getString("ui.actionLogs.logEntry.suffix")}` : "",
-                reason: logEntry.reason ? `${getString("ui.actionLogs.logEntry.reasonPrefix")}${logEntry.reason}${getString("ui.actionLogs.logEntry.suffix")}` : "",
-                details: logEntry.details ? `${getString("ui.actionLogs.logEntry.detailsPrefix")}${logEntry.details}${getString("ui.actionLogs.logEntry.suffix")}` : ""
+                duration: logEntry.duration ? `${getString("ui.actionLogs.logEntry.durationPrefix")}${log.duration}${getString("ui.actionLogs.logEntry.suffix")}` : "",
+                reason: logEntry.reason ? `${getString("ui.actionLogs.logEntry.reasonPrefix")}${log.reason}${getString("ui.actionLogs.logEntry.suffix")}` : "",
+                details: logEntry.details ? `${getString("ui.actionLogs.logEntry.detailsPrefix")}${log.details}${getString("ui.actionLogs.logEntry.suffix")}` : ""
             }).replace(/\s+\(\s*\)/g, '');
         }).join("\n");
 
@@ -1030,3 +1054,5 @@ showDetailedFlagsForm = async function(adminPlayer, targetPlayer, playerDataMana
     await form.show(adminPlayer).catch(e => depPlayerUtils.debugLog(`Error showing detailed flags: ${e.stack || e}`, adminPlayer.nameTag));
     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); // Navigate back
 };
+
+[end of AntiCheatsBP/scripts/core/uiManager.js]

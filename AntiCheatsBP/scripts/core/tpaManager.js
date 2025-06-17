@@ -29,6 +29,10 @@ const activeRequests = new Map();
 const lastPlayerRequestTimestamp = new Map();
 const playerTpaStatuses = new Map();
 
+/**
+ * Generates a new unique ID for a TPA request.
+ * @returns {string} A UUID string.
+ */
 function generateRequestId() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
         const r = Math.random() * 16 | 0;

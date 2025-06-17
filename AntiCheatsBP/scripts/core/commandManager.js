@@ -160,6 +160,6 @@ export async function handleChatCommand(eventData, playerDataManager, uiManager,
             playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error}`, null); // Context already known
         }
         // Optionally, log to logManager as well
-        addLog('command_error', `Cmd: ${finalCommandName}, Player: ${player.nameTag}, Args: [${args.join(', ')}], Error: ${error.message}`);
+        addLog('commandError', `Cmd: ${finalCommandName}, Player: ${player.nameTag}, Args: [${args.join(', ')}], Error: ${error.message}`);
     }
 }

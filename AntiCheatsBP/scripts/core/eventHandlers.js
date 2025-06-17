@@ -514,7 +514,7 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
  */
 export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     const { checks, config } = dependencies;
-    const { player, brokenBlockPermutation, brokenBlockType, itemStackAfterBreak } = eventData; // itemStackAfterBreak is the tool
+    const { player, brokenBlockType, itemStackAfterBreak } = eventData; // itemStackAfterBreak is the tool
 
     if (!player || !brokenBlockType) return;
 
@@ -790,6 +790,37 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         if (eventData.cancel) return;
     }
 
+    // Chat Content Repeat Check
+    if (!eventData.cancel && checks?.checkChatContentRepeat && config.enableChatContentRepeatCheck) {
+        // Assuming checkChatContentRepeat does not directly cancel, but flags for AutoMod
+        await checks.checkChatContentRepeat(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkChatContentRepeat can set it.
+    }
+
+    // Unicode Abuse Check
+    if (!eventData.cancel && checks?.checkUnicodeAbuse && config.enableUnicodeAbuseCheck) {
+        await checks.checkUnicodeAbuse(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkUnicodeAbuse can set it.
+    }
+
+    // Gibberish Check
+    if (!eventData.cancel && checks?.checkGibberish && config.enableGibberishCheck) {
+        await checks.checkGibberish(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkGibberish can set it.
+    }
+
+    // Excessive Mentions Check
+    if (!eventData.cancel && checks?.checkExcessiveMentions && config.enableExcessiveMentionsCheck) {
+        await checks.checkExcessiveMentions(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkExcessiveMentions can set it.
+    }
+
+    // Simple Impersonation Check
+    if (!eventData.cancel && checks?.checkSimpleImpersonation && config.enableSimpleImpersonationCheck) {
+        await checks.checkSimpleImpersonation(player, pData, originalMessage, dependencies);
+        // No immediate 'if (eventData.cancel) return;' unless checkSimpleImpersonation can set it.
+    }
+
     // Newline Check (Adding flag logic here)
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
@@ -902,3 +933,5 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     }
 }
 
+
+[end of AntiCheatsBP/scripts/core/eventHandlers.js]

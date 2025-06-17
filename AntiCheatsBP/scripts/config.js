@@ -84,7 +84,19 @@ export const enableAntiAdvertisingCheck = true;
 /** @type {string[]} List of string patterns to detect potential advertisements. */
 export const antiAdvertisingPatterns = ["http://", "https://", "www.", ".com", ".net", ".org", ".gg", ".tk", ".co", ".uk", ".biz", ".info", ".io", ".me", ".tv", ".us", ".ws", ".club", ".store", ".online", ".site", ".xyz", ".shop", "discord.gg/", "joinmc.", "playmc.", "server."];
 /** @type {string} The action profile name for advertising violations. */
-export const antiAdvertisingActionProfileName = "chat_advertising_detected";
+export const antiAdvertisingActionProfileName = "chatAdvertisingDetected";
+
+/** @type {boolean} If true, enables advanced regex-based link detection and whitelisting. */
+export const enableAdvancedLinkDetection = false; // Default to false initially
+/** @type {string[]} List of regex strings for advanced link detection. */
+export const advancedLinkRegexList = [
+    "https?://(?:[a-zA-Z0-9\\-_]+\\.)+[a-zA-Z]{2,}(?::\\d+)?(?:/[^\\s]*)?",
+    "www\\.(?:[a-zA-Z0-9\\-_]+\\.)+[a-zA-Z]{2,}(?::\\d+)?(?:/[^\\s]*)?",
+    "\\b(?:[a-zA-Z0-9\\-_]+\\.)+(com|net|org|gg|io|me|tv|us|uk|biz|info|club|store|online|site|xyz|shop|network|info|website|co|dev|app|online|xyz|tech|space|store|fun|press|host|art|blog|cafe|pics|live|life|news|ninja|cool|guru|gallery|city|country|link|click|buzz|stream|tube|chat|community|forum|group|page|fans|media|show|studio|style|video|software|pictures|graphics|game|games|server|play|mc|srv|network|gaming|fun|pro|services|shop|store|center|solutions|support|tech|tools|systems|cloud|digital|data|security|hosting|design|dev|app|api|network|community|forum|blog|news|media|studio|graphics|gallery|live|life|video|stream|tube|chat|page|fans|show|style|center|solutions|support|systems|cloud|digital|data|security|hosting|design|dev|app|api)(\\b|/[^\\s]*)",
+    "\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?::\\d+)?(?:/[^\\s]*)?\\b"
+];
+/** @type {string[]} List of patterns (strings or regex strings) to whitelist from advertising flags. */
+export const advertisingWhitelistPatterns = []; // Example: ["myserver\\.com", "discord\\.gg/myinvite"]
 
 /** @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat. */
 export const enableCapsCheck = true;
@@ -579,9 +591,55 @@ export const spamRepeatMessageCount = 3;
 /** @type {number} Time window in seconds to monitor for repeated messages. */
 export const spamRepeatTimeWindowSeconds = 5;
 /** @type {boolean} If true, flags the player for repeated message spam. */
-export const spamRepeatFlagPlayer = true;
+export const spamRepeatFlagPlayer = false; // Changed to false as per new policy
 /** @type {boolean} If true, cancels the message that triggers repeated spam detection. */
 export const spamRepeatCancelMessage = false;
+
+/** @type {boolean} If true, the Chat Content Repeat check is active. */
+export const enableChatContentRepeatCheck = false;
+/** @type {boolean} If true, the Unicode Abuse (Zalgo/diacritics) check is active. */
+export const enableUnicodeAbuseCheck = false;
+
+/** @type {boolean} If true, the Gibberish Chat check is active. */
+export const enableGibberishCheck = false;
+/** @type {number} Minimum message length to apply gibberish check. */
+export const gibberishMinMessageLength = 10;
+/** @type {number} Minimum ratio of alphabetic characters (0-1) for gibberish check to apply. */
+export const gibberishMinAlphaRatio = 0.6;
+/** @type {number} Lower bound for vowel ratio (0-1) to flag as gibberish. */
+export const gibberishVowelRatioLowerBound = 0.15;
+/** @type {number} Upper bound for vowel ratio (0-1) to flag as gibberish. */
+export const gibberishVowelRatioUpperBound = 0.80;
+/** @type {number} Maximum number of consecutive consonants to flag as gibberish. */
+export const gibberishMaxConsecutiveConsonants = 5;
+/** @type {string} Action profile name for gibberish violations. */
+export const gibberishActionProfileName = "chatGibberish";
+
+/** @type {boolean} If true, the Excessive Mentions chat check is active. */
+export const enableExcessiveMentionsCheck = false;
+/** @type {number} Minimum message length to apply excessive mentions check. */
+export const mentionsMinMessageLength = 10;
+/** @type {number} Maximum number of unique users that can be mentioned in a single message. */
+export const mentionsMaxUniquePerMessage = 4;
+/** @type {number} Maximum number of times a single user can be mentioned in a single message. */
+export const mentionsMaxRepeatedPerMessage = 3;
+/** @type {string} Action profile name for excessive mention violations. */
+export const mentionsActionProfileName = "chatExcessiveMentions";
+
+/** @type {boolean} If true, the Simple Impersonation (mimicking server/staff messages) check is active. */
+export const enableSimpleImpersonationCheck = false;
+/** @type {string[]} Regex patterns to identify server/staff message impersonation attempts. */
+export const impersonationServerMessagePatterns = [
+    "^\[(Server|Admin|System|Mod|Staff|Broadcast|Announcement|Alert)\]",
+    "^§[4c][\\s\\S]*?(Warning|Critical|Error)",
+    "^§[b9ea][\\s\\S]*?(Notice|Info|Server|System)"
+];
+/** @type {number} Permission level at or below which players are exempt from impersonation checks. */
+export const impersonationExemptPermissionLevel = 1; // Assuming 1 is Admin or similar, adjust if needed based on rankManager.permissionLevels
+/** @type {number} Minimum message length for impersonation pattern matching to apply. */
+export const impersonationMinMessageLengthForPatternMatch = 10;
+/** @type {string} Action profile name for impersonation attempt violations. */
+export const impersonationActionProfileName = "chatImpersonationAttempt";
 
 // --- Scaffold/Tower Detection ---
 /** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
@@ -828,7 +886,10 @@ export let editableConfigValues = {
     swearCheckMuteDuration: swearCheckMuteDuration,
     enableAntiAdvertisingCheck: enableAntiAdvertisingCheck,
     antiAdvertisingPatterns: antiAdvertisingPatterns,
-    antiAdvertisingActionProfileName: antiAdvertisingActionProfileName,
+    antiAdvertisingActionProfileName: antiAdvertisingActionProfileName, // Corrected source
+    enableAdvancedLinkDetection: enableAdvancedLinkDetection,
+    advancedLinkRegexList: advancedLinkRegexList,
+    advertisingWhitelistPatterns: advertisingWhitelistPatterns,
     enableCapsCheck: enableCapsCheck,
     capsCheckMinLength: capsCheckMinLength,
     capsCheckUpperCasePercentage: capsCheckUpperCasePercentage,
@@ -1032,6 +1093,20 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    enableChatContentRepeatCheck,
+    enableUnicodeAbuseCheck,
+    enableGibberishCheck,
+    gibberishMinMessageLength,
+    gibberishMinAlphaRatio,
+    gibberishVowelRatioLowerBound,
+    gibberishVowelRatioUpperBound,
+    gibberishMaxConsecutiveConsonants,
+    gibberishActionProfileName,
+    enableExcessiveMentionsCheck,
+    mentionsMinMessageLength,
+    mentionsMaxUniquePerMessage,
+    mentionsMaxRepeatedPerMessage,
+    mentionsActionProfileName,
     // Swear Check specific (action profile name is advanced)
     swearCheckActionProfileName, // swearCheckMuteDuration is in user_settings
     // AutoMod Configuration (complex object, now imported)
@@ -1118,3 +1193,5 @@ export function updateConfigValue(key, newValue) {
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
     return true;
 }
+
+[end of AntiCheatsBP/scripts/config.js]

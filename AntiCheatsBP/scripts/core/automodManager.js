@@ -3,7 +3,6 @@
  * Manages automated moderation actions based on player flags and configured rules.
  * @version 1.0.1
  */
-
 // import * as mc from '@minecraft/server'; // REMOVED - Unused
 import { getString } from './i18n.js';
 
@@ -437,3 +436,5 @@ export async function processAutoModActions(player, pData, checkType, dependenci
         }
     }
 }
+
+[end of AntiCheatsBP/scripts/core/automodManager.js]
