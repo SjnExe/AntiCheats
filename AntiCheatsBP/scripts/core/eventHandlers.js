@@ -363,37 +363,78 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
  * @returns {Promise<void>}
  */
 export async function handleEntityHurt(eventData, dependencies) {
-    const { playerDataManager, checks, config, currentTick, actionManager } = dependencies;
-    const { hurtEntity, cause, damagingEntity } = eventData;
+    const { playerDataManager, checks, config, currentTick, actionManager, playerUtils } = dependencies;
+    const { hurtEntity, cause, damagingEntity: directDamagingEntity } = eventData; // Renamed damagingEntity to avoid conflict
 
+    // Process victim data (if player)
     if (hurtEntity?.typeId === 'minecraft:player') {
-        const victim = hurtEntity; // victim is a Player
-        const pData = playerDataManager.getPlayerData(victim.id);
-        if (pData) {
-            pData.lastTookDamageTick = currentTick;
-            pData.lastDamageCause = cause.cause; // Store the cause string
-            pData.lastDamagingEntityType = damagingEntity?.typeId; // Store typeId if damagingEntity exists
-            pData.isDirtyForSave = true;
+        const victimPlayer = hurtEntity; // victimPlayer is a Player
+        const victimPData = playerDataManager.getPlayerData(victimPlayer.id);
+        if (victimPData) {
+            victimPData.lastTookDamageTick = currentTick;
+            victimPData.lastDamageCause = cause.cause;
+            victimPData.lastDamagingEntityType = directDamagingEntity?.typeId;
+            victimPData.isDirtyForSave = true;
 
-            if (damagingEntity?.typeId === 'minecraft:player' && damagingEntity.id !== victim.id) {
-                pData.lastCombatInteractionTime = Date.now(); // Update for PvP
-                const attacker = damagingEntity; // attacker is a Player
-                const attackerPData = playerDataManager.getPlayerData(attacker.id);
+            // If the direct damaging entity is a player (attacker)
+            if (directDamagingEntity?.typeId === 'minecraft:player' && directDamagingEntity.id !== victimPlayer.id) {
+                const attackerPlayer = directDamagingEntity; // attackerPlayer is a Player
+                victimPData.lastCombatInteractionTime = Date.now(); // Update victim's combat time
+
+                const attackerPData = playerDataManager.getPlayerData(attackerPlayer.id);
                 if (attackerPData) {
-                    attackerPData.lastCombatInteractionTime = Date.now(); // Also update for attacker
+                    attackerPData.lastCombatInteractionTime = Date.now(); // Also update attacker's combat time
                     attackerPData.isDirtyForSave = true;
+
+                    // Record attack event for CPS check on attacker
+                    attackerPData.attackEvents = attackerPData.attackEvents || [];
+                    attackerPData.attackEvents.push(Date.now());
+
+
+                    // Prepare eventSpecificData for combat checks
+                    const eventSpecificData = {
+                        targetEntity: victimPlayer, // The entity that was hurt
+                        damagingEntity: attackerPlayer, // The player who dealt the damage
+                        cause: cause, // The full damage cause object
+                        gameMode: attackerPlayer.gameMode // GameMode of the attacker
+                    };
+
+                    // Call combat checks for the attacker
+                    if (checks?.checkReach && config.enableReachCheck) {
+                        await checks.checkReach(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    }
+                    if (checks?.checkMultiTarget && config.enableMultiTargetCheck) {
+                        await checks.checkMultiTarget(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    }
+                    if (checks?.checkAttackWhileSleeping && config.enableStateConflictCheck) {
+                        await checks.checkAttackWhileSleeping(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    }
+                    if (checks?.checkAttackWhileUsingItem && config.enableStateConflictCheck) {
+                        await checks.checkAttackWhileUsingItem(attackerPlayer, attackerPData, dependencies, eventSpecificData);
+                    }
+                    // ViewSnap and CPS are typically called from the tick loop, not directly on entityHurt.
+                    // However, lastAttackTick for ViewSnap is set here for the attacker:
+                    attackerPData.lastAttackTick = currentTick;
                 }
             }
 
+            // Self-hurt check for the victim
             if (checks?.checkSelfHurt && config.enableSelfHurtCheck) {
-                await checks.checkSelfHurt(victim, cause, damagingEntity, pData, dependencies);
+                // For self-hurt, damagingEntity might be the player themselves or environmental.
+                // The checkSelfHurt function needs to correctly interpret this.
+                // The eventSpecificData here is from the perspective of the victim being hurt.
+                const selfHurtEventSpecificData = {
+                    damagingEntity: directDamagingEntity, // Could be self, another entity, or undefined
+                    cause: cause
+                };
+                await checks.checkSelfHurt(victimPlayer, victimPData, dependencies, selfHurtEventSpecificData);
             }
         }
     }
 
-    // Example: Pass to a generic combat check if needed
+    // Call a generic combat processing function if it exists (might be for non-player entities or other logic)
     if (checks?.processCombatEvent) {
-        await checks.processCombatEvent(eventData, dependencies);
+        await checks.processCombatEvent(eventData, dependencies); // Pass original eventData
     }
 }
 
@@ -773,55 +814,55 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
-    // Swear Check (delegated to AutoMod via actionManager profile)
+    // Swear Check
     if (!eventData.cancel && checks?.checkSwear && config.enableSwearCheck) {
-        await checks.checkSwear(player, originalMessage, pData, dependencies);
-        if (eventData.cancel) return; // Swear check might cancel based on its profile
+        // Signature: (player, eventData, pData, dependencies)
+        await checks.checkSwear(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
-    // Spam Check (delegated to AutoMod via actionManager profile)
-    // Note: This was 'enableSpamCheck', assuming it refers to the repeat spam check.
-    // The checkType used in automodConfig was 'chat_repeat_spam'.
-    // If 'checks.checkSpam' is the correct function for repeat spam:
-    if (!eventData.cancel && checks?.checkMessageRate && config.spamRepeatCheckEnabled) { // Assuming config.spamRepeatCheckEnabled is the correct toggle
-        await checks.checkMessageRate(player, pData, eventData, config, playerUtils, playerDataManager, logManager, actionManager.executeCheckAction, dependencies.currentTick); // This function would internally use "chat_repeat_spam" or similar checkType
-        // If checkSpam itself doesn't handle cancellation via action profile, and a specific cancel config exists:
-        // if (config.spamRepeatCancelMessage) eventData.cancel = true;
+    // Message Rate Check (formerly Spam Check / Fast Message Spam)
+    if (!eventData.cancel && checks?.checkMessageRate && config.enableFastMessageSpamCheck) { // Corrected config toggle
+        // Signature: (player, eventData, pData, dependencies)
+        // This check returns a boolean indicating if the message should be cancelled.
+        const cancelFromMessageRate = await checks.checkMessageRate(player, eventData, pData, dependencies);
+        if (cancelFromMessageRate) {
+            eventData.cancel = true;
+        }
         if (eventData.cancel) return;
     }
 
     // Chat Content Repeat Check
     if (!eventData.cancel && checks?.checkChatContentRepeat && config.enableChatContentRepeatCheck) {
-        // Assuming checkChatContentRepeat does not directly cancel, but flags for AutoMod
-        await checks.checkChatContentRepeat(player, pData, originalMessage, dependencies);
-        // No immediate 'if (eventData.cancel) return;' unless checkChatContentRepeat can set it.
+        await checks.checkChatContentRepeat(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // Unicode Abuse Check
     if (!eventData.cancel && checks?.checkUnicodeAbuse && config.enableUnicodeAbuseCheck) {
-        await checks.checkUnicodeAbuse(player, pData, originalMessage, dependencies);
-        // No immediate 'if (eventData.cancel) return;' unless checkUnicodeAbuse can set it.
+        await checks.checkUnicodeAbuse(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // Gibberish Check
     if (!eventData.cancel && checks?.checkGibberish && config.enableGibberishCheck) {
-        await checks.checkGibberish(player, pData, originalMessage, dependencies);
-        // No immediate 'if (eventData.cancel) return;' unless checkGibberish can set it.
+        await checks.checkGibberish(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // Excessive Mentions Check
     if (!eventData.cancel && checks?.checkExcessiveMentions && config.enableExcessiveMentionsCheck) {
-        await checks.checkExcessiveMentions(player, pData, originalMessage, dependencies);
-        // No immediate 'if (eventData.cancel) return;' unless checkExcessiveMentions can set it.
+        await checks.checkExcessiveMentions(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // Simple Impersonation Check
     if (!eventData.cancel && checks?.checkSimpleImpersonation && config.enableSimpleImpersonationCheck) {
-        await checks.checkSimpleImpersonation(player, pData, originalMessage, dependencies);
-        // No immediate 'if (eventData.cancel) return;' unless checkSimpleImpersonation can set it.
+        await checks.checkSimpleImpersonation(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
-    // Newline Check (Adding flag logic here)
+    // Newline Check
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
             playerUtils.warnPlayer(player, getString("chat.error.newline")); // Assuming a generic warning key
@@ -851,37 +892,31 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 
     // Anti-Advertising Check
     if (!eventData.cancel && checks?.checkAntiAdvertising && config.enableAntiAdvertisingCheck) {
-        await checks.checkAntiAdvertising(player, originalMessage, pData, dependencies);
-        // The action profile for advertising does not cancel by default,
-        // but if it were configured to, this check would be useful:
-        // if (eventData.cancel) return;
+        // Signature: (player, eventData, pData, dependencies)
+        await checks.checkAntiAdvertising(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // CAPS Abuse Check
     if (!eventData.cancel && checks?.checkCapsAbuse && config.enableCapsCheck) {
-        await checks.checkCapsAbuse(player, originalMessage, pData, dependencies);
-        // The default action profile for CAPS abuse does not cancel the message.
-        // If it were configured to cancel, this would be important:
-        // if (eventData.cancel) return;
+        // Signature: (player, eventData, pData, dependencies)
+        await checks.checkCapsAbuse(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // Character Repeat Check
     if (!eventData.cancel && checks?.checkCharRepeat && config.enableCharRepeatCheck) {
-        await checks.checkCharRepeat(player, originalMessage, pData, dependencies);
-        // The default action profile for char repeat does not cancel the message.
-        // If it were configured to cancel, this would be important:
-        // if (eventData.cancel) return;
+        await checks.checkCharRepeat(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
     // Symbol Spam Check
     if (!eventData.cancel && checks?.checkSymbolSpam && config.enableSymbolSpamCheck) {
-        await checks.checkSymbolSpam(player, originalMessage, pData, dependencies);
-        // The default action profile for symbol spam does not cancel the message.
-        // If it were configured to cancel, this would be important:
-        // if (eventData.cancel) return;
+        await checks.checkSymbolSpam(player, eventData, pData, dependencies);
+        if (eventData.cancel) return;
     }
 
-    // Rank Formatting (if message not cancelled by now)
+    // Rank Formatting (if message not cancelled)
     if (!eventData.cancel) {
         const rankElements = getPlayerRankFormattedChatElements(player, config);
         const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;

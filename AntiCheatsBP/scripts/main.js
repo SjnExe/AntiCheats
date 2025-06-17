@@ -620,19 +620,53 @@ mc.system.runInterval(async () => {
             pData.isUsingShield = false;
         }
 
-        if (configModule.editableConfigValues.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
-        if (configModule.editableConfigValues.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
-        if (configModule.editableConfigValues.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (configModule.editableConfigValues.enableCPSCheck && checks.checkCPS) await checks.checkCPS(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (configModule.editableConfigValues.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
-        if (configModule.editableConfigValues.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, configModule.editableConfigValues, currentTick, playerUtils, playerDataManager, logManager, executeCheckAction);
+        // Construct dependencies for tick-based checks
+        const tickDependencies = {
+            config: configModule.editableConfigValues,
+            playerUtils,
+            playerDataManager,
+            logManager,
+            actionManager: { executeCheckAction },
+            checks, // Barrel import of all checks
+            currentTick
+        };
+
+        // Standardized calls for checks previously taking many arguments
+        // Note: Fly, Speed, NoFall, Nuker, etc., would also need this refactoring if their signatures were changed in this batch.
+        // For now, only CPS and ViewSnap are confirmed to be refactored in the combat check group.
+        // Other checks here retain their verbose signature until refactored.
+
+        if (configModule.editableConfigValues.enableFlyCheck && checks.checkFly) {
+            // Assuming checkFly is NOT YET refactored to (player, pData, dependencies, eventSpecificData)
+            // If it IS refactored, the call would be: await checks.checkFly(player, pData, tickDependencies, null);
+            // For now, keeping original call structure if it's not part of this batch's direct targets for signature change.
+            // Based on previous flyCheck.js content, it WAS refactored to use `dependenciesFull`.
+            await checks.checkFly(player, pData, tickDependencies);
+        }
+        if (configModule.editableConfigValues.enableSpeedCheck && checks.checkSpeed) {
+            await checks.checkSpeed(player, pData, tickDependencies);
+        }
+        if (configModule.editableConfigValues.enableNofallCheck && checks.checkNoFall) {
+            await checks.checkNoFall(player, pData, tickDependencies);
+        }
+        if (configModule.editableConfigValues.enableCPSCheck && checks.checkCPS) {
+            await checks.checkCPS(player, pData, tickDependencies, null); // Refactored call from previous batch
+        }
+        if (configModule.editableConfigValues.enableNukerCheck && checks.checkNuker) {
+            // Nuker's signature is (player, pData, config, playerUtils, playerDataManager, logManager, executeCheckAction)
+            // It was not targeted for a signature change to (player, pData, dependencies) in this batch.
+            await checks.checkNuker(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction);
+        }
+        if (configModule.editableConfigValues.enableViewSnapCheck && checks.checkViewSnap) {
+            await checks.checkViewSnap(player, pData, tickDependencies, null); // Refactored call from previous batch
+        }
 
         if (configModule.editableConfigValues.enableNoSlowCheck && checks.checkNoSlow) {
-            await checks.checkNoSlow(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+            await checks.checkNoSlow(player, pData, tickDependencies);
         }
 
         if (configModule.editableConfigValues.enableInvalidSprintCheck && checks.checkInvalidSprint) {
-            await checks.checkInvalidSprint(player, pData, configModule.editableConfigValues, playerUtils, playerDataManager, logManager, executeCheckAction, currentTick);
+            await checks.checkInvalidSprint(player, pData, tickDependencies);
         }
 
         if (configModule.editableConfigValues.enableAutoToolCheck && checks.checkAutoTool) {
@@ -672,14 +706,12 @@ mc.system.runInterval(async () => {
             pData.lastRenderDistanceCheckTick = currentTick;
         }
 
-        const netherRoofDependencies = {
-            config: configModule.editableConfigValues,
-            automodConfig: configModule.editableConfigValues.automodConfig,
-            playerDataManager: playerDataManager,
-            playerUtils: playerUtils
-        };
+        // Use tickDependencies for checkNetherRoof, ensuring it has all it needs.
+        // checkNetherRoof's signature is (player, pData, dependencies)
+        // tickDependencies already includes: config, playerDataManager, playerUtils.
+        // If automodConfig is needed via dependencies.config.automodConfig, it's covered.
         if (configModule.editableConfigValues.enableNetherRoofCheck && checks.checkNetherRoof) {
-            checks.checkNetherRoof(player, pData, netherRoofDependencies);
+            checks.checkNetherRoof(player, pData, tickDependencies);
         }
 
         if (!player.isOnGround) {

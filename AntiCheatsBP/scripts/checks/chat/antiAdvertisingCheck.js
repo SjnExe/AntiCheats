@@ -12,13 +12,15 @@
 /**
  * Checks a message for potential advertising links or patterns.
  * @param {import('@minecraft/server').Player} player
- * @param {string} message The raw message content.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
  * @param {PlayerAntiCheatData} pData Player-specific data.
  * @param {CommandDependencies} dependencies
  * @returns {Promise<void>}
  */
-export async function checkAntiAdvertising(player, message, pData, dependencies) {
+export async function checkAntiAdvertising(player, eventData, pData, dependencies) { // Changed message to eventData
     const { config, actionManager, playerUtils } = dependencies;
+    const message = eventData.message; // Get message from eventData
+
     // Ensure config.antiAdvertisingActionProfileName (from config.js) is the camelCase version for consistency.
     const actionProfileName = config.antiAdvertisingActionProfileName || "chatAdvertisingDetected";
 
@@ -31,7 +33,7 @@ export async function checkAntiAdvertising(player, message, pData, dependencies)
         for (const regexString of config.advancedLinkRegexList) {
             try {
                 const regex = new RegExp(regexString, 'i'); // Case-insensitive
-                const match = regex.exec(message);
+                const match = regex.exec(message); // Use message from eventData
                 if (match) {
                     const detectedLink = match[0];
                     let isWhitelisted = false;

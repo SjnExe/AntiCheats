@@ -2,48 +2,36 @@
  * @file AntiCheatsBP/scripts/checks/combat/viewSnapCheck.js
  * Implements checks for invalid player view pitch and rapid view snaps (aimbot-like behavior)
  * that can occur shortly after a player performs an attack.
- * @version 1.0.1
+ * @version 1.1.0
  */
-
-import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
 /**
  * Checks for invalid pitch (looking too far up or down) and for excessively rapid
  * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
- * Player's last pitch and yaw are updated in `updateTransientPlayerData` in `main.js`.
- * Player's last attack tick is updated in `handleEntityHurt` in `eventHandlers.js`.
+ * Player's last pitch and yaw are updated in `updateTransientPlayerData`.
+ * Player's last attack tick is updated in `handleEntityHurt`.
  *
- * @param {mc.Player} player - The player instance to check.
+ * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastAttackTick`, `lastPitch`, `lastYaw`.
- * @param {Config} config - The server configuration object with thresholds like `invalidPitchThresholdMin/Max`,
- *                          `maxPitchSnapPerTick`, `maxYawSnapPerTick`, and `viewSnapWindowTicks`.
- * @param {number} currentTick - The current game tick.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, executeCheckAction, currentTick, etc.
+ * @param {EventSpecificData} [eventSpecificData] - Optional data specific to the event that triggered this check (unused by ViewSnap).
  * @returns {Promise<void>}
  */
 export async function checkViewSnap(
     player,
     pData,
-    config,
-    currentTick,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction
+    dependencies,
+    eventSpecificData // Unused by ViewSnap check
 ) {
-    if (!config.enableViewSnapCheck || !pData) { // Added null check for pData
+    const { config, playerUtils, playerDataManager, logManager, actionManager, currentTick } = dependencies;
+
+    if (!config.enableViewSnapCheck || !pData) {
         return;
     }
 
@@ -51,9 +39,13 @@ export async function checkViewSnap(
     const currentPitch = currentRotation.x;
     const currentYaw = currentRotation.y;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-    const dependencies = { config, playerDataManager, playerUtils, logManager };
 
-    // 1. Check for invalid absolute pitch (looking straight up/down beyond vanilla limits)
+    // Construct a more focused dependencies object for executeCheckAction if preferred,
+    // or pass the main 'dependencies' object directly if action profiles expect the full set.
+    // For consistency with other checks, we can pass the main 'dependencies'.
+    // const actionContextDependencies = { config, playerDataManager, playerUtils, logManager };
+
+    // 1. Check for invalid absolute pitch
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
 
@@ -63,23 +55,21 @@ export async function checkViewSnap(
             minLimit: invalidPitchMin.toFixed(2),
             maxLimit: invalidPitchMax.toFixed(2)
         };
-        await executeCheckAction(player, "combatInvalidPitch", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, "combatInvalidPitch", violationDetails, dependencies);
     }
 
-    // 2. Check for view snaps (rapid rotation changes) after an attack
-    // pData.lastAttackTick is set in handleEntityHurt when the player is the attacker.
+    // 2. Check for view snaps after an attack
     const viewSnapWindow = config.viewSnapWindowTicks ?? 10;
     if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < viewSnapWindow)) {
         const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
         let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
 
-        // Normalize yaw difference (e.g., turning from 350 to 10 degrees is 20 deg, not 340)
-        if (deltaYaw > 180) {
+        if (deltaYaw > 180) { // Normalize yaw difference
             deltaYaw = 360 - deltaYaw;
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
-        const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms (assuming 20 TPS)
+        const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms
 
         const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
         if (deltaPitch > maxPitchSnap) {
@@ -90,8 +80,8 @@ export async function checkViewSnap(
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
-            await executeCheckAction(player, "combatViewsnapPitch", violationDetails, dependencies);
-            playerUtils.debugLog?.(`ViewSnap (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
+            await actionManager.executeCheckAction(player, "combatViewsnapPitch", violationDetails, dependencies);
+            playerUtils.debugLog?.(\`ViewSnap (Pitch) for \${player.nameTag}: dP=\${deltaPitch.toFixed(1)} within \${ticksSinceLastAttack} ticks.\`, watchedPrefix);
         }
 
         const maxYawSnap = config.maxYawSnapPerTick ?? 100;
@@ -103,10 +93,9 @@ export async function checkViewSnap(
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
-            await executeCheckAction(player, "combatViewsnapYaw", violationDetails, dependencies);
-            playerUtils.debugLog?.(`ViewSnap (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix);
+            await actionManager.executeCheckAction(player, "combatViewsnapYaw", violationDetails, dependencies);
+            playerUtils.debugLog?.(\`ViewSnap (Yaw) for \${player.nameTag}: dY=\${deltaYaw.toFixed(1)} within \${ticksSinceLastAttack} ticks.\`, watchedPrefix);
         }
     }
-    // Note: pData.lastPitch and pData.lastYaw are updated externally in main.js's updateTransientPlayerData.
-    // No need to mark pData as dirty here unless this check itself modifies persisted fields.
+    // pData.lastPitch and pData.lastYaw are updated in main.js's updateTransientPlayerData.
 }

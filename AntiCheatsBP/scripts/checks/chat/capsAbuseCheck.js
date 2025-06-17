@@ -7,13 +7,14 @@
 /**
  * Checks a chat message for excessive capitalization.
  * @param {import('@minecraft/server').Player} player The player who sent the message.
- * @param {string} message The raw chat message content.
- * @param {object} _pData The player's anti-cheat data (currently unused in this check).
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {object} pData The player's anti-cheat data (currently unused in this specific check's logic, but passed for signature consistency).
  * @param {import('../../types.js').CommandDependencies} dependencies Shared command dependencies (includes config, actionManager, etc.).
  * @returns {Promise<void>}
  */
-export async function checkCapsAbuse(player, message, _pData, dependencies) { // pData marked as unused
+export async function checkCapsAbuse(player, eventData, pData, dependencies) { // Changed signature
     const { config, actionManager, playerUtils } = dependencies;
+    const message = eventData.message; // Get message from eventData
 
     if (!config.enableCapsCheck) {
         return;

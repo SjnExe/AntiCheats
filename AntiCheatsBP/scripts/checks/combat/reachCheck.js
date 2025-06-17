@@ -1,62 +1,48 @@
 /**
  * @file AntiCheatsBP/scripts/checks/combat/reachCheck.js
  * Implements a check to detect if a player is attacking entities from an excessive distance.
- * @version 1.0.1
+ * @version 1.1.0
  */
 
 import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
 /**
  * Checks if a player is attacking an entity from an excessive distance (Reach).
  * Calculates the distance between the player's eye location and the target entity's location.
  * @param {mc.Player} player - The attacking player instance.
- * @param {mc.Entity} targetEntity - The entity that was attacked/hurt.
- * @param {mc.GameMode} gameMode - The attacker's current game mode (e.g., survival, creative).
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data for the attacker.
- * @param {Config} config - The server configuration object, containing reach distance limits and buffer.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, executeCheckAction, etc.
+ * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `targetEntity` and `gameMode`.
  * @returns {Promise<void>}
  */
 export async function checkReach(
     player,
-    targetEntity,
-    gameMode,
     pData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction
+    dependencies,
+    eventSpecificData
 ) {
+    const { config, playerUtils, playerDataManager, logManager, actionManager } = dependencies;
+    const targetEntity = eventSpecificData?.targetEntity;
+    const gameMode = eventSpecificData?.gameMode;
+
     if (!config.enableReachCheck) {
         return;
     }
 
-    // pData might be null if ensurePlayerDataInitialized hasn't run for this player yet in the calling context.
-    // For reach check, pData is primarily used for isWatched status for debug logging.
-    // If pData itself were necessary for limits or state, this check would need to be more robust.
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
-    if (!player || !targetEntity || !player.location || !targetEntity.location || typeof player.getHeadLocation !== 'function') {
-        playerUtils.debugLog?.("ReachCheck: Prerequisites (player, targetEntity, locations, or getHeadLocation method) not met.", watchedPrefix);
+    if (!player || !targetEntity || !player.location || !targetEntity.location || typeof player.getHeadLocation !== 'function' || typeof gameMode === 'undefined') {
+        playerUtils.debugLog?.("ReachCheck: Prerequisites (player, targetEntity, locations, getHeadLocation method, or gameMode) not met.", watchedPrefix);
         return;
     }
 
     const eyeLocation = player.getHeadLocation();
-    // Entity.location is typically the base/feet of the entity. For more precision, one might consider
-    // the entity's bounding box, but eye-to-origin distance is a common approach for reach checks.
     const distanceToTarget = eyeLocation.distance(targetEntity.location);
 
     if (pData?.isWatched && playerUtils.debugLog) {
@@ -69,12 +55,12 @@ export async function checkReach(
             maxReachDistBase = config.reachDistanceCreative ?? 6.0;
             break;
         case mc.GameMode.survival:
-        case mc.GameMode.adventure: // Same reach as survival
+        case mc.GameMode.adventure:
             maxReachDistBase = config.reachDistanceSurvival ?? 4.5;
             break;
         default:
-            playerUtils.debugLog?.(`ReachCheck: Unsupported game mode "${gameMode}" for player ${player.nameTag}.`, watchedPrefix);
-            return; // Do not check reach for other game modes like spectator.
+            playerUtils.debugLog?.(\`ReachCheck: Unsupported game mode "\${gameMode}" for player \${player.nameTag}.\`, watchedPrefix);
+            return;
     }
 
     const reachBuffer = config.reachBuffer ?? 0.5;
@@ -88,16 +74,14 @@ export async function checkReach(
         const violationDetails = {
             distance: distanceToTarget.toFixed(2),
             maxAllowed: maxAllowedReach.toFixed(2),
-            baseMax: maxReachDistBase.toFixed(2), // Max reach before buffer
+            baseMax: maxReachDistBase.toFixed(2),
             buffer: reachBuffer.toFixed(2),
             targetEntityType: targetEntity.typeId,
-            targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''), // Use nameTag or formatted typeId
-            playerGameMode: String(gameMode) // Store game mode as string
+            targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
+            playerGameMode: String(gameMode)
         };
 
-        const dependencies = { config, playerDataManager, playerUtils, logManager };
-        // The action profile name "example_reach_attack" seems like a placeholder.
-        // It should ideally be configurable, e.g., config.reachCheckActionProfileName ?? "combat_reach"
-        await executeCheckAction(player, "combatReachAttack", violationDetails, dependencies);
+        // Pass the main dependencies object to executeCheckAction
+        await actionManager.executeCheckAction(player, "combatReachAttack", violationDetails, dependencies);
     }
 }
