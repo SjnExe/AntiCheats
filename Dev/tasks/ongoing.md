@@ -31,16 +31,10 @@ This document summarizes the current work-in-progress and pending tasks for the 
 
 *   **Player Utilities & Experience:** SjnExe parity goal.
 
-### AutoMod Enhancements
-*(Tasks related to improving the AutoMod system - new rules, rule adjustments, etc.)*
-
-### Chat Moderation Features
-*(Tasks related to chat content filtering, spam control, etc.)*
-
 ### Documentation & Workflow
 *   **Task File Maintenance:** AI assistant should keep `completed.md`, `ongoing.md`, and `todo.md` current.
 
-## IV. Recent User Feedback & Context for Future Work
+## Recent User Feedback & Context for Future Work
 
 *   **UI Command Design:** For future UI-based commands (e.g., a potential `!admin` command or enhancements to `!panel`), design them to be accessible by various permission levels, showing different information/buttons contextually (similar to the recent `!panel` refactor for player vs. admin views).
 *   **Development Workflow:** Continue applying cleanup and refactoring "in batches" where appropriate.
