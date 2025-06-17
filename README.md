@@ -5,7 +5,6 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 ## Table of Contents
 
 *   [Features](#features)
-*   [Required Experimental Toggles](#required-experimental-toggles)
 *   [Setup](#setup)
 *   [Admin Commands & UI](#admin-commands--ui)
 *   [Configuration](#configuration)
@@ -31,21 +30,12 @@ This addon uses advanced scripting capabilities to provide anti-cheat functional
 *   **Automated Moderation (AutoMod):** System to automatically apply actions (warn, kick, ban, mute, etc.) based on configurable flag thresholds.
 *   **Advanced World Border:** Per-dimension configurable borders (square/circle) with optional damage outside border, particle visuals, gradual resizing (including pause/resume capabilities), and safe player teleportation.
 
-## Required Experimental Toggles
-
-To ensure this addon works correctly, you **must** enable the following experimental toggle(s) in your world settings:
-
-*   **Beta APIs:** This toggle enables the ``@minecraft/server`` and ``@minecraft/server-ui`` scripting modules, essential for core functionality.
-
-As new features are added, this list may be updated. Always check this README for the latest requirements.
-
 ## Setup
 
-**Note:** This addon is designed for Minecraft Bedrock version 1.21.80 and newer.
+**Note:** This addon is designed for Minecraft Bedrock version 1.21.90 and newer.
 
 1.  Apply both the Behavior Pack (``AntiCheatsBP``) and Resource Pack (``AntiCheatsRP``) to your world.
 2.  Ensure the Behavior Pack is at the top of the pack list if multiple packs are applied.
-3.  Enable the experimental toggles listed above.
 
 ## Admin Commands & UI
 

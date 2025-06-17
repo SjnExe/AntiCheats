@@ -7,7 +7,7 @@
     "min_engine_version": [
       1,
       21,
-      80
+      90
     ],
     "version": "__VERSION_ARRAY__"
   },
