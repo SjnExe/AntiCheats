@@ -25,10 +25,10 @@ Below are links to specific sections particularly relevant for Add-On developmen
     *   [Entity Events (JSON-based)](https://learn.microsoft.com/en-us/minecraft/creator/documents/entityevents?view=minecraft-bedrock-stable)
 *   **Items:**
     *   [ItemStack Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/itemstack?view=minecraft-bedrock-stable)
-    *   [Item Components (JSON-based)](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/itemreference/examples/itemcomponents?view=minecraft-bedrock-stable)
+    *   [Item JSON Reference](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/itemreference/?view=minecraft-bedrock-stable)
 *   **Blocks:**
     *   [Block Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server/block?view=minecraft-bedrock-stable)
-    *   [Block Components (JSON-based)](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/examples/blockcomponents?view=minecraft-bedrock-stable)
+    *   [Block JSON Reference](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/blockreference/?view=minecraft-bedrock-stable)
 *   **User Interface (Server-Side):**
     *   [@minecraft/server-ui Module](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/minecraft-server-ui?view=minecraft-bedrock-stable)
     *   [ActionFormData Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/actionformdata?view=minecraft-bedrock-stable)
@@ -36,7 +36,6 @@ Below are links to specific sections particularly relevant for Add-On developmen
     *   [ModalFormData Class](https://learn.microsoft.com/en-us/minecraft/creator/scriptapi/minecraft/server-ui/modalformdata?view=minecraft-bedrock-stable)
 *   **Other Useful Links:**
     *   [Introduction to Behavior Packs](https://learn.microsoft.com/en-us/minecraft/creator/documents/behaviorpack?view=minecraft-bedrock-stable)
-    *   [manifest.json Reference](https://learn.microsoft.com/en-us/minecraft/creator/reference/content/addonsreference/filedetails/manifest?view=minecraft-bedrock-stable)
     *   [Commands Introduction](https://learn.microsoft.com/en-us/minecraft/creator/documents/commandsintroduction?view=minecraft-bedrock-stable)
     *   [Command Reference](https://learn.microsoft.com/en-us/minecraft/creator/commands/?view=minecraft-bedrock-stable)
 
