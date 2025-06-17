@@ -2,8 +2,8 @@
 
 This document summarizes the current work-in-progress and pending tasks for the AntiCheat addon, intended for handoff to the next development session.
 
-## Current Focus: Player Panel Enhancement - 'My Stats' (Completed)
-*   Added coordinates and dimension display to the 'My Stats' section of the player panel.
+## Current Focus: Admin Tool - `!listwatched` Command (Completed)
+*   Implemented the `!listwatched` command.
 *   Next: Select next major task category or specific task from the pending list.
 
 ## I. Current Active Plan: Coding Style Review & Corrections - Batch 1 & 2 (Core, Checks Directories)
@@ -34,6 +34,8 @@ This list contains planned features, improvements, and areas for future investig
         *   [COMPLETED - V1] Simple Impersonation (server/staff message patterns).
 
 *   **Admin Tools & Management (Expansion):** SjnExe parity goal where applicable.
+    *   [COMPLETED] Added `!listwatched` command to list online watched players.
+    *   (Further enhancements or specific SjnExe parity features for Admin Tools can be listed here as they are identified).
     *   **Enhanced Commands:**
         *   `!worldborder` Enhancements: (Initial square/circle, damage, visuals, safe teleport, gradual resize, pause/resume, interpolation methods, per-dimension static particle types, alternating particle sequence, and pulsing density effects are complete. `!wb remove` now requires confirmation). Further enhancements to consider (see `Dev/notes/WorldBorderDesign.md`):
             *   - Advanced dynamic particle effects (e.g., color/scale changes via custom particle JSONs) investigated; deferred for now.

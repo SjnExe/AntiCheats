@@ -85,6 +85,11 @@ This document lists significant tasks that have been completed.
     - Modified `uiManager.js` (`showMyStats` function) to fetch and format this information.
     - Added a `formatDimensionName` helper function in `uiManager.js`.
     - Updated `en_US.js` with new i18n keys (`ui.myStats.labelLocation`, `ui.myStats.labelDimension`) and adjusted `ui.myStats.body`.
+-   **Added `!listwatched` Admin Command:** Implemented a new chat command `!listwatched` (aliases: `!lw`, `!watchedlist`) for administrators.
+    - The command lists all currently online players who have the `isWatched` flag set to true in their player data.
+    - Added new command module `commands/listwatched.js`.
+    - Registered the command in `commands/commandRegistry.js`.
+    - Added i18n strings for command description and output messages to `en_US.js`.
 
 ## Refactor `checkType` Identifiers, AutoMod Fixes, and Verifications (Session YYYY-MM-DD)
 

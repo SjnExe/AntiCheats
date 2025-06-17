@@ -185,6 +185,11 @@ export const translations = {
             header: "§e--- Warnings for {playerName} ---",
             individualFlagsHeader": "§eIndividual Flags:",
             noData: "§cNo warning data found for {playerName}.",
+        },
+        listwatched: {
+            description: "Lists all currently online players who are being watched.",
+            noPlayers: "No players are currently being watched.",
+            header: "Currently watched players: "
         }
     },
     checks: {

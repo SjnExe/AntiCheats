@@ -19,6 +19,7 @@ import * as helpCmd from './help.js';
 import * as inspectCmd from './inspect.js';
 import * as invseeCmd from './invsee.js';
 import * as kickCmd from './kick.js';
+import * as listwatchedCmd from './listwatched.js'; // New import
 import * as muteCmd from './mute.js';
 import * as myflagsCmd from './myflags.js';
 import * as netherlockCmd from './netherlock.js';
@@ -63,6 +64,7 @@ export const commandModules = [
     inspectCmd,
     invseeCmd,
     kickCmd,
+    listwatchedCmd, // New module added
     muteCmd,
     myflagsCmd,
     netherlockCmd,
