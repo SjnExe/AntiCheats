@@ -950,9 +950,9 @@ showActionLogsForm = async function (adminPlayer, config, playerDataManager, dep
                 adminNameOrPlayer: logEntry.adminName || logEntry.playerName || 'SYSTEM',
                 actionType: logEntry.actionType,
                 targetNameOrEmpty: logEntry.targetName || '',
-                duration: logEntry.duration ? `${getString("ui.actionLogs.logEntry.durationPrefix")}${logEntry.duration}${getString("ui.actionLogs.logEntry.suffix")}` : "",
-                reason: logEntry.reason ? `${getString("ui.actionLogs.logEntry.reasonPrefix")}${logEntry.reason}${getString("ui.actionLogs.logEntry.suffix")}` : "",
-                details: logEntry.details ? `${getString("ui.actionLogs.logEntry.detailsPrefix")}${logEntry.details}${getString("ui.actionLogs.logEntry.suffix")}` : ""
+                duration: logEntry.duration ? `${getString("ui.actionLogs.logEntry.durationPrefix")}${log.duration}${getString("ui.actionLogs.logEntry.suffix")}` : "",
+                reason: logEntry.reason ? `${getString("ui.actionLogs.logEntry.reasonPrefix")}${log.reason}${getString("ui.actionLogs.logEntry.suffix")}` : "",
+                details: logEntry.details ? `${getString("ui.actionLogs.logEntry.detailsPrefix")}${log.details}${getString("ui.actionLogs.logEntry.suffix")}` : ""
             }).replace(/\s+\(\s*\)/g, '');
         }).join("\n");
 
@@ -1054,3 +1054,5 @@ showDetailedFlagsForm = async function(adminPlayer, targetPlayer, playerDataMana
     await form.show(adminPlayer).catch(e => depPlayerUtils.debugLog(`Error showing detailed flags: ${e.stack || e}`, adminPlayer.nameTag));
     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies); // Navigate back
 };
+
+[end of AntiCheatsBP/scripts/core/uiManager.js]

@@ -148,6 +148,11 @@ export const automodConfig = {
             { "flagThreshold": 6, "actionType": "mute", "parameters": { "reasonKey": "automod.chat.gibberish.mute1", "duration": "5m" }, "resetFlagsAfterAction": true },
             { "flagThreshold": 9, "actionType": "kick", "parameters": { "reasonKey": "automod.chat.gibberish.kick1" }, "resetFlagsAfterAction": true }
         ],
+        "chatImpersonationAttempt": [
+            { "flagThreshold": 2, "actionType": "warn", "parameters": { "reasonKey": "automod.chat.impersonation.warn1"}, "resetFlagsAfterAction": false },
+            { "flagThreshold": 4, "actionType": "kick", "parameters": { "reasonKey": "automod.chat.impersonation.kick1"}, "resetFlagsAfterAction": false },
+            { "flagThreshold": 6, "actionType": "tempBan", "parameters": { "reasonKey": "automod.chat.impersonation.tempban1", "duration": "1h"}, "resetFlagsAfterAction": true }
+        ],
         "combatViewsnapPitch": [
             { flagThreshold: 10, actionType: "warn", parameters: { reasonKey: "automod.viewsnap.pitch.warn1" }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: "kick", parameters: { reasonKey: "automod.viewsnap.pitch.kick1" }, resetFlagsAfterAction: false },
@@ -495,6 +500,9 @@ export const automodConfig = {
         "automod.chat.gibberish.warn1": "AutoMod: Please ensure your messages are readable and contribute to the conversation.",
         "automod.chat.gibberish.mute1": "AutoMod: Muted for 5 minutes due to unreadable message patterns.",
         "automod.chat.gibberish.kick1": "AutoMod: Kicked for persistent unreadable or gibberish messages.",
+        "automod.chat.impersonation.warn1": "AutoMod: Your message format appears to mimic server or staff announcements. Please avoid this.",
+        "automod.chat.impersonation.kick1": "AutoMod: Kicked for attempting to impersonate server or staff messages.",
+        "automod.chat.impersonation.tempban1": "AutoMod: Temporarily banned for persistent attempts to impersonate server or staff messages.",
         "automod.chat.charrepeat.warn1": "AutoMod: Excessive character repetition detected.",
         "automod.chat.charrepeat.mute1": "AutoMod: Muted for 5 minutes for character repetition.",
         "automod.chat.charrepeat.mute2": "AutoMod: Muted for 15 minutes for persistent character repetition.",

@@ -514,7 +514,7 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
  */
 export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     const { checks, config } = dependencies;
-    const { player, brokenBlockPermutation, brokenBlockType, itemStackAfterBreak } = eventData; // itemStackAfterBreak is the tool
+    const { player, brokenBlockType, itemStackAfterBreak } = eventData; // itemStackAfterBreak is the tool
 
     if (!player || !brokenBlockType) return;
 
@@ -933,3 +933,5 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     }
 }
 
+
+[end of AntiCheatsBP/scripts/core/eventHandlers.js]
