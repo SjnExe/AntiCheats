@@ -98,7 +98,8 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
 export async function handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
-    const { playerDataManager, playerUtils, config, configModule, logManager, actionManager, checks } = dependencies;
+    // config is now directly from dependencies.config, configModule is removed
+    const { playerDataManager, playerUtils, config, logManager, actionManager, checks, getString } = dependencies;
 
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
@@ -121,8 +122,9 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             const durationStringKick = getString(banInfo.unbanTime === Infinity ? "ban.duration.permanent" : "ban.duration.expires", { expiryDate: new Date(banInfo.unbanTime).toLocaleString() });
             let kickReason = getString("ban.kickMessage", { reason: banInfo.reason || getString("common.value.noReasonProvided"), durationMessage: durationStringKick });
 
-            if (configModule.discordLink && configModule.discordLink.trim() !== "" && configModule.discordLink !== "https://discord.gg/example") {
-                kickReason += "\n" + getString("ban.kickMessage.discord", { discordLink: configModule.discordLink });
+            // Use dependencies.config.discordLink
+            if (dependencies.config.discordLink && dependencies.config.discordLink.trim() !== "" && dependencies.config.discordLink !== "https://discord.gg/example") {
+                kickReason += "\n" + getString("ban.kickMessage.discord", { discordLink: dependencies.config.discordLink });
             }
             player.kick(kickReason);
             return;
@@ -375,7 +377,8 @@ export async function handleEntityHurt(eventData, dependencies) {
 
 export async function handlePlayerDeath(eventData, dependencies) {
     const { player } = eventData;
-    const { playerDataManager, config, configModule, logManager } = dependencies;
+    // config is now directly from dependencies.config, configModule is removed
+    const { playerDataManager, config, logManager, getString } = dependencies;
 
     if (!player) return;
 
@@ -392,8 +395,9 @@ export async function handlePlayerDeath(eventData, dependencies) {
         const y = Math.floor(location.y);
         const z = Math.floor(location.z);
 
-        const deathCoordsMsgKey = configModule.deathCoordsMessageKey || "message.deathCoords";
-        let message = getString(deathCoordsMsgKey, {
+        // Use dependencies.config.deathCoordsMessageKey
+        const deathCoordsMsgKey = dependencies.config.deathCoordsMessageKey || "message.deathCoords";
+        let message = getString(deathCoordsMsgKey, { // getString is now from dependencies
             x: x.toString(), y: y.toString(), z: z.toString(), dimensionId: dimensionId
         });
         pData.deathMessageToShowOnSpawn = message;
@@ -682,7 +686,7 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 }
 
 export async function handleBeforeChatSend(eventData, dependencies) {
-    const { playerDataManager, config, playerUtils, checks, logManager, actionManager, commandManager } = dependencies;
+    const { playerDataManager, config, playerUtils, checks, logManager, actionManager, getString } = dependencies; // Removed commandManager as it's not used here, added getString
     const { sender: player, message: originalMessage } = eventData;
 
     if (!player) return;
@@ -703,7 +707,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         return;
     }
 
-    if (originalMessage.startsWith(config.commandPrefix)) {
+    if (originalMessage.startsWith(config.prefix)) { // Changed from config.commandPrefix to config.prefix
         console.warn(`[AntiCheat] Command message \`${originalMessage}\` reached non-command chat handler. This should be handled by main.js's direct call to commandManager.handleChatCommand.`);
         eventData.cancel = true;
         return;
@@ -833,7 +837,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
-    const { playerUtils, config } = dependencies;
+    const { playerUtils, config, getString } = dependencies; // Added getString
 
     if (!player || !toDimension || !fromDimension || !fromLocation) return;
 

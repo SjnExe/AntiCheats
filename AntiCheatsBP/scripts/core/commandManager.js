@@ -53,7 +53,7 @@ if (commandModules && Array.isArray(commandModules)) {
  */
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels: importedPermissionLevels } = dependencies; // Destructure needed parts for local use
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies; // Destructure needed parts for local use
 
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     let commandNameInput = args.shift()?.toLowerCase();
@@ -112,8 +112,8 @@ export async function handleChatCommand(eventData, dependencies) {
     eventData.cancel = true;
 
     // Log admin command usage
-    // importedPermissionLevels is from dependencies
-    if (userPermissionLevel <= importedPermissionLevels.admin) {
+    // permissionLevels is from dependencies
+    if (userPermissionLevel <= permissionLevels.admin) {
         const timestamp = new Date().toISOString();
         // 'message' from eventData contains the raw command string including prefix.
         console.warn(`[AdminCommandLog] ${timestamp} - Player: ${player.name} - Command: ${message}`);

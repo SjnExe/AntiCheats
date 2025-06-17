@@ -4,21 +4,18 @@
  */
 
 import { world, system } from '@minecraft/server';
-// Removed direct import of config
-import * as tpaManager from '../core/tpaManager.js';
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+// tpaManager, permissionLevels, getString will be from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpa',
-    description: getString("command.tpa.description"),
+    description: "command.tpa.description", // Key
     aliases: [],
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: null, // To be set from dependencies.permissionLevels.normal
     syntax: '!tpa <playerName>',
-    enabled: true,
+    enabled: true, // Will be checked against dependencies.config.enableTPASystem
 };
 
 /**
@@ -28,10 +25,14 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config: fullConfig } = dependencies; // config from dependencies is editableConfigValues, fullConfig is the module
-    const prefix = fullConfig.prefix; // Use prefix from the main config module via dependencies
+    const { playerUtils, config, tpaManager, permissionLevels, getString, logManager } = dependencies;
 
-    if (!fullConfig.enableTPASystem) { // Check against the main config module
+    definition.description = getString(definition.description);
+    definition.permissionLevel = permissionLevels.normal; // Set actual permission level
+
+    const prefix = config.prefix;
+
+    if (!config.enableTPASystem) {
         player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
@@ -42,7 +43,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetName = args[0];
-    const target = world.getAllPlayers().find(p => p.name === targetName);
+    const target = playerUtils.findPlayer(targetName); // Use playerUtils.findPlayer
 
     if (!target) {
         player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetName }));
@@ -54,19 +55,20 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name);
+    const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name, dependencies); // Pass dependencies
     if (!targetTpaStatus.acceptsTpaRequests) {
         player.sendMessage(getString("command.tpa.error.targetDisabled", { targetName: target.nameTag }));
         return;
     }
 
+    // findRequest does not need dependencies as it's a local lookup
     const existingRequest = tpaManager.findRequest(player.name, target.name);
     if (existingRequest) {
          player.sendMessage(getString("command.tpa.error.existingRequest", { targetName: target.nameTag }));
          return;
     }
 
-    const requestResult = tpaManager.addRequest(player, target, 'tpa');
+    const requestResult = tpaManager.addRequest(player, target, 'tpa', dependencies); // Pass dependencies
 
     if (requestResult && requestResult.error === 'cooldown') {
         player.sendMessage(getString("command.tpa.error.cooldown", { remaining: requestResult.remaining }));
@@ -74,19 +76,24 @@ export async function execute(player, args, dependencies) {
     }
 
     if (requestResult) {
-        player.sendMessage(getString("command.tpa.requestSent", { targetName: target.nameTag, timeout: fullConfig.TPARequestTimeoutSeconds, prefix: prefix }));
+        player.sendMessage(getString("command.tpa.requestSent", { targetName: target.nameTag, timeout: config.TPARequestTimeoutSeconds, prefix: prefix }));
 
         system.run(() => {
             try {
                 target.onScreenDisplay.setActionBar(getString("command.tpa.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
             } catch (e) {
-                if (fullConfig.enableDebugLogging && playerUtils?.debugLog) {
-                    playerUtils.debugLog(`[TPACommand] Failed to set action bar for target ${target.nameTag}: ${e}`, player.nameTag);
+                if (config.enableDebugLogging && playerUtils?.debugLog) {
+                    playerUtils.debugLog(`[TpaCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag);
                 }
             }
         });
 
     } else {
         player.sendMessage(getString("command.tpa.failToSend"));
+        // Log this failure for admins/debug
+        playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag);
+        if(logManager) {
+            logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`});
+        }
     }
 }

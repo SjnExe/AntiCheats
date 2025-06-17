@@ -6,9 +6,12 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
-import { debugLog, warnPlayer, notifyAdmins } from '../utils/playerUtils.js';
+// warnPlayer, notifyAdmins, getString will come from 'dependencies' once all functions are refactored.
+// debugLog from playerUtils is used via dependencies where available, or the global import for module-level calls.
+import { debugLog } from '../utils/playerUtils.js';
+// getString is removed as addMute, addBan etc. will get it from dependencies. Other direct uses need checking or refactoring.
 import { processAutoModActions } from './automodManager.js';
-import { getString } from './i18n.js';
+
 
 const playerData = new Map();
 
@@ -495,20 +498,23 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
  * @param {string} [mutedBy="Unknown"] - Who issued the mute.
  * @param {boolean} [isAutoMod=false] - Was this mute issued by AutoMod.
  * @param {string|null} [triggeringCheckType=null] - If by AutoMod, which checkType.
+ * @param {object} dependencies - Dependencies object containing playerUtils and getString.
  * @returns {boolean} True if the mute was successfully added, false otherwise.
  */
-export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoMod = false, triggeringCheckType = null) {
+export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoMod = false, triggeringCheckType = null, dependencies) {
+    const { playerUtils, getString } = dependencies; // Dependencies are now mandatory
+
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
-        debugLog(`PDM:addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag);
+        playerUtils.debugLog(`[PlayerDataManager] addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        debugLog(`PDM:addMute: No pData found for player ${player.nameTag}. Cannot apply mute.`, player.nameTag);
+        playerUtils.debugLog(`[PlayerDataManager] addMute: No pData found for player ${player.nameTag}. Cannot apply mute.`, player.nameTag);
         return false;
     }
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
-    const muteReason = reason || getString("playerData.mute.defaultReason");
+    const muteReason = reason || getString("playerData.mute.defaultReason"); // getString from dependencies
     pData.muteInfo = {
         unmuteTime,
         reason: muteReason,
@@ -517,38 +523,40 @@ export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoM
         triggeringCheckType: triggeringCheckType
     };
     pData.isDirtyForSave = true;
-    let logMsg = `PDM:addMute: Player ${player.nameTag} muted by ${mutedBy}. Reason: "${muteReason}". AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType || 'N/A'}.`;
+    let logMsg = `[PlayerDataManager] addMute: Player ${player.nameTag} muted by ${mutedBy}. Reason: "${muteReason}". AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType || 'N/A'}.`;
     if (durationMs === Infinity) {
         logMsg += " Duration: Permanent.";
     } else {
         logMsg += ` Unmute time: ${new Date(unmuteTime).toISOString()}.`;
     }
-    debugLog(logMsg, pData.isWatched ? player.nameTag : null);
+    playerUtils.debugLog(logMsg, pData.isWatched ? player.nameTag : null); // playerUtils from dependencies
     return true;
 }
 
 /**
  * Removes a mute from a player's data.
  * @param {mc.Player} player - The player to unmute.
+ * @param {object} dependencies - Dependencies object containing playerUtils.
  * @returns {boolean} True if the mute was successfully removed or if the player was not muted, false on error.
  */
-export function removeMute(player) {
+export function removeMute(player, dependencies) {
+    const { playerUtils } = dependencies; // Dependencies are now mandatory
     if (!player) {
-        debugLog(`PDM:removeMute: Invalid player object provided.`);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: Invalid player object provided.`);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        debugLog(`PDM:removeMute: No pData found for player ${player.nameTag}. Cannot unmute.`, player.nameTag);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: No pData found for player ${player.nameTag}. Cannot unmute.`, player.nameTag);
         return false;
     }
     if (pData.muteInfo) {
         pData.muteInfo = null;
         pData.isDirtyForSave = true;
-        debugLog(`PDM:removeMute: Player ${player.nameTag} has been unmuted.`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: Player ${player.nameTag} has been unmuted.`, pData.isWatched ? player.nameTag : null); // playerUtils from dependencies
         return true;
     } else {
-        debugLog(`PDM:removeMute: Player ${player.nameTag} was not muted or already unmuted. No action taken.`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: Player ${player.nameTag} was not muted or already unmuted. No action taken.`, pData.isWatched ? player.nameTag : null); // playerUtils from dependencies
         return false;
     }
 }
@@ -557,9 +565,11 @@ export function removeMute(player) {
  * Retrieves a player's current mute information, if any.
  * Automatically clears expired mutes.
  * @param {mc.Player} player - The player whose mute info to retrieve.
+ * @param {object} dependencies - Dependencies object containing playerUtils.
  * @returns {object | null} The mute information object (e.g., { unmuteTime, reason }), or null if not muted or mute expired.
  */
-export function getMuteInfo(player) {
+export function getMuteInfo(player, dependencies) {
+    const { playerUtils } = dependencies; // Dependencies are now mandatory
     if (!player) return null;
     const pData = getPlayerData(player.id);
     if (!pData || !pData.muteInfo) return null;
@@ -567,7 +577,7 @@ export function getMuteInfo(player) {
     if (mute.unmuteTime !== Infinity && Date.now() >= mute.unmuteTime) {
         pData.muteInfo = null;
         pData.isDirtyForSave = true;
-        debugLog(`PDM:getMuteInfo: Mute for player ${player.nameTag} expired and has been removed.`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[PlayerDataManager] getMuteInfo: Mute for player ${player.nameTag} expired and has been removed.`, pData.isWatched ? player.nameTag : null); // playerUtils from dependencies
         return null;
     }
     return mute;
@@ -576,10 +586,11 @@ export function getMuteInfo(player) {
 /**
  * Checks if a player is currently muted.
  * @param {mc.Player} player - The player to check.
+ * @param {object} dependencies - Dependencies object to pass to getMuteInfo.
  * @returns {boolean} True if the player is muted, false otherwise.
  */
-export function isMuted(player) {
-    return getMuteInfo(player) !== null;
+export function isMuted(player, dependencies) {
+    return getMuteInfo(player, dependencies) !== null;
 }
 
 /**
@@ -717,9 +728,10 @@ export async function saveDirtyPlayerData(player) {
  * Clears flags and resets AutoMod state for a specific checkType for a player.
  * @param {import('@minecraft/server').Player} player The player.
  * @param {string} checkType The checkType whose flags need to be cleared.
- * @param {object} [dependencies] Optional dependencies, expecting playerUtils for logging.
+ * @param {object} dependencies - Dependencies object containing playerUtils.
  */
 export async function clearFlagsForCheckType(player, checkType, dependencies) {
+    const { playerUtils } = dependencies; // Dependencies are now mandatory
     if (!player || !checkType) return;
     const pData = getPlayerData(player.id);
     if (!pData) return;
@@ -741,11 +753,8 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
 
     pData.isDirtyForSave = true;
 
-    // Use debugLog from dependencies if available and player is watched, otherwise use global debugLog
-    const logFunction = dependencies?.playerUtils?.debugLog || debugLog;
     const playerContext = pData.isWatched ? player.nameTag : null;
-
-    logFunction(`Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, playerContext);
+    playerUtils.debugLog(`[PlayerDataManager] Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, playerContext); // playerUtils from dependencies
 }
 
 [end of AntiCheatsBP/scripts/core/playerDataManager.js]

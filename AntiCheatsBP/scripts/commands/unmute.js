@@ -3,9 +3,8 @@
  * Defines the !unmute command for administrators to allow a previously muted player to chat again.
  * @version 1.0.2
  */
-import { permissionLevels } from '../core/rankManager.js';
-import { clearFlagsForCheckType } from '../../core/playerDataManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+// Imports for permissionLevels, clearFlagsForCheckType, and getString are removed.
+// They will be accessed via the dependencies object.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,8 +12,8 @@ import { getString } from '../core/i18n.js'; // Import getString
 export const definition = {
     name: "unmute",
     syntax: "!unmute <playername>",
-    description: getString("command.unmute.description"),
-    permissionLevel: permissionLevels.admin,
+    description: "command.unmute.description", // Key to be resolved by getString from dependencies
+    permissionLevel: null, // Will be set from dependencies.permissionLevels.admin in execute
     enabled: true,
 };
 
@@ -25,7 +24,15 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, addLog, findPlayer } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels, getString } = dependencies;
+
+    // Set definition properties from dependencies
+    definition.permissionLevel = permissionLevels.admin;
+    // Ensure description is resolved only once if it's a key (e.g. if execute is called multiple times)
+    if (typeof definition.description === 'string' && !definition.description.startsWith("§")) {
+       definition.description = getString(definition.description);
+    }
+
     const prefix = config.prefix;
 
     if (args.length < 1) {
@@ -33,7 +40,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
     const targetPlayerName = args[0];
-    const foundPlayer = findPlayer(targetPlayerName, playerUtils);
+    const foundPlayer = playerUtils.findPlayer(targetPlayerName); // Use playerUtils from dependencies
 
     if (!foundPlayer) {
         player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
@@ -41,21 +48,22 @@ export async function execute(player, args, dependencies) {
     }
 
     try {
-        const oldMuteInfo = playerDataManager.getMuteInfo(foundPlayer);
+        // Calls to playerDataManager functions now pass 'dependencies'
+        const oldMuteInfo = playerDataManager.getMuteInfo(foundPlayer, dependencies);
 
         if (!oldMuteInfo) {
             player.sendMessage(getString("command.unmute.error.notMuted", { targetName: foundPlayer.nameTag }));
             return;
         }
 
-        const unmuted = playerDataManager.removeMute(foundPlayer);
+        const unmuted = playerDataManager.removeMute(foundPlayer, dependencies);
 
         if (unmuted) {
             try {
                 foundPlayer.onScreenDisplay.setActionBar(getString("command.unmute.targetNotification"));
             } catch (e) {
                 if (config.enableDebugLogging && playerUtils.debugLog) {
-                    playerUtils.debugLog(`Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e}`, player.nameTag);
+                    playerUtils.debugLog(`[UnmuteCommand] Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e.stack || e}`, player.nameTag);
                 }
             }
             player.sendMessage(getString("command.unmute.success", { targetName: foundPlayer.nameTag }));
@@ -63,8 +71,8 @@ export async function execute(player, args, dependencies) {
                 const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context
                 playerUtils.notifyAdmins(getString("command.unmute.adminNotify", { targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPData);
             }
-            if (addLog) {
-                addLog({
+            if (logManager?.addLog) { // Use logManager from dependencies
+                logManager.addLog({
                     timestamp: Date.now(),
                     adminName: player.nameTag,
                     actionType: 'unmute',
@@ -75,12 +83,13 @@ export async function execute(player, args, dependencies) {
             }
 
             if (oldMuteInfo.isAutoMod && oldMuteInfo.triggeringCheckType) {
-                await clearFlagsForCheckType(foundPlayer, oldMuteInfo.triggeringCheckType, dependencies);
+                // Use playerDataManager from dependencies
+                await playerDataManager.clearFlagsForCheckType(foundPlayer, oldMuteInfo.triggeringCheckType, dependencies);
                 const message = getString("command.unmute.automodFlagClear", { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag });
                 player.sendMessage(message);
                 const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
                 if (config.enableDebugLogging && playerUtils.debugLog) {
-                    playerUtils.debugLog(message.replace(/§[a-f0-9]/g, ''), targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null);
+                    playerUtils.debugLog(`[UnmuteCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null);
                 }
                 if (playerUtils.notifyAdmins) {
                     playerUtils.notifyAdmins(getString("command.unmute.automodFlagClearAdminNotify", { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPDataForFlagClearLog);
@@ -90,9 +99,9 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(getString("command.unmute.fail", { targetName: foundPlayer.nameTag }));
         }
     } catch (e) {
-        player.sendMessage(getString("common.error.generic") + `: ${e}`);
-        if (config.enableDebugLogging && playerUtils.debugLog) {
-            playerUtils.debugLog(`Unexpected error during unmute command for ${foundPlayer.nameTag} by ${player.nameTag}: ${e}`, player.nameTag);
-        }
+        player.sendMessage(getString("common.error.generic") + `: ${e.message}`); // Provide e.message for user
+        // Standardized error logging
+        console.error(`[UnmuteCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
+        logManager?.addLog?.({ actionType: 'error', details: `[UnmuteCommand] Failed to unmute ${foundPlayer?.nameTag || targetPlayerName}: ${e.stack || e}`});
     }
 }

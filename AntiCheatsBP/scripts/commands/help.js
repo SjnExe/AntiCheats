@@ -4,9 +4,7 @@
  * or detailed information about a specific command based on their permission level.
  * @version 1.0.1
  */
-// Removed direct import of config
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js';
+// Imports for permissionLevels, getString, and config are removed, they will come from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -23,59 +21,67 @@ export const definition = {
  * Executes the help command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
  * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include `allCommands` list.
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include an array of command definitions.
  */
 export async function execute(player, args, dependencies) {
-    const { getPlayerPermissionLevel, allCommands, config: runtimeConfig } = dependencies; // runtimeConfig is editableConfigValues
-    const userPermissionLevel = getPlayerPermissionLevel(player);
-    const prefix = runtimeConfig.prefix; // Get prefix from runtime config
+    // Use playerUtils.getPlayerPermissionLevel, commandDefinitions (array), config, permissionLevels, getString from dependencies
+    const { playerUtils, commandDefinitionMap, /*assume commandDefinitions is an array derived from commandDefinitionMap if needed for .find*/ config, permissionLevels, getString } = dependencies;
+
+    // For clarity, let's create an array from the commandDefinitionMap values if allCommands was meant to be that.
+    // Or, if commandDefinitionMap is already passed as an array of definitions by this point, rename it.
+    // For now, let's assume commandDefinitionMap is the Map, and we'll get an array from its values.
+    const commandDefinitionsArray = Array.from(commandDefinitionMap.values());
+
+    const userPermissionLevel = playerUtils.getPlayerPermissionLevel(player);
+    const prefix = config.prefix;
 
     if (args[0]) {
         const specificCommandName = args[0].toLowerCase().replace(prefix, "");
-        let foundCmdDef = allCommands.find(cmd => cmd.name === specificCommandName);
+        let foundCmdDef = commandDefinitionsArray.find(cmd => cmd.name === specificCommandName);
 
-        if (!foundCmdDef && runtimeConfig.commandAliases) {
-            const aliasTarget = Object.keys(runtimeConfig.commandAliases).find(alias => alias === specificCommandName && runtimeConfig.commandAliases[alias]);
+        if (!foundCmdDef && config.commandAliases) {
+            const aliasTarget = Object.keys(config.commandAliases).find(alias => alias === specificCommandName && config.commandAliases[alias]);
             if (aliasTarget) {
-                const targetCmdName = runtimeConfig.commandAliases[aliasTarget];
-                foundCmdDef = allCommands.find(cmd => cmd.name === targetCmdName);
+                const targetCmdName = config.commandAliases[aliasTarget];
+                foundCmdDef = commandDefinitionsArray.find(cmd => cmd.name === targetCmdName);
             }
         }
 
         if (foundCmdDef) {
             let isEffectivelyEnabled = foundCmdDef.enabled;
-            if (runtimeConfig.commandSettings && typeof runtimeConfig.commandSettings[foundCmdDef.name]?.enabled === 'boolean') {
-                isEffectivelyEnabled = runtimeConfig.commandSettings[foundCmdDef.name].enabled;
+            if (config.commandSettings && typeof config.commandSettings[foundCmdDef.name]?.enabled === 'boolean') {
+                isEffectivelyEnabled = config.commandSettings[foundCmdDef.name].enabled;
             }
 
             if (!isEffectivelyEnabled) {
-                player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName }));
+                player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName })); // getString from dependencies
                 return;
             }
 
+            // permissionLevels is now from dependencies
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
                 const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
                 let permLevelName = "Unknown";
-                for (const key in permissionLevels) {
+                for (const key in permissionLevels) { // permissionLevels from dependencies
                     if (permissionLevels[key] === foundCmdDef.permissionLevel) {
                         permLevelName = key.charAt(0).toUpperCase() + key.slice(1);
                         break;
                     }
                 }
                 player.sendMessage(
-                    getString("help.specific.header", { prefix: prefix, commandName: foundCmdDef.name }) + "\n" +
-                    getString("help.specific.syntax", { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" +
-                    getString("help.specific.description", { description: getString(foundCmdDef.description) }) + "\n" +
-                    getString("help.specific.permission", { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel })
+                    getString("help.specific.header", { prefix: prefix, commandName: foundCmdDef.name }) + "\n" + // getString from dependencies
+                    getString("help.specific.syntax", { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" + // getString from dependencies
+                    getString("help.specific.description", { description: getString(foundCmdDef.description) }) + "\n" + // getString from dependencies
+                    getString("help.specific.permission", { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel }) // getString from dependencies
                 );
             } else {
-                player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: prefix }));
+                player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: prefix })); // getString from dependencies
             }
         } else {
-            player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName }));
+            player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName })); // getString from dependencies
         }
     } else {
-        let helpMessage = getString("help.list.header", { prefix: prefix }) + "\n";
+        let helpMessage = getString("help.list.header", { prefix: prefix }) + "\n"; // getString from dependencies
         let commandsListed = 0;
 
         const categories = [
@@ -86,7 +92,7 @@ export async function execute(player, args, dependencies) {
             {
                 nameKey: "help.list.category.tpa",
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
-                condition: () => runtimeConfig.enableTPASystem // Use runtimeConfig
+                condition: () => config.enableTPASystem // Use config from dependencies
             },
             {
                 nameKey: "help.list.category.moderation",
@@ -116,11 +122,11 @@ export async function execute(player, args, dependencies) {
 
             let categoryHelp = "";
             category.commands.forEach(commandName => {
-                const cmdDef = allCommands.find(cmd => cmd.name === commandName);
+                const cmdDef = commandDefinitionsArray.find(cmd => cmd.name === commandName); // Use commandDefinitionsArray
                 if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) {
                     let isEffectivelyEnabled = cmdDef.enabled;
-                    if (runtimeConfig.commandSettings && typeof runtimeConfig.commandSettings[cmdDef.name]?.enabled === 'boolean') {
-                        isEffectivelyEnabled = runtimeConfig.commandSettings[cmdDef.name].enabled;
+                    if (config.commandSettings && typeof config.commandSettings[cmdDef.name]?.enabled === 'boolean') { // config from dependencies
+                        isEffectivelyEnabled = config.commandSettings[cmdDef.name].enabled;
                     }
                     if (!isEffectivelyEnabled) {
                         return; // Skips this command in the list
@@ -130,11 +136,11 @@ export async function execute(player, args, dependencies) {
                     // Get localized description for each command
                     let description;
                     if (cmdDef.name === 'panel') {
-                        description = getString("help.descriptionOverride.panel");
+                        description = getString("help.descriptionOverride.panel"); // getString from dependencies
                     } else if (cmdDef.name === 'ui') { // Handle 'ui' alias specifically if its description key is different
-                        description = getString("help.descriptionOverride.ui"); // Assuming 'ui' might have its own override or shares panel's
+                        description = getString("help.descriptionOverride.ui"); // getString from dependencies
                     } else {
-                        description = getString(cmdDef.description); // All command definitions should have description as a key
+                        description = getString(cmdDef.description); // getString from dependencies
                     }
 
                     categoryHelp += `§e${prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
@@ -143,13 +149,13 @@ export async function execute(player, args, dependencies) {
             });
 
             if (categoryHelp) {
-                const categoryNameString = getString(category.nameKey);
+                const categoryNameString = getString(category.nameKey); // getString from dependencies
                 helpMessage += `\n${categoryNameString}\n${categoryHelp}`;
             }
         });
 
         if (commandsListed === 0) {
-            helpMessage += getString("help.list.noCommandsAvailable");
+            helpMessage += getString("help.list.noCommandsAvailable"); // getString from dependencies
         } else {
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);

@@ -3,22 +3,19 @@
  * @version 1.0.2
  */
 
-import { world, system } from '@minecraft/server';
-// import * as config from '../config.js'; // config.prefix is used, but should come from dependencies.configModule.prefix
-import * as tpaManager from '../core/tpaManager.js';
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+import { world, system } from '@minecraft/server'; // Keep system import if used, though it's not in this snippet
+// tpaManager, permissionLevels, getString will be from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpaccept',
-    description: getString("command.tpaccept.description"),
+    description: "command.tpaccept.description", // Key
     aliases: ['tpaaccept'],
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: null, // To be set from dependencies.permissionLevels.normal
     syntax: '!tpaccept [playerName]',
-    enabled: true,
+    enabled: true, // Will be checked against dependencies.config.enableTPASystem
 };
 
 /**
@@ -28,11 +25,14 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config: fullConfig } = dependencies; // config here is editableConfigValues, fullConfig is the module
-    const prefix = fullConfig.prefix; // Use prefix from the main config module via dependencies
+    const { playerUtils, config, tpaManager, permissionLevels, getString, logManager } = dependencies;
 
+    definition.description = getString(definition.description);
+    definition.permissionLevel = permissionLevels.normal;
 
-    if (!fullConfig.enableTPASystem) {
+    const prefix = config.prefix;
+
+    if (!config.enableTPASystem) {
         player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
@@ -41,6 +41,7 @@ export async function execute(player, args, dependencies) {
     const specificRequesterName = args[0];
     let requestToAccept = null;
 
+    // findRequestsForPlayer does not need dependencies as it's a local lookup in tpaManager
     const incomingRequests = tpaManager.findRequestsForPlayer(acceptingPlayerName)
         .filter(req => req.targetName === acceptingPlayerName && Date.now() < req.expiryTimestamp);
 
@@ -57,7 +58,7 @@ export async function execute(player, args, dependencies) {
             return;
         }
     } else {
-        incomingRequests.sort((a, b) => b.creationTimestamp - a.creationTimestamp);
+        incomingRequests.sort((a, b) => b.creationTimestamp - a.creationTimestamp); // Sort to get the latest if no name specified
         requestToAccept = incomingRequests[0];
     }
 
@@ -66,13 +67,23 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Pass dependencies to tpaManager.acceptRequest
-    const warmUpInitiated = tpaManager.acceptRequest(requestToAccept.requestId, dependencies);
+    try {
+        const warmUpInitiated = await tpaManager.acceptRequest(requestToAccept.requestId, dependencies);
 
-
-    if (warmUpInitiated) {
-        player.sendMessage(getString("command.tpaccept.success", { playerName: requestToAccept.requesterName, warmupSeconds: fullConfig.TPATeleportWarmupSeconds }));
-    } else {
-        player.sendMessage(getString("command.tpaccept.fail", { playerName: requestToAccept.requesterName }));
+        if (warmUpInitiated) {
+            player.sendMessage(getString("command.tpaccept.success", { playerName: requestToAccept.requesterName, warmupSeconds: config.TPATeleportWarmupSeconds }));
+        } else {
+            // Attempt to provide a more specific message if acceptRequest returned an error object (though current acceptRequest returns bool)
+            player.sendMessage(getString("command.tpaccept.fail", { playerName: requestToAccept.requesterName }));
+             if (config.enableDebugLogging) {
+                playerUtils.debugLog(`[TpAcceptCommand] Call to tpaManager.acceptRequest for ${requestToAccept.requestId} returned falsy.`, player.nameTag);
+            }
+        }
+    } catch (error) {
+        console.error(`[TpAcceptCommand] Error during tpaccept for ${player.nameTag}: ${error.stack || error}`);
+        player.sendMessage(getString("common.error.genericCommand"));
+        if(logManager) {
+            logManager.addLog({actionType: 'error', details: `[TpAcceptCommand] ${player.nameTag} failed to accept TPA: ${error.stack || error}`});
+        }
     }
 }

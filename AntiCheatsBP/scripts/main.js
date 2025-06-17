@@ -14,13 +14,14 @@ import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js';
 import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
-import { executeCheckAction } from './core/actionManager.js';
+import * as actionManager from './core/actionManager.js';
 import { permissionLevels as importedPermissionLevels } from './core/rankManager.js';
 import { ActionFormData as ImportedActionFormData, MessageFormData as ImportedMessageFormData, ModalFormData as ImportedModalFormData } from '@minecraft/server-ui';
 import { ItemComponentTypes as ImportedItemComponentTypes } from '@minecraft/server';
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
+import { getString } from './core/i18n.js';
 import { getBorderSettings, saveBorderSettings } from './utils/worldBorderManager.js';
 
 function easeOutQuad(t) {
@@ -40,43 +41,59 @@ playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
 mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     const baseDependencies = {
         config: configModule.editableConfigValues,
-        configModule: configModule,
         playerUtils,
         playerDataManager,
         logManager,
-        actionManager: { executeCheckAction },
-        checks,
+        actionManager,
         uiManager,
         reportManager,
+        tpaManager,
+        checks,
+        mc,
         currentTick,
+        permissionLevels: importedPermissionLevels,
+        ActionFormData: ImportedActionFormData,
+        MessageFormData: ImportedMessageFormData,
+        ModalFormData: ImportedModalFormData,
+        ItemComponentTypes: ImportedItemComponentTypes,
+        getString,
     };
 
     if (eventData.message.startsWith(baseDependencies.config.prefix)) {
         const commandHandlingDependencies = {
             ...baseDependencies,
-            mc,
-            permissionLevels: importedPermissionLevels,
-            ActionFormData: ImportedActionFormData,
-            MessageFormData: ImportedMessageFormData,
-            ModalFormData: ImportedModalFormData,
-            ItemComponentTypes: ImportedItemComponentTypes,
             commandManager: commandManager,
             commandDefinitionMap: commandManager.commandDefinitionMap,
             commandExecutionMap: commandManager.commandExecutionMap,
         };
         await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
     } else {
-        await eventHandlers.handleBeforeChatSend(eventData, baseDependencies);
+        // For non-command chat messages, pass a slightly reduced set if some deps are not needed
+        const chatEventDependencies = {
+            ...baseDependencies,
+            // Potentially remove commandManager, commandDefinitionMap, commandExecutionMap if not used by handleBeforeChatSend
+            // For now, keeping them for consistency unless a clear need to remove arises.
+        };
+        await eventHandlers.handleBeforeChatSend(eventData, chatEventDependencies);
     }
 });
 
 mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
     const player = eventData.player;
-    await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
+    // Create a minimal dependencies object for this handler
+    const dependencies = {
+        config: configModule.editableConfigValues,
+        playerUtils: playerUtils,
+        playerDataManager: playerDataManager,
+        // getString: getString, // Not strictly needed for this part unless kick messages are localized here
+        // logManager: logManager // For console.warn consistency if desired, but not essential for this change
+    };
 
-    if (playerDataManager.isBanned(player)) {
+    await dependencies.playerDataManager.ensurePlayerDataInitialized(player, currentTick);
+
+    if (dependencies.playerDataManager.isBanned(player)) {
         eventData.cancel = true;
-        const banInfo = playerDataManager.getBanInfo(player);
+        const banInfo = dependencies.playerDataManager.getBanInfo(player);
         let detailedKickMessage = `§cYou are banned from this server.\n`;
         if (banInfo) {
             detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || "Unknown"}\n`;
@@ -85,102 +102,94 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
         } else {
             detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`;
         }
-        if (configModule.editableConfigValues.discordLink && configModule.editableConfigValues.discordLink.trim() !== "" && configModule.editableConfigValues.discordLink !== "https://discord.gg/example") {
-            detailedKickMessage += `§fDiscord: §b${configModule.editableConfigValues.discordLink}`;
+
+        if (dependencies.config.discordLink && dependencies.config.discordLink.trim() !== "" && dependencies.config.discordLink !== "https://discord.gg/example") {
+            detailedKickMessage += `§fDiscord: §b${dependencies.config.discordLink}`;
         }
         const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Ban details: By ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}, Expires: ${banInfo?.unbanTime === Infinity ? "Permanent" : new Date(banInfo?.unbanTime).toLocaleString()}`;
-        console.warn(logMessage);
-        if (playerUtils.notifyAdmins) {
-            playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. Banned by: ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}`, null);
+        console.warn(logMessage); // Keep console.warn for this critical log or switch to dependencies.logManager.addLog if included
+        if (dependencies.playerUtils.notifyAdmins) {
+            dependencies.playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. Banned by: ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}`, null);
         }
     }
 });
 
+const getStandardDependencies = () => ({
+    config: configModule.editableConfigValues,
+    playerUtils,
+    playerDataManager,
+    logManager,
+    actionManager,
+    uiManager,
+    reportManager,
+    tpaManager,
+    checks,
+    mc,
+    currentTick,
+    permissionLevels: importedPermissionLevels,
+    ActionFormData: ImportedActionFormData,
+    MessageFormData: ImportedMessageFormData,
+    ModalFormData: ImportedModalFormData,
+    ItemComponentTypes: ImportedItemComponentTypes,
+    getString,
+});
+
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    eventHandlers.handlePlayerSpawn(eventData, dependencies);
+    eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
 });
 
 mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    eventHandlers.handlePlayerLeave(eventData, dependencies);
+    eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    eventHandlers.handleEntityHurt(eventData, dependencies);
+    const deps = getStandardDependencies();
+    // combatLogEvents subscription might need adjustment if it also needs full deps
+    eventHandlers.handleEntityHurt(eventData, deps);
 });
 
+// Ensure this subscription also uses standardized dependencies if it calls functions needing them.
+// For now, assuming it's self-contained or uses what's passed.
+// This was already correct, passing config aliased from editableConfigValues.
 eventHandlers.subscribeToCombatLogEvents({
     config: configModule.editableConfigValues, playerDataManager, playerUtils
 });
 
 mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, dependencies);
+    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, dependencies);
+    await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
 });
 
 mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handleItemUse(eventData, dependencies);
+    await eventHandlers.handleItemUse(eventData, getStandardDependencies());
 });
 
 mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handleItemUseOn(eventData, dependencies);
+    await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
 });
 
 mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, dependencies);
+    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, dependencies);
+    await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, actionManager: { executeCheckAction }, checks, currentTick
-    };
-    await eventHandlers.handleInventoryItemChange(eventData.player, eventData.newItem, eventData.oldItem, eventData.slotName, dependencies);
+    await eventHandlers.handleInventoryItemChange(eventData.player, eventData.newItem, eventData.oldItem, eventData.slotName, getStandardDependencies());
 });
 
 mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, playerUtils, playerDataManager, currentTick
-    };
-    eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, dependencies);
+    // This handler might only need a subset, adjust if necessary
+    eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.entityDie.subscribe((eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, playerDataManager, logManager, currentTick
-    };
+    const dependencies = getStandardDependencies();
     if (eventData.deadEntity.typeId === 'minecraft:player') {
         eventHandlers.handlePlayerDeath(eventData, dependencies);
     }
@@ -188,26 +197,21 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
 });
 
 mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, logManager, actionManager: { executeCheckAction }, playerDataManager, checks, currentTick
-    };
-    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, dependencies);
+    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
-    const dependencies = {
-        config: configModule.editableConfigValues, configModule, playerUtils, logManager, actionManager: { executeCheckAction }, playerDataManager, checks, currentTick
-    };
-    await eventHandlers.handlePistonActivate_AntiGrief(eventData, dependencies);
+    await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
 });
 
 mc.system.runInterval(() => {
-    if (configModule.editableConfigValues.enableTPASystem) {
-        tpaManager.clearExpiredRequests();
-        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+    const tpaIntervalDependencies = getStandardDependencies();
+    if (tpaIntervalDependencies.config.enableTPASystem) {
+        tpaManager.clearExpiredRequests(tpaIntervalDependencies);
+        const requestsInWarmup = tpaManager.getRequestsInWarmup(); // This function does not require dependencies
         for (const request of requestsInWarmup) {
             if (Date.now() >= request.warmupExpiryTimestamp) {
-                tpaManager.executeTeleport(request.requestId);
+                tpaManager.executeTeleport(request.requestId, tpaIntervalDependencies);
             }
         }
     }
@@ -252,7 +256,8 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, playerForDebug
 }
 
 mc.world.beforeEvents.entityHurt.subscribe(eventData => {
-    if (!configModule.editableConfigValues.enableTPASystem) return;
+    const tpaEntityHurtDependencies = getStandardDependencies();
+    if (!tpaEntityHurtDependencies.config.enableTPASystem) return;
     const { hurtEntity, damageSource } = eventData;
     let playerNameTag;
     try {
@@ -272,9 +277,9 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
 
             if (playerIsTeleporting) {
                 const damageCause = damageSource?.cause || 'unknown';
-                const reasonMsgPlayer = `§cTeleport cancelled: You took damage (cause: ${damageCause}).`;
+                const reasonMsgPlayer = tpaEntityHurtDependencies.getString("tpa.manager.error.warmupDamageTaken", { damageCause: damageCause });
                 const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
-                tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog);
+                tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog, tpaEntityHurtDependencies);
                 break;
             }
         }
@@ -331,15 +336,7 @@ mc.system.runInterval(async () => {
     const allPlayers = mc.world.getAllPlayers();
     playerDataManager.cleanupActivePlayerData(allPlayers);
 
-    const tickDependencies = {
-        config: configModule.editableConfigValues,
-        playerUtils,
-        playerDataManager,
-        logManager,
-        actionManager: { executeCheckAction },
-        checks,
-        currentTick
-    };
+    const tickDependencies = getStandardDependencies(); // Use the standardized getter
 
     for (const player of allPlayers) {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
@@ -506,7 +503,7 @@ mc.system.runInterval(async () => {
                             const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils);
                             try {
                                 player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
-                                if (tickDependencies.config.worldBorderWarningMessage) playerUtils.warnPlayer(player, getString(tickDependencies.config.worldBorderWarningMessage));
+                        if (tickDependencies.config.worldBorderWarningMessage) playerUtils.warnPlayer(player, tickDependencies.getString(tickDependencies.config.worldBorderWarningMessage));
                                 if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
                                 pData.ticksOutsideBorder = 0; pData.borderDamageApplications = 0; pData.isDirtyForSave = true;
                             } catch (e) {
