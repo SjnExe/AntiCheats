@@ -2,7 +2,7 @@
 
 This document lists significant tasks that have been completed.
 
-## Global Configuration: Checks Disabled by Default (Session 2024-07-26)
+## Global Configuration: Checks Disabled by Default
 *   **Modified `AntiCheatsBP/scripts/core/automodConfig.js`**:
     *   Set all boolean values in the `automodPerCheckTypeToggles` object to `false`. This ensures that AutoMod actions for all checks are disabled by default.
 *   **Modified `AntiCheatsBP/scripts/config.js`**:
