@@ -42,13 +42,13 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                             try { // Attempt to treat whitelist pattern as regex
                                 if (new RegExp(wlPattern, 'i').test(detectedLink)) {
                                     isWhitelisted = true;
-                                    playerUtils.debugLog?.(\`AntiAdv: Link '\${detectedLink}' on \${player.nameTag} whitelisted by regex pattern '\${wlPattern}'.\`, watchedPlayerName);
+                                    playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by regex pattern '${wlPattern}'.`, dependencies, watchedPlayerName);
                                     break;
                                 }
                             } catch (e) { // If wlPattern is not a valid regex, treat as simple string contains (case-insensitive)
                                 if (detectedLink.toLowerCase().includes(wlPattern.toLowerCase())) {
                                     isWhitelisted = true;
-                                    playerUtils.debugLog?.(\`AntiAdv: Link '\${detectedLink}' on \${player.nameTag} whitelisted by simple string '\${wlPattern}'.\`, watchedPlayerName);
+                                    playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by simple string '${wlPattern}'.`, dependencies, watchedPlayerName);
                                     break;
                                 }
                             }
@@ -56,11 +56,11 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     }
                     if (isWhitelisted) {
                         // Link is whitelisted, continue checking the message with other regex patterns
-                        playerUtils.debugLog?.(\`AntiAdv: Whitelisted link "\${detectedLink}" found. Continuing scan with other regex patterns.\`, watchedPlayerName);
+                        playerUtils.debugLog(`[AntiAdvCheck] Whitelisted link "${detectedLink}" found. Continuing scan with other regex patterns.`, dependencies, watchedPlayerName);
                         continue;
                     }
                     // Link not whitelisted, proceed to flag
-                    playerUtils.debugLog?.(\`AntiAdv: Player \${player.nameTag} triggered regex pattern '\${regexString}' with link: "\${detectedLink}" in message: "\${message}"\`, watchedPlayerName);
+                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, dependencies, watchedPlayerName);
                     const violationDetails = {
                         detectedLink: detectedLink,
                         method: "regex",
@@ -71,21 +71,22 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     return; // Stop after first non-whitelisted match
                 }
             } catch (e) {
-                playerUtils.debugLog?.(\`AntiAdv: Error executing regex '\${regexString}' for \${player.nameTag}: \${e.message}\`, watchedPlayerName);
+                playerUtils.debugLog(`[AntiAdvCheck] Error executing regex '${regexString}' for ${player.nameTag}: ${e.message}`, dependencies, watchedPlayerName);
+                console.error(`[AntiAdvCheck] Regex error for pattern "${regexString}": ${e.stack || e}`);
             }
         }
         // No non-whitelisted links found by advanced regexes
     } else {
         // Fallback to simple pattern checking
         if (!config.antiAdvertisingPatterns || config.antiAdvertisingPatterns.length === 0) {
-            playerUtils.debugLog?.("AntiAdv: No simple patterns configured, skipping simple check.", watchedPlayerName);
+            playerUtils.debugLog("[AntiAdvCheck] No simple patterns configured, skipping simple check.", dependencies, watchedPlayerName);
             return;
         }
         const lowerCaseMessage = message.toLowerCase();
         for (const pattern of config.antiAdvertisingPatterns) {
             if (lowerCaseMessage.includes(pattern.toLowerCase())) {
                 // Simple patterns currently do not have a separate whitelisting mechanism here.
-                playerUtils.debugLog?.(\`AntiAdv: Player \${player.nameTag} triggered simple pattern '\${pattern}' with message: "\${message}"\`, watchedPlayerName);
+                playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered simple pattern '${pattern}' with message: "${message}"`, dependencies, watchedPlayerName);
                 const violationDetails = {
                     matchedPattern: pattern,
                     method: "simple_pattern",

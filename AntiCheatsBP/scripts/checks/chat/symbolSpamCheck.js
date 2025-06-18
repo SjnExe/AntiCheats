@@ -54,14 +54,13 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const symbolPercentage = (symbolChars / totalChars) * 100;
 
     if (symbolPercentage >= config.symbolSpamPercentage) {
-        if (config.enableDebugLogging && playerUtils?.debugLog) {
-            playerUtils.debugLog(
-                \`SymbolSpamCheck: Player \${player.nameTag} triggered symbol spam. \` +
-                \`Msg: "\${message}", Symbols: \${symbolPercentage.toFixed(1)}%, \` +
-                \`Threshold: \${config.symbolSpamPercentage}%, MinLength: \${config.symbolSpamMinLength}\`,
-                pData?.isWatched ? player.nameTag : null // Use pData for watched check
-            );
-        }
+        // playerUtils.debugLog will internally check config.enableDebugLogging
+        playerUtils.debugLog(
+            `[SymbolSpamCheck] Player ${player.nameTag} triggered symbol spam. ` +
+            `Msg: "${message}", Symbols: ${symbolPercentage.toFixed(1)}%, ` +
+            `Threshold: ${config.symbolSpamPercentage}%, MinLength: ${config.symbolSpamMinLength}`,
+            dependencies, pData?.isWatched ? player.nameTag : null
+        );
 
         const profileName = config.symbolSpamActionProfileName || "chatSymbolSpamDetected";
 

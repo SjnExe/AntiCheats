@@ -55,14 +55,13 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     }
 
     if (maxRepeatCount >= config.charRepeatThreshold) {
-        if (config.enableDebugLogging && playerUtils && playerUtils.debugLog) {
-            playerUtils.debugLog(
-                \`CharRepeatCheck: Player \${player.nameTag} triggered char repeat. \` +
-                \`Msg: "\${message}", Char: '\${charThatRepeated}', Count: \${maxRepeatCount}, \` +
-                \`Threshold: \${config.charRepeatThreshold}, MinLength: \${config.charRepeatMinLength}\`,
-                pData?.isWatched ? player.nameTag : null // Use pData for watched check
-            );
-        }
+        // playerUtils.debugLog will internally check config.enableDebugLogging
+        playerUtils.debugLog(
+            `[CharRepeatCheck] Player ${player.nameTag} triggered char repeat. ` +
+            `Msg: "${message}", Char: '${charThatRepeated}', Count: ${maxRepeatCount}, ` +
+            `Threshold: ${config.charRepeatThreshold}, MinLength: ${config.charRepeatMinLength}`,
+            dependencies, pData?.isWatched ? player.nameTag : null
+        );
         await actionManager.executeCheckAction(
             player,
             config.charRepeatActionProfileName,

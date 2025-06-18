@@ -5,16 +5,15 @@
  */
 import * as mc from '@minecraft/server';
 import { registerCommand } from './commandRegistry.js';
-import { getString } from '../core/i18n.js';
-import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+// getString and permissionLevels will be accessed via dependencies
 
 // Command Configuration
 const commandName = 'listwatched';
-const commandDescriptionKey = 'command.listwatched.description';
-const requiredPermissionLevel = permissionLevels.admin; // Use imported permission level
+const commandDescriptionKey = "Lists all currently online players being watched."; // Static fallback
+const requiredPermissionLevel = 1; // Static fallback (Admin)
 
 async function executeListWatched(player, args, dependencies) {
-    const { playerDataManager, playerUtils } = dependencies;
+    const { playerDataManager, playerUtils, getString } = dependencies; // Added getString
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
@@ -37,15 +36,17 @@ async function executeListWatched(player, args, dependencies) {
 // Register the command
 registerCommand({
     commandName: commandName,
-    aliases: ["lw", "watchedlist"], // Added some example aliases
-    descriptionKey: commandDescriptionKey,
-    permissionLevel: requiredPermissionLevel,
+    aliases: ["lw", "watchedlist"],
+    descriptionKey: commandDescriptionKey, // commandManager should handle localization if this is a key
+    permissionLevel: requiredPermissionLevel, // commandManager uses this
     execute: async (player, args, dependencies) => {
-        // Manual permission check
-        if (dependencies.playerUtils.getPlayerPermissionLevel(player) > requiredPermissionLevel) {
-            dependencies.playerUtils.sendMessage(player, getString("common.error.noPermissionCommand")); // Corrected key
+        const { playerUtils, getString, permissionLevels, rankManager } = dependencies; // Ensure all are here
+
+        // Manual permission check using rankManager from dependencies
+        if (rankManager.getPlayerPermissionLevel(player, dependencies) > (permissionLevels.admin /* or static 1 */)) {
+            playerUtils.sendMessage(player, getString("common.error.noPermissionCommand"));
             return;
         }
-        await executeListWatched(player, args, dependencies);
+        await executeListWatched(player, args, dependencies); // executeListWatched already destructures getString
     }
 });

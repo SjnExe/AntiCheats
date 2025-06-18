@@ -26,7 +26,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         return;
     }
     if (!pData) { // pData might not be used by this specific check's logic but is part of standard signature
-        playerUtils.debugLog?.("ExcessiveMentions: pData is null, skipping check (though not strictly needed for this check's core logic).", player.nameTag);
+        playerUtils.debugLog("[ExcessiveMentionsCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
         // return; // Decide if pData is truly optional or if this is an error state
     }
 
@@ -81,6 +81,6 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         };
 
         await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-        playerUtils.debugLog?.(\`ExcessiveMentions: Flagged \${player.nameTag} for \${flagReasonTexts.join('; ')}. Msg: "\${rawMessageContent.substring(0,20)}..."\`, pData?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[ExcessiveMentionsCheck] Flagged ${player.nameTag} for ${flagReasonTexts.join('; ')}. Msg: "${rawMessageContent.substring(0,20)}..."`, dependencies, pData?.isWatched ? player.nameTag : null);
     }
 }

@@ -1,10 +1,9 @@
 /**
  * @file AntiCheatsBP/scripts/commands/myflags.js
  * Defines the !myflags command, allowing players to view their own AntiCheat flag status.
- * @version 1.0.2
+ * @version 1.0.3
  */
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js';
+// permissionLevels and getString are now accessed via dependencies
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +11,8 @@ import { getString } from '../core/i18n.js';
 export const definition = {
     name: "myflags",
     syntax: "!myflags",
-    description: getString("command.myflags.description"),
-    permissionLevel: permissionLevels.normal, // Accessible by all players
+    description: "Allows players to view their own AntiCheat flag status.", // Static fallback
+    permissionLevel: 0, // Static fallback (Normal)
     enabled: true,
 };
 
@@ -23,9 +22,12 @@ export const definition = {
  * @param {string[]} args The command arguments (unused in this command).
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-export async function execute(player, _args, dependencies) { // args renamed to _args as it's unused
-    const { playerDataManager } = dependencies;
+export async function execute(player, _args, dependencies) {
+    const { playerDataManager, getString, permissionLevels } = dependencies; // Destructure getString and permissionLevels
     const pDataSelf = playerDataManager.getPlayerData(player.id);
+
+    // definition.description = getString("command.myflags.description");
+    // definition.permissionLevel = permissionLevels.normal;
 
     if (pDataSelf && pDataSelf.flags) {
         const totalFlags = pDataSelf.flags.totalFlags || 0;

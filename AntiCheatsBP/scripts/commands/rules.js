@@ -1,29 +1,25 @@
 // Script for the !rules command
 import { MessageFormData } from '@minecraft/server-ui';
-// Removed direct import of config
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js';
+// permissionLevels and getString are now accessed via dependencies
 
 /**
  * @file Script for the !rules command, displays server rules to the player.
- * @version 1.0.2
+ * @version 1.0.3
  */
 
 /**
  * @typedef {import('../types.js').CommandDefinition} CommandDefinition
  */
 
-// Corrected final structure based on reflections during generation
-// and aligning with typical command module structure in this project.
 /**
  * @type {CommandDefinition}
  */
 export const definition = {
     name: 'rules',
-    description: getString("command.rules.description"),
+    description: "Displays the server rules.", // Static fallback
     syntax: '!rules',
     aliases: ['rule'],
-    permissionLevel: permissionLevels.normal, // Accessible to everyone
+    permissionLevel: 0, // Static fallback (Normal)
     enabled: true,
 };
 
@@ -33,36 +29,30 @@ export const definition = {
  * @param {string[]} _args The command arguments (not used in this command).
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
-export async function execute(player, _args, dependencies) { // args renamed to _args
-    const { playerUtils, config: runtimeConfig } = dependencies; // Use runtimeConfig from dependencies
+export async function execute(player, _args, dependencies) {
+    const { playerUtils, config, getString, permissionLevels } = dependencies; // Destructure all needed services
+
+    // definition.description = getString("command.rules.description");
+    // definition.permissionLevel = permissionLevels.normal;
 
     const form = new MessageFormData();
     form.title(getString("command.rules.ui.title"));
 
-    // Access serverRules from runtimeConfig (which is dependencies.config)
-    if (runtimeConfig.serverRules && runtimeConfig.serverRules.trim() !== "") {
-        // Assuming runtimeConfig.serverRules is already a string, potentially with formatting codes.
-        // If serverRules itself needs to be a localization key, this would need to change to:
-        // form.body(getString(runtimeConfig.serverRules));
-        // For now, assuming it's a direct string from config.
-        form.body(runtimeConfig.serverRules);
+    if (config.serverRules && config.serverRules.trim() !== "") {
+        // Assuming config.serverRules is already a string.
+        // If it were a loc key: form.body(getString(config.serverRules));
+        form.body(config.serverRules);
     } else {
         form.body(getString("command.rules.noRulesConfigured"));
     }
 
     form.button1(getString("common.button.close"));
-    // MessageFormData requires two buttons. Using close for both as they have same behavior.
-    form.button2(getString("common.button.close"));
+    form.button2(getString("common.button.close")); // MessageFormData requires two buttons
 
     try {
-        // We don't need to do anything with the response for a simple info display.
         await form.show(player);
     } catch (error) {
-        // Use playerUtils.debugLog if available from dependencies, otherwise console.error
-        if (runtimeConfig.enableDebugLogging && playerUtils?.debugLog) {
-            playerUtils.debugLog(`Error showing rules form to ${player.nameTag || player.name}: ${error}`);
-        } else {
-            console.error(`Error showing rules form to ${player.nameTag || player.name}: ${error}`);
-        }
+        playerUtils.debugLog(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.message}`, dependencies, player.nameTag);
+        console.error(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.stack || error}`);
     }
 }

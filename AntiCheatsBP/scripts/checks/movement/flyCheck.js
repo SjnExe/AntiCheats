@@ -42,12 +42,11 @@ import * as mc from '@minecraft/server';
 export async function checkFly(
     player,
     pData,
-    dependenciesFull,
-    currentTick
+    dependencies // Renamed from dependenciesFull, currentTick will be from here
 ) {
-    const { config, playerUtils, executeCheckAction, ...restOfDependencies } = dependenciesFull;
-    // For executeCheckAction, we pass a slightly modified dependencies object that doesn't re-contain executeCheckAction itself
-    const actionDependencies = { config, playerUtils, ...restOfDependencies };
+    // Destructure what's needed. actionManager contains executeCheckAction.
+    // currentTick is now from dependencies.
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if ((!config.enableFlyCheck && !config.enableHighYVelocityCheck) || !pData) {
         return;
@@ -56,18 +55,14 @@ export async function checkFly(
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
     if (player.isGliding) {
-        pData.lastUsedElytraTick = currentTick;
+        pData.lastUsedElytraTick = currentTick; // Use dependencies.currentTick
         pData.isDirtyForSave = true;
-        if (playerUtils?.debugLog) {
-            playerUtils.debugLog(`FlyCheck: ${player.nameTag} is gliding. lastUsedElytraTick updated. Standard fly checks bypassed.`, watchedPrefix);
-        }
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is gliding. lastUsedElytraTick updated. Standard fly checks bypassed.`, dependencies, watchedPrefix);
         return; // Bypass other fly/hover checks
     }
 
     if (player.isFlying) { // Creative or Spectator mode
-        if (playerUtils?.debugLog) {
-            playerUtils.debugLog(`FlyCheck: ${player.nameTag} is legitimately flying (Creative/Spectator). Standard fly checks bypassed.`, watchedPrefix);
-        }
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is legitimately flying (Creative/Spectator). Standard fly checks bypassed.`, dependencies, watchedPrefix);
         return;
     }
 
@@ -80,12 +75,12 @@ export async function checkFly(
         const baseYVelocityPositive = config.maxYVelocityPositive ?? 2.0;
         const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
 
-        if (pData.isWatched && playerUtils?.debugLog) {
-            playerUtils.debugLog(`FlyCheck ${player.nameTag}: BaseMaxYVel: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMaxYVel: ${effectiveMaxYVelocity.toFixed(3)}`, player.nameTag);
+        if (pData.isWatched) {
+            playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: BaseMaxYVel: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMaxYVel: ${effectiveMaxYVelocity.toFixed(3)}`, dependencies, player.nameTag);
         }
 
-        const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity);
-        const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity);
+        const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity); // Use dependencies.currentTick
+        const ticksSinceLastElytra = currentTick - (pData.lastUsedElytraTick ?? -Infinity); // Use dependencies.currentTick
 
         const graceTicks = config.yVelocityGraceTicks ?? 10;
         const underGraceCondition = (
@@ -95,11 +90,11 @@ export async function checkFly(
             (pData.hasSlowFalling && currentYVelocity < 0)
         );
 
-        if (underGraceCondition && pData.isWatched && playerUtils?.debugLog) {
-            if (ticksSinceLastDamage <= graceTicks) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to recent damage (Ticks: ${ticksSinceLastDamage})`, player.nameTag);
-            if (ticksSinceLastElytra <= graceTicks) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to recent elytra use (Ticks: ${ticksSinceLastElytra})`, player.nameTag);
-            if (player.isClimbing) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to climbing.`, player.nameTag);
-            if (pData.hasSlowFalling && currentYVelocity < 0) playerUtils.debugLog(`FlyCheck ${player.nameTag}: Y-velocity check grace due to slow falling and downward movement.`, player.nameTag);
+        if (underGraceCondition && pData.isWatched) {
+            if (ticksSinceLastDamage <= graceTicks) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to recent damage (Ticks: ${ticksSinceLastDamage})`, dependencies, player.nameTag);
+            if (ticksSinceLastElytra <= graceTicks) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to recent elytra use (Ticks: ${ticksSinceLastElytra})`, dependencies, player.nameTag);
+            if (player.isClimbing) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to climbing.`, dependencies, player.nameTag);
+            if (pData.hasSlowFalling && currentYVelocity < 0) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to slow falling and downward movement.`, dependencies, player.nameTag);
         }
 
         if (currentYVelocity > effectiveMaxYVelocity && !underGraceCondition) {
@@ -115,10 +110,8 @@ export async function checkFly(
                 hasSlowFalling: pData.hasSlowFalling?.toString() ?? "false",
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
-            await executeCheckAction(player, config.highYVelocityActionProfileName || "movementHighYVelocity", violationDetails, actionDependencies);
-            if (playerUtils && playerUtils.debugLog) {
-                playerUtils.debugLog(`HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix);
-            }
+            await actionManager.executeCheckAction(player, config.highYVelocityActionProfileName || "movementHighYVelocity", violationDetails, dependencies);
+            playerUtils.debugLog(`[FlyCheck] HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, dependencies, watchedPrefix);
         }
     }
 
@@ -130,21 +123,17 @@ export async function checkFly(
 
     // If player has Levitation and is moving upwards, it's considered legitimate for fly/hover.
     if (pData.hasLevitation && pData.velocity.y > 0) {
-        if (playerUtils && playerUtils.debugLog) {
-            playerUtils.debugLog(`FlyCheck: ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix);
-        }
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, dependencies, watchedPrefix);
         return;
     }
     // If player has Slow Falling and is moving downwards, it's legitimate for hover-like behavior.
     // This doesn't fully exempt from hover, as prolonged near-zero Y speed is still suspicious.
-    if (pData.hasSlowFalling && pData.velocity.y < 0 && playerUtils && playerUtils.debugLog) {
-        playerUtils.debugLog(`FlyCheck: ${player.nameTag} noting slow descent due to Slow Falling. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix);
+    if (pData.hasSlowFalling && pData.velocity.y < 0) {
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} noting slow descent due to Slow Falling. VSpeed: ${pData.velocity.y.toFixed(2)}`, dependencies, watchedPrefix);
     }
 
     const verticalSpeed = pData.velocity.y;
-    if (playerUtils && playerUtils.debugLog) {
-        playerUtils.debugLog(`FlyCheck: Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, watchedPrefix);
-    }
+    playerUtils.debugLog(`[FlyCheck] Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, dependencies, watchedPrefix);
 
     // 1. Sustained Upward Movement (not climbing, not levitating)
     const sustainedThreshold = config.flySustainedVerticalSpeedThreshold ?? 0.5;
@@ -161,7 +150,8 @@ export async function checkFly(
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
             // Use a specific action profile name from config if available, otherwise fallback
-            await executeCheckAction(player, config.sustainedFlyActionProfileName || "movementSustainedFly", violationDetails, actionDependencies);
+            // Pass the full dependencies object
+            await actionManager.executeCheckAction(player, config.sustainedFlyActionProfileName || "movementSustainedFly", violationDetails, dependencies);
         }
     }
 
@@ -198,7 +188,8 @@ export async function checkFly(
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
             // Use a specific action profile name from config if available, otherwise fallback
-            await executeCheckAction(player, config.hoverFlyActionProfileName || "movementFlyHover", violationDetails, actionDependencies);
+            // Pass the full dependencies object
+            await actionManager.executeCheckAction(player, config.hoverFlyActionProfileName || "movementFlyHover", violationDetails, dependencies);
         }
     }
 }

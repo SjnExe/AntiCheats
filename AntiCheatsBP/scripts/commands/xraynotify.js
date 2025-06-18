@@ -1,10 +1,9 @@
 /**
  * @file AntiCheatsBP/scripts/commands/xraynotify.js
  * Defines the !xraynotify command for administrators to manage their X-Ray mining notifications.
- * @version 1.0.2
+ * @version 1.0.3
  */
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+// permissionLevels and getString are now accessed via dependencies
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +11,8 @@ import { getString } from '../core/i18n.js'; // Import getString
 export const definition = {
     name: "xraynotify",
     syntax: "!xraynotify <on|off|status>",
-    description: getString("command.xraynotify.description"),
-    permissionLevel: permissionLevels.admin,
+    description: "Manages your X-Ray mining notification preferences.", // Static fallback
+    permissionLevel: 1, // Static fallback (Admin)
     enabled: true,
 };
 
@@ -24,30 +23,29 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, addLog } = dependencies;
+    const { config, playerUtils, logManager, getString, permissionLevels } = dependencies;
     const subCommand = args[0] ? args[0].toLowerCase() : "status";
-    const notifyOnTag = "xray_notify_on";
-    const notifyOffTag = "xray_notify_off";
+    const notifyOnTag = "xray_notify_on"; // Consider moving to config
+    const notifyOffTag = "xray_notify_off"; // Consider moving to config
     const prefix = config.prefix;
+
+    // definition.description = getString("command.xraynotify.description");
+    // definition.permissionLevel = permissionLevels.admin;
 
     switch (subCommand) {
         case "on":
             try { player.removeTag(notifyOffTag); } catch (e) {}
             player.addTag(notifyOnTag);
             player.sendMessage(getString("command.xraynotify.status.enabled"));
-            if (config.enableDebugLogging && playerUtils.debugLog) {
-                playerUtils.debugLog(`Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
-            }
-            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_on', details: 'X-Ray notifications ON' });
+            playerUtils.debugLog(dependencies, `[XrayNotifyCommand] Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
+            logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_on', details: 'X-Ray notifications ON' }, dependencies);
             break;
         case "off":
             try { player.removeTag(notifyOnTag); } catch (e) {}
             player.addTag(notifyOffTag);
             player.sendMessage(getString("command.xraynotify.status.disabled"));
-            if (config.enableDebugLogging && playerUtils.debugLog) {
-                playerUtils.debugLog(`Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
-            }
-            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_off', details: 'X-Ray notifications OFF' });
+            playerUtils.debugLog(dependencies, `[XrayNotifyCommand] Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
+            logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_off', details: 'X-Ray notifications OFF' }, dependencies);
             break;
         case "status":
             const isOn = player.hasTag(notifyOnTag);
@@ -64,7 +62,7 @@ export async function execute(player, args, dependencies) {
                                    "command.xraynotify.currentStatus.offDefault";
             }
             player.sendMessage(getString(statusMessageKey, { prefix: prefix }));
-            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_status', details: `Checked X-Ray notifications status` });
+            logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_status', details: `Checked X-Ray notifications status` }, dependencies);
             break;
         default:
             player.sendMessage(getString("command.xraynotify.usage", { prefix: prefix }));

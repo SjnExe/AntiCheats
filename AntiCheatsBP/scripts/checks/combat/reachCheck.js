@@ -38,15 +38,15 @@ export async function checkReach(
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
     if (!player || !targetEntity || !player.location || !targetEntity.location || typeof player.getHeadLocation !== 'function' || typeof gameMode === 'undefined') {
-        playerUtils.debugLog?.("ReachCheck: Prerequisites (player, targetEntity, locations, getHeadLocation method, or gameMode) not met.", watchedPrefix);
+        playerUtils.debugLog("[ReachCheck] Prerequisites (player, targetEntity, locations, getHeadLocation method, or gameMode) not met.", dependencies, watchedPrefix);
         return;
     }
 
     const eyeLocation = player.getHeadLocation();
     const distanceToTarget = eyeLocation.distance(targetEntity.location);
 
-    if (pData?.isWatched && playerUtils.debugLog) {
-        playerUtils.debugLog(`ReachCheck: ${player.nameTag} distance to ${targetEntity.typeId}: ${distanceToTarget.toFixed(2)}. Mode: ${gameMode}.`, watchedPrefix);
+    if (pData?.isWatched) { // playerUtils.debugLog is implicitly checked by being part of dependencies
+        playerUtils.debugLog(`[ReachCheck] ${player.nameTag} distance to ${targetEntity.typeId}: ${distanceToTarget.toFixed(2)}. Mode: ${gameMode}.`, dependencies, watchedPrefix);
     }
 
     let maxReachDistBase;
@@ -59,15 +59,15 @@ export async function checkReach(
             maxReachDistBase = config.reachDistanceSurvival ?? 4.5;
             break;
         default:
-            playerUtils.debugLog?.(\`ReachCheck: Unsupported game mode "\${gameMode}" for player \${player.nameTag}.\`, watchedPrefix);
+            playerUtils.debugLog(`[ReachCheck] Unsupported game mode "${gameMode}" for player ${player.nameTag}.`, dependencies, watchedPrefix);
             return;
     }
 
     const reachBuffer = config.reachBuffer ?? 0.5;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
-    if (pData?.isWatched && playerUtils.debugLog) {
-        playerUtils.debugLog(`ReachCheck ${player.nameTag}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(3)}, ActualDist: ${distanceToTarget.toFixed(3)}`, player.nameTag);
+    if (pData?.isWatched) { // playerUtils.debugLog is implicitly checked
+        playerUtils.debugLog(`[ReachCheck] ${player.nameTag}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(3)}, ActualDist: ${distanceToTarget.toFixed(3)}`, dependencies, player.nameTag);
     }
 
     if (distanceToTarget > maxAllowedReach) {

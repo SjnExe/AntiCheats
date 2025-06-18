@@ -41,7 +41,7 @@ export async function checkAttackWhileSleeping(
             targetEntityType: eventSpecificData?.targetEntity?.typeId
         };
         await actionManager.executeCheckAction(player, "combatAttackWhileSleeping", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`StateConflict: Flagged \${player.nameTag} for Attack While Sleeping.\`, watchedPrefix);
+        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Sleeping.`, dependencies, watchedPrefix);
     }
 }
 
@@ -79,7 +79,7 @@ export async function checkAttackWhileUsingItem(
             itemCategory: "consumable",
         };
         await actionManager.executeCheckAction(player, "combatAttackWhileConsuming", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`StateConflict: Flagged \${player.nameTag} for Attack While Consuming.\`, watchedPrefix);
+        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Consuming.`, dependencies, watchedPrefix);
     }
 
     if (pData.isChargingBow) {
@@ -89,7 +89,7 @@ export async function checkAttackWhileUsingItem(
             itemCategory: "bow",
         };
         await actionManager.executeCheckAction(player, "combatAttackWhileBowCharging", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`StateConflict: Flagged \${player.nameTag} for Attack While Charging Bow.\`, watchedPrefix);
+        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Charging Bow.`, dependencies, watchedPrefix);
     }
 
     if (pData.isUsingShield) {
@@ -99,6 +99,6 @@ export async function checkAttackWhileUsingItem(
             itemCategory: "shield",
         };
         await actionManager.executeCheckAction(player, "combatAttackWhileShielding", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`StateConflict: Flagged \${player.nameTag} for Attack While Shielding.\`, watchedPrefix);
+        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Shielding.`, dependencies, watchedPrefix);
     }
 }

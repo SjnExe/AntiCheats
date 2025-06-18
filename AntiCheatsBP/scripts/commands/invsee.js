@@ -1,12 +1,11 @@
 /**
  * @file AntiCheatsBP/scripts/commands/invsee.js
  * Defines the !invsee command for administrators to view a player's inventory.
- * @version 1.0.2
+ * @version 1.0.3
  */
-import { permissionLevels } from '../core/rankManager.js';
+// permissionLevels and getString are now accessed via dependencies
 import { MessageFormData } from '@minecraft/server-ui';
-import { ItemComponentTypes } from '@minecraft/server';
-import { getString } from '../core/i18n.js'; // Import getString
+import { ItemComponentTypes } from '@minecraft/server'; // This is a specific type import, fine to keep.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -14,8 +13,8 @@ import { getString } from '../core/i18n.js'; // Import getString
 export const definition = {
     name: "invsee",
     syntax: "!invsee <playername>",
-    description: getString("command.invsee.description"),
-    permissionLevel: permissionLevels.admin,
+    description: "Views a player's inventory.", // Static fallback
+    permissionLevel: 1, // Static fallback (Admin)
     enabled: true,
 };
 
@@ -26,15 +25,19 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, addLog, findPlayer } = dependencies;
+    const { config, playerUtils, logManager, getString, permissionLevels } = dependencies; // Destructure all needed
+    const findPlayer = playerUtils.findPlayer;
     const prefix = config.prefix;
+
+    // definition.description = getString("command.invsee.description");
+    // definition.permissionLevel = permissionLevels.admin;
 
     if (args.length < 1) {
         player.sendMessage(getString("command.invsee.usage", { prefix: prefix }));
         return;
     }
     const targetPlayerName = args[0];
-    const foundPlayer = findPlayer(targetPlayerName, playerUtils);
+    const foundPlayer = findPlayer(targetPlayerName);
 
     if (!foundPlayer) {
         player.sendMessage(getString("command.invsee.error.notFound", { playerName: targetPlayerName }));
@@ -93,7 +96,7 @@ export async function execute(player, args, dependencies) {
                 durability: durabilityText,
                 enchants: enchantsText,
                 lore: loreText
-            }).replace(/\s+\|/g, ' |').replace(/\|\s*$/, '').trim() + "\n"; // Clean up extra spaces and trailing pipes
+            }).replace(/\s+\|/g, ' |').replace(/\|\s*$/, '').trim() + "\n";
 
         }
     }
@@ -101,17 +104,14 @@ export async function execute(player, args, dependencies) {
         inventoryDetails += getString("command.invsee.form.emptyInventory");
     }
 
-    if (addLog) {
-        addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'invsee', targetName: foundPlayer.nameTag, details: `Viewed inventory of ${foundPlayer.nameTag}` });
-    }
+    logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'invsee', targetName: foundPlayer.nameTag, details: `Viewed inventory of ${foundPlayer.nameTag}` }, dependencies);
 
     const invForm = new MessageFormData();
     invForm.title(getString("command.invsee.form.title", { playerName: foundPlayer.nameTag }));
     invForm.body(inventoryDetails.trim());
     invForm.button1(getString("common.button.close"));
     invForm.show(player).catch(e => {
-        if (config.enableDebugLogging) {
-            playerUtils.debugLog(`Error showing invsee form: ${e}`, player.nameTag);
-        }
+        playerUtils.debugLog(`[InvSeeCommand] Error showing invsee form: ${e.message}`, dependencies, player.nameTag);
+        console.error(`[InvSeeCommand] Error showing invsee form: ${e.stack || e}`);
     });
 }

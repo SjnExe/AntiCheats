@@ -6,15 +6,11 @@
  * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -23,31 +19,23 @@ import { getString } from '../../../core/i18n.js';
  *
  * @param {mc.Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {Config} config - The server configuration object.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick.
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkNameSpoof(
     player,
     pData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick
+    dependencies
 ) {
+    const { config, playerUtils, actionManager, getString, currentTick } = dependencies;
+
     if (!config.enableNameSpoofCheck || !pData) {
         return;
     }
 
     const currentNameTag = player.nameTag;
     const watchedPrefix = pData.isWatched ? player.name : null;
-    const dependencies = { config, playerDataManager, playerUtils, logManager };
+    // No need to reconstruct dependencies for executeCheckAction, pass the main one.
 
     let reasonDetailKey = null;
     let reasonDetailParams = {};
@@ -70,7 +58,8 @@ export async function checkNameSpoof(
                 flaggedReasonForLog = `NameTag contains disallowed character(s) (e.g., '${match[0]}')`;
             }
         } catch (e) {
-            playerUtils.debugLog?.(`NameSpoofCheck: Error compiling regex "${config.nameSpoofDisallowedCharsRegex}": ${e.message}`, watchedPrefix);
+            playerUtils.debugLog(`[NameSpoofCheck] Error compiling regex "${config.nameSpoofDisallowedCharsRegex}": ${e.message}`, dependencies, watchedPrefix);
+            console.error(`[NameSpoofCheck] Regex compilation error: ${e.stack || e}`);
         }
     }
 
@@ -91,9 +80,9 @@ export async function checkNameSpoof(
     }
 
     if (reasonDetailKey) {
-        const localizedReasonDetail = getString(reasonDetailKey, reasonDetailParams);
+        const localizedReasonDetail = getString(reasonDetailKey, reasonDetailParams); // getString from dependencies
         const violationDetails = {
-            reasonDetail: localizedReasonDetail, // This will be used by the action profile's message template
+            reasonDetail: localizedReasonDetail,
             currentNameTagDisplay: currentNameTag,
             previousNameTagRecorded: (reasonDetailKey === "check.nameSpoof.reason.rapidChange") ? previousNameTagForLog : "N/A",
             actualPlayerName: player.name,
@@ -102,9 +91,8 @@ export async function checkNameSpoof(
             minChangeIntervalConfig: (config.nameSpoofMinChangeIntervalTicks ?? 0).toString()
         };
         const nameSpoofActionProfile = config.nameSpoofActionProfileName ?? "playerNamespoof";
-        await executeCheckAction(player, nameSpoofActionProfile, violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, nameSpoofActionProfile, violationDetails, dependencies);
 
-        // Use the more detailed internal log message for debugLog
-        playerUtils.debugLog?.(`NameSpoof: Flagged ${player.name} (current nameTag: "${currentNameTag}") for ${flaggedReasonForLog}`, watchedPrefix);
+        playerUtils.debugLog(`[NameSpoofCheck] Flagged ${player.name} (current nameTag: "${currentNameTag}") for ${flaggedReasonForLog}`, dependencies, watchedPrefix);
     }
 }

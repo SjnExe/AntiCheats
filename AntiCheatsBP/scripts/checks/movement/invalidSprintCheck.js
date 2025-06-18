@@ -8,15 +8,11 @@
  */
 
 import * as mc from '@minecraft/server';
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -25,25 +21,13 @@ import { getString } from '../../../core/i18n.js';
  * @param {mc.Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data. Expected to contain `blindnessTicks`
  *                                     (updated by `updateTransientPlayerData`).
- * @param {Config} config - The server configuration object, with `enableInvalidSprintCheck`.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick (not directly used in this check's core logic).
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
-export async function checkInvalidSprint(
-    player,
-    pData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick // Not directly used by this check's core logic
-) {
-    if (!config.enableInvalidSprintCheck || !pData) { // Added null check for pData
+export async function checkInvalidSprint(player, pData, dependencies) {
+    const { config, playerUtils, actionManager, getString } = dependencies;
+
+    if (!config.enableInvalidSprintCheck || !pData) {
         return;
     }
 
@@ -51,8 +35,24 @@ export async function checkInvalidSprint(
     // No need to call player.getEffects() here if that's the case.
 
     if (player.isSprinting) {
-        let invalidConditionKey = null; // Store the key for localization
+        let invalidConditionKey = null;
         let conditionDetails = "";
+        let isHungerTooLow = false;
+        let currentFoodLevel = 'N/A';
+
+        try {
+            const foodComp = player.getComponent("minecraft:food");
+            if (foodComp) {
+                currentFoodLevel = foodComp.foodLevel.toString();
+                if (foodComp.foodLevel <= (config.sprintHungerLimit ?? 6)) {
+                    isHungerTooLow = true;
+                }
+            }
+        } catch (e) {
+            if (playerUtils.debugLog && pData.isWatched) {
+                playerUtils.debugLog(dependencies, `[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag);
+            }
+        }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
             invalidConditionKey = "check.invalidSprint.condition.blindness";
@@ -63,25 +63,38 @@ export async function checkInvalidSprint(
         } else if (player.isRiding) {
             invalidConditionKey = "check.invalidSprint.condition.riding";
             conditionDetails = "Player is riding an entity";
+        } else if (isHungerTooLow) {
+            invalidConditionKey = "check.invalidSprint.condition.hunger";
+            conditionDetails = `Hunger level at ${currentFoodLevel} (Limit: <= ${config.sprintHungerLimit ?? 6})`;
+        } else if (pData.isUsingConsumable) {
+            invalidConditionKey = "check.invalidSprint.condition.usingItem";
+            conditionDetails = "Player is using a consumable";
+        } else if (pData.isChargingBow) {
+            invalidConditionKey = "check.invalidSprint.condition.chargingBow";
+            conditionDetails = "Player is charging a bow";
         }
+        // Note: Shield check (pData.isUsingShield) is not typically here as shield doesn't prevent sprint if already sprinting,
+        // but prevents initiation. NoSlow check handles speed while shield is up.
 
         if (invalidConditionKey) {
             const localizedCondition = getString(invalidConditionKey);
-            const dependencies = { config, playerDataManager, playerUtils, logManager };
             const violationDetails = {
-                condition: localizedCondition, // Use the localized string here
+                condition: localizedCondition,
                 details: conditionDetails,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
                 isRiding: player.isRiding.toString(),
-                blindnessTicks: (pData.blindnessTicks ?? 0).toString()
+                blindnessTicks: (pData.blindnessTicks ?? 0).toString(),
+                hungerLevel: currentFoodLevel,
+                isUsingConsumable: pData.isUsingConsumable.toString(),
+                isChargingBow: pData.isChargingBow.toString()
             };
-            await executeCheckAction(player, "movementInvalidSprint", violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, "movementInvalidSprint", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog?.(
-                `InvalidSprint: Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
-                watchedPrefix
+            playerUtils.debugLog(
+                `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
+                dependencies, watchedPrefix
             );
         }
     }

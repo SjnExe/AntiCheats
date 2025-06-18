@@ -1,10 +1,9 @@
 /**
  * @file AntiCheatsBP/scripts/commands/inspect.js
  * Defines the !inspect command for administrators to view a player's AntiCheat data.
- * @version 1.0.2
+ * @version 1.0.3
  */
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js';
+// permissionLevels and getString are now accessed via dependencies
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +11,8 @@ import { getString } from '../core/i18n.js';
 export const definition = {
     name: "inspect",
     syntax: "!inspect <playername>",
-    description: getString("command.inspect.description"),
-    permissionLevel: permissionLevels.admin,
+    description: "Views a player's AntiCheat data and status.", // Static fallback
+    permissionLevel: 1, // Static fallback (Admin)
     enabled: true,
 };
 
@@ -24,21 +23,25 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, addLog, findPlayer } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, getString, permissionLevels } = dependencies;
+    const findPlayer = playerUtils.findPlayer;
+
+    // definition.description = getString("command.inspect.description");
+    // definition.permissionLevel = permissionLevels.admin;
 
     if (args.length < 1) {
         player.sendMessage(getString("command.inspect.usage", { prefix: config.prefix }));
         return;
     }
     const targetPlayerName = args[0];
-    const targetPlayer = findPlayer(targetPlayerName, playerUtils);
+    const targetPlayer = findPlayer(targetPlayerName); // Assumes findPlayer is part of playerUtils
 
     if (!targetPlayer) {
         player.sendMessage(getString("common.error.invalidPlayer", { targetName: targetPlayerName }));
         return;
     }
 
-    const pData = playerDataManager.getPlayerData(targetPlayer.id);
+    const pData = playerDataManager.getPlayerData(targetPlayer.id); // Pass dependencies if getPlayerData expects it
     let messageLines = [];
     messageLines.push(getString("command.inspect.header", { playerName: targetPlayer.nameTag }));
 
@@ -64,9 +67,7 @@ export async function execute(player, args, dependencies) {
             }
         }
 
-        const muteInfo = (playerDataManager.getMuteInfo && typeof playerDataManager.getMuteInfo === 'function')
-            ? playerDataManager.getMuteInfo(targetPlayer)
-            : null;
+        const muteInfo = playerDataManager.getMuteInfo(targetPlayer, dependencies); // Pass dependencies
         if (muteInfo) {
             const expiry = muteInfo.unmuteTime === Infinity ? getString("common.value.permanent") : new Date(muteInfo.unmuteTime).toLocaleString();
             messageLines.push(getString("command.inspect.mutedYes", { expiryDate: expiry, reason: muteInfo.reason }));
@@ -74,9 +75,7 @@ export async function execute(player, args, dependencies) {
             messageLines.push(getString("command.inspect.mutedNo"));
         }
 
-        const banInfo = (playerDataManager.getBanInfo && typeof playerDataManager.getBanInfo === 'function')
-            ? playerDataManager.getBanInfo(targetPlayer)
-            : null;
+        const banInfo = playerDataManager.getBanInfo(targetPlayer, dependencies); // Pass dependencies
         if (banInfo) {
             const expiry = banInfo.unbanTime === Infinity ? getString("common.value.permanent") : new Date(banInfo.unbanTime).toLocaleString();
             messageLines.push(getString("command.inspect.bannedYes", { expiryDate: expiry, reason: banInfo.reason }));
@@ -89,7 +88,5 @@ export async function execute(player, args, dependencies) {
     }
 
     player.sendMessage(messageLines.join("\n"));
-    if (addLog) {
-        addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'inspect_player', targetName: targetPlayer.nameTag, details: `Inspected ${targetPlayer.nameTag}` });
-    }
+    logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'inspect_player', targetName: targetPlayer.nameTag, details: `Inspected ${targetPlayer.nameTag}` }, dependencies);
 }

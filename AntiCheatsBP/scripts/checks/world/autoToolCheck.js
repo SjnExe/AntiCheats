@@ -68,7 +68,7 @@ export async function checkAutoTool(
 
                     if (isSignificantlyBetter) {
                         pData.switchedToOptimalToolForBreak = true;
-                        playerUtils.debugLog?.(\`AutoTool: Detected switch to optimal tool (\${newToolStack?.typeId ?? 'hand'} in slot \${currentSlotIndex}) for \${pData.breakingBlockTypeId}. Initial slot: \${pData.slotAtBreakAttemptStart}\`, watchedPrefix);
+                        playerUtils.debugLog(`[AutoToolCheck] Detected switch to optimal tool (${newToolStack?.typeId ?? 'hand'} in slot ${currentSlotIndex}) for ${pData.breakingBlockTypeId}. Initial slot: ${pData.slotAtBreakAttemptStart}`, dependencies, watchedPrefix);
                     }
                 }
             }
@@ -101,7 +101,7 @@ export async function checkAutoTool(
             };
             const autoToolActionProfile = config.autoToolActionProfileName ?? "worldAutotool";
             await actionManager.executeCheckAction(player, autoToolActionProfile, violationDetails, dependencies);
-            playerUtils.debugLog?.(\`AutoTool: Flagged \${player.nameTag} for switching back after optimal tool use. From: \${previousOptimalSlot}, To: \${currentSlotIndex}\`, watchedPrefix);
+            playerUtils.debugLog(`[AutoToolCheck] Flagged ${player.nameTag} for switching back after optimal tool use. From: ${previousOptimalSlot}, To: ${currentSlotIndex}`, dependencies, watchedPrefix);
 
             pData.switchedToOptimalToolForBreak = false;
             pData.optimalToolSlotForLastBreak = null;
@@ -113,7 +113,7 @@ export async function checkAutoTool(
 
     const timeoutForBreakAttempt = 200;
     if (pData.isAttemptingBlockBreak && (currentTick - (pData.breakAttemptTick ?? 0) > timeoutForBreakAttempt)) {
-        playerUtils.debugLog?.(\`AutoTool: Stale break attempt timed out for \${player.nameTag}. Block: \${pData.breakingBlockTypeId ?? 'N/A'}\`, watchedPrefix);
+        playerUtils.debugLog(`[AutoToolCheck] Stale break attempt timed out for ${player.nameTag}. Block: ${pData.breakingBlockTypeId ?? 'N/A'}`, dependencies, watchedPrefix);
         pData.isAttemptingBlockBreak = false;
         pData.switchedToOptimalToolForBreak = false;
         pData.breakingBlockTypeId = null;
@@ -126,7 +126,7 @@ export async function checkAutoTool(
     if (pData.optimalToolSlotForLastBreak !== null &&
         (pData.lastBreakCompleteTick ?? 0) > 0 &&
         (currentTick - (pData.lastBreakCompleteTick ?? 0) > timeoutForSwitchBackState)) {
-        playerUtils.debugLog?.(\`AutoTool: Stale optimalToolSlotForLastBreak state timed out for \${player.nameTag}. Slot: \${pData.optimalToolSlotForLastBreak}\`, watchedPrefix);
+        playerUtils.debugLog(`[AutoToolCheck] Stale optimalToolSlotForLastBreak state timed out for ${player.nameTag}. Slot: ${pData.optimalToolSlotForLastBreak}`, dependencies, watchedPrefix);
         pData.optimalToolSlotForLastBreak = null;
         pData.blockBrokenWithOptimalTypeId = null;
         pData.optimalToolTypeIdForLastBreak = null;
