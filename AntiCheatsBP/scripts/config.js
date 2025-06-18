@@ -1,6 +1,6 @@
 // Anti-Cheat Configuration File
-import { checkActionProfiles } from '../core/actionProfiles.js';
-import { automodConfig as importedAutoModConfig } from '../core/automodConfig.js';
+import { checkActionProfiles } from './core/actionProfiles.js';
+import { automodConfig as importedAutoModConfig } from './core/automodConfig.js';
 
 // General Admin & System
 /** @type {string} The tag for identifying admin players. */
