@@ -42,7 +42,7 @@
     },
     {
       "module_name": "@minecraft/server-gametest",
-      "version": "0.1.0"
+      "version": "1.0.0-beta"
     },
     {
       "module_name": "@minecraft/server-ui",
