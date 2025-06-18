@@ -23,8 +23,23 @@ This document outlines coding style conventions to be followed for this project 
 ### Acronyms in Code (Variables/Functions):
 *   Acronyms within JavaScript variable and function names should generally be preserved in their original uppercase form if they represent specific, well-known abbreviations. For example, 'GMC' (for Game Mode Creative), 'GMS' (Game Mode Survival), 'GMSP' (Game Mode Spectator), 'GMA' (Game Mode Adventure) should be written as `enableAntiGMCCheck`, `playerGMSStatus`, etc., rather than `enableAntiGmcCheck` or `playerGmsStatus`. This enhances readability and aligns with common project-specific terminology. When in doubt, prefer uppercase for established project acronyms.
 
-### Command Naming:
-*   User-facing commands (e.g., those typed in chat like `!gmc`, `!help`) should remain in their existing lowercase format. The uppercase acronym convention described for JavaScript variables and functions does not apply to these command identifiers.
+## Command System Conventions
+
+### Command Prefixes
+- Commands should be directly accessible via the configured `prefix` (e.g., `!`, as defined in `config.js`).
+- The previous convention of using `!ac <command>` is deprecated. Commands should now be, for example, `!ban`, `!kick`, `!panel`.
+
+### Command Naming
+- Main command names should be descriptive and clear (e.g., `ban`, `kick`, `mute`, `inspect`).
+- Avoid overly short or cryptic main command names. Aliases are preferred for brevity.
+- User-facing commands (e.g., those typed in chat like `!gmc`, `!help`) should remain in their existing lowercase format. The uppercase acronym convention described for JavaScript variables and functions does not apply to these command identifiers.
+
+### Command Aliases
+- Most new commands should consider having a short, convenient alias.
+- Aliases are defined in `config.js` within the `commandAliases` object. This object maps alias strings to their corresponding main command names.
+  - Example: `export const commandAliases = { "b": "ban", "k": "kick", "i": "inspect" };`
+- The `commandManager.js` is responsible for checking if an entered command string is an alias and resolving it to the main command name before further processing.
+- Aliases should be unique and not conflict with other aliases or main command names.
 
 ### `checkType` String Identifiers
 *   `checkType` string identifiers (used in check scripts, `actionProfiles.js`, `automodConfig.js`) should use **`camelCase`**.
