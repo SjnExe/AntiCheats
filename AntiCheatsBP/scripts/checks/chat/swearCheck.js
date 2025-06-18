@@ -1,15 +1,8 @@
 /**
  * @file AntiCheatsBP/scripts/checks/chat/swearCheck.js
- * Implements swear word detection in chat messages with obfuscation resistance.
- *
- * IMPORTANT: Levenshtein distance matching for fuzzy matching of swear words is currently
- * DISABLED. The previous placeholder `calculateLevenshtein` function was incorrect.
- * To re-enable this feature, a proper Levenshtein distance algorithm implementation
- * is required. It is also recommended to set `config.swearCheckEnableLevenshtein`
- * to `false` in the server's configuration file to avoid any unintended behavior
- * or errors until a correct implementation is in place.
- *
- * @version 1.1.1
+ * Implements swear word detection in chat messages with obfuscation resistance
+ * using exact normalized matching.
+ * @version 1.1.2
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -56,7 +49,7 @@ function normalizeWordForSwearCheck(word, config) {
 }
 /**
  * Checks a chat message for swear words based on a configurable list,
- * with options for normalization, leet speak, and Levenshtein distance.
+ * using normalization and optionally leet speak conversion for matching.
  *
  * @param {import('@minecraft/server').Player} player The player sending the message.
  * @param {PlayerAntiCheatData} pData Player-specific data from playerDataManager.
@@ -95,36 +88,17 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
         const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config); // Pass config from dependenciesFull
         if (normalizedInputWord.length === 0) continue;
         for (const swearItem of normalizedSwearWordList) {
-            let matchType = null;
-            let detectedDistance = -1;
             // Exact Normalized Match
             if (normalizedInputWord === swearItem.normalized) {
-                matchType = "exact_normalized";
-            }
-            // Levenshtein Match (if not exact and enabled)
-            /*
-            else if (config.swearCheckEnableLevenshtein) {
-                // NOTE: Levenshtein matching is disabled until a proper algorithm is implemented.
-                // The calculateLevenshtein function was a placeholder and has been removed.
-                const distance = calculateLevenshtein(normalizedInputWord, swearItem.normalized); // This line would cause an error now
-                const levenshteinThreshold = config.swearCheckLevenshteinDistance ?? 1;
-                if (distance <= levenshteinThreshold) {
-                    matchType = "levenshtein";
-                    detectedDistance = distance;
-                }
-            }
-            */
-            if (matchType) {
                 const violationDetails = {
                     detectedSwear: swearItem.original,
                     matchedWordInMessage: wordInMessage,
                     normalizedInput: normalizedInputWord,
                     normalizedSwear: swearItem.normalized,
-                    matchMethod: matchType,
-                    levenshteinDistance: matchType === "levenshtein" ? detectedDistance.toString() : "N/A",
+                    matchMethod: "exact_normalized",
                     originalMessage: originalMessage,
                 };
-                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by ${matchType}. Distance: ${detectedDistance}`, dependenciesFull, pData.isWatched ? player.nameTag : null);
+                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by exact_normalized.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
 
                 if (actionManager && typeof actionManager.executeCheckAction === 'function') {
                      await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependenciesFull);
