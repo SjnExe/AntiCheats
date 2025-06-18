@@ -174,4 +174,5 @@ export function getString(key, args) {
 }
 
 // Exporting loadLanguage for potential future use, testing, or if other modules need to trigger language loading.
+export const translations = {}; // Diagnostic placeholder
 export { loadLanguage };
