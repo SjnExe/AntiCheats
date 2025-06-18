@@ -18,8 +18,8 @@ let currentLanguage = defaultLanguage; // Initialize with default, will be set b
  * and the values are the corresponding translation objects.
  * @type {Object.<string, object>}
  */
-const translations = {};
-translations[defaultLanguage] = enUSTranslations; // Populate with imported en_US translations
+const _internalTranslations = {};
+_internalTranslations[defaultLanguage] = enUSTranslations; // Populate with imported en_US translations
 
 /**
  * Attempts to load a language pack.
@@ -30,14 +30,14 @@ translations[defaultLanguage] = enUSTranslations; // Populate with imported en_U
  * @returns {boolean} True if the language is already loaded/available (i.e., 'en_US'), false otherwise.
  */
 function loadLanguage(langCode) {
-    if (translations[langCode]) {
+    if (_internalTranslations[langCode]) {
         return true;
     }
     // Placeholder for future dynamic language loading:
     // try {
     //     const module = await import(`./languages/${langCode}.js`);
     //     if (module && module.translations) {
-    //         translations[langCode] = module.translations;
+    //         _internalTranslations[langCode] = module.translations;
     //         console.log(`[i18n] Successfully loaded language: ${langCode}`);
     //         return true;
     //     }
@@ -61,7 +61,7 @@ export function setCurrentLanguage(langCode) {
         return;
     }
 
-    if (translations[langCode]) {
+    if (_internalTranslations[langCode]) {
         currentLanguage = langCode;
     } else {
         if (loadLanguage(langCode)) {
@@ -113,7 +113,7 @@ export function getString(key, args) {
     let retrievedString = null;
 
     // Attempt to get string from current language
-    targetTranslationStore = translations[currentLanguage];
+    targetTranslationStore = _internalTranslations[currentLanguage];
     if (targetTranslationStore) {
         let tempValue = targetTranslationStore;
         for (const part of keyParts) {
@@ -131,7 +131,7 @@ export function getString(key, args) {
 
     // If not found in current language, try fallback to defaultLanguage
     if (retrievedString === null && currentLanguage !== defaultLanguage) {
-        targetTranslationStore = translations[defaultLanguage];
+        targetTranslationStore = _internalTranslations[defaultLanguage];
         if (targetTranslationStore) {
             let tempValue = targetTranslationStore;
             for (const part of keyParts) {
@@ -175,3 +175,4 @@ export function getString(key, args) {
 
 // Exporting loadLanguage for potential future use, testing, or if other modules need to trigger language loading.
 export { loadLanguage };
+export const translations = _internalTranslations; // Diagnostic: Exporting internal translations
