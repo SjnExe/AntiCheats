@@ -595,5 +595,3 @@ export const automodConfig = {
         // Add more checkTypes here
     }
 };
-
-[end of AntiCheatsBP/scripts/core/automodConfig.js]
