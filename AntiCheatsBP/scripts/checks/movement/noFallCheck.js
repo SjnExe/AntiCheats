@@ -52,6 +52,33 @@ export async function checkNoFall(player, pData, dependencies) {
     }
 
     if (player.isOnGround) {
+        // Slime Block Check (Grace period of 1 second after last bounce)
+        // NOTE: pData.lastOnSlimeBlockTick needs to be updated elsewhere (e.g., main tick loop or specific event)
+        if ((dependencies.currentTick - (pData.lastOnSlimeBlockTick || 0)) < 20) { // 20 ticks = 1 second grace
+            if (playerUtils.debugLog && pData.isWatched) {
+                playerUtils.debugLog(dependencies, `[NoFallCheck] Player ${player.nameTag} recently on slime block (LastTick: ${pData.lastOnSlimeBlockTick}, Current: ${dependencies.currentTick}). Fall damage check modified/bypassed.`, player.nameTag);
+            }
+            // Assuming full bypass for simplicity if recently on slime.
+            // More nuanced logic could adjust expected damage or fallDistance.
+            return;
+        }
+
+        // Other Mitigation Blocks Check (Hay Bale, Powder Snow, Sweet Berry Bush)
+        try {
+            const blockBelowLocation = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
+            const blockBelow = player.dimension.getBlock(blockBelowLocation);
+            if (blockBelow && (config.noFallMitigationBlocks || []).includes(blockBelow.typeId)) {
+                if (playerUtils.debugLog && pData.isWatched) {
+                    playerUtils.debugLog(dependencies, `[NoFallCheck] Player ${player.nameTag} landed on a fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified.`, player.nameTag);
+                }
+                return; // Bypass for now
+            }
+        } catch (e) {
+            if (playerUtils.debugLog) {
+                playerUtils.debugLog(dependencies, `[NoFallCheck] Error checking block below player ${player.nameTag}: ${e.message}`, player.nameTag);
+            }
+        }
+
         playerUtils.debugLog(
             `[NoFallCheck] ${player.nameTag} landed. FallDistance=${pData.fallDistance.toFixed(2)}, ` +
             `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.velocity?.y?.toFixed(2) ?? 'N/A'}`,

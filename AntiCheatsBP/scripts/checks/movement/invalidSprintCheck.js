@@ -35,8 +35,24 @@ export async function checkInvalidSprint(player, pData, dependencies) {
     // No need to call player.getEffects() here if that's the case.
 
     if (player.isSprinting) {
-        let invalidConditionKey = null; // Store the key for localization
+        let invalidConditionKey = null;
         let conditionDetails = "";
+        let isHungerTooLow = false;
+        let currentFoodLevel = 'N/A';
+
+        try {
+            const foodComp = player.getComponent("minecraft:food");
+            if (foodComp) {
+                currentFoodLevel = foodComp.foodLevel.toString();
+                if (foodComp.foodLevel <= (config.sprintHungerLimit ?? 6)) {
+                    isHungerTooLow = true;
+                }
+            }
+        } catch (e) {
+            if (playerUtils.debugLog && pData.isWatched) {
+                playerUtils.debugLog(dependencies, `[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag);
+            }
+        }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
             invalidConditionKey = "check.invalidSprint.condition.blindness";
@@ -47,18 +63,31 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         } else if (player.isRiding) {
             invalidConditionKey = "check.invalidSprint.condition.riding";
             conditionDetails = "Player is riding an entity";
+        } else if (isHungerTooLow) {
+            invalidConditionKey = "check.invalidSprint.condition.hunger";
+            conditionDetails = `Hunger level at ${currentFoodLevel} (Limit: <= ${config.sprintHungerLimit ?? 6})`;
+        } else if (pData.isUsingConsumable) {
+            invalidConditionKey = "check.invalidSprint.condition.usingItem";
+            conditionDetails = "Player is using a consumable";
+        } else if (pData.isChargingBow) {
+            invalidConditionKey = "check.invalidSprint.condition.chargingBow";
+            conditionDetails = "Player is charging a bow";
         }
+        // Note: Shield check (pData.isUsingShield) is not typically here as shield doesn't prevent sprint if already sprinting,
+        // but prevents initiation. NoSlow check handles speed while shield is up.
 
         if (invalidConditionKey) {
-            const localizedCondition = getString(invalidConditionKey); // getString from dependencies
-            // Pass the full dependencies object to executeCheckAction
+            const localizedCondition = getString(invalidConditionKey);
             const violationDetails = {
                 condition: localizedCondition,
                 details: conditionDetails,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
                 isRiding: player.isRiding.toString(),
-                blindnessTicks: (pData.blindnessTicks ?? 0).toString()
+                blindnessTicks: (pData.blindnessTicks ?? 0).toString(),
+                hungerLevel: currentFoodLevel,
+                isUsingConsumable: pData.isUsingConsumable.toString(),
+                isChargingBow: pData.isChargingBow.toString()
             };
             await actionManager.executeCheckAction(player, "movementInvalidSprint", violationDetails, dependencies);
 

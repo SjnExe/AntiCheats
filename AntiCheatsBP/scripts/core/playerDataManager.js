@@ -204,7 +204,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastTookDamageTick: 0,
         lastUsedElytraTick: 0,
         lastUsedRiptideTick: 0,
-        lastOnSlimeBlockTick: 0,
+        lastOnSlimeBlockTick: 0, // This was already present, ensuring it's initialized to 0.
         lastBlindnessTicks: 0,
         previousSelectedSlotIndex: player.selectedSlotIndex,
         lastSelectedSlotChangeTick: 0,
@@ -239,6 +239,7 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastCheckAutoToolTick: 0,
         lastCheckFlatRotationBuildingTick: 0,
         // lastRenderDistanceCheckTick is already present in main.js loop and pData if check is enabled
+        // lastOnSlimeBlockTick is already initialized above
     };
 }
 
@@ -313,7 +314,7 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         newPData.lastTookDamageTick = 0;
         newPData.lastUsedElytraTick = 0;
         newPData.lastUsedRiptideTick = 0;
-        newPData.lastOnSlimeBlockTick = 0;
+        newPData.lastOnSlimeBlockTick = 0; // Ensure reset if loading old data without this field
         newPData.lastBlindnessTicks = 0;
         newPData.previousSelectedSlotIndex = player.selectedSlotIndex;
         newPData.lastSelectedSlotChangeTick = currentTick;
@@ -341,6 +342,7 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         if (typeof newPData.lastCheckNetherRoofTick === 'undefined') newPData.lastCheckNetherRoofTick = 0;
         if (typeof newPData.lastCheckAutoToolTick === 'undefined') newPData.lastCheckAutoToolTick = 0;
         if (typeof newPData.lastCheckFlatRotationBuildingTick === 'undefined') newPData.lastCheckFlatRotationBuildingTick = 0;
+        if (typeof newPData.lastOnSlimeBlockTick === 'undefined') newPData.lastOnSlimeBlockTick = 0; // Added for older data
     } else {
         debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Using fresh default data.`, player.nameTag);
     }
@@ -383,10 +385,12 @@ export function cleanupActivePlayerData(activePlayers) {
  * This is typically called every tick for each online player.
  * @param {mc.Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - The player's current anti-cheat data.
- * @param {number} currentTick - The current game tick.
+ * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {void}
  */
-export function updateTransientPlayerData(player, pData, currentTick) {
+export function updateTransientPlayerData(player, pData, dependencies) {
+    const { currentTick, playerUtils, config } = dependencies; // Assuming config might be needed for debugLog checks
+
     const rotation = player.getRotation();
     pData.lastPitch = rotation.x;
     pData.lastYaw = rotation.y;
@@ -401,6 +405,33 @@ export function updateTransientPlayerData(player, pData, currentTick) {
         pData.consecutiveOffGroundTicks = 0;
         pData.lastOnGroundTick = currentTick;
         pData.lastOnGroundPosition = player.location;
+
+        // Check for slime block landing
+        // This logic is simplified; a more robust check might look at vertical velocity change (bounce)
+        // or specific events if available. This checks the block at/below feet upon landing.
+        // It's placed here to ensure lastOnSlimeBlockTick is updated around the same time as other on-ground states.
+        try {
+            const feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
+            const blockBelowFeet = player.dimension.getBlock({x: feetPos.x, y: feetPos.y -1, z: feetPos.z});
+            // Check block directly at feet as well, though less likely for "landing on" detection
+            const blockAtFeet = player.dimension.getBlock(feetPos);
+
+            if ((blockBelowFeet && blockBelowFeet.typeId === 'minecraft:slime_block') || (blockAtFeet && blockAtFeet.typeId === 'minecraft:slime_block')) {
+                pData.lastOnSlimeBlockTick = currentTick;
+                // pData.isDirtyForSave = true; // Optional, usually not needed for transient tick updates unless it affects persisted logic
+                if (playerUtils.debugLog && pData.isWatched && config.enableDebugLogging) { // Check config directly if playerUtils doesn't
+                    playerUtils.debugLog(dependencies, `[PlayerDataManager] Player ${pData.playerNameTag || player.nameTag} on slime block at tick ${currentTick}.`, pData.playerNameTag || player.nameTag);
+                }
+            }
+        } catch (e) {
+            if (playerUtils.debugLog && config.enableDebugLogging) { // Check config directly
+                playerUtils.debugLog(dependencies, `[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`, pData.playerNameTag || player.nameTag);
+            } else {
+                // Fallback if debugLog is not available or disabled
+                console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`);
+            }
+        }
+
     } else {
         pData.consecutiveOffGroundTicks++;
     }
@@ -428,7 +459,8 @@ export function updateTransientPlayerData(player, pData, currentTick) {
             isOnGround: player.isOnGround,
             fallDistance: player.fallDistance.toFixed(3)
         };
-        debugLog(`Transient update for ${player.nameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, player.nameTag);
+        // Use playerUtils.debugLog with dependencies
+        playerUtils.debugLog(dependencies, `Transient update for ${pData.playerNameTag || player.nameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, pData.playerNameTag || player.nameTag);
     }
 }
 

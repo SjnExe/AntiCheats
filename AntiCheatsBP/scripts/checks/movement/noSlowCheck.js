@@ -55,11 +55,15 @@ export async function checkNoSlow(player, pData, dependencies) {
 
     if (slowingActionKey && horizontalSpeed > maxAllowedBaseSpeed) {
         let effectiveMaxAllowedSpeed = maxAllowedBaseSpeed;
-        const speedAmplifier = pData.speedAmplifier ?? -1;
+        const speedAmplifier = pData.speedAmplifier ?? -1; // pData.speedAmplifier is 0 for Speed I, 1 for Speed II, etc.
 
         if (speedAmplifier >= 0) {
-            effectiveMaxAllowedSpeed += (config.noSlowSpeedEffectTolerance ?? 0.5);
+            // Calculate vanilla speed with effect: Speed effect is 20% per level (amplifier + 1)
+            const vanillaSpeedWithEffect = maxAllowedBaseSpeed * (1 + (speedAmplifier + 1) * 0.20);
+            // Add percentage-based tolerance
+            effectiveMaxAllowedSpeed = vanillaSpeedWithEffect * (1 + (config.noSlowSpeedEffectTolerancePercent ?? 0.10));
         }
+        // If no speed effect, effectiveMaxAllowedSpeed remains maxAllowedBaseSpeed (plus any inherent small buffer in that base speed)
 
         if (horizontalSpeed > effectiveMaxAllowedSpeed) {
             const localizedSlowingAction = getString(slowingActionKey); // getString from dependencies

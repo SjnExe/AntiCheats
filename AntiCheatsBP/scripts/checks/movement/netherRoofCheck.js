@@ -3,8 +3,7 @@
  * Checks if a player is on the Nether roof.
  * @version 1.0.1
  */
-import * as mc from '@minecraft/server';
-import { getString } from '../../../core/i18n.js';
+import * as mc from '@minecraft/server'; // Keep this if mc.GameMode is used, otherwise it comes from dependencies.mc
 
 /**
  * Checks if a player is on top of the Nether roof.
@@ -13,9 +12,17 @@ import { getString } from '../../../core/i18n.js';
  * @param {import('../../types.js').Dependencies} dependencies Shared dependencies.
  */
 export function checkNetherRoof(player, pData, dependencies) { // pData is not used here but kept for signature consistency
-    const { config, playerDataManager, playerUtils, getString } = dependencies;
+    const { config, playerDataManager, playerUtils, getString, mc: minecraftSystem } = dependencies; // getString from dependencies, mc for GameMode
 
     if (!config.enableNetherRoofCheck) {
+        return;
+    }
+
+    // Bypass for spectators
+    if (player.gameMode === minecraftSystem.GameMode.spectator) {
+        if (playerUtils.debugLog && pData.isWatched) { // pData is passed as parameter
+            playerUtils.debugLog(dependencies, `[NetherRoofCheck] Player ${player.nameTag} is in spectator mode. Check bypassed.`, player.nameTag);
+        }
         return;
     }
 

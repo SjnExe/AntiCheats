@@ -284,7 +284,8 @@ mc.system.runInterval(async () => {
         pData.ticksOutsideBorder = pData.ticksOutsideBorder || 0;
         pData.borderDamageApplications = pData.borderDamageApplications || 0;
 
-        playerDataManager.updateTransientPlayerData(player, pData, currentTick);
+        // Pass tickDependencies to updateTransientPlayerData
+        tickDependencies.playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
 
         // Call the new function to clear expired item use states
         tickDependencies.playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);

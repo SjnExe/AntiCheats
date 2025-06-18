@@ -388,9 +388,14 @@ export const flyHoverMaxFallDistanceThreshold = 1.0;
 export const speedToleranceBuffer = 0.5;
 /** @type {number} Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged by Speed check. */
 export const speedGroundConsecutiveTicksThreshold = 5;
+/** @type {string[]} List of block type IDs that mitigate fall damage (e.g., hay_block). */
+export const noFallMitigationBlocks = ["minecraft:hay_block", "minecraft:powder_snow", "minecraft:sweet_berry_bush"];
 
 /** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass) is active. */
 export const enableNoSlowCheck = false;
+// export const noSlowSpeedEffectTolerance = 0.5; // Deprecated: Flat tolerance for Speed effect with NoSlow. Use noSlowSpeedEffectTolerancePercent.
+/** @type {number} Percentage (0.0 to 1.0) of additional speed allowed if player has Speed effect, relative to the action's max speed. E.g., 0.10 for 10% buffer. */
+export const noSlowSpeedEffectTolerancePercent = 0.10;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed. */
 export const noSlowMaxSpeedEating = 1.0;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla movement is significantly slowed. */
@@ -402,6 +407,8 @@ export const noSlowMaxSpeedSneaking = 1.5;
 
 /** @type {boolean} If true, the Invalid Sprint check (detecting sprinting under disallowed conditions) is active. */
 export const enableInvalidSprintCheck = true;
+/** @type {number} Minimum food level (inclusive) required to sprint. Vanilla default is > 6 (i.e., 7 or more). */
+export const sprintHungerLimit = 6;
 
 
 // --- Combat Checks ---
@@ -978,6 +985,9 @@ export let editableConfigValues = {
     noSlowMaxSpeedUsingShield,
     noSlowMaxSpeedSneaking,
     enableInvalidSprintCheck,
+    sprintHungerLimit,
+    // noSlowSpeedEffectTolerance, // Deprecated
+    noSlowSpeedEffectTolerancePercent,
     attackBlockingConsumables,
     attackBlockingBows,
     attackBlockingShields,
@@ -994,6 +1004,7 @@ export let editableConfigValues = {
     flyHoverMaxFallDistanceThreshold,
     speedToleranceBuffer,
     speedGroundConsecutiveTicksThreshold,
+    noFallMitigationBlocks, // Added for noFallCheck
     netherRoofYLevelThreshold,
     maxCpsThreshold,
     reachDistanceSurvival,
