@@ -22,11 +22,13 @@ export const definition = {
 
 
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, configModule } = dependencies; // config is editableConfigValues, configModule is the full module
+    // Destructure all needed services, including getString, worldBorderManager, uiManager
+    const { playerUtils, logManager, config, configModule, getString, worldBorderManager, uiManager } = dependencies;
     const subCommand = args.shift()?.toLowerCase();
-    const cmdPrefix = config.prefix; // Use runtime prefix from editableConfigValues
+    const cmdPrefix = config.prefix;
 
     if (!subCommand || subCommand === "help") {
+        // Use destructured getString
         playerUtils.notifyPlayer(player, getString('command.worldborder.help.header'));
         playerUtils.notifyPlayer(player, getString('command.worldborder.help.set', { prefix: cmdPrefix }));
         playerUtils.notifyPlayer(player, getString('command.worldborder.help.get', { prefix: cmdPrefix }));
@@ -46,13 +48,13 @@ export async function execute(player, args, dependencies) {
     // Subcommand validation (basic check, specific handlers do more)
     const validSubcommands = ["set", "get", "toggle", "remove", "shrink", "expand", "resizepause", "resizeresume", "setglobalparticle", "setparticle"];
     if (!validSubcommands.includes(subCommand)) {
+        // Use destructured getString
         playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
         return;
     }
 
-    // Note: cmdPrefix is removed from calls to helper functions.
-    // They will use dependencies.config.prefix or dependencies.configModule.prefix as needed.
-    // getString will be sourced from dependencies within each handler.
+    // All helper functions will now take (player, args, dependencies)
+    // and destructure what they need from dependencies.
     switch (subCommand) {
         case "set":
             await handleSetCommand(player, args, dependencies);
@@ -61,20 +63,15 @@ export async function execute(player, args, dependencies) {
             await handleGetCommand(player, args, dependencies);
             break;
         case "toggle":
-            // handleToggleCommand was already correctly using full dependencies in its signature from a previous partial refactor attempt.
-            // We'll ensure it's consistent with others.
             await handleToggleCommand(player, args, dependencies);
             break;
         case "remove":
-            // handleRemoveCommand was also correctly using full dependencies.
             await handleRemoveCommand(player, args, dependencies);
             break;
         case "shrink":
-            // handleShrinkCommand calls handleResizeCommand, which will be updated.
             await handleShrinkCommand(player, args, dependencies);
             break;
         case "expand":
-            // handleExpandCommand calls handleResizeCommand, which will be updated.
             await handleExpandCommand(player, args, dependencies);
             break;
         case "resizepause":
@@ -90,8 +87,8 @@ export async function execute(player, args, dependencies) {
             await handleSetParticleCommand(player, args, dependencies);
             break;
         default:
-            // Need getString from dependencies here for the error message
-            dependencies.playerUtils.warnPlayer(player, dependencies.getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
+            // Use destructured getString and playerUtils
+            playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
     }
 }
 
@@ -484,7 +481,9 @@ async function handleExpandCommand(player, args, dependencies) {
     await handleResizeCommand(player, args, "expand", dependencies);
 }
 
-async function handleResizePauseCommand(player, args, playerUtils, logManager, dependencies) {
+async function handleResizePauseCommand(player, args, dependencies) {
+    const { playerUtils, logManager, getString, worldBorderManager, config } = dependencies;
+    const prefix = config.prefix;
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
@@ -492,7 +491,7 @@ async function handleResizePauseCommand(player, args, playerUtils, logManager, d
         playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidDimension', { dimensionIdInput: (dimensionIdInput || player.dimension.id) }));
         return;
     }
-    const settings = getBorderSettings(dimensionId);
+    const settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!settings || !settings.isResizing) {
         playerUtils.warnPlayer(player, getString('command.worldborder.resizepause.notResizing', { dimensionId: dimensionId.replace("minecraft:", "") }));
         return;
@@ -503,17 +502,19 @@ async function handleResizePauseCommand(player, args, playerUtils, logManager, d
     }
     settings.isPaused = true;
     settings.resizeLastPauseStartTimeMs = Date.now();
-    if (saveBorderSettings(dimensionId, settings)) {
+    if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
         playerUtils.notifyPlayer(player, getString('command.worldborder.resizepause.success', { dimensionId: dimensionId.replace("minecraft:", "") }));
         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_pause', targetName: dimensionId, details: JSON.stringify(settings) });
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_pause', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
         }
     } else {
         playerUtils.warnPlayer(player, getString('command.worldborder.resizepause.fail', { dimensionId: dimensionId.replace("minecraft:", "") }));
     }
 }
 
-async function handleResizeResumeCommand(player, args, playerUtils, logManager, dependencies) {
+async function handleResizeResumeCommand(player, args, dependencies) {
+    const { playerUtils, logManager, getString, worldBorderManager, config } = dependencies;
+    const prefix = config.prefix;
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
@@ -521,7 +522,7 @@ async function handleResizeResumeCommand(player, args, playerUtils, logManager, 
         playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidDimension', { dimensionIdInput: (dimensionIdInput || player.dimension.id) }));
         return;
     }
-    const settings = getBorderSettings(dimensionId);
+    const settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!settings || !settings.isResizing) {
         playerUtils.warnPlayer(player, getString('command.worldborder.resizeresume.notResizing', { dimensionId: dimensionId.replace("minecraft:", "") }));
         return;
@@ -534,19 +535,19 @@ async function handleResizeResumeCommand(player, args, playerUtils, logManager, 
     settings.resizePausedTimeMs = (settings.resizePausedTimeMs || 0) + currentPauseDurationMs;
     settings.isPaused = false;
     settings.resizeLastPauseStartTimeMs = undefined;
-    if (saveBorderSettings(dimensionId, settings)) {
+    if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
         playerUtils.notifyPlayer(player, getString('command.worldborder.resizeresume.success', { dimensionId: dimensionId.replace("minecraft:", "") }));
         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_resume', targetName: dimensionId, details: JSON.stringify(settings) });
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_resume', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
         }
     } else {
         playerUtils.warnPlayer(player, getString('command.worldborder.resizeresume.fail', { dimensionId: dimensionId.replace("minecraft:", "") }));
     }
 }
 
-async function handleSetGlobalParticleCommand(player, args, playerUtils, logManager, dependencies) {
-    const { configModule, config: currentRunTimeConfig } = dependencies;
-    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
+async function handleSetGlobalParticleCommand(player, args, dependencies) {
+    const { playerUtils, logManager, configModule, config: currentRunTimeConfig, getString } = dependencies;
+    const prefix = currentRunTimeConfig.prefix;
 
     if (args.length < 1) {
         playerUtils.warnPlayer(player, getString('command.worldborder.setglobalparticle.usage', { prefix: prefix }));
@@ -566,7 +567,7 @@ async function handleSetGlobalParticleCommand(player, args, playerUtils, logMana
     if (success) {
         playerUtils.notifyPlayer(player, getString('command.worldborder.setglobalparticle.success', { particleName: particleName }));
         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setglobalparticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` });
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setglobalparticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);
         }
     } else {
         const currentParticleName = configModule.editableConfigValues.worldBorderParticleName;
@@ -578,9 +579,9 @@ async function handleSetGlobalParticleCommand(player, args, playerUtils, logMana
     }
 }
 
-async function handleSetParticleCommand(player, args, playerUtils, logManager, dependencies) {
-    const { config: currentRunTimeConfig, configModule } = dependencies;
-    const prefix = currentRunTimeConfig.prefix; // Get prefix from runtime config
+async function handleSetParticleCommand(player, args, dependencies) {
+    const { playerUtils, logManager, config: currentRunTimeConfig, configModule, getString, worldBorderManager } = dependencies;
+    const prefix = currentRunTimeConfig.prefix;
     const globalDefaultParticle = currentRunTimeConfig.worldBorderParticleName;
 
     if (args.length < 1) {
@@ -595,7 +596,7 @@ async function handleSetParticleCommand(player, args, playerUtils, logManager, d
         playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidDimension', { dimensionIdInput: (dimensionIdInput || player.dimension.id) }));
         return;
     }
-    let settings = getBorderSettings(dimensionId);
+    let settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!settings || !settings.enabled) {
         playerUtils.warnPlayer(player, getString('command.worldborder.setparticle.error.noActiveBorder', { dimensionId: dimensionId.replace('minecraft:','') }));
         return;
@@ -613,10 +614,10 @@ async function handleSetParticleCommand(player, args, playerUtils, logManager, d
         newParticleOverride = particleNameInput.trim();
     }
     settings.particleNameOverride = newParticleOverride;
-    if (saveBorderSettings(dimensionId, settings)) {
+    if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
         playerUtils.notifyPlayer(player, getString('command.worldborder.setparticle.success', { dimensionId: dimensionId.replace('minecraft:',''), messageParticleName: messageParticleName }));
         if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setparticle', targetName: dimensionId, details: `Set particle override to: ${newParticleOverride === undefined ? 'Global Default' : newParticleOverride}` });
+            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setparticle', targetName: dimensionId, details: `Set particle override to: ${newParticleOverride === undefined ? 'Global Default' : newParticleOverride}` }, dependencies);
         }
     } else {
         playerUtils.warnPlayer(player, getString('command.worldborder.setparticle.error.fail'));
