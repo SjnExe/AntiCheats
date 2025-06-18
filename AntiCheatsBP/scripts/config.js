@@ -1128,53 +1128,80 @@ export function updateConfigValue(key, newValue) {
         }
         coercedNewValue = parsedNum;
     } else if (originalType === 'boolean' && typeof newValue === 'string') {
-        if (newValue.toLowerCase() === 'true') {
+        const lowerNewValue = newValue.toLowerCase();
+        if (lowerNewValue === 'true') {
             coercedNewValue = true;
-        } else if (newValue.toLowerCase() === 'false') {
+        } else if (lowerNewValue === 'false') {
             coercedNewValue = false;
         } else {
             console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected boolean, got unparsable string "${newValue}" for boolean. Update rejected.`);
             return false;
         }
     } else if (Array.isArray(oldValue) && typeof newValue === 'string') {
-        // MODIFIED LOGIC FOR STRING ARRAY FROM COMMA-SEPARATED STRING
-        if (newValue.trim() === "") {
-            coercedNewValue = [];
+        const stringItems = newValue.trim() === "" ? [] : newValue.split(',').map(item => item.trim());
+
+        if (oldValue.length > 0) {
+            const targetElementType = typeof oldValue[0];
+            const convertedArray = [];
+            for (const item of stringItems) {
+                let convertedItem;
+                if (targetElementType === 'number') {
+                    convertedItem = Number(item);
+                    if (isNaN(convertedItem)) {
+                        console.warn(`[ConfigManager] Type mismatch for array element in key ${key}. Expected number, got "${item}". Update rejected.`);
+                        return false;
+                    }
+                } else if (targetElementType === 'boolean') {
+                    const lowerItem = item.toLowerCase();
+                    if (lowerItem === 'true') {
+                        convertedItem = true;
+                    } else if (lowerItem === 'false') {
+                        convertedItem = false;
+                    } else {
+                        console.warn(`[ConfigManager] Type mismatch for array element in key ${key}. Expected boolean, got "${item}". Update rejected.`);
+                        return false;
+                    }
+                } else { // Default to string, or handle other specific types if needed
+                    convertedItem = item;
+                }
+                convertedArray.push(convertedItem);
+            }
+            coercedNewValue = convertedArray;
         } else {
-            coercedNewValue = newValue.split(',').map(item => item.trim());
+            // If original array is empty, assume new string items are acceptable as strings
+            coercedNewValue = stringItems;
         }
-        // No longer rejecting here, coercedNewValue is now an array.
-        // The function will proceed to the general type check.
     }
 
-    // --- NEW STRICT ARRAY CHECK START ---
-    // This check is after all coercions. If oldValue was array, coercedNewValue must also be an array.
-    if (Array.isArray(oldValue) && !Array.isArray(coercedNewValue)) {
-        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, but received incompatible type ${typeof newValue} (which resolved to type ${typeof coercedNewValue} after coercion attempts). Update rejected.`);
-        return false;
-    }
-    // --- NEW STRICT ARRAY CHECK END ---
-     else if (typeof oldValue !== typeof coercedNewValue && !Array.isArray(oldValue)) { // Allow assigning new array to array type
-        // This check should correctly skip if oldValue was an array and coercedNewValue is now also an array.
-        // It primarily handles cases where oldValue was not an array, but there's still a type mismatch.
-        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${typeof coercedNewValue}. Update rejected.`);
-        return false;
-    }
+    // Type validation after coercion
+    const newCoercedType = typeof coercedNewValue;
 
-
-    // For arrays and objects, a simple comparison checks reference, not content.
-    // For this application, if new and old value are "equal" by strict comparison, consider it unchanged.
-    // Deep equality check for objects/arrays could be added if needed but adds complexity.
-    if (oldValue === coercedNewValue && !Array.isArray(coercedNewValue)) { // For non-arrays, strict equality is fine
-        if (enableDebugLogging) console.log(`[ConfigManager] No change for ${key}, value is already ${coercedNewValue}`);
-        return false;
-    }
-    // For arrays, compare JSON strings to check for content equality
-    if (Array.isArray(oldValue) && Array.isArray(coercedNewValue) && JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
-        if (enableDebugLogging) console.log(`[ConfigManager] No change for array ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
+    if (Array.isArray(oldValue)) {
+        if (!Array.isArray(coercedNewValue)) {
+            console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, but received ${newCoercedType} after coercion. Update rejected.`);
+            return false;
+        }
+        // Further check: if original array was not empty, new array elements should match original element types
+        if (oldValue.length > 0 && coercedNewValue.length > 0) {
+            const originalElementType = typeof oldValue[0];
+            const newElementType = typeof coercedNewValue[0];
+            if (originalElementType !== newElementType) {
+                // This case should ideally be caught by the per-element coercion above for string inputs.
+                // However, this serves as a fallback or for cases where newValue was already an array but with wrong typed elements.
+                console.warn(`[ConfigManager] Element type mismatch for array key ${key}. Expected elements of type ${originalElementType}, got ${newElementType}. Update rejected.`);
+                return false;
+            }
+        }
+    } else if (originalType !== newCoercedType) {
+        console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected ${originalType}, got ${newCoercedType}. Update rejected.`);
         return false;
     }
 
+    // Value comparison (handles arrays and primitives)
+    if (JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
+        if (enableDebugLogging) console.log(`[ConfigManager] No change for ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
+        return false;
+    }
 
     editableConfigValues[key] = coercedNewValue;
     if (enableDebugLogging) console.log(`[ConfigManager] Updated ${key} from "${Array.isArray(oldValue) ? JSON.stringify(oldValue) : oldValue}" to "${Array.isArray(coercedNewValue) ? JSON.stringify(coercedNewValue) : coercedNewValue}"`);
