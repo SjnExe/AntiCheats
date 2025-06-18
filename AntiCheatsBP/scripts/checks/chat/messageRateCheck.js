@@ -19,18 +19,19 @@ import * as mc from '@minecraft/server';
  * Checks if a player is sending messages too frequently.
  * If a violation is detected, configured actions (flagging, logging, message cancellation) are executed.
  * @param {mc.Player} player - The player sending the message.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastChatMessageTimestamp`.
  * @param {mc.ChatSendBeforeEvent} eventData - The chat event data, used for message content and cancellation.
- * @param {Config} config - The server configuration object, containing thresholds and check toggles.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {CommandDependencies} dependencies - The full dependencies object.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastChatMessageTimestamp`.
+ * @param {import('../../types.js').CommandDependencies} dependencies - The full dependencies object, including:
+ * @param {Config} dependencies.config - The server configuration object.
+ * @param {PlayerUtils} dependencies.playerUtils - Utility functions for player interactions.
+ * @param {PlayerDataManager} dependencies.playerDataManager - Manager for player data.
+ * @param {LogManager} dependencies.logManager - Manager for logging.
+ * @param {import('../../types.js').ActionManager} dependencies.actionManager - Manager for executing check actions.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the message should be cancelled due to spam, `false` otherwise.
  */
 export async function checkMessageRate(
     player,
-    eventData, // eventData is now the second parameter
+    eventData,
     pData,
     dependencies
 ) {
