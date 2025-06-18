@@ -22,14 +22,14 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
     if (playerDataManager.saveDirtyPlayerData) {
         try {
-            await playerDataManager.saveDirtyPlayerData(player); // This function likely needs dependencies too if it calls other services
+            await playerDataManager.saveDirtyPlayerData(player, dependencies); // Pass dependencies
             playerUtils.debugLog(`Data saved for ${player.nameTag} on leave via saveDirtyPlayerData.`, dependencies, player.nameTag);
         } catch (error) {
             console.error(`[AntiCheat] Error in saveDirtyPlayerData for ${player.nameTag} on leave: ${error}`);
         }
     }
 
-    const pData = playerDataManager.getPlayerData(player.id);
+    const pData = playerDataManager.getPlayerData(player.id); // This typically doesn't need full dependencies for a simple get
 
     if (pData && currentConfig.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) {
         const currentTime = Date.now();
@@ -88,7 +88,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
         }, dependencies);
     }
 
-    await playerDataManager.prepareAndSavePlayerData(player); // This function likely needs dependencies too
+    await playerDataManager.prepareAndSavePlayerData(player, dependencies); // Pass dependencies
     playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, dependencies, player.nameTag);
 
     if (currentConfig.enableDetailedJoinLeaveLogging) {
@@ -132,7 +132,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, dependencies, player.nameTag);
 
         if (initialSpawn && config.enableWelcomerMessage) {
-            const welcomeMsgKey = config.welcomeMessageKey || "welcome.joinMessage";
+            const welcomeMsgKey = config.welcomeMessage || "welcome.joinMessage"; // Changed from config.welcomeMessageKey
             let message = getString(welcomeMsgKey, { playerName: player.nameTag });
             mc.system.runTimeout(() => {
                 player.sendMessage(message);
@@ -199,6 +199,14 @@ export async function handlePlayerSpawn(eventData, dependencies) {
     } catch (error) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player?.nameTag || "unknown player"}: ${error.stack || error}`);
         playerUtils?.debugLog?.(`Error in handlePlayerSpawn for ${player?.nameTag || "unknown player"}: ${error}`, dependencies, player?.nameTag);
+        if (dependencies.logManager && dependencies.logManager.addLog) {
+            dependencies.logManager.addLog('error', {
+                message: `Error in handlePlayerSpawn for ${player?.nameTag || "unknown player"}`,
+                error: error.message,
+                stack: error.stack,
+                context: "handlePlayerSpawn"
+            }, dependencies);
+        }
     }
 }
 
@@ -394,7 +402,7 @@ export async function handlePlayerDeath(eventData, dependencies) {
         const y = Math.floor(location.y);
         const z = Math.floor(location.z);
 
-        const deathCoordsMsgKey = config.deathCoordsMessageKey || "message.deathCoords"; // config from dependencies
+        const deathCoordsMsgKey = config.deathCoordsMessage || "message.deathCoords"; // Changed from config.deathCoordsMessageKey
         let message = getString(deathCoordsMsgKey, { // getString from dependencies
             x: x.toString(), y: y.toString(), z: z.toString(), dimensionId: dimensionId
         });
@@ -449,7 +457,7 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
         const pData = dependencies.playerDataManager.getPlayerData(player.id);
         if (!pData) return;
 
-        const expectedTicks = getExpectedBreakTicks(block.typeId, itemStack, player);
+        const expectedTicks = getExpectedBreakTicks(player, block.permutation, itemStack, dependencies.config);
         pData.blockBreakStartTime = dependencies.currentTick;
         pData.expectedBreakTicks = expectedTicks;
         pData.blockBeingBroken = block;

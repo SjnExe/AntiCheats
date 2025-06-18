@@ -3,7 +3,8 @@
  * Defines the !kick command for administrators to remove a player from the server.
  * @version 1.0.2
  */
-// Imports for permissionLevels and getString are removed, they will come from dependencies.
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+// getString will come from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +13,7 @@ export const definition = {
     name: "kick",
     syntax: "!kick <playername> [reason]",
     description: "Kicks a player from the server.",
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Use imported permissionLevels
     enabled: true,
 };
 
@@ -68,15 +69,14 @@ export async function execute(player, args, dependencies) {
                 const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // playerDataManager from dependencies
                 playerUtils.notifyAdmins(getString('command.kick.adminNotification', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: originalReason }), player, targetPData); // getString from dependencies
             }
-            if (logManager?.addLog) { // use logManager.addLog
-                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: originalReason });
+            if (logManager?.addLog) {
+                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: originalReason }, dependencies);
             }
         } catch (e) {
             player.sendMessage(getString('command.kick.error', { targetName: targetPlayerName, error: e.message })); // getString from dependencies, provide e.message
             // Standardized error logging
             console.error(`[KickCommand] Error kicking player ${targetPlayerName}: ${e.stack || e}`);
-            // Optionally add to logManager as well if persistent tracking of such errors is desired
-            logManager?.addLog?.({ actionType: 'error', details: `[KickCommand] Failed to kick ${targetPlayerName}: ${e.stack || e}` });
+            logManager?.addLog?.({ actionType: 'error', details: `[KickCommand] Failed to kick ${targetPlayerName}: ${e.stack || e}` }, dependencies);
         }
     } else {
         player.sendMessage(getString('command.kick.notFound', { targetName: targetPlayerName })); // getString from dependencies

@@ -4,7 +4,8 @@
  * Also aliased as !ui.
  * @version 1.0.2
  */
-// permissionLevels and getString imports removed. uiManager is accessed via dependencies.
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+// getString imports removed. uiManager is accessed via dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +13,8 @@
 export const definition = {
     name: "panel",
     syntax: "!panel",
-    description: "help.descriptionOverride.panel", // Key, will be resolved by getString from dependencies
-    permissionLevel: null, // To be set from dependencies.permissionLevels.normal in execute
+    description: "help.descriptionOverride.panel", // Key, localization handled by help system
+    permissionLevel: permissionLevels.normal, // Statically set permission level
     enabled: true,
 };
 
@@ -24,23 +25,17 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { uiManager, playerDataManager, config, logManager, playerUtils, permissionLevels, getString } = dependencies;
-
-    // Set definition properties from dependencies
-    definition.permissionLevel = permissionLevels.normal;
-    // Ensure description is resolved only once if it's a key
-    if (typeof definition.description === 'string' && !definition.description.startsWith("§")) {
-       definition.description = getString(definition.description);
-    }
+    const { uiManager, playerDataManager, config, logManager, playerUtils, getString } = dependencies;
+    // permissionLevels is now imported and set statically in definition.
+    // description is also static.
 
     try {
         if (uiManager && typeof uiManager.showAdminPanelMain === 'function') {
-            // Call showAdminPanelMain correctly with (player, dependencies)
-            // showAdminPanelMain itself will decide whether to show admin or normal panel based on permissions
-            await uiManager.showAdminPanelMain(player, dependencies);
+            // Call showAdminPanelMain with all required arguments from dependencies
+            await uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies);
 
             if (logManager?.addLog) {
-                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_panel_ui', targetName: player.nameTag, details: 'Player opened main panel via command' });
+                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_panel_ui', targetName: player.nameTag, details: 'Player opened main panel via command' }, dependencies);
             }
         } else {
             const errorMessage = getString("command.panel.error.uiManagerUnavailable");
@@ -51,14 +46,14 @@ export async function execute(player, _args, dependencies) {
             }
             console.error("[PanelCommand] uiManager.showAdminPanelMain is not available for panel command.");
             if(logManager?.addLog){
-                logManager.addLog({actionType: 'error', details: `[PanelCommand] uiManager or showAdminPanelMain not available for ${player.nameTag}`});
+                logManager.addLog({actionType: 'error', details: `[PanelCommand] uiManager or showAdminPanelMain not available for ${player.nameTag}`}, dependencies);
             }
         }
     } catch (error) {
         console.error(`[PanelCommand] Error executing panel command for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage(getString("common.error.genericCommand"));
         if(logManager?.addLog){
-            logManager.addLog({actionType: 'error', details: `[PanelCommand] Panel command error for ${player.nameTag}: ${error.stack || error}`});
+            logManager.addLog({actionType: 'error', details: `[PanelCommand] Panel command error for ${player.nameTag}: ${error.stack || error}`}, dependencies);
         }
     }
 }

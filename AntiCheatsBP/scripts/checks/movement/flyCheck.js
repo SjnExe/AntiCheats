@@ -35,14 +35,13 @@ import * as mc from '@minecraft/server';
  *
  * @param {mc.Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependenciesFull - Object containing shared dependencies like config, playerUtils, executeCheckAction etc.
- * @param {number} currentTick - The current game tick.
+ * @param {CommandDependencies} dependencies - Object containing shared dependencies like config, playerUtils, actionManager, currentTick etc.
  * @returns {Promise<void>}
  */
 export async function checkFly(
     player,
     pData,
-    dependencies // Renamed from dependenciesFull, currentTick will be from here
+    dependencies
 ) {
     // Destructure what's needed. actionManager contains executeCheckAction.
     // currentTick is now from dependencies.

@@ -4,7 +4,8 @@
  * or detailed information about a specific command based on their permission level.
  * @version 1.0.1
  */
-// Imports for permissionLevels, getString, and config are removed, they will come from dependencies.
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+// getString, and config are removed, they will come from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,7 +14,7 @@ export const definition = {
     name: "help",
     syntax: "!help [command_name]",
     description: "Shows available commands or help for a specific command.",
-    permissionLevel: permissionLevels.normal, // Accessible by all players
+    permissionLevel: permissionLevels.normal, // Use imported permissionLevels
     enabled: true,
 };
 

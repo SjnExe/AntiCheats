@@ -3,7 +3,8 @@
  * Defines the !ban command for administrators to ban players.
  * @version 1.0.1
  */
-// Imports for permissionLevels and getString are removed, they will come from dependencies.
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+// getString will come from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +13,7 @@ export const definition = {
     name: "ban",
     syntax: "!ban <playername> [duration] [reason]",
     description: "Bans a player for a specified duration (e.g., 7d, 2h, perm).",
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Use imported permissionLevels
     enabled: true,
 };
 
