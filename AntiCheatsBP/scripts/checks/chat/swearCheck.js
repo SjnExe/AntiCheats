@@ -1,7 +1,15 @@
 /**
  * @file AntiCheatsBP/scripts/checks/chat/swearCheck.js
  * Implements swear word detection in chat messages with obfuscation resistance.
- * @version 1.1.0
+ *
+ * IMPORTANT: Levenshtein distance matching for fuzzy matching of swear words is currently
+ * DISABLED. The previous placeholder `calculateLevenshtein` function was incorrect.
+ * To re-enable this feature, a proper Levenshtein distance algorithm implementation
+ * is required. It is also recommended to set `config.swearCheckEnableLevenshtein`
+ * to `false` in the server's configuration file to avoid any unintended behavior
+ * or errors until a correct implementation is in place.
+ *
+ * @version 1.1.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -9,21 +17,7 @@
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-// Placeholder - NOT a correct Levenshtein algorithm.
-// Assume calculateLevenshtein(a,b) function is available from utils or will be added/replaced with a proper one.
-function calculateLevenshtein(s1, s2) {
-    if (s1 === s2) return 0;
-    if (!s1 || !s2) return (s1 || s2).length; // Handle null/undefined/empty strings
-    const longer = s1.length > s2.length ? s1 : s2;
-    const shorter = s1.length > s2.length ? s2 : s1;
-    let diff = longer.length - shorter.length;
-    for (let i = 0; i < shorter.length; i++) {
-        if (shorter[i] !== longer[i]) {
-            diff++;
-        }
-    }
-    return diff;
-}
+
 /**
  * Normalizes a word for swear checking, including leet speak conversion and character collapsing.
  * @param {string} word The word to normalize.
@@ -108,14 +102,18 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
                 matchType = "exact_normalized";
             }
             // Levenshtein Match (if not exact and enabled)
+            /*
             else if (config.swearCheckEnableLevenshtein) {
-                const distance = calculateLevenshtein(normalizedInputWord, swearItem.normalized);
+                // NOTE: Levenshtein matching is disabled until a proper algorithm is implemented.
+                // The calculateLevenshtein function was a placeholder and has been removed.
+                const distance = calculateLevenshtein(normalizedInputWord, swearItem.normalized); // This line would cause an error now
                 const levenshteinThreshold = config.swearCheckLevenshteinDistance ?? 1;
                 if (distance <= levenshteinThreshold) {
                     matchType = "levenshtein";
                     detectedDistance = distance;
                 }
             }
+            */
             if (matchType) {
                 const violationDetails = {
                     detectedSwear: swearItem.original,
