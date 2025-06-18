@@ -1,7 +1,8 @@
 /**
  * @file AntiCheatsBP/scripts/checks/chat/swearCheck.js
- * Implements swear word detection in chat messages with obfuscation resistance.
- * @version 1.1.0
+ * Implements swear word detection in chat messages with obfuscation resistance
+ * using exact normalized matching.
+ * @version 1.1.2
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -9,21 +10,7 @@
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-// Placeholder - NOT a correct Levenshtein algorithm.
-// Assume calculateLevenshtein(a,b) function is available from utils or will be added/replaced with a proper one.
-function calculateLevenshtein(s1, s2) {
-    if (s1 === s2) return 0;
-    if (!s1 || !s2) return (s1 || s2).length; // Handle null/undefined/empty strings
-    const longer = s1.length > s2.length ? s1 : s2;
-    const shorter = s1.length > s2.length ? s2 : s1;
-    let diff = longer.length - shorter.length;
-    for (let i = 0; i < shorter.length; i++) {
-        if (shorter[i] !== longer[i]) {
-            diff++;
-        }
-    }
-    return diff;
-}
+
 /**
  * Normalizes a word for swear checking, including leet speak conversion and character collapsing.
  * @param {string} word The word to normalize.
@@ -62,7 +49,7 @@ function normalizeWordForSwearCheck(word, config) {
 }
 /**
  * Checks a chat message for swear words based on a configurable list,
- * with options for normalization, leet speak, and Levenshtein distance.
+ * using normalization and optionally leet speak conversion for matching.
  *
  * @param {import('@minecraft/server').Player} player The player sending the message.
  * @param {PlayerAntiCheatData} pData Player-specific data from playerDataManager.
@@ -101,32 +88,17 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
         const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config); // Pass config from dependenciesFull
         if (normalizedInputWord.length === 0) continue;
         for (const swearItem of normalizedSwearWordList) {
-            let matchType = null;
-            let detectedDistance = -1;
             // Exact Normalized Match
             if (normalizedInputWord === swearItem.normalized) {
-                matchType = "exact_normalized";
-            }
-            // Levenshtein Match (if not exact and enabled)
-            else if (config.swearCheckEnableLevenshtein) {
-                const distance = calculateLevenshtein(normalizedInputWord, swearItem.normalized);
-                const levenshteinThreshold = config.swearCheckLevenshteinDistance ?? 1;
-                if (distance <= levenshteinThreshold) {
-                    matchType = "levenshtein";
-                    detectedDistance = distance;
-                }
-            }
-            if (matchType) {
                 const violationDetails = {
                     detectedSwear: swearItem.original,
                     matchedWordInMessage: wordInMessage,
                     normalizedInput: normalizedInputWord,
                     normalizedSwear: swearItem.normalized,
-                    matchMethod: matchType,
-                    levenshteinDistance: matchType === "levenshtein" ? detectedDistance.toString() : "N/A",
+                    matchMethod: "exact_normalized",
                     originalMessage: originalMessage,
                 };
-                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by ${matchType}. Distance: ${detectedDistance}`, dependenciesFull, pData.isWatched ? player.nameTag : null);
+                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by exact_normalized.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
 
                 if (actionManager && typeof actionManager.executeCheckAction === 'function') {
                      await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependenciesFull);

@@ -7,7 +7,7 @@
  */
 
 import * as mc from '@minecraft/server';
-import { getOptimalToolForBlock, getBlockBreakingSpeed } from '../../utils/index.js';
+import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -59,16 +59,21 @@ export async function checkAutoTool(
                     const initialToolStack = inventory?.container?.getItem(pData.slotAtBreakAttemptStart);
                     const newToolStack = optimalToolInfo.itemStack;
 
-                    const initialSpeed = getBlockBreakingSpeed(player, blockPermutation, initialToolStack);
-                    const newSpeed = optimalToolInfo.speed;
+                    // 'speed' from getOptimalToolForBlock is actually breaking power
+                    const initialPower = calculateRelativeBlockBreakingPower(player, blockPermutation, initialToolStack);
+                    const newPower = optimalToolInfo.speed; // This 'speed' is the power score from getOptimalToolForBlock
 
-                    const isSignificantlyBetter = (newSpeed > initialSpeed * 1.5) ||
-                                                (initialSpeed < 1 && newSpeed > 1 && newSpeed !== Infinity) ||
-                                                (newSpeed === Infinity && initialSpeed < 1000);
+                    // Higher power is better.
+                    // 1. New tool is at least 50% more powerful.
+                    // 2. New tool is "infinitely" powerful (e.g., shears on wool) and old tool wasn't already super effective.
+                    // 3. New tool has a basic power level (e.g. >5) and initial was extremely low (e.g. <1, like punching stone).
+                    const isSignificantlyBetter = (newPower > initialPower * 1.5) ||
+                                                (newPower === Infinity && initialPower < 1000) ||
+                                                (newPower > 5 && initialPower < 1);
 
                     if (isSignificantlyBetter) {
                         pData.switchedToOptimalToolForBreak = true;
-                        playerUtils.debugLog(`[AutoToolCheck] Detected switch to optimal tool (${newToolStack?.typeId ?? 'hand'} in slot ${currentSlotIndex}) for ${pData.breakingBlockTypeId}. Initial slot: ${pData.slotAtBreakAttemptStart}`, dependencies, watchedPrefix);
+                        playerUtils.debugLog(`[AutoToolCheck] Detected switch to optimal tool (${newToolStack?.typeId ?? 'hand'} in slot ${currentSlotIndex}, newPower: ${newPower.toFixed(2)}, oldPower: ${initialPower.toFixed(2)}) for ${pData.breakingBlockTypeId}. Initial slot: ${pData.slotAtBreakAttemptStart}`, dependencies, watchedPrefix);
                     }
                 }
             }
