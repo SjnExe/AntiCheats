@@ -111,7 +111,6 @@ export function warnPlayer(player, reason) {
  * and the global default setting `acGlobalNotificationsDefaultOn`.
  * Optionally includes context about a specific player and their flag data if provided.
  * @param {string} baseMessage The core message to send.
- * @param {mc.Player} [player] Optional: The player related to this notification.
  * @param {object} dependencies The standard dependencies object.
  * @param {mc.Player} [player] Optional: The player related to this notification.
  * @param {object} [pData] Optional: The player-specific data, typically from playerDataManager,
