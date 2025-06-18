@@ -64,9 +64,9 @@ export const translations = {
             description: "Accepts an incoming TPA request.",
             usage: "§cUsage: {prefix}tpaccept [playerName]",
             error_noPending: "§cYou have no pending TPA requests.",
-            error_noRequestFrom": "§cNo pending TPA request found from \"{playerName}\".",
-            error_pendingFromList": "§7Pending requests are from: {playerList}",
-            error_couldNotFind": "§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests.",
+            error_noRequestFrom: "§cNo pending TPA request found from \"{playerName}\".",
+            error_pendingFromList: "§7Pending requests are from: {playerList}",
+            error_couldNotFind: "§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests.",
             success: "§aAccepted TPA request from \"{playerName}\". Teleport will occur in {warmupSeconds} seconds if the teleporting player avoids damage and stays online.",
             fail: "§cCould not accept TPA request from \"{playerName}\". It might have expired or been cancelled.",
             teleportWarmupCancelled: "§cTeleport cancelled for TPA request from {requesterName} to {targetName} because {reason}.",
@@ -84,7 +84,7 @@ export const translations = {
             success_specific: "§aSuccessfully cancelled/declined TPA request involving \"{playerName}\".",
             success_all: "§aCancelled/declined {count} TPA request(s).",
             error_noRequests: "§cYou have no active TPA requests to cancel or decline.",
-            error_noSpecificRequest": "§cNo active or pending TPA request found with \"{playerName}\" that can be cancelled.",
+            error_noSpecificRequest: "§cNo active or pending TPA request found with \"{playerName}\" that can be cancelled.",
             error_noneCancellable: "§cNo active requests were found in a state that could be cancelled/declined.",
             notifyOther_cancelled: "§eTPA request involving \"{otherPlayerName}\" was cancelled by {cancellingPlayerName}.",
         },
@@ -95,7 +95,7 @@ export const translations = {
             nowDisabled: "§cYou are no longer accepting TPA requests.",
             nowDisabledDeclined: "§e{count} pending incoming TPA request(s) were automatically declined.",
             current_enabled: "§aYou are currently accepting TPA requests.",
-            current_disabled": "§cYou are currently not accepting TPA requests.",
+            current_disabled: "§cYou are currently not accepting TPA requests.",
             error_invalidOption: "§cInvalid option. Usage: {prefix}tpastatus [on|off|status]",
             notifyRequester_declined: "§e{targetPlayerName} is no longer accepting TPA requests; your request was automatically declined.",
         },
@@ -104,7 +104,7 @@ export const translations = {
             specific_syntax: "§eSyntax:§r {prefix}{commandName} {syntaxArgs}",
             specific_description: "§bDescription:§r {description}",
             specific_permission: "§7Permission: {permLevelName} (Level {permissionLevel})",
-            specific_notFoundOrNoPermission": "§cCommand \"{commandName}\" not found or you do not have permission to view its details. Type {prefix}help for a list of available commands.",
+            specific_notFoundOrNoPermission: "§cCommand \"{commandName}\" not found or you do not have permission to view its details. Type {prefix}help for a list of available commands.",
             error_unknownCommand: "§cUnknown command: \"{commandName}\". Type {prefix}help for a list of available commands.",
             list_header: "§l§bAvailable Commands (prefix: {prefix}):§r",
             list_noCommandsAvailable: "§7No commands available to you at this time.",
@@ -127,7 +127,7 @@ export const translations = {
         },
         copyinv: {
             description: "Copies another player's inventory to your own.",
-            error_playerLookupUnavailable": "§cCommand error: Player lookup utility not available.",
+            error_playerLookupUnavailable: "§cCommand error: Player lookup utility not available.",
             usage: "§cUsage: {prefix}copyinv <playername>",
             error_selfCopy: "§cYou cannot copy your own inventory.",
             error_inventoryAccess: "§cCould not access inventories.",
@@ -162,7 +162,7 @@ export const translations = {
             mutedYes: "§fMuted: §cYes (Expires: {expiryDate}, Reason: {reason})",
             mutedNo: "§fMuted: §aNo",
             bannedYes: "§fBanned: §cYes (Expires: {expiryDate}, Reason: {reason})",
-            bannedNo": "§fBanned: §aNo",
+            bannedNo: "§fBanned: §aNo",
             noData: "§7No AntiCheat data found for this player (they might not have triggered any checks or joined recently).",
         },
         testnotify: {
@@ -183,7 +183,7 @@ export const translations = {
             description: "Shows a detailed list of warnings/flags for a player.",
             usage: "§cUsage: {prefix}warnings <playername>",
             header: "§e--- Warnings for {playerName} ---",
-            individualFlagsHeader": "§eIndividual Flags:",
+            individualFlagsHeader: "§eIndividual Flags:",
             noData: "§cNo warning data found for {playerName}.",
         },
         listwatched: {
@@ -200,7 +200,7 @@ export const translations = {
         },
         inventoryMod: {
             details_switchAndUseSameTick: "Item used in the same tick as hotbar slot change",
-            details_movedWhileLocked": "Inventory item moved/changed (slot {slotNum}) while {action}",
+            details_movedWhileLocked: "Inventory item moved/changed (slot {slotNum}) while {action}",
             action_usingConsumable: "using consumable",
             action_chargingBow: "charging bow",
         },
@@ -209,7 +209,7 @@ export const translations = {
             reason_staticPitch: "Static Pitch",
             reason_staticYaw: "Static Yaw",
             reason_flatHorizontal: "Flat Horizontal Pitch Range",
-            reason_flatDownward": "Flat Downward Pitch Range",
+            reason_flatDownward: "Flat Downward Pitch Range",
         },
         nameSpoof: {
             reason_lengthExceeded: "NameTag length limit exceeded ({currentLength}/{maxLength})",
@@ -228,7 +228,7 @@ export const translations = {
         noSlow: {
             action_eatingDrinking: "Eating/Drinking",
             action_chargingBow: "Charging Bow",
-            action_usingShield": "Using Shield",
+            action_usingShield: "Using Shield",
             action_sneaking: "Sneaking",
         },
     },
@@ -248,7 +248,7 @@ export const translations = {
         action_permbanDefaultReason: "Permanently banned by AutoMod for severe rule violations.",
         action_muteDefaultReason: "Muted by AutoMod.",
         action_freezeDefaultReason: "Player frozen by AutoMod due to rule violation.",
-        action_teleportDefaultReason": "AutoMod: You have been teleported to a safe location.", // Existing typo noted, not fixing in this pass.
+        action_teleportDefaultReason: "AutoMod: You have been teleported to a safe location.", // Existing typo noted, not fixing in this pass.
         "automod.chat.contentrepeat.warn1": "AutoMod: Please avoid repeating the same message content.",
         "automod.chat.contentrepeat.mute1": "AutoMod: Muted for 5 minutes for repeating message content.",
         "automod.chat.contentrepeat.mute2": "AutoMod: Muted for 30 minutes for persistent message content repetition.",
@@ -268,21 +268,21 @@ export const translations = {
         kickMessage_common_reason: "Reason: {reason}",
         kickMessage_common_duration: "Duration: {duration}",
         adminNotify_actionReport: "{basePrefix} Action: {actionType} on {playerName} for {checkType}. Reason: {reason}{details}",
-        adminNotify_basePrefix": "§7[§cAutoMod§7]", // Existing typo noted
+        adminNotify_basePrefix: "§7[§cAutoMod§7]", // Existing typo noted
         adminNotify_details_duration: ". Duration: {duration}",
-        adminNotify_details_item": ". Item: {item}", // Existing typo noted
-        adminNotify_details_teleport": "Teleported to: X:{x} Y:{y} Z:{z}", // Existing typo noted
+        adminNotify_details_item: ". Item: {item}", // Existing typo noted
+        adminNotify_details_teleport: "Teleported to: X:{x} Y:{y} Z:{z}", // Existing typo noted
         default_itemRemoved: "AutoMod removed {quantity}x {itemTypeId} from your inventory.",
     },
     tpaManager: { // Keys starting with "tpa.manager."
-        error_targetOfflineOnAccept": "§c{offlinePlayerName} is no longer online. TPA request cancelled.",
+        error_targetOfflineOnAccept: "§c{offlinePlayerName} is no longer online. TPA request cancelled.",
         warmupMessage: "§eTeleporting in {warmupSeconds} seconds. Do not move or take damage.",
         requester_accepted: "§aYour TPA request to \"{targetPlayerName}\" has been accepted. {warmupMessage}",
         target_acceptedByRequester: "§a\"{requesterPlayerName}\" accepted your TPA request. {warmupMessage}",
-        target_acceptedFromRequester": "§aYou accepted the TPA request from \"{requesterPlayerName}\". They will teleport in {warmupSeconds}s.",
+        target_acceptedFromRequester: "§aYou accepted the TPA request from \"{requesterPlayerName}\". They will teleport in {warmupSeconds}s.",
         requester_acceptedHere: "§a\"{targetPlayerName}\" accepted your TPA Here request. They will teleport in {warmupSeconds}s.",
-        error_teleportTargetOffline": "§cTeleport cancelled: {offlinePlayerName} logged off.",
-        teleport_successToTarget": "§aTeleported successfully to {targetPlayerName}.",
+        error_teleportTargetOffline: "§cTeleport cancelled: {offlinePlayerName} logged off.",
+        teleport_successToTarget: "§aTeleported successfully to {targetPlayerName}.",
         teleport_successTargetNotified": "§a{requesterPlayerName} has teleported to you.",
         teleport_successToRequester": "§aTeleported successfully to {requesterPlayerName}.",
         teleport_successRequesterNotified": "§a{targetPlayerName} has teleported to you.",
@@ -410,7 +410,7 @@ export const translations = {
         },
         player_antigmc: {
             flagReason: "System detected unauthorized Creative Mode.",
-            notifyMessage": "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}",
+            notifyMessage: "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}",
         },
         player_inventory_mod: {
             flagReason: "System detected suspicious inventory/hotbar manipulation ({reasonDetail}).",
@@ -512,13 +512,13 @@ export const translations = {
         dimensionLock_teleportMessage: "§cYou cannot enter {lockedDimensionName} as it is currently locked.",
         chat_error_muted: "§cYou are currently muted and cannot send messages.",
         chat_error_combatCooldown: "§cYou cannot chat for {seconds} seconds after combat.",
-        chat_error_itemUse": "§cYou cannot chat while {itemUseState}.",
+        chat_error_itemUse: "§cYou cannot chat while {itemUseState}.",
     },
     ui: {
         panel_error_uiManagerUnavailable: "§cError: The UI Panel manager is currently unavailable.", // From command.panel...
         systemInfo: { // From ui.systemInfo...
             label_currentTick: "Current Server Tick:",
-            label_worldTime": "World Time (ticks):",
+            label_worldTime: "World Time (ticks):",
             label_defaultServerLanguage: "Default Server Language:",
             entry: {
                 acVersion: "AntiCheat Version: {version}",
