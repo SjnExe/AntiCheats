@@ -64,7 +64,7 @@ export const translations = {
             description: "Accepts an incoming TPA request.",
             usage: "§cUsage: {prefix}tpaccept [playerName]",
             error_noPending: "§cYou have no pending TPA requests.",
-            error_noRequestFrom": "§cNo pending TPA request found from \"{playerName}\".",
+            error_noRequestFrom: "§cNo pending TPA request found from \"{playerName}\".",
             error_pendingFromList": "§7Pending requests are from: {playerList}",
             error_couldNotFind": "§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests.",
             success: "§aAccepted TPA request from \"{playerName}\". Teleport will occur in {warmupSeconds} seconds if the teleporting player avoids damage and stays online.",
