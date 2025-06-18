@@ -33,7 +33,7 @@ export async function execute(
     isAutoModAction = false,
     autoModCheckType = null
 ) {
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels, getString } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels, getString, rankManager } = dependencies;
 
     if (args.length < 1) {
         const usageMessage = getString('command.ban.usage', { prefix: config.prefix }); // getString from dependencies
@@ -72,8 +72,8 @@ export async function execute(
     }
 
     if (invokedBy === "PlayerCommand" && player) {
-        const targetPermissionLevel = playerUtils.getPlayerPermissionLevel(foundPlayer); // Use playerUtils
-        const issuerPermissionLevel = playerUtils.getPlayerPermissionLevel(player); // Use playerUtils
+        const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies);
+        const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
 
         // permissionLevels is now from dependencies
         if (targetPermissionLevel <= permissionLevels.admin && issuerPermissionLevel > permissionLevels.owner) {
@@ -136,7 +136,7 @@ export async function execute(
             foundPlayer.kick(kickMessage);
         } catch (e) {
             // Debug log for this specific error context, config.enableDebugLogging is checked by debugLog itself
-            playerUtils.debugLog(`[BanCommand] Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e}`, player ? player.nameTag : "System");
+            playerUtils.debugLog(dependencies, `[BanCommand] Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e}`, player ? player.nameTag : "System");
         }
 
         const successMessage = getString('command.ban.success', { targetName: foundPlayer.nameTag, durationString: durationString, reason: actualReason }); // getString from dependencies
@@ -148,10 +148,10 @@ export async function execute(
 
         if (playerUtils.notifyAdmins) {
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context in notifyAdmins
-            playerUtils.notifyAdmins(getString('command.ban.adminNotification', { targetName: foundPlayer.nameTag, bannedBy: actualBannedBy, durationString: durationString, reason: actualReason }), player, targetPData); // getString from dependencies
+            playerUtils.notifyAdmins(getString('command.ban.adminNotification', { targetName: foundPlayer.nameTag, bannedBy: actualBannedBy, durationString: durationString, reason: actualReason }), dependencies, player, targetPData); // getString from dependencies, pass dependencies
         }
         if (logManager?.addLog) { // Use logManager.addLog
-            logManager.addLog({ timestamp: Date.now(), adminName: actualBannedBy, actionType: 'ban', targetName: foundPlayer.nameTag, duration: durationString, reason: actualReason, isAutoMod: isAutoModAction, checkType: autoModCheckType });
+            logManager.addLog({ timestamp: Date.now(), adminName: actualBannedBy, actionType: 'ban', targetName: foundPlayer.nameTag, duration: durationString, reason: actualReason, isAutoMod: isAutoModAction, checkType: autoModCheckType }, dependencies); // Pass dependencies
         }
     } else {
         const failureMessage = getString('command.ban.fail', { targetName: foundPlayer.nameTag }); // getString from dependencies

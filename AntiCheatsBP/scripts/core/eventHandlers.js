@@ -115,7 +115,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             pData.lastDimensionId = player.dimension.id;
         }
 
-        const banInfo = playerDataManager.getBanInfo(player, dependencies); // getBanInfo might need dependencies
+        const banInfo = playerDataManager.getBanInfo(player, dependencies); // Pass dependencies
         if (banInfo) {
             playerUtils.debugLog(`Player ${player.nameTag} is banned. Kicking. Ban reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`, dependencies, player.nameTag);
             const durationStringKick = getString(banInfo.unbanTime === Infinity ? "ban.duration.permanent" : "ban.duration.expires", { expiryDate: new Date(banInfo.unbanTime).toLocaleString() });

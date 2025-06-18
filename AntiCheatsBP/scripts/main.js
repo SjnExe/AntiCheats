@@ -82,9 +82,10 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
 
     await dependencies.playerDataManager.ensurePlayerDataInitialized(player, currentTick);
 
-    if (dependencies.playerDataManager.isBanned(player)) {
+    // Pass the local 'dependencies' object to isBanned and getBanInfo
+    if (dependencies.playerDataManager.isBanned(player, dependencies)) {
         eventData.cancel = true;
-        const banInfo = dependencies.playerDataManager.getBanInfo(player);
+        const banInfo = dependencies.playerDataManager.getBanInfo(player, dependencies);
         let detailedKickMessage = `§cYou are banned from this server.\n`;
         if (banInfo) {
             detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || "Unknown"}\n`;
