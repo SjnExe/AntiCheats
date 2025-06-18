@@ -1,6 +1,6 @@
-[![Version](https://img.shields.io/badge/version-v__VERSION_STRING__-blue)](https://github.com/placeholder_username/placeholder_repo/releases)
+[![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.90+-green)](https://www.minecraft.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/placeholder_username/placeholder_repo?style=flat-square)](https://github.com/placeholder_username/placeholder_repo/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=flat-square)](https://github.com/SjnExe/AntiCheats/issues)
 
 # Anti-Cheats Addon
 
@@ -11,118 +11,82 @@ This addon utilizes advanced scripting capabilities to provide robust anti-cheat
 1.  **Download:** Get the latest version from the [GitHub Releases page](https://github.com/placeholder_username/placeholder_repo/releases). Look for the `.mcaddon` file.
 2.  **Install:** Apply both the Behavior Pack (`AntiCheatsBP`) and Resource Pack (`AntiCheatsRP`) to your Minecraft world.
 3.  **Prioritize:** Ensure the Behavior Pack is at the **top** of the pack list if you have multiple behavior packs active.
-4.  **Explore:** Join your world and type `!panel` (or `!ui`) in chat to open the admin interface.
-5.  **Configure (Optional):** Key settings like admin tags and command prefix are in `AntiCheatsBP/scripts/config.js`.
+4.  **Set Owner (Crucial):**
+    [!IMPORTANT]
+    > Set your in-game name as `ownerPlayerName` in `AntiCheatsBP/scripts/config.js` to gain full owner permissions. This step is vital for full control over the addon.
+5.  **Explore:** Join your world and type `!panel` (or `!ui`) in chat to open the admin interface.
+6.  **Configure (Optional):** Other key settings like admin tags and command prefix are also in `AntiCheatsBP/scripts/config.js`.
 
-For more details, see the sections below.
+For more details on specific systems, see the linked documentation pages.
 
 ## Table of Contents
-
 *   [🚀 Quick Start](#-quick-start)
-*   [Features](#features)
-*   [Initial Configuration (Setup)](#initial-configuration-setup)
-*   [Admin Commands & UI](#admin-commands--ui)
-*   [Main Configuration File](#main-configuration-file)
-*   [Automated Moderation (AutoMod)](#automated-moderation-automod)
-*   [World Border System](#world-border-system)
-*   [Owner and Rank System](#owner-and-rank-system)
-*   [General Player Commands](#general-player-commands)
+*   [Core Features Overview](#core-features-overview)
+*   [Installation](#installation)
+*   [Basic Usage & Commands](#basic-usage--commands)
+*   [Configuration Overview](#configuration-overview)
+*   [Key Systems](#key-systems)
 *   [Versioning](#versioning)
 *   [Contributing](#contributing)
+*   [License](#license)
 
-## Features
+## Core Features Overview
 
-*   **Comprehensive Cheat Detections:**
-    *   **Movement:** Fly (sustained, hover, high Y-velocity), Speed, NoFall.
-    *   **Combat:** Reach, Clicks Per Second (CPS) / AutoClicker.
-    *   **World Interaction:** Nuker (rapid block breaking), Illegal Item usage/placement, AntiGMC, NameSpoof, InstaBreak, Tower, AirPlace, FastUse, SelfHurt.
-    *   **Exploits:** Nether Roof access, Combat Logging (disconnecting during PvP).
-*   **Admin Tools:** User-friendly UI (`!panel`) and extensive text commands for player management and system control.
-*   **Persistent Data:** Player flags and violation records are saved across sessions.
-*   **Flagging System:** Players accumulate flags for suspected cheat violations, triggering admin notifications.
-*   **Customizable Configuration:** Fine-tune detection sensitivity and toggle features via `AntiCheatsBP/scripts/config.js`.
-*   **Automated Moderation (AutoMod):** Automatically issues warnings, kicks, or bans based on configurable flag thresholds. [Learn more in AutoMod Details](Docs/AutoModDetails.md).
-*   **Advanced World Border:** Per-dimension, configurable square or circular borders with particle visuals, optional damage, and gradual resizing capabilities. [Explore World Border Details](Docs/WorldBorderDetails.md).
+This addon provides a suite of tools and detections to help maintain a fair gameplay environment:
 
-## Initial Configuration (Setup)
+*   **Comprehensive Cheat Detections:** Identifies a wide range of cheats including:
+    *   **Movement:** Fly, Speed, NoFall.
+    *   **Combat:** Reach, CPS/AutoClicker.
+    *   **World Interaction:** Nuker (rapid block breaking), Illegal Item usage/placement, `AntiGMC`, `NameSpoof`, `InstaBreak`, and various other player behavior checks.
+    *   **Exploits:** Nether Roof access, Combat Logging.
+*   **Admin Management Tools:** A user-friendly UI (`!panel`) and extensive text commands provide administrators with full control over players and system settings.
+*   **Persistent Data & Flagging:** Player flags and violation records are saved across sessions, with notifications for administrators.
+*   **Highly Customizable:** Fine-tune detection sensitivity, toggle features, and define automated actions.
+*   **Automated Moderation (AutoMod):** Automatically issues warnings, kicks, or bans based on configurable flag thresholds. [Learn more in Docs/AutoModDetails.md](Docs/AutoModDetails.md).
+*   **Advanced World Border:** Define per-dimension, configurable borders with visuals, damage, and resizing. [Explore Docs/WorldBorderDetails.md](Docs/WorldBorderDetails.md).
+*   **Rank System:** Differentiate users with Owner, Admin, and Member ranks, configurable with visual tags. [Details in Docs/RankSystem.md](Docs/RankSystem.md).
 
-**Note:** This addon is designed for Minecraft Bedrock version `1.21.90` and newer. The "Quick Start" section covers the basic installation.
+## Installation
 
-After installing the addon:
-1.  **Set Permissions:**
-    *   Assign the `admin` tag (or your configured `adminTag` from `config.js`) to trusted players who need administrative access.
-    *   To designate a server owner with special privileges, set their exact in-game name in the `ownerPlayerName` field within `AntiCheatsBP/scripts/config.js`.
+1.  **Download:** Obtain the addon pack (usually an `.mcaddon` file) from the [GitHub Releases page](https://github.com/placeholder_username/placeholder_repo/releases).
+2.  **Apply Packs:** Apply both the Behavior Pack (`AntiCheatsBP`) and Resource Pack (`AntiCheatsRP`) to your Minecraft world.
+3.  **Prioritize Behavior Pack:** Ensure the Behavior Pack is at the **top** of the behavior pack list if you have multiple packs active. This is crucial for compatibility.
+4.  **Initial Configuration:** Follow step 4 in the [🚀 Quick Start](#-quick-start) section to set the `ownerPlayerName`. Also, ensure trusted admins have the appropriate `adminTag` (default: `"admin"`) as defined in `AntiCheatsBP/scripts/config.js`.
 
-## Admin Commands & UI
+## Basic Usage & Commands
 
-Administrators (players with the `admin` tag) manage the system via the `!panel` UI or text commands. The default command prefix is `!` (configurable in `config.js`).
+The default command prefix is `!` (configurable in `AntiCheatsBP/scripts/config.js`).
+*   The primary way to interact with the addon as an admin is via the **`!panel`** (or `!ui`) command, which opens a comprehensive UI.
+*   For a detailed list of all text-based commands for both administrators and players, including syntax and permissions, please refer to our complete [Commands Guide](Docs/Commands.md).
 
-### Admin UI (Recommended)
+[!TIP]
+> You can quickly get help for any command by typing `!help <command_name>` in the chat if you know the command, or `!help` to list commands available to you.
 
-*   `!panel` (or `!ui`): Opens the main AntiCheat Admin Menu, providing access to:
-    *   Player inspection (flags, stats, inventory via `!invsee`).
-    *   Flag management (view, reset via `!resetflags`).
-    *   Applying punishments (`!kick`, `!mute`, `!ban`, `!tempban`, `!freeze`).
-    *   World Border management (`!worldborder`).
-    *   System status and logs.
+## Configuration Overview
 
-### Essential Text Commands
-
-*   `!help [command_name]`: Lists available commands or details for a specific command.
-*   `!kick <playername> [reason]`: Kicks a player.
-*   `!ban <playername> [reason]`: Permanently bans a player.
-*   `!tempban <playername> <duration> [reason]`: Temporarily bans a player (e.g., `!tempban PlayerX 7d cheating`). Durations: `m` (minutes), `h` (hours), `d` (days).
-*   `!mute <playername> <duration> [reason]`: Temporarily mutes a player.
-*   `!unban <playername>` / `!unmute <playername>`: Manages bans/mutes.
-*   `!freeze <playername>` / `!unfreeze <playername>`: Freezes/unfreezes a player.
-*   `!inspect <playername>`: Shows detailed anti-cheat stats.
-*   `!resetflags <playername> [checkType]`: Resets flags for a player.
-*   `!worldborder` (or `!wb`): Manages world borders. Use `!wb help` for subcommands.
-*   `!version`: Displays addon version.
-
-For full command details, use `!help` in-game or the `!panel` UI. Angle brackets (`< >`) denote required parameters; square brackets (`[ ]`) denote optional ones. Do not include the brackets themselves when using the commands.
-
-## Main Configuration File
-
-Primary addon settings are in **[`AntiCheatsBP/scripts/config.js`](AntiCheatsBP/scripts/config.js)**. This central file allows administrators to customize:
-
+The main configuration for this addon is centralized in **[`AntiCheatsBP/scripts/config.js`](AntiCheatsBP/scripts/config.js)**. This file allows you to customize:
 *   Core settings (command prefix, language, global feature toggles).
 *   Cheat detection sensitivity and thresholds.
-*   AutoMod enablement and general behavior.
-*   Default settings for systems like World Border.
-*   Action profiles for cheat detection responses.
+*   General behavior for systems like AutoMod and World Border.
 
-While `config.js` is the main hub, it uses other script files in `AntiCheatsBP/scripts/core/` for organization, such as:
-*   [`AntiCheatsBP/scripts/core/actionProfiles.js`](AntiCheatsBP/scripts/core/actionProfiles.js): Details specific action sequences (flagging, notifications, punishments).
-*   [`AntiCheatsBP/scripts/core/automodConfig.js`](AntiCheatsBP/scripts/core/automodConfig.js): Contains fine-grained rules and messages for AutoMod.
+While `config.js` is the primary hub, it may reference other specialized files for more detailed settings, such as [`AntiCheatsBP/scripts/core/actionProfiles.js`](AntiCheatsBP/scripts/core/actionProfiles.js) for defining specific detection responses.
 
-Consult the extensive comments within these files for detailed guidance on each option.
+[!NOTE]
+> Detailed setup and advanced configuration for complex systems like Automated Moderation and the World Border are found in their respective documentation files within the `Docs/` directory. Consult these for in-depth guidance.
 
-## Automated Moderation (AutoMod)
+## Key Systems
 
-AutoMod automatically acts against players who repeatedly trigger cheat detections, based on flag counts and configurable rules.
-*   **Control:** Enable/disable globally via `enableAutoMod` in `config.js`.
-*   **Customization:** Define specific rules, actions (warn, kick, ban), and messages in `AntiCheatsBP/scripts/core/automodConfig.js`.
-*   **Full Details:** For a comprehensive guide to AutoMod's mechanics and options, see [Docs/AutoModDetails.md](Docs/AutoModDetails.md).
+This addon includes several powerful systems that can be configured to your needs:
 
-## World Border System
-
-Define playable areas per dimension with optional damage, particle indicators, and dynamic resizing.
-*   **Management:** Control via `!worldborder` (or `!wb`) command and the `!panel` UI.
-*   **In-Depth Guide:** For features, commands, and setup, refer to [Docs/WorldBorderDetails.md](Docs/WorldBorderDetails.md).
-
-## Owner and Rank System
-
-The addon includes a basic rank system: Owner, Admin, and Member, each with distinct visual tags in chat and above nametags.
-*   **Owner Rank:** Configure by setting `ownerPlayerName` in `config.js` to the exact in-game name of the owner. If unset or left as default, this rank is not applied.
-*   **Admin Rank:** Players with the `adminTag` (default: `"admin"`, set in `config.js`) receive this rank.
-
-## General Player Commands
-
-*   `!help [command_name]`: Shows available commands or help for a specific command.
-*   `!myflags`: Allows players to check their own flag status.
-*   `!uinfo`: Displays a UI with personal anti-cheat stats, server rules, and help links.
-*   `!report <playername> <reason...>`: Reports a player for admin review (reason is mandatory).
+*   **Automated Moderation (AutoMod):**
+    *   Automatically punishes players based on accumulated flags. Highly configurable.
+    *   **Configure & Learn More:** [Docs/AutoModDetails.md](Docs/AutoModDetails.md)
+*   **World Border System:**
+    *   Define per-dimension playable areas with various customization options.
+    *   **Configure & Learn More:** [Docs/WorldBorderDetails.md](Docs/WorldBorderDetails.md)
+*   **Rank System:**
+    *   Define Owner, Admin, and Member ranks with distinct visual tags.
+    *   **Configure & Learn More:** [Docs/RankSystem.md](Docs/RankSystem.md)
 
 ## Versioning
 
@@ -138,3 +102,7 @@ We enthusiastically welcome contributions! Whether it's bug fixes, new features,
 5.  **Pull Request:** Submit a PR to `main` with a clear description of your changes.
 
 For more on development practices, see [Addon Development Resources in `Dev/README.md`](Dev/README.md). We appreciate your help!
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
