@@ -1,4 +1,4 @@
-[![Minecraft Version](https://img.shields.io/badge/Minecraft-1.21.90+-green)](https://www.minecraft.net/)
+[![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.90%2B-green)](https://www.minecraft.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=flat-square)](https://github.com/SjnExe/AntiCheats/issues)
 
@@ -12,8 +12,8 @@ This addon utilizes advanced scripting capabilities to provide robust anti-cheat
 2.  **Install:** Apply both the Behavior Pack (`AntiCheatsBP`) and Resource Pack (`AntiCheatsRP`) to your Minecraft world.
 3.  **Prioritize:** Ensure the Behavior Pack is at the **top** of the pack list if you have multiple behavior packs active.
 4.  **Set Owner (Crucial):**
-    > [!IMPORTANT]
-    > Set your in-game name as `ownerPlayerName` in `AntiCheatsBP/scripts/config.js` to gain full owner permissions. This step is vital for full control over the addon.
+> [!IMPORTANT]
+> Set your in-game name as `ownerPlayerName` in `AntiCheatsBP/scripts/config.js` to gain full owner permissions. This step is vital for full control over the addon.
 5.  **Explore:** Join your world and type `!panel` (or `!ui`) in chat to open the admin interface.
 6.  **Configure (Optional):** Other key settings like admin tags and command prefix are also in `AntiCheatsBP/scripts/config.js`.
 
