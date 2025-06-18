@@ -9,11 +9,7 @@ import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  * @typedef {mc.ItemUseBeforeEvent | mc.ItemUseOnBeforeEvent | mc.PlayerPlaceBlockBeforeEvent} ItemRelatedEventData
  * // PlayerPlaceBlockBeforeEvent is also relevant for "place" actions, though ItemUseOnBeforeEvent is more common for item-specific place denial.
  * // This type definition is a bit broad; specific event types are usually handled by the calling event handler.
@@ -32,12 +28,7 @@ import * as mc from '@minecraft/server';
  *        Must have a `cancel` property. For "place" actions, `eventData.block` is used. For "use", `eventData.source` might be relevant.
  * @param {"use" | "place"} actionType - The type of action being performed ("use" or "place").
  * @param {PlayerAntiCheatData | undefined} pData - Player-specific anti-cheat data (primarily for `isWatched` status).
- * @param {Config} config - The server configuration object, containing `enableIllegalItemCheck`,
- *                          `bannedItemsPlace`, and `bannedItemsUse` lists.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkIllegalItems(
@@ -46,12 +37,10 @@ export async function checkIllegalItems(
     eventData,
     actionType,
     pData, // pData can be undefined if not available, check handles this for debug logging.
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction
+    dependencies
 ) {
+    const { config, playerUtils, actionManager, playerDataManager, logManager } = dependencies;
+
     if (!config.enableIllegalItemCheck) {
         return;
     }
@@ -60,17 +49,17 @@ export async function checkIllegalItems(
 
     if (!itemStack) {
         // This case might occur if the event doesn't involve an item or hand is empty.
-        playerUtils.debugLog?.(`IllegalItemCheck: No itemStack provided for ${player.nameTag}, action: ${actionType}.`, watchedPrefix);
+        playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}.`, dependencies, watchedPrefix);
         return;
     }
 
     const itemId = itemStack.typeId;
-    playerUtils.debugLog?.(`IllegalItemCheck: Processing for ${player.nameTag}. Action: ${actionType}, Item: ${itemId}.`, watchedPrefix);
+    playerUtils.debugLog(`[IllegalItemCheck] Processing for ${player.nameTag}. Action: ${actionType}, Item: ${itemId}.`, dependencies, watchedPrefix);
 
     let isBanned = false;
     let checkProfileKey = ""; // The key for checkActionProfiles in config
     let violationDetails = {};
-    const dependencies = { config, playerDataManager, playerUtils, logManager };
+    // No need to reconstruct dependencies, the main one is passed to executeCheckAction
 
     const bannedItemsForPlace = config.bannedItemsPlace ?? [];
     const bannedItemsForUse = config.bannedItemsUse ?? [];
@@ -101,11 +90,11 @@ export async function checkIllegalItems(
 
     if (isBanned) {
         eventData.cancel = true; // Crucial: cancel the event immediately to prevent illegal action.
-        await executeCheckAction(player, checkProfileKey, violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, checkProfileKey, violationDetails, dependencies);
 
-        playerUtils.debugLog?.(
-            `IllegalItemCheck: Cancelled illegal ${actionType} by ${player.nameTag} for item ${itemId}. Action profile "${checkProfileKey}" triggered.`,
-            watchedPrefix
+        playerUtils.debugLog(
+            `[IllegalItemCheck] Cancelled illegal ${actionType} by ${player.nameTag} for item ${itemId}. Action profile "${checkProfileKey}" triggered.`,
+            dependencies, watchedPrefix
         );
     }
     // This check doesn't modify pData directly.

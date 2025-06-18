@@ -26,7 +26,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         return;
     }
     if (!pData) { // pData might not be used by this specific check's logic
-        playerUtils.debugLog?.("GibberishCheck: pData is null, skipping check (though not strictly needed for this check's core logic).", player.nameTag);
+        playerUtils.debugLog("[GibberishCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
         // return; // Decide if pData is truly optional or if this is an error state
     }
 
@@ -106,6 +106,6 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         };
 
         await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-        playerUtils.debugLog?.(\`GibberishCheck: Flagged \${player.nameTag} for \${flagReason.join(', ')}. Msg: "\${rawMessageContent.substring(0,20)}..."\`, pData?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[GibberishCheck] Flagged ${player.nameTag} for ${flagReason.join(', ')}. Msg: "${rawMessageContent.substring(0,20)}..."`, dependencies, pData?.isWatched ? player.nameTag : null);
     }
 }

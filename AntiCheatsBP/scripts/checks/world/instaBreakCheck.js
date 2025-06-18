@@ -10,11 +10,7 @@ import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -27,24 +23,18 @@ import * as mc from '@minecraft/server';
  * @param {mc.Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {mc.PlayerBreakBlockBeforeEvent} eventData - The event data from `PlayerBreakBlockBeforeEvent`.
- * @param {Config} config - The server configuration object.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkBreakUnbreakable(
     player,
     pData,
     eventData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction
+    dependencies
 ) {
-    if (!config.enableInstaBreakUnbreakableCheck || !pData) { // Added null check for pData
+    const { config, playerUtils, actionManager, playerDataManager, logManager } = dependencies;
+
+    if (!config.enableInstaBreakUnbreakableCheck || !pData) {
         return;
     }
 
@@ -53,7 +43,7 @@ export async function checkBreakUnbreakable(
 
     if (unbreakableBlocks.includes(blockTypeId)) {
         if (player.gameMode !== mc.GameMode.creative) {
-            const dependencies = { config, playerDataManager, playerUtils, logManager };
+            // Pass the full dependencies object to executeCheckAction
             const violationDetails = {
                 blockType: blockTypeId,
                 x: eventData.block.location.x.toString(),
@@ -61,15 +51,14 @@ export async function checkBreakUnbreakable(
                 z: eventData.block.location.z.toString(),
                 playerName: player.nameTag
             };
-            // Action profile name: config.instaBreakUnbreakableActionProfileName ?? "world_instabreak_unbreakable"
-            await executeCheckAction(player, "worldInstabreakUnbreakable", violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, "worldInstabreakUnbreakable", violationDetails, dependencies);
             eventData.cancel = true; // Prevent the block from being broken
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog?.(`InstaBreak (Unbreakable): ${player.nameTag} attempt to break \`${blockTypeId}\` cancelled.`, watchedPrefix);
+            playerUtils.debugLog(`[InstaBreakCheck] (Unbreakable): ${player.nameTag} attempt to break \`${blockTypeId}\` cancelled.`, dependencies, watchedPrefix);
         } else {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog?.(`InstaBreak (Unbreakable): Creative player ${player.nameTag} broke normally unbreakable block \`${blockTypeId}\`. Allowed.`, watchedPrefix);
+            playerUtils.debugLog(`[InstaBreakCheck] (Unbreakable): Creative player ${player.nameTag} broke normally unbreakable block \`${blockTypeId}\`. Allowed.`, dependencies, watchedPrefix);
         }
     }
 }
@@ -83,26 +72,18 @@ export async function checkBreakUnbreakable(
  * @param {mc.Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {mc.PlayerBreakBlockAfterEvent} eventData - The event data from `PlayerBreakBlockAfterEvent`.
- * @param {Config} config - The server configuration object.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick when the block was broken.
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkBreakSpeed(
     player,
     pData,
     eventData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick
+    dependencies
 ) {
-    if (!config.enableInstaBreakSpeedCheck || !pData) { // Added null check for pData
+    const { config, playerUtils, actionManager, playerDataManager, logManager, currentTick } = dependencies;
+
+    if (!config.enableInstaBreakSpeedCheck || !pData) {
         return;
     }
 
@@ -122,11 +103,11 @@ export async function checkBreakSpeed(
         const tolerance = config.instaBreakTimeToleranceTicks ?? 2; // Default tolerance of 2 ticks
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
-        playerUtils.debugLog?.(
-            `InstaBreak (Speed Eval): Player ${player.nameTag} broke ${blockTypeId}. ` +
+        playerUtils.debugLog(
+            `[InstaBreakCheck] (Speed Eval): Player ${player.nameTag} broke ${blockTypeId}. ` +
             `Actual: ${actualDurationTicks}t, Expected: ${expectedTicks}t, Tolerance: ${tolerance}t, ` +
             `Tool: ${pData.toolUsedForBreakAttempt ?? "unknown"}`,
-            watchedPrefix
+            dependencies, watchedPrefix
         );
 
         let flagged = false;
@@ -142,7 +123,7 @@ export async function checkBreakSpeed(
         }
 
         if (flagged) {
-            const dependencies = { config, playerDataManager, playerUtils, logManager };
+            // Pass the full dependencies object to executeCheckAction
             const violationDetails = {
                 blockType: blockTypeId,
                 expectedTicks: expectedTicks === Infinity ? "Infinity" : expectedTicks.toString(),
@@ -153,9 +134,8 @@ export async function checkBreakSpeed(
                 z: blockLocation.z.toString(),
                 toolUsed: pData.toolUsedForBreakAttempt ?? "unknown"
             };
-            // Action profile name: config.instaBreakSpeedActionProfileName ?? "world_instabreak_speed"
-            await executeCheckAction(player, "worldInstabreakSpeed", violationDetails, dependencies);
-            playerUtils.debugLog?.(`InstaBreak (Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, watchedPrefix);
+            await actionManager.executeCheckAction(player, "worldInstabreakSpeed", violationDetails, dependencies);
+            playerUtils.debugLog(`[InstaBreakCheck] (Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, dependencies, watchedPrefix);
         }
     }
 

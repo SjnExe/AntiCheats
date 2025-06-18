@@ -35,11 +35,13 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
 /**
  * Retrieves the world border settings for a given dimension.
  * @param {string} dimensionId - The ID of the dimension (e.g., "minecraft:overworld").
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {WorldBorderSettings | null} The border settings if found and valid, otherwise null.
  */
-export function getBorderSettings(dimensionId) {
+export function getBorderSettings(dimensionId, dependencies) {
+    const { playerUtils } = dependencies;
     if (!dimensionId || typeof dimensionId !== 'string') {
-        console.warn("[WorldBorderManager] getBorderSettings: Invalid dimensionId provided.");
+        playerUtils.debugLog("[WorldBorderManager] getBorderSettings: Invalid dimensionId provided.", dependencies, "System");
         return null;
     }
     const propertyKey = WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX + dimensionId.replace("minecraft:", "");
@@ -51,23 +53,23 @@ export function getBorderSettings(dimensionId) {
             // Basic validation for common properties
             if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
                 typeof settings.enabled !== 'boolean' || settings.dimensionId !== dimensionId) {
-                console.warn(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}.`);
+                playerUtils.debugLog(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}. Settings: ${JSON.stringify(settings)}`, dependencies, "System");
                 return null;
             }
 
             // Shape-specific validation
             if (settings.shape === "square") {
                 if (typeof settings.halfSize !== 'number' || settings.halfSize <= 0) {
-                    console.warn(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in ${dimensionId}.`);
+                    playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in ${dimensionId}. Value: ${settings.halfSize}`, dependencies, "System");
                     return null;
                 }
             } else if (settings.shape === "circle") {
                 if (typeof settings.radius !== 'number' || settings.radius <= 0) {
-                    console.warn(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}.`);
+                    playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}. Value: ${settings.radius}`, dependencies, "System");
                     return null;
                 }
             } else {
-                console.warn(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`);
+                playerUtils.debugLog(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`, dependencies, "System");
                 return null;
             }
 
@@ -81,8 +83,8 @@ export function getBorderSettings(dimensionId) {
             return settings;
         }
     } catch (error) {
-        // This can happen if JSON.parse fails or if the property is not a string.
-        // It's also possible for getDynamicProperty to throw if the key is invalid, though unlikely with prefixing.
+        console.error(`[WorldBorderManager] Error in getBorderSettings for ${dimensionId}: ${error.stack || error}`);
+        playerUtils.debugLog(`[WorldBorderManager] Exception in getBorderSettings for ${dimensionId}: ${error.message}`, dependencies, "System");
     }
     return null;
 }
@@ -92,11 +94,13 @@ export function getBorderSettings(dimensionId) {
  * @param {string} dimensionId - The ID of the dimension.
  * @param {Omit<WorldBorderSettings, "dimensionId">} settingsToSave - The border settings to save.
  *        The dimensionId from the parameter will be added to the stored object.
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {boolean} True if settings were saved successfully, false otherwise.
  */
-export function saveBorderSettings(dimensionId, settingsToSave) {
+export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
+    const { playerUtils } = dependencies;
     if (!dimensionId || typeof dimensionId !== 'string' || !settingsToSave) {
-        console.warn("[WorldBorderManager] saveBorderSettings: Invalid dimensionId or settings provided.");
+        playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Invalid dimensionId or settings provided.", dependencies, "System");
         return false;
     }
 
@@ -109,21 +113,21 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
     // Validate and clean shape-specific properties
     if (fullSettings.shape === "square") {
         if (typeof fullSettings.halfSize !== 'number' || fullSettings.halfSize <= 0) {
-            console.warn("[WorldBorderManager] saveBorderSettings: Invalid 'halfSize' for square shape.");
+            playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Invalid 'halfSize' for square shape. Value: ${fullSettings.halfSize}`, dependencies, "System");
             return false;
         }
         fullSettings.radius = undefined; // Ensure radius is explicitly not part of square settings
     } else if (fullSettings.shape === "circle") {
         if (typeof fullSettings.radius !== 'number' || fullSettings.radius <= 0) {
-            console.warn("[WorldBorderManager] saveBorderSettings: Invalid or non-positive 'radius' for circle shape.");
+            playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Invalid or non-positive 'radius' for circle shape. Value: ${fullSettings.radius}`, dependencies, "System");
             return false;
         }
         fullSettings.halfSize = undefined; // Ensure halfSize is explicitly not part of circle settings
     } else if (fullSettings.shape) { // Shape exists but is not 'square' or 'circle'
-        console.warn(`[WorldBorderManager] saveBorderSettings: Unknown shape '${fullSettings.shape}' provided.`);
+        playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Unknown shape '${fullSettings.shape}' provided.`, dependencies, "System");
         return false;
     } else { // Shape is missing
-        console.warn("[WorldBorderManager] saveBorderSettings: Shape is required.");
+        playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Shape is required.", dependencies, "System");
         return false;
     }
 
@@ -138,7 +142,7 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
         : true; // If not resizing, other fields don't strictly need to be there or can be cleaned up
 
     if (hasSomeResizeFields && !hasAllResizeFieldsIfResizing && fullSettings.isResizing) {
-        console.warn("[WorldBorderManager] saveBorderSettings: Incomplete or invalid resize operation data. All resize fields must be valid if isResizing is true.");
+        playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Incomplete or invalid resize operation data. All resize fields must be valid if isResizing is true.", dependencies, "System");
         // Optionally, clean up partial resize fields if isResizing is false
         // For now, we'll rely on the command layer to set these correctly or clear them.
         return false;
@@ -189,9 +193,11 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
 
     try {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));
+        playerUtils.debugLog(`[WorldBorderManager] Successfully saved border settings for ${dimensionId}.`, dependencies, "System");
         return true;
     } catch (error) {
-        console.error(`[WorldBorderManager] Error saving border settings for ${dimensionId}: ${error}`);
+        console.error(`[WorldBorderManager] Error saving border settings for ${dimensionId}: ${error.stack || error}`);
+        playerUtils.debugLog(`[WorldBorderManager] Exception saving border settings for ${dimensionId}: ${error.message}`, dependencies, "System");
         return false;
     }
 }
@@ -200,19 +206,23 @@ export function saveBorderSettings(dimensionId, settingsToSave) {
  * Clears the world border settings for a given dimension.
  * This effectively disables the border by removing its configuration.
  * @param {string} dimensionId - The ID of the dimension.
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {boolean} True if settings were cleared successfully, false otherwise.
  */
-export function clearBorderSettings(dimensionId) {
+export function clearBorderSettings(dimensionId, dependencies) {
+    const { playerUtils } = dependencies;
     if (!dimensionId || typeof dimensionId !== 'string') {
-        console.warn("[WorldBorderManager] clearBorderSettings: Invalid dimensionId provided.");
+        playerUtils.debugLog("[WorldBorderManager] clearBorderSettings: Invalid dimensionId provided.", dependencies, "System");
         return false;
     }
     const propertyKey = WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX + dimensionId.replace("minecraft:", "");
     try {
         mc.world.setDynamicProperty(propertyKey, undefined); // Setting to undefined removes the property
+        playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, dependencies, "System");
         return true;
     } catch (error) {
-        console.error(\`[WorldBorderManager] Error clearing border settings for \${dimensionId}: \${error}\`);
+        console.error(`[WorldBorderManager] Error clearing border settings for ${dimensionId}: ${error.stack || error}`);
+        playerUtils.debugLog(`[WorldBorderManager] Exception clearing border settings for ${dimensionId}: ${error.message}`, dependencies, "System");
         return false;
     }
 }

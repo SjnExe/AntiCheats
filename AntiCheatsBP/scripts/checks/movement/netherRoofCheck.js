@@ -10,11 +10,10 @@ import { getString } from '../../../core/i18n.js';
  * Checks if a player is on top of the Nether roof.
  * @param {mc.Player} player The player to check.
  * @param {object} pData The player's anti-cheat data. (Not directly used in this check's logic but part of standard signature)
- * @param {object} dependencies Shared dependencies, expected to include:
- *                            { config, playerDataManager, playerUtils }
+ * @param {import('../../types.js').Dependencies} dependencies Shared dependencies.
  */
-export function checkNetherRoof(player, pData, dependencies) {
-    const { config, playerDataManager, playerUtils } = dependencies;
+export function checkNetherRoof(player, pData, dependencies) { // pData is not used here but kept for signature consistency
+    const { config, playerDataManager, playerUtils, getString } = dependencies;
 
     if (!config.enableNetherRoofCheck) {
         return;
@@ -38,7 +37,7 @@ export function checkNetherRoof(player, pData, dependencies) {
                 // If this `detailsForNotify.originalDetailsForNotify` IS used in a user-facing message template
                 // then it MUST be localized. Assuming it's for internal logging / details for admins for now.
                 // For true localization, the profile message would use {detectedY} and {threshold}.
-                originalDetailsForNotify: getString("check.netherRoof.details.onRoof", {
+                originalDetailsForNotify: getString("check.netherRoof.details.onRoof", { // getString from dependencies
                     detectedY: detectedYValue,
                     threshold: thresholdValue.toString()
                 })
@@ -48,11 +47,13 @@ export function checkNetherRoof(player, pData, dependencies) {
                 "movementNetherRoof",
                 "Player detected on Nether roof.", // This specific reason is for internal flagging, not typically directly shown to users.
                                                   // User-facing messages come from action profiles.
-                detailsForNotify
+                detailsForNotify,
+                dependencies // Pass full dependencies to addFlag
             );
         } else {
+            // This else block might be redundant if playerDataManager and addFlag are guaranteed to be in dependencies
             if (playerUtils && playerUtils.debugLog) {
-                playerUtils.debugLog(\`NetherRoofCheck: playerDataManager.addFlag not available for player \${player.nameTag}\`, player.nameTag);
+                playerUtils.debugLog(`[NetherRoofCheck] playerDataManager.addFlag not available for player ${player.nameTag}`, dependencies, player.nameTag);
             }
         }
     }

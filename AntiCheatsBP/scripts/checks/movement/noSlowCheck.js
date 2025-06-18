@@ -8,15 +8,11 @@
  */
 
 import * as mc from '@minecraft/server';
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -27,25 +23,12 @@ import { getString } from '../../../core/i18n.js';
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data. Expected to contain
  *                                     state flags like `isUsingConsumable`, `isChargingBow`, `isUsingShield`,
  *                                     and `speedAmplifier` (from Speed effect).
- * @param {Config} config - The server configuration object, with `enableNoSlowCheck` and speed thresholds
- *                          like `noSlowMaxSpeedEating`, `noSlowMaxSpeedChargingBow`, etc.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick (not directly used in this check's core logic).
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
-export async function checkNoSlow(
-    player,
-    pData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick
-) {
+export async function checkNoSlow(player, pData, dependencies) {
+    const { config, playerUtils, actionManager, getString } = dependencies;
+
     if (!config.enableNoSlowCheck || !pData) {
         return;
     }
@@ -79,22 +62,22 @@ export async function checkNoSlow(
         }
 
         if (horizontalSpeed > effectiveMaxAllowedSpeed) {
-            const localizedSlowingAction = getString(slowingActionKey);
-            const dependencies = { config, playerDataManager, playerUtils, logManager };
+            const localizedSlowingAction = getString(slowingActionKey); // getString from dependencies
+            // Pass the full dependencies object to executeCheckAction
             const violationDetails = {
-                action: localizedSlowingAction, // Use localized string
+                action: localizedSlowingAction,
                 speed: horizontalSpeed.toFixed(2),
                 maxAllowedSpeed: effectiveMaxAllowedSpeed.toFixed(2),
                 baseMaxSpeedForAction: maxAllowedBaseSpeed.toFixed(2),
                 hasSpeedEffect: (speedAmplifier >= 0).toString(),
                 speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : "0"
             };
-            await executeCheckAction(player, "movementNoslow", violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, "movementNoslow", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog?.(
-                `NoSlow: Flagged ${player.nameTag}. Action: ${localizedSlowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
-                watchedPrefix
+            playerUtils.debugLog(
+                `[NoSlowCheck] Flagged ${player.nameTag}. Action: ${localizedSlowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
+                dependencies, watchedPrefix
             );
         }
     }

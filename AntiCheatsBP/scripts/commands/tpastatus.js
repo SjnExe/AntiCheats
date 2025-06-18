@@ -3,22 +3,19 @@
  * @version 1.0.2
  */
 
-import { world, system } from '@minecraft/server';
-// import * as config from '../config.js'; // No direct config needed here, prefix comes from dependencies
-import * as tpaManager from '../core/tpaManager.js';
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+import { world, system } from '@minecraft/server'; // system is used
+// tpaManager, permissionLevels, getString will be from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpastatus',
-    description: getString("command.tpastatus.description"),
+    description: "command.tpastatus.description", // Key
     aliases: ['tpatoggle'],
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: null, // To be set from dependencies.permissionLevels.normal
     syntax: '!tpastatus [on|off|status]',
-    enabled: true,
+    enabled: true, // Will be checked against dependencies.config.enableTPASystem
 };
 
 /**
@@ -28,66 +25,78 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config: fullConfig } = dependencies;
-    const prefix = fullConfig.prefix;
+    const { playerUtils, config, tpaManager, permissionLevels, getString, logManager } = dependencies;
 
-    if (!fullConfig.enableTPASystem) {
+    definition.description = getString(definition.description);
+    definition.permissionLevel = permissionLevels.normal;
+
+    const prefix = config.prefix;
+
+    if (!config.enableTPASystem) {
         player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
 
     const option = args[0] ? args[0].toLowerCase() : 'status';
 
-    switch (option) {
-        case 'on':
-            tpaManager.setPlayerTpaStatus(player.name, true);
-            player.sendMessage(getString("command.tpastatus.nowEnabled"));
-            break;
-        case 'off':
-            tpaManager.setPlayerTpaStatus(player.name, false);
-            player.sendMessage(getString("command.tpastatus.nowDisabled"));
+    try {
+        switch (option) {
+            case 'on':
+                tpaManager.setPlayerTpaStatus(player.name, true, dependencies); // Pass dependencies
+                player.sendMessage(getString("command.tpastatus.nowEnabled"));
+                break;
+            case 'off':
+                tpaManager.setPlayerTpaStatus(player.name, false, dependencies); // Pass dependencies
+                player.sendMessage(getString("command.tpastatus.nowDisabled"));
 
-            const incomingRequests = tpaManager.findRequestsForPlayer(player.name)
-                .filter(req => req.targetName === player.name && Date.now() < req.expiryTimestamp);
+                // findRequestsForPlayer does not require dependencies
+                const incomingRequests = tpaManager.findRequestsForPlayer(player.name)
+                    .filter(req => req.targetName === player.name && Date.now() < req.expiryTimestamp);
 
-            if (incomingRequests.length > 0) {
-                let declinedCount = 0;
-                for (const req of incomingRequests) {
-                    // Pass dependencies to declineRequest if it needs them (e.g., for logging or notifications within declineRequest)
-                    tpaManager.declineRequest(req.requestId, dependencies);
-                    const requesterPlayer = world.getAllPlayers().find(p => p.name === req.requesterName);
-                    if (requesterPlayer) {
-                        system.run(() => {
-                            try {
-                                requesterPlayer.onScreenDisplay.setActionBar(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
-                            } catch (e) {
-                                if (fullConfig.enableDebugLogging && playerUtils?.debugLog) {
-                                    playerUtils.debugLog(`[TPAStatusCmd] Failed to set action bar for ${req.requesterName}: ${e}`, player.nameTag);
-                                } else {
-                                    console.warn(`[TPAStatusCmd] Failed to set action bar for ${req.requesterName}: ${e}`);
+                if (incomingRequests.length > 0) {
+                    let declinedCount = 0;
+                    for (const req of incomingRequests) {
+                        await tpaManager.declineRequest(req.requestId, dependencies); // Pass dependencies
+                        const requesterPlayer = world.getAllPlayers().find(p => p.name === req.requesterName);
+                        if (requesterPlayer) {
+                            system.run(() => {
+                                try {
+                                    requesterPlayer.onScreenDisplay.setActionBar(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
+                                } catch (e) {
+                                    if (config.enableDebugLogging && playerUtils?.debugLog) {
+                                        playerUtils.debugLog(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e.stack || e}`, player.nameTag);
+                                    } else {
+                                        // Consider a less intrusive log if debugLog is off, or remove.
+                                        // console.warn(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e}`);
+                                    }
                                 }
-                            }
-                        });
-                        // Also send a chat message as action bar can be missed
-                        requesterPlayer.sendMessage(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
+                            });
+                            requesterPlayer.sendMessage(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
+                        }
+                        declinedCount++;
                     }
-                    declinedCount++;
+                    if (declinedCount > 0) {
+                        player.sendMessage(getString("command.tpastatus.nowDisabledDeclined", {count: declinedCount}));
+                    }
                 }
-                if (declinedCount > 0) {
-                    player.sendMessage(getString("command.tpastatus.nowDisabledDeclined", {count: declinedCount})); // Corrected potential extra space
+                break;
+            case 'status':
+                const currentStatus = tpaManager.getPlayerTpaStatus(player.name, dependencies); // Pass dependencies
+                if (currentStatus.acceptsTpaRequests) {
+                    player.sendMessage(getString("command.tpastatus.current.enabled"));
+                } else {
+                    player.sendMessage(getString("command.tpastatus.current.disabled"));
                 }
-            }
-            break;
-        case 'status':
-            const currentStatus = tpaManager.getPlayerTpaStatus(player.name);
-            if (currentStatus.acceptsTpaRequests) {
-                player.sendMessage(getString("command.tpastatus.current.enabled"));
-            } else {
-                player.sendMessage(getString("command.tpastatus.current.disabled"));
-            }
-            break;
-        default:
-            player.sendMessage(getString("command.tpastatus.error.invalidOption", { prefix: prefix }));
-            break;
+                break;
+            default:
+                player.sendMessage(getString("command.tpastatus.error.invalidOption", { prefix: prefix }));
+                break;
+        }
+    } catch (error) {
+        console.error(`[TpaStatusCommand] Error for ${player.nameTag} processing option ${option}: ${error.stack || error}`);
+        player.sendMessage(getString("common.error.genericCommand"));
+        if(logManager) {
+            logManager.addLog({actionType: 'error', details: `[TpaStatusCommand] ${player.nameTag} error (option: ${option}): ${error.stack || error}`});
+        }
     }
 }

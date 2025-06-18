@@ -45,14 +45,13 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) { /
     const upperCasePercentage = (upperCaseLetters / totalLetters) * 100;
 
     if (upperCasePercentage >= config.capsCheckUpperCasePercentage) {
-        if (config.enableDebugLogging && playerUtils && playerUtils.debugLog) {
-            playerUtils.debugLog(
-                `CapsAbuseCheck: Player ${player.nameTag} triggered CAPS abuse. ` +
-                `Msg: "${message}", CAPS: ${upperCasePercentage.toFixed(1)}%, ` +
-                `Threshold: ${config.capsCheckUpperCasePercentage}%, MinLength: ${config.capsCheckMinLength}`,
-                player.nameTag
-            );
-        }
+        // playerUtils.debugLog will internally check config.enableDebugLogging
+        playerUtils.debugLog(
+            `[CapsAbuseCheck] Player ${player.nameTag} triggered CAPS abuse. ` +
+            `Msg: "${message}", CAPS: ${upperCasePercentage.toFixed(1)}%, ` +
+            `Threshold: ${config.capsCheckUpperCasePercentage}%, MinLength: ${config.capsCheckMinLength}`,
+            dependencies, pData?.isWatched ? player.nameTag : null // Pass dependencies and context
+        );
         await actionManager.executeCheckAction(
             player,
             config.capsCheckActionProfileName,

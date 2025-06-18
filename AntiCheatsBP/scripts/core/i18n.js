@@ -4,14 +4,14 @@
  * This module handles the loading and retrieval of translation strings,
  * supporting different languages and placeholder substitution in strings.
  * It allows for nested key access using dot notation (e.g., "common.greeting").
- * @version 1.1.0
+ * @version 1.1.1
  */
 
-import { editableConfigValues as runTimeConfig } from '../config.js';
+// configModule import removed, will be initialized via a function call from main.js
 import { translations as enUSTranslations } from './languages/en_US.js'; // Default language pack
 
 const defaultLanguage = "en_US";
-let currentLanguage = runTimeConfig.defaultServerLanguage || defaultLanguage;
+let currentLanguage = defaultLanguage; // Initialize with default, will be set by initializeI18n
 
 /**
  * Stores all loaded translations. The keys are language codes (e.g., "en_US"),
@@ -72,9 +72,23 @@ export function setCurrentLanguage(langCode) {
     }
 }
 
-// Initialize with the default or configured language at startup.
-// This ensures 'en_US' (pre-loaded) is set if it's the default or configured language.
-setCurrentLanguage(currentLanguage);
+// Removed direct call to setCurrentLanguage(currentLanguage) here.
+// Initialization will be triggered by initializeI18n from main.js.
+
+/**
+ * Initializes the i18n system with configuration from dependencies.
+ * Sets the current language based on server configuration.
+ * @param {object} dependencies - The standard dependencies object, expected to contain `config`.
+ */
+export function initializeI18n(dependencies) {
+    if (dependencies && dependencies.config && dependencies.config.defaultServerLanguage) {
+        setCurrentLanguage(dependencies.config.defaultServerLanguage);
+    } else {
+        // Fallback to defaultLanguage if config or specific setting is missing
+        setCurrentLanguage(defaultLanguage);
+        console.warn(`[i18n] defaultServerLanguage not found in config dependencies. Using default: ${defaultLanguage}`);
+    }
+}
 
 /**
  * Retrieves a localized string based on a key and optionally formats it with arguments.

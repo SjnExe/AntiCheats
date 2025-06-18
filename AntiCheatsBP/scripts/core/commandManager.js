@@ -5,10 +5,9 @@
  * @version 1.1.0
  */
 import * as mc from '@minecraft/server'; // mc is used for e.g. world, system. Commands also get it via dependencies.
-// Imports for permissionLevels, specific UI modules, reportManager, ItemComponentTypes, addLog, and configModule
-// are removed as they are now expected to be part of the 'dependencies' object passed to handleChatCommand.
+// Imports for permissionLevels, specific UI modules, reportManager, ItemComponentTypes, addLog, configModule,
+// and getPlayerPermissionLevel are removed as they are now expected to be part of the 'dependencies' object.
 // findPlayer and parseDuration are not used in this file; commands can import them from playerUtils if needed.
-import { getPlayerPermissionLevel } from '../utils/playerUtils.js'; // getPlayerPermissionLevel still used directly
 
 // Import command modules from the commandRegistry
 import { commandModules } from '../commands/commandRegistry.js';
@@ -60,7 +59,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     const senderPDataForLog = playerDataManager.getPlayerData(player.id);
     if (playerUtils.debugLog) {
-        playerUtils.debugLog(`Player ${player.nameTag} issued command attempt: "${commandNameInput || ''}" with args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`Player ${player.nameTag} issued command attempt: "${commandNameInput || ''}" with args: [${args.join(', ')}]`, dependencies, senderPDataForLog?.isWatched ? player.nameTag : null);
     }
 
     if (!commandNameInput) {
@@ -73,7 +72,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const finalCommandName = aliasTarget ? aliasTarget.toLowerCase() : commandNameInput;
 
     if (aliasTarget && playerUtils.debugLog) {
-        playerUtils.debugLog(`Command alias '${commandNameInput}' resolved to '${finalCommandName}'.`, player.nameTag);
+        playerUtils.debugLog(`Command alias '${commandNameInput}' resolved to '${finalCommandName}'.`, dependencies, player.nameTag);
     }
 
     const commandDef = commandDefinitionMap.get(finalCommandName);
@@ -94,16 +93,17 @@ export async function handleChatCommand(eventData, dependencies) {
         player.sendMessage(`§cUnknown command: ${config.prefix}${finalCommandName}§r. Type ${config.prefix}help for assistance.`);
         eventData.cancel = true;
         if (playerUtils?.debugLog) {
-            playerUtils.debugLog(`Command '${finalCommandName}' is disabled. Access denied for ${player.nameTag}.`, player.nameTag);
+            playerUtils.debugLog(`Command '${finalCommandName}' is disabled. Access denied for ${player.nameTag}.`, dependencies, player.nameTag);
         }
         return;
     }
 
-    const userPermissionLevel = getPlayerPermissionLevel(player); // Uses global getPlayerPermissionLevel
+    // Use rankManager from dependencies to get permission level
+    const userPermissionLevel = dependencies.rankManager.getPlayerPermissionLevel(player, dependencies);
     if (userPermissionLevel > commandDef.permissionLevel) {
         playerUtils.warnPlayer(player, "You do not have permission to use this command.");
         if (playerUtils.debugLog) {
-            playerUtils.debugLog(`Command '${commandDef.name}' denied for ${player.nameTag} due to insufficient permissions. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel}`, player.nameTag);
+            playerUtils.debugLog(`Command '${commandDef.name}' denied for ${player.nameTag} due to insufficient permissions. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel}`, dependencies, player.nameTag);
         }
         eventData.cancel = true;
         return;
@@ -121,8 +121,9 @@ export async function handleChatCommand(eventData, dependencies) {
 
     // Echo Admin Command for Watched Admins
     const pDataForAdminLog = playerDataManager.getPlayerData(player.id);
-    if (pDataForAdminLog && pDataForAdminLog.isWatched && playerUtils.isAdmin(player)) {
-        playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, player.nameTag);
+    // playerUtils.isAdmin now requires dependencies
+    if (pDataForAdminLog && pDataForAdminLog.isWatched && playerUtils.isAdmin(player, dependencies)) {
+        playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, dependencies, player.nameTag);
     }
 
     // The `dependencies` object received from main.js is passed directly to commandExecute
@@ -133,15 +134,22 @@ export async function handleChatCommand(eventData, dependencies) {
         // Pass the comprehensive dependencies object directly to the command
         await commandExecute(player, args, dependencies);
         if (playerUtils.debugLog) {
-            playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, senderPDataForLog?.isWatched ? player.nameTag : null);
+            playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, dependencies, senderPDataForLog?.isWatched ? player.nameTag : null);
         }
     } catch (error) {
         player.sendMessage(`§cAn error occurred while executing command '${finalCommandName}'. Please report this.`);
         console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${error.stack || error}`);
         if (playerUtils.debugLog) {
-            playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error}`, null); // Context already known
+            // Pass dependencies to debugLog, contextPlayerName can be null if not specific to a watched player in this exact message
+            playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error.message || error}`, dependencies, null);
         }
         // Use logManager from the destructured dependencies
-        logManager.addLog('command_execution_error', `Cmd: ${finalCommandName}, Player: ${player.nameTag}, Args: [${args.join(', ')}], Error: ${error.message}`);
+        logManager.addLog('command_execution_error', { // Pass as an object for structured logging
+            command: finalCommandName,
+            player: player.nameTag,
+            args: args,
+            error: error.message,
+            stack: error.stack // Storing stack might be too verbose for logManager, consider if needed
+        }, dependencies); // Assuming addLog also needs dependencies for config checks or other context
     }
 }

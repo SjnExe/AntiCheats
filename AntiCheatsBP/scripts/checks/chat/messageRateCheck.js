@@ -54,9 +54,8 @@ export async function checkMessageRate(
         const timeSinceLastMsgMs = currentTime - pData.lastChatMessageTimestamp;
 
         if (timeSinceLastMsgMs < threshold) {
-            if (playerUtils.debugLog) {
-                playerUtils.debugLog(`MessageRateCheck: ${player.nameTag} sent message too fast. Diff: ${timeSinceLastMsgMs}ms, Threshold: ${threshold}ms`, watchedPrefix);
-            }
+            // playerUtils.debugLog is implicitly checked by being part of dependencies
+            playerUtils.debugLog(`[MessageRateCheck] ${player.nameTag} sent message too fast. Diff: ${timeSinceLastMsgMs}ms, Threshold: ${threshold}ms`, dependencies, watchedPrefix);
 
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),

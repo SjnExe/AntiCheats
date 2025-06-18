@@ -27,7 +27,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
     if (!pData) { // pData might not be used by this specific check's logic
-        playerUtils.debugLog?.("SimpleImpersonation: pData is null, skipping check (though not strictly needed for this check's core logic).", player.nameTag);
+        playerUtils.debugLog("[SimpleImpersonationCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
         // return;
     }
 
@@ -40,9 +40,9 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
     const adminPermissionLevelDefault = dependencies.permissionLevels?.admin ?? 1; // Default to 1 if not found in deps
     const exemptPermissionLevel = config.impersonationExemptPermissionLevel ?? adminPermissionLevelDefault;
 
-    const playerPermission = playerUtils.getPlayerPermissionLevel(player); // This uses config internally
+    const playerPermission = dependencies.rankManager.getPlayerPermissionLevel(player, dependencies);
     if (playerPermission <= exemptPermissionLevel) {
-        playerUtils.debugLog?.(\`SimpleImpersonation: Player \${player.nameTag} (perm: \${playerPermission}) is exempt (threshold: \${exemptPermissionLevel}).\`, player.nameTag);
+        playerUtils.debugLog(`[SimpleImpersonationCheck] Player ${player.nameTag} (perm: ${playerPermission}) is exempt (threshold: ${exemptPermissionLevel}).`, dependencies, player.nameTag);
         return;
     }
 
@@ -56,7 +56,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
     for (const patternString of serverMessagePatterns) {
         if (typeof patternString !== 'string' || patternString.trim() === '') {
-            playerUtils.debugLog?.("SimpleImpersonation: Encountered empty or invalid pattern string in config.", watchedPlayerName);
+            playerUtils.debugLog("[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config.", dependencies, watchedPlayerName);
             continue;
         }
         try {
@@ -70,11 +70,12 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
                 };
 
                 await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-                playerUtils.debugLog?.(\`SimpleImpersonation: Flagged \${player.nameTag} for impersonation attempt. Pattern: '\${patternString}'. Msg: "\${rawMessageContent.substring(0,50)}..."\`, watchedPlayerName);
+                playerUtils.debugLog(`[SimpleImpersonationCheck] Flagged ${player.nameTag} for impersonation attempt. Pattern: '${patternString}'. Msg: "${rawMessageContent.substring(0,50)}..."`, dependencies, watchedPlayerName);
                 return; // Stop on first match
             }
         } catch (e) {
-            playerUtils.debugLog?.(\`SimpleImpersonation: Invalid regex pattern '\${patternString}' in config. Error: \${e.message}\`, watchedPlayerName);
+            playerUtils.debugLog(`[SimpleImpersonationCheck] Invalid regex pattern '${patternString}' in config. Error: ${e.message}`, dependencies, watchedPlayerName);
+            console.error(`[SimpleImpersonationCheck] Regex pattern error: ${e.stack || e}`);
         }
     }
 }

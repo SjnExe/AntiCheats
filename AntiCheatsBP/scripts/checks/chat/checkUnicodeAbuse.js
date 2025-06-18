@@ -25,7 +25,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
         return;
     }
     if (!pData) { // pData might not be used by this specific check's logic
-        playerUtils.debugLog?.("UnicodeAbuse: pData is null, skipping check (though not strictly needed for this check's core logic).", player.nameTag);
+        playerUtils.debugLog("[UnicodeAbuseCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
         // return;
     }
 
@@ -78,6 +78,6 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
         };
 
         await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-        playerUtils.debugLog?.(\`UnicodeAbuse: Flagged \${player.nameTag} for Unicode abuse (\${reason}). Ratio: \${actualRatio.toFixed(2)}, Diacritics: \${diacriticCount}. Msg: "\${rawMessageContent.substring(0,20)}..."\`, pData?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[UnicodeAbuseCheck] Flagged ${player.nameTag} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: "${rawMessageContent.substring(0,20)}..."`, dependencies, pData?.isWatched ? player.nameTag : null);
     }
 }

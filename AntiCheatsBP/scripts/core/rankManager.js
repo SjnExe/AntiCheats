@@ -4,7 +4,8 @@
  */
 
 import { Player } from '@minecraft/server';
-import { isOwner, isAdmin } from '../utils/playerUtils.js';
+// isOwner and isAdmin imports are removed as their logic is now incorporated into
+// _standardizedGetPlayerPermissionLevel using config values from dependencies.
 
 /**
  * @typedef {number} PermissionLevel
@@ -103,24 +104,88 @@ export const ranks = {
     }
 };
 
+// permissionLevels is defined in this file and can be used directly by _standardizedGetPlayerPermissionLevel
+function _standardizedGetPlayerPermissionLevel(player, dependencies) {
+    if (!dependencies || !dependencies.config || !dependencies.permissionLevels) {
+        // Fallback or error if dependencies are not provided correctly by the caller.
+        console.warn("[RankManager] _standardizedGetPlayerPermissionLevel called without full dependencies object (config or permissionLevels missing)!");
+        // Attempt to use local permissionLevels if dependencies.permissionLevels is missing
+        const perms = dependencies?.permissionLevels || permissionLevels;
+        return perms.member; // Default to lowest permission
+    }
+
+    // Ensure player is valid
+    if (!(player instanceof Player)) {
+        if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
+            dependencies.playerUtils.debugLog("[RankManager] Invalid player object passed to _standardizedGetPlayerPermissionLevel.", player?.nameTag || "UnknownSource");
+        } else {
+            console.warn("[RankManager] Invalid player object passed to _standardizedGetPlayerPermissionLevel.");
+        }
+        return dependencies.permissionLevels.member;
+    }
+
+
+    // Ensure config values are present before using them
+    if (typeof dependencies.config.ownerPlayerName !== 'string' || typeof dependencies.config.adminTag !== 'string') {
+        if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
+            dependencies.playerUtils.debugLog("[RankManager] ownerPlayerName or adminTag not configured in dependencies.config!", player.nameTag);
+        } else {
+            console.warn("[RankManager] ownerPlayerName or adminTag not configured in dependencies.config!");
+        }
+        return dependencies.permissionLevels.member;
+    }
+
+    if (player.nameTag === dependencies.config.ownerPlayerName) {
+        return dependencies.permissionLevels.owner;
+    }
+    if (player.hasTag(dependencies.config.adminTag)) {
+        return dependencies.permissionLevels.admin;
+    }
+    // Add other rank checks here if necessary (e.g., moderator tags from config)
+    // For example:
+    // const moderatorTagValue = dependencies.config.moderatorTag || "moderator";
+    // if (player.hasTag(moderatorTagValue)) {
+    //     return dependencies.permissionLevels.moderator;
+    // }
+    return dependencies.permissionLevels.member;
+}
+
 /**
  * Determines the rank ID ('owner', 'admin', 'member') for a given player.
  * @param {Player} player - The Minecraft Player object.
  * @returns {string} The rank ID. Defaults to 'member'.
  */
-export function getPlayerRankId(player) {
-    if (!(player instanceof Player)) {
-         console.warn("[RankManager] Invalid player object passed to getPlayerRankId. Defaulting to member.");
-         return 'member';
-    }
-    // Ensure player.nameTag is available, which it should be for a valid Player object.
-    if (typeof player.nameTag !== 'string') {
-        console.warn(`[RankManager] Player object for ID ${player.id} has no nameTag. Defaulting to member.`);
+export function getPlayerRankId(player, dependencies) { // Added dependencies for potential future use and logging
+    try {
+        if (!(player instanceof Player)) {
+            if (dependencies?.playerUtils?.debugLog && dependencies?.config?.enableDebugLogging) {
+                dependencies.playerUtils.debugLog("[RankManager] Invalid player object passed to getPlayerRankId. Defaulting to member.", player?.nameTag || "UnknownSource");
+            } else if (!dependencies?.playerUtils?.debugLog || !dependencies?.config?.enableDebugLogging) {
+                 console.warn("[RankManager] Invalid player object passed to getPlayerRankId (debug logging disabled or playerUtils not available). Defaulting to member.");
+            }
+            return 'member';
+        }
+        if (typeof player.nameTag !== 'string') {
+            if (dependencies?.playerUtils?.debugLog && dependencies?.config?.enableDebugLogging) {
+                dependencies.playerUtils.debugLog(`[RankManager] Player object for ID ${player.id} has no nameTag. Defaulting to member.`, player.nameTag);
+            } else if (!dependencies?.playerUtils?.debugLog || !dependencies?.config?.enableDebugLogging) {
+                console.warn(`[RankManager] Player object for ID ${player.id} has no nameTag (debug logging disabled or playerUtils not available). Defaulting to member.`);
+            }
+            return 'member';
+        }
+
+        const permLevel = _standardizedGetPlayerPermissionLevel(player, dependencies);
+
+        if (permLevel === permissionLevels.owner) return 'owner';
+        if (permLevel === permissionLevels.admin) return 'admin';
+        // Add mapping for other ranks if permissionLevels enum expands
+        // e.g. if (permLevel === permissionLevels.moderator) return 'moderator';
+        return 'member';
+    } catch (error) {
+        // No dependencies here yet for logging via playerUtils
+        console.error(`[RankManager] Error in getPlayerRankId for player ${player?.nameTag || player?.id || 'unknown'}: ${error.stack || error}`);
         return 'member';
     }
-    if (isOwner(player.nameTag)) return 'owner';
-    if (isAdmin(player)) return 'admin';
-    return 'member';
 }
 
 /**
@@ -128,17 +193,17 @@ export function getPlayerRankId(player) {
  * and configurable color settings.
  *
  * @param {Player} player - The Minecraft Player object.
- * @param {object} [configValues] - Optional: The editable configuration values from `config.js` (e.g., `config.editableConfigValues`).
- *                                 If not provided, default colors from the `ranks` object will be used.
+ * @param {import('../types.js').Dependencies} dependencies - The dependencies object.
  * @returns {{fullPrefix: string, nameColor: string, messageColor: string}} An object containing the formatted chat elements.
  */
-export function getPlayerRankFormattedChatElements(player, configValues = {}) {
-    const rankId = getPlayerRankId(player);
-    const rankProperties = ranks[rankId] || ranks.member; // Fallback to member if rankId is somehow invalid
+export function getPlayerRankFormattedChatElements(player, dependencies) {
+    const { config, playerUtils } = dependencies; // Destructure config
+    const rankId = getPlayerRankId(player, dependencies); // Pass dependencies
+    const rankProperties = ranks[rankId] || ranks.member;
 
-    const actualPrefixColor = configValues?.[rankProperties.configKeys.prefixColor] ?? rankProperties.chatColors.defaultPrefixColor;
-    const actualNameColor = configValues?.[rankProperties.configKeys.nameColor] ?? rankProperties.chatColors.defaultNameColor;
-    const actualMessageColor = configValues?.[rankProperties.configKeys.messageColor] ?? rankProperties.chatColors.defaultMessageColor;
+    const actualPrefixColor = config?.[rankProperties.configKeys.prefixColor] ?? rankProperties.chatColors.defaultPrefixColor;
+    const actualNameColor = config?.[rankProperties.configKeys.nameColor] ?? rankProperties.chatColors.defaultNameColor;
+    const actualMessageColor = config?.[rankProperties.configKeys.messageColor] ?? rankProperties.chatColors.defaultMessageColor;
 
     return {
         fullPrefix: actualPrefixColor + rankProperties.prefixText,
@@ -153,32 +218,40 @@ export function getPlayerRankFormattedChatElements(player, configValues = {}) {
  * If the player has a "vanished" tag, their nametag is cleared.
  *
  * @param {Player} player - The Minecraft Player object whose nametag is to be updated.
+ * @param {import('../types.js').Dependencies} dependencies - The dependencies object.
  * @returns {void}
  */
-export function updatePlayerNametag(player) {
+export function updatePlayerNametag(player, dependencies) {
+    const { config, playerUtils } = dependencies; // Destructure config and playerUtils
+
     if (!(player instanceof Player)) {
         console.error("[RankManager] Invalid player object passed to updatePlayerNametag.");
         return;
     }
 
-    const vanishedTag = "vanished"; // Consider moving to config if used elsewhere
+    const vanishedTag = config.vanishedPlayerTag || "vanished"; // Use config for vanished tag
 
     try {
         if (player.hasTag(vanishedTag)) {
-            player.nameTag = ""; // Clear nametag for vanished players
+            player.nameTag = "";
             return;
         }
 
-        const rankId = getPlayerRankId(player);
+        const rankId = getPlayerRankId(player, dependencies); // Pass dependencies
         const rankDisplay = ranks[rankId];
 
         if (!rankDisplay) {
             console.error(`[RankManager] Could not find rank display properties for rankId: ${rankId} for player ${player.nameTag}. Defaulting nametag.`);
-            player.nameTag = player.name; // Fallback to just player name
+            player.nameTag = player.name;
             return;
         }
 
+        // Potentially make nametagPrefix configurable via dependencies.config.ranks[rankId].nametagPrefix if needed in future
+        // For now, using the hardcoded one from 'ranks' object.
         player.nameTag = rankDisplay.nametagPrefix + player.name;
+        if (config.enableDebugLogging) {
+            playerUtils.debugLog(`[RankManager] Updated nametag for ${player.nameTag} to "${player.nameTag}"`, player.nameTag);
+        }
 
     } catch (error) {
         let playerNameForError = "UnknownPlayer";
@@ -187,6 +260,7 @@ export function updatePlayerNametag(player) {
                 playerNameForError = player.name;
             }
         } catch (nameAccessError) {
+            // This specific console.warn can remain as it's a fallback within error handling
             console.warn(`[RankManager] Could not access name of player during nametag update error: ${nameAccessError}`);
         }
         console.error(`[RankManager] Error setting nametag for '${playerNameForError}': ${error.stack || error}`);

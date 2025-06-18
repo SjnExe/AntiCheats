@@ -3,22 +3,19 @@
  * @version 1.0.2
  */
 
-import { world, system } from '@minecraft/server';
-// Removed direct import of config
-import * as tpaManager from '../core/tpaManager.js';
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+import { world, system } from '@minecraft/server'; // system is used
+// tpaManager, permissionLevels, getString will be from dependencies.
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpahere',
-    description: getString("command.tpahere.description"),
+    description: "command.tpahere.description", // Key
     aliases: ['tpask', 'tph'],
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: null, // To be set from dependencies.permissionLevels.normal
     syntax: '!tpahere <playerName>',
-    enabled: true,
+    enabled: true, // Will be checked against dependencies.config.enableTPASystem
 };
 
 /**
@@ -28,10 +25,14 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config: fullConfig } = dependencies;
-    const prefix = fullConfig.prefix;
+    const { playerUtils, config, tpaManager, permissionLevels, getString, logManager } = dependencies;
 
-    if (!fullConfig.enableTPASystem) {
+    definition.description = getString(definition.description);
+    definition.permissionLevel = permissionLevels.normal;
+
+    const prefix = config.prefix;
+
+    if (!config.enableTPASystem) {
         player.sendMessage(getString("command.tpa.systemDisabled"));
         return;
     }
@@ -42,7 +43,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetName = args[0];
-    const target = world.getAllPlayers().find(p => p.name === targetName);
+    const target = playerUtils.findPlayer(targetName); // Use playerUtils.findPlayer
 
     if (!target) {
         player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetName }));
@@ -54,38 +55,50 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name);
+    const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name, dependencies); // Pass dependencies
     if (!targetTpaStatus.acceptsTpaRequests) {
-        player.sendMessage(getString("command.tpa.error.targetDisabled", { targetName: target.nameTag })); // Reusing tpa key
+        player.sendMessage(getString("command.tpa.error.targetDisabled", { targetName: target.nameTag }));
         return;
     }
 
+    // findRequest does not require dependencies
     const existingRequest = tpaManager.findRequest(player.name, target.name);
     if (existingRequest) {
-         player.sendMessage(getString("command.tpa.error.existingRequest", { targetName: target.nameTag })); // Reusing tpa key
+         player.sendMessage(getString("command.tpa.error.existingRequest", { targetName: target.nameTag }));
          return;
     }
+    try {
+        const requestResult = tpaManager.addRequest(player, target, 'tpahere', dependencies); // Pass dependencies
 
-    const requestResult = tpaManager.addRequest(player, target, 'tpahere');
+        if (requestResult && requestResult.error === 'cooldown') {
+            player.sendMessage(getString("command.tpa.error.cooldown", { remaining: requestResult.remaining }));
+            return;
+        }
 
-    if (requestResult && requestResult.error === 'cooldown') {
-        player.sendMessage(getString("command.tpa.error.cooldown", { remaining: requestResult.remaining })); // Reusing tpa key
-        return;
-    }
+        if (requestResult) {
+            player.sendMessage(getString("command.tpahere.requestSent", { targetName: target.nameTag, timeout: config.TPARequestTimeoutSeconds, prefix: prefix }));
 
-    if (requestResult) {
-        player.sendMessage(getString("command.tpahere.requestSent", { targetName: target.nameTag, timeout: fullConfig.TPARequestTimeoutSeconds, prefix: prefix }));
-
-        system.run(() => {
-            try {
-                target.onScreenDisplay.setActionBar(getString("command.tpahere.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
-            } catch (e) {
-                if (fullConfig.enableDebugLogging && playerUtils?.debugLog) {
-                    playerUtils.debugLog(`[TPAHereCommand] Failed to set action bar for target ${target.nameTag}: ${e}`, player.nameTag);
+            system.run(() => {
+                try {
+                    target.onScreenDisplay.setActionBar(getString("command.tpahere.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
+                } catch (e) {
+                    if (config.enableDebugLogging && playerUtils?.debugLog) {
+                        playerUtils.debugLog(`[TpaHereCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag);
+                    }
                 }
+            });
+        } else {
+            player.sendMessage(getString("command.tpahere.failToSend"));
+            playerUtils.debugLog(`[TpaHereCommand] Failed to send TPAHere request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag);
+            if(logManager) {
+                logManager.addLog({actionType: 'error', details: `[TpaHereCommand] TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`});
             }
-        });
-    } else {
-        player.sendMessage(getString("command.tpahere.failToSend"));
+        }
+    } catch (error) {
+        console.error(`[TpaHereCommand] Error for ${player.nameTag}: ${error.stack || error}`);
+        player.sendMessage(getString("common.error.genericCommand"));
+        if(logManager) {
+            logManager.addLog({actionType: 'error', details: `[TpaHereCommand] ${player.nameTag} error: ${error.stack || error}`});
+        }
     }
 }

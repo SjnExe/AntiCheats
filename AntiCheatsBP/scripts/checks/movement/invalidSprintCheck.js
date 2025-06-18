@@ -8,15 +8,11 @@
  */
 
 import * as mc from '@minecraft/server';
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -25,25 +21,13 @@ import { getString } from '../../../core/i18n.js';
  * @param {mc.Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data. Expected to contain `blindnessTicks`
  *                                     (updated by `updateTransientPlayerData`).
- * @param {Config} config - The server configuration object, with `enableInvalidSprintCheck`.
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick (not directly used in this check's core logic).
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
-export async function checkInvalidSprint(
-    player,
-    pData,
-    config,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick // Not directly used by this check's core logic
-) {
-    if (!config.enableInvalidSprintCheck || !pData) { // Added null check for pData
+export async function checkInvalidSprint(player, pData, dependencies) {
+    const { config, playerUtils, actionManager, getString } = dependencies;
+
+    if (!config.enableInvalidSprintCheck || !pData) {
         return;
     }
 
@@ -66,22 +50,22 @@ export async function checkInvalidSprint(
         }
 
         if (invalidConditionKey) {
-            const localizedCondition = getString(invalidConditionKey);
-            const dependencies = { config, playerDataManager, playerUtils, logManager };
+            const localizedCondition = getString(invalidConditionKey); // getString from dependencies
+            // Pass the full dependencies object to executeCheckAction
             const violationDetails = {
-                condition: localizedCondition, // Use the localized string here
+                condition: localizedCondition,
                 details: conditionDetails,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
                 isRiding: player.isRiding.toString(),
                 blindnessTicks: (pData.blindnessTicks ?? 0).toString()
             };
-            await executeCheckAction(player, "movementInvalidSprint", violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, "movementInvalidSprint", violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog?.(
-                `InvalidSprint: Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
-                watchedPrefix
+            playerUtils.debugLog(
+                `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
+                dependencies, watchedPrefix
             );
         }
     }

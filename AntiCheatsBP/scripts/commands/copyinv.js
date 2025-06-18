@@ -1,11 +1,10 @@
 /**
  * @file AntiCheatsBP/scripts/commands/copyinv.js
  * Defines the !copyinv command for administrators to copy another player's inventory.
- * @version 1.0.1
+ * @version 1.0.2
  */
-import { permissionLevels } from '../core/rankManager.js';
+// permissionLevels and getString are now accessed via dependencies
 import { ModalFormData } from '@minecraft/server-ui';
-import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,8 +12,8 @@ import { getString } from '../core/i18n.js';
 export const definition = {
     name: "copyinv",
     syntax: "!copyinv <playername>",
-    description: getString("command.copyinv.description"),
-    permissionLevel: permissionLevels.admin,
+    description: "Copies another player's inventory to your own.", // Static fallback
+    permissionLevel: 1, // Static fallback (Admin)
     enabled: true,
 };
 
@@ -25,12 +24,12 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, addLog, findPlayer: depFindPlayer } = dependencies;
-    const findPlayerFunc = depFindPlayer || (playerUtils && playerUtils.findPlayer);
+    const { config, playerUtils, logManager, getString, permissionLevels, playerDataManager } = dependencies;
+    const findPlayer = playerUtils.findPlayer;
 
-    if (!findPlayerFunc) {
+    if (!findPlayer) {
         player.sendMessage(getString("command.copyinv.error.playerLookupUnavailable"));
-        console.error("[copyinvCmd] findPlayer utility is not available in dependencies.");
+        console.error("[CopyInvCommand] findPlayer utility is not available in playerUtils from dependencies.");
         return;
     }
 
@@ -39,7 +38,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
     const targetPlayerName = args[0];
-    const targetPlayer = findPlayerFunc(targetPlayerName, playerUtils);
+    const targetPlayer = findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
         player.sendMessage(getString("common.error.invalidPlayer", { targetName: targetPlayerName }));
@@ -63,14 +62,15 @@ export async function execute(player, args, dependencies) {
         .toggle(getString("command.copyinv.confirm.toggle"), false);
 
     const response = await form.show(player).catch(e => {
-        if (config.enableDebugLogging) {
-            playerUtils.debugLog(`copyinv confirmation form cancelled or failed for ${player.nameTag}: ${e}`, player.nameTag);
-        }
-        return { canceled: true };
+        playerUtils.debugLog(`[CopyInvCommand] Confirmation form cancelled or failed for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+        console.error(`[CopyInvCommand] Confirmation form error for ${player.nameTag}: ${e.stack || e}`);
+        return { canceled: true, error: true }; // Ensure error prop for later check
     });
 
     if (response.canceled || !response.formValues || !response.formValues[0]) {
-        player.sendMessage(getString("command.copyinv.cancelled"));
+        if (!response.error) { // Only send cancellation message if it wasn't an error
+            player.sendMessage(getString("command.copyinv.cancelled"));
+        }
         return;
     }
 
@@ -87,27 +87,24 @@ export async function execute(player, args, dependencies) {
             }
         }
         player.sendMessage(getString("command.copyinv.success", { targetPlayerName: targetPlayer.nameTag, itemCount: itemsCopied }));
-        if (addLog) {
-            addLog({
-                timestamp: Date.now(),
-                adminName: player.nameTag,
-                actionType: 'copy_inventory',
-                targetName: targetPlayer.nameTag,
-                details: getString("command.copyinv.log", { itemCount: itemsCopied })
-            });
-        }
-        if (playerUtils.notifyAdmins) {
-            const targetPData = dependencies.playerDataManager.getPlayerData(targetPlayer.id); // For context
-            playerUtils.notifyAdmins(
-                getString("command.copyinv.notifyAdmins", { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag }),
-                player,
-                targetPData
-            );
-        }
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: player.nameTag,
+            actionType: 'copy_inventory',
+            targetName: targetPlayer.nameTag,
+            details: getString("command.copyinv.log", { itemCount: itemsCopied })
+        }, dependencies);
+
+        const targetPData = playerDataManager.getPlayerData(targetPlayer.id); // Pass dependencies if getPlayerData expects it
+        playerUtils.notifyAdmins(
+            getString("command.copyinv.notifyAdmins", { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag }),
+            dependencies,
+            player,
+            targetPData
+        );
     } catch (e) {
-        player.sendMessage(getString("common.error.generic") + `: ${e}`); // Keep specific error for debug, but generic for user
-        if (config.enableDebugLogging) {
-            playerUtils.debugLog(`copyinv error for ${player.nameTag} from ${targetPlayer.nameTag}: ${e}`, player.nameTag);
-        }
+        player.sendMessage(getString("common.error.generic") + `: ${e.message}`);
+        playerUtils.debugLog(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.message}`, dependencies, player.nameTag);
+        console.error(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.stack || e}`);
     }
 }

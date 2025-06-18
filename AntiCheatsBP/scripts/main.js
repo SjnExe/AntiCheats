@@ -21,7 +21,8 @@ import { ItemComponentTypes as ImportedItemComponentTypes } from '@minecraft/ser
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
-import { getString } from './core/i18n.js';
+import { getString, initializeI18n } from './core/i18n.js'; // Added initializeI18n
+// reportManager functions initializeReportCache and persistReportsToDisk are already imported via `import * as reportManager from './core/reportManager.js';`
 import { getBorderSettings, saveBorderSettings } from './utils/worldBorderManager.js';
 
 function easeOutQuad(t) {
@@ -291,23 +292,35 @@ let currentTick = 0;
 mc.system.runInterval(async () => {
     currentTick++;
 
+    // Initialize ReportManager cache if it hasn't been done yet (e.g. script reload)
+    // This is a failsafe; ideally, it's called once after dependencies are fully ready.
+    // However, reportManager is designed to be idempotent on initializeReportCache.
+    if (typeof reportManager.initializeReportCache === 'function' && !reportManager.isInitialized) {
+        const initDeps = getStandardDependencies(); // Use standard deps for initialization
+        reportManager.initializeReportCache(initDeps);
+        reportManager.isInitialized = true; // Mark as initialized
+        playerUtils.debugLog("ReportManager cache initialized from main tick loop (failsafe).", initDeps, "System");
+    }
+
     const knownBorderDimensions = ["minecraft:overworld", "minecraft:the_nether", "minecraft:the_end"];
     for (const dimId of knownBorderDimensions) {
         let dimBorderSettings = null;
+        const localTickDependencies = getStandardDependencies(); // Get dependencies for this scope
         try {
-            dimBorderSettings = getBorderSettings(dimId);
+            dimBorderSettings = getBorderSettings(dimId, localTickDependencies);
         } catch (e) {
-            console.warn(`[WB Resize] Error getting border settings for ${dimId} during resize check: ${e}`);
+            console.error(`[WB Resize] Error getting border settings for ${dimId} during resize check: ${e.stack || e}`);
+            playerUtils.debugLog(`[WB Resize] Error getting border settings for ${dimId} during resize check: ${e.message}`, localTickDependencies, "System");
             continue;
         }
         if (dimBorderSettings && dimBorderSettings.isResizing && dimBorderSettings.enabled) {
             const currentTimeMs = Date.now();
             if (typeof dimBorderSettings.resizeStartTimeMs !== 'number' || typeof dimBorderSettings.resizeDurationMs !== 'number' || typeof dimBorderSettings.originalSize !== 'number' || typeof dimBorderSettings.targetSize !== 'number') {
-                console.warn(`[WB Resize] Invalid resize parameters for dimension ${dimId}. Cancelling resize.`);
+                playerUtils.debugLog(`[WB Resize] Invalid resize parameters for dimension ${dimId}. Cancelling resize.`, localTickDependencies, "System");
                 dimBorderSettings.isResizing = false;
                 delete dimBorderSettings.originalSize; delete dimBorderSettings.targetSize;
                 delete dimBorderSettings.resizeStartTimeMs; delete dimBorderSettings.resizeDurationMs;
-                saveBorderSettings(dimId, dimBorderSettings);
+                saveBorderSettings(dimId, dimBorderSettings, localTickDependencies);
                 continue;
             }
             const accumulatedPausedMs = dimBorderSettings.resizePausedTimeMs || 0;
@@ -321,13 +334,13 @@ mc.system.runInterval(async () => {
                 dimBorderSettings.isResizing = false;
                 delete dimBorderSettings.originalSize; delete dimBorderSettings.targetSize;
                 delete dimBorderSettings.resizeStartTimeMs; delete dimBorderSettings.resizeDurationMs;
-                if (saveBorderSettings(dimId, dimBorderSettings)) {
-                     console.warn(`[AntiCheat][WorldBorder] Border resize in ${dimId.replace("minecraft:","")} completed. New size parameter: ${targetSize}.`);
+                if (saveBorderSettings(dimId, dimBorderSettings, localTickDependencies)) {
+                     playerUtils.debugLog(`[AntiCheat][WorldBorder] Border resize in ${dimId.replace("minecraft:","")} completed. New size parameter: ${targetSize}.`, localTickDependencies, "System");
                      if (logManager && typeof logManager.addLog === 'function') {
-                        logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` });
+                        logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` }, localTickDependencies);
                      }
                 } else {
-                    console.warn(`[AntiCheat][WorldBorder] Failed to save completed border resize for ${dimId}.`);
+                    playerUtils.debugLog(`[AntiCheat][WorldBorder] Failed to save completed border resize for ${dimId}.`, localTickDependencies, "System");
                 }
             }
         }
@@ -341,7 +354,7 @@ mc.system.runInterval(async () => {
     for (const player of allPlayers) {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
         if (!pData) {
-            if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure.`, player.nameTag);
+            if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure.`, tickDependencies, player.nameTag);
             continue;
         }
 
@@ -352,15 +365,15 @@ mc.system.runInterval(async () => {
         playerDataManager.updateTransientPlayerData(player, pData, currentTick);
 
         if (pData.isUsingConsumable && (currentTick - pData.lastItemUseTick > tickDependencies.config.itemUseStateClearTicks)) {
-            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingConsumable for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingConsumable for ${player.nameTag} after timeout. Tick: ${currentTick}`, tickDependencies, player.nameTag);
             pData.isUsingConsumable = false;
         }
         if (pData.isChargingBow && (currentTick - pData.lastItemUseTick > tickDependencies.config.itemUseStateClearTicks)) {
-            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isChargingBow for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isChargingBow for ${player.nameTag} after timeout. Tick: ${currentTick}`, tickDependencies, player.nameTag);
             pData.isChargingBow = false;
         }
         if (pData.isUsingShield && (currentTick - pData.lastItemUseTick > tickDependencies.config.itemUseStateClearTicks)) {
-            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingShield for ${player.nameTag} after timeout. Tick: ${currentTick}`, player.nameTag);
+            if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`StateConflict: Auto-clearing isUsingShield for ${player.nameTag} after timeout. Tick: ${currentTick}`, tickDependencies, player.nameTag);
             pData.isUsingShield = false;
         }
 
@@ -415,11 +428,18 @@ mc.system.runInterval(async () => {
             pData.isTakingFallDamage = false;
         }
 
+        // This section was already updated in the previous diff chunk.
+        // The getBorderSettings calls and playerUtils.debugLog calls within this
+        // specific block (player enforcement and visuals) were already corrected.
+        // No changes are needed for this SEARCH block based on the current goal for this chunk
+        // as the previous diff covered these lines.
+        // I will keep the SEARCH and REPLACE blocks identical to signify no change to this specific part.
         let borderSettings = null;
         if (tickDependencies.config.enableWorldBorderSystem) {
-            borderSettings = getBorderSettings(player.dimension.id);
+            borderSettings = getBorderSettings(player.dimension.id, tickDependencies);
             if (borderSettings && borderSettings.enabled) {
-                const playerPermLevel = playerUtils.getPlayerPermissionLevel(player);
+                // Correctly get permission level from rankManager via dependencies
+                const playerPermLevel = tickDependencies.rankManager.getPlayerPermissionLevel(player, tickDependencies);
                 if (playerPermLevel > importedPermissionLevels.admin) {
                     const loc = player.location;
                     let isPlayerOutside = false;
@@ -449,7 +469,7 @@ mc.system.runInterval(async () => {
                             if (borderSettings.shape === "square") currentEffectiveHalfSize = borderSettings.targetSize;
                             else if (borderSettings.shape === "circle") currentEffectiveRadius = borderSettings.targetSize;
                         }
-                        if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: In-progress resize for dim ${player.dimension.id} has incomplete parameters in player loop. Using targetSize or stored size.`, player.nameTag);
+                        if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: In-progress resize for dim ${player.dimension.id} has incomplete parameters in player loop. Using targetSize or stored size.`, tickDependencies, player.nameTag);
                     }
 
                     if (borderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
@@ -475,7 +495,7 @@ mc.system.runInterval(async () => {
                             }
                         }
                     } else if (borderSettings.shape) {
-                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Invalid shape ('${borderSettings.shape}') or non-positive effective size (Sq: ${currentEffectiveHalfSize}, Circ: ${currentEffectiveRadius}) in dimension ${player.dimension.id}. Skipping enforcement.`, player.nameTag);
+                         if(playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Invalid shape ('${borderSettings.shape}') or non-positive effective size (Sq: ${currentEffectiveHalfSize}, Circ: ${currentEffectiveRadius}) in dimension ${player.dimension.id}. Skipping enforcement.`, tickDependencies, player.nameTag);
                     }
 
                     if (isPlayerOutside) {
@@ -491,29 +511,32 @@ mc.system.runInterval(async () => {
                                 try {
                                     player.applyDamage(damageAmount, { cause: mc.EntityDamageCause.worldBorder });
                                     pData.borderDamageApplications++; pData.isDirtyForSave = true;
-                                    if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Applied ${damageAmount} damage to ${player.nameTag}. Total applications: ${pData.borderDamageApplications}`, player.nameTag);
+                                    if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Applied ${damageAmount} damage to ${player.nameTag}. Total applications: ${pData.borderDamageApplications}`, tickDependencies, player.nameTag);
                                     if (pData.borderDamageApplications >= teleportAfterNumDamageEvents) {
                                         performTeleport = true;
-                                        if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag);
+                                        if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, tickDependencies, player.nameTag);
                                     }
-                                } catch (e) { console.warn(`[WorldBorder] Failed to apply damage to player ${player.nameTag}: ${e}`); }
+                                } catch (e) {
+                                    console.warn(`[WorldBorder] Failed to apply damage to player ${player.nameTag}: ${e}`);
+                                    playerUtils.debugLog(`[WorldBorder] Failed to apply damage to player ${player.nameTag}: ${e.message}`, tickDependencies, player.nameTag);
+                                }
                             }
                         }
                         if (performTeleport) {
-                            const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils);
+                            const safeY = findSafeTeleportY(player.dimension, targetX, loc.y, targetZ, player, playerUtils); // findSafeTeleportY doesn't use dependencies directly
                             try {
                                 player.teleport({ x: targetX, y: safeY, z: targetZ }, { dimension: player.dimension });
                         if (tickDependencies.config.worldBorderWarningMessage) playerUtils.warnPlayer(player, tickDependencies.getString(tickDependencies.config.worldBorderWarningMessage));
-                                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, player.nameTag);
+                                if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Teleported ${player.nameTag} to XZ(${targetX.toFixed(1)},${targetZ.toFixed(1)}) Y=${safeY}. Reason: ${enableDamage && pData.borderDamageApplications >= teleportAfterNumDamageEvents ? 'Max damage events reached' : (!enableDamage ? 'Standard enforcement' : 'Damage logic did not require teleport yet')}.`, tickDependencies, player.nameTag);
                                 pData.ticksOutsideBorder = 0; pData.borderDamageApplications = 0; pData.isDirtyForSave = true;
                             } catch (e) {
                                 console.warn(`[WorldBorder] Failed to teleport player ${player.nameTag}: ${e}`);
-                                 if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e}`, player.nameTag);
+                                 if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Teleport failed for ${player.nameTag}. Error: ${e.message}`, tickDependencies, player.nameTag);
                             }
                         }
                     } else {
                         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
-                             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Player ${player.nameTag} re-entered border. Resetting counters.`, player.nameTag);
+                             if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`WorldBorder: Player ${player.nameTag} re-entered border. Resetting counters.`, tickDependencies, player.nameTag);
                             pData.ticksOutsideBorder = 0; pData.borderDamageApplications = 0; pData.isDirtyForSave = true;
                         }
                     }
@@ -528,7 +551,7 @@ mc.system.runInterval(async () => {
         }
 
         if (tickDependencies.config.enableWorldBorderSystem && tickDependencies.config.worldBorderEnableVisuals) {
-            const currentBorderSettings = borderSettings || getBorderSettings(player.dimension.id);
+            const currentBorderSettings = borderSettings || getBorderSettings(player.dimension.id, tickDependencies);
             if (currentBorderSettings && currentBorderSettings.enabled) {
                 if (currentTick - (pData.lastBorderVisualTick || 0) >= tickDependencies.config.worldBorderVisualUpdateIntervalTicks) {
                     pData.lastBorderVisualTick = currentTick;
@@ -605,17 +628,32 @@ mc.system.runInterval(async () => {
             const pData = playerDataManager.getPlayerData(player.id);
             if (pData && pData.isDirtyForSave) {
                 try {
-                    await playerDataManager.saveDirtyPlayerData(player);
-                    if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, player.nameTag);
+                    await playerDataManager.saveDirtyPlayerData(player); // This function might need dependencies eventually
+                    if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, tickDependencies, player.nameTag);
                 } catch (error) {
                     console.error(`Error during deferred save for ${player.nameTag}: ${error}`);
-                    logManager.addLog('error', `DeferredSaveFail: ${player.nameTag}, ${error}`);
+                    logManager.addLog('error', `DeferredSaveFail: ${player.nameTag}, ${error.message}`, tickDependencies); // Pass dependencies to addLog
                 }
             }
         }
-        if (logManager.persistLogCacheToDisk) logManager.persistLogCacheToDisk();
-        if (reportManager.persistReportsToDisk) reportManager.persistReportsToDisk();
+        if (logManager.persistLogCacheToDisk) logManager.persistLogCacheToDisk(tickDependencies);
+        if (reportManager.persistReportsToDisk) reportManager.persistReportsToDisk(tickDependencies);
     }
 }, 1);
 
-playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tick loop are active.", "System");
+playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tick loop are active.", getStandardDependencies(), "System");
+
+// Initializing ReportManager after core systems are confirmed to be ready and dependencies can be provided.
+// This is a more robust place than inside the tick loop for a one-time initialization.
+const startupDependencies = getStandardDependencies();
+if (typeof reportManager.initializeReportCache === 'function') {
+    reportManager.initializeReportCache(startupDependencies);
+    reportManager.isInitialized = true; // Set a flag to prevent re-initialization from tick loop if not strictly necessary
+    playerUtils.debugLog("ReportManager cache initialized on startup.", startupDependencies, "System");
+}
+
+// Initialize i18n with server's default language from config
+if (typeof initializeI18n === 'function') {
+    initializeI18n(startupDependencies);
+    playerUtils.debugLog("i18n system initialized with configured default language.", startupDependencies, "System");
+}

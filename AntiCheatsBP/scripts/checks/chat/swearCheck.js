@@ -78,7 +78,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
     }
     const originalMessage = eventData.message;
     if (!config.swearWordList || config.swearWordList.length === 0) {
-        playerUtils.debugLog?.(\`SwearCheck: Skipped for \${player.nameTag} as swearWordList is empty or undefined.\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
         return false;
     }
 
@@ -90,7 +90,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
         .filter(item => item.normalized.length > 0);
 
     if (normalizedSwearWordList.length === 0) {
-        playerUtils.debugLog?.(\`SwearCheck: Skipped for \${player.nameTag} as normalizedSwearWordList is empty.\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
         return false;
     }
 
@@ -126,15 +126,15 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
                     levenshteinDistance: matchType === "levenshtein" ? detectedDistance.toString() : "N/A",
                     originalMessage: originalMessage,
                 };
-                playerUtils.debugLog?.(\`SwearCheck: \${player.nameTag} triggered swear check. Word: "\${wordInMessage}" (normalized: "\${normalizedInputWord}") matched "\${swearItem.original}" (normalized: "\${swearItem.normalized}") by \${matchType}. Distance: \${detectedDistance}\`, pData.isWatched ? player.nameTag : null);
+                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by ${matchType}. Distance: ${detectedDistance}`, dependenciesFull, pData.isWatched ? player.nameTag : null);
 
                 if (actionManager && typeof actionManager.executeCheckAction === 'function') {
                      await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependenciesFull);
                 } else {
-                    playerUtils.debugLog?.("SwearCheck: actionManager.executeCheckAction is not available in dependencies.", null);
+                    playerUtils.debugLog("[SwearCheck] actionManager.executeCheckAction is not available in dependencies.", dependenciesFull, null);
                      // Fallback to direct flagging if actionManager is not set up as expected in dependencies
                      if (playerDataManager && playerDataManager.addFlag) {
-                         playerDataManager.addFlag(player, actionProfileName, `Swear word detected: \${swearItem.original} (matched: \${wordInMessage})`, violationDetails, dependenciesFull); // Pass full dependencies to addFlag
+                         playerDataManager.addFlag(player, actionProfileName, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependenciesFull); // Pass full dependencies to addFlag
                      }
                 }
                 return true; // Violation detected and handled

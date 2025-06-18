@@ -3,10 +3,10 @@
  * Implements checks for suspicious inventory manipulations, such as:
  * 1. Using an item in the same game tick as a hotbar slot change.
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating).
- * @version 1.1.0
+ * @version 1.1.1
  */
 
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -31,7 +31,7 @@ export async function checkSwitchAndUseInSameTick(
     dependencies,
     eventSpecificData
 ) {
-    const { config, playerUtils, actionManager, currentTick } = dependencies;
+    const { config, playerUtils, actionManager, currentTick, getString } = dependencies; // Added getString
     const itemStack = eventSpecificData?.itemStack; // Item being used
 
     if (!config.enableInventoryModCheck || !pData || !itemStack) {
@@ -41,7 +41,7 @@ export async function checkSwitchAndUseInSameTick(
     // pData.lastSelectedSlotChangeTick is updated in main.js's updateTransientPlayerData
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
-            reasonDetail: getString("check.inventoryMod.details.switchAndUseSameTick"),
+            reasonDetail: getString("check.inventoryMod.details.switchAndUseSameTick"), // getString from dependencies
             itemType: itemStack.typeId,
             slot: player.selectedSlotIndex.toString(), // Current slot after the switch and now use
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
@@ -50,9 +50,9 @@ export async function checkSwitchAndUseInSameTick(
         await actionManager.executeCheckAction(player, "playerInventoryModSwitchUse", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
-        playerUtils.debugLog?.(
-            \`InventoryMod (SwitchUse): Flagged \${player.nameTag} for using \${itemStack.typeId} in same tick as slot change (Tick: \${currentTick}).\`,
-            watchedPrefix
+        playerUtils.debugLog(
+            `[InventoryModCheck] (SwitchUse): Flagged ${player.nameTag} for using ${itemStack.typeId} in same tick as slot change (Tick: ${currentTick}).`,
+            dependencies, watchedPrefix
         );
     }
 }
@@ -73,7 +73,7 @@ export async function checkInventoryMoveWhileActionLocked(
     dependencies,
     eventSpecificData
 ) {
-    const { config, playerUtils, actionManager } = dependencies;
+    const { config, playerUtils, actionManager, getString } = dependencies; // Added getString
     // The original eventData from PlayerInventoryItemChangeAfterEvent is passed as eventSpecificData
     const inventoryChangeData = eventSpecificData;
 
@@ -90,14 +90,14 @@ export async function checkInventoryMoveWhileActionLocked(
     // Potentially add other states like pData.isUsingShield if intended to lock inventory movement.
 
     if (lockingActionKey) {
-        const localizedLockingAction = getString(lockingActionKey);
+        const localizedLockingAction = getString(lockingActionKey); // getString from dependencies
         // Extract details from inventoryChangeData (which is the original eventData)
         const changedItemType = inventoryChangeData.newItem?.typeId ?? inventoryChangeData.oldItem?.typeId ?? "unknown";
         const slotIdentifier = inventoryChangeData.slotName ?? inventoryChangeData.slot?.toString() ?? "unknown_slot";
 
 
         const violationDetails = {
-            reasonDetail: getString("check.inventoryMod.details.movedWhileLocked", { slotNum: slotIdentifier, action: localizedLockingAction }),
+            reasonDetail: getString("check.inventoryMod.details.movedWhileLocked", { slotNum: slotIdentifier, action: localizedLockingAction }), // getString from dependencies
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
             actionInProgress: localizedLockingAction,
@@ -107,9 +107,9 @@ export async function checkInventoryMoveWhileActionLocked(
         await actionManager.executeCheckAction(player, "playerInventoryModMoveLocked", violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
-        playerUtils.debugLog?.(
-            \`InventoryMod (MoveLocked): Flagged \${player.nameTag} for inventory item change (Slot: \${slotIdentifier}, Item: \${changedItemType}) while \${localizedLockingAction}.\`,
-            watchedPrefix
+        playerUtils.debugLog(
+            `[InventoryModCheck] (MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${localizedLockingAction}.`,
+            dependencies, watchedPrefix
         );
     }
 }

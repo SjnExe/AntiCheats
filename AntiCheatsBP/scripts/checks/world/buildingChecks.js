@@ -2,11 +2,11 @@
  * @file AntiCheatsBP/scripts/checks/world/buildingChecks.js
  * Implements various checks related to player building activities, such as Tower, FastPlace,
  * AirPlace (scaffolding), Downward Scaffold, and Flat/Static Rotation Building.
- * @version 1.2.0
+ * @version 1.2.1
  */
 
 import * as mc from '@minecraft/server';
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -63,7 +63,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
             pData.lastPillarTick = currentTick;
             pData.currentPillarX = blockLocation.x;
             pData.currentPillarZ = blockLocation.z;
-            playerUtils.debugLog?.(\`TowerCheck: Started new pillar for \${player.nameTag} at \${blockLocation.x},\${blockLocation.y},\${blockLocation.z}. Pitch: \${pitch.toFixed(1)}\`, watchedPrefix);
+            playerUtils.debugLog(`[TowerCheck] Started new pillar for ${player.nameTag} at ${blockLocation.x},${blockLocation.y},${blockLocation.z}. Pitch: ${pitch.toFixed(1)}`, dependencies, watchedPrefix);
         } else {
             pData.consecutivePillarBlocks = 0; pData.lastPillarTick = 0;
             pData.currentPillarX = null; pData.currentPillarZ = null;
@@ -81,12 +81,12 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
             y: blockLocation.y.toString(), z: blockLocation.z.toString()
         };
         await actionManager.executeCheckAction(player, "worldTowerBuild", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`TowerCheck: Flagged \${player.nameTag} for tower height \${pData.consecutivePillarBlocks} with pitch \${pitch.toFixed(1)} (Threshold: >\${maxPitchValue}).\`, watchedPrefix);
+        playerUtils.debugLog(`[TowerCheck] Flagged ${player.nameTag} for tower height ${pData.consecutivePillarBlocks} with pitch ${pitch.toFixed(1)} (Threshold: >${maxPitchValue}).`, dependencies, watchedPrefix);
         pData.consecutivePillarBlocks = 0; pData.lastPillarTick = 0;
         pData.currentPillarX = null; pData.currentPillarZ = null;
         pData.isDirtyForSave = true;
-    } else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight && playerUtils.debugLog) {
-        playerUtils.debugLog(`TowerCheck: Tower for ${player.nameTag} (height ${pData.consecutivePillarBlocks}), pitch ${pitch.toFixed(1)} OK (Threshold: >${maxPitchValue}).`, watchedPrefix);
+    } else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight) { // playerUtils.debugLog implicitly checked
+        playerUtils.debugLog(`[TowerCheck] Tower for ${player.nameTag} (height ${pData.consecutivePillarBlocks}), pitch ${pitch.toFixed(1)} OK (Threshold: >${maxPitchValue}).`, dependencies, watchedPrefix);
     }
 }
 
@@ -120,7 +120,7 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
             maxBlocks: maxBlocks.toString(), blockType: block.typeId ?? "unknown"
         };
         await actionManager.executeCheckAction(player, "worldFastPlace", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`FastPlace: Flagged \${player.nameTag}. Placed \${pData.recentPlaceTimestamps.length} blocks in \${windowMs}ms.\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[FastPlaceCheck] Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, dependencies, pData.isWatched ? player.nameTag : null);
     }
 }
 
@@ -142,7 +142,7 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
     if (!blockLocation && eventData?.block) blockLocation = eventData.block.location;
 
     if (!itemStack || !faceLocation || !blockLocation) {
-        playerUtils.debugLog?.(\`AirPlaceCheck: Event data incomplete for \${player.nameTag}.\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[AirPlaceCheck] Event data incomplete for ${player.nameTag}.`, dependencies, pData.isWatched ? player.nameTag : null);
         return;
     }
 
@@ -153,7 +153,7 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
     const dimension = player.dimension;
     const targetBlock = dimension.getBlock(faceLocation);
     if (!targetBlock) {
-        playerUtils.debugLog?.(\`AirPlaceCheck: Target block at faceLocation undefined for \${player.nameTag}.\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[AirPlaceCheck] Target block at faceLocation undefined for ${player.nameTag}.`, dependencies, pData.isWatched ? player.nameTag : null);
         return;
     }
 
@@ -177,7 +177,7 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                 z: blockLocation.z.toString(), targetFaceType: targetBlock.typeId
             };
             await actionManager.executeCheckAction(player, "worldAirPlace", violationDetails, dependencies);
-            playerUtils.debugLog?.(\`AirPlaceCheck: Flagged \${player.nameTag} for placing \${placedBlockTypeId} against \${targetBlock.typeId} at (\${blockLocation.x},\${blockLocation.y},\${blockLocation.z}).\`, pData.isWatched ? player.nameTag : null);
+            playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}).`, dependencies, pData.isWatched ? player.nameTag : null);
         }
     }
 }
@@ -231,7 +231,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
             y: blockLocation.y.toString(), z: blockLocation.z.toString()
         };
         await actionManager.executeCheckAction(player, "worldDownwardScaffold", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`DownwardScaffold: Flagged \${player.nameTag}. Blocks: \${pData.consecutiveDownwardBlocks}, Speed: \${horizontalSpeedBPS.toFixed(2)} BPS\`, watchedPrefix);
+        playerUtils.debugLog(`[DownwardScaffoldCheck] Flagged ${player.nameTag}. Blocks: ${pData.consecutiveDownwardBlocks}, Speed: ${horizontalSpeedBPS.toFixed(2)} BPS`, dependencies, watchedPrefix);
         pData.consecutiveDownwardBlocks = 0; pData.lastDownwardScaffoldBlockLocation = null; pData.isDirtyForSave = true;
     }
 }
@@ -240,10 +240,10 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
  * Checks for building with flat or static camera rotation.
  * @param {import('@minecraft/server').Player} player
  * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
+ * @param {Dependencies} dependencies
  */
 export async function checkFlatRotationBuilding(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick } = dependencies;
+    const { config, playerUtils, actionManager, currentTick, getString } = dependencies; // Added getString
 
     if (!config.enableFlatRotationCheck || !pData) { return; }
 
@@ -294,7 +294,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     else if (allPitchesInDownwardRange) { detectionReasonKey = "check.flatRotation.reason.flatDownward"; shouldFlag = true; }
 
     if (shouldFlag) {
-        const localizedDetectionReason = getString(detectionReasonKey);
+        const localizedDetectionReason = getString(detectionReasonKey); // getString from dependencies
         const violationDetails = {
             pitchVariance: pitchVariance.toFixed(1), yawMaxDifferenceFromFirst: maxIndividualYawDifference.toFixed(1),
             isYawConsideredStatic: yawIsEffectivelyStatic.toString(), detectionReason: localizedDetectionReason,
@@ -302,7 +302,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
             maxPitchObserved: maxObservedPitch.toFixed(1)
         };
         await actionManager.executeCheckAction(player, "worldFlatRotationBuilding", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`FlatRotationCheck: Flagged \${player.nameTag} for \${localizedDetectionReason}. PitchVar: \${pitchVariance.toFixed(1)}, YawMaxDiff: \${maxIndividualYawDifference.toFixed(1)}, YawStatic: \${yawIsEffectivelyStatic}\`, watchedPrefix);
+        playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${localizedDetectionReason}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, dependencies, watchedPrefix);
     }
 }
 
@@ -345,7 +345,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             blockType: blockType, actionTaken: config.blockSpamAction
         };
         await actionManager.executeCheckAction(player, "worldAntigriefBlockspam", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`BlockSpam: Flagged \${player.nameTag}. Placed \${pData.recentBlockSpamTimestamps.length} monitored blocks (\${blockType}) in \${windowMs}ms. Action: \${config.blockSpamAction}\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[BlockSpamCheck] Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, dependencies, pData.isWatched ? player.nameTag : null);
         pData.recentBlockSpamTimestamps = [];
         pData.isDirtyForSave = true;
     }
@@ -398,6 +398,6 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
             actionTaken: config.blockSpamDensityAction ?? "warn"
         };
         await actionManager.executeCheckAction(player, "worldAntigriefBlockspamDensity", violationDetails, dependencies);
-        playerUtils.debugLog?.(\`BlockSpamDensity: Flagged \${player.nameTag}. Density: \${densityPercentage.toFixed(1)}% in radius \${R} (Count: \${playerPlacedBlocksInVolumeCount}/\${totalVolumeBlocks}). Block: \${block.typeId}. Action: \${config.blockSpamDensityAction}\`, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${R} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, dependencies, pData.isWatched ? player.nameTag : null);
     }
 }

@@ -8,65 +8,55 @@ import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
- * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
- * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
  * Checks for entity spamming based on spawn rate of monitored entity types by a player.
  * @param {mc.Player | null} potentialPlayer - The player suspected of spawning the entity, if known.
  * @param {string} entityType - The typeId of the spawned entity.
- * @param {Config} config - The server configuration object.
  * @param {PlayerAntiCheatData | null} pData - Player-specific anti-cheat data (if potentialPlayer is known).
- * @param {PlayerUtils} playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} playerDataManager - Manager for player data.
- * @param {LogManager} logManager - Manager for logging.
- * @param {ExecuteCheckAction} executeCheckAction - Function to execute defined actions for a check.
- * @param {number} currentTick - The current game tick.
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<boolean>} True if spam was detected and action might be needed on the entity, false otherwise.
  */
 export async function checkEntitySpam(
     potentialPlayer,
     entityType,
-    config,
     pData,
-    playerUtils,
-    playerDataManager,
-    logManager,
-    executeCheckAction,
-    currentTick
+    dependencies
 ) {
+    const { config, playerUtils, actionManager, playerDataManager, logManager } = dependencies; // currentTick not used
+
     if (!config.enableEntitySpamAntiGrief) {
         return false;
     }
 
+    const watchedPrefix = pData?.isWatched ? potentialPlayer?.nameTag : null; // Handle potentialPlayer being null for watchedPrefix
+
     if (!potentialPlayer) {
         // If player is unknown, we can't do player-specific rate limiting with the current pData structure.
         // Future: Could implement a global rate limit for certain anonymous spawns if needed.
-        playerUtils.debugLog?.("EntitySpam: Check skipped, potentialPlayer is null.", null);
+        playerUtils.debugLog("[EntitySpamCheck] Check skipped, potentialPlayer is null.", dependencies, null);
         return false;
     }
 
     if (!pData) {
-        playerUtils.debugLog?.(`EntitySpam: Check skipped for player ${potentialPlayer.nameTag}, pData is null/undefined.`, potentialPlayer.nameTag);
+        playerUtils.debugLog(`[EntitySpamCheck] Check skipped for player ${potentialPlayer.nameTag}, pData is null/undefined.`, dependencies, potentialPlayer.nameTag);
         return false; // pData is required for player-specific tracking
     }
 
     if (config.entitySpamBypassInCreative && potentialPlayer.gameMode === mc.GameMode.creative) {
-        playerUtils.debugLog?.(`EntitySpam: Check bypassed for ${potentialPlayer.nameTag} (Creative mode).`, potentialPlayer.nameTag);
+        playerUtils.debugLog(`[EntitySpamCheck] Check bypassed for ${potentialPlayer.nameTag} (Creative mode).`, dependencies, potentialPlayer.nameTag);
         return false;
     }
 
     if (!config.entitySpamMonitoredEntityTypes || config.entitySpamMonitoredEntityTypes.length === 0) {
-        playerUtils.debugLog?.("EntitySpam: Check skipped, no monitored entity types configured.", null);
+        playerUtils.debugLog("[EntitySpamCheck] Check skipped, no monitored entity types configured.", dependencies, null);
         return false; // No types to monitor
     }
 
     if (!config.entitySpamMonitoredEntityTypes.includes(entityType)) {
-        playerUtils.debugLog?.(`EntitySpam: Entity type ${entityType} not monitored for spam.`, null);
+        playerUtils.debugLog(`[EntitySpamCheck] Entity type ${entityType} not monitored for spam.`, dependencies, null);
         return false; // Not a monitored entity type
     }
 
@@ -91,7 +81,7 @@ export async function checkEntitySpam(
     const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5;
 
     if (pData.recentEntitySpamTimestamps[entityType].length > maxSpawns) {
-        const actionDependencies = { config, playerDataManager, playerUtils, logManager };
+        // Pass the full dependencies object to executeCheckAction
         const violationDetails = {
             playerName: potentialPlayer.nameTag,
             entityType: entityType,
@@ -101,9 +91,9 @@ export async function checkEntitySpam(
             actionTaken: config.entitySpamAction
         };
 
-        await executeCheckAction(potentialPlayer, "worldAntigriefEntityspam", violationDetails, actionDependencies);
+        await actionManager.executeCheckAction(potentialPlayer, "worldAntigriefEntityspam", violationDetails, dependencies);
 
-        playerUtils.debugLog?.(`EntitySpam: Flagged ${potentialPlayer.nameTag} for spawning ${entityType}. Count: ${pData.recentEntitySpamTimestamps[entityType].length}/${maxSpawns}`, pData.isWatched ? potentialPlayer.nameTag : null);
+        playerUtils.debugLog(`[EntitySpamCheck] Flagged ${potentialPlayer.nameTag} for spawning ${entityType}. Count: ${pData.recentEntitySpamTimestamps[entityType].length}/${maxSpawns}`, dependencies, pData.isWatched ? potentialPlayer.nameTag : null);
 
         pData.recentEntitySpamTimestamps[entityType] = []; // Clear timestamps for this entity type after flagging
         pData.isDirtyForSave = true;

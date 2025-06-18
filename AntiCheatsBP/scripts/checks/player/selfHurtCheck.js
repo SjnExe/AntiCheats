@@ -6,7 +6,7 @@
  */
 
 import * as mc from '@minecraft/server'; // For mc.EntityDamageCause and mc.EntityComponentTypes
-import { getString } from '../../../core/i18n.js'; // If any translatable strings are needed
+// getString import removed as it's not used
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -42,9 +42,9 @@ export async function checkSelfHurt(
 
     // Core condition: damaging entity exists, is the player themselves, and damage cause is entityAttack.
     if (damagingEntity && damagingEntity.id === player.id && cause.cause === mc.EntityDamageCause.entityAttack) {
-        playerUtils.debugLog?.(
-            \`SelfHurtCheck: \${player.nameTag} damaged by self via entityAttack. Cause: \${cause.cause}, DamagingEntity: \${damagingEntity.typeId} (ID: \${damagingEntity.id})\`,
-            watchedPrefix
+        playerUtils.debugLog(
+            `[SelfHurtCheck] ${player.nameTag} damaged by self via entityAttack. Cause: ${cause.cause}, DamagingEntity: ${damagingEntity.typeId} (ID: ${damagingEntity.id})`,
+            dependencies, watchedPrefix
         );
 
         let playerHealthString = "N/A";
@@ -54,7 +54,8 @@ export async function checkSelfHurt(
                 playerHealthString = healthComponent.currentValue.toFixed(1);
             }
         } catch (e) {
-            playerUtils.debugLog?.(\`SelfHurtCheck: Error getting health for \${player.nameTag}: \${e}\`, watchedPrefix);
+            playerUtils.debugLog(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.message}`, dependencies, watchedPrefix);
+            console.error(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.stack || e}`);
         }
 
         const violationDetails = {
@@ -68,9 +69,9 @@ export async function checkSelfHurt(
 
     } else if (pData.isWatched && damagingEntity && damagingEntity.id === player.id) {
         // Log other types of self-damage for watched players, for observation, but don't flag.
-        playerUtils.debugLog?.(
-            \`SelfHurtCheck (Info): \${player.nameTag} damaged by self. Cause: \${cause.cause} (Ignored by flagging logic). DamagingEntity: \${damagingEntity.typeId}\`,
-            watchedPrefix
+        playerUtils.debugLog(
+            `[SelfHurtCheck] (Info): ${player.nameTag} damaged by self. Cause: ${cause.cause} (Ignored by flagging logic). DamagingEntity: ${damagingEntity.typeId}`,
+            dependencies, watchedPrefix
         );
     }
 }

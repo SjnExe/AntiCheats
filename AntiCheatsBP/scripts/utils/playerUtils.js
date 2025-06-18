@@ -5,63 +5,59 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-import { editableConfigValues } from '../config.js'; // Import editableConfigValues
-import { permissionLevels } from '../core/rankManager.js';
+// editableConfigValues and permissionLevels will be accessed via dependencies in isAdmin/isOwner
+// Other functions in this file might need updates later if they relied on the global import
 
 /**
  * Checks if a player has admin privileges based on a specific tag.
  * @param {mc.Player} player The player instance to check.
- * @returns {boolean} True if the player has the admin tag, false otherwise.
+ * @param {object} dependencies The standard dependencies object.
+ * @returns {boolean} True if the player has admin permission, false otherwise.
  */
-export function isAdmin(player) {
-    return player.hasTag(editableConfigValues.adminTag);
-}
-
-/**
- * Checks if a player is the owner based on their exact name.
- * @param {string} playerName The name of the player to check.
- * @returns {boolean} True if the player is the owner, false otherwise.
- *                  Returns false if ownerPlayerName is not set or is a placeholder.
- */
-export function isOwner(playerName) {
-    if (!editableConfigValues.ownerPlayerName || editableConfigValues.ownerPlayerName === "" || editableConfigValues.ownerPlayerName === "PlayerNameHere") {
+export function isAdmin(player, dependencies) {
+    if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
+        console.warn("[PlayerUtils] isAdmin called without full dependencies object containing rankManager and permissionLevels.");
         return false;
     }
-    return playerName === editableConfigValues.ownerPlayerName;
+    if (!(player instanceof mc.Player) || !player.isValid()) {
+        return false;
+    }
+    return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.admin;
 }
 
 /**
- * Determines the permission level of a given player (e.g., normal, admin, owner).
- * @param {mc.Player} player The player instance to check.
- * @returns {permissionLevels} The permission level of the player.
- *                             Defaults to `permissionLevels.normal` if player object is invalid.
+ * Checks if a player is the owner.
+ * @param {mc.Player} player The player instance to check. (Note: Original took playerName, now takes Player object for consistency with rankManager)
+ * @param {object} dependencies The standard dependencies object.
+ * @returns {boolean} True if the player is the owner, false otherwise.
  */
-export function getPlayerPermissionLevel(player) {
-    if (!(player instanceof mc.Player)) {
-        console.error("[playerUtils] Invalid player object passed to getPlayerPermissionLevel.");
-        return permissionLevels.normal;
+export function isOwner(player, dependencies) {
+    if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
+        console.warn("[PlayerUtils] isOwner called without full dependencies object containing rankManager and permissionLevels.");
+        return false;
     }
-
-    return isOwner(player.nameTag) ? permissionLevels.owner :
-        isAdmin(player) ? permissionLevels.admin :
-            permissionLevels.normal;
+    if (!(player instanceof mc.Player) || !player.isValid()) {
+        return false;
+    }
+    return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.owner;
 }
 
 /**
  * Clears all dropped item entities across standard dimensions (Overworld, Nether, End).
  * Useful for reducing server lag.
+ * @param {object} dependencies The standard dependencies object, used for logging.
  * @param {mc.Player} [adminPerformingAction] Optional: The admin player who initiated the action, for logging context.
  * @returns {Promise<{clearedItemsCount: number, dimensionsProcessed: number, error: string | null}>}
  *          An object containing the count of cleared items, the number of dimensions processed,
  *          and any error messages encountered (null if no errors).
  */
-export async function executeLagClear(adminPerformingAction) {
+export async function executeLagClear(dependencies, adminPerformingAction) {
     let clearedItemsCount = 0;
     let dimensionsProcessed = 0;
     let errorMessages = [];
-    const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
+    const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"]; // Consider making configurable via dependencies.config
 
-    debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, adminPerformingAction?.nameTag);
+    debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, dependencies, adminPerformingAction?.nameTag);
 
     for (const dimensionId of dimensionIds) {
         try {
@@ -78,19 +74,19 @@ export async function executeLagClear(adminPerformingAction) {
                 } catch (killError) {
                     const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`;
                     errorMessages.push(errMsg);
-                    debugLog(errMsg, adminPerformingAction?.nameTag);
+                    debugLog(errMsg, dependencies, adminPerformingAction?.nameTag);
                 }
             }
-            debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag);
+            debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, dependencies, adminPerformingAction?.nameTag);
 
         } catch (dimError) {
             const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
             errorMessages.push(errMsg);
-            debugLog(errMsg, adminPerformingAction?.nameTag);
+            debugLog(errMsg, dependencies, adminPerformingAction?.nameTag);
         }
     }
 
-    debugLog(`LagClear: Finished. Processed ${dimensionsProcessed} dimensions. Total items cleared: ${clearedItemsCount}. Errors: ${errorMessages.length}`, adminPerformingAction?.nameTag);
+    debugLog(`LagClear: Finished. Processed ${dimensionsProcessed} dimensions. Total items cleared: ${clearedItemsCount}. Errors: ${errorMessages.length}`, dependencies, adminPerformingAction?.nameTag);
     return {
         clearedItemsCount,
         dimensionsProcessed,
@@ -116,11 +112,18 @@ export function warnPlayer(player, reason) {
  * Optionally includes context about a specific player and their flag data if provided.
  * @param {string} baseMessage The core message to send.
  * @param {mc.Player} [player] Optional: The player related to this notification.
+ * @param {object} dependencies The standard dependencies object.
+ * @param {mc.Player} [player] Optional: The player related to this notification.
  * @param {object} [pData] Optional: The player-specific data, typically from playerDataManager,
  *                         expected to have `flags.totalFlags` and `lastFlagType` if player context is relevant.
  * @returns {void}
  */
-export function notifyAdmins(baseMessage, player, pData) {
+export function notifyAdmins(baseMessage, dependencies, player, pData) {
+    if (!dependencies || !dependencies.config) {
+        // If called without dependencies, log an error and exit to prevent further issues.
+        console.warn("[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.");
+        return;
+    }
     let fullMessage = `§7[AC Notify] ${baseMessage}§r`;
 
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
@@ -132,23 +135,25 @@ export function notifyAdmins(baseMessage, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    const notificationsOffTag = "ac_notifications_off";
-    const notificationsOnTag = "ac_notifications_on";
+    const notificationsOffTag = "ac_notifications_off"; // Consider making these configurable via dependencies.config
+    const notificationsOnTag = "ac_notifications_on";   // Consider making these configurable via dependencies.config
 
     for (const p of allPlayers) {
-        if (isAdmin(p)) {
+        // isAdmin now requires dependencies
+        if (isAdmin(p, dependencies)) {
             const hasExplicitOn = p.hasTag(notificationsOnTag);
             const hasExplicitOff = p.hasTag(notificationsOffTag);
 
-            // Determine if the admin should receive the message based on tags and global default
-            const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && editableConfigValues.acGlobalNotificationsDefaultOn);
+            // Use dependencies.config for acGlobalNotificationsDefaultOn
+            const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && dependencies.config.acGlobalNotificationsDefaultOn);
 
             if (shouldReceiveMessage) {
                 try {
                     p.sendMessage(fullMessage);
                 } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
-                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag);
+                    // debugLog now requires dependencies
+                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, dependencies, p.nameTag);
                 }
             }
         }
@@ -160,12 +165,14 @@ export function notifyAdmins(baseMessage, player, pData) {
  * Logs a message to the console if debug logging (`enableDebugLogging` in config) is enabled.
  * Prefixes messages with "[AC Debug]" or "[AC Watch - PlayerName]" if `contextPlayerNameIfWatched` is provided.
  * @param {string} message The message to log.
+ * @param {object} dependencies The standard dependencies object, used to access config.enableDebugLogging.
  * @param {string} [contextPlayerNameIfWatched=null] Optional: The nameTag of a player being watched.
  *                                                  If provided, the log prefix changes to indicate context.
  * @returns {void}
  */
-export function debugLog(message, contextPlayerNameIfWatched = null) {
-    if (editableConfigValues.enableDebugLogging) {
+export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
+    // Ensure dependencies and config are available before trying to access enableDebugLogging
+    if (dependencies && dependencies.config && dependencies.config.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
         console.warn(`${prefix} ${message}`); // console.warn is often used for better visibility in Bedrock consoles
     }

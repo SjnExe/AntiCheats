@@ -38,7 +38,9 @@ export async function checkFastUse(
     const cooldown = config.fastUseItemCooldowns?.[itemTypeId];
 
     if (typeof cooldown !== 'number') {
-        playerUtils.debugLog?.(\`FastUseCheck: Item \${itemTypeId} not tracked or invalid cooldown in config.\`, pData.isWatched ? player.nameTag : null);
+        // This log is fine as is, or could be prefixed if desired, but it's a config/setup notice.
+        // For consistency, we'll update it.
+        playerUtils.debugLog(`[FastUseCheck] Item ${itemTypeId} not tracked or invalid cooldown in config for player ${player.nameTag}.`, dependencies, pData.isWatched ? player.nameTag : null);
         return;
     }
 
@@ -58,9 +60,9 @@ export async function checkFastUse(
         await actionManager.executeCheckAction(player, profileName, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
-        playerUtils.debugLog?.(
-            \`FastUse: Flagged \${player.nameTag} for using \${itemTypeId} too fast. Actual: \${timeSinceLastUse}ms, Cooldown: \${cooldown}ms\`,
-            watchedPrefix
+        playerUtils.debugLog(
+            `[FastUseCheck] Flagged ${player.nameTag} for using ${itemTypeId} too fast. Actual: ${timeSinceLastUse}ms, Cooldown: ${cooldown}ms`,
+            dependencies, watchedPrefix
         );
     }
 

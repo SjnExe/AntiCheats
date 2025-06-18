@@ -1,9 +1,9 @@
 /**
  * @file AntiCheatsBP/scripts/checks/world/pistonChecks.js
  * Piston related checks, primarily for detecting potential lag machines.
- * @version 1.0.1
+ * @version 1.0.2
  */
-import { getString } from '../../../core/i18n.js';
+// getString will be accessed via dependencies.getString
 
 // Global map to store piston activation data.
 // Key: string like "x,y,z,dimensionId"
@@ -14,15 +14,13 @@ let pistonActivityData = new Map();
  * Checks for rapid and sustained piston activations that might indicate a lag machine.
  * @param {import('@minecraft/server').Block} pistonBlock - The piston block that activated.
  * @param {string} dimensionId - The ID of the dimension where the piston activated.
- * @param {import('../../config.js').editableConfigValues} config - The server configuration object.
- * @param {import('../../utils/playerUtils.js').PlayerUtils} playerUtils - Utility functions.
- * @param {import('../../core/logManager.js').LogManager} logManager - Log manager instance.
- * @param {import('../../core/actionManager.js').ActionManager} actionManager - Action manager instance.
- * @param {import('../../../types.js').EventHandlerDependencies} dependencies - Full dependencies object.
+ * @param {import('../../types.js').Dependencies} dependencies - Full dependencies object.
  */
-export async function checkPistonLag(pistonBlock, dimensionId, config, playerUtils, logManager, actionManager, dependencies) {
+export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
+    const { config, playerUtils, logManager, actionManager, getString } = dependencies;
+
     if (!pistonBlock || !pistonBlock.location) {
-        playerUtils.debugLog("PistonLag: Invalid pistonBlock provided.", null);
+        playerUtils.debugLog("[PistonLagCheck] Invalid pistonBlock provided.", dependencies, null);
         return;
     }
 
@@ -57,7 +55,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, config, playerUti
                 dimensionId: dimensionName,
                 rate: activationRate.toFixed(1),
                 duration: config.pistonActivationSustainedDurationSeconds,
-                detailsString: getString("check.pistonLag.details.activationRate", {
+                detailsString: getString("check.pistonLag.details.activationRate", { // getString from dependencies
                     x: location.x,
                     y: location.y,
                     z: location.z,
@@ -67,25 +65,32 @@ export async function checkPistonLag(pistonBlock, dimensionId, config, playerUti
                 })
             };
 
-            if (dependencies.actionManager && typeof dependencies.actionManager.executeCheckAction === 'function') {
-                 await dependencies.actionManager.executeCheckAction("worldAntigriefPistonLag", null, violationDetails, dependencies);
-            } else if (typeof actionManager === 'function') {
-                 await actionManager("worldAntigriefPistonLag", null, violationDetails, dependencies);
-            }
+            await actionManager.executeCheckAction("worldAntigriefPistonLag", null, violationDetails, dependencies);
 
-            playerUtils.debugLog(`PistonLag: Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, null);
+            playerUtils.debugLog(`[PistonLagCheck] Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, dependencies, null);
         }
     }
 
     pistonActivityData.set(pistonKey, data);
 
-    if (pistonActivityData.size > 1000) {
-        const cleanupTime = currentTime - (config.pistonLagLogCooldownSeconds * 1000 * 5);
+    // Simple cleanup strategy: if map grows too large, iterate and remove old entries.
+    // A more robust solution might involve a separate cleanup interval or more sophisticated data structure.
+    const maxMapSize = config.pistonActivityMapMaxSize ?? 2000; // Max entries before attempting prune
+    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? 300) * 1000; // Time after which an inactive entry is stale
+
+    if (pistonActivityData.size > maxMapSize) {
+        const cleanupCutoffTime = currentTime - entryTimeoutMs;
+        let prunedCount = 0;
         for (const [key, value] of pistonActivityData.entries()) {
-            if (value.lastLogTime < cleanupTime && (!value.activations.length || value.activations[value.activations.length -1] < cleanupTime) ) {
+            // Remove if no recent activations AND last log time is also old (or never logged)
+            if ((!value.activations.length || value.activations[value.activations.length - 1] < cleanupCutoffTime) &&
+                (value.lastLogTime === 0 || value.lastLogTime < cleanupCutoffTime)) {
                 pistonActivityData.delete(key);
+                prunedCount++;
             }
         }
-        if(playerUtils.debugLog) playerUtils.debugLog(`PistonLag: Pruned pistonActivityData. New size: ${pistonActivityData.size}`, null);
+        if (prunedCount > 0) {
+            playerUtils.debugLog(`[PistonLagCheck] Pruned ${prunedCount} stale entries from pistonActivityData. New size: ${pistonActivityData.size}`, dependencies, null);
+        }
     }
 }
