@@ -14,7 +14,7 @@
  */
 function formatDuration(ms, getStringFn) {
     if (ms === Infinity) return getStringFn("common.value.permanent");
-    if (ms < 1000) return \`\${ms}ms\`;
+    if (ms < 1000) return `${ms}ms`;
 
     let seconds = Math.floor(ms / 1000);
     let minutes = Math.floor(seconds / 60);
