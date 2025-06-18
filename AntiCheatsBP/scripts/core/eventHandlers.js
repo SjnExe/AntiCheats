@@ -744,5 +744,3 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
         }
     }
 }
-
-[end of AntiCheatsBP/scripts/core/eventHandlers.js]
