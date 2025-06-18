@@ -28,7 +28,6 @@ For more details on specific systems, see the linked documentation pages.
 *   [Key Systems](#key-systems)
 *   [Versioning](#versioning)
 *   [Contributing](#contributing)
-*   [License](#license)
 
 ## Core Features Overview
 
@@ -102,7 +101,3 @@ We enthusiastically welcome contributions! Whether it's bug fixes, new features,
 5.  **Pull Request:** Submit a PR to `main` with a clear description of your changes.
 
 For more on development practices, see [Addon Development Resources in `Dev/README.md`](Dev/README.md). We appreciate your help!
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
