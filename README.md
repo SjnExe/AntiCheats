@@ -1,6 +1,10 @@
+<!-- Optional: Add project logo/banner here -->
 [![Minecraft BE Version](https://img.shields.io/badge/Minecraft_BE-1.21.90%2B-green)](https://www.minecraft.net/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=flat-square)](https://github.com/SjnExe/AntiCheats/issues)
+[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)](https://github.com/SjnExe/AntiCheats/pulse)
+[![Maintained](https://img.shields.io/badge/Maintained%3F-Yes-brightgreen?style=flat-square)](https://github.com/SjnExe/AntiCheats/graphs/commit-activity)
+<!-- [![Discord](https://img.shields.io/badge/Discord-Join_Chat-7289DA?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/YOUR_INVITE_CODE_HERE) -->
 
 # Anti-Cheats Addon
 
@@ -19,20 +23,23 @@ This addon utilizes advanced scripting capabilities to provide robust anti-cheat
 
 For more details on specific systems, see the linked documentation pages.
 
-## Table of Contents
+## 📚 Table of Contents
 *   [🚀 Quick Start](#-quick-start)
-*   [Core Features Overview](#core-features-overview)
-*   [Installation](#installation)
-*   [Basic Usage & Commands](#basic-usage--commands)
-*   [Configuration Overview](#configuration-overview)
-*   [Key Systems](#key-systems)
-*   [Versioning](#versioning)
-*   [Contributing](#contributing)
+*   [✨ Core Features Overview](#-core-features-overview)
+*   [🛠️ Initial Configuration (Setup)](#️-initial-configuration-setup)
+*   [⚙️ Basic Usage & Commands](#️-basic-usage--commands)
+*   [🔧 Main Configuration File](#️-main-configuration-file)
+*   [🛡️ Automated Moderation (AutoMod)](#️-automated-moderation-automod)
+*   [🗺️ World Border System](#️-world-border-system)
+*   [🏅 Owner and Rank System](#️-owner-and-rank-system)
+*   [📜 Versioning](#-versioning)
+*   [🤝 Contributing](#-contributing)
 
-## Core Features Overview
+## ✨ Core Features Overview
 
 This addon provides a suite of tools and detections to help maintain a fair gameplay environment:
 
+*   **🌍 Internationalization (i18n):** UI and messages adaptable for multiple languages. Default is English (`en_US`), with support for community translations. See `Docs/Internationalization.md`.
 *   **Comprehensive Cheat Detections:** Identifies a wide range of cheats including:
     *   **Movement:** Fly, Speed, NoFall.
     *   **Combat:** Reach, CPS/AutoClicker.
@@ -45,14 +52,16 @@ This addon provides a suite of tools and detections to help maintain a fair game
 *   **Advanced World Border:** Define per-dimension, configurable borders with visuals, damage, and resizing. [Explore Docs/WorldBorderDetails.md](Docs/WorldBorderDetails.md).
 *   **Rank System:** Differentiate users with Owner, Admin, and Member ranks, configurable with visual tags. [Details in Docs/RankSystem.md](Docs/RankSystem.md).
 
-## Installation
+## 🛠️ Initial Configuration (Setup)
 
-1.  **Download:** Obtain the addon pack (usually an `.mcaddon` file) from the [GitHub Releases page](https://github.com/placeholder_username/placeholder_repo/releases).
-2.  **Apply Packs:** Apply both the Behavior Pack (`AntiCheatsBP`) and Resource Pack (`AntiCheatsRP`) to your Minecraft world.
-3.  **Prioritize Behavior Pack:** Ensure the Behavior Pack is at the **top** of the behavior pack list if you have multiple packs active. This is crucial for compatibility.
-4.  **Initial Configuration:** Follow step 4 in the [🚀 Quick Start](#-quick-start) section to set the `ownerPlayerName`. Also, ensure trusted admins have the appropriate `adminTag` (default: `"admin"`) as defined in `AntiCheatsBP/scripts/config.js`.
+**Note:** This addon is designed for Minecraft Bedrock version `1.21.90` and newer. The "Quick Start" section covers the basic installation.
 
-## Basic Usage & Commands
+After installing the addon:
+1.  **Set Permissions:**
+    *   Assign the `admin` tag (or your configured `adminTag` from `config.js`) to trusted players who need administrative access.
+    *   To designate a server owner with special privileges, set their exact in-game name in the `ownerPlayerName` field within `AntiCheatsBP/scripts/config.js`.
+
+## ⚙️ Basic Usage & Commands
 
 The default command prefix is `!` (configurable in `AntiCheatsBP/scripts/config.js`).
 *   The primary way to interact with the addon as an admin is via the **`!panel`** (or `!ui`) command, which opens a comprehensive UI.
@@ -61,7 +70,7 @@ The default command prefix is `!` (configurable in `AntiCheatsBP/scripts/config.
 > [!TIP]
 > You can quickly get help for any command by typing `!help <command_name>` in the chat if you know the command, or `!help` to list commands available to you.
 
-## Configuration Overview
+## 🔧 Main Configuration File
 
 The main configuration for this addon is centralized in **[`AntiCheatsBP/scripts/config.js`](AntiCheatsBP/scripts/config.js)**. This file allows you to customize:
 *   Core settings (command prefix, language, global feature toggles).
@@ -73,25 +82,40 @@ While `config.js` is the primary hub, it may reference other specialized files f
 > [!NOTE]
 > Detailed setup and advanced configuration for complex systems like Automated Moderation and the World Border are found in their respective documentation files within the `Docs/` directory. Consult these for in-depth guidance.
 
-## Key Systems
+## 🛡️ Automated Moderation (AutoMod)
 
-This addon includes several powerful systems that can be configured to your needs:
+Automatically punishes players based on accumulated flags. This system is highly configurable to suit your server's needs.
+Key aspects include:
+*   Global enable/disable via `config.js`.
+*   Per-check type toggles and detailed rule definitions (flag thresholds, actions like warn/kick/ban, custom messages) in `AntiCheatsBP/scripts/core/automodConfig.js`.
 
-*   **Automated Moderation (AutoMod):**
-    *   Automatically punishes players based on accumulated flags. Highly configurable.
-    *   **Configure & Learn More:** [Docs/AutoModDetails.md](Docs/AutoModDetails.md)
-*   **World Border System:**
-    *   Define per-dimension playable areas with various customization options.
-    *   **Configure & Learn More:** [Docs/WorldBorderDetails.md](Docs/WorldBorderDetails.md)
-*   **Rank System:**
-    *   Define Owner, Admin, and Member ranks with distinct visual tags.
-    *   **Configure & Learn More:** [Docs/RankSystem.md](Docs/RankSystem.md)
+For a comprehensive guide to AutoMod's mechanics, rule structure, action types, and all configuration options, please refer to [Docs/AutoModDetails.md](Docs/AutoModDetails.md).
 
-## Versioning
+## 🗺️ World Border System
+
+Define and manage playable areas per dimension (Overworld, Nether, End) with this powerful system.
+Features include:
+*   Square or circular borders.
+*   Optional damage for players outside the border.
+*   Particle visuals to indicate border proximity.
+*   Gradual resizing, including pause/resume capabilities.
+*   Admin control via the `!worldborder` command (or `!wb`) and the `!panel` UI.
+
+For a full guide on features, commands, and configuration, see [Docs/WorldBorderDetails.md](Docs/WorldBorderDetails.md).
+
+## 🏅 Owner and Rank System
+
+This addon includes a basic rank system to visually distinguish Owner, Admin, and Member roles, each potentially having different command access and chat/nametag visuals.
+*   **Owner Rank:** Set via `ownerPlayerName` in `config.js`.
+*   **Admin Rank:** Determined by the `adminTag` (also in `config.js`).
+
+For detailed setup instructions, refer to [Docs/RankSystem.md](Docs/RankSystem.md).
+
+## 📜 Versioning
 
 The version string from `!version` (sourced from `config.js`) and in manifest files uses a `v__VERSION_STRING__` placeholder, automatically updated during GitHub releases.
 
-## Contributing
+## 🤝 Contributing
 
 We enthusiastically welcome contributions! Whether it's bug fixes, new features, or documentation improvements, your input is valuable.
 1.  **Fork & Branch:** Fork the repository and create a new branch for your work.
