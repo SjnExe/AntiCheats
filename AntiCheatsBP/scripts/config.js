@@ -760,6 +760,19 @@ export const chatDuringCombatCooldownSeconds = 4;
 /** @type {boolean} If true, the Chat During Item Use check is active. */
 export const enableChatDuringItemUseCheck = true;
 
+// --- Tick Interval Configurations for Checks ---
+/** @type {number} Interval in game ticks for NameSpoof check. (100 ticks = 5 seconds) */
+export const nameSpoofCheckIntervalTicks = 100;
+/** @type {number} Interval in game ticks for AntiGMC check. (40 ticks = 2 seconds) */
+export const antiGMCCheckIntervalTicks = 40;
+/** @type {number} Interval in game ticks for NetherRoof check. (60 ticks = 3 seconds) */
+export const netherRoofCheckIntervalTicks = 60;
+/** @type {number} Interval in game ticks for AutoTool check. (10 ticks = 0.5 seconds) */
+export const autoToolCheckIntervalTicks = 10;
+/** @type {number} Interval in game ticks for FlatRotationBuilding check. (10 ticks = 0.5 seconds) */
+export const flatRotationCheckIntervalTicks = 10;
+
+
 // --- Chat Formatting Settings ---
 /** @type {string} Default color for the Owner rank's chat prefix. */
 // --- System ---
@@ -1053,6 +1066,12 @@ export let editableConfigValues = {
     enableChatDuringCombatCheck,
     chatDuringCombatCooldownSeconds,
     enableChatDuringItemUseCheck,
+    // New interval ticks
+    nameSpoofCheckIntervalTicks,
+    antiGMCCheckIntervalTicks,
+    netherRoofCheckIntervalTicks,
+    autoToolCheckIntervalTicks,
+    flatRotationCheckIntervalTicks,
     enableChatContentRepeatCheck,
     enableUnicodeAbuseCheck,
     enableGibberishCheck,

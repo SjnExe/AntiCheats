@@ -490,46 +490,8 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
         await checks.checkAutoTool(player, pData, dependencies); // Pass tickDependencies
     }
 
-    // Refactored Building Checks called from here
-    if (checks?.checkTower && config.enableTowerCheck) {
-        await checks.checkTower(player, pData, dependencies, { block: block }); // eventData.block is the placed block instance
-    }
-    if (checks?.checkFastPlace && config.enableFastPlaceCheck) {
-        await checks.checkFastPlace(player, pData, dependencies, { block: block });
-    }
-    if (checks?.checkDownwardScaffold && config.enableDownwardScaffoldCheck) {
-        await checks.checkDownwardScaffold(player, pData, dependencies, { block: block });
-    }
-    if (checks?.checkBlockSpam && config.enableBlockSpamAntiGrief) {
-        await checks.checkBlockSpam(player, pData, dependencies, { block: block });
-    }
-    if (checks?.checkBlockSpamDensity && config.enableBlockSpamDensityCheck) {
-        await checks.checkBlockSpamDensity(player, pData, dependencies, { block: block });
-    }
-    // checkFlatRotationBuilding is likely called from main tick loop as it analyzes pData.recentBlockPlacements
-
-    // AntiGrief: Track potential golem construction
-    if (config.enableEntitySpamAntiGrief && block.typeId === "minecraft:carved_pumpkin") {
-        if (pData) {
-            const blockBelow = player.dimension.getBlock(block.location.offset(0, -1, 0));
-            const blockTwoBelow = player.dimension.getBlock(block.location.offset(0, -2, 0));
-            let potentialGolemType = null;
-            if (blockBelow?.typeId === "minecraft:iron_block" && blockTwoBelow?.typeId === "minecraft:iron_block") {
-                potentialGolemType = "minecraft:iron_golem";
-            } else if (blockBelow?.typeId === "minecraft:snow_block" && blockTwoBelow?.typeId === "minecraft:snow_block") {
-                potentialGolemType = "minecraft:snow_golem";
-            }
-            if (potentialGolemType) {
-                pData.expectingConstructedEntity = {
-                    type: potentialGolemType,
-                    location: block.location,
-                    tick: dependencies.currentTick
-                };
-                pData.isDirtyForSave = true;
-                playerUtils.debugLog(`AntiGrief: Player ${player.nameTag} placed pumpkin for potential ${potentialGolemType}. Expecting entity.`, dependencies, player.nameTag);
-            }
-        }
-    }
+    // checkFlatRotationBuilding is called from main tick loop as it analyzes pData.recentBlockPlacements
+    // Misplaced building checks and golem logic have been removed from this handler.
 }
 
 export async function handleItemUse(eventData, dependencies) {
@@ -632,14 +594,8 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     await handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies); // This function was already updated
 }
 
-export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
-    const { config, playerDataManager, playerUtils, checks, actionManager, logManager, currentTick } = dependencies; // getString available in dependencies
-    const { player, block } = eventData;
-
-    if (!player || !block) return;
-
-    const pData = playerDataManager.getPlayerData(player.id);
-    if (!pData) return;
+async function _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies) {
+    const { config, playerUtils, checks, currentTick } = dependencies; // Destructure what's needed
 
     const eventSpecificBlockData = { block: block };
 
@@ -660,27 +616,40 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
     }
     // Note: checkFlatRotationBuilding is called from the main tick loop in main.js
 
+    // AntiGrief: Track potential golem construction
     if (config.enableEntitySpamAntiGrief && block.typeId === "minecraft:carved_pumpkin") {
-        if (pData) {
-            const blockBelow = player.dimension.getBlock(block.location.offset(0, -1, 0));
-            const blockTwoBelow = player.dimension.getBlock(block.location.offset(0, -2, 0));
-            let potentialGolemType = null;
-            if (blockBelow?.typeId === "minecraft:iron_block" && blockTwoBelow?.typeId === "minecraft:iron_block") {
-                potentialGolemType = "minecraft:iron_golem";
-            } else if (blockBelow?.typeId === "minecraft:snow_block" && blockTwoBelow?.typeId === "minecraft:snow_block") {
-                potentialGolemType = "minecraft:snow_golem";
-            }
-            if (potentialGolemType) {
-                pData.expectingConstructedEntity = {
-                    type: potentialGolemType,
-                    location: block.location,
-                    tick: dependencies.currentTick
-                };
-                pData.isDirtyForSave = true;
-                playerUtils.debugLog(`AntiGrief: Player ${player.nameTag} placed pumpkin for potential ${potentialGolemType}. Expecting entity.`, dependencies, player.nameTag);
-            }
+        // pData is already passed as a parameter and validated before this helper is called
+        const blockBelow = player.dimension.getBlock(block.location.offset(0, -1, 0));
+        const blockTwoBelow = player.dimension.getBlock(block.location.offset(0, -2, 0));
+        let potentialGolemType = null;
+        if (blockBelow?.typeId === "minecraft:iron_block" && blockTwoBelow?.typeId === "minecraft:iron_block") {
+            potentialGolemType = "minecraft:iron_golem";
+        } else if (blockBelow?.typeId === "minecraft:snow_block" && blockTwoBelow?.typeId === "minecraft:snow_block") {
+            potentialGolemType = "minecraft:snow_golem";
+        }
+        if (potentialGolemType) {
+            pData.expectingConstructedEntity = {
+                type: potentialGolemType,
+                location: block.location,
+                tick: currentTick // Use currentTick from dependencies
+            };
+            pData.isDirtyForSave = true;
+            // Corrected debugLog call to pass dependencies first
+            playerUtils.debugLog(dependencies, `[EventHandler][AntiGrief] Player ${player.nameTag} placed pumpkin for potential ${potentialGolemType}. Expecting entity.`, player.nameTag);
         }
     }
+}
+
+export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
+    const { playerDataManager } = dependencies;
+    const { player, block } = eventData;
+
+    if (!player || !block) return;
+
+    const pData = playerDataManager.getPlayerData(player.id);
+    if (!pData) return;
+
+    await _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies);
 }
 
 export async function handleBeforeChatSend(eventData, dependencies) {
@@ -711,129 +680,24 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         return;
     }
 
-    if (config.enableChatDuringCombatCheck && pData.lastCombatInteractionTime) {
-        const timeSinceCombat = (Date.now() - pData.lastCombatInteractionTime) / 1000;
-        if (timeSinceCombat < config.chatDuringCombatCooldownSeconds) {
-            const profile = config.checkActionProfiles?.player_chat_during_combat;
-            if (profile?.enabled) {
-                if (profile.cancelMessage) eventData.cancel = true;
-                playerUtils.warnPlayer(player, getString(profile.messageKey || "chat.error.combatCooldown", { seconds: config.chatDuringCombatCooldownSeconds }));
-                actionManager?.executeCheckAction?.("playerChatDuringCombat", player, { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
-                if (eventData.cancel) return;
-            }
-        }
+    // All chat processing logic, including mute checks, content checks, and final message formatting,
+    // has been moved to chatProcessor.processChatMessage.
+
+    // Ensure chatProcessor is available in dependencies
+    if (!dependencies.chatProcessor || typeof dependencies.chatProcessor.processChatMessage !== 'function') {
+        console.warn("[AntiCheat] handleBeforeChatSend: chatProcessor.processChatMessage is not available in dependencies. Chat will not be processed.");
+        playerUtils.warnPlayer(player, getString("error.chatProcessingUnavailable")); // Inform player if possible
+        eventData.cancel = true; // Cancel to prevent raw message if processing fails
+        return;
     }
 
-    if (!eventData.cancel && config.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
-        const itemUseState = pData.isUsingConsumable ? getString("check.inventoryMod.action.usingConsumable") : getString("check.inventoryMod.action.chargingBow");
-        const profile = config.checkActionProfiles?.player_chat_during_item_use;
-        if (profile?.enabled) {
-            if (profile.cancelMessage) eventData.cancel = true;
-            playerUtils.warnPlayer(player, getString(profile.messageKey || "chat.error.itemUse", { itemUseState: itemUseState }));
-            actionManager?.executeCheckAction?.("playerChatDuringItemUse", player, { itemUseState }, dependencies);
-            if (eventData.cancel) return;
-        }
-    }
+    await dependencies.chatProcessor.processChatMessage(player, pData, originalMessage, eventData, dependencies);
 
-    if (pData.isChargingBow) {
-        pData.isChargingBow = false;
-        pData.isDirtyForSave = true;
-    }
-
-    if (!eventData.cancel && checks?.checkSwear && config.enableSwearCheck) {
-        await checks.checkSwear(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkMessageRate && config.enableFastMessageSpamCheck) {
-        const cancelFromMessageRate = await checks.checkMessageRate(player, eventData, pData, dependencies);
-        if (cancelFromMessageRate) {
-            eventData.cancel = true;
-        }
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkChatContentRepeat && config.enableChatContentRepeatCheck) {
-        await checks.checkChatContentRepeat(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkUnicodeAbuse && config.enableUnicodeAbuseCheck) {
-        await checks.checkUnicodeAbuse(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkGibberish && config.enableGibberishCheck) {
-        await checks.checkGibberish(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkExcessiveMentions && config.enableExcessiveMentionsCheck) {
-        await checks.checkExcessiveMentions(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkSimpleImpersonation && config.enableSimpleImpersonationCheck) {
-        await checks.checkSimpleImpersonation(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && config.enableNewlineCheck) {
-        if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
-            playerUtils.warnPlayer(player, getString("chat.error.newline"));
-            if (config.flagOnNewline) {
-                // addFlag already takes dependencies as its last argument from previous changes
-                playerDataManager.addFlag(player, "chatNewline", "Newline character detected in chat message.", { message: originalMessage }, dependencies);
-            }
-            if (config.cancelMessageOnNewline) {
-                eventData.cancel = true;
-            }
-            if (eventData.cancel) return;
-        }
-    }
-
-    if (!eventData.cancel && config.enableMaxMessageLengthCheck) {
-        if (originalMessage.length > config.maxMessageLength) {
-            playerUtils.warnPlayer(player, getString("chat.error.maxLength", { maxLength: config.maxMessageLength }));
-            if (config.flagOnMaxMessageLength) {
-                // addFlag already takes dependencies
-                playerDataManager.addFlag(player, "chatMaxlength", "Message exceeded maximum configured length.", { message: originalMessage, maxLength: config.maxMessageLength }, dependencies);
-            }
-            if (config.cancelOnMaxMessageLength) {
-                eventData.cancel = true;
-            }
-            if (eventData.cancel) return;
-        }
-    }
-
-    if (!eventData.cancel && checks?.checkAntiAdvertising && config.enableAntiAdvertisingCheck) {
-        await checks.checkAntiAdvertising(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkCapsAbuse && config.enableCapsCheck) {
-        await checks.checkCapsAbuse(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkCharRepeat && config.enableCharRepeatCheck) {
-        await checks.checkCharRepeat(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel && checks?.checkSymbolSpam && config.enableSymbolSpamCheck) {
-        await checks.checkSymbolSpam(player, eventData, pData, dependencies);
-        if (eventData.cancel) return;
-    }
-
-    if (!eventData.cancel) {
-        // Use rankManager from dependencies
-        const rankElements = rankManager.getPlayerRankFormattedChatElements(player, dependencies);
-        const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;
-        mc.world.sendMessage(finalMessage);
-        eventData.cancel = true;
-        logManager?.addLog?.({ actionType: 'chatMessageSent', targetName: player.nameTag, details: originalMessage }, dependencies);
-    }
+    // The processChatMessage function now handles:
+    // - All chat checks
+    // - Setting eventData.cancel = true if a check cancels the message OR if the formatted message is sent
+    // - Sending the formatted message itself
+    // Therefore, no further logic is needed here for non-command messages.
 }
 
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {

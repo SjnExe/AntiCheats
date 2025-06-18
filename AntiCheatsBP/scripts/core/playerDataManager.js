@@ -231,7 +231,14 @@ export function initializeDefaultPlayerData(player, currentTick) {
         lastDimensionId: player.dimension.id,
         isDirtyForSave: false,
         lastViolationDetailsMap: {},
-        automodState: {}
+        automodState: {},
+        // New tick tracking fields for check intervals
+        lastCheckNameSpoofTick: 0,
+        lastCheckAntiGMCTick: 0,
+        lastCheckNetherRoofTick: 0,
+        lastCheckAutoToolTick: 0,
+        lastCheckFlatRotationBuildingTick: 0,
+        // lastRenderDistanceCheckTick is already present in main.js loop and pData if check is enabled
     };
 }
 
@@ -328,6 +335,12 @@ export async function ensurePlayerDataInitialized(player, currentTick) {
         newPData.lastNameTagChangeTick = currentTick;
         newPData.recentMessages = [];
         newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;
+        // Ensure new tick fields are present if loading older data, defaulting to 0
+        if (typeof newPData.lastCheckNameSpoofTick === 'undefined') newPData.lastCheckNameSpoofTick = 0;
+        if (typeof newPData.lastCheckAntiGMCTick === 'undefined') newPData.lastCheckAntiGMCTick = 0;
+        if (typeof newPData.lastCheckNetherRoofTick === 'undefined') newPData.lastCheckNetherRoofTick = 0;
+        if (typeof newPData.lastCheckAutoToolTick === 'undefined') newPData.lastCheckAutoToolTick = 0;
+        if (typeof newPData.lastCheckFlatRotationBuildingTick === 'undefined') newPData.lastCheckFlatRotationBuildingTick = 0;
     } else {
         debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Using fresh default data.`, player.nameTag);
     }
@@ -755,6 +768,42 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
 
     const playerContext = pData.isWatched ? player.nameTag : null;
     playerUtils.debugLog(`[PlayerDataManager] Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, playerContext); // playerUtils from dependencies
+}
+
+/**
+ * Clears item use states (consumable, bow, shield) if they have expired.
+ * @param {PlayerAntiCheatData} pData - The player's anti-cheat data object.
+ * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ */
+export function clearExpiredItemUseStates(pData, dependencies) {
+    const { currentTick, config, playerUtils } = dependencies;
+
+    // Clear isUsingConsumable state
+    if (pData.isUsingConsumable && (currentTick - (pData.lastItemUseTick || 0) > config.itemUseStateClearTicks)) {
+        if (playerUtils.debugLog && pData.isWatched) {
+            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isUsingConsumable for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, dependencies, pData.playerNameTag);
+        }
+        pData.isUsingConsumable = false;
+        pData.isDirtyForSave = true;
+    }
+
+    // Clear isChargingBow state
+    if (pData.isChargingBow && (currentTick - (pData.lastItemUseTick || 0) > config.itemUseStateClearTicks)) {
+        if (playerUtils.debugLog && pData.isWatched) {
+            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isChargingBow for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, dependencies, pData.playerNameTag);
+        }
+        pData.isChargingBow = false;
+        pData.isDirtyForSave = true;
+    }
+
+    // Clear isUsingShield state
+    if (pData.isUsingShield && (currentTick - (pData.lastItemUseTick || 0) > config.itemUseStateClearTicks)) {
+        if (playerUtils.debugLog && pData.isWatched) {
+            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isUsingShield for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, dependencies, pData.playerNameTag);
+        }
+        pData.isUsingShield = false;
+        pData.isDirtyForSave = true;
+    }
 }
 
 [end of AntiCheatsBP/scripts/core/playerDataManager.js]

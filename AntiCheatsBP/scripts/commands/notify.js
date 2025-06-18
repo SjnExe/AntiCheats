@@ -1,10 +1,9 @@
 /**
  * @file AntiCheatsBP/scripts/commands/notify.js
  * Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
- * @version 1.0.2
+ * @version 1.0.3
  */
-import { permissionLevels } from '../core/rankManager.js';
-import { getString } from '../core/i18n.js'; // Import getString
+// permissionLevels and getString are now accessed via dependencies
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +11,8 @@ import { getString } from '../core/i18n.js'; // Import getString
 export const definition = {
     name: "notify",
     syntax: "!notify [on|off|toggle|status]",
-    description: getString("command.notify.description"),
-    permissionLevel: permissionLevels.admin,
+    description: "Manages your AntiCheat system notification preferences.", // Static fallback
+    permissionLevel: 1, // Static fallback (Admin)
     enabled: true,
 };
 
@@ -24,13 +23,32 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, addLog, config, playerDataManager } = dependencies;
-    const notifKey = 'notificationsEnabled'; // Stored in playerDataManager
+    const { playerUtils, logManager, config, playerDataManager, getString, permissionLevels } = dependencies;
+    const notifKey = 'ac_notifications_enabled'; // Using a more specific key for player data
+    // This key should ideally be a constant or from a config if used elsewhere.
+    // If this is intended to map to the "ac_notifications_on"/"off" tags, the logic needs adjustment.
+    // For now, assuming it's a new boolean field in pData.
+
     const subCommand = args[0] ? args[0].toLowerCase() : "toggle";
 
-    let currentPreference = playerDataManager.getPlayerData(player.id, notifKey); // Use player.id
+    // definition.description = getString("command.notify.description");
+    // definition.permissionLevel = permissionLevels.admin;
+
+    let pData = playerDataManager.getPlayerData(player.id);
+    if (!pData) {
+        playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. This should not happen.`, dependencies, player.nameTag);
+        // Initialize a temporary minimal pData if necessary for currentPreference logic, though setPlayerData should handle creation.
+        pData = { id: player.id, isWatched: false };
+    }
+
+    let currentPreference = pData[notifKey];
     if (typeof currentPreference !== 'boolean') {
-        currentPreference = dependencies.config.acGlobalNotificationsDefaultOn; // Use global default from main config
+        // Infer current preference from tags if the specific pData field is not set
+        const notificationsOffTag = "ac_notifications_off";
+        const notificationsOnTag = "ac_notifications_on";
+        if (player.hasTag(notificationsOnTag)) currentPreference = true;
+        else if (player.hasTag(notificationsOffTag)) currentPreference = false;
+        else currentPreference = config.acGlobalNotificationsDefaultOn;
     }
 
     let newPreference;
@@ -52,20 +70,34 @@ export async function execute(player, args, dependencies) {
         case "status":
             const statusText = getString(currentPreference ? "common.status.enabled" : "common.status.disabled");
             player.sendMessage(getString("command.notify.currentStatus", { status: statusText.toUpperCase() }));
-            if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'notify_status_checked', details: `Checked own notification status: ${statusText}` });
-            return; // Exit after status
+            logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'notify_status_checked', details: `Checked own notification status: ${statusText}` }, dependencies);
+            return;
         default:
             player.sendMessage(getString("command.notify.usage", { prefix: config.prefix }));
             return;
     }
 
-    playerDataManager.setPlayerData(player.id, notifKey, newPreference); // Use player.id
+    // Update player tags based on new preference for compatibility with playerUtils.notifyAdmins
+    const notificationsOffTag = "ac_notifications_off"; // Consider centralizing tag names
+    const notificationsOnTag = "ac_notifications_on";
+    try {
+        if (newPreference) {
+            player.removeTag(notificationsOffTag);
+            player.addTag(notificationsOnTag);
+        } else {
+            player.removeTag(notificationsOnTag);
+            player.addTag(notificationsOffTag);
+        }
+    } catch (e) {
+         playerUtils.debugLog(`[NotifyCommand] Error updating tags for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+    }
+
+    // Also save to pData for direct querying if needed, though tags are primary for notifyAdmins
+    playerDataManager.setPlayerData(player.id, notifKey, newPreference, dependencies);
 
     player.sendMessage(getString(messageKey));
 
     const logMessageAction = newPreference ? "enabled" : "disabled";
-    if (config.enableDebugLogging && playerUtils.debugLog) {
-        playerUtils.debugLog(`Admin ${player.nameTag} ${logMessageAction} notifications. Current pref: ${newPreference}`, player.nameTag);
-    }
-    if (addLog) addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: `notify_${logMessageAction}`, details: `Notifications ${logMessageAction}` });
+    playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. Current pref: ${newPreference}`, dependencies, player.nameTag);
+    logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: `notify_${logMessageAction}`, details: `Notifications ${logMessageAction}` }, dependencies);
 }
