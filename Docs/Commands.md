@@ -2,7 +2,7 @@
 
 The default command prefix for this addon is `!` (this can be configured in `AntiCheatsBP/scripts/config.js`). All commands are entered via the standard Minecraft chat.
 
-[!NOTE]
+> [!NOTE]
 > Angle brackets (`< >`) in command syntax denote required parameters.
 > Square brackets (`[ ]`) denote optional parameters.
 > Do not include the brackets themselves when using the commands.

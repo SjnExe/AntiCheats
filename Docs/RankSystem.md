@@ -10,7 +10,7 @@ Rank configuration is managed via settings in the `AntiCheatsBP/scripts/config.j
 
 The Owner rank is the highest permission level, typically intended for the primary server administrator(s).
 
-[!IMPORTANT]
+> [!IMPORTANT]
 > To correctly configure the **Owner** rank, you **must** edit the `ownerPlayerName` variable in `AntiCheatsBP/scripts/config.js`.
 > Set this variable to the exact in-game name of the player who should be designated as the Owner.
 >

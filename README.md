@@ -12,7 +12,7 @@ This addon utilizes advanced scripting capabilities to provide robust anti-cheat
 2.  **Install:** Apply both the Behavior Pack (`AntiCheatsBP`) and Resource Pack (`AntiCheatsRP`) to your Minecraft world.
 3.  **Prioritize:** Ensure the Behavior Pack is at the **top** of the pack list if you have multiple behavior packs active.
 4.  **Set Owner (Crucial):**
-    [!IMPORTANT]
+    > [!IMPORTANT]
     > Set your in-game name as `ownerPlayerName` in `AntiCheatsBP/scripts/config.js` to gain full owner permissions. This step is vital for full control over the addon.
 5.  **Explore:** Join your world and type `!panel` (or `!ui`) in chat to open the admin interface.
 6.  **Configure (Optional):** Other key settings like admin tags and command prefix are also in `AntiCheatsBP/scripts/config.js`.
@@ -59,7 +59,7 @@ The default command prefix is `!` (configurable in `AntiCheatsBP/scripts/config.
 *   The primary way to interact with the addon as an admin is via the **`!panel`** (or `!ui`) command, which opens a comprehensive UI.
 *   For a detailed list of all text-based commands for both administrators and players, including syntax and permissions, please refer to our complete [Commands Guide](Docs/Commands.md).
 
-[!TIP]
+> [!TIP]
 > You can quickly get help for any command by typing `!help <command_name>` in the chat if you know the command, or `!help` to list commands available to you.
 
 ## Configuration Overview
@@ -71,7 +71,7 @@ The main configuration for this addon is centralized in **[`AntiCheatsBP/scripts
 
 While `config.js` is the primary hub, it may reference other specialized files for more detailed settings, such as [`AntiCheatsBP/scripts/core/actionProfiles.js`](AntiCheatsBP/scripts/core/actionProfiles.js) for defining specific detection responses.
 
-[!NOTE]
+> [!NOTE]
 > Detailed setup and advanced configuration for complex systems like Automated Moderation and the World Border are found in their respective documentation files within the `Docs/` directory. Consult these for in-depth guidance.
 
 ## Key Systems
