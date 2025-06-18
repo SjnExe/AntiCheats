@@ -457,7 +457,7 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
         const pData = dependencies.playerDataManager.getPlayerData(player.id);
         if (!pData) return;
 
-        const expectedTicks = getExpectedBreakTicks(block.typeId, itemStack, player);
+        const expectedTicks = getExpectedBreakTicks(player, block.permutation, itemStack, dependencies.config);
         pData.blockBreakStartTime = dependencies.currentTick;
         pData.expectedBreakTicks = expectedTicks;
         pData.blockBeingBroken = block;
