@@ -89,3 +89,5 @@ export const commandModules = [
     worldborderCmd,
     xraynotifyCmd,
 ];
+
+export function registerCommand() { console.warn('Dummy registerCommand called - this is a diagnostic placeholder and should be removed after identifying the caller.'); }
