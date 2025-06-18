@@ -1,5 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/movement/netherRoofCheck.js
+ * @file AntiCheatsBP/scripts/checks/world/netherRoofCheck.js
  * Checks if a player is on the Nether roof.
  * @version 1.0.1
  */

@@ -1,5 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/nameSpoofCheck.js
+ * @file AntiCheatsBP/scripts/checks/player/nameSpoofCheck.js
  * Implements a check to detect player name spoofing attempts, including names that are too long,
  * contain disallowed characters, or are changed too rapidly.
  * Relies on `pData` fields like `lastKnownNameTag` and `lastNameTagChangeTick`.
