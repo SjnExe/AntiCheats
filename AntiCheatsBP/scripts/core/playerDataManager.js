@@ -505,7 +505,7 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
             quantityFound: detailsForNotify.quantityFound || 0,
             timestamp: Date.now()
         };
-        playerUtils.debugLog(dependencies, \`PDM:addFlag: Stored violation details for \${flagType} on \${player.nameTag}: \${JSON.stringify(pData.lastViolationDetailsMap[flagType])}\`, player.nameTag);
+        playerUtils.debugLog(dependencies, `PDM:addFlag: Stored violation details for ${flagType} on ${player.nameTag}: ${JSON.stringify(pData.lastViolationDetailsMap[flagType])}`, player.nameTag);
     }
 
     pData.isDirtyForSave = true;
