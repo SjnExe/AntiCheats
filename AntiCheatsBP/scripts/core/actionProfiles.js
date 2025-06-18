@@ -851,5 +851,3 @@ export const checkActionProfiles = {
         }
     }
 };
-
-[end of AntiCheatsBP/scripts/core/actionProfiles.js]
