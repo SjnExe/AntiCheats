@@ -5,6 +5,7 @@
  */
 import * as mc from '@minecraft/server';
 
+// The dynamic property key used for storing world border settings.
 const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
 
 /**
