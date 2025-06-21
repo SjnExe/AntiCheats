@@ -76,7 +76,7 @@ export async function execute(player, args, dependencies) {
             // Attempt to provide a more specific message if acceptRequest returned an error object (though current acceptRequest returns bool)
             player.sendMessage(getString("command.tpaccept.fail", { playerName: requestToAccept.requesterName }));
              if (config.enableDebugLogging) {
-                playerUtils.debugLog(`[TpAcceptCommand] Call to tpaManager.acceptRequest for ${requestToAccept.requestId} returned falsy.`, player.nameTag);
+                playerUtils.debugLog(`[TpAcceptCommand] Call to tpaManager.acceptRequest for ${requestToAccept.requestId} returned falsy.`, player.nameTag, dependencies);
             }
         }
     } catch (error) {

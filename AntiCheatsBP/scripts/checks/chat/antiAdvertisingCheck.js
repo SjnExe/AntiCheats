@@ -42,13 +42,13 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                             try { // Attempt to treat whitelist pattern as regex
                                 if (new RegExp(wlPattern, 'i').test(detectedLink)) {
                                     isWhitelisted = true;
-                                    playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by regex pattern '${wlPattern}'.`, dependencies, watchedPlayerName);
+                                    playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by regex pattern '${wlPattern}'.`, watchedPlayerName, dependencies);
                                     break;
                                 }
                             } catch (e) { // If wlPattern is not a valid regex, treat as simple string contains (case-insensitive)
                                 if (detectedLink.toLowerCase().includes(wlPattern.toLowerCase())) {
                                     isWhitelisted = true;
-                                    playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by simple string '${wlPattern}'.`, dependencies, watchedPlayerName);
+                                    playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by simple string '${wlPattern}'.`, watchedPlayerName, dependencies);
                                     break;
                                 }
                             }
@@ -56,11 +56,11 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     }
                     if (isWhitelisted) {
                         // Link is whitelisted, continue checking the message with other regex patterns
-                        playerUtils.debugLog(`[AntiAdvCheck] Whitelisted link "${detectedLink}" found. Continuing scan with other regex patterns.`, dependencies, watchedPlayerName);
+                        playerUtils.debugLog(`[AntiAdvCheck] Whitelisted link "${detectedLink}" found. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
                         continue;
                     }
                     // Link not whitelisted, proceed to flag
-                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, dependencies, watchedPlayerName);
+                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, watchedPlayerName, dependencies);
                     const violationDetails = {
                         detectedLink: detectedLink,
                         method: "regex",

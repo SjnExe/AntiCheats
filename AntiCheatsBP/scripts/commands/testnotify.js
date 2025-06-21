@@ -35,7 +35,7 @@ export async function execute(player, _args, dependencies) {
     } else {
         player.sendMessage(getString("command.testnotify.error.unavailable"));
         // Use standardized debugLog
-        playerUtils.debugLog("[TestNotifyCommand] playerUtils.notifyAdmins is not available in dependencies.", dependencies, player.nameTag);
+        playerUtils.debugLog("[TestNotifyCommand] playerUtils.notifyAdmins is not available in dependencies.", player.nameTag, dependencies);
         console.warn("[TestNotifyCommand] playerUtils.notifyAdmins is not available in dependencies."); // Keep console for visibility
     }
 }

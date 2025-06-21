@@ -23,7 +23,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, findPlayer, permissionLevels } = dependencies; // Destructure all
+    const { config, playerUtils, logManager, findPlayer, getString, permissionLevels } = dependencies; // Destructure all
     const frozenTag = "frozen"; // Consider moving to config if customizable
     const effectDuration = 2000000; // A very long duration for "permanent" effect until removed
 
@@ -32,7 +32,7 @@ export async function execute(player, args, dependencies) {
 
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}freeze <playername> [on|off]`);
+        player.sendMessage(getString("command.freeze.usage", { prefix: config.prefix }));
         return;
     }
     const targetPlayerName = args[0];
@@ -41,12 +41,12 @@ export async function execute(player, args, dependencies) {
     const foundPlayer = findPlayer(targetPlayerName); // Assumes findPlayer is from playerUtils or global
 
     if (!foundPlayer) {
-        player.sendMessage(`Player "${targetPlayerName}" not found.`);
+        player.sendMessage(getString("common.error.invalidPlayer", { targetName: targetPlayerName }));
         return;
     }
 
     if (foundPlayer.id === player.id) {
-        player.sendMessage("§cYou cannot freeze yourself.");
+        player.sendMessage(getString("command.freeze.error.self"));
         return;
     }
 
@@ -65,29 +65,29 @@ export async function execute(player, args, dependencies) {
         try {
             foundPlayer.addTag(frozenTag);
             foundPlayer.addEffect("slowness", effectDuration, { amplifier: 255, showParticles: false });
-            foundPlayer.sendMessage("§cYou have been frozen by an administrator.");
-            player.sendMessage(`§aSuccessfully froze ${foundPlayer.nameTag}.`);
-            playerUtils.notifyAdmins(`§7[Freeze] §e${foundPlayer.nameTag} §7was frozen by §e${player.nameTag}§7.`, dependencies, player, null);
+            foundPlayer.sendMessage(getString("command.freeze.frozenTarget"));
+            player.sendMessage(getString("command.freeze.frozenAdmin", { targetPlayerName: foundPlayer.nameTag }));
+            playerUtils.notifyAdmins(getString("command.freeze.notifyAdmins.frozen", { adminName: player.nameTag, targetPlayerName: foundPlayer.nameTag }), dependencies, player, null);
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'freeze', targetName: foundPlayer.nameTag, details: 'Player frozen' }, dependencies);
         } catch (e) {
-            player.sendMessage(`§cAn error occurred while trying to modify freeze state for ${foundPlayer.nameTag}: ${e.message}`);
-            playerUtils.debugLog(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+            player.sendMessage(getString("command.freeze.error.generic", { targetPlayerName: foundPlayer.nameTag, error: e.message }));
+            playerUtils.debugLog(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
             console.error(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
         }
     } else if (targetFreezeState === false && currentFreezeState) {
         try {
             foundPlayer.removeTag(frozenTag);
             foundPlayer.removeEffect("slowness");
-            foundPlayer.sendMessage("§aYou have been unfrozen.");
-            player.sendMessage(`§aSuccessfully unfroze ${foundPlayer.nameTag}.`);
-            playerUtils.notifyAdmins(`§7[Freeze] §e${foundPlayer.nameTag} §7was unfrozen by §e${player.nameTag}§7.`, dependencies, player, null);
+            foundPlayer.sendMessage(getString("command.freeze.unfrozenTarget"));
+            player.sendMessage(getString("command.freeze.unfrozenAdmin", { targetPlayerName: foundPlayer.nameTag }));
+            playerUtils.notifyAdmins(getString("command.freeze.notifyAdmins.unfrozen", { adminName: player.nameTag, targetPlayerName: foundPlayer.nameTag }), dependencies, player, null);
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unfreeze', targetName: foundPlayer.nameTag, details: 'Player unfrozen' }, dependencies);
         } catch (e) {
-            player.sendMessage(`§cAn error occurred while trying to modify freeze state for ${foundPlayer.nameTag}: ${e.message}`);
-            playerUtils.debugLog(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+            player.sendMessage(getString("command.freeze.error.generic", { targetPlayerName: foundPlayer.nameTag, error: e.message }));
+            playerUtils.debugLog(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
             console.error(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
         }
     } else {
-        player.sendMessage(targetFreezeState ? `§e${foundPlayer.nameTag} is already frozen.` : `§e${foundPlayer.nameTag} is already unfrozen.`);
+        player.sendMessage(targetFreezeState ? getString("command.freeze.alreadyFrozen", { targetPlayerName: foundPlayer.nameTag }) : getString("command.freeze.alreadyUnfrozen", { targetPlayerName: foundPlayer.nameTag }));
     }
 }

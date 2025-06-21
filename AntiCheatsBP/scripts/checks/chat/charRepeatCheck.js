@@ -60,7 +60,7 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
             `[CharRepeatCheck] Player ${player.nameTag} triggered char repeat. ` +
             `Msg: "${message}", Char: '${charThatRepeated}', Count: ${maxRepeatCount}, ` +
             `Threshold: ${config.charRepeatThreshold}, MinLength: ${config.charRepeatMinLength}`,
-            dependencies, pData?.isWatched ? player.nameTag : null
+            pData?.isWatched ? player.nameTag : null, dependencies
         );
         await actionManager.executeCheckAction(
             player,

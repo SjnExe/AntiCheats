@@ -8,10 +8,14 @@
 import * as mc from '@minecraft/server';
 import * as playerUtils from '../utils/playerUtils.js'; // For debugLog
 
-// The dynamic property key used for storing action logs.
+/**
+ * @const {string} logPropertyKeyName - The dynamic property key used for storing action logs.
+ */
 const logPropertyKeyName = "anticheat:action_logs_v1";
 
-// Maximum number of log entries to keep in memory and persisted storage.
+/**
+ * @const {number} maxLogEntriesCount - Maximum number of log entries to keep in memory and persisted storage.
+ */
 const maxLogEntriesCount = 200;
 
 /**

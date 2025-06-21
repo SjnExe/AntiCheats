@@ -40,15 +40,14 @@ function generateRequestId() {
 }
 
 export function addRequest(requester, target, type, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
-    // const translationsDict = dependencies.translations_dict || {}; // Not needed in this function
+    const { config, playerUtils, getString, logManager } = dependencies;
     const now = Date.now();
 
     if (lastPlayerRequestTimestamp.has(requester.name)) {
         const elapsedTime = now - lastPlayerRequestTimestamp.get(requester.name);
         if (elapsedTime < config.TPARequestCooldownSeconds * 1000) {
             const remainingSeconds = Math.ceil((config.TPARequestCooldownSeconds * 1000 - elapsedTime) / 1000);
-            playerUtils.debugLog(`[TpaManager] Cooldown active for ${requester.name}. Remaining: ${remainingSeconds}s`, requester.name);
+            playerUtils.debugLog(`[TpaManager] Cooldown active for ${requester.name}. Remaining: ${remainingSeconds}s`, requester.name, dependencies);
             return { error: 'cooldown', remaining: remainingSeconds };
         }
     }
@@ -70,7 +69,7 @@ export function addRequest(requester, target, type, dependencies) {
     };
     activeRequests.set(requestId, request);
     lastPlayerRequestTimestamp.set(requester.name, now);
-    playerUtils.debugLog(`[TpaManager] Added request ${requestId}: ${requester.name} -> ${target.name}, type: ${type}`, requester.name);
+    playerUtils.debugLog(`[TpaManager] Added request ${requestId}: ${requester.name} -> ${target.name}, type: ${type}`, requester.name, dependencies);
     if (logManager) { // logManager might not be on dependencies if called from an unrefactored context
         logManager.addLog({actionType: 'tpa_request_sent', targetName: target.nameTag, adminName: requester.nameTag, details: `Type: ${type}, ID: ${requestId}`});
     }
@@ -126,7 +125,7 @@ export function removeRequest(requestId, dependencies) { // Added dependencies f
     if (activeRequests.has(requestId)) {
         activeRequests.delete(requestId);
         if (dependencies?.playerUtils) {
-            dependencies.playerUtils.debugLog(`[TpaManager] Removed request ${requestId}`, null);
+            dependencies.playerUtils.debugLog(`[TpaManager] Removed request ${requestId}`, null, dependencies);
         }
         return true;
     }
@@ -134,16 +133,15 @@ export function removeRequest(requestId, dependencies) { // Added dependencies f
 }
 
 export function acceptRequest(requestId, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
-    const translationsDict = dependencies.translations_dict || {};
+    const { config, playerUtils, getString, logManager } = dependencies;
     const request = activeRequests.get(requestId);
     if (!request) {
-        playerUtils.debugLog(`[TpaManager] Attempted to accept non-existent request ${requestId}`, null);
+        playerUtils.debugLog(`[TpaManager] Attempted to accept non-existent request ${requestId}`, null, dependencies);
         return false;
     }
 
     if (request.status !== 'pending_acceptance') {
-        playerUtils.debugLog(`[TpaManager] Attempted to accept request ${requestId} which is not in 'pending_acceptance' state (current: ${request.status})`, null);
+        playerUtils.debugLog(`[TpaManager] Attempted to accept request ${requestId} which is not in 'pending_acceptance' state (current: ${request.status})`, null, dependencies);
         return false;
     }
 
@@ -154,9 +152,9 @@ export function acceptRequest(requestId, dependencies) {
         const offlinePlayerName = !requesterPlayer ? request.requesterName : (!targetPlayer ? request.targetName : "Unknown");
         const onlinePlayer = requesterPlayer || targetPlayer;
         if (onlinePlayer) {
-            onlinePlayer.sendMessage((translationsDict["tpaManager.error_targetOfflineOnAccept"] || "§c{offlinePlayerName} is no longer online. TPA request cancelled.").replace("{offlinePlayerName}", offlinePlayerName));
+            onlinePlayer.sendMessage(getString("tpa.manager.error.targetOfflineOnAccept", { offlinePlayerName: offlinePlayerName }));
         }
-        playerUtils.debugLog(`[TpaManager] Player ${offlinePlayerName} (or target) not found for accepted request ${requestId}. Cancelling.`, offlinePlayerName);
+        playerUtils.debugLog(`[TpaManager] Player ${offlinePlayerName} (or target) not found for accepted request ${requestId}. Cancelling.`, offlinePlayerName, dependencies);
         request.status = 'cancelled';
         removeRequest(requestId, dependencies); // Pass dependencies
         return false;
@@ -166,29 +164,28 @@ export function acceptRequest(requestId, dependencies) {
     request.warmupExpiryTimestamp = Date.now() + (config.TPATeleportWarmupSeconds * 1000);
     activeRequests.set(requestId, request);
 
-    const warmupMsgString = (translationsDict["tpaManager.warmupMessage"] || "§eTeleporting in {warmupSeconds} seconds. Do not move or take damage.").replace("{warmupSeconds}", config.TPATeleportWarmupSeconds.toString());
+    const warmupMsgString = getString("tpa.manager.warmupMessage", { warmupSeconds: config.TPATeleportWarmupSeconds });
 
     if (request.requestType === 'tpa') {
-        requesterPlayer.sendMessage((translationsDict["tpaManager.requester_accepted"] || "§aYour TPA request to \"{targetPlayerName}\" has been accepted. {warmupMessage}").replace("{targetPlayerName}", targetPlayer.nameTag).replace("{warmupMessage}", warmupMsgString));
-        targetPlayer.sendMessage((translationsDict["tpaManager.target_acceptedFromRequester"] || "§aYou accepted the TPA request from \"{requesterPlayerName}\". They will teleport in {warmupSeconds}s.").replace("{requesterPlayerName}", requesterPlayer.nameTag).replace("{warmupSeconds}", config.TPATeleportWarmupSeconds.toString()));
+        requesterPlayer.sendMessage(getString("tpa.manager.requester.accepted", { targetPlayerName: targetPlayer.nameTag, warmupMessage: warmupMsgString }));
+        targetPlayer.sendMessage(getString("tpa.manager.target.acceptedFromRequester", { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: config.TPATeleportWarmupSeconds }));
     } else {
-        targetPlayer.sendMessage((translationsDict["tpaManager.target_acceptedByRequester"] || "§a\"{requesterPlayerName}\" accepted your TPA request. {warmupMessage}").replace("{requesterPlayerName}", requesterPlayer.nameTag).replace("{warmupMessage}", warmupMsgString));
-        requesterPlayer.sendMessage((translationsDict["tpaManager.requester_acceptedHere"] || "§a\"{targetPlayerName}\" accepted your TPA Here request. They will teleport in {warmupSeconds}s.").replace("{targetPlayerName}", targetPlayer.nameTag).replace("{warmupSeconds}", config.TPATeleportWarmupSeconds.toString()));
+        targetPlayer.sendMessage(getString("tpa.manager.target.acceptedByRequester", { requesterPlayerName: requesterPlayer.nameTag, warmupMessage: warmupMsgString }));
+        requesterPlayer.sendMessage(getString("tpa.manager.requester.acceptedHere", { targetPlayerName: targetPlayer.nameTag, warmupSeconds: config.TPATeleportWarmupSeconds }));
     }
     if(logManager) { // logManager might not be on dependencies if called from an unrefactored context
         logManager.addLog({actionType: 'tpa_request_accepted', targetName: targetPlayer.nameTag, adminName: requesterPlayer.nameTag, details: `Type: ${request.requestType}, ID: ${requestId}`});
     }
-    playerUtils.debugLog(`[TpaManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`, request.targetName);
+    playerUtils.debugLog(`[TpaManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`, request.targetName, dependencies);
     return true;
 }
 
 export function executeTeleport(requestId, dependencies) { // Added dependencies
-    const { playerUtils, logManager } = dependencies;
-    const translationsDict = dependencies.translations_dict || {};
+    const { playerUtils, getString, logManager } = dependencies;
     const request = activeRequests.get(requestId);
     if (!request) { return; }
     if (request.status !== 'pending_teleport_warmup') {
-        playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Request ${requestId} is not in 'pending_teleport_warmup' state (current: ${request.status}). Aborting teleport.`, request.requesterName);
+        playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Request ${requestId} is not in 'pending_teleport_warmup' state (current: ${request.status}). Aborting teleport.`, request.requesterName, dependencies);
         if (request.status === 'completed' || request.status === 'cancelled') { removeRequest(requestId, dependencies); } // Pass dependencies
         return;
     }
@@ -199,9 +196,9 @@ export function executeTeleport(requestId, dependencies) { // Added dependencies
     if (!requesterPlayer || !targetPlayer) {
         const offlinePlayerName = !requesterPlayer ? request.requesterName : (!targetPlayer ? request.targetName : "Unknown");
         const onlinePlayer = requesterPlayer || targetPlayer;
-        const message = (translationsDict["tpaManager.error_teleportTargetOffline"] || "§cTeleport cancelled: {offlinePlayerName} logged off.").replace("{offlinePlayerName}", offlinePlayerName);
+        const message = getString("tpa.manager.error.teleportTargetOffline", { offlinePlayerName: offlinePlayerName });
         if (onlinePlayer) { onlinePlayer.sendMessage(message); }
-        playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Player ${offlinePlayerName} (or target) not found for request ${requestId}. ${message}`, offlinePlayerName);
+        playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Player ${offlinePlayerName} (or target) not found for request ${requestId}. ${message}`, offlinePlayerName, dependencies);
         request.status = 'cancelled';
         removeRequest(requestId, dependencies); // Pass dependencies
         return;
@@ -213,39 +210,39 @@ export function executeTeleport(requestId, dependencies) { // Added dependencies
             const targetDimension = world.getDimension(request.targetDimensionId);
             if (!targetDimension) throw new Error(`Invalid target dimension ID: ${request.targetDimensionId}`);
             requesterPlayer.teleport(request.targetLocation, { dimension: targetDimension });
-            requesterPlayer.sendMessage((translationsDict["tpaManager.teleport_successToTarget"] || "§aTeleported successfully to {targetPlayerName}.").replace("{targetPlayerName}", targetPlayer.nameTag));
-            targetPlayer.sendMessage((translationsDict["tpaManager.teleport_successTargetNotified"] || "§a{requesterPlayerName} has teleported to you.").replace("{requesterPlayerName}", requesterPlayer.nameTag));
+            requesterPlayer.sendMessage(getString("tpa.manager.teleport.successToTarget", { targetPlayerName: targetPlayer.nameTag }));
+            targetPlayer.sendMessage(getString("tpa.manager.teleport.successTargetNotified", { requesterPlayerName: requesterPlayer.nameTag }));
             teleportSuccessful = true;
         } else if (request.requestType === 'tpahere') {
             const requesterDimension = world.getDimension(request.requesterDimensionId);
             if (!requesterDimension) throw new Error(`Invalid requester dimension ID: ${request.requesterDimensionId}`);
             targetPlayer.teleport(request.requesterLocation, { dimension: requesterDimension });
-            targetPlayer.sendMessage((translationsDict["tpaManager.teleport_successToRequester"] || "§aTeleported successfully to {requesterPlayerName}.").replace("{requesterPlayerName}", requesterPlayer.nameTag));
-            requesterPlayer.sendMessage((translationsDict["tpaManager.teleport_successRequesterNotified"] || "§a{targetPlayerName} has teleported to you.").replace("{targetPlayerName}", targetPlayer.nameTag));
+            targetPlayer.sendMessage(getString("tpa.manager.teleport.successToRequester", { requesterPlayerName: requesterPlayer.nameTag }));
+            requesterPlayer.sendMessage(getString("tpa.manager.teleport.successRequesterNotified", { targetPlayerName: targetPlayer.nameTag }));
             teleportSuccessful = true;
         } else {
-            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Unknown request type: ${request.requestType} for request ${requestId}`, request.requesterName);
+            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Unknown request type: ${request.requestType} for request ${requestId}`, request.requesterName, dependencies);
         }
 
         if (teleportSuccessful) {
             request.status = 'completed';
-            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Request ${requestId} processed successfully. Type: ${request.requestType}`, request.requesterName);
+            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Request ${requestId} processed successfully. Type: ${request.requestType}`, request.requesterName, dependencies);
         } else {
             request.status = 'cancelled';
-            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Failed due to unknown request type for ${requestId}.`, request.requesterName);
+            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Failed due to unknown request type for ${requestId}.`, request.requesterName, dependencies);
         }
     } catch (e) {
         request.status = 'cancelled';
         console.error(`[TpaManager] ExecuteTeleport: Error during teleport for request ${requestId}: ${e.stack || e}`);
         try {
             if (requesterPlayer && requesterPlayer.isValid()) {
-                 requesterPlayer.sendMessage(translationsDict["tpaManager.error_teleportGenericErrorToRequester"] || "§cAn error occurred during teleportation. Please try again.");
+                 requesterPlayer.sendMessage(getString("tpa.manager.error.teleportGenericErrorToRequester"));
             }
             if (targetPlayer && targetPlayer.isValid()) {
-                 targetPlayer.sendMessage((translationsDict["tpaManager.error_teleportGenericErrorToTarget"] || "§cAn error occurred during a TPA teleportation involving {otherPlayerName}.").replace("{otherPlayerName}", (requesterPlayer ? requesterPlayer.nameTag : request.requesterName)));
+                 targetPlayer.sendMessage(getString("tpa.manager.error.teleportGenericErrorToTarget", { otherPlayerName: (requesterPlayer ? requesterPlayer.nameTag : request.requesterName) }));
             }
         } catch (notifyError) {
-            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Failed to notify players after teleport error: ${notifyError.stack || notifyError}`, request.requesterName);
+            playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Failed to notify players after teleport error: ${notifyError.stack || notifyError}`, request.requesterName, dependencies);
         }
     } finally {
         removeRequest(requestId, dependencies); // Pass dependencies
@@ -266,7 +263,7 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
     if (requesterPlayer && requesterPlayer.isValid()) { requesterPlayer.sendMessage(reasonMessagePlayer); }
     if (targetPlayer && targetPlayer.isValid()) { targetPlayer.sendMessage(reasonMessagePlayer); }
-    playerUtils.debugLog(`[TpaManager] Teleport for request ${requestId} cancelled: ${reasonMessageLog}`, request.requesterName);
+    playerUtils.debugLog(`[TpaManager] Teleport for request ${requestId} cancelled: ${reasonMessageLog}`, request.requesterName, dependencies);
     if (logManager) {
         logManager.addLog({actionType: 'tpa_teleport_cancelled', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Reason: ${reasonMessageLog}, ID: ${requestId}`});
     }
@@ -274,8 +271,7 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
 }
 
 export function declineRequest(requestId, dependencies) { // Added dependencies
-    const { playerUtils, logManager } = dependencies;
-    const translationsDict = dependencies.translations_dict || {};
+    const { playerUtils, getString, logManager } = dependencies;
     const request = activeRequests.get(requestId);
     if (!request) { return; }
 
@@ -288,20 +284,20 @@ export function declineRequest(requestId, dependencies) { // Added dependencies
 
     if (request.status === 'pending_acceptance') {
         if (requesterPlayer && requesterPlayer.isValid()) {
-            requesterPlayer.sendMessage((translationsDict["tpaManager.decline_requesterNotified"] || "§c\"{targetPlayerName}\" declined your TPA request.").replace("{targetPlayerName}", targetDisplayName));
+            requesterPlayer.sendMessage(getString("tpa.manager.decline.requesterNotified", { targetPlayerName: targetDisplayName }));
         }
         if (targetPlayer && targetPlayer.isValid()) {
-            targetPlayer.sendMessage((translationsDict["tpaManager.decline_targetNotified"] || "§cYou declined the TPA request from \"{requesterPlayerName}\".").replace("{requesterPlayerName}", requesterDisplayName));
+            targetPlayer.sendMessage(getString("tpa.manager.decline.targetNotified", { requesterPlayerName: requesterDisplayName }));
         }
-        playerUtils.debugLog(`[TpaManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} declined.`, request.targetName);
+        playerUtils.debugLog(`[TpaManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} declined.`, request.targetName, dependencies);
     } else {
         if (requesterPlayer && requesterPlayer.isValid()) {
-            requesterPlayer.sendMessage((translationsDict["tpaManager.decline_otherCancelledRequester"] || "§cTPA request involving \"{targetPlayerName}\" was cancelled.").replace("{targetPlayerName}", targetDisplayName));
+            requesterPlayer.sendMessage(getString("tpa.manager.decline.otherCancelledRequester", { targetPlayerName: targetDisplayName }));
         }
         if (targetPlayer && targetPlayer.isValid()) {
-            targetPlayer.sendMessage((translationsDict["tpaManager.decline_otherCancelledTarget"] || "§cTPA request involving \"{requesterPlayerName}\" was cancelled.").replace("{requesterPlayerName}", requesterDisplayName));
+            targetPlayer.sendMessage(getString("tpa.manager.decline.otherCancelledTarget", { requesterPlayerName: requesterDisplayName }));
         }
-        playerUtils.debugLog(`[TpaManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} cancelled (was in state: ${request.status}).`, request.requesterName);
+        playerUtils.debugLog(`[TpaManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} cancelled (was in state: ${request.status}).`, request.requesterName, dependencies);
     }
     request.status = 'cancelled';
     if(logManager) {
@@ -311,8 +307,7 @@ export function declineRequest(requestId, dependencies) { // Added dependencies
 }
 
 export function clearExpiredRequests(dependencies) { // Added dependencies
-    const { playerUtils, logManager } = dependencies;
-    const translationsDict = dependencies.translations_dict || {};
+    const { playerUtils, getString, logManager } = dependencies;
     const now = Date.now();
     const requestIdsToExpire = [];
     for (const request of activeRequests.values()) {
@@ -325,7 +320,7 @@ export function clearExpiredRequests(dependencies) { // Added dependencies
         if (!request || request.status !== 'pending_acceptance') continue;
 
         request.status = 'cancelled';
-        playerUtils.debugLog(`[TpaManager] Request ${request.requestId} between ${request.requesterName} and ${request.targetName} expired while pending acceptance.`, request.requesterName);
+        playerUtils.debugLog(`[TpaManager] Request ${request.requestId} between ${request.requesterName} and ${request.targetName} expired while pending acceptance.`, request.requesterName, dependencies);
 
         const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
         const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
@@ -333,10 +328,10 @@ export function clearExpiredRequests(dependencies) { // Added dependencies
         const requesterDisplayName = requesterPlayer ? requesterPlayer.nameTag : request.requesterName;
 
         if (requesterPlayer && requesterPlayer.isValid()) {
-            requesterPlayer.sendMessage((translationsDict["tpaManager.expired_requesterNotified"] || "§cYour TPA request to \"{targetName}\" has expired.").replace("{targetName}", targetDisplayName));
+            requesterPlayer.sendMessage(getString("tpa.manager.expired.requesterNotified", { targetName: targetDisplayName }));
         }
         if (targetPlayer && targetPlayer.isValid()) {
-            targetPlayer.sendMessage((translationsDict["tpaManager.expired_targetNotified"] || "§cThe TPA request from \"{requesterName}\" has expired.").replace("{requesterName}", requesterDisplayName));
+            targetPlayer.sendMessage(getString("tpa.manager.expired.targetNotified", { requesterName: requesterDisplayName }));
         }
         if (logManager) {
             logManager.addLog({actionType: 'tpa_request_expired', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}`});
@@ -362,7 +357,7 @@ export function setPlayerTpaStatus(playerName, accepts, dependencies) { // Added
         lastTpaToggleTimestamp: Date.now()
     };
     playerTpaStatuses.set(playerName, status);
-    playerUtils.debugLog(`[TpaManager] Player ${playerName} TPA status set to: ${accepts}`, playerName);
+    playerUtils.debugLog(`[TpaManager] Player ${playerName} TPA status set to: ${accepts}`, playerName, dependencies);
     if (logManager) {
         logManager.addLog({actionType: 'tpa_status_set', targetName: playerName, details: `Accepts TPA: ${accepts}`});
     }

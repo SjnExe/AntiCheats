@@ -4,6 +4,7 @@
  * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
+import { getString } from '../core/i18n.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -36,7 +37,7 @@ export async function execute(
     const { config, playerUtils, playerDataManager, addLog, findPlayer, parseDuration } = dependencies;
 
     if (args.length < 1) {
-        const usageMessage = `§cUsage: ${config.prefix}mute <playername> [duration] [reason]`;
+        const usageMessage = getString('command.mute.usage', { prefix: config.prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {
@@ -58,7 +59,7 @@ export async function execute(
     const foundPlayer = findPlayer(targetPlayerName, playerUtils);
 
     if (!foundPlayer) {
-        const message = `§cPlayer '${targetPlayerName}' not found or is not online.`;
+        const message = getString('command.mute.notFound', { targetName: targetPlayerName });
         if (player) {
             player.sendMessage(message);
         } else {
@@ -68,7 +69,7 @@ export async function execute(
     }
 
     if (player && foundPlayer.id === player.id) {
-        player.sendMessage("§cYou cannot mute yourself.");
+        player.sendMessage(getString('command.mute.self'));
         return;
     }
 
@@ -76,14 +77,14 @@ export async function execute(
         const targetPermissionLevel = dependencies.getPlayerPermissionLevel(foundPlayer);
         const issuerPermissionLevel = dependencies.getPlayerPermissionLevel(player);
         if (targetPermissionLevel >= issuerPermissionLevel && player.id !== foundPlayer.id) {
-            player.sendMessage("§cYou do not have permission to mute this player.");
+            player.sendMessage(getString('command.mute.permissionInsufficient'));
             return; // Corrected extra space
         }
     }
 
     const durationMs = parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
-        const message = `§cInvalid duration. Example: 10m, 1h, 2d, perm. Default: ${defaultDuration}`;
+        const message = getString('command.mute.invalidDuration', { defaultDuration: defaultDuration });
         if (player) {
             player.sendMessage(message);
         } else {
@@ -110,21 +111,15 @@ export async function execute(
             const durationText = durationMs === Infinity ? "permanently (this session/until unmuted)" : `for ${durationString}`; // This text is for admin notifications, not directly to target
 
             let targetNotificationKey = durationMs === Infinity ? 'command.mute.targetNotification.permanent' : 'command.mute.targetNotification.timed';
-            let targetNotificationMessage = "";
-            if (durationMs === Infinity) {
-                targetNotificationMessage = `§cYou have been permanently muted. Reason: ${actualReason}`;
-            } else {
-                targetNotificationMessage = `§cYou have been muted for ${durationString}. Reason: ${actualReason}`;
-            }
             try {
-                foundPlayer.onScreenDisplay.setActionBar(targetNotificationMessage);
+                foundPlayer.onScreenDisplay.setActionBar(getString(targetNotificationKey, { durationString: durationString, reason: actualReason }));
             } catch (e) {
                 if (config.enableDebugLogging && playerUtils.debugLog) {
-                    playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayer.nameTag}: ${e}`, player ? player.nameTag : "System");
+                    playerUtils.debugLog(`Failed to set action bar for muted player ${foundPlayer.nameTag}: ${e}`, player ? player.nameTag : "System", dependencies);
                 }
             }
 
-            const successMessage = `§aSuccessfully muted ${foundPlayer.nameTag} ${durationText} for: ${actualReason}`;
+            const successMessage = getString('command.mute.success', { targetName: foundPlayer.nameTag, durationText: durationText, reason: actualReason });
             if (player) {
                 player.sendMessage(successMessage);
             } else {
@@ -133,7 +128,7 @@ export async function execute(
 
             if (playerUtils.notifyAdmins) {
                 const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For context
-                playerUtils.notifyAdmins(`§7[Mute] §e${foundPlayer.nameTag} §7was muted by §e${actualMutedBy}§7 for ${durationText}. Reason: §f${actualReason}`, player, targetPData);
+                playerUtils.notifyAdmins(getString('command.mute.adminNotification', { targetName: foundPlayer.nameTag, durationText: durationText, mutedBy: actualMutedBy, reason: actualReason }), player, targetPData);
             }
             if (addLog) {
                 addLog({
@@ -148,7 +143,7 @@ export async function execute(
                 });
             }
         } else {
-            const failureMessage = `§cFailed to mute ${foundPlayer.nameTag}. They may already be muted or an error occurred.`;
+            const failureMessage = getString('command.mute.fail', { targetName: foundPlayer.nameTag });
             if (player) {
                 player.sendMessage(failureMessage);
             } else {
@@ -156,14 +151,14 @@ export async function execute(
             }
         }
     } catch (e) {
-        const errorMessage = `§cAn error occurred while muting ${foundPlayer.nameTag}: ${e}`;
+        const errorMessage = getString('command.mute.error', { targetName: foundPlayer.nameTag, error: e });
         if (player) {
             player.sendMessage(errorMessage);
         } else {
             console.error(errorMessage.replace(/§[a-f0-9]/g, ''));
         }
         if (config.enableDebugLogging && playerUtils.debugLog) {
-            playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayer.nameTag} by ${player ? player.nameTag : invokedBy}: ${e}`, player ? player.nameTag : "System");
+            playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayer.nameTag} by ${player ? player.nameTag : invokedBy}: ${e}`, player ? player.nameTag : "System", dependencies);
         }
     }
 }

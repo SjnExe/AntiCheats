@@ -8,6 +8,7 @@
  */
 
 import * as mc from '@minecraft/server';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -24,7 +25,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies;
+    const { config, playerUtils, actionManager, getString } = dependencies;
 
     if (!config.enableInvalidSprintCheck || !pData) {
         return;
@@ -38,7 +39,6 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let conditionDetails = "";
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
-        let localizedCondition = "";
 
         try {
             const foodComp = player.getComponent("minecraft:food");
@@ -50,39 +50,34 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             }
         } catch (e) {
             if (playerUtils.debugLog && pData.isWatched) {
-                playerUtils.debugLog(dependencies, `[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag);
+                playerUtils.debugLog(`[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }
         }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
-            invalidConditionKey = "checks.invalidSprint.condition_blindness";
-            localizedCondition = "Blindness";
+            invalidConditionKey = "check.invalidSprint.condition.blindness";
             conditionDetails = `Blindness Ticks: ${pData.blindnessTicks}`;
         } else if (player.isSneaking) {
-            invalidConditionKey = "checks.invalidSprint.condition_sneaking";
-            localizedCondition = "Sneaking";
+            invalidConditionKey = "check.invalidSprint.condition.sneaking";
             conditionDetails = "Player is sneaking";
         } else if (player.isRiding) {
-            invalidConditionKey = "checks.invalidSprint.condition_riding";
-            localizedCondition = "Riding Entity";
+            invalidConditionKey = "check.invalidSprint.condition.riding";
             conditionDetails = "Player is riding an entity";
         } else if (isHungerTooLow) {
             invalidConditionKey = "check.invalidSprint.condition.hunger";
-            localizedCondition = "Low hunger"; // Using key as string was not intended, providing default
             conditionDetails = `Hunger level at ${currentFoodLevel} (Limit: <= ${config.sprintHungerLimit ?? 6})`;
         } else if (pData.isUsingConsumable) {
             invalidConditionKey = "check.invalidSprint.condition.usingItem";
-            localizedCondition = "Using item"; // Using key as string was not intended, providing default
             conditionDetails = "Player is using a consumable";
         } else if (pData.isChargingBow) {
             invalidConditionKey = "check.invalidSprint.condition.chargingBow";
-            localizedCondition = "Charging bow"; // Using key as string was not intended, providing default
             conditionDetails = "Player is charging a bow";
         }
         // Note: Shield check (pData.isUsingShield) is not typically here as shield doesn't prevent sprint if already sprinting,
         // but prevents initiation. NoSlow check handles speed while shield is up.
 
         if (invalidConditionKey) {
+            const localizedCondition = getString(invalidConditionKey);
             const violationDetails = {
                 condition: localizedCondition,
                 details: conditionDetails,
@@ -99,7 +94,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(
                 `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
-                dependencies, watchedPrefix
+                watchedPrefix, dependencies
             );
         }
     }

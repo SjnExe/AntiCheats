@@ -4,6 +4,7 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -18,7 +19,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidRenderDistance(player, pData, dependencies) {
-    const { config, playerUtils, logManager, actionManager } = dependencies;
+    const { config, playerUtils, logManager, actionManager, getString } = dependencies; // Added getString
 
     if (!config.enableInvalidRenderDistanceCheck) {
         return;
@@ -28,14 +29,14 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
     const clientSystemInfo = player.clientSystemInfo;
 
     if (!clientSystemInfo) {
-        playerUtils.debugLog(`[InvalidRenderDistanceCheck] clientSystemInfo not available for ${player.nameTag}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[InvalidRenderDistanceCheck] clientSystemInfo not available for ${player.nameTag}.`, watchedPrefix, dependencies);
         return;
     }
 
     const clientRenderDistance = clientSystemInfo.maxRenderDistance;
 
     if (typeof clientRenderDistance !== 'number' || clientRenderDistance < 0) {
-        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Invalid or missing maxRenderDistance value (${clientRenderDistance}) for ${player.nameTag}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Invalid or missing maxRenderDistance value (${clientRenderDistance}) for ${player.nameTag}.`, watchedPrefix, dependencies);
         return;
     }
 
@@ -44,14 +45,17 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             playerName: player.nameTag,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
-            detailsString: `Reported: ${clientRenderDistance.toString()}, Max: ${config.maxAllowedClientRenderDistance.toString()}`
+            detailsString: getString("check.clientInfo.renderDistance.details", { // getString from dependencies
+                reportedDistance: clientRenderDistance.toString(),
+                maxAllowed: config.maxAllowedClientRenderDistance.toString()
+            })
         };
 
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {
             await actionManager.executeCheckAction(player, "playerInvalidRenderDistance", violationDetails, dependencies);
         } else {
             // This case should ideally not happen if actionManager is always in dependencies
-            playerUtils.debugLog("[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available in dependencies for critical logging.", dependencies, null);
+            playerUtils.debugLog("[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available in dependencies for critical logging.", null, dependencies);
             if (logManager && typeof logManager.addLog === 'function') { // Fallback critical log
                  logManager.addLog({
                     adminName: "System (AntiCheat)",
@@ -62,6 +66,6 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             }
         }
 
-        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Player ${player.nameTag} reported ${clientRenderDistance} chunks, max allowed is ${config.maxAllowedClientRenderDistance}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Player ${player.nameTag} reported ${clientRenderDistance} chunks, max allowed is ${config.maxAllowedClientRenderDistance}.`, watchedPrefix, dependencies);
     }
 }

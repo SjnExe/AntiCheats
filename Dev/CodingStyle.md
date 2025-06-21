@@ -55,36 +55,6 @@ String literals used for `actionType` values (e.g., in `automodConfig.js` for Au
 *   Use JSDoc comments for all functions, especially exported ones, detailing their purpose, parameters, and return values.
 *   Use JSDoc typedefs for complex object structures (e.g., `PlayerAntiCheatData`) and consider placing these in a central `types.js` file in the future to avoid circular dependencies.
 
-## Comment Styles
-
-### Configuration File Comments
-For constants defined in user-facing configuration files (like `config.js`) or elsewhere where the type of the constant is obvious from its assigned value or its simple description, prefer compact single-line comments over more verbose JSDoc blocks. The goal is to enhance readability for users who may edit these configurations.
-
-**Avoid (where type is obvious):**
-```javascript
-/** @type {boolean} If true, enables detailed debug logging to console. */
-export const enableDebugLogging = true;
-
-/** @type {string} The tag for identifying admin players. */
-export const adminTag = "admin";
-```
-
-**Prefer:**
-```javascript
-// If true, enables detailed debug logging to console.
-export const enableDebugLogging = true;
-
-// The tag for identifying admin players.
-export const adminTag = "admin";
-```
-
-JSDoc comments (`/** ... */`) should still be used for:
-- File-level documentation.
-- Function and method documentation (including `@param`, `@returns`, etc.).
-- Complex type definitions (`@typedef`, `@property`).
-- Configuration constants that describe complex objects or where the type/purpose isn't immediately obvious from a short description.
-The key is to balance conciseness for simple, user-editable constants with the descriptiveness of JSDoc for more complex code elements.
-
 ## General Formatting
 *   Follow existing code formatting for indentation (e.g., 4 spaces), spacing, and brace style.
 *   Aim for clarity and readability in code structure.

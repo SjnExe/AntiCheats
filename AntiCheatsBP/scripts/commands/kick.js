@@ -24,20 +24,20 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager, permissionLevels } = dependencies;
+    const { config, playerUtils, logManager, playerDataManager, permissionLevels, getString } = dependencies;
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`);
+        player.sendMessage(getString('command.kick.usage', { prefix: config.prefix })); // getString from dependencies
         return;
     }
     const targetPlayerName = args[0];
-    const reason = args.slice(1).join(" ") || "Kicked by an administrator.";
+    const reason = args.slice(1).join(" ") || getString('command.kick.defaultReason'); // getString from dependencies
 
     const foundPlayer = playerUtils.findPlayer(targetPlayerName); // Use playerUtils.findPlayer
 
     if (foundPlayer) {
         if (foundPlayer.id === player.id) {
-            player.sendMessage("§cYou cannot kick yourself.");
+            player.sendMessage(getString('command.kick.self')); // getString from dependencies
             return;
         }
 
@@ -46,39 +46,39 @@ export async function execute(player, args, dependencies) {
         const issuerPermissionLevel = playerUtils.getPlayerPermissionLevel(player);
 
         if (targetPermissionLevel <= permissionLevels.admin && issuerPermissionLevel > permissionLevels.owner) {
-            player.sendMessage("You do not have sufficient permission to kick this player.");
+            player.sendMessage(getString('command.ban.permissionInsufficient')); // Re-use ban string or create a new one
             return;
         }
          if (targetPermissionLevel <= permissionLevels.owner && issuerPermissionLevel > permissionLevels.owner) {
-            player.sendMessage("Owners can only be kicked by other owners.");
+            player.sendMessage(getString('command.ban.ownerByNonOwner'));  // Re-use ban string or create a new one
             return;
         }
         if (targetPermissionLevel === permissionLevels.owner && issuerPermissionLevel === permissionLevels.owner && player.id !== foundPlayer.id) {
-             player.sendMessage("One owner cannot kick another owner.");
+             player.sendMessage(getString('command.ban.ownerByOwner')); // Re-use ban string or create a new one
             return;
         }
 
         try {
             const originalReason = reason;
-            const kickMessageToTarget = `§cYou have been kicked from the server by ${player.nameTag}.\nReason: ${originalReason}\nIf you believe this was a mistake, contact staff. Your command prefix is ${config.prefix}`;
+            const kickMessageToTarget = getString('command.kick.targetNotification', { adminName: player.nameTag, reason: originalReason, prefix: config.prefix }); // getString from dependencies
             foundPlayer.kick(kickMessageToTarget);
 
-            player.sendMessage(`§aSuccessfully kicked ${foundPlayer.nameTag} for: ${originalReason}`);
+            player.sendMessage(getString('command.kick.success', { targetName: foundPlayer.nameTag, reason: originalReason })); // getString from dependencies
 
             if (playerUtils.notifyAdmins) {
                 const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // playerDataManager from dependencies
-                playerUtils.notifyAdmins(`§7[Admin] §e${foundPlayer.nameTag} §7was kicked by §e${player.nameTag}§7. Reason: §f${originalReason}`, player, targetPData);
+                playerUtils.notifyAdmins(getString('command.kick.adminNotification', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: originalReason }), player, targetPData); // getString from dependencies
             }
             if (logManager?.addLog) {
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'kick', targetName: foundPlayer.nameTag, reason: originalReason }, dependencies);
             }
         } catch (e) {
-            player.sendMessage(`§cError kicking ${targetPlayerName}: ${e.message}`);
+            player.sendMessage(getString('command.kick.error', { targetName: targetPlayerName, error: e.message })); // getString from dependencies, provide e.message
             // Standardized error logging
             console.error(`[KickCommand] Error kicking player ${targetPlayerName}: ${e.stack || e}`);
             logManager?.addLog?.({ actionType: 'error', details: `[KickCommand] Failed to kick ${targetPlayerName}: ${e.stack || e}` }, dependencies);
         }
     } else {
-        player.sendMessage(`§cPlayer '${targetPlayerName}' not found or is not online.`);
+        player.sendMessage(getString('command.kick.notFound', { targetName: targetPlayerName })); // getString from dependencies
     }
 }

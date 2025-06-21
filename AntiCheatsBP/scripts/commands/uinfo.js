@@ -42,7 +42,7 @@ async function showMyStatsUI(player, dependencies) {
         .title(getString("uinfo.myStats.title"))
         .body(statsOutput.trim())
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag); console.error(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.stack || e}`); });
+    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
 /**
@@ -63,7 +63,7 @@ async function showServerRulesUI(player, dependencies) {
         .title(getString("uinfo.serverRules.title"))
         .body(rulesText)
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag); console.error(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.stack || e}`); });
+    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
 /**
@@ -103,7 +103,7 @@ async function showHelpLinksUI(player, dependencies) {
         .title(getString("uinfo.helpLinks.title"))
         .body(linksBody.trim())
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag); console.error(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.stack || e}`); });
+    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
 /**
@@ -124,7 +124,7 @@ async function showGeneralTipsUI(player, dependencies) {
         .title(getString("uinfo.generalTips.title"))
         .body(tips)
         .button1(getString("common.button.close"));
-    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag); console.error(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.stack || e}`); });
+    await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
 /**
@@ -159,14 +159,14 @@ export async function execute(player, _args, dependencies) {
         .button(getString("uinfo.mainPanel.button.generalTips"), "textures/ui/lightbulb_idea_color");
 
     const response = await mainPanel.show(player).catch(e => {
-        playerUtils.debugLog(`[UInfoCommand] Error showing main uinfo panel for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[UInfoCommand] Error showing main uinfo panel for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
         console.error(`[UInfoCommand] Error showing main uinfo panel for ${player.nameTag}: ${e.stack || e}`);
         return { canceled: true, error: true }; // Ensure structure for cancellation check
     });
 
     if (response.canceled) {
         if (!response.error) { // Only log standard cancellation if it wasn't an error causing cancellation
-            playerUtils.debugLog(`[UInfoCommand] User ${player.nameTag} cancelled uinfo panel. Reason: ${response.cancelationReason}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[UInfoCommand] User ${player.nameTag} cancelled uinfo panel. Reason: ${response.cancelationReason}`, player.nameTag, dependencies);
         }
         return;
     }
@@ -180,6 +180,6 @@ export async function execute(player, _args, dependencies) {
         case 2: await showHelpLinksUI(player, dependencies); break;
         case 3: await showGeneralTipsUI(player, dependencies); break;
         default:
-            playerUtils.debugLog(`[UInfoCommand] Unexpected selection in uinfo panel for ${player.nameTag}: ${response.selection}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[UInfoCommand] Unexpected selection in uinfo panel for ${player.nameTag}: ${response.selection}`, player.nameTag, dependencies);
     }
 }

@@ -50,7 +50,7 @@ export async function checkCPS(
     const eventsInWindow = pData.attackEvents.length;
 
     if (pData.isWatched && eventsInWindow > 0) { // playerUtils.debugLog is implicitly checked by being part of dependencies
-        playerUtils.debugLog(`[CPSCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[CPSCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;

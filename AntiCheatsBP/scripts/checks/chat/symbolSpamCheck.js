@@ -59,7 +59,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
             `[SymbolSpamCheck] Player ${player.nameTag} triggered symbol spam. ` +
             `Msg: "${message}", Symbols: ${symbolPercentage.toFixed(1)}%, ` +
             `Threshold: ${config.symbolSpamPercentage}%, MinLength: ${config.symbolSpamMinLength}`,
-            dependencies, pData?.isWatched ? player.nameTag : null
+            pData?.isWatched ? player.nameTag : null, dependencies
         );
 
         const profileName = config.symbolSpamActionProfileName || "chatSymbolSpamDetected";

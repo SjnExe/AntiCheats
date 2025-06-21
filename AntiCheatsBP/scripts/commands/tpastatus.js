@@ -64,7 +64,7 @@ export async function execute(player, args, dependencies) {
                                     requesterPlayer.onScreenDisplay.setActionBar(getString("command.tpastatus.notifyRequester.declined", {targetPlayerName: player.nameTag}));
                                 } catch (e) {
                                     if (config.enableDebugLogging && playerUtils?.debugLog) {
-                                        playerUtils.debugLog(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e.stack || e}`, player.nameTag);
+                                        playerUtils.debugLog(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e.stack || e}`, player.nameTag, dependencies);
                                     } else {
                                         // Consider a less intrusive log if debugLog is off, or remove.
                                         // console.warn(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e}`);

@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, permissionLevels } = dependencies; // Removed findPlayer from direct destructuring
+    const { playerUtils, logManager, config, getString, permissionLevels } = dependencies; // Removed findPlayer from direct destructuring
     const targetPlayerName = args[0];
     const gamemodeName = "Creative"; // For messaging
 
@@ -34,27 +34,27 @@ export async function execute(player, args, dependencies) {
         if (targetPlayer) {
             try {
                 targetPlayer.setGameMode(mc.GameMode.creative);
-                player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`);
+                player.sendMessage(getString("command.gmc.success.other", { targetPlayerName: targetPlayer.nameTag, gamemode: gamemodeName }));
                 if (player.id !== targetPlayer.id) {
-                    targetPlayer.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
+                    targetPlayer.sendMessage(getString("command.gmc.success.self", { gamemode: gamemodeName }));
                 }
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change', targetName: targetPlayer.nameTag, details: `Set to ${gamemodeName}` }, dependencies);
             } catch (e) {
-                player.sendMessage(`§cError setting game mode for ${targetPlayer.nameTag}.`);
-                playerUtils.debugLog(dependencies, `[GMCCommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.message}`, player.nameTag);
+                player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: targetPlayer.nameTag }));
+                playerUtils.debugLog(`[GMCCommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
                 console.error(`[GMCCommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.stack || e}`);
             }
         } else {
-            player.sendMessage(`§cPlayer '${targetPlayerName}' not found or is not online.`);
+            player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
         }
     } else {
         try {
             player.setGameMode(mc.GameMode.creative);
-            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
+            player.sendMessage(getString("command.gmc.success.self", { gamemode: gamemodeName }));
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change_self', targetName: player.nameTag, details: `Set to ${gamemodeName}` }, dependencies);
         } catch (e) {
-            player.sendMessage(`§cError setting game mode for ${player.nameTag}.`);
-            playerUtils.debugLog(dependencies, `[GMCCommand] Error setting own gamemode: ${e.message}`, player.nameTag);
+            player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: player.nameTag }));
+            playerUtils.debugLog(`[GMCCommand] Error setting own gamemode: ${e.message}`, player.nameTag, dependencies); // No change needed here
             console.error(`[GMCCommand] Error setting own gamemode: ${e.stack || e}`);
         }
     }

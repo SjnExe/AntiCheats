@@ -27,6 +27,7 @@ import * as notifyCmd from './notify.js';
 import * as panelCmd from './panel.js';
 import * as resetflagsCmd from './resetflags.js'; // Handles resetflags (and clearwarnings via alias)
 import * as rulesCmd from './rules.js';
+import * as setlangCmd from './setlang.js'; // Renamed import to avoid conflict with future 'setlang' variable if any
 import * as testnotifyCmd from './testnotify.js';
 import * as tpacceptCmd from './tpaccept.js';
 import * as tpacancelCmd from './tpacancel.js';
@@ -71,6 +72,7 @@ export const commandModules = [
     panelCmd,
     resetflagsCmd,
     rulesCmd,
+    setlangCmd, // Adjusted to match renamed import
     testnotifyCmd,
     tpaCmd,
     tpacceptCmd,

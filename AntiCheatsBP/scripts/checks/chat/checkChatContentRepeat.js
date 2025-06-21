@@ -73,6 +73,6 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         };
         await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
-        playerUtils.debugLog(`[ChatContentRepeatCheck] Flagged ${player.nameTag} for repeating "${normalizedMessage.substring(0,20)}...". Count: ${matchCount}/${historyLength}`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[ChatContentRepeatCheck] Flagged ${player.nameTag} for repeating "${normalizedMessage.substring(0,20)}...". Count: ${matchCount}/${historyLength}`, pData.isWatched ? player.nameTag : null, dependencies);
     }
 }

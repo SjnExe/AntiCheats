@@ -8,6 +8,7 @@
  */
 
 import * as mc from '@minecraft/server';
+// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -26,7 +27,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkNoSlow(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies;
+    const { config, playerUtils, actionManager, getString } = dependencies;
 
     if (!config.enableNoSlowCheck || !pData) {
         return;
@@ -37,23 +38,18 @@ export async function checkNoSlow(player, pData, dependencies) {
 
     let slowingActionKey = null;
     let maxAllowedBaseSpeed = Infinity;
-    let localizedSlowingAction = "";
 
     if (pData.isUsingConsumable) {
-        slowingActionKey = "checks.noSlow.action_eatingDrinking";
-        localizedSlowingAction = "Eating/Drinking";
+        slowingActionKey = "check.noSlow.action.eatingDrinking";
         maxAllowedBaseSpeed = config.noSlowMaxSpeedEating ?? 1.0;
     } else if (pData.isChargingBow) {
-        slowingActionKey = "checks.noSlow.action_chargingBow";
-        localizedSlowingAction = "Charging Bow";
+        slowingActionKey = "check.noSlow.action.chargingBow";
         maxAllowedBaseSpeed = config.noSlowMaxSpeedChargingBow ?? 1.0;
     } else if (pData.isUsingShield) {
-        slowingActionKey = "checks.noSlow.action_usingShield";
-        localizedSlowingAction = "Using Shield";
+        slowingActionKey = "check.noSlow.action.usingShield";
         maxAllowedBaseSpeed = config.noSlowMaxSpeedUsingShield ?? 4.4;
     } else if (player.isSneaking) {
-        slowingActionKey = "checks.noSlow.action_sneaking";
-        localizedSlowingAction = "Sneaking";
+        slowingActionKey = "check.noSlow.action.sneaking";
         maxAllowedBaseSpeed = config.noSlowMaxSpeedSneaking ?? 1.5;
     }
 
@@ -70,6 +66,7 @@ export async function checkNoSlow(player, pData, dependencies) {
         // If no speed effect, effectiveMaxAllowedSpeed remains maxAllowedBaseSpeed (plus any inherent small buffer in that base speed)
 
         if (horizontalSpeed > effectiveMaxAllowedSpeed) {
+            const localizedSlowingAction = getString(slowingActionKey); // getString from dependencies
             // Pass the full dependencies object to executeCheckAction
             const violationDetails = {
                 action: localizedSlowingAction,
@@ -84,7 +81,7 @@ export async function checkNoSlow(player, pData, dependencies) {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(
                 `[NoSlowCheck] Flagged ${player.nameTag}. Action: ${localizedSlowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
-                dependencies, watchedPrefix
+                watchedPrefix, dependencies
             );
         }
     }

@@ -12,7 +12,7 @@ import * as mc from '@minecraft/server'; // Keep this if mc.GameMode is used, ot
  * @param {import('../../types.js').Dependencies} dependencies Shared dependencies.
  */
 export function checkNetherRoof(player, pData, dependencies) { // pData is not used here but kept for signature consistency
-    const { config, playerDataManager, playerUtils, mc: minecraftSystem } = dependencies; // mc for GameMode
+    const { config, playerDataManager, playerUtils, getString, mc: minecraftSystem } = dependencies; // getString from dependencies, mc for GameMode
 
     if (!config.enableNetherRoofCheck) {
         return;
@@ -21,7 +21,7 @@ export function checkNetherRoof(player, pData, dependencies) { // pData is not u
     // Bypass for spectators
     if (player.gameMode === minecraftSystem.GameMode.spectator) {
         if (playerUtils.debugLog && pData.isWatched) { // pData is passed as parameter
-            playerUtils.debugLog(dependencies, `[NetherRoofCheck] Player ${player.nameTag} is in spectator mode. Check bypassed.`, player.nameTag);
+            playerUtils.debugLog(`[NetherRoofCheck] Player ${player.nameTag} is in spectator mode. Check bypassed.`, player.nameTag, dependencies);
         }
         return;
     }
@@ -44,7 +44,10 @@ export function checkNetherRoof(player, pData, dependencies) { // pData is not u
                 // If this `detailsForNotify.originalDetailsForNotify` IS used in a user-facing message template
                 // then it MUST be localized. Assuming it's for internal logging / details for admins for now.
                 // For true localization, the profile message would use {detectedY} and {threshold}.
-                originalDetailsForNotify: `Player on Nether roof at Y: ${detectedYValue} (Threshold: ${thresholdValue.toString()})`
+                originalDetailsForNotify: getString("check.netherRoof.details.onRoof", { // getString from dependencies
+                    detectedY: detectedYValue,
+                    threshold: thresholdValue.toString()
+                })
             };
             playerDataManager.addFlag(
                 player,
@@ -57,7 +60,7 @@ export function checkNetherRoof(player, pData, dependencies) { // pData is not u
         } else {
             // This else block might be redundant if playerDataManager and addFlag are guaranteed to be in dependencies
             if (playerUtils && playerUtils.debugLog) {
-                playerUtils.debugLog(`[NetherRoofCheck] playerDataManager.addFlag not available for player ${player.nameTag}`, dependencies, player.nameTag);
+                playerUtils.debugLog(`[NetherRoofCheck] playerDataManager.addFlag not available for player ${player.nameTag}`, player.nameTag, dependencies);
             }
         }
     }

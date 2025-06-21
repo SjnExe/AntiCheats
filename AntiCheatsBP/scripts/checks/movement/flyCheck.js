@@ -56,12 +56,12 @@ export async function checkFly(
     if (player.isGliding) {
         pData.lastUsedElytraTick = currentTick; // Use dependencies.currentTick
         pData.isDirtyForSave = true;
-        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is gliding. lastUsedElytraTick updated. Standard fly checks bypassed.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is gliding. lastUsedElytraTick updated. Standard fly checks bypassed.`, watchedPrefix, dependencies);
         return; // Bypass other fly/hover checks
     }
 
     if (player.isFlying) { // Creative or Spectator mode
-        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is legitimately flying (Creative/Spectator). Standard fly checks bypassed.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is legitimately flying (Creative/Spectator). Standard fly checks bypassed.`, watchedPrefix, dependencies);
         return;
     }
 
@@ -75,7 +75,7 @@ export async function checkFly(
         const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
 
         if (pData.isWatched) {
-            playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: BaseMaxYVel: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMaxYVel: ${effectiveMaxYVelocity.toFixed(3)}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: BaseMaxYVel: ${baseYVelocityPositive.toFixed(3)}, JumpBoostLvl: ${jumpBoostAmplifierValue}, JumpBoostBonus: ${jumpBoostBonus.toFixed(3)}, EffectiveMaxYVel: ${effectiveMaxYVelocity.toFixed(3)}`, player.nameTag, dependencies);
         }
 
         const ticksSinceLastDamage = currentTick - (pData.lastTookDamageTick ?? -Infinity); // Use dependencies.currentTick
@@ -90,10 +90,10 @@ export async function checkFly(
         );
 
         if (underGraceCondition && pData.isWatched) {
-            if (ticksSinceLastDamage <= graceTicks) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to recent damage (Ticks: ${ticksSinceLastDamage})`, dependencies, player.nameTag);
-            if (ticksSinceLastElytra <= graceTicks) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to recent elytra use (Ticks: ${ticksSinceLastElytra})`, dependencies, player.nameTag);
-            if (player.isClimbing) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to climbing.`, dependencies, player.nameTag);
-            if (pData.hasSlowFalling && currentYVelocity < 0) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to slow falling and downward movement.`, dependencies, player.nameTag);
+            if (ticksSinceLastDamage <= graceTicks) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to recent damage (Ticks: ${ticksSinceLastDamage})`, player.nameTag, dependencies);
+            if (ticksSinceLastElytra <= graceTicks) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to recent elytra use (Ticks: ${ticksSinceLastElytra})`, player.nameTag, dependencies);
+            if (player.isClimbing) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to climbing.`, player.nameTag, dependencies);
+            if (pData.hasSlowFalling && currentYVelocity < 0) playerUtils.debugLog(`[FlyCheck] ${player.nameTag}: Y-velocity check grace due to slow falling and downward movement.`, player.nameTag, dependencies);
         }
 
         if (currentYVelocity > effectiveMaxYVelocity && !underGraceCondition) {
@@ -110,7 +110,7 @@ export async function checkFly(
                 hasLevitation: pData.hasLevitation?.toString() ?? "false"
             };
             await actionManager.executeCheckAction(player, config.highYVelocityActionProfileName || "movementHighYVelocity", violationDetails, dependencies);
-            playerUtils.debugLog(`[FlyCheck] HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[FlyCheck] HighYVelocity: Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix, dependencies);
         }
     }
 
@@ -122,17 +122,17 @@ export async function checkFly(
 
     // If player has Levitation and is moving upwards, it's considered legitimate for fly/hover.
     if (pData.hasLevitation && pData.velocity.y > 0) {
-        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix, dependencies);
         return;
     }
     // If player has Slow Falling and is moving downwards, it's legitimate for hover-like behavior.
     // This doesn't fully exempt from hover, as prolonged near-zero Y speed is still suspicious.
     if (pData.hasSlowFalling && pData.velocity.y < 0) {
-        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} noting slow descent due to Slow Falling. VSpeed: ${pData.velocity.y.toFixed(2)}`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[FlyCheck] ${player.nameTag} noting slow descent due to Slow Falling. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix, dependencies);
     }
 
     const verticalSpeed = pData.velocity.y;
-    playerUtils.debugLog(`[FlyCheck] Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, dependencies, watchedPrefix);
+    playerUtils.debugLog(`[FlyCheck] Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, watchedPrefix, dependencies);
 
     // 1. Sustained Upward Movement (not climbing, not levitating)
     const sustainedThreshold = config.flySustainedVerticalSpeedThreshold ?? 0.5;

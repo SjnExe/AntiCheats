@@ -3,271 +3,276 @@ import { checkActionProfiles } from './core/actionProfiles.js';
 import { automodConfig as importedAutoModConfig } from './core/automodConfig.js';
 
 // General Admin & System
-// The tag for identifying admin players.
+/** @type {string} The tag for identifying admin players. */
 export const adminTag = "admin";
-// The exact name of the server owner. Required for owner-level commands/features.
+/** @type {string} The exact name of the server owner. Required for owner-level commands/features. */
 export const ownerPlayerName = "PlayerNameHere";
-// If true, enables detailed debug logging to console.
+/** @type {boolean} If true, enables detailed debug logging to console. */
 export const enableDebugLogging = true;
-// The prefix for chat-based commands (e.g., "!", ".").
+/** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
 export const prefix = "!";
+/** @type {string} Default language code for server messages if player's language is not set or translation missing. */
+export const defaultServerLanguage = "en_US";
 
 // Welcomer & Player Info
-// If true, a welcome message is sent to players when they join.
+/** @type {boolean} If true, a welcome message is sent to players when they join. */
 export const enableWelcomerMessage = true;
-// If true, sends the multi-line 'firstJoinMessage' to new players.
-export const enableDetailedFirstJoinMessage = true;
-// The welcome message string (supports {playerName} placeholder).
-export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
-// If true, admins are notified when a new player joins for the first time.
+/** @type {string} Localization key for the welcome message. */
+export const welcomeMessage = "message.welcome";
+/** @type {boolean} If true, admins are notified when a new player joins for the first time. */
 export const notifyAdminOnNewPlayerJoin = true;
-// If true, players are sent their death coordinates upon respawning.
+/** @type {boolean} If true, players are sent their death coordinates upon respawning. */
 export const enableDeathCoordsMessage = true;
-// The death coordinates message string (supports {x}, {y}, {z}, {dimensionId} placeholders).
-export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
+/** @type {string} Localization key for the death coordinates message. */
+export const deathCoordsMessage = "message.deathCoords";
 
 // Combat Log
-// If true, enables detection of players leaving shortly after combat.
+/** @type {boolean} If true, enables detection of players leaving shortly after combat. */
 export const enableCombatLogDetection = false;
-// Seconds after last combat interaction within which leaving is considered combat logging.
+/** @type {number} Seconds after last combat interaction within which leaving is considered combat logging. */
 export const combatLogThresholdSeconds = 15;
-// Number of flags to add for a combat log violation.
+/** @type {number} Number of flags to add for a combat log violation. */
 export const combatLogFlagIncrement = 1;
-// The admin notification message string for combat log detection (supports {playerName}, {timeSinceCombat}, {incrementAmount} placeholders).
-export const combatLogMessage = "§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}";
+/** @type {string} Localization key for the admin notification message on combat log detection. */
+export const combatLogMessage = "message.combatLogAdminNotify";
 
 // TPA System
-// If true, the TPA (Teleport Ask) system is enabled.
+/** @type {boolean} If true, the TPA (Teleport Ask) system is enabled. */
 export const enableTPASystem = false;
-// Seconds a TPA request remains valid before automatically expiring.
+/** @type {number} Seconds a TPA request remains valid before automatically expiring. */
 export const TPARequestTimeoutSeconds = 60;
-// Seconds a player must wait between sending TPA requests.
+/** @type {number} Seconds a player must wait between sending TPA requests. */
 export const TPARequestCooldownSeconds = 10;
-// Seconds of warmup before a player is teleported after a TPA request is accepted. Movement or damage cancels it.
+/** @type {number} Seconds of warmup before a player is teleported after a TPA request is accepted. Movement or damage cancels it. */
 export const TPATeleportWarmupSeconds = 10;
 
 // Server Info & Links
-// Link to the server's Discord. Displayed in help or server info commands.
+/** @type {string} Link to the server's Discord. Displayed in help or server info commands. */
 export const discordLink = "https://discord.gg/example";
-// Link to the server's website.
+/** @type {string} Link to the server's website. */
 export const websiteLink = "https://example.com";
-// Array of objects defining helpful links (e.g., for rules, reporting).
+/** @type {Array<{title: string, url: string}>} Array of objects defining helpful links (e.g., for rules, reporting). */
 export const helpLinks = [
     { title: "Our Discord Server", url: "https://discord.gg/YourInviteCode" },
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
 ];
-// The multi-line message shown to players on their first join (lines separated by \n).
-export const firstJoinMessage = "Welcome to the server! Type `!help` for commands.\nUse `!help <command>` for more info on a specific command.\nTo report a player, please use the report command or contact staff.\nMake sure to read the server rules using the `!rules` command.";
+/** @type {string[]} Array of localization keys for general help messages. */
+export const generalHelpMessages = [
+    "message.generalHelp.welcome",
+    "message.generalHelp.helpCommandPrompt",
+    "message.generalHelp.reportPrompt",
+    "message.generalHelp.rulesPrompt"
+];
 
 // Logging
-// If true, enables detailed logging of player join and leave events to the console.
+/** @type {boolean} If true, enables detailed logging of player join and leave events to the console. */
 export const enableDetailedJoinLeaveLogging = true;
 
 // Chat Checks
-// If true, enables the Swear Word detection check.
+/** @type {boolean} If true, enables the Swear Word detection check. */
 export const enableSwearCheck = false;
-// List of swear words to detect (case-insensitive, whole word).
+/** @type {string[]} List of swear words to detect (case-insensitive, whole word). */
 export const swearWordList = [];
-// Duration for the mute applied on swear word detection (e.g., "30s", "5m", "1h").
+/** @type {string} Duration for the mute applied on swear word detection (e.g., "30s", "5m", "1h"). */
 export const swearCheckMuteDuration = "30s";
 
-// If true, enables the basic anti-advertising check in chat.
+/** @type {boolean} If true, enables the basic anti-advertising check in chat. */
 export const enableAntiAdvertisingCheck = true;
-// List of string patterns to detect potential advertisements.
+/** @type {string[]} List of string patterns to detect potential advertisements. */
 export const antiAdvertisingPatterns = ["http://", "https://", "www.", ".com", ".net", ".org", ".gg", ".tk", ".co", ".uk", ".biz", ".info", ".io", ".me", ".tv", ".us", ".ws", ".club", ".store", ".online", ".site", ".xyz", ".shop", "discord.gg/", "joinmc.", "playmc.", "server."];
-// The action profile name for advertising violations.
+/** @type {string} The action profile name for advertising violations. */
 export const antiAdvertisingActionProfileName = "chatAdvertisingDetected";
 
-// If true, enables advanced regex-based link detection and whitelisting.
+/** @type {boolean} If true, enables advanced regex-based link detection and whitelisting. */
 export const enableAdvancedLinkDetection = false; // Default to false initially
-// List of regex strings for advanced link detection.
+/** @type {string[]} List of regex strings for advanced link detection. */
 export const advancedLinkRegexList = [
     "https?://(?:[a-zA-Z0-9\\-_]+\\.)+[a-zA-Z]{2,}(?::\\d+)?(?:/[^\\s]*)?",
     "www\\.(?:[a-zA-Z0-9\\-_]+\\.)+[a-zA-Z]{2,}(?::\\d+)?(?:/[^\\s]*)?",
     "\\b(?:[a-zA-Z0-9\\-_]+\\.)+(com|net|org|gg|io|me|tv|us|uk|biz|info|club|store|online|site|xyz|shop|network|info|website|co|dev|app|online|xyz|tech|space|store|fun|press|host|art|blog|cafe|pics|live|life|news|ninja|cool|guru|gallery|city|country|link|click|buzz|stream|tube|chat|community|forum|group|page|fans|media|show|studio|style|video|software|pictures|graphics|game|games|server|play|mc|srv|network|gaming|fun|pro|services|shop|store|center|solutions|support|tech|tools|systems|cloud|digital|data|security|hosting|design|dev|app|api|network|community|forum|blog|news|media|studio|graphics|gallery|live|life|video|stream|tube|chat|page|fans|show|style|center|solutions|support|systems|cloud|digital|data|security|hosting|design|dev|app|api)(\\b|/[^\\s]*)",
     "\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?::\\d+)?(?:/[^\\s]*)?\\b"
 ];
-// List of patterns (strings or regex strings) to whitelist from advertising flags.
+/** @type {string[]} List of patterns (strings or regex strings) to whitelist from advertising flags. */
 export const advertisingWhitelistPatterns = []; // Example: ["myserver\\.com", "discord\\.gg/myinvite"]
 
-// If true, enables the check for excessive capitalization (CAPS abuse) in chat.
+/** @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat. */
 export const enableCapsCheck = true;
-// The minimum message length for the CAPS abuse check to apply.
+/** @type {number} The minimum message length for the CAPS abuse check to apply. */
 export const capsCheckMinLength = 10;
-// The percentage (0-100) of uppercase letters to trigger a CAPS abuse flag.
+/** @type {number} The percentage (0-100) of uppercase letters to trigger a CAPS abuse flag. */
 export const capsCheckUpperCasePercentage = 70;
-// The action profile name for CAPS abuse violations.
+/** @type {string} The action profile name for CAPS abuse violations. */
 export const capsCheckActionProfileName = "chat_caps_abuse_detected";
 
-// If true, enables the check for excessive character repetition in chat.
+/** @type {boolean} If true, enables the check for excessive character repetition in chat. */
 export const enableCharRepeatCheck = true;
-// The minimum message length for the character repeat check to apply.
+/** @type {number} The minimum message length for the character repeat check to apply. */
 export const charRepeatMinLength = 10;
-// The minimum number of identical consecutive characters to trigger a flag.
+/** @type {number} The minimum number of identical consecutive characters to trigger a flag. */
 export const charRepeatThreshold = 6;
-// The action profile name for character repeat violations.
+/** @type {string} The action profile name for character repeat violations. */
 export const charRepeatActionProfileName = "chat_char_repeat_detected";
 
-// If true, enables the check for excessive symbol usage in chat.
+/** @type {boolean} If true, enables the check for excessive symbol usage in chat. */
 export const enableSymbolSpamCheck = true;
-// The minimum message length for the symbol spam check to apply.
+/** @type {number} The minimum message length for the symbol spam check to apply. */
 export const symbolSpamMinLength = 10;
-// The percentage (0-100) of non-alphanumeric characters to trigger a symbol spam flag.
+/** @type {number} The percentage (0-100) of non-alphanumeric characters to trigger a symbol spam flag. */
 export const symbolSpamPercentage = 50;
-// The action profile name for symbol spam violations.
+/** @type {string} The action profile name for symbol spam violations. */
 export const symbolSpamActionProfileName = "chat_symbol_spam_detected";
 
 // AntiGrief - TNT
-// If true, enables anti-grief measures for TNT placement.
+/** @type {boolean} If true, enables anti-grief measures for TNT placement. */
 export const enableTntAntiGrief = false;
-// If true, admins (identified by `adminTag`) can place TNT without restriction.
+/** @type {boolean} If true, admins (identified by `adminTag`) can place TNT without restriction. */
 export const allowAdminTntPlacement = true;
-// Action to take when unauthorized TNT placement is detected ("remove", "warn", "flag_only").
+/** @type {string} Action to take when unauthorized TNT placement is detected ("remove", "warn", "flag_only"). */
 export const tntPlacementAction = "remove";
 
 // AntiGrief - Wither
-// If true, enables anti-grief measures for Wither spawning.
+/** @type {boolean} If true, enables anti-grief measures for Wither spawning. */
 export const enableWitherAntiGrief = false;
-// If true, admins can spawn Withers without restriction.
+/** @type {boolean} If true, admins can spawn Withers without restriction. */
 export const allowAdminWitherSpawn = true;
-// Action for unauthorized Wither spawn ("prevent", "kill", "warn", "flag_only").
+/** @type {string} Action for unauthorized Wither spawn ("prevent", "kill", "warn", "flag_only"). */
 export const witherSpawnAction = "prevent";
 
 // AntiGrief - Fire
-// If true, enables anti-grief measures for fire spread/placement.
+/** @type {boolean} If true, enables anti-grief measures for fire spread/placement. */
 export const enableFireAntiGrief = false;
-// If true, admins can create fire without restriction.
+/** @type {boolean} If true, admins can create fire without restriction. */
 export const allowAdminFire = true;
-// Action for unauthorized fire ("extinguish", "warn", "flag_only").
+/** @type {string} Action for unauthorized fire ("extinguish", "warn", "flag_only"). */
 export const fireControlAction = "extinguish";
 
 // AntiGrief - Lava
-// If true, enables anti-grief measures for lava placement.
+/** @type {boolean} If true, enables anti-grief measures for lava placement. */
 export const enableLavaAntiGrief = false;
-// If true, admins can place lava without restriction.
+/** @type {boolean} If true, admins can place lava without restriction. */
 export const allowAdminLava = true;
-// Action for unauthorized lava placement ("remove", "warn", "flag_only").
+/** @type {string} Action for unauthorized lava placement ("remove", "warn", "flag_only"). */
 export const lavaPlacementAction = "remove";
 
 // AntiGrief - Water
-// If true, enables anti-grief measures for water placement.
+/** @type {boolean} If true, enables anti-grief measures for water placement. */
 export const enableWaterAntiGrief = false;
-// If true, admins can place water without restriction.
+/** @type {boolean} If true, admins can place water without restriction. */
 export const allowAdminWater = true;
-// Action for unauthorized water placement ("remove", "warn", "flag_only").
+/** @type {string} Action for unauthorized water placement ("remove", "warn", "flag_only"). */
 export const waterPlacementAction = "remove";
 
 // AntiGrief - Block Spam (Rate)
-// If true, enables detection of rapid block placement (block spam by rate).
+/** @type {boolean} If true, enables detection of rapid block placement (block spam by rate). */
 export const enableBlockSpamAntiGrief = false;
-// If true, players in Creative mode bypass the block spam (rate) check.
+/** @type {boolean} If true, players in Creative mode bypass the block spam (rate) check. */
 export const blockSpamBypassInCreative = true;
-// Time window in milliseconds to count blocks for rate-based spam detection.
+/** @type {number} Time window in milliseconds to count blocks for rate-based spam detection. */
 export const blockSpamTimeWindowMs = 1000;
-// Maximum number of blocks allowed to be placed within `blockSpamTimeWindowMs`.
+/** @type {number} Maximum number of blocks allowed to be placed within `blockSpamTimeWindowMs`. */
 export const blockSpamMaxBlocksInWindow = 8;
-// Specific block types to monitor for rate-based spam. Empty array means all blocks.
+/** @type {string[]} Specific block types to monitor for rate-based spam. Empty array means all blocks. */
 export const blockSpamMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
-// Action for block spam (rate) violation ("warn", "flag_only", "kick").
+/** @type {string} Action for block spam (rate) violation ("warn", "flag_only", "kick"). */
 export const blockSpamAction = "warn";
 
 // AntiGrief - Entity Spam
-// If true, enables detection of rapid entity spawning.
+/** @type {boolean} If true, enables detection of rapid entity spawning. */
 export const enableEntitySpamAntiGrief = false;
-// If true, players in Creative mode bypass the entity spam check.
+/** @type {boolean} If true, players in Creative mode bypass the entity spam check. */
 export const entitySpamBypassInCreative = true;
-// Time window in milliseconds to count entities for spam detection.
+/** @type {number} Time window in milliseconds to count entities for spam detection. */
 export const entitySpamTimeWindowMs = 2000;
-// Maximum number of specified entities allowed to be spawned within `entitySpamTimeWindowMs`.
+/** @type {number} Maximum number of specified entities allowed to be spawned within `entitySpamTimeWindowMs`. */
 export const entitySpamMaxSpawnsInWindow = 5;
-// Specific entity types to monitor for spam.
+/** @type {string[]} Specific entity types to monitor for spam. */
 export const entitySpamMonitoredEntityTypes = ["minecraft:boat", "minecraft:armor_stand", "minecraft:item_frame", "minecraft:minecart", "minecraft:snow_golem", "minecraft:iron_golem"];
-// Action for entity spam violation ("kill", "warn", "flag_only").
+/** @type {string} Action for entity spam violation ("kill", "warn", "flag_only"). */
 export const entitySpamAction = "kill";
 
 // AntiGrief - Block Spam (Density)
-// If true, enables detection of high-density block placement.
+/** @type {boolean} If true, enables detection of high-density block placement. */
 export const enableBlockSpamDensityCheck = false;
-// Specific block types to monitor for density-based spam. Empty means all.
+/** @type {string[]} Specific block types to monitor for density-based spam. Empty means all. */
 export const blockSpamDensityMonitoredBlockTypes = ["minecraft:dirt", "minecraft:cobblestone", "minecraft:netherrack", "minecraft:sand", "minecraft:gravel"];
-// Action for block spam (density) violation ("warn", "flag_only").
+/** @type {string} Action for block spam (density) violation ("warn", "flag_only"). */
 export const blockSpamDensityAction = "warn";
 
 // Piston Lag Check
-// If true, enables monitoring of rapid piston activations to detect potential lag machines.
+/** @type {boolean} If true, enables monitoring of rapid piston activations to detect potential lag machines. */
 export const enablePistonLagCheck = false;
-// Activations per second of a single piston to trigger logging/alert.
+/** @type {number} Activations per second of a single piston to trigger logging/alert. */
 export const pistonActivationLogThresholdPerSecond = 15;
-// Duration in seconds piston activity must be sustained above threshold to trigger.
+/** @type {number} Duration in seconds piston activity must be sustained above threshold to trigger. */
 export const pistonActivationSustainedDurationSeconds = 3;
-// Cooldown in seconds before logging/alerting for the same piston again.
+/** @type {number} Cooldown in seconds before logging/alerting for the same piston again. */
 export const pistonLagLogCooldownSeconds = 60;
 
 // World Border System (User-Facing Parts)
-// Master switch for the entire World Border feature.
+/** @type {boolean} Master switch for the entire World Border feature. */
 export const enableWorldBorderSystem = false;
-// The warning message string shown to players approaching the border.
-export const worldBorderWarningMessage = "You are approaching the world border!";
-// Default setting for whether players take damage when outside the world border.
+/** @type {string} Localization key for the warning message shown to players approaching the border. */
+export const worldBorderWarningMessage = "message.worldBorderWarning";
+/** @type {boolean} Default setting for whether players take damage when outside the world border. */
 export const worldBorderDefaultEnableDamage = false;
-// Default damage amount per interval for players outside the border.
+/** @type {number} Default damage amount per interval for players outside the border. */
 export const worldBorderDefaultDamageAmount = 0.5;
-// Default interval in game ticks at which damage is applied.
+/** @type {number} Default interval in game ticks at which damage is applied. */
 export const worldBorderDefaultDamageIntervalTicks = 20;
-// Number of damage events after which a player is teleported back inside.
+/** @type {number} Number of damage events after which a player is teleported back inside. */
 export const worldBorderTeleportAfterNumDamageEvents = 30;
-// If true, enables visual particle effects for the world border.
+/** @type {boolean} If true, enables visual particle effects for the world border. */
 export const worldBorderEnableVisuals = false;
-// Default particle type ID for the world border visual effect.
+/** @type {string} Default particle type ID for the world border visual effect. */
 export const worldBorderParticleName = "minecraft:end_rod";
-// Visual range in blocks from the border where particles may appear.
+/** @type {number} Visual range in blocks from the border where particles may appear. */
 export const worldBorderVisualRange = 24;
-// Density of particles for the visual effect. Higher is denser.
+/** @type {number} Density of particles for the visual effect. Higher is denser. */
 export const worldBorderParticleDensity = 1;
-// Height in blocks of the particle wall visual.
+/** @type {number} Height in blocks of the particle wall visual. */
 export const worldBorderParticleWallHeight = 4;
-// Length in blocks of each segment of the particle wall.
+/** @type {number} Length in blocks of each segment of the particle wall. */
 export const worldBorderParticleSegmentLength = 32;
-// Interval in game ticks at which world border visuals are updated.
+/** @type {number} Interval in game ticks at which world border visuals are updated. */
 export const worldBorderVisualUpdateIntervalTicks = 10;
-// If populated, visuals cycle through these particles. Overrides `worldBorderParticleName`.
+/** @type {string[]} If populated, visuals cycle through these particles. Overrides `worldBorderParticleName`. */
 export const worldBorderParticleSequence = [];
-// If true, enables pulsing density effect for border visuals.
+/** @type {boolean} If true, enables pulsing density effect for border visuals. */
 export const worldBorderEnablePulsingDensity = false;
-// Minimum particle density multiplier for pulsing effect.
+/** @type {number} Minimum particle density multiplier for pulsing effect. */
 export const worldBorderPulseDensityMin = 0.5;
-// Maximum particle density multiplier for pulsing effect.
+/** @type {number} Maximum particle density multiplier for pulsing effect. */
 export const worldBorderPulseDensityMax = 1.5;
-// Speed of the pulsing effect. Higher is faster.
+/** @type {number} Speed of the pulsing effect. Higher is faster. */
 export const worldBorderPulseSpeed = 1.0;
 
 // X-Ray Detection Notifications
-// If true, admins are notified when players mine valuable ores.
+/** @type {boolean} If true, admins are notified when players mine valuable ores. */
 export const xrayDetectionNotifyOnOreMineEnabled = true;
-// List of block type IDs monitored for X-Ray mining notifications.
+/** @type {string[]} List of block type IDs monitored for X-Ray mining notifications. */
 export const xrayDetectionMonitoredOres = ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"];
-// If true, admins receive X-Ray notifications by default (can be toggled per admin).
+/** @type {boolean} If true, admins receive X-Ray notifications by default (can be toggled per admin). */
 export const xrayDetectionAdminNotifyByDefault = true;
 
 // Chat Formatting
-// Chat prefix color for Owner rank.
+/** @type {string} Chat prefix color for Owner rank. */
 export const chatFormatOwnerPrefixColor = "§c";
-// Name color for Owner rank.
+/** @type {string} Name color for Owner rank. */
 export const chatFormatOwnerNameColor = "§c";
-// Message color for Owner rank.
+/** @type {string} Message color for Owner rank. */
 export const chatFormatOwnerMessageColor = "§f";
-// Chat prefix color for Admin rank.
+/** @type {string} Chat prefix color for Admin rank. */
 export const chatFormatAdminPrefixColor = "§b";
-// Name color for Admin rank.
+/** @type {string} Name color for Admin rank. */
 export const chatFormatAdminNameColor = "§b";
-// Message color for Admin rank.
+/** @type {string} Message color for Admin rank. */
 export const chatFormatAdminMessageColor = "§f";
-// Chat prefix color for Member rank.
+/** @type {string} Chat prefix color for Member rank. */
 export const chatFormatMemberPrefixColor = "§7";
-// Name color for Member rank.
+/** @type {string} Name color for Member rank. */
 export const chatFormatMemberNameColor = "§7";
-// Message color for Member rank.
+/** @type {string} Message color for Member rank. */
 export const chatFormatMemberMessageColor = "§f";
 
 
@@ -310,10 +315,12 @@ export const commandSettings = {
     setlang: { enabled: true }
 };
 
-// If true, the Automated Moderation system is active.
+/** @type {boolean} If true, the Automated Moderation system is active. */
 export const enableAutoMod = false;
 
-// Defines the server rules to be displayed to players.
+/**
+ * @type {string[]} Defines the server rules to be displayed to players.
+ */
 export const serverRules = [
     "Rule 1: Be respectful to all players and staff.",
     "Rule 2: No cheating, exploiting, or using unauthorized modifications.",
@@ -325,128 +332,128 @@ export const serverRules = [
 
 // --- General Check Toggles ---
 
-// If true, the Reach check is active.
+/** @type {boolean} If true, the Reach check is active. */
 export const enableReachCheck = true;
-// If true, the CPS (Clicks Per Second) check is active.
+/** @type {boolean} If true, the CPS (Clicks Per Second) check is active. */
 export const enableCPSCheck = true;
-// If true, the View Snap / Invalid Pitch check is active.
+/** @type {boolean} If true, the View Snap / Invalid Pitch check is active. */
 export const enableViewSnapCheck = true;
-// If true, the Multi-Target Killaura check is active.
+/** @type {boolean} If true, the Multi-Target Killaura check is active. */
 export const enableMultiTargetCheck = true;
-// If true, various state conflict checks (e.g., attack while sleeping) are active.
+/** @type {boolean} If true, various state conflict checks (e.g., attack while sleeping) are active. */
 export const enableStateConflictCheck = true;
-// If true, the Fly check (both sustained and hover) is active.
+/** @type {boolean} If true, the Fly check (both sustained and hover) is active. */
 export const enableFlyCheck = false;
-// If true, the Speed check is active.
+/** @type {boolean} If true, the Speed check is active. */
 export const enableSpeedCheck = false;
-// If true, the NoFall check is active.
+/** @type {boolean} If true, the NoFall check is active. */
 export const enableNofallCheck = true;
-// If true, the Nuker check is active.
+/** @type {boolean} If true, the Nuker check is active. */
 export const enableNukerCheck = false;
-// If true, the Illegal Item check (both use and place) is active.
+/** @type {boolean} If true, the Illegal Item check (both use and place) is active. */
 export const enableIllegalItemCheck = true;
-// If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage.
+/** @type {boolean} If true, the Self-Hurt Detection check is active. Detects suspicious self-inflicted damage. */
 export const enableSelfHurtCheck = true;
 
-// If true, the Nether Roof Check is active and will flag players found on the Nether roof.
+/** @type {boolean} If true, the Nether Roof Check is active and will flag players found on the Nether roof. */
 export const enableNetherRoofCheck = false;
 
 
 // --- Movement Checks ---
 
-// The Y-level at or above which a player in the Nether is considered to be on the roof.
+/** @type {number} The Y-level at or above which a player in the Nether is considered to be on the roof. */
 export const netherRoofYLevelThreshold = 128;
 
-// Maximum vertical speed (positive for upward, negative for downward) in blocks per second. Used by Fly check.
+/** @type {number} Maximum vertical speed (positive for upward, negative for downward) in blocks per second. Used by Fly check. */
 export const maxVerticalSpeed = 10;
-// Maximum horizontal speed in blocks per second. Default vanilla sprint speed is ~5.6 blocks/sec.
+/** @type {number} Maximum horizontal speed in blocks per second. Default vanilla sprint speed is ~5.6 blocks/sec. */
 export const maxHorizontalSpeed = 15;
-// Flat bonus to maximum horizontal speed (blocks/sec) added per level of the Speed effect.
+/** @type {number} Flat bonus to maximum horizontal speed (blocks/sec) added per level of the Speed effect. */
 export const speedEffectBonus = 2.0;
-// Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check.
+/** @type {number} Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check. */
 export const minFallDistanceForDamage = 3.5;
-// Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection.
+/** @type {number} Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection. */
 export const flySustainedVerticalSpeedThreshold = 0.5;
-// Number of consecutive off-ground ticks, while exceeding `flySustainedVerticalSpeedThreshold`, to trigger a fly flag.
+/** @type {number} Number of consecutive off-ground ticks, while exceeding `flySustainedVerticalSpeedThreshold`, to trigger a fly flag. */
 export const flySustainedOffGroundTicksThreshold = 10;
-// Minimum height in blocks above the last known ground position for hover detection.
+/** @type {number} Minimum height in blocks above the last known ground position for hover detection. */
 export const flyHoverNearGroundThreshold = 3;
-// Vertical speed (absolute value, blocks per tick) below which a player is considered hovering.
+/** @type {number} Vertical speed (absolute value, blocks per tick) below which a player is considered hovering. */
 export const flyHoverVerticalSpeedThreshold = 0.08;
-// Number of consecutive off-ground ticks, while meeting hover conditions, to trigger a hover flag.
+/** @type {number} Number of consecutive off-ground ticks, while meeting hover conditions, to trigger a hover flag. */
 export const flyHoverOffGroundTicksThreshold = 20;
-// Maximum fall distance accumulated while hovering that will not be reset, to differentiate from actual falls.
+/** @type {number} Maximum fall distance accumulated while hovering that will not be reset, to differentiate from actual falls. */
 export const flyHoverMaxFallDistanceThreshold = 1.0;
-// A tolerance buffer in blocks per second added to the maximum horizontal speed calculation.
+/** @type {number} A tolerance buffer in blocks per second added to the maximum horizontal speed calculation. */
 export const speedToleranceBuffer = 0.5;
-// Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged by Speed check.
+/** @type {number} Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged by Speed check. */
 export const speedGroundConsecutiveTicksThreshold = 5;
-// List of block type IDs that mitigate fall damage (e.g., hay_block).
+/** @type {string[]} List of block type IDs that mitigate fall damage (e.g., hay_block). */
 export const noFallMitigationBlocks = ["minecraft:hay_block", "minecraft:powder_snow", "minecraft:sweet_berry_bush"];
 
-// If true, the NoSlow check (detecting movement speed reduction bypass) is active.
+/** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass) is active. */
 export const enableNoSlowCheck = false;
 // export const noSlowSpeedEffectTolerance = 0.5; // Deprecated: Flat tolerance for Speed effect with NoSlow. Use noSlowSpeedEffectTolerancePercent.
-// Percentage (0.0 to 1.0) of additional speed allowed if player has Speed effect, relative to the action's max speed. E.g., 0.10 for 10% buffer.
+/** @type {number} Percentage (0.0 to 1.0) of additional speed allowed if player has Speed effect, relative to the action's max speed. E.g., 0.10 for 10% buffer. */
 export const noSlowSpeedEffectTolerancePercent = 0.10;
-// Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed.
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed. */
 export const noSlowMaxSpeedEating = 1.0;
-// Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla movement is significantly slowed.
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while charging a bow. Vanilla movement is significantly slowed. */
 export const noSlowMaxSpeedChargingBow = 1.0;
-// Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield. Vanilla walking speed is ~4.3 BPS; shield does not slow normal walking/sprinting. This value helps catch hacks if combined with other speed modifiers.
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while actively using/raising a shield. Vanilla walking speed is ~4.3 BPS; shield does not slow normal walking/sprinting. This value helps catch hacks if combined with other speed modifiers. */
 export const noSlowMaxSpeedUsingShield = 4.4;
-// Maximum horizontal speed (blocks/sec) allowed while sneaking. Vanilla sneaking speed is ~1.31 BPS.
+/** @type {number} Maximum horizontal speed (blocks/sec) allowed while sneaking. Vanilla sneaking speed is ~1.31 BPS. */
 export const noSlowMaxSpeedSneaking = 1.5;
 
-// If true, the Invalid Sprint check (detecting sprinting under disallowed conditions) is active.
+/** @type {boolean} If true, the Invalid Sprint check (detecting sprinting under disallowed conditions) is active. */
 export const enableInvalidSprintCheck = true;
-// Minimum food level (inclusive) required to sprint. Vanilla default is > 6 (i.e., 7 or more).
+/** @type {number} Minimum food level (inclusive) required to sprint. Vanilla default is > 6 (i.e., 7 or more). */
 export const sprintHungerLimit = 6;
 
 
 // --- Combat Checks ---
 
-// Maximum clicks per second (CPS) threshold before flagging.
+/** @type {number} Maximum clicks per second (CPS) threshold before flagging. */
 export const maxCpsThreshold = 20;
-// Maximum reach distance in blocks for Survival/Adventure mode players.
+/** @type {number} Maximum reach distance in blocks for Survival/Adventure mode players. */
 export const reachDistanceSurvival = 4.5;
-// Maximum reach distance in blocks for Creative mode players.
+/** @type {number} Maximum reach distance in blocks for Creative mode players. */
 export const reachDistanceCreative = 6.0;
-// A small buffer in blocks added to maximum reach distance calculations to reduce false positives.
+/** @type {number} A small buffer in blocks added to maximum reach distance calculations to reduce false positives. */
 export const reachBuffer = 0.5;
-// Time window in milliseconds over which CPS is calculated.
+/** @type {number} Time window in milliseconds over which CPS is calculated. */
 export const cpsCalculationWindowMs = 1000;
 
 // --- View Snap / Invalid Pitch (Aimbot/Killaura components) ---
-// Maximum degrees the player's pitch (up/down view angle) can change in a single game tick immediately after an attack.
+/** @type {number} Maximum degrees the player's pitch (up/down view angle) can change in a single game tick immediately after an attack. */
 export const maxPitchSnapPerTick = 75;
-// Maximum degrees the player's yaw (left/right view angle) can change in a single game tick immediately after an attack.
+/** @type {number} Maximum degrees the player's yaw (left/right view angle) can change in a single game tick immediately after an attack. */
 export const maxYawSnapPerTick = 100;
-// Number of game ticks after an attack during which view snaps (pitch/yaw changes) are monitored.
+/** @type {number} Number of game ticks after an attack during which view snaps (pitch/yaw changes) are monitored. */
 export const viewSnapWindowTicks = 10;
-// Minimum pitch value (degrees) considered invalid (e.g., looking impossibly far down). Vanilla range is -90 to 90.
+/** @type {number} Minimum pitch value (degrees) considered invalid (e.g., looking impossibly far down). Vanilla range is -90 to 90. */
 export const invalidPitchThresholdMin = -90.5;
-// Maximum pitch value (degrees) considered invalid (e.g., looking impossibly far up). Vanilla range is -90 to 90.
+/** @type {number} Maximum pitch value (degrees) considered invalid (e.g., looking impossibly far up). Vanilla range is -90 to 90. */
 export const invalidPitchThresholdMax = 90.5;
-// Reason message for flagging due to invalid pitch.
+/** @type {string} Reason message for flagging due to invalid pitch. */
 export const flagReasonInvalidPitch = "Invalid Pitch";
-// Reason message for flagging due to view snaps.
+/** @type {string} Reason message for flagging due to view snaps. */
 export const flagReasonViewSnap = "View Snap";
-// Increment value for flags related to view snap or invalid pitch.
+/** @type {number} Increment value for flags related to view snap or invalid pitch. */
 export const flagIncrementViewSnap = 1;
 
 // --- Multi-Target Killaura ---
-// Time window in milliseconds for detecting attacks on multiple distinct targets.
+/** @type {number} Time window in milliseconds for detecting attacks on multiple distinct targets. */
 export const multiTargetWindowMs = 1000;
-// Number of distinct entities that must be hit within the `multiTargetWindowMs` to trigger a multi-target flag.
+/** @type {number} Number of distinct entities that must be hit within the `multiTargetWindowMs` to trigger a multi-target flag. */
 export const multiTargetThreshold = 3;
-// Maximum number of recent hit target records to store per player for multi-target analysis.
+/** @type {number} Maximum number of recent hit target records to store per player for multi-target analysis. */
 export const multiTargetMaxHistory = 10;
-// Reason message for flagging due to multi-target aura.
+/** @type {string} Reason message for flagging due to multi-target aura. */
 export const flagReasonMultiAura = "Multi-Target Aura";
 
 // --- State Conflict Checks (Killaura components) ---
-// Reason message for flagging due to attacking while sleeping.
+/** @type {string} Reason message for flagging due to attacking while sleeping. */
 export const flagReasonAttackWhileSleeping = "Attack While Sleeping";
 
 /**
@@ -475,200 +482,200 @@ export const attackBlockingBows = ["minecraft:bow", "minecraft:crossbow"];
  */
 export const attackBlockingShields = ["minecraft:shield"];
 
-// Number of ticks an 'item use' state (e.g., `isUsingConsumable`) persists before auto-clearing if no explicit stop event. (20 ticks = 1 second).
+/** @type {number} Number of ticks an 'item use' state (e.g., `isUsingConsumable`) persists before auto-clearing if no explicit stop event. (20 ticks = 1 second). */
 export const itemUseStateClearTicks = 60; // Default to 3 seconds
 
 
 // --- World Checks ---
 
 // --- AutoTool Check ---
-// If true, the AutoTool check (detecting unnaturally fast tool switching for optimal block breaking) is active.
+/** @type {boolean} If true, the AutoTool check (detecting unnaturally fast tool switching for optimal block breaking) is active. */
 export const enableAutoToolCheck = false;
-// Maximum ticks between starting to break a block and switching to an optimal tool to be considered suspicious by AutoTool check.
+/** @type {number} Maximum ticks between starting to break a block and switching to an optimal tool to be considered suspicious by AutoTool check. */
 export const autoToolSwitchToOptimalWindowTicks = 2;
-// Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check.
+/** @type {number} Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check. */
 export const autoToolSwitchBackWindowTicks = 5;
 
 // --- InstaBreak Check ---
-// If true, the check for breaking normally unbreakable blocks (like Bedrock) is active.
+/** @type {boolean} If true, the check for breaking normally unbreakable blocks (like Bedrock) is active. */
 export const enableInstaBreakUnbreakableCheck = false;
-// List of block type IDs considered normally unbreakable by non-Operator players.
+/** @type {string[]} List of block type IDs considered normally unbreakable by non-Operator players. */
 export const instaBreakUnbreakableBlocks = [
     "minecraft:bedrock", "minecraft:barrier", "minecraft:command_block",
     "minecraft:repeating_command_block", "minecraft:chain_command_block",
     "minecraft:structure_block", "minecraft:structure_void", "minecraft:jigsaw",
     "minecraft:light_block", "minecraft:end_portal_frame", "minecraft:end_gateway"
 ];
-// If true, the check for breaking blocks significantly faster than vanilla capabilities is active.
+/** @type {boolean} If true, the check for breaking blocks significantly faster than vanilla capabilities is active. */
 export const enableInstaBreakSpeedCheck = true;
-// Tolerance in game ticks for block breaking speed. Actual break time must be less than (ExpectedTime - Tolerance) to flag.
+/** @type {number} Tolerance in game ticks for block breaking speed. Actual break time must be less than (ExpectedTime - Tolerance) to flag. */
 export const instaBreakTimeToleranceTicks = 2;
 
 // --- Player Behavior Checks ---
-// If true, the NameSpoof check (detecting invalid or rapidly changing player names) is active.
+/** @type {boolean} If true, the NameSpoof check (detecting invalid or rapidly changing player names) is active. */
 export const enableNameSpoofCheck = true;
-// Maximum allowed length for a player's nameTag. Used by NameSpoof check.
+/** @type {number} Maximum allowed length for a player's nameTag. Used by NameSpoof check. */
 export const nameSpoofMaxLength = 48;
 /**
  * @type {string} Regular expression pattern for disallowed characters in player nameTags.
  * Aims to block control characters, newlines, and other potentially problematic symbols.
  */
 export const nameSpoofDisallowedCharsRegex = "[\n\r\t\x00-\x1F\x7F-\x9F]";
-// Minimum interval in game ticks between allowed player nameTag changes. Used by NameSpoof check. (200 ticks = 10 seconds)
+/** @type {number} Minimum interval in game ticks between allowed player nameTag changes. Used by NameSpoof check. (200 ticks = 10 seconds) */
 export const nameSpoofMinChangeIntervalTicks = 200;
 
-// If true, the Anti-Gamemode Creative (Anti-GMC) check (detecting unauthorized Creative mode usage) is active.
+/** @type {boolean} If true, the Anti-Gamemode Creative (Anti-GMC) check (detecting unauthorized Creative mode usage) is active. */
 export const enableAntiGMCCheck = true;
 /**
  * @type {string} The gamemode to switch players to if unauthorized Creative mode is detected and `antiGmcAutoSwitch` is true.
  * Valid values: "survival", "adventure", "spectator". Default: "survival".
  */
 export const antiGMCSwitchToGameMode = "survival";
-// If true, automatically switch a player's gamemode to `antiGMCSwitchToGameMode` if unauthorized Creative mode is detected.
+/** @type {boolean} If true, automatically switch a player's gamemode to `antiGMCSwitchToGameMode` if unauthorized Creative mode is detected. */
 export const antiGmcAutoSwitch = true;
 
-// If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active.
+/** @type {boolean} If true, Inventory Modification checks (e.g., suspicious hotbar switching, using items from closed inventory) are active. */
 export const enableInventoryModCheck = false;
 
 
-// Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker.
+/** @type {number} Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
-// Time window in milliseconds for the Nuker check to count broken blocks.
+/** @type {number} Time window in milliseconds for the Nuker check to count broken blocks. */
 export const nukerCheckIntervalMs = 200;
-// Array of item type IDs banned from being placed by players.
+/** @type {string[]} Array of item type IDs banned from being placed by players. */
 export const bannedItemsPlace = ["minecraft:command_block", "minecraft:moving_block"];
-// Array of item type IDs banned from being used by players.
+/** @type {string[]} Array of item type IDs banned from being used by players. */
 export const bannedItemsUse = [];
 
 // --- Chat Checks ---
 
-// The action profile name for swear word violations.
+/** @type {string} The action profile name for swear word violations. */
 export const swearCheckActionProfileName = "chat_swear_violation";
 
-// If true, the Fast Message Spam check is active.
+/** @type {boolean} If true, the Fast Message Spam check is active. */
 export const enableFastMessageSpamCheck = true;
-// Minimum time in milliseconds that must pass between messages to avoid being considered spam.
+/** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500;
-// The action profile name (from `checkActionProfiles`) to use for fast message spam violations.
+/** @type {string} The action profile name (from `checkActionProfiles`) to use for fast message spam violations. */
 export const fastMessageSPAMActionProfileName = "chatSpamFastMessage";
 
-// If true, the Max Words Spam check (preventing overly long messages) is active.
+/** @type {boolean} If true, the Max Words Spam check (preventing overly long messages) is active. */
 export const enableMaxWordsSpamCheck = true;
-// Maximum allowed number of words in a single chat message.
+/** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
-// The action profile name (from `checkActionProfiles`) to use for max words spam violations.
+/** @type {string} The action profile name (from `checkActionProfiles`) to use for max words spam violations. */
 export const maxWordsSPAMActionProfileName = "chat_spam_max_words";
 
-// If true, checks for newline or carriage return characters in chat messages.
+/** @type {boolean} If true, checks for newline or carriage return characters in chat messages. */
 export const enableNewlineCheck = true;
-// If true, sending a message containing newlines/carriage returns will flag the player.
+/** @type {boolean} If true, sending a message containing newlines/carriage returns will flag the player. */
 export const flagOnNewline = true;
-// If true, messages containing newlines/carriage returns will be cancelled and not sent.
+/** @type {boolean} If true, messages containing newlines/carriage returns will be cancelled and not sent. */
 export const cancelMessageOnNewline = true;
-// If true, checks if chat messages exceed the `maxMessageLength`.
+/** @type {boolean} If true, checks if chat messages exceed the `maxMessageLength`. */
 export const enableMaxMessageLengthCheck = true;
-// Maximum allowed character length for a single chat message.
+/** @type {number} Maximum allowed character length for a single chat message. */
 export const maxMessageLength = 256;
-// If true, sending a message exceeding `maxMessageLength` will flag the player.
+/** @type {boolean} If true, sending a message exceeding `maxMessageLength` will flag the player. */
 export const flagOnMaxMessageLength = true;
-// If true, messages exceeding `maxMessageLength` will be cancelled.
+/** @type {boolean} If true, messages exceeding `maxMessageLength` will be cancelled. */
 export const cancelOnMaxMessageLength = true;
-// If true, checks for players sending the same or very similar messages repeatedly.
+/** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
 export const spamRepeatCheckEnabled = true;
-// Number of identical or similar messages within `spamRepeatTimeWindowSeconds` to trigger a spam flag.
+/** @type {number} Number of identical or similar messages within `spamRepeatTimeWindowSeconds` to trigger a spam flag. */
 export const spamRepeatMessageCount = 3;
-// Time window in seconds to monitor for repeated messages.
+/** @type {number} Time window in seconds to monitor for repeated messages. */
 export const spamRepeatTimeWindowSeconds = 5;
-// If true, flags the player for repeated message spam.
+/** @type {boolean} If true, flags the player for repeated message spam. */
 export const spamRepeatFlagPlayer = false; // Changed to false as per new policy
-// If true, cancels the message that triggers repeated spam detection.
+/** @type {boolean} If true, cancels the message that triggers repeated spam detection. */
 export const spamRepeatCancelMessage = false;
 
-// If true, the Chat Content Repeat check is active.
+/** @type {boolean} If true, the Chat Content Repeat check is active. */
 export const enableChatContentRepeatCheck = false;
-// If true, the Unicode Abuse (Zalgo/diacritics) check is active.
+/** @type {boolean} If true, the Unicode Abuse (Zalgo/diacritics) check is active. */
 export const enableUnicodeAbuseCheck = false;
 
-// If true, the Gibberish Chat check is active.
+/** @type {boolean} If true, the Gibberish Chat check is active. */
 export const enableGibberishCheck = false;
-// Minimum message length to apply gibberish check.
+/** @type {number} Minimum message length to apply gibberish check. */
 export const gibberishMinMessageLength = 10;
-// Minimum ratio of alphabetic characters (0-1) for gibberish check to apply.
+/** @type {number} Minimum ratio of alphabetic characters (0-1) for gibberish check to apply. */
 export const gibberishMinAlphaRatio = 0.6;
-// Lower bound for vowel ratio (0-1) to flag as gibberish.
+/** @type {number} Lower bound for vowel ratio (0-1) to flag as gibberish. */
 export const gibberishVowelRatioLowerBound = 0.15;
-// Upper bound for vowel ratio (0-1) to flag as gibberish.
+/** @type {number} Upper bound for vowel ratio (0-1) to flag as gibberish. */
 export const gibberishVowelRatioUpperBound = 0.80;
-// Maximum number of consecutive consonants to flag as gibberish.
+/** @type {number} Maximum number of consecutive consonants to flag as gibberish. */
 export const gibberishMaxConsecutiveConsonants = 5;
-// Action profile name for gibberish violations.
+/** @type {string} Action profile name for gibberish violations. */
 export const gibberishActionProfileName = "chatGibberish";
 
-// If true, the Excessive Mentions chat check is active.
+/** @type {boolean} If true, the Excessive Mentions chat check is active. */
 export const enableExcessiveMentionsCheck = false;
-// Minimum message length to apply excessive mentions check.
+/** @type {number} Minimum message length to apply excessive mentions check. */
 export const mentionsMinMessageLength = 10;
-// Maximum number of unique users that can be mentioned in a single message.
+/** @type {number} Maximum number of unique users that can be mentioned in a single message. */
 export const mentionsMaxUniquePerMessage = 4;
-// Maximum number of times a single user can be mentioned in a single message.
+/** @type {number} Maximum number of times a single user can be mentioned in a single message. */
 export const mentionsMaxRepeatedPerMessage = 3;
-// Action profile name for excessive mention violations.
+/** @type {string} Action profile name for excessive mention violations. */
 export const mentionsActionProfileName = "chatExcessiveMentions";
 
-// If true, the Simple Impersonation (mimicking server/staff messages) check is active.
+/** @type {boolean} If true, the Simple Impersonation (mimicking server/staff messages) check is active. */
 export const enableSimpleImpersonationCheck = false;
-// Regex patterns to identify server/staff message impersonation attempts.
+/** @type {string[]} Regex patterns to identify server/staff message impersonation attempts. */
 export const impersonationServerMessagePatterns = [
     "^\[(Server|Admin|System|Mod|Staff|Broadcast|Announcement|Alert)\]",
     "^§[4c][\\s\\S]*?(Warning|Critical|Error)",
     "^§[b9ea][\\s\\S]*?(Notice|Info|Server|System)"
 ];
-// Permission level at or below which players are exempt from impersonation checks.
+/** @type {number} Permission level at or below which players are exempt from impersonation checks. */
 export const impersonationExemptPermissionLevel = 1; // Assuming 1 is Admin or similar, adjust if needed based on rankManager.permissionLevels
-// Minimum message length for impersonation pattern matching to apply.
+/** @type {number} Minimum message length for impersonation pattern matching to apply. */
 export const impersonationMinMessageLengthForPatternMatch = 10;
-// Action profile name for impersonation attempt violations.
+/** @type {string} Action profile name for impersonation attempt violations. */
 export const impersonationActionProfileName = "chatImpersonationAttempt";
 
 // --- Scaffold/Tower Detection ---
-// If true, the Scaffold/Tower (detecting rapid upward block placement) check is active.
+/** @type {boolean} If true, the Scaffold/Tower (detecting rapid upward block placement) check is active. */
 export const enableTowerCheck = false;
-// Maximum time in game ticks between consecutive upward pillar blocks for them to be considered part of the same tower structure.
+/** @type {number} Maximum time in game ticks between consecutive upward pillar blocks for them to be considered part of the same tower structure. */
 export const towerMaxTickGap = 10; // 0.5 seconds
-// Minimum number of consecutive upward blocks placed to trigger a tower flag.
+/** @type {number} Minimum number of consecutive upward blocks placed to trigger a tower flag. */
 export const towerMinHeight = 5;
-// Maximum pitch deviation (degrees) allowed while pillaring up. Player's pitch must be less than this (e.g., looking further down than -30 degrees).
+/** @type {number} Maximum pitch deviation (degrees) allowed while pillaring up. Player's pitch must be less than this (e.g., looking further down than -30 degrees). */
 export const towerMaxPitchWhilePillaring = -30;
-// How many recent block placements to store for pattern analysis in tower/scaffold checks.
+/** @type {number} How many recent block placements to store for pattern analysis in tower/scaffold checks. */
 export const towerPlacementHistoryLength = 20;
 
-// If true, the Flat/Invalid Rotation While Building check (detecting unnatural head movements during placement) is active.
+/** @type {boolean} If true, the Flat/Invalid Rotation While Building check (detecting unnatural head movements during placement) is active. */
 export const enableFlatRotationCheck = false;
-// Number of consecutive block placements to analyze for static or flat rotation patterns.
+/** @type {number} Number of consecutive block placements to analyze for static or flat rotation patterns. */
 export const flatRotationConsecutiveBlocks = 4;
-// Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks` to be considered 'static'.
+/** @type {number} Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks` to be considered 'static'. */
 export const flatRotationMaxPitchVariance = 2.0;
-// Maximum degrees of variance allowed for yaw over `flatRotationConsecutiveBlocks` to be considered 'static'.
+/** @type {number} Maximum degrees of variance allowed for yaw over `flatRotationConsecutiveBlocks` to be considered 'static'. */
 export const flatRotationMaxYawVariance = 2.0;
-// Minimum pitch for 'flat horizontal' building detection (e.g., looking straight ahead).
+/** @type {number} Minimum pitch for 'flat horizontal' building detection (e.g., looking straight ahead). */
 export const flatRotationPitchHorizontalMin = -5.0;
-// Maximum pitch for 'flat horizontal' building detection.
+/** @type {number} Maximum pitch for 'flat horizontal' building detection. */
 export const flatRotationPitchHorizontalMax = 5.0;
-// Minimum pitch for 'flat downward' building detection (e.g., looking straight down).
+/** @type {number} Minimum pitch for 'flat downward' building detection (e.g., looking straight down). */
 export const flatRotationPitchDownwardMin = -90.0;
-// Maximum pitch for 'flat downward' building detection.
+/** @type {number} Maximum pitch for 'flat downward' building detection. */
 export const flatRotationPitchDownwardMax = -85.0;
 
-// If true, the Downward Scaffold check (detecting rapid downward block placement while airborne) is active.
+/** @type {boolean} If true, the Downward Scaffold check (detecting rapid downward block placement while airborne) is active. */
 export const enableDownwardScaffoldCheck = false;
-// Minimum number of consecutive downward blocks placed while airborne to trigger a downward scaffold flag.
+/** @type {number} Minimum number of consecutive downward blocks placed while airborne to trigger a downward scaffold flag. */
 export const downwardScaffoldMinBlocks = 3;
-// Maximum time in game ticks between consecutive downward scaffold blocks.
+/** @type {number} Maximum time in game ticks between consecutive downward scaffold blocks. */
 export const downwardScaffoldMaxTickGap = 10; // 0.5 seconds
-// Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding to be flagged. Vanilla players usually slow significantly.
+/** @type {number} Minimum horizontal speed (blocks/sec) player must maintain while downward scaffolding to be flagged. Vanilla players usually slow significantly. */
 export const downwardScaffoldMinHorizontalSpeed = 3.0;
 
-// If true, the check for Placing Blocks onto Air/Liquid without adjacent support is active.
+/** @type {boolean} If true, the check for Placing Blocks onto Air/Liquid without adjacent support is active. */
 export const enableAirPlaceCheck = false;
 /**
  * @type {string[]} List of block type IDs that are considered 'solid' and typically require support.
@@ -683,7 +690,7 @@ export const airPlaceSolidBlocks = [
 ];
 
 // --- Fast Use/Place Checks ---
-// If true, the Fast Item Use check (detecting usage faster than vanilla cooldowns) is active.
+/** @type {boolean} If true, the Fast Item Use check (detecting usage faster than vanilla cooldowns) is active. */
 export const enableFastUseCheck = true;
 /**
  * @type {Object.<string, number>} Defines minimum cooldown in milliseconds between uses for specific items.
@@ -702,23 +709,23 @@ export const fastUseItemCooldowns = {
     "minecraft:shield": 500 // Cooldown for re-raising shield after being hit or lowered.
 };
 
-// If true, the Fast Block Place check is active.
+/** @type {boolean} If true, the Fast Block Place check is active. */
 export const enableFastPlaceCheck = false;
-// Time window in milliseconds for fast block placement detection.
+/** @type {number} Time window in milliseconds for fast block placement detection. */
 export const fastPlaceTimeWindowMs = 1000; // 1 second
-// Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`.
+/** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
 export const fastPlaceMaxBlocksInWindow = 10;
 
 // --- Combat Log Detection ---
-// If true, enables detection of players leaving the game shortly after engaging in combat.
+/** @type {boolean} If true, enables detection of players leaving the game shortly after engaging in combat. */
 export const acGlobalNotificationsDefaultOn = true;
 
 // --- Death Effects ---
-// If true, cosmetic effects (particle and sound) are shown when a player dies.
+/** @type {boolean} If true, cosmetic effects (particle and sound) are shown when a player dies. */
 export const enableDeathEffects = false;
-// The particle effect name to spawn when a player dies. Example: "minecraft:totem_particle".
+/** @type {string} The particle effect name to spawn when a player dies. Example: "minecraft:totem_particle". */
 export const deathEffectParticleName = "minecraft:totem_particle";
-// The sound ID to play when a player dies. Example: "mob.ghast.scream".
+/** @type {string} The sound ID to play when a player dies. Example: "mob.ghast.scream". */
 export const deathEffectSoundId = "mob.ghast.scream";
 /**
  * @type {object} Defines the default cosmetic effect shown when a player dies (legacy, can be removed if particleName/soundId are preferred).
@@ -738,43 +745,43 @@ export const defaultDeathEffect = {
 };
 
 // Anti-Grief Settings
-// Radius for the density check cube (e.g., 1 means 3x3x3 cube).
+/** @type {number} Radius for the density check cube (e.g., 1 means 3x3x3 cube). */
 export const blockSpamDensityCheckRadius = 1;
-// Time window in ticks to consider recent blocks for density calculation.
+/** @type {number} Time window in ticks to consider recent blocks for density calculation. */
 export const blockSpamDensityTimeWindowTicks = 60; // 3 seconds
-// Percentage of volume filled by player's recent blocks to trigger detection.
+/** @type {number} Percentage of volume filled by player's recent blocks to trigger detection. */
 export const blockSpamDensityThresholdPercentage = 70;
 
 // --- Client Behavior Checks ---
-// If true, the Invalid Render Distance check is active.
+/** @type {boolean} If true, the Invalid Render Distance check is active. */
 export const enableInvalidRenderDistanceCheck = true;
-// Maximum allowed client-reported render distance in chunks.
+/** @type {number} Maximum allowed client-reported render distance in chunks. */
 export const maxAllowedClientRenderDistance = 64;
 
 // --- World Border System ---
 // --- Chat Behavior Checks ---
-// If true, the Chat During Combat check is active.
+/** @type {boolean} If true, the Chat During Combat check is active. */
 export const enableChatDuringCombatCheck = true;
-// Seconds after the last combat interaction during which a player cannot chat.
+/** @type {number} Seconds after the last combat interaction during which a player cannot chat. */
 export const chatDuringCombatCooldownSeconds = 4;
-// If true, the Chat During Item Use check is active.
+/** @type {boolean} If true, the Chat During Item Use check is active. */
 export const enableChatDuringItemUseCheck = true;
 
 // --- Tick Interval Configurations for Checks ---
-// Interval in game ticks for NameSpoof check. (100 ticks = 5 seconds)
+/** @type {number} Interval in game ticks for NameSpoof check. (100 ticks = 5 seconds) */
 export const nameSpoofCheckIntervalTicks = 100;
-// Interval in game ticks for AntiGMC check. (40 ticks = 2 seconds)
+/** @type {number} Interval in game ticks for AntiGMC check. (40 ticks = 2 seconds) */
 export const antiGMCCheckIntervalTicks = 40;
-// Interval in game ticks for NetherRoof check. (60 ticks = 3 seconds)
+/** @type {number} Interval in game ticks for NetherRoof check. (60 ticks = 3 seconds) */
 export const netherRoofCheckIntervalTicks = 60;
-// Interval in game ticks for AutoTool check. (10 ticks = 0.5 seconds)
+/** @type {number} Interval in game ticks for AutoTool check. (10 ticks = 0.5 seconds) */
 export const autoToolCheckIntervalTicks = 10;
-// Interval in game ticks for FlatRotationBuilding check. (10 ticks = 0.5 seconds)
+/** @type {number} Interval in game ticks for FlatRotationBuilding check. (10 ticks = 0.5 seconds) */
 export const flatRotationCheckIntervalTicks = 10;
 
 
 // --- Chat Formatting Settings ---
-// Default color for the Owner rank's chat prefix.
+/** @type {string} Default color for the Owner rank's chat prefix. */
 // --- System ---
 /**
  * @type {string}
@@ -840,8 +847,8 @@ export let editableConfigValues = {
     ownerPlayerName: ownerPlayerName,
     enableDebugLogging: enableDebugLogging,
     prefix: prefix,
+    defaultServerLanguage: defaultServerLanguage,
     enableWelcomerMessage: enableWelcomerMessage,
-    enableDetailedFirstJoinMessage: enableDetailedFirstJoinMessage,
     welcomeMessage: welcomeMessage,
     notifyAdminOnNewPlayerJoin: notifyAdminOnNewPlayerJoin,
     enableDeathCoordsMessage: enableDeathCoordsMessage,
@@ -857,7 +864,7 @@ export let editableConfigValues = {
     discordLink: discordLink,
     websiteLink: websiteLink,
     helpLinks: helpLinks,
-    firstJoinMessage: firstJoinMessage,
+    generalHelpMessages: generalHelpMessages,
     enableDetailedJoinLeaveLogging: enableDetailedJoinLeaveLogging,
     enableSwearCheck: enableSwearCheck,
     swearWordList: swearWordList,

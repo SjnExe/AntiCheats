@@ -37,7 +37,7 @@ export async function checkMultiTarget(
     const now = Date.now(); // Time-sensitive check
 
     if (!targetEntity || typeof targetEntity.id === 'undefined') {
-        playerUtils.debugLog(`[MultiTargetCheck] Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[MultiTargetCheck] Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, watchedPrefix, dependencies);
         return;
     }
 
@@ -75,7 +75,7 @@ export async function checkMultiTarget(
         distinctTargets.add(hit.entityId);
     }
 
-    playerUtils.debugLog(`[MultiTargetCheck] Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, dependencies, watchedPrefix);
+    playerUtils.debugLog(`[MultiTargetCheck] Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, watchedPrefix, dependencies);
 
     if (distinctTargets.size >= threshold) {
         const violationDetails = {
@@ -87,7 +87,7 @@ export async function checkMultiTarget(
 
         await actionManager.executeCheckAction(player, "combatMultitargetAura", violationDetails, dependencies);
 
-        playerUtils.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix, dependencies);
 
         pData.recentHits = [];
         pData.isDirtyForSave = true;

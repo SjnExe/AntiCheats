@@ -65,7 +65,7 @@ export async function execute(player, args, dependencies) {
 
         } catch (e) {
             player.sendMessage(getString("command.vanish.error.apply", { error: e.message }));
-            playerUtils.debugLog(`[VanishCommand] Error applying vanish for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[VanishCommand] Error applying vanish for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             console.error(`[VanishCommand] Error applying vanish for ${player.nameTag}: ${e.stack || e}`);
         }
     } else {
@@ -95,7 +95,7 @@ export async function execute(player, args, dependencies) {
 
         } catch (e) {
             player.sendMessage(getString("command.vanish.error.remove", { error: e.message }));
-            playerUtils.debugLog(`[VanishCommand] Error removing vanish for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[VanishCommand] Error removing vanish for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             console.error(`[VanishCommand] Error removing vanish for ${player.nameTag}: ${e.stack || e}`);
         }
     }

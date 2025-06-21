@@ -46,7 +46,7 @@ export async function checkNoFall(player, pData, dependencies) {
             `[NoFallCheck] ${player.nameTag} in exempt state. ` +
             `Flying: ${player.isFlying}, Gliding: ${player.isGliding}, InWater: ${player.isInWater}, ` +
             `Climbing: ${player.isClimbing}, SlowFalling: ${pData.hasSlowFalling}, Riding: ${player.hasComponent('minecraft:rider')}.`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
         return;
     }
@@ -56,7 +56,7 @@ export async function checkNoFall(player, pData, dependencies) {
         // NOTE: pData.lastOnSlimeBlockTick needs to be updated elsewhere (e.g., main tick loop or specific event)
         if ((dependencies.currentTick - (pData.lastOnSlimeBlockTick || 0)) < 20) { // 20 ticks = 1 second grace
             if (playerUtils.debugLog && pData.isWatched) {
-                playerUtils.debugLog(dependencies, `[NoFallCheck] Player ${player.nameTag} recently on slime block (LastTick: ${pData.lastOnSlimeBlockTick}, Current: ${dependencies.currentTick}). Fall damage check modified/bypassed.`, player.nameTag);
+                playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} recently on slime block (LastTick: ${pData.lastOnSlimeBlockTick}, Current: ${dependencies.currentTick}). Fall damage check modified/bypassed.`, player.nameTag, dependencies);
             }
             // Assuming full bypass for simplicity if recently on slime.
             // More nuanced logic could adjust expected damage or fallDistance.
@@ -69,20 +69,20 @@ export async function checkNoFall(player, pData, dependencies) {
             const blockBelow = player.dimension.getBlock(blockBelowLocation);
             if (blockBelow && (config.noFallMitigationBlocks || []).includes(blockBelow.typeId)) {
                 if (playerUtils.debugLog && pData.isWatched) {
-                    playerUtils.debugLog(dependencies, `[NoFallCheck] Player ${player.nameTag} landed on a fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified.`, player.nameTag);
+                    playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} landed on a fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified.`, player.nameTag, dependencies);
                 }
                 return; // Bypass for now
             }
         } catch (e) {
             if (playerUtils.debugLog) {
-                playerUtils.debugLog(dependencies, `[NoFallCheck] Error checking block below player ${player.nameTag}: ${e.message}`, player.nameTag);
+                playerUtils.debugLog(`[NoFallCheck] Error checking block below player ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }
         }
 
         playerUtils.debugLog(
             `[NoFallCheck] ${player.nameTag} landed. FallDistance=${pData.fallDistance.toFixed(2)}, ` +
             `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.velocity?.y?.toFixed(2) ?? 'N/A'}`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
 
         const minDamageDistance = config.minFallDistanceForDamage ?? 3.5;
@@ -96,7 +96,7 @@ export async function checkNoFall(player, pData, dependencies) {
                     currentHealth = healthComponent.currentValue.toString();
                 }
             } catch (e) {
-                playerUtils.debugLog(`[NoFallCheck] Error getting health for ${player.nameTag}: ${e.message}`, dependencies, watchedPrefix);
+                playerUtils.debugLog(`[NoFallCheck] Error getting health for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
                 console.error(`[NoFallCheck] Error getting health for ${player.nameTag}: ${e.stack || e}`);
             }
 
@@ -108,7 +108,7 @@ export async function checkNoFall(player, pData, dependencies) {
                     activeEffectsString = effects.map(e => `${e.typeId} (Amp: ${e.amplifier}, Dur: ${e.duration})`).join(', ') || "none";
                 }
             } catch(e) {
-                 playerUtils.debugLog(`[NoFallCheck] Error getting effects for ${player.nameTag}: ${e.message}`, dependencies, watchedPrefix);
+                 playerUtils.debugLog(`[NoFallCheck] Error getting effects for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
                  console.error(`[NoFallCheck] Error getting effects for ${player.nameTag}: ${e.stack || e}`);
             }
 

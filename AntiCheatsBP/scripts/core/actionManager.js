@@ -75,20 +75,20 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     const playerNameForLog = player ? player.nameTag : "System";
 
     if (!config?.checkActionProfiles) {
-        playerUtils?.debugLog?.(`[ActionManager] checkActionProfiles not found in config. Cannot process action for ${checkType}. Context: ${playerNameForLog}`);
+        playerUtils?.debugLog?.(`[ActionManager] checkActionProfiles not found in config. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
     const profile = config.checkActionProfiles[checkType];
 
     if (!profile) {
-        playerUtils?.debugLog?.(`[ActionManager] No action profile found for checkType: "${checkType}". Context: ${playerNameForLog}`);
+        playerUtils?.debugLog?.(`[ActionManager] No action profile found for checkType: "${checkType}". Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
     if (!profile.enabled) {
         // This debug log is conditional on profile.enabled being false, which is fine.
-        playerUtils?.debugLog?.(`[ActionManager] Actions for checkType "${checkType}" are disabled in its profile. Context: ${playerNameForLog}`);
+        playerUtils?.debugLog?.(`[ActionManager] Actions for checkType "${checkType}" are disabled in its profile. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
@@ -112,9 +112,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         for (let i = 0; i < increment; i++) {
             await playerDataManager.addFlag(player, flagType, flagReasonMessage, flagDetailsForAdminNotify, dependencies);
         }
-        playerUtils?.debugLog?.(`[ActionManager] Flagged ${playerNameForLog} for ${flagType} (x${increment}). Reason: "${flagReasonMessage}"`);
+        playerUtils?.debugLog?.(`[ActionManager] Flagged ${playerNameForLog} for ${flagType} (x${increment}). Reason: "${flagReasonMessage}"`, player ? player.nameTag : null, dependencies);
     } else if (!player && profile.flag) {
-        playerUtils?.debugLog?.(`[ActionManager] Skipping flagging for checkType "${checkType}" because player is null. Profile had flagging enabled.`);
+        playerUtils?.debugLog?.(`[ActionManager] Skipping flagging for checkType "${checkType}" because player is null. Profile had flagging enabled.`, null, dependencies);
     }
 
     // 2. Handle Logging
@@ -160,11 +160,11 @@ export async function executeCheckAction(player, checkType, violationDetails, de
                 timestamp: Date.now()
             };
             pData.isDirtyForSave = true;
-            playerUtils?.debugLog?.(`[ActionManager] Stored itemTypeId '${violationDetails.itemTypeId}' for check '${checkType}' in pData.lastViolationDetailsMap for ${playerNameForLog}.`);
+            playerUtils?.debugLog?.(`[ActionManager] Stored itemTypeId '${violationDetails.itemTypeId}' for check '${checkType}' in pData.lastViolationDetailsMap for ${playerNameForLog}.`, player ? player.nameTag : null, dependencies);
         } else {
-            playerUtils?.debugLog?.(`[ActionManager] Could not store itemTypeId for check '${checkType}' because pData could not be retrieved for ${playerNameForLog}.`);
+            playerUtils?.debugLog?.(`[ActionManager] Could not store itemTypeId for check '${checkType}' because pData could not be retrieved for ${playerNameForLog}.`, player ? player.nameTag : null, dependencies);
         }
     } else if (!player && violationDetails?.itemTypeId) {
-        playerUtils?.debugLog?.(`[ActionManager] Skipping storage of itemTypeId for check '${checkType}' because player is null.`);
+        playerUtils?.debugLog?.(`[ActionManager] Skipping storage of itemTypeId for check '${checkType}' because player is null.`, null, dependencies);
     }
 }

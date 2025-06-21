@@ -82,7 +82,7 @@ export async function execute(player, args, dependencies) {
         playerUtils.notifyAdmins(getString("command.resetflags.adminNotify", { targetName: targetPlayer.nameTag, adminName: player.nameTag }), dependencies, player, pData);
         logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'reset_flags', targetName: targetPlayer.nameTag, details: `Reset flags for ${targetPlayer.nameTag}` }, dependencies);
 
-        playerUtils.debugLog(`[ResetFlagsCommand] Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, dependencies, pData.isWatched ? targetPlayer.nameTag : null);
+        playerUtils.debugLog(`[ResetFlagsCommand] Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, pData.isWatched ? targetPlayer.nameTag : null, dependencies);
 
     } else {
         player.sendMessage(getString("command.resetflags.failNoData", { targetName: targetPlayer.nameTag }));

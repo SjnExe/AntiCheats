@@ -36,7 +36,7 @@ export async function execute(player, args, dependencies) {
 
     let pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. This should not happen.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. This should not happen.`, player.nameTag, dependencies);
         // Initialize a temporary minimal pData if necessary for currentPreference logic, though setPlayerData should handle creation.
         pData = { id: player.id, isWatched: false };
     }
@@ -89,7 +89,7 @@ export async function execute(player, args, dependencies) {
             player.addTag(notificationsOffTag);
         }
     } catch (e) {
-         playerUtils.debugLog(`[NotifyCommand] Error updating tags for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+         playerUtils.debugLog(`[NotifyCommand] Error updating tags for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
     }
 
     // Also save to pData for direct querying if needed, though tags are primary for notifyAdmins
@@ -98,6 +98,6 @@ export async function execute(player, args, dependencies) {
     player.sendMessage(getString(messageKey));
 
     const logMessageAction = newPreference ? "enabled" : "disabled";
-    playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. Current pref: ${newPreference}`, dependencies, player.nameTag);
+    playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. Current pref: ${newPreference}`, player.nameTag, dependencies);
     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: `notify_${logMessageAction}`, details: `Notifications ${logMessageAction}` }, dependencies);
 }

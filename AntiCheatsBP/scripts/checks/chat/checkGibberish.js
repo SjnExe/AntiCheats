@@ -106,6 +106,6 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         };
 
         await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-        playerUtils.debugLog(`[GibberishCheck] Flagged ${player.nameTag} for ${flagReason.join(', ')}. Msg: "${rawMessageContent.substring(0,20)}..."`, dependencies, pData?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[GibberishCheck] Flagged ${player.nameTag} for ${flagReason.join(', ')}. Msg: "${rawMessageContent.substring(0,20)}..."`, pData?.isWatched ? player.nameTag : null, dependencies);
     }
 }
