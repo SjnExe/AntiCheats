@@ -16,13 +16,13 @@ export const prefix = "!";
 /** @type {boolean} If true, a welcome message is sent to players when they join. */
 export const enableWelcomerMessage = true;
 /** @type {string} Localization key for the welcome message. */
-export const welcomeMessage = "message.welcome";
+export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
 /** @type {boolean} If true, admins are notified when a new player joins for the first time. */
 export const notifyAdminOnNewPlayerJoin = true;
 /** @type {boolean} If true, players are sent their death coordinates upon respawning. */
 export const enableDeathCoordsMessage = true;
 /** @type {string} Localization key for the death coordinates message. */
-export const deathCoordsMessage = "message.deathCoords";
+export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
 // Combat Log
 /** @type {boolean} If true, enables detection of players leaving shortly after combat. */
@@ -32,7 +32,7 @@ export const combatLogThresholdSeconds = 15;
 /** @type {number} Number of flags to add for a combat log violation. */
 export const combatLogFlagIncrement = 1;
 /** @type {string} Localization key for the admin notification message on combat log detection. */
-export const combatLogMessage = "message.combatLogAdminNotify";
+export const combatLogMessage = "§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}";
 
 // TPA System
 /** @type {boolean} If true, the TPA (Teleport Ask) system is enabled. */
