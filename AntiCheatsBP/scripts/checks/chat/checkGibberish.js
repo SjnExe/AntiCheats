@@ -27,7 +27,6 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     }
     if (!pData) { // pData might not be used by this specific check's logic
         playerUtils.debugLog("[GibberishCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
-        // return; // Decide if pData is truly optional or if this is an error state
     }
 
     const minMessageLength = config.gibberishMinMessageLength ?? 10;

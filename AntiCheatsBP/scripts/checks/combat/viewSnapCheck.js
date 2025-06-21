@@ -40,11 +40,6 @@ export async function checkViewSnap(
     const currentYaw = currentRotation.y;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Construct a more focused dependencies object for executeCheckAction if preferred,
-    // or pass the main 'dependencies' object directly if action profiles expect the full set.
-    // For consistency with other checks, we can pass the main 'dependencies'.
-    // const actionContextDependencies = { config, playerDataManager, playerUtils, logManager };
-
     // 1. Check for invalid absolute pitch
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;

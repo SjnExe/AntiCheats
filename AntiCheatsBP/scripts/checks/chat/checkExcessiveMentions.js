@@ -27,7 +27,6 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     }
     if (!pData) { // pData might not be used by this specific check's logic but is part of standard signature
         playerUtils.debugLog("[ExcessiveMentionsCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
-        // return; // Decide if pData is truly optional or if this is an error state
     }
 
     const minMessageLength = config.mentionsMinMessageLength ?? 10;

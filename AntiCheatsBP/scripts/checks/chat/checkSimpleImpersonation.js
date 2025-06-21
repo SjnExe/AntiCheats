@@ -28,7 +28,6 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
     }
     if (!pData) { // pData might not be used by this specific check's logic
         playerUtils.debugLog("[SimpleImpersonationCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
-        // return;
     }
 
     const minMessageLength = config.impersonationMinMessageLengthForPatternMatch ?? 10;
