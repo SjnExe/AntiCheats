@@ -11,7 +11,7 @@ This addon utilizes advanced scripting capabilities to provide robust anti-cheat
 
 ## 🚀 Quick Start
 
-1.  **Download:** Get the latest version from the [GitHub Releases page](https://github.com/placeholder_username/placeholder_repo/releases). Look for the `.mcaddon` file.
+1.  **Download:** Get the latest version from the [GitHub Releases page](https://github.com/SjnExe/AntiCheats/releases). Look for the `.mcaddon` file.
 2.  **Install:** Apply both the Behavior Pack (`AntiCheatsBP`) and Resource Pack (`AntiCheatsRP`) to your Minecraft world.
 3.  **Prioritize:** Ensure the Behavior Pack is at the **top** of the pack list if you have multiple behavior packs active.
 4.  **Set Owner (Crucial):**
