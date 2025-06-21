@@ -83,7 +83,7 @@ export async function execute(player, args, dependencies) {
                 target.onScreenDisplay.setActionBar(getString("command.tpa.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
             } catch (e) {
                 if (config.enableDebugLogging && playerUtils?.debugLog) {
-                    playerUtils.debugLog(`[TpaCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag);
+                    playerUtils.debugLog(`[TpaCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                 }
             }
         });
@@ -91,7 +91,7 @@ export async function execute(player, args, dependencies) {
     } else {
         player.sendMessage(getString("command.tpa.failToSend"));
         // Log this failure for admins/debug
-        playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag);
+        playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
         if(logManager) {
             logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`});
         }

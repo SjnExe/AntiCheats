@@ -58,7 +58,7 @@ export async function execute(player, args, dependencies) {
         } else {
             playerUtils.warnPlayer(player, getString("command.setlang.fail"));
             // Use playerUtils.debugLog for more detailed server-side logging
-            playerUtils.debugLog(`[SetLangCommand] updateConfigValue for defaultServerLanguage to '${langCode}' returned false, and value is not currently ${langCode}.`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[SetLangCommand] updateConfigValue for defaultServerLanguage to '${langCode}' returned false, and value is not currently ${langCode}.`, player.nameTag, dependencies);
             console.warn(`[SetLangCommand] updateConfigValue for defaultServerLanguage to '${langCode}' returned false, and value is not currently ${langCode}.`); // Kept for console visibility
         }
     }

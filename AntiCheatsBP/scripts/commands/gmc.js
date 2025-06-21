@@ -41,7 +41,7 @@ export async function execute(player, args, dependencies) {
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change', targetName: targetPlayer.nameTag, details: `Set to ${gamemodeName}` }, dependencies);
             } catch (e) {
                 player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: targetPlayer.nameTag }));
-                playerUtils.debugLog(dependencies, `[GMCCommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.message}`, player.nameTag);
+                playerUtils.debugLog(`[GMCCommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
                 console.error(`[GMCCommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.stack || e}`);
             }
         } else {
@@ -54,7 +54,7 @@ export async function execute(player, args, dependencies) {
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change_self', targetName: player.nameTag, details: `Set to ${gamemodeName}` }, dependencies);
         } catch (e) {
             player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: player.nameTag }));
-            playerUtils.debugLog(dependencies, `[GMCCommand] Error setting own gamemode: ${e.message}`, player.nameTag);
+            playerUtils.debugLog(`[GMCCommand] Error setting own gamemode: ${e.message}`, player.nameTag, dependencies); // No change needed here
             console.error(`[GMCCommand] Error setting own gamemode: ${e.stack || e}`);
         }
     }

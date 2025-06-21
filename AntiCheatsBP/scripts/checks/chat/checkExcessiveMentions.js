@@ -81,6 +81,6 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         };
 
         await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-        playerUtils.debugLog(`[ExcessiveMentionsCheck] Flagged ${player.nameTag} for ${flagReasonTexts.join('; ')}. Msg: "${rawMessageContent.substring(0,20)}..."`, dependencies, pData?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[ExcessiveMentionsCheck] Flagged ${player.nameTag} for ${flagReasonTexts.join('; ')}. Msg: "${rawMessageContent.substring(0,20)}..."`, pData?.isWatched ? player.nameTag : null, dependencies);
     }
 }

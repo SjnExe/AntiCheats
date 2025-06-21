@@ -71,7 +71,7 @@ export async function execute(player, args, dependencies) {
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'freeze', targetName: foundPlayer.nameTag, details: 'Player frozen' }, dependencies);
         } catch (e) {
             player.sendMessage(getString("command.freeze.error.generic", { targetPlayerName: foundPlayer.nameTag, error: e.message }));
-            playerUtils.debugLog(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
             console.error(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
         }
     } else if (targetFreezeState === false && currentFreezeState) {
@@ -84,7 +84,7 @@ export async function execute(player, args, dependencies) {
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unfreeze', targetName: foundPlayer.nameTag, details: 'Player unfrozen' }, dependencies);
         } catch (e) {
             player.sendMessage(getString("command.freeze.error.generic", { targetPlayerName: foundPlayer.nameTag, error: e.message }));
-            playerUtils.debugLog(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
             console.error(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
         }
     } else {

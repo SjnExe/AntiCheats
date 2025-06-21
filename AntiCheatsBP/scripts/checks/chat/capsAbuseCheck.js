@@ -50,7 +50,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) { /
             `[CapsAbuseCheck] Player ${player.nameTag} triggered CAPS abuse. ` +
             `Msg: "${message}", CAPS: ${upperCasePercentage.toFixed(1)}%, ` +
             `Threshold: ${config.capsCheckUpperCasePercentage}%, MinLength: ${config.capsCheckMinLength}`,
-            dependencies, pData?.isWatched ? player.nameTag : null // Pass dependencies and context
+            pData?.isWatched ? player.nameTag : null, dependencies // Pass dependencies and context
         );
         await actionManager.executeCheckAction(
             player,

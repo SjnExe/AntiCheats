@@ -119,7 +119,7 @@ export async function execute(player, args, dependencies) {
     if (!playerToMove || !destinationLocation || !targetDimension) {
         player.sendMessage(getString("command.tp.usage", { prefix: prefix }));
         if (config.enableDebugLogging) {
-            playerUtils.debugLog?.(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag);
+            playerUtils.debugLog?.(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag, dependencies);
         }
         return;
     }
@@ -153,7 +153,7 @@ export async function execute(player, args, dependencies) {
     } catch (e) {
         player.sendMessage(getString("command.tp.error.failed", { errorMessage: (e.message || e) }));
         if (config.enableDebugLogging) {
-            playerUtils.debugLog?.(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag);
+            playerUtils.debugLog?.(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag, dependencies);
         }
     }
 }

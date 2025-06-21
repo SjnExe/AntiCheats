@@ -44,7 +44,7 @@ export async function checkSelfHurt(
     if (damagingEntity && damagingEntity.id === player.id && cause.cause === mc.EntityDamageCause.entityAttack) {
         playerUtils.debugLog(
             `[SelfHurtCheck] ${player.nameTag} damaged by self via entityAttack. Cause: ${cause.cause}, DamagingEntity: ${damagingEntity.typeId} (ID: ${damagingEntity.id})`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
 
         let playerHealthString = "N/A";
@@ -54,7 +54,7 @@ export async function checkSelfHurt(
                 playerHealthString = healthComponent.currentValue.toFixed(1);
             }
         } catch (e) {
-            playerUtils.debugLog(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.message}`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
             console.error(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.stack || e}`);
         }
 
@@ -71,7 +71,7 @@ export async function checkSelfHurt(
         // Log other types of self-damage for watched players, for observation, but don't flag.
         playerUtils.debugLog(
             `[SelfHurtCheck] (Info): ${player.nameTag} damaged by self. Cause: ${cause.cause} (Ignored by flagging logic). DamagingEntity: ${damagingEntity.typeId}`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
     }
 }

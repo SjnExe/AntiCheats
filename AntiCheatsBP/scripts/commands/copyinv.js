@@ -62,7 +62,7 @@ export async function execute(player, args, dependencies) {
         .toggle(getString("command.copyinv.confirm.toggle"), false);
 
     const response = await form.show(player).catch(e => {
-        playerUtils.debugLog(`[CopyInvCommand] Confirmation form cancelled or failed for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[CopyInvCommand] Confirmation form cancelled or failed for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); // No change needed here
         console.error(`[CopyInvCommand] Confirmation form error for ${player.nameTag}: ${e.stack || e}`);
         return { canceled: true, error: true }; // Ensure error prop for later check
     });
@@ -104,7 +104,7 @@ export async function execute(player, args, dependencies) {
         );
     } catch (e) {
         player.sendMessage(getString("common.error.generic") + `: ${e.message}`);
-        playerUtils.debugLog(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.message}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.message}`, player.nameTag, dependencies);
         console.error(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.stack || e}`);
     }
 }

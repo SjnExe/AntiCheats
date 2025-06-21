@@ -5,7 +5,7 @@
  */
 import * as mc from '@minecraft/server';
 
-const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
+const worldBorderDynamicPropertyPrefix = "anticheat:worldborder_";
 
 /**
  * @typedef {object} WorldBorderSettings
@@ -41,10 +41,10 @@ const WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX = "anticheat:worldborder_";
 export function getBorderSettings(dimensionId, dependencies) {
     const { playerUtils } = dependencies;
     if (!dimensionId || typeof dimensionId !== 'string') {
-        playerUtils.debugLog("[WorldBorderManager] getBorderSettings: Invalid dimensionId provided.", dependencies, "System");
+        playerUtils.debugLog("[WorldBorderManager] getBorderSettings: Invalid dimensionId provided.", "System", dependencies);
         return null;
     }
-    const propertyKey = WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX + dimensionId.replace("minecraft:", "");
+    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace("minecraft:", "");
     try {
         const settingsJson = mc.world.getDynamicProperty(propertyKey);
         if (typeof settingsJson === 'string') {
@@ -100,11 +100,11 @@ export function getBorderSettings(dimensionId, dependencies) {
 export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
     const { playerUtils } = dependencies;
     if (!dimensionId || typeof dimensionId !== 'string' || !settingsToSave) {
-        playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Invalid dimensionId or settings provided.", dependencies, "System");
+        playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Invalid dimensionId or settings provided.", "System", dependencies);
         return false;
     }
 
-    const propertyKey = WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX + dimensionId.replace("minecraft:", "");
+    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace("minecraft:", "");
     const fullSettings = {
         ...settingsToSave,
         dimensionId: dimensionId // Ensure dimensionId is part of the stored object
@@ -539,17 +539,17 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
 export function clearBorderSettings(dimensionId, dependencies) {
     const { playerUtils } = dependencies;
     if (!dimensionId || typeof dimensionId !== 'string') {
-        playerUtils.debugLog("[WorldBorderManager] clearBorderSettings: Invalid dimensionId provided.", dependencies, "System");
+        playerUtils.debugLog("[WorldBorderManager] clearBorderSettings: Invalid dimensionId provided.", "System", dependencies);
         return false;
     }
-    const propertyKey = WORLD_BORDER_DYNAMIC_PROPERTY_PREFIX + dimensionId.replace("minecraft:", "");
+    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace("minecraft:", "");
     try {
         mc.world.setDynamicProperty(propertyKey, undefined); // Setting to undefined removes the property
-        playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, dependencies, "System");
+        playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, "System", dependencies);
         return true;
     } catch (error) {
         console.error(`[WorldBorderManager] Error clearing border settings for ${dimensionId}: ${error.stack || error}`);
-        playerUtils.debugLog(`[WorldBorderManager] Exception clearing border settings for ${dimensionId}: ${error.message}`, dependencies, "System");
+        playerUtils.debugLog(`[WorldBorderManager] Exception clearing border settings for ${dimensionId}: ${error.message}`, "System", dependencies);
         return false;
     }
 }

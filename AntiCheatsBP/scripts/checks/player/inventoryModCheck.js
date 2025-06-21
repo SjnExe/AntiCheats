@@ -52,7 +52,7 @@ export async function checkSwitchAndUseInSameTick(
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog(
             `[InventoryModCheck] (SwitchUse): Flagged ${player.nameTag} for using ${itemStack.typeId} in same tick as slot change (Tick: ${currentTick}).`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
     }
 }
@@ -109,7 +109,7 @@ export async function checkInventoryMoveWhileActionLocked(
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog(
             `[InventoryModCheck] (MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${localizedLockingAction}.`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
     }
 }

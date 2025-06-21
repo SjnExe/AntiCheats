@@ -61,16 +61,16 @@ export async function checkAntiGmc(
                 default:
                     targetMcGameMode = mc.GameMode.survival;
                     targetGamemodeString = "survival";
-                    playerUtils.debugLog(`[AntiGMCCheck] Invalid antiGMCSwitchToGameMode value "${config.antiGMCSwitchToGameMode}". Defaulting to survival.`, dependencies, watchedPrefix);
+                    playerUtils.debugLog(`[AntiGMCCheck] Invalid antiGMCSwitchToGameMode value "${config.antiGMCSwitchToGameMode}". Defaulting to survival.`, watchedPrefix, dependencies);
             }
 
             if (config.antiGMCAutoSwitch) {
                 try {
                     player.setGameMode(targetMcGameMode);
                     autoSwitchedGameMode = true;
-                    playerUtils.debugLog(`[AntiGMCCheck] Switched ${player.nameTag} from Creative to ${targetGamemodeString}.`, dependencies, watchedPrefix);
+                    playerUtils.debugLog(`[AntiGMCCheck] Switched ${player.nameTag} from Creative to ${targetGamemodeString}.`, watchedPrefix, dependencies);
                 } catch (e) {
-                    playerUtils.debugLog(`[AntiGMCCheck] Error switching ${player.nameTag} from Creative: ${e.message}`, dependencies, watchedPrefix);
+                    playerUtils.debugLog(`[AntiGMCCheck] Error switching ${player.nameTag} from Creative: ${e.message}`, watchedPrefix, dependencies);
                     console.error(`[AntiGMCCheck] Error switching ${player.nameTag} from Creative: ${e.stack || e}`);
                 }
             }
@@ -86,9 +86,9 @@ export async function checkAntiGmc(
 
             if (pData.isWatched) { // playerUtils.debugLog is implicitly available
                 if (!autoSwitchedGameMode && config.antiGMCAutoSwitch) {
-                    playerUtils.debugLog(`[AntiGMCCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch was enabled but might have failed.`, dependencies, watchedPrefix);
+                    playerUtils.debugLog(`[AntiGMCCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch was enabled but might have failed.`, watchedPrefix, dependencies);
                 } else if (!config.antiGMCAutoSwitch) {
-                    playerUtils.debugLog(`[AntiGMCCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch disabled.`, dependencies, watchedPrefix);
+                    playerUtils.debugLog(`[AntiGMCCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch disabled.`, watchedPrefix, dependencies);
                 }
             }
         }

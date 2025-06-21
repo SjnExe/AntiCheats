@@ -70,11 +70,11 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
                 };
 
                 await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-                playerUtils.debugLog(`[SimpleImpersonationCheck] Flagged ${player.nameTag} for impersonation attempt. Pattern: '${patternString}'. Msg: "${rawMessageContent.substring(0,50)}..."`, dependencies, watchedPlayerName);
+                playerUtils.debugLog(`[SimpleImpersonationCheck] Flagged ${player.nameTag} for impersonation attempt. Pattern: '${patternString}'. Msg: "${rawMessageContent.substring(0,50)}..."`, watchedPlayerName, dependencies);
                 return; // Stop on first match
             }
         } catch (e) {
-            playerUtils.debugLog(`[SimpleImpersonationCheck] Invalid regex pattern '${patternString}' in config. Error: ${e.message}`, dependencies, watchedPlayerName);
+            playerUtils.debugLog(`[SimpleImpersonationCheck] Invalid regex pattern '${patternString}' in config. Error: ${e.message}`, watchedPlayerName, dependencies);
             console.error(`[SimpleImpersonationCheck] Regex pattern error: ${e.stack || e}`);
         }
     }

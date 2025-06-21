@@ -38,7 +38,7 @@ export async function checkSpeed(player, pData, dependencies) {
             pData.consecutiveOnGroundSpeedingTicks = 0; // Reset if previously speeding on ground
             pData.isDirtyForSave = true;
         }
-        playerUtils.debugLog(`[SpeedCheck] ${player.nameTag} in exempt state (flying, gliding, climbing, inWater, riding). Skipping.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[SpeedCheck] ${player.nameTag} in exempt state (flying, gliding, climbing, inWater, riding). Skipping.`, watchedPrefix, dependencies);
         return;
     }
 
@@ -59,7 +59,7 @@ export async function checkSpeed(player, pData, dependencies) {
 
     playerUtils.debugLog(
         `[SpeedCheck] Processing for ${player.nameTag}. HSpeedBPS=${hSpeedBPS.toFixed(2)}, MaxAllowableBPS=${maxAllowedSpeedBPS.toFixed(2)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}`,
-        dependencies, watchedPrefix
+        watchedPrefix, dependencies
     );
 
     const groundActionProfileKey = "movementSpeedGround";
@@ -78,7 +78,7 @@ export async function checkSpeed(player, pData, dependencies) {
                         activeEffectsString = effects.map(e => `${e.typeId} (Amp: ${e.amplifier}, Dur: ${e.duration})`).join(', ') || "none";
                     }
                 } catch(e) {
-                    playerUtils.debugLog(`[SpeedCheck] Error getting effects for ${player.nameTag}: ${e.message}`, dependencies, watchedPrefix);
+                    playerUtils.debugLog(`[SpeedCheck] Error getting effects for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
                     console.error(`[SpeedCheck] Error getting effects for ${player.nameTag}: ${e.stack || e}`);
                 }
 

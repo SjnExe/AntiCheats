@@ -58,7 +58,7 @@ export async function checkNameSpoof(
                 flaggedReasonForLog = `NameTag contains disallowed character(s) (e.g., '${match[0]}')`;
             }
         } catch (e) {
-            playerUtils.debugLog(`[NameSpoofCheck] Error compiling regex "${config.nameSpoofDisallowedCharsRegex}": ${e.message}`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[NameSpoofCheck] Error compiling regex "${config.nameSpoofDisallowedCharsRegex}": ${e.message}`, watchedPrefix, dependencies);
             console.error(`[NameSpoofCheck] Regex compilation error: ${e.stack || e}`);
         }
     }
@@ -93,6 +93,6 @@ export async function checkNameSpoof(
         const nameSpoofActionProfile = config.nameSpoofActionProfileName ?? "playerNamespoof";
         await actionManager.executeCheckAction(player, nameSpoofActionProfile, violationDetails, dependencies);
 
-        playerUtils.debugLog(`[NameSpoofCheck] Flagged ${player.name} (current nameTag: "${currentNameTag}") for ${flaggedReasonForLog}`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[NameSpoofCheck] Flagged ${player.name} (current nameTag: "${currentNameTag}") for ${flaggedReasonForLog}`, watchedPrefix, dependencies);
     }
 }

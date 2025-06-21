@@ -83,15 +83,15 @@ export async function execute(player, args, dependencies) {
                     target.onScreenDisplay.setActionBar(getString("command.tpahere.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
                 } catch (e) {
                     if (config.enableDebugLogging && playerUtils?.debugLog) {
-                        playerUtils.debugLog(`[TpaHereCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag);
+                        playerUtils.debugLog(`[TpaHereCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                     }
                 }
             });
         } else {
             player.sendMessage(getString("command.tpahere.failToSend"));
-            playerUtils.debugLog(`[TpaHereCommand] Failed to send TPAHere request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag);
+            playerUtils.debugLog(`[TpaHereCommand] Failed to send TPAHere request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
             if(logManager) {
-                logManager.addLog({actionType: 'error', details: `[TpaHereCommand] TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`});
+                logManager.addLog({actionType: 'error', details: `[TPAHereCommand] TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`});
             }
         }
     } catch (error) {

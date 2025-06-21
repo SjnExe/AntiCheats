@@ -63,7 +63,7 @@ export async function execute(player, args, dependencies) {
                 foundPlayer.onScreenDisplay.setActionBar(getString("command.unmute.targetNotification"));
             } catch (e) {
                 if (config.enableDebugLogging && playerUtils.debugLog) {
-                    playerUtils.debugLog(`[UnmuteCommand] Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e.stack || e}`, player.nameTag);
+                    playerUtils.debugLog(`[UnmuteCommand] Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                 }
             }
             player.sendMessage(getString("command.unmute.success", { targetName: foundPlayer.nameTag }));
@@ -89,7 +89,7 @@ export async function execute(player, args, dependencies) {
                 player.sendMessage(message);
                 const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
                 if (config.enableDebugLogging && playerUtils.debugLog) {
-                    playerUtils.debugLog(`[UnmuteCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null);
+                    playerUtils.debugLog(`[UnmuteCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
                 if (playerUtils.notifyAdmins) {
                     playerUtils.notifyAdmins(getString("command.unmute.automodFlagClearAdminNotify", { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPDataForFlagClearLog);

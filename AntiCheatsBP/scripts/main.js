@@ -27,7 +27,7 @@ import { getString, initializeI18n } from './core/i18n.js'; // Added initializeI
 import { getBorderSettings, saveBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer } from './utils/worldBorderManager.js';
 import * as chatProcessor from './core/chatProcessor.js';
 
-playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...");
+playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...", null, getStandardDependencies()); // Pass null for player context, and initial dependencies
 
 mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     const baseDependencies = {
@@ -253,7 +253,7 @@ mc.system.runInterval(async () => {
         const initDeps = getStandardDependencies(); // Use standard deps for initialization
         reportManager.initializeReportCache(initDeps);
         reportManager.isInitialized = true; // Mark as initialized
-        playerUtils.debugLog("ReportManager cache initialized from main tick loop (failsafe).", initDeps, "System");
+        playerUtils.debugLog("ReportManager cache initialized from main tick loop (failsafe).", "System", initDeps);
     }
 
     // Get dependencies for the current tick
@@ -265,7 +265,7 @@ mc.system.runInterval(async () => {
             processWorldBorderResizing(tickDependencies);
         } catch (e) {
             console.error(`[MainTick] Error processing world border resizing: ${e.stack || e}`);
-            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, tickDependencies, "System");
+            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, "System", tickDependencies);
         }
     }
 
@@ -277,7 +277,7 @@ mc.system.runInterval(async () => {
     for (const player of allPlayers) {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick);
         if (!pData) {
-            if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure.`, tickDependencies, player.nameTag);
+            if (playerUtils.debugLog) playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure.`, player.nameTag, tickDependencies);
             continue;
         }
 
@@ -361,7 +361,7 @@ mc.system.runInterval(async () => {
                 enforceWorldBorderForPlayer(player, pData, tickDependencies);
             } catch (e) {
                 console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${e.stack || e}`);
-                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, tickDependencies, player.nameTag);
+                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
             }
         }
     }
@@ -372,7 +372,7 @@ mc.system.runInterval(async () => {
             if (pData && pData.isDirtyForSave) {
                 try {
                     await playerDataManager.saveDirtyPlayerData(player); // This function might need dependencies eventually
-                    if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, tickDependencies, player.nameTag);
+                    if (playerUtils.debugLog && pData.isWatched) playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, player.nameTag, tickDependencies);
                 } catch (error) {
                     console.error(`Error during deferred save for ${player.nameTag}: ${error}`);
                     logManager.addLog('error', `DeferredSaveFail: ${player.nameTag}, ${error.message}`, tickDependencies); // Pass dependencies to addLog
@@ -384,7 +384,7 @@ mc.system.runInterval(async () => {
     }
 }, 1);
 
-playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tick loop are active.", getStandardDependencies(), "System");
+playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tick loop are active.", "System", getStandardDependencies());
 
 // Initializing ReportManager after core systems are confirmed to be ready and dependencies can be provided.
 // This is a more robust place than inside the tick loop for a one-time initialization.
@@ -392,11 +392,11 @@ const startupDependencies = getStandardDependencies();
 if (typeof reportManager.initializeReportCache === 'function') {
     reportManager.initializeReportCache(startupDependencies);
     reportManager.isInitialized = true; // Set a flag to prevent re-initialization from tick loop if not strictly necessary
-    playerUtils.debugLog("ReportManager cache initialized on startup.", startupDependencies, "System");
+    playerUtils.debugLog("ReportManager cache initialized on startup.", "System", startupDependencies);
 }
 
 // Initialize i18n with server's default language from config
 if (typeof initializeI18n === 'function') {
     initializeI18n(startupDependencies);
-    playerUtils.debugLog("i18n system initialized with configured default language.", startupDependencies, "System");
+    playerUtils.debugLog("i18n system initialized with configured default language.", "System", startupDependencies);
 }

@@ -6,72 +6,72 @@
 
 // Defines the sequence of actions for each checkType based on flag thresholds.
 export const automodRules = {
-  "fly_y_velocity": [ // Example checkType, ensure this matches a real checkType string
+  "flyYVelocity": [ // Example checkType, ensure this matches a real checkType string
     {
       "flagThreshold": 2,
-      "actionType": "WARN",
+      "actionType": "warn",
       "parameters": { "reasonKey": "automod.fly.warn1" },
       "resetFlagsAfterAction": false
     },
     {
       "flagThreshold": 4,
-      "actionType": "KICK",
+      "actionType": "kick",
       "parameters": { "reasonKey": "automod.fly.kick1" }
     },
     {
       "flagThreshold": 6,
-      "actionType": "TEMP_BAN",
+      "actionType": "tempBan",
       "parameters": { "duration": "30m", "reasonKey": "automod.fly.tempban1" }
     }
   ],
-  "speed_ground": [ // Example checkType
+  "speedGround": [ // Example checkType
     {
       "flagThreshold": 3,
-      "actionType": "WARN",
+      "actionType": "warn",
       "parameters": { "reasonKey": "automod.speed.warn1" }
     },
     {
       "flagThreshold": 6,
-      "actionType": "KICK",
+      "actionType": "kick",
       "parameters": { "reasonKey": "automod.speed.kick1" }
     }
   ],
-  "nuker_break_speed": [ // Example for a check that might be more sensitive
+  "nukerBreakSpeed": [ // Example for a check that might be more sensitive
     {
       "flagThreshold": 1,
-      "actionType": "FLAG_ONLY", // Special action type: only flags, no other punishment
+      "actionType": "flagOnly", // Special action type: only flags, no other punishment
       "parameters": { "reasonKey": "automod.nuker.flag" } // Still good to have a reason for logging
     },
     {
       "flagThreshold": 3,
-      "actionType": "WARN",
+      "actionType": "warn",
       "parameters": { "reasonKey": "automod.nuker.warn1" }
     }
   ],
-  "reach_combat": [
-    { "flagThreshold": 5, "actionType": "WARN", "parameters": { "reasonKey": "automod.reach.warn1" } },
-    { "flagThreshold": 10, "actionType": "TEMP_BAN", "parameters": { "duration": "2h", "reasonKey": "automod.reach.tempban1" } },
-    { "flagThreshold": 15, "actionType": "PERM_BAN", "parameters": { "reasonKey": "automod.reach.permban1" } }
+  "reachCombat": [
+    { "flagThreshold": 5, "actionType": "warn", "parameters": { "reasonKey": "automod.reach.warn1" } },
+    { "flagThreshold": 10, "actionType": "tempBan", "parameters": { "duration": "2h", "reasonKey": "automod.reach.tempban1" } },
+    { "flagThreshold": 15, "actionType": "permBan", "parameters": { "reasonKey": "automod.reach.permban1" } }
   ],
-  "chat_spam_fast": [
-    { "flagThreshold": 3, "actionType": "WARN", "parameters": { "reasonKey": "automod.chatspam.warn" } },
-    { "flagThreshold": 5, "actionType": "MUTE", "parameters": { "duration": "15m", "reasonKey": "automod.chatspam.mute" } }
+  "chatSpamFast": [
+    { "flagThreshold": 3, "actionType": "warn", "parameters": { "reasonKey": "automod.chatspam.warn" } },
+    { "flagThreshold": 5, "actionType": "mute", "parameters": { "duration": "15m", "reasonKey": "automod.chatspam.mute" } }
   ],
-  "fly_severe_long": [
-    { "flagThreshold": 1, "actionType": "FREEZE", "parameters": { "reasonKey": "automod.flysevere.freeze" } },
-    { "flagThreshold": 1, "actionType": "WARN", "parameters": { "reasonKey": "automod.flysevere.warn" }, "resetFlagsAfterAction": false },
-    { "flagThreshold": 3, "actionType": "KICK", "parameters": { "reasonKey": "automod.flysevere.kick" } }
+  "flySevereLong": [
+    { "flagThreshold": 1, "actionType": "freeze", "parameters": { "reasonKey": "automod.flysevere.freeze" } },
+    { "flagThreshold": 1, "actionType": "warn", "parameters": { "reasonKey": "automod.flysevere.warn" }, "resetFlagsAfterAction": false },
+    { "flagThreshold": 3, "actionType": "kick", "parameters": { "reasonKey": "automod.flysevere.kick" } }
   ],
-  "illegal_item_possession": [
+  "illegalItemPossession": [
     {
       "flagThreshold": 1,
-      "actionType": "REMOVE_ILLEGAL_ITEM",
+      "actionType": "removeIllegalItem",
       "parameters": { "reasonKey": "automod.illegalitem.removed_generic" },
       "resetFlagsAfterAction": true
     },
     {
       "flagThreshold": 2,
-      "actionType": "WARN",
+      "actionType": "warn",
       "parameters": { "reasonKey": "automod.illegalitem.warn_repeat" }
     }
   ]
@@ -106,17 +106,17 @@ export const automodActionMessages = {
  * If a checkType is not listed here, AutoMod is assumed to be ENABLED for it (provided global enableAutoMod is true).
  * Set a checkType to 'false' to disable AutoMod specifically for it.
  * Example:
- *   "fly_y_velocity": true,  // AutoMod enabled for fly_y_velocity
- *   "reach_combat": false, // AutoMod disabled for reach_combat
+ *   "flyYVelocity": true,  // AutoMod enabled for flyYVelocity
+ *   "reachCombat": false, // AutoMod disabled for reachCombat
  */
 export const automodPerCheckTypeToggles = {
-  "fly_y_velocity": true,
-  "speed_ground": true,
-  "nuker_break_speed": true,
-  "reach_combat": true,
-  "chat_spam_fast": true,
-  "fly_severe_long": true,
-  "illegal_item_possession": true
+  "flyYVelocity": true,
+  "speedGround": true,
+  "nukerBreakSpeed": true,
+  "reachCombat": true,
+  "chatSpamFast": true,
+  "flySevereLong": true,
+  "illegalItemPossession": true
   // Add new checkTypes here if you want to explicitly set their AutoMod toggle.
   // If a checkType from automodRules is NOT listed here, it defaults to AutoMod being ON for it.
 };

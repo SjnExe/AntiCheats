@@ -37,14 +37,14 @@ export async function execute(player, args, dependencies) {
             try { player.removeTag(notifyOffTag); } catch (e) {}
             player.addTag(notifyOnTag);
             player.sendMessage(getString("command.xraynotify.status.enabled"));
-            playerUtils.debugLog(dependencies, `[XrayNotifyCommand] Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag);
+            playerUtils.debugLog(`[XrayNotifyCommand] Admin ${player.nameTag} enabled X-Ray notifications.`, player.nameTag, dependencies);
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_on', details: 'X-Ray notifications ON' }, dependencies);
             break;
         case "off":
             try { player.removeTag(notifyOnTag); } catch (e) {}
             player.addTag(notifyOffTag);
             player.sendMessage(getString("command.xraynotify.status.disabled"));
-            playerUtils.debugLog(dependencies, `[XrayNotifyCommand] Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag);
+            playerUtils.debugLog(`[XrayNotifyCommand] Admin ${player.nameTag} disabled X-Ray notifications.`, player.nameTag, dependencies);
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'xraynotify_off', details: 'X-Ray notifications OFF' }, dependencies);
             break;
         case "status":

@@ -65,7 +65,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
     }
     const originalMessage = eventData.message;
     if (!config.swearWordList || config.swearWordList.length === 0) {
-        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, pData.isWatched ? player.nameTag : null, dependenciesFull);
         return false;
     }
 
@@ -77,7 +77,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
         .filter(item => item.normalized.length > 0);
 
     if (normalizedSwearWordList.length === 0) {
-        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty.`, pData.isWatched ? player.nameTag : null, dependenciesFull);
         return false;
     }
 
@@ -98,12 +98,12 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) { /
                     matchMethod: "exact_normalized",
                     originalMessage: originalMessage,
                 };
-                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by exact_normalized.`, dependenciesFull, pData.isWatched ? player.nameTag : null);
+                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: "${wordInMessage}" (normalized: "${normalizedInputWord}") matched "${swearItem.original}" (normalized: "${swearItem.normalized}") by exact_normalized.`, pData.isWatched ? player.nameTag : null, dependenciesFull);
 
                 if (actionManager && typeof actionManager.executeCheckAction === 'function') {
                      await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependenciesFull);
                 } else {
-                    playerUtils.debugLog("[SwearCheck] actionManager.executeCheckAction is not available in dependencies.", dependenciesFull, null);
+                    playerUtils.debugLog("[SwearCheck] actionManager.executeCheckAction is not available in dependencies.", null, dependenciesFull);
                      // Fallback to direct flagging if actionManager is not set up as expected in dependencies
                      if (playerDataManager && playerDataManager.addFlag) {
                          playerDataManager.addFlag(player, actionProfileName, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependenciesFull); // Pass full dependencies to addFlag

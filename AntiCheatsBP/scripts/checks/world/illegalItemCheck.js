@@ -49,12 +49,12 @@ export async function checkIllegalItems(
 
     if (!itemStack) {
         // This case might occur if the event doesn't involve an item or hand is empty.
-        playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}.`, watchedPrefix, dependencies);
         return;
     }
 
     const itemId = itemStack.typeId;
-    playerUtils.debugLog(`[IllegalItemCheck] Processing for ${player.nameTag}. Action: ${actionType}, Item: ${itemId}.`, dependencies, watchedPrefix);
+    playerUtils.debugLog(`[IllegalItemCheck] Processing for ${player.nameTag}. Action: ${actionType}, Item: ${itemId}.`, watchedPrefix, dependencies);
 
     let isBanned = false;
     let checkProfileKey = ""; // The key for checkActionProfiles in config
@@ -94,7 +94,7 @@ export async function checkIllegalItems(
 
         playerUtils.debugLog(
             `[IllegalItemCheck] Cancelled illegal ${actionType} by ${player.nameTag} for item ${itemId}. Action profile "${checkProfileKey}" triggered.`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
     }
     // This check doesn't modify pData directly.

@@ -81,7 +81,7 @@ export async function checkViewSnap(
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
             await actionManager.executeCheckAction(player, "combatViewsnapPitch", violationDetails, dependencies);
-            playerUtils.debugLog(`[ViewSnapCheck] (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[ViewSnapCheck] (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix, dependencies);
         }
 
         const maxYawSnap = config.maxYawSnapPerTick ?? 100;
@@ -94,7 +94,7 @@ export async function checkViewSnap(
                 postAttackTimeMs: postAttackTimeMs.toString()
             };
             await actionManager.executeCheckAction(player, "combatViewsnapYaw", violationDetails, dependencies);
-            playerUtils.debugLog(`[ViewSnapCheck] (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[ViewSnapCheck] (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix, dependencies);
         }
     }
     // pData.lastPitch and pData.lastYaw are updated in main.js's updateTransientPlayerData.

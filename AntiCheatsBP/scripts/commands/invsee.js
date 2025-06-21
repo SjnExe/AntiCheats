@@ -111,7 +111,7 @@ export async function execute(player, args, dependencies) {
     invForm.body(inventoryDetails.trim());
     invForm.button1(getString("common.button.close"));
     invForm.show(player).catch(e => {
-        playerUtils.debugLog(`[InvSeeCommand] Error showing invsee form: ${e.message}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[InvSeeCommand] Error showing invsee form: ${e.message}`, player.nameTag, dependencies);
         console.error(`[InvSeeCommand] Error showing invsee form: ${e.stack || e}`);
     });
 }

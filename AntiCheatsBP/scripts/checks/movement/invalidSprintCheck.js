@@ -50,7 +50,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             }
         } catch (e) {
             if (playerUtils.debugLog && pData.isWatched) {
-                playerUtils.debugLog(dependencies, `[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag);
+                playerUtils.debugLog(`[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }
         }
 
@@ -94,7 +94,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(
                 `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
-                dependencies, watchedPrefix
+                watchedPrefix, dependencies
             );
         }
     }

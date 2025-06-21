@@ -137,7 +137,7 @@ export async function execute(
             foundPlayer.kick(kickMessage);
         } catch (e) {
             // Debug log for this specific error context, config.enableDebugLogging is checked by debugLog itself
-            playerUtils.debugLog(dependencies, `[BanCommand] Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e}`, player ? player.nameTag : "System");
+            playerUtils.debugLog(`[BanCommand] Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e}`, player ? player.nameTag : "System", dependencies);
         }
 
         const successMessage = getString('command.ban.success', { targetName: foundPlayer.nameTag, durationString: durationString, reason: actualReason }); // getString from dependencies

@@ -29,14 +29,14 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
     const clientSystemInfo = player.clientSystemInfo;
 
     if (!clientSystemInfo) {
-        playerUtils.debugLog(`[InvalidRenderDistanceCheck] clientSystemInfo not available for ${player.nameTag}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[InvalidRenderDistanceCheck] clientSystemInfo not available for ${player.nameTag}.`, watchedPrefix, dependencies);
         return;
     }
 
     const clientRenderDistance = clientSystemInfo.maxRenderDistance;
 
     if (typeof clientRenderDistance !== 'number' || clientRenderDistance < 0) {
-        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Invalid or missing maxRenderDistance value (${clientRenderDistance}) for ${player.nameTag}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Invalid or missing maxRenderDistance value (${clientRenderDistance}) for ${player.nameTag}.`, watchedPrefix, dependencies);
         return;
     }
 
@@ -55,7 +55,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             await actionManager.executeCheckAction(player, "playerInvalidRenderDistance", violationDetails, dependencies);
         } else {
             // This case should ideally not happen if actionManager is always in dependencies
-            playerUtils.debugLog("[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available in dependencies for critical logging.", dependencies, null);
+            playerUtils.debugLog("[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available in dependencies for critical logging.", null, dependencies);
             if (logManager && typeof logManager.addLog === 'function') { // Fallback critical log
                  logManager.addLog({
                     adminName: "System (AntiCheat)",
@@ -66,6 +66,6 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             }
         }
 
-        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Player ${player.nameTag} reported ${clientRenderDistance} chunks, max allowed is ${config.maxAllowedClientRenderDistance}.`, dependencies, watchedPrefix);
+        playerUtils.debugLog(`[InvalidRenderDistanceCheck] Player ${player.nameTag} reported ${clientRenderDistance} chunks, max allowed is ${config.maxAllowedClientRenderDistance}.`, watchedPrefix, dependencies);
     }
 }

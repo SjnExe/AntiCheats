@@ -20,7 +20,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
     const { config, playerUtils, logManager, actionManager, getString } = dependencies;
 
     if (!pistonBlock || !pistonBlock.location) {
-        playerUtils.debugLog("[PistonLagCheck] Invalid pistonBlock provided.", dependencies, null);
+        playerUtils.debugLog("[PistonLagCheck] Invalid pistonBlock provided.", null, dependencies);
         return;
     }
 
@@ -67,7 +67,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
 
             await actionManager.executeCheckAction("worldAntigriefPistonLag", null, violationDetails, dependencies);
 
-            playerUtils.debugLog(`[PistonLagCheck] Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, dependencies, null);
+            playerUtils.debugLog(`[PistonLagCheck] Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, null, dependencies);
         }
     }
 
@@ -90,7 +90,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
             }
         }
         if (prunedCount > 0) {
-            playerUtils.debugLog(`[PistonLagCheck] Pruned ${prunedCount} stale entries from pistonActivityData. New size: ${pistonActivityData.size}`, dependencies, null);
+            playerUtils.debugLog(`[PistonLagCheck] Pruned ${prunedCount} stale entries from pistonActivityData. New size: ${pistonActivityData.size}`, null, dependencies);
         }
     }
 }

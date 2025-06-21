@@ -59,7 +59,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     const senderPDataForLog = playerDataManager.getPlayerData(player.id);
     if (playerUtils.debugLog) {
-        playerUtils.debugLog(`Player ${player.nameTag} issued command attempt: "${commandNameInput || ''}" with args: [${args.join(', ')}]`, dependencies, senderPDataForLog?.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`Player ${player.nameTag} issued command attempt: "${commandNameInput || ''}" with args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? player.nameTag : null, dependencies);
     }
 
     if (!commandNameInput) {
@@ -72,7 +72,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const finalCommandName = aliasTarget ? aliasTarget.toLowerCase() : commandNameInput;
 
     if (aliasTarget && playerUtils.debugLog) {
-        playerUtils.debugLog(`Command alias '${commandNameInput}' resolved to '${finalCommandName}'.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`Command alias '${commandNameInput}' resolved to '${finalCommandName}'.`, player.nameTag, dependencies);
     }
 
     const commandDef = commandDefinitionMap.get(finalCommandName);
@@ -93,7 +93,7 @@ export async function handleChatCommand(eventData, dependencies) {
         player.sendMessage(`§cUnknown command: ${config.prefix}${finalCommandName}§r. Type ${config.prefix}help for assistance.`);
         eventData.cancel = true;
         if (playerUtils?.debugLog) {
-            playerUtils.debugLog(`Command '${finalCommandName}' is disabled. Access denied for ${player.nameTag}.`, dependencies, player.nameTag);
+            playerUtils.debugLog(`Command '${finalCommandName}' is disabled. Access denied for ${player.nameTag}.`, player.nameTag, dependencies);
         }
         return;
     }
@@ -103,7 +103,7 @@ export async function handleChatCommand(eventData, dependencies) {
     if (userPermissionLevel > commandDef.permissionLevel) {
         playerUtils.warnPlayer(player, "You do not have permission to use this command.");
         if (playerUtils.debugLog) {
-            playerUtils.debugLog(`Command '${commandDef.name}' denied for ${player.nameTag} due to insufficient permissions. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`Command '${commandDef.name}' denied for ${player.nameTag} due to insufficient permissions. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel}`, player.nameTag, dependencies);
         }
         eventData.cancel = true;
         return;
@@ -123,7 +123,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const pDataForAdminLog = playerDataManager.getPlayerData(player.id);
     // playerUtils.isAdmin now requires dependencies
     if (pDataForAdminLog && pDataForAdminLog.isWatched && playerUtils.isAdmin(player, dependencies)) {
-        playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, player.nameTag, dependencies);
     }
 
     // The `dependencies` object received from main.js is passed directly to commandExecute
@@ -134,14 +134,14 @@ export async function handleChatCommand(eventData, dependencies) {
         // Pass the comprehensive dependencies object directly to the command
         await commandExecute(player, args, dependencies);
         if (playerUtils.debugLog) {
-            playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, dependencies, senderPDataForLog?.isWatched ? player.nameTag : null);
+            playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, senderPDataForLog?.isWatched ? player.nameTag : null, dependencies);
         }
     } catch (error) {
         player.sendMessage(`§cAn error occurred while executing command '${finalCommandName}'. Please report this.`);
         console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${error.stack || error}`);
         if (playerUtils.debugLog) {
             // Pass dependencies to debugLog, contextPlayerName can be null if not specific to a watched player in this exact message
-            playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error.message || error}`, dependencies, null);
+            playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error.message || error}`, null, dependencies);
         }
         // Use logManager from the destructured dependencies
         logManager.addLog('command_execution_error', { // Pass as an object for structured logging

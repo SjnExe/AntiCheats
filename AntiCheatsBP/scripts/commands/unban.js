@@ -46,7 +46,7 @@ export async function execute(player, args, dependencies) {
     if (!foundPlayer) {
         player.sendMessage(getString("command.unban.error.offlineNotSupported", { targetName: targetPlayerName }));
         if (config.enableDebugLogging && playerUtils.debugLog) {
-            playerUtils.debugLog(`[UnbanCommand] Unban attempt for offline player ${targetPlayerName} by ${player.nameTag}. This version primarily handles online players.`, player.nameTag);
+            playerUtils.debugLog(`[UnbanCommand] Unban attempt for offline player ${targetPlayerName} by ${player.nameTag}. This version primarily handles online players.`, player.nameTag, dependencies);
         }
         return;
     }
@@ -86,7 +86,7 @@ export async function execute(player, args, dependencies) {
                 player.sendMessage(message);
                 const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
                 if (config.enableDebugLogging && playerUtils.debugLog) {
-                    playerUtils.debugLog(`[UnbanCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null);
+                    playerUtils.debugLog(`[UnbanCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
                 if (playerUtils.notifyAdmins) {
                     playerUtils.notifyAdmins(getString("command.unban.automodFlagClearAdminNotify", { checkType: oldBanInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag }), player, targetPDataForFlagClearLog);

@@ -81,7 +81,7 @@ export async function checkNoSlow(player, pData, dependencies) {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(
                 `[NoSlowCheck] Flagged ${player.nameTag}. Action: ${localizedSlowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
-                dependencies, watchedPrefix
+                watchedPrefix, dependencies
             );
         }
     }

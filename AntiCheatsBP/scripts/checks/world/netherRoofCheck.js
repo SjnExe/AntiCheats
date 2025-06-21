@@ -21,7 +21,7 @@ export function checkNetherRoof(player, pData, dependencies) { // pData is not u
     // Bypass for spectators
     if (player.gameMode === minecraftSystem.GameMode.spectator) {
         if (playerUtils.debugLog && pData.isWatched) { // pData is passed as parameter
-            playerUtils.debugLog(dependencies, `[NetherRoofCheck] Player ${player.nameTag} is in spectator mode. Check bypassed.`, player.nameTag);
+            playerUtils.debugLog(`[NetherRoofCheck] Player ${player.nameTag} is in spectator mode. Check bypassed.`, player.nameTag, dependencies);
         }
         return;
     }
@@ -60,7 +60,7 @@ export function checkNetherRoof(player, pData, dependencies) { // pData is not u
         } else {
             // This else block might be redundant if playerDataManager and addFlag are guaranteed to be in dependencies
             if (playerUtils && playerUtils.debugLog) {
-                playerUtils.debugLog(`[NetherRoofCheck] playerDataManager.addFlag not available for player ${player.nameTag}`, dependencies, player.nameTag);
+                playerUtils.debugLog(`[NetherRoofCheck] playerDataManager.addFlag not available for player ${player.nameTag}`, player.nameTag, dependencies);
             }
         }
     }

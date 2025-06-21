@@ -55,10 +55,10 @@ export async function checkBreakUnbreakable(
             eventData.cancel = true; // Prevent the block from being broken
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog(`[InstaBreakCheck] (Unbreakable): ${player.nameTag} attempt to break \`${blockTypeId}\` cancelled.`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[InstaBreakCheck] (Unbreakable): ${player.nameTag} attempt to break \`${blockTypeId}\` cancelled.`, watchedPrefix, dependencies);
         } else {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog(`[InstaBreakCheck] (Unbreakable): Creative player ${player.nameTag} broke normally unbreakable block \`${blockTypeId}\`. Allowed.`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[InstaBreakCheck] (Unbreakable): Creative player ${player.nameTag} broke normally unbreakable block \`${blockTypeId}\`. Allowed.`, watchedPrefix, dependencies);
         }
     }
 }
@@ -107,7 +107,7 @@ export async function checkBreakSpeed(
             `[InstaBreakCheck] (Speed Eval): Player ${player.nameTag} broke ${blockTypeId}. ` +
             `Actual: ${actualDurationTicks}t, Expected: ${expectedTicks}t, Tolerance: ${tolerance}t, ` +
             `Tool: ${pData.toolUsedForBreakAttempt ?? "unknown"}`,
-            dependencies, watchedPrefix
+            watchedPrefix, dependencies
         );
 
         let flagged = false;
@@ -135,7 +135,7 @@ export async function checkBreakSpeed(
                 toolUsed: pData.toolUsedForBreakAttempt ?? "unknown"
             };
             await actionManager.executeCheckAction(player, "worldInstabreakSpeed", violationDetails, dependencies);
-            playerUtils.debugLog(`[InstaBreakCheck] (Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`[InstaBreakCheck] (Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, watchedPrefix, dependencies);
         }
     }
 
