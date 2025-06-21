@@ -6,7 +6,6 @@
  */
 
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -243,7 +242,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
  * @param {Dependencies} dependencies
  */
 export async function checkFlatRotationBuilding(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick, getString } = dependencies; // Added getString
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if (!config.enableFlatRotationCheck || !pData) { return; }
 
@@ -285,16 +284,32 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
 
     const pitchIsStatic = pitchVariance <= (config.flatRotationMaxPitchVariance ?? 2.0);
     let detectionReasonKey = "";
+    let localizedDetectionReason = "";
     let shouldFlag = false;
 
-    if (pitchIsStatic && yawIsEffectivelyStatic) { detectionReasonKey = "check.flatRotation.reason.staticPitchYaw"; shouldFlag = true; }
-    else if (pitchIsStatic) { detectionReasonKey = "check.flatRotation.reason.staticPitch"; shouldFlag = true; }
-    else if (yawIsEffectivelyStatic) { detectionReasonKey = "check.flatRotation.reason.staticYaw"; shouldFlag = true; }
-    else if (allPitchesInHorizontalRange) { detectionReasonKey = "check.flatRotation.reason.flatHorizontal"; shouldFlag = true; }
-    else if (allPitchesInDownwardRange) { detectionReasonKey = "check.flatRotation.reason.flatDownward"; shouldFlag = true; }
+    if (pitchIsStatic && yawIsEffectivelyStatic) {
+        detectionReasonKey = "checks.flatRotation.reason_staticPitchYaw";
+        localizedDetectionReason = "Static Pitch & Yaw";
+        shouldFlag = true;
+    } else if (pitchIsStatic) {
+        detectionReasonKey = "checks.flatRotation.reason_staticPitch";
+        localizedDetectionReason = "Static Pitch";
+        shouldFlag = true;
+    } else if (yawIsEffectivelyStatic) {
+        detectionReasonKey = "checks.flatRotation.reason_staticYaw";
+        localizedDetectionReason = "Static Yaw";
+        shouldFlag = true;
+    } else if (allPitchesInHorizontalRange) {
+        detectionReasonKey = "checks.flatRotation.reason_flatHorizontal";
+        localizedDetectionReason = "Flat Horizontal Pitch Range";
+        shouldFlag = true;
+    } else if (allPitchesInDownwardRange) {
+        detectionReasonKey = "checks.flatRotation.reason_flatDownward";
+        localizedDetectionReason = "Flat Downward Pitch Range";
+        shouldFlag = true;
+    }
 
     if (shouldFlag) {
-        const localizedDetectionReason = getString(detectionReasonKey); // getString from dependencies
         const violationDetails = {
             pitchVariance: pitchVariance.toFixed(1), yawMaxDifferenceFromFirst: maxIndividualYawDifference.toFixed(1),
             isYawConsideredStatic: yawIsEffectivelyStatic.toString(), detectionReason: localizedDetectionReason,

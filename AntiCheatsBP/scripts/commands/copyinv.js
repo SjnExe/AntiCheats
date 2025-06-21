@@ -24,42 +24,42 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, getString, permissionLevels, playerDataManager } = dependencies;
+    const { config, playerUtils, logManager, permissionLevels, playerDataManager } = dependencies;
     const findPlayer = playerUtils.findPlayer;
 
     if (!findPlayer) {
-        player.sendMessage(getString("command.copyinv.error.playerLookupUnavailable"));
+        player.sendMessage("§cCommand error: Player lookup utility not available.");
         console.error("[CopyInvCommand] findPlayer utility is not available in playerUtils from dependencies.");
         return;
     }
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.copyinv.usage", { prefix: config.prefix }));
+        player.sendMessage(`§cUsage: ${config.prefix}copyinv <playername>`);
         return;
     }
     const targetPlayerName = args[0];
     const targetPlayer = findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(getString("common.error.invalidPlayer", { targetName: targetPlayerName }));
+        player.sendMessage(`Player "${targetPlayerName}" not found.`);
         return;
     }
     if (targetPlayer.id === player.id) {
-        player.sendMessage(getString("command.copyinv.error.selfCopy"));
+        player.sendMessage("§cYou cannot copy your own inventory.");
         return;
     }
 
     const targetInvComp = targetPlayer.getComponent("minecraft:inventory");
     const adminInvComp = player.getComponent("minecraft:inventory");
     if (!targetInvComp || !targetInvComp.container || !adminInvComp || !adminInvComp.container) {
-        player.sendMessage(getString("command.copyinv.error.inventoryAccess"));
+        player.sendMessage("§cCould not access inventories.");
         return;
     }
 
     const form = new ModalFormData()
-        .title(getString("command.copyinv.confirm.title"))
-        .body(getString("command.copyinv.confirm.body", { targetPlayerName: targetPlayer.nameTag }))
-        .toggle(getString("command.copyinv.confirm.toggle"), false);
+        .title("Confirm Inventory Copy")
+        .body(`Overwrite YOUR inventory with a copy of ${targetPlayer.nameTag}'s inventory? THIS CANNOT BE UNDONE.`)
+        .toggle("Yes, I confirm.", false);
 
     const response = await form.show(player).catch(e => {
         playerUtils.debugLog(`[CopyInvCommand] Confirmation form cancelled or failed for ${player.nameTag}: ${e.message}`, dependencies, player.nameTag);
@@ -69,7 +69,7 @@ export async function execute(player, args, dependencies) {
 
     if (response.canceled || !response.formValues || !response.formValues[0]) {
         if (!response.error) { // Only send cancellation message if it wasn't an error
-            player.sendMessage(getString("command.copyinv.cancelled"));
+            player.sendMessage("§7Inventory copy cancelled.");
         }
         return;
     }
@@ -86,24 +86,24 @@ export async function execute(player, args, dependencies) {
                 itemsCopied++;
             }
         }
-        player.sendMessage(getString("command.copyinv.success", { targetPlayerName: targetPlayer.nameTag, itemCount: itemsCopied }));
+        player.sendMessage(`§aCopied ${targetPlayer.nameTag}'s inventory (${itemsCopied} items/stacks). Your inventory overwritten.`);
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
             actionType: 'copy_inventory',
             targetName: targetPlayer.nameTag,
-            details: getString("command.copyinv.log", { itemCount: itemsCopied })
+            details: `Copied ${itemsCopied} items.`
         }, dependencies);
 
         const targetPData = playerDataManager.getPlayerData(targetPlayer.id); // Pass dependencies if getPlayerData expects it
         playerUtils.notifyAdmins(
-            getString("command.copyinv.notifyAdmins", { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag }),
+            `${player.nameTag} copied ${targetPlayer.nameTag}'s inventory.`,
             dependencies,
             player,
             targetPData
         );
     } catch (e) {
-        player.sendMessage(getString("common.error.generic") + `: ${e.message}`);
+        player.sendMessage("§cAn unexpected error occurred." + `: ${e.message}`);
         playerUtils.debugLog(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.message}`, dependencies, player.nameTag);
         console.error(`[CopyInvCommand] Error for ${player.nameTag} copying from ${targetPlayer.nameTag}: ${e.stack || e}`);
     }

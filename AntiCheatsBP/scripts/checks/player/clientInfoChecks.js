@@ -4,7 +4,6 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -19,7 +18,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidRenderDistance(player, pData, dependencies) {
-    const { config, playerUtils, logManager, actionManager, getString } = dependencies; // Added getString
+    const { config, playerUtils, logManager, actionManager } = dependencies;
 
     if (!config.enableInvalidRenderDistanceCheck) {
         return;
@@ -45,10 +44,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             playerName: player.nameTag,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
-            detailsString: getString("check.clientInfo.renderDistance.details", { // getString from dependencies
-                reportedDistance: clientRenderDistance.toString(),
-                maxAllowed: config.maxAllowedClientRenderDistance.toString()
-            })
+            detailsString: `Reported: ${clientRenderDistance.toString()}, Max: ${config.maxAllowedClientRenderDistance.toString()}`
         };
 
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {

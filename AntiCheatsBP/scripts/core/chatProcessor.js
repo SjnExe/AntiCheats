@@ -14,10 +14,11 @@ import * as mc from '@minecraft/server'; // Only if mc.world.sendMessage is dire
  * @param {import('../../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export async function processChatMessage(player, pData, originalMessage, eventData, dependencies) {
-    const { config, playerUtils, checks, playerDataManager, logManager, actionManager, getString, rankManager, mc: minecraftSystem } = dependencies;
+    const { config, playerUtils, checks, playerDataManager, logManager, actionManager, rankManager, mc: minecraftSystem } = dependencies;
+    const translationsDict = dependencies.translations_dict || {};
 
     if (!pData) {
-        playerUtils.warnPlayer(player, getString("error.playerDataNotFound"));
+        playerUtils.warnPlayer(player, translationsDict["error.playerDataNotFound"] || "§cError: Your player data could not be loaded. Please try again or contact an admin.");
         eventData.cancel = true;
         dependencies.playerUtils.debugLog(dependencies, `[ChatProcessor] Cancelling chat for ${player.nameTag} due to missing pData.`, player.nameTag);
         return;
@@ -26,8 +27,8 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
     // Mute Check (Moved from eventHandlers.js)
     if (playerDataManager.isMuted(player, dependencies)) {
         const muteInfo = playerDataManager.getMuteInfo(player, dependencies);
-        const reason = muteInfo?.reason || getString("common.value.noReasonProvided");
-        playerUtils.warnPlayer(player, getString("chat.error.muted"));
+        const reason = muteInfo?.reason || (translationsDict["common.value.noReasonProvided"] || "No reason provided.");
+        playerUtils.warnPlayer(player, translationsDict["system.chat_error_muted"] || "§cYou are currently muted and cannot send messages.");
         eventData.cancel = true;
         logManager?.addLog?.({ actionType: 'chatAttemptMuted', targetName: player.nameTag, details: `Msg: "${originalMessage}". Reason: ${reason}` }, dependencies);
         dependencies.playerUtils.debugLog(dependencies, `[ChatProcessor] Cancelling chat for ${player.nameTag} (muted). Reason: ${reason}`, player.nameTag);
@@ -41,8 +42,10 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             const profile = config.checkActionProfiles?.player_chat_during_combat;
             if (profile?.enabled) {
                 if (profile.cancelMessage) eventData.cancel = true;
-                playerUtils.warnPlayer(player, getString(profile.messageKey || "chat.error.combatCooldown", { seconds: config.chatDuringCombatCooldownSeconds }));
-                actionManager?.executeCheckAction?.("playerChatDuringCombat", player, { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
+                const messageKey = profile.messageKey || "system.chat_error_combatCooldown";
+                const message = (translationsDict[messageKey] || "§cYou cannot chat for {seconds} seconds after combat.").replace("{seconds}", config.chatDuringCombatCooldownSeconds.toString());
+                playerUtils.warnPlayer(player, message);
+                actionManager?.executeCheckAction?.(player, "playerChatDuringCombat", { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
                 if (eventData.cancel) {
                     dependencies.playerUtils.debugLog(dependencies, `[ChatProcessor] Cancelling chat for ${player.nameTag} (chat during combat).`, player.nameTag);
                     return;
@@ -52,12 +55,15 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
     }
 
     if (!eventData.cancel && config.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
-        const itemUseState = pData.isUsingConsumable ? getString("check.inventoryMod.action.usingConsumable") : getString("check.inventoryMod.action.chargingBow");
+        const itemUseStateKey = pData.isUsingConsumable ? "checks.inventoryMod.action_usingConsumable" : "checks.inventoryMod.action_chargingBow";
+        const itemUseState = translationsDict[itemUseStateKey] || (pData.isUsingConsumable ? "using consumable" : "charging bow");
         const profile = config.checkActionProfiles?.player_chat_during_item_use;
         if (profile?.enabled) {
             if (profile.cancelMessage) eventData.cancel = true;
-            playerUtils.warnPlayer(player, getString(profile.messageKey || "chat.error.itemUse", { itemUseState: itemUseState }));
-            actionManager?.executeCheckAction?.("playerChatDuringItemUse", player, { itemUseState }, dependencies);
+            const messageKey = profile.messageKey || "system.chat_error_itemUse";
+            const message = (translationsDict[messageKey] || "§cYou cannot chat while {itemUseState}.").replace("{itemUseState}", itemUseState);
+            playerUtils.warnPlayer(player, message);
+            actionManager?.executeCheckAction?.(player, "playerChatDuringItemUse", { itemUseState }, dependencies);
             if (eventData.cancel) {
                 dependencies.playerUtils.debugLog(dependencies, `[ChatProcessor] Cancelling chat for ${player.nameTag} (chat during item use).`, player.nameTag);
                 return;
@@ -138,7 +144,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
     if (!eventData.cancel && config.enableNewlineCheck) {
         if (originalMessage.includes('\\n') || originalMessage.includes('\\r')) {
-            playerUtils.warnPlayer(player, getString("chat.error.newline"));
+            playerUtils.warnPlayer(player, translationsDict["chat.error.newline"] || "§cNewlines are not allowed in chat messages.");
             if (config.flagOnNewline) {
                 playerDataManager.addFlag(player, "chatNewline", "Newline character detected in chat message.", { message: originalMessage }, dependencies);
             }
@@ -154,7 +160,8 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
     if (!eventData.cancel && config.enableMaxMessageLengthCheck) {
         if (originalMessage.length > config.maxMessageLength) {
-            playerUtils.warnPlayer(player, getString("chat.error.maxLength", { maxLength: config.maxMessageLength }));
+            const message = (translationsDict["chat.error.maxLength"] || "§cYour message is too long (max {maxLength} characters).").replace("{maxLength}", config.maxMessageLength.toString());
+            playerUtils.warnPlayer(player, message);
             if (config.flagOnMaxMessageLength) {
                 playerDataManager.addFlag(player, "chatMaxlength", "Message exceeded maximum configured length.", { message: originalMessage, maxLength: config.maxMessageLength }, dependencies);
             }

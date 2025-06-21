@@ -24,7 +24,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager, getString, permissionLevels, config } = dependencies; // Destructure all needed
+    const { playerUtils, logManager, permissionLevels, config } = dependencies; // Destructure all needed
 
     // definition.description = getString("command.clearchat.description");
     // definition.permissionLevel = permissionLevels.admin;
@@ -33,9 +33,9 @@ export async function execute(player, _args, dependencies) {
     for (let i = 0; i < linesToClear; i++) {
         mc.world.sendMessage("");
     }
-    player.sendMessage(getString("command.clearchat.success"));
+    player.sendMessage("§aChat has been cleared.");
 
-    playerUtils.notifyAdmins(getString("command.clearchat.notifyAdmins", { playerName: player.nameTag }), dependencies, player, null);
+    playerUtils.notifyAdmins(`Chat was cleared by ${player.nameTag}.`, dependencies, player, null);
 
     logManager.addLog({
         timestamp: Date.now(),

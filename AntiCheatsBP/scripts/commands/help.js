@@ -25,8 +25,8 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include an array of command definitions.
  */
 export async function execute(player, args, dependencies) {
-    // Use playerUtils.getPlayerPermissionLevel, commandDefinitions (array), config, permissionLevels, getString from dependencies
-    const { playerUtils, commandDefinitionMap, /*assume commandDefinitions is an array derived from commandDefinitionMap if needed for .find*/ config, permissionLevels, getString } = dependencies;
+    // Use playerUtils.getPlayerPermissionLevel, commandDefinitions (array), config, permissionLevels from dependencies
+    const { playerUtils, commandDefinitionMap, /*assume commandDefinitions is an array derived from commandDefinitionMap if needed for .find*/ config, permissionLevels } = dependencies;
 
     // For clarity, let's create an array from the commandDefinitionMap values if allCommands was meant to be that.
     // Or, if commandDefinitionMap is already passed as an array of definitions by this point, rename it.
@@ -55,7 +55,7 @@ export async function execute(player, args, dependencies) {
             }
 
             if (!isEffectivelyEnabled) {
-                player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName })); // getString from dependencies
+                player.sendMessage(`§cUnknown command: "${specificCommandName}". Type ${prefix}help for a list of available commands.`);
                 return;
             }
 
@@ -69,44 +69,48 @@ export async function execute(player, args, dependencies) {
                         break;
                     }
                 }
+                // Resolve cmdDef.description which is a key
+                const cmdDescriptionKey = foundCmdDef.description; // e.g., "commands.ban.description"
+                const localizedCmdDescription = dependencies.translations_dict?.[cmdDescriptionKey] || cmdDescriptionKey; // Fallback to key if not found
+
                 player.sendMessage(
-                    getString("help.specific.header", { prefix: prefix, commandName: foundCmdDef.name }) + "\n" + // getString from dependencies
-                    getString("help.specific.syntax", { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + "\n" + // getString from dependencies
-                    getString("help.specific.description", { description: getString(foundCmdDef.description) }) + "\n" + // getString from dependencies
-                    getString("help.specific.permission", { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel }) // getString from dependencies
+                    `§l§b--- Help: ${prefix}${foundCmdDef.name} ---` + "\n" +
+                    `§eSyntax:§r ${prefix}${foundCmdDef.name} ${syntaxArgs}` + "\n" +
+                    `§bDescription:§r ${localizedCmdDescription}` + "\n" +
+                    `§7Permission: ${permLevelName} (Level ${foundCmdDef.permissionLevel})`
                 );
             } else {
-                player.sendMessage(getString("help.specific.notFoundOrNoPermission", { commandName: specificCommandName, prefix: prefix })); // getString from dependencies
+                player.sendMessage(`§cCommand "${specificCommandName}" not found or you do not have permission to view its details. Type ${prefix}help for a list of available commands.`);
             }
         } else {
-            player.sendMessage(getString("help.error.unknownCommand", { prefix: prefix, commandName: specificCommandName })); // getString from dependencies
+            player.sendMessage(`§cUnknown command: "${specificCommandName}". Type ${prefix}help for a list of available commands.`);
         }
     } else {
-        let helpMessage = getString("help.list.header", { prefix: prefix }) + "\n"; // getString from dependencies
+        let helpMessage = `§l§bAvailable Commands (prefix: ${prefix}):§r` + "\n";
         let commandsListed = 0;
 
         const categories = [
             {
-                nameKey: "help.list.category.general",
+                nameKey: "commands.help.list_category_general", // Corrected key
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version']
             },
             {
-                nameKey: "help.list.category.tpa",
+                nameKey: "commands.help.list_category_tpa", // Corrected key
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
                 condition: () => config.enableTPASystem // Use config from dependencies
             },
             {
-                nameKey: "help.list.category.moderation",
+                nameKey: "commands.help.list_category_moderation", // Corrected key
                 permissionRequired: permissionLevels.moderator,
                 commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel'] // 'ui' is an alias for panel
             },
             {
-                nameKey: "help.list.category.administrative",
+                nameKey: "commands.help.list_category_administrative", // Corrected key
                 permissionRequired: permissionLevels.admin,
                 commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder', 'setlang', 'log', 'reports', 'systeminfo']
             },
             {
-                nameKey: "help.list.category.owner",
+                nameKey: "commands.help.list_category_owner", // Corrected key
                 permissionRequired: permissionLevels.owner,
                 commands: ['testnotify'] // Removed 'config' as it's panel-only for owner
             }
@@ -136,12 +140,13 @@ export async function execute(player, args, dependencies) {
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
                     // Get localized description for each command
                     let description;
+                    const descriptionKey = cmdDef.description; // This is the translation key, e.g., "commands.ban.description"
                     if (cmdDef.name === 'panel') {
-                        description = getString("help.descriptionOverride.panel"); // getString from dependencies
+                        description = dependencies.translations_dict?.["commands.help.descriptionOverride_panel"] || "Opens the Admin/User Interface Panel.";
                     } else if (cmdDef.name === 'ui') { // Handle 'ui' alias specifically if its description key is different
-                        description = getString("help.descriptionOverride.ui"); // getString from dependencies
+                        description = dependencies.translations_dict?.["commands.help.descriptionOverride_ui"] || "Alias for !panel. Opens the Admin/User Interface Panel.";
                     } else {
-                        description = getString(cmdDef.description); // getString from dependencies
+                        description = dependencies.translations_dict?.[descriptionKey] || descriptionKey; // Fallback to key
                     }
 
                     categoryHelp += `§e${prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
@@ -150,13 +155,13 @@ export async function execute(player, args, dependencies) {
             });
 
             if (categoryHelp) {
-                const categoryNameString = getString(category.nameKey); // getString from dependencies
+                const categoryNameString = dependencies.translations_dict?.[category.nameKey] || category.nameKey.substring(category.nameKey.lastIndexOf('.') + 1); // Fallback to last part of key
                 helpMessage += `\n${categoryNameString}\n${categoryHelp}`;
             }
         });
 
         if (commandsListed === 0) {
-            helpMessage += getString("help.list.noCommandsAvailable"); // getString from dependencies
+            helpMessage += dependencies.translations_dict?.["commands.help.list_noCommandsAvailable"] || "§7No commands available to you at this time.";
         } else {
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);

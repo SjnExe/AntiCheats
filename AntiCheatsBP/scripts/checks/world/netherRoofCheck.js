@@ -12,7 +12,7 @@ import * as mc from '@minecraft/server'; // Keep this if mc.GameMode is used, ot
  * @param {import('../../types.js').Dependencies} dependencies Shared dependencies.
  */
 export function checkNetherRoof(player, pData, dependencies) { // pData is not used here but kept for signature consistency
-    const { config, playerDataManager, playerUtils, getString, mc: minecraftSystem } = dependencies; // getString from dependencies, mc for GameMode
+    const { config, playerDataManager, playerUtils, mc: minecraftSystem } = dependencies; // mc for GameMode
 
     if (!config.enableNetherRoofCheck) {
         return;
@@ -44,10 +44,7 @@ export function checkNetherRoof(player, pData, dependencies) { // pData is not u
                 // If this `detailsForNotify.originalDetailsForNotify` IS used in a user-facing message template
                 // then it MUST be localized. Assuming it's for internal logging / details for admins for now.
                 // For true localization, the profile message would use {detectedY} and {threshold}.
-                originalDetailsForNotify: getString("check.netherRoof.details.onRoof", { // getString from dependencies
-                    detectedY: detectedYValue,
-                    threshold: thresholdValue.toString()
-                })
+                originalDetailsForNotify: `Player on Nether roof at Y: ${detectedYValue} (Threshold: ${thresholdValue.toString()})`
             };
             playerDataManager.addFlag(
                 player,

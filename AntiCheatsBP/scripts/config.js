@@ -11,8 +11,6 @@ export const ownerPlayerName = "PlayerNameHere";
 export const enableDebugLogging = true;
 /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
 export const prefix = "!";
-/** @type {string} Default language code for server messages if player's language is not set or translation missing. */
-export const defaultServerLanguage = "en_US";
 
 // Welcomer & Player Info
 /** @type {boolean} If true, a welcome message is sent to players when they join. */
@@ -847,7 +845,6 @@ export let editableConfigValues = {
     ownerPlayerName: ownerPlayerName,
     enableDebugLogging: enableDebugLogging,
     prefix: prefix,
-    defaultServerLanguage: defaultServerLanguage,
     enableWelcomerMessage: enableWelcomerMessage,
     welcomeMessage: welcomeMessage,
     notifyAdminOnNewPlayerJoin: notifyAdminOnNewPlayerJoin,

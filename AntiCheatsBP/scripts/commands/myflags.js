@@ -23,7 +23,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerDataManager, getString, permissionLevels } = dependencies; // Destructure getString and permissionLevels
+    const { playerDataManager, permissionLevels } = dependencies; // Destructure getString and permissionLevels
     const pDataSelf = playerDataManager.getPlayerData(player.id);
 
     // definition.description = getString("command.myflags.description");
@@ -31,9 +31,9 @@ export async function execute(player, _args, dependencies) {
 
     if (pDataSelf && pDataSelf.flags) {
         const totalFlags = pDataSelf.flags.totalFlags || 0;
-        const lastFlagType = pDataSelf.lastFlagType || getString("command.myflags.value.none");
+        const lastFlagType = pDataSelf.lastFlagType || "None"; // Fallback for common.value.none
 
-        let message = getString("command.myflags.header", { totalFlags: totalFlags, lastFlagType: lastFlagType }) + "\n";
+        let message = `§7Your current flags: §eTotal=${totalFlags}§7. Last type: §e${lastFlagType}§r` + "\n";
         let specificFlagsFound = false;
 
         for (const key in pDataSelf.flags) {
@@ -41,19 +41,19 @@ export async function execute(player, _args, dependencies) {
                 const flagDetail = pDataSelf.flags[key];
                 const lastDetectionTime = flagDetail.lastDetectionTime
                     ? new Date(flagDetail.lastDetectionTime).toLocaleTimeString()
-                    : getString("command.myflags.value.notApplicable");
-                message += getString("command.myflags.flagEntry", { flagName: key, count: flagDetail.count, lastDetectionTime: lastDetectionTime });
+                    : "N/A"; // Fallback for common.value.notApplicable
+                message += ` §7- ${key}: §e${flagDetail.count} §7(Last: ${lastDetectionTime})\n`;
                 specificFlagsFound = true;
             }
         }
 
         if (!specificFlagsFound && totalFlags === 0) {
-            message = getString("command.myflags.noFlags");
+            message = "§7You have no active flags.";
         } else if (!specificFlagsFound && totalFlags > 0) {
-            message = getString("command.myflags.noSpecificFlags", { totalFlags: totalFlags, lastFlagType: lastFlagType });
+            message = `§7Your current flags: §eTotal=${totalFlags}§7. Last type: §e${lastFlagType}§r\n§7(No specific flag type details available with counts > 0).`;
         }
         player.sendMessage(message.trim());
     } else {
-        player.sendMessage(getString("command.myflags.noData"));
+        player.sendMessage("§7No flag data found for you, or you have no flags.");
     }
 }

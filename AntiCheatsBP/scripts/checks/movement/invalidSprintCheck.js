@@ -8,7 +8,6 @@
  */
 
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -25,7 +24,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableInvalidSprintCheck || !pData) {
         return;
@@ -39,6 +38,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let conditionDetails = "";
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
+        let localizedCondition = "";
 
         try {
             const foodComp = player.getComponent("minecraft:food");
@@ -55,29 +55,34 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
-            invalidConditionKey = "check.invalidSprint.condition.blindness";
+            invalidConditionKey = "checks.invalidSprint.condition_blindness";
+            localizedCondition = "Blindness";
             conditionDetails = `Blindness Ticks: ${pData.blindnessTicks}`;
         } else if (player.isSneaking) {
-            invalidConditionKey = "check.invalidSprint.condition.sneaking";
+            invalidConditionKey = "checks.invalidSprint.condition_sneaking";
+            localizedCondition = "Sneaking";
             conditionDetails = "Player is sneaking";
         } else if (player.isRiding) {
-            invalidConditionKey = "check.invalidSprint.condition.riding";
+            invalidConditionKey = "checks.invalidSprint.condition_riding";
+            localizedCondition = "Riding Entity";
             conditionDetails = "Player is riding an entity";
         } else if (isHungerTooLow) {
             invalidConditionKey = "check.invalidSprint.condition.hunger";
+            localizedCondition = "Low hunger"; // Using key as string was not intended, providing default
             conditionDetails = `Hunger level at ${currentFoodLevel} (Limit: <= ${config.sprintHungerLimit ?? 6})`;
         } else if (pData.isUsingConsumable) {
             invalidConditionKey = "check.invalidSprint.condition.usingItem";
+            localizedCondition = "Using item"; // Using key as string was not intended, providing default
             conditionDetails = "Player is using a consumable";
         } else if (pData.isChargingBow) {
             invalidConditionKey = "check.invalidSprint.condition.chargingBow";
+            localizedCondition = "Charging bow"; // Using key as string was not intended, providing default
             conditionDetails = "Player is charging a bow";
         }
         // Note: Shield check (pData.isUsingShield) is not typically here as shield doesn't prevent sprint if already sprinting,
         // but prevents initiation. NoSlow check handles speed while shield is up.
 
         if (invalidConditionKey) {
-            const localizedCondition = getString(invalidConditionKey);
             const violationDetails = {
                 condition: localizedCondition,
                 details: conditionDetails,

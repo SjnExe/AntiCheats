@@ -6,7 +6,6 @@
  * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -27,7 +26,7 @@ export async function checkNameSpoof(
     pData,
     dependencies
 ) {
-    const { config, playerUtils, actionManager, getString, currentTick } = dependencies;
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if (!config.enableNameSpoofCheck || !pData) {
         return;
@@ -40,11 +39,13 @@ export async function checkNameSpoof(
     let reasonDetailKey = null;
     let reasonDetailParams = {};
     let flaggedReasonForLog = ""; // For more detailed internal logging
+    let localizedReasonDetail = "";
 
     const maxLength = config.nameSpoofMaxLength ?? 48;
     if (currentNameTag.length > maxLength) {
-        reasonDetailKey = "check.nameSpoof.reason.lengthExceeded";
+        reasonDetailKey = "checks.nameSpoof.reason_lengthExceeded";
         reasonDetailParams = { currentLength: currentNameTag.length.toString(), maxLength: maxLength.toString() };
+        localizedReasonDetail = `NameTag length limit exceeded (${currentNameTag.length.toString()}/${maxLength.toString()})`;
         flaggedReasonForLog = `NameTag length limit exceeded (${currentNameTag.length}/${maxLength})`;
     }
 
@@ -53,8 +54,9 @@ export async function checkNameSpoof(
             const regex = new RegExp(config.nameSpoofDisallowedCharsRegex, "u");
             const match = currentNameTag.match(regex);
             if (match) {
-                reasonDetailKey = "check.nameSpoof.reason.disallowedChars";
+                reasonDetailKey = "checks.nameSpoof.reason_disallowedChars";
                 reasonDetailParams = { char: match[0] };
+                localizedReasonDetail = `NameTag contains disallowed character(s) (e.g., '${match[0]}')`;
                 flaggedReasonForLog = `NameTag contains disallowed character(s) (e.g., '${match[0]}')`;
             }
         } catch (e) {
@@ -70,8 +72,9 @@ export async function checkNameSpoof(
         if (!reasonDetailKey &&
             (pData.lastNameTagChangeTick ?? 0) !== 0 &&
             ticksSinceLastChange < minInterval) {
-            reasonDetailKey = "check.nameSpoof.reason.rapidChange";
+            reasonDetailKey = "checks.nameSpoof.reason_rapidChange";
             reasonDetailParams = { interval: ticksSinceLastChange.toString(), minInterval: minInterval.toString() };
+            localizedReasonDetail = `NameTag changed too rapidly (within ${ticksSinceLastChange.toString()} ticks, min is ${minInterval.toString()}t)`;
             flaggedReasonForLog = `NameTag changed too rapidly (within ${ticksSinceLastChange} ticks, min is ${minInterval}t)`;
         }
         pData.lastKnownNameTag = currentNameTag;
@@ -80,7 +83,6 @@ export async function checkNameSpoof(
     }
 
     if (reasonDetailKey) {
-        const localizedReasonDetail = getString(reasonDetailKey, reasonDetailParams); // getString from dependencies
         const violationDetails = {
             reasonDetail: localizedReasonDetail,
             currentNameTagDisplay: currentNameTag,

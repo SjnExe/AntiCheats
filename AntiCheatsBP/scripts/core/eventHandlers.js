@@ -12,7 +12,8 @@ import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/ind
 import { formatSessionDuration } from '../utils/playerUtils.js'; // formatSessionDuration is a standalone utility
 
 export async function handlePlayerLeave(eventData, dependencies) {
-    const { playerDataManager, playerUtils, config: currentConfig, logManager, getString } = dependencies;
+    const { playerDataManager, playerUtils, config: currentConfig, logManager } = dependencies;
+    const translationsDict = dependencies.translations_dict || {};
     const { player } = eventData;
     if (!player) {
         console.warn("[AntiCheat] handlePlayerLeave: Player undefined in eventData.");
@@ -49,11 +50,11 @@ export async function handlePlayerLeave(eventData, dependencies) {
             }
 
             if (currentConfig.combatLogMessage && currentConfig.combatLogMessageKey) {
-                 const notifyMessage = getString(currentConfig.combatLogMessageKey, {
-                    playerName: player.nameTag,
-                    timeSinceCombat: timeSinceLastCombatSeconds,
-                    incrementAmount: incrementAmount.toString()
-                });
+                const messageKey = currentConfig.combatLogMessageKey; // e.g., "message.combatLogAdminNotify"
+                let notifyMessage = translationsDict[messageKey] || "§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}"; // Fallback
+                notifyMessage = notifyMessage.replace("{playerName}", player.nameTag)
+                                           .replace("{timeSinceCombat}", timeSinceLastCombatSeconds)
+                                           .replace("{incrementAmount}", incrementAmount.toString());
                 playerUtils.notifyAdmins(notifyMessage, dependencies, player, pData);
             }
 
@@ -98,7 +99,8 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
 export async function handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
-    const { playerDataManager, playerUtils, config, logManager, actionManager, checks, getString, rankManager } = dependencies; // Added rankManager
+    const { playerDataManager, playerUtils, config, logManager, actionManager, checks, rankManager } = dependencies; // Added rankManager, removed getString
+    const translationsDict = dependencies.translations_dict || {};
 
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
@@ -118,11 +120,13 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         const banInfo = playerDataManager.getBanInfo(player, dependencies); // Pass dependencies
         if (banInfo) {
             playerUtils.debugLog(`Player ${player.nameTag} is banned. Kicking. Ban reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`, dependencies, player.nameTag);
-            const durationStringKick = getString(banInfo.unbanTime === Infinity ? "ban.duration.permanent" : "ban.duration.expires", { expiryDate: new Date(banInfo.unbanTime).toLocaleString() });
-            let kickReason = getString("ban.kickMessage", { reason: banInfo.reason || getString("common.value.noReasonProvided"), durationMessage: durationStringKick });
+            const durationStringKick = banInfo.unbanTime === Infinity ? (translationsDict["ban.duration.permanent"] || "Permanent") : (translationsDict["ban.duration.expires"] || "Expires: {expiryDate}").replace("{expiryDate}", new Date(banInfo.unbanTime).toLocaleString());
+            let kickReasonUnlocalized = translationsDict["ban.kickMessage"] || "§cYou are banned.\nReason: {reason}\n{durationMessage}";
+            let kickReason = kickReasonUnlocalized.replace("{reason}", banInfo.reason || (translationsDict["common.value.noReasonProvided"] || "No reason provided."))
+                                               .replace("{durationMessage}", durationStringKick);
 
             if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
-                kickReason += "\n" + getString("ban.kickMessage.discord", { discordLink: config.discordLink });
+                kickReason += "\n" + (translationsDict["ban.kickMessage.discord"] || "Appeal on our Discord: {discordLink}").replace("{discordLink}", config.discordLink);
             }
             player.kick(kickReason);
             return;
@@ -132,8 +136,8 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, dependencies, player.nameTag);
 
         if (initialSpawn && config.enableWelcomerMessage) {
-            const welcomeMsgKey = config.welcomeMessage || "welcome.joinMessage"; // Changed from config.welcomeMessageKey
-            let message = getString(welcomeMsgKey, { playerName: player.nameTag });
+            const welcomeMsgKey = config.welcomeMessage || "message.welcome";
+            let message = (translationsDict[welcomeMsgKey] || "Welcome, {playerName}, to our amazing server! We're glad to have you.").replace("{playerName}", player.nameTag);
             mc.system.runTimeout(() => {
                 player.sendMessage(message);
             }, 20);
@@ -158,7 +162,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             }
 
             if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) {
-                playerUtils.notifyAdmins(getString("admin.notify.newPlayerJoined", { playerName: player.nameTag }), dependencies, player, pData);
+                playerUtils.notifyAdmins((translationsDict["system.admin_notify_newPlayerJoined"] || "§e[Admin] New player {playerName} has joined the server for the first time!").replace("{playerName}", player.nameTag), dependencies, player, pData);
             }
         } else if (!initialSpawn && logManager?.addLog && pData) {
             const spawnLocation = player.location;
@@ -176,7 +180,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
 
         if (pData && pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
             mc.system.runTimeout(() => {
-                player.sendMessage(pData.deathMessageToShowOnSpawn);
+                player.sendMessage(pData.deathMessageToShowOnSpawn); // This is already a direct string
             }, 5);
             playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, dependencies, pData.isWatched ? player.nameTag : null);
             pData.deathMessageToShowOnSpawn = null;
@@ -188,10 +192,10 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         }
 
         if (config.enableDetailedJoinLeaveLogging) {
-            const deviceType = player.clientSystemInfo?.platformType?.toString() || getString("common.value.unknown");
-            const gameModeName = mc.GameMode[player.gameMode] || getString("common.value.unknown");
+            const deviceType = player.clientSystemInfo?.platformType?.toString() || (translationsDict["common.value.unknown"] || "Unknown");
+            const gameModeName = mc.GameMode[player.gameMode] || (translationsDict["common.value.unknown"] || "Unknown");
             const loc = player.location;
-            const dimId = player.dimension.id.split(':')[1] || getString("common.value.unknown");
+            const dimId = player.dimension.id.split(':')[1] || (translationsDict["common.value.unknown"] || "Unknown");
             const locStr = `${Math.floor(loc.x)}, ${Math.floor(loc.y)}, ${Math.floor(loc.z)} in ${dimId}`;
             console.warn(`[JoinLog] Player: ${player.nameTag} (ID: ${player.id}, Device: ${deviceType}, Mode: ${gameModeName}) ${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`);
         }
@@ -270,7 +274,8 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
 }
 
 export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
-    const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies; // Added rankManager, getString, permissionLevels
+    const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies; // Added rankManager, permissionLevels, removed getString
+    const translationsDict = dependencies.translations_dict || {};
     const { player, itemStack, block } = eventData;
 
     if (!player || !itemStack || !block) return;
@@ -283,13 +288,13 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         }
 
         const violationDetails = { itemTypeId: itemStack.typeId, location: block.location };
-        await actionManager.executeCheckAction("worldAntigriefTntPlace", player, violationDetails, dependencies);
+        await actionManager.executeCheckAction(player,"worldAntigriefTntPlace", violationDetails, dependencies);
 
         const profile = config.checkActionProfiles?.world_antigrief_tnt_place;
         if (profile?.cancelEvent) {
             eventData.cancel = true;
-            // getString is already from dependencies
-            playerUtils.warnPlayer(player, getString(profile.messageKey || "antigrief.tntPlacementDenied"));
+            const messageKey = profile.messageKey || "antigrief.tntPlacementDenied";
+            playerUtils.warnPlayer(player, translationsDict[messageKey] || "§cTNT placement is currently restricted.");
         }
     }
 }
@@ -385,7 +390,8 @@ export async function handleEntityHurt(eventData, dependencies) {
 export async function handlePlayerDeath(eventData, dependencies) {
     const { player } = eventData;
     // config is now directly from dependencies.config
-    const { playerDataManager, config, logManager, getString } = dependencies;
+    const { playerDataManager, config, logManager } = dependencies;
+    const translationsDict = dependencies.translations_dict || {};
 
     if (!player) return;
 
@@ -402,10 +408,12 @@ export async function handlePlayerDeath(eventData, dependencies) {
         const y = Math.floor(location.y);
         const z = Math.floor(location.z);
 
-        const deathCoordsMsgKey = config.deathCoordsMessage || "message.deathCoords"; // Changed from config.deathCoordsMessageKey
-        let message = getString(deathCoordsMsgKey, { // getString from dependencies
-            x: x.toString(), y: y.toString(), z: z.toString(), dimensionId: dimensionId
-        });
+        const deathCoordsMsgKey = config.deathCoordsMessage || "message.deathCoords";
+        let message = (translationsDict[deathCoordsMsgKey] || "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.")
+            .replace("{x}", x.toString())
+            .replace("{y}", y.toString())
+            .replace("{z}", z.toString())
+            .replace("{dimensionId}", dimensionId);
         pData.deathMessageToShowOnSpawn = message;
         pData.isDirtyForSave = true;
     }
@@ -495,7 +503,7 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
         // checkAutoTool might need itemStackAfterBreak which is not directly on PlayerBreakBlockAfterEvent
         // It uses pData.lastUsedTool, so that needs to be accurate.
         // For now, assuming it works with pData state primarily.
-        await checks.checkAutoTool(player, pData, dependencies); // Pass tickDependencies
+        await checks.checkAutoTool(player, pData, dependencies);
     }
 
     // checkFlatRotationBuilding is called from main tick loop as it analyzes pData.recentBlockPlacements
@@ -503,7 +511,8 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
 }
 
 export async function handleItemUse(eventData, dependencies) {
-    const { checks, config, getString, playerUtils } = dependencies; // Added getString, playerUtils
+    const { checks, config, playerUtils } = dependencies;
+    const translationsDict = dependencies.translations_dict || {};
     const { source: player, itemStack } = eventData;
 
     if (!player || !itemStack) return;
@@ -535,7 +544,7 @@ export async function handleItemUse(eventData, dependencies) {
     }
 
     if (config.preventedItemUses && config.preventedItemUses.includes(itemStack.typeId)) {
-        playerUtils.warnPlayer(player, getString("antigrief.itemUseDenied", {item: itemStack.typeId})); // getString, playerUtils from dependencies
+        playerUtils.warnPlayer(player, (translationsDict["antigrief.itemUseDenied"] || "§cUse of {item} is restricted.").replace("{item}", itemStack.typeId));
     }
 }
 
@@ -661,22 +670,23 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 }
 
 export async function handleBeforeChatSend(eventData, dependencies) {
-    const { playerDataManager, config, playerUtils, checks, logManager, actionManager, getString, rankManager } = dependencies; // Added rankManager
+    const { playerDataManager, config, playerUtils, checks, logManager, actionManager, rankManager } = dependencies; // Added rankManager, removed getString
+    const translationsDict = dependencies.translations_dict || {};
     const { sender: player, message: originalMessage } = eventData;
 
     if (!player) return;
 
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
-        playerUtils.warnPlayer(player, getString("error.playerDataNotFound")); // getString from dependencies
+        playerUtils.warnPlayer(player, translationsDict["error.playerDataNotFound"] || "§cError: Your player data could not be loaded. Please try again or contact an admin.");
         eventData.cancel = true;
         return;
     }
 
     if (playerDataManager.isMuted(player, dependencies)) { // isMuted might need dependencies
         const muteInfo = playerDataManager.getMuteInfo(player, dependencies); // getMuteInfo might need dependencies
-        const reason = muteInfo?.reason || getString("common.value.noReasonProvided");
-        playerUtils.warnPlayer(player, getString("chat.error.muted"));
+        const reason = muteInfo?.reason || (translationsDict["common.value.noReasonProvided"] || "No reason provided.");
+        playerUtils.warnPlayer(player, translationsDict["system.chat_error_muted"] || "§cYou are currently muted and cannot send messages.");
         eventData.cancel = true;
         logManager?.addLog?.({ actionType: 'chatAttemptMuted', targetName: player.nameTag, details: `Msg: "${originalMessage}". Reason: ${reason}` }, dependencies);
         return;
@@ -694,7 +704,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
     // Ensure chatProcessor is available in dependencies
     if (!dependencies.chatProcessor || typeof dependencies.chatProcessor.processChatMessage !== 'function') {
         console.warn("[AntiCheat] handleBeforeChatSend: chatProcessor.processChatMessage is not available in dependencies. Chat will not be processed.");
-        playerUtils.warnPlayer(player, getString("error.chatProcessingUnavailable")); // Inform player if possible
+        playerUtils.warnPlayer(player, translationsDict["error.chatProcessingUnavailable"] || "§cChat processing is temporarily unavailable. Please try again later."); // Inform player if possible
         eventData.cancel = true; // Cancel to prevent raw message if processing fails
         return;
     }
@@ -710,7 +720,8 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
-    const { playerUtils, config, getString, rankManager, permissionLevels } = dependencies; // Added rankManager, permissionLevels
+    const { playerUtils, config, rankManager, permissionLevels } = dependencies; // Added rankManager, permissionLevels, removed getString
+    const translationsDict = dependencies.translations_dict || {};
 
     if (!player || !toDimension || !fromDimension || !fromLocation) return;
 
@@ -727,17 +738,17 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
 
     if (toDimensionId === 'nether' && isNetherLocked(config)) { // isNetherLocked might need config from dependencies if refactored
         dimensionIsLocked = true;
-        lockedDimensionName = getString("dimensionLock.name.nether");
+        lockedDimensionName = translationsDict["dimensionLock.name.nether"] || "The Nether";
     } else if (toDimensionId === 'the_end' && isEndLocked(config)) { // isEndLocked might need config from dependencies
         dimensionIsLocked = true;
-        lockedDimensionName = getString("dimensionLock.name.end");
+        lockedDimensionName = translationsDict["dimensionLock.name.end"] || "The End";
     }
 
     if (dimensionIsLocked) {
         try {
             player.teleport(fromLocation, { dimension: fromDimension });
-            playerUtils.warnPlayer(player, getString("dimensionLock.teleportMessage", { lockedDimensionName: lockedDimensionName }));
-            playerUtils.notifyAdmins(getString("admin.notify.dimensionLockAttempt", { playerName: player.nameTag, dimensionName: lockedDimensionName }), dependencies, player);
+            playerUtils.warnPlayer(player, (translationsDict["system.dimensionLock_teleportMessage"] || "§cYou cannot enter {lockedDimensionName} as it is currently locked.").replace("{lockedDimensionName}", lockedDimensionName));
+            playerUtils.notifyAdmins((translationsDict["admin.notify.dimensionLockAttempt"] || "§7[AdminNotify] §e{playerName} §7attempted to enter the locked dimension: §c{dimensionName}").replace("{playerName}", player.nameTag).replace("{dimensionName}", lockedDimensionName), dependencies, player);
         } catch (e) {
             console.error(`[AntiCheat] Failed to teleport ${player.nameTag} back from locked dimension ${toDimensionId}: ${e}`);
             playerUtils.debugLog(`Teleport fail for ${player.nameTag} from ${toDimensionId}: ${e}`, dependencies, player.nameTag);

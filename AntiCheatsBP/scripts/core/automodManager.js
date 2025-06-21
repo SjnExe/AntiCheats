@@ -12,8 +12,8 @@
  * @param {function} getStringFn - The getString function from i18n.
  * @returns {string} A human-readable duration string. Returns "Permanent" if ms is Infinity.
  */
-function formatDuration(ms, getStringFn) {
-    if (ms === Infinity) return getStringFn("common.value.permanent");
+function formatDuration(ms, translationsDict) {
+    if (ms === Infinity) return translationsDict["common.value.permanent"] || "Permanent";
     if (ms < 1000) return `${ms}ms`;
 
     let seconds = Math.floor(ms / 1000);
@@ -38,8 +38,9 @@ function formatDuration(ms, getStringFn) {
  * Internal function to dispatch and execute specific automod actions.
  */
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager, getString } = dependencies; // Removed commandModules
+    const { playerUtils, logManager, config, playerDataManager } = dependencies; // Removed commandModules, getString
     const currentAutomodConfig = config.automodConfig;
+    const translationsDict = dependencies.translations_dict || {}; // Assume translations_dict is passed in dependencies
 
     playerUtils.debugLog(dependencies, `[AutoModManager] Dispatching action '${actionType}' for ${player.nameTag} due to ${checkType}. Params: ${JSON.stringify(parameters)}`, player.nameTag);
 
@@ -51,8 +52,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     switch (actionType) {
         case "warn":
             const reasonKeyWarn = parameters.reasonKey || 'automod.unknown.warn';
-            const messageWarnUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyWarn] || "automod.action.warnDefaultReason";
-            const localizedMessageWarn = getString(messageWarnUnlocalized);
+            const messageWarnUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyWarn] || "You have received an automated warning."; // automod.action.warnDefaultReason
+            const localizedMessageWarn = translationsDict[messageWarnUnlocalized] || messageWarnUnlocalized;
 
             if (playerUtils.warnPlayer) {
                 playerUtils.warnPlayer(player, localizedMessageWarn);
@@ -64,8 +65,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "kick":
             const reasonKeyKick = parameters.reasonKey || 'automod.unknown.kick';
-            const kickReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyKick] || "automod.action.kickDefaultReason";
-            const localizedKickReason = getString(kickReasonUnlocalized);
+            const kickReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyKick] || "Kicked by AutoMod due to rule violation."; // automod.action.kickDefaultReason
+            const localizedKickReason = translationsDict[kickReasonUnlocalized] || kickReasonUnlocalized;
 
             try {
                 player.kick(localizedKickReason);
@@ -88,8 +89,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "tempBan":
             const reasonKeyTempBan = parameters.reasonKey || 'automod.unknown.tempban';
-            const reasonMessageTempBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTempBan] || "automod.action.tempbanDefaultReason";
-            const localizedReasonMsgTempBan = getString(reasonMessageTempBanUnlocalized);
+            const reasonMessageTempBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTempBan] || "Temporarily banned by AutoMod for rule violations."; // automod.action.tempbanDefaultReason
+            const localizedReasonMsgTempBan = translationsDict[reasonMessageTempBanUnlocalized] || reasonMessageTempBanUnlocalized;
             const durationStringTempBan = parameters.duration || "5m";
 
             let parsedDurationMsTempBan = playerUtils.parseDuration(durationStringTempBan);
@@ -102,14 +103,14 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
             if (banSuccessTemp) {
                 durationForLog = parsedDurationMsTempBan;
-                const friendlyDuration = formatDuration(parsedDurationMsTempBan, getString);
+                const friendlyDuration = formatDuration(parsedDurationMsTempBan, translationsDict);
 
-                const kickMsgHeader = getString("automod.kickMessage.tempban.header");
-                const kickMsgReasonPart = getString("automod.kickMessage.common.reason", { reason: localizedReasonMsgTempBan });
-                const kickMsgDurationPart = getString("automod.kickMessage.common.duration", { duration: friendlyDuration });
+                const kickMsgHeader = translationsDict["automod.kickMessage_tempban_header"] || "You are temporarily banned by AutoMod.";
+                const kickMsgReasonPart = `Reason: ${localizedReasonMsgTempBan}`; // translationsDict["automod.kickMessage.common.reason"]
+                const kickMsgDurationPart = `Duration: ${friendlyDuration}`; // translationsDict["automod.kickMessage.common.duration"]
                 const kickMsgTempBan = `${kickMsgHeader}\n${kickMsgReasonPart}\n${kickMsgDurationPart}`;
 
-                adminNotifyDetails = getString("automod.adminNotify.details.duration", { duration: friendlyDuration });
+                adminNotifyDetails = `. Duration: ${friendlyDuration}`; // translationsDict["automod.adminNotify.details.duration"]
                 try {
                     player.kick(kickMsgTempBan);
                     logDetails = `Temp banned player for ${friendlyDuration}. Check: ${checkType}, Reason: ${localizedReasonMsgTempBan}`;
@@ -145,17 +146,17 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "permBan":
             const reasonKeyPermBan = parameters.reasonKey || 'automod.unknown.permban';
-            const reasonMessagePermBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyPermBan] || "automod.action.permbanDefaultReason";
-            const localizedReasonMsgPermBan = getString(reasonMessagePermBanUnlocalized);
+            const reasonMessagePermBanUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyPermBan] || "Permanently banned by AutoMod for severe rule violations."; // automod.action.permbanDefaultReason
+            const localizedReasonMsgPermBan = translationsDict[reasonMessagePermBanUnlocalized] || reasonMessagePermBanUnlocalized;
 
             const banSuccessPerm = playerDataManager?.addBan && playerDataManager.addBan(player, Infinity, localizedReasonMsgPermBan, "AutoMod", true, checkType, dependencies);
 
             if (banSuccessPerm) {
                 durationForLog = Infinity;
-                adminNotifyDetails = getString("automod.adminNotify.details.duration", { duration: getString("common.value.permanent") });
+                adminNotifyDetails = `. Duration: ${translationsDict["common.value.permanent"] || "Permanent"}`; // translationsDict["automod.adminNotify.details.duration"]
 
-                const kickMsgHeaderPerm = getString("automod.kickMessage.permban.header");
-                const kickMsgReasonPartPerm = getString("automod.kickMessage.common.reason", { reason: localizedReasonMsgPermBan });
+                const kickMsgHeaderPerm = translationsDict["automod.kickMessage_permban_header"] || "You are permanently banned by AutoMod."; // Fallback for missing key
+                const kickMsgReasonPartPerm = `Reason: ${localizedReasonMsgPermBan}`; // translationsDict["automod.kickMessage.common.reason"]
                 const kickMsgPermBan = `${kickMsgHeaderPerm}\n${kickMsgReasonPartPerm}`;
 
                 try {
@@ -193,8 +194,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             break;
         case "mute":
             const reasonKeyMute = parameters.reasonKey || 'automod.unknown.mute';
-            const reasonMessageMuteUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyMute] || "automod.action.muteDefaultReason";
-            const localizedReasonMsgMute = getString(reasonMessageMuteUnlocalized);
+            const reasonMessageMuteUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyMute] || "Muted by AutoMod."; // automod.action.muteDefaultReason
+            const localizedReasonMsgMute = translationsDict[reasonMessageMuteUnlocalized] || reasonMessageMuteUnlocalized;
             const durationStringMute = parameters.duration || "10m";
             let parsedDurationMsMute = playerUtils.parseDuration(durationStringMute) || 600000; // Default to 10m (600,000 ms) if parsing fails
 
@@ -202,13 +203,10 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
             if (muteSuccess) {
                 durationForLog = parsedDurationMsMute;
-                adminNotifyDetails = getString("automod.adminNotify.details.duration", { duration: formatDuration(durationForLog, getString) });
-                logDetails = `Muted player. Duration: ${formatDuration(durationForLog, getString)}, Check: ${checkType}, Reason: ${localizedReasonMsgMute}`;
+                adminNotifyDetails = `. Duration: ${formatDuration(durationForLog, translationsDict)}`; // translationsDict["automod.adminNotify.details.duration"]
+                logDetails = `Muted player. Duration: ${formatDuration(durationForLog, translationsDict)}, Check: ${checkType}, Reason: ${localizedReasonMsgMute}`;
 
-                const muteNotificationToPlayer = getString("automod.playerNotification.mute", {
-                    reason: localizedReasonMsgMute,
-                    duration: formatDuration(durationForLog, getString)
-                });
+                const muteNotificationToPlayer = `AutoMod: You have been muted for ${formatDuration(durationForLog, translationsDict)}. Reason: ${localizedReasonMsgMute}`; // Fallback for automod.playerNotification.mute
                 playerUtils.warnPlayer(player, muteNotificationToPlayer);
                 actionProcessed = true;
             } else {
@@ -261,13 +259,15 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 }
                 if (removedCount > 0) {
                     let removalMessageKey = parameters.reasonKey || 'automod.unknown.itemRemoved';
-                    let removalMessage = getString(currentAutomodConfig?.automodActionMessages?.[removalMessageKey] || "automod.default.itemRemoved",
-                                                 { quantity: removedCount.toString(), itemTypeId: itemTypeIdToRemove });
+                    let removalMessageUnlocalized = currentAutomodConfig?.automodActionMessages?.[removalMessageKey] || "AutoMod removed {quantity}x {itemTypeId} from your inventory."; // automod.default_itemRemoved
+                    let removalMessage = (translationsDict[removalMessageUnlocalized] || removalMessageUnlocalized)
+                                                 .replace("{quantity}", removedCount.toString())
+                                                 .replace("{itemTypeId}", itemTypeIdToRemove);
 
                     if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, removalMessage);
                     else player.sendMessage(removalMessage);
 
-                    adminNotifyDetails = getString("automod.adminNotify.details.item", { item: itemTypeIdToRemove });
+                    adminNotifyDetails = `. Item: ${itemTypeIdToRemove}`; // translationsDict["automod.adminNotify.details.item"]
                     logDetails = `Removed ${removedCount}x ${itemTypeIdToRemove} from ${player.nameTag} (Check: ${checkType}).`;
                 } else {
                     logDetails = `No items of type ${itemTypeIdToRemove} found to remove from ${player.nameTag} (Check: ${checkType}).`;
@@ -283,8 +283,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
         case "teleportSafe":
             const reasonKeyTeleport = parameters.reasonKey || 'automod.unknown.teleport';
-            const teleportReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTeleport] || "automod.action.teleportDefaultReason";
-            const localizedTeleportReason = getString(teleportReasonUnlocalized);
+            const teleportReasonUnlocalized = currentAutomodConfig?.automodActionMessages?.[reasonKeyTeleport] || "AutoMod: You have been teleported to a safe location."; // automod.action.teleportDefaultReason
+            const localizedTeleportReason = translationsDict[teleportReasonUnlocalized] || teleportReasonUnlocalized;
             const targetCoordinates = parameters.coordinates;
 
             if (!targetCoordinates || typeof targetCoordinates.y !== 'number') {
@@ -311,7 +311,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                         player.sendMessage(localizedTeleportReason);
                     }
                     logDetails = `Teleported player to safe location near ${JSON.stringify(teleportLocation)}. Reason: ${localizedTeleportReason}`;
-                    adminNotifyDetails = getString("automod.adminNotify.details.teleport", { x: safeLocation.x.toFixed(1), y: safeLocation.y.toFixed(1), z: safeLocation.z.toFixed(1) });
+                    adminNotifyDetails = `Teleported to: X:${safeLocation.x.toFixed(1)} Y:${safeLocation.y.toFixed(1)} Z:${safeLocation.z.toFixed(1)}`; // translationsDict["automod.adminNotify.details.teleport"]
                     actionProcessed = true;
                 } else {
                     playerUtils.debugLog(dependencies, `[AutoModManager] No ideal safe location found for TELEPORT_SAFE near ${JSON.stringify(teleportLocation)} for ${player.nameTag}. Attempting direct teleport.`, player.nameTag);
@@ -322,14 +322,14 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                         player.sendMessage(localizedTeleportReason);
                     }
                     logDetails = `Teleported player directly to ${JSON.stringify(teleportLocation)} (safe location search failed). Reason: ${localizedTeleportReason}`;
-                    adminNotifyDetails = getString("automod.adminNotify.details.teleport", { x: teleportLocation.x.toFixed(1), y: teleportLocation.y.toFixed(1), z: teleportLocation.z.toFixed(1) });
+                    adminNotifyDetails = `Teleported to: X:${teleportLocation.x.toFixed(1)} Y:${teleportLocation.y.toFixed(1)} Z:${teleportLocation.z.toFixed(1)}`; // translationsDict["automod.adminNotify.details.teleport"]
                     actionProcessed = true;
                 }
 
             } catch (e) {
                 playerUtils.debugLog(dependencies, `[AutoModManager] Error teleporting player ${player.nameTag} for TELEPORT_SAFE: ${e.stack || e}`, player.nameTag);
                 logDetails = `Failed to teleport player ${player.nameTag} to ${JSON.stringify(teleportLocation)}. Reason: ${localizedTeleportReason}, Error: ${e.stack || e}`;
-                adminNotifyDetails = getString("common.error.generic") + `: ${e.message || e}`;
+                adminNotifyDetails = (translationsDict["common.error.generic"] || "§cAn unexpected error occurred.") + `: ${e.message || e}`;
                 actionProcessed = false;
             }
             break;
@@ -358,11 +358,12 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
 
         if (playerUtils && playerUtils.notifyAdmins) {
-            const basePrefix = getString("automod.adminNotify.basePrefix");
-            const reasonMessageUnlocalized = currentAutomodConfig?.automodActionMessages?.[parameters.reasonKey] || parameters.reasonKey || "automod.action.unknownReason";
-            const localizedReasonForNotification = getString(reasonMessageUnlocalized);
+            const basePrefix = translationsDict["automod.adminNotify_basePrefix"] || "§7[§cAutoMod§7]";
+            const reasonMessageUnlocalized = currentAutomodConfig?.automodActionMessages?.[parameters.reasonKey] || parameters.reasonKey || "Automated action for unspecified reasons."; // automod.action.unknownReason
+            const localizedReasonForNotification = translationsDict[reasonMessageUnlocalized] || reasonMessageUnlocalized;
 
-            const adminMessage = getString("automod.adminNotify.actionReport", {
+            const adminMessage = `${basePrefix} Action: ${actionType} on ${player.nameTag} for ${checkType}. Reason: ${localizedReasonForNotification}${adminNotifyDetails}`; // Fallback for automod.adminNotify.actionReport
+            /*getString("automod.adminNotify.actionReport", { // TODO: This complex template needs careful handling
                 basePrefix: basePrefix,
                 actionType: actionType,
                 playerName: player.nameTag,

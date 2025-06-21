@@ -550,7 +550,8 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
  * @returns {boolean} True if the mute was successfully added, false otherwise.
  */
 export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoMod = false, triggeringCheckType = null, dependencies) {
-    const { playerUtils, getString } = dependencies;
+    const { playerUtils } = dependencies;
+    const translationsDict = dependencies.translations_dict || {};
 
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
         playerUtils.debugLog(dependencies, `[PlayerDataManager] addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag);
@@ -562,7 +563,7 @@ export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoM
         return false;
     }
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
-    const muteReason = reason || getString("playerData.mute.defaultReason");
+    const muteReason = reason || (translationsDict["playerData.mute_defaultReason"] || "Muted by system.");
     pData.muteInfo = {
         unmuteTime,
         reason: muteReason,
@@ -653,7 +654,8 @@ export function isMuted(player, dependencies) {
  * @returns {boolean} True if the ban was successfully added, false otherwise.
  */
 export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoMod = false, triggeringCheckType = null, dependencies) {
-    const { playerUtils, getString } = dependencies;
+    const { playerUtils } = dependencies;
+    const translationsDict = dependencies.translations_dict || {};
 
     if (!player || typeof durationMs !== 'number' || durationMs <= 0 || typeof bannedBy !== 'string') {
         playerUtils.debugLog(dependencies, `PDM:addBan: Invalid arguments. Player: ${player?.nameTag}, Duration: ${durationMs}, BannedBy: ${bannedBy}`, player?.nameTag);
@@ -666,7 +668,7 @@ export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoM
     }
     const currentTime = Date.now();
     const unbanTime = (durationMs === Infinity) ? Infinity : currentTime + durationMs;
-    const banReason = reason || getString("playerData.ban.defaultReason");
+    const banReason = reason || (translationsDict["playerData.ban_defaultReason"] || "Banned by system.");
     pData.banInfo = {
         xuid: player.id,
         playerName: player.nameTag,

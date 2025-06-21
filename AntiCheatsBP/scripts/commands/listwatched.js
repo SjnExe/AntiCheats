@@ -13,7 +13,7 @@ const commandDescriptionKey = "Lists all currently online players being watched.
 const requiredPermissionLevel = 1; // Static fallback (Admin)
 
 async function executeListWatched(player, args, dependencies) {
-    const { playerDataManager, playerUtils, getString } = dependencies; // Added getString
+    const { playerDataManager, playerUtils } = dependencies;
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
@@ -26,9 +26,9 @@ async function executeListWatched(player, args, dependencies) {
     }
 
     if (watchedPlayersNames.length === 0) {
-        playerUtils.sendMessage(player, getString("command.listwatched.noPlayers"));
+        playerUtils.sendMessage(player, "No players are currently being watched.");
     } else {
-        const header = getString("command.listwatched.header");
+        const header = "Currently watched players: ";
         playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
     }
 }
@@ -40,13 +40,13 @@ registerCommand({
     descriptionKey: commandDescriptionKey, // commandManager should handle localization if this is a key
     permissionLevel: requiredPermissionLevel, // commandManager uses this
     execute: async (player, args, dependencies) => {
-        const { playerUtils, getString, permissionLevels, rankManager } = dependencies; // Ensure all are here
+        const { playerUtils, permissionLevels, rankManager } = dependencies; // Ensure all are here
 
         // Manual permission check using rankManager from dependencies
         if (rankManager.getPlayerPermissionLevel(player, dependencies) > (permissionLevels.admin /* or static 1 */)) {
-            playerUtils.sendMessage(player, getString("common.error.noPermissionCommand"));
+            playerUtils.sendMessage(player, "You do not have permission to use this command.");
             return;
         }
-        await executeListWatched(player, args, dependencies); // executeListWatched already destructures getString
+        await executeListWatched(player, args, dependencies);
     }
 });
