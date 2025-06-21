@@ -38,4 +38,6 @@ Member is the default rank for all players who are not designated as Owner or Ad
 
 ## Visuals
 
-Ranks are usually displayed with distinct prefixes and colors in chat messages and potentially above player nametags, making it easy to identify players with different roles. The specifics of these visuals can sometimes be configured within the addon's settings or related resource pack files if available.
+Ranks are displayed with distinct prefixes and colors in chat messages. These colors are directly configurable in `AntiCheatsBP/scripts/config.js` via settings like `chatFormatOwnerPrefixColor`, `chatFormatAdminNameColor`, etc.
+
+Visuals above player nametags might also be present, potentially configured through the resource pack (`AntiCheatsRP`), if such features are implemented.

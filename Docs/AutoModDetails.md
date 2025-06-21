@@ -13,46 +13,50 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
 - **Setting:** Look for `enableAutoMod` (or a similarly named variable) within this file.
 - **Usage:** Set to `true` to enable the entire AutoMod system, or `false` to disable it globally.
   ```javascript
-  // Example structure within config.js
-  export const someConfigObject = {
-      // ... other settings
-      enableAutoMod: true, // or false
-      // ... other settings
-  };
+  // Example in config.js
+  export const enableAutoMod = true; // or false
+  // This value is then accessible via editableConfigValues.enableAutoMod at runtime.
   ```
 
 ### 2. Per-CheckType AutoMod Toggles
-- **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
+- **File:** `AntiCheatsBP/scripts/core/automodConfig.js` (this whole object is then typically assigned to a key in `editableConfigValues` in `config.js`)
 - **Setting:** `automodPerCheckTypeToggles`
-- **Usage:** This object allows you to enable or disable AutoMod for specific `checkType`s. If a `checkType` is not listed in this object, or if its value is `true`, AutoMod will be active for it (assuming the global `enableAutoMod` is also `true`). To disable AutoMod for a particular check, set its value to `false`.
+- **Usage:** This object allows you to enable or disable AutoMod for specific `checkType`s. `checkType`s should follow `camelCase` naming (e.g., `movementFlyHover`). If a `checkType` is not listed or is `true`, AutoMod will be active for it (if `enableAutoMod` is also `true`).
   ```javascript
-  export const automodPerCheckTypeToggles = {
-    "movement_hover_fly": true,  // AutoMod enabled for this check
-    "combat_cps_high": false, // AutoMod disabled for this check
-    // ... other check types
+  // Inside automodConfig.js
+  export const automodConfig = {
+    // ...
+    automodPerCheckTypeToggles: {
+      "movementFlyHover": true,  // AutoMod enabled for this checkType
+      "combatCpsHigh": false, // AutoMod disabled for this checkType
+      // ... other checkTypes
+    },
+    // ...
   };
   ```
 
 ### 3. AutoMod Rules (`automodRules`)
 - **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodRules`
-- **Structure:** This is an object where each key is a `checkType` string (e.g., `"movement_hover_fly"`, `"nuker_break_speed"`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
+- **Structure:** An object where each key is a `checkType` string (e.g., `"movementFlyHover"`, `"worldNuker"`), following `camelCase` convention as per `Dev/CodingStyle.md`. Specifically, acronyms like GMC, TPA, etc., should be uppercase within the camelCase identifier (e.g., `playerAntiGMC`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
 - **`actionStep` Object Properties:**
   - `flagThreshold` (number): The number of flags for this `checkType` at which this action step is triggered.
-  - `actionType` (string): The type of action to take. See "Supported Action Types" below.
+  - `actionType` (string): The type of action to take (e.g., `warn`, `kick`, `tempBan`). See "Supported Action Types" below. These should be `camelCase` if multi-word (e.g. `tempBan`).
   - `parameters` (object): Action-specific parameters.
     - `reasonKey` (string): A key to look up the message/reason in `automodActionMessages`.
-    - `duration` (string, optional): For actions like `TEMP_BAN` or `MUTE` (e.g., "30m", "1h", "7d").
+    - `duration` (string, optional): For actions like `tempBan` or `mute` (e.g., "30m", "1h", "7d").
+    - `coordinates` (object, optional): For `teleportSafe` action, e.g., `{ x: 0, y: 100, z: 0 }`.
+    - `itemToRemoveTypeId` (string, optional): For `removeIllegalItem` action, specifying the item `TypeId`.
     - *(Other parameters might be used by specific actions in the future).*
   - `resetFlagsAfterAction` (boolean, optional): If `true`, the flag count for this specific `checkType` will be reset to 0 after this action is performed. Defaults to `false`.
 
 - **Example Rule:**
   ```javascript
-  // In automodRules
-  "movement_hover_fly": [
+  // In automodConfig.js, within the automodRules object:
+  "movementFlyHover": [ // checkType in camelCase
     {
       "flagThreshold": 3,
-      "actionType": "warn",
+      "actionType": "warn", // actionType in camelCase (or single word lowercase)
       "parameters": { "reasonKey": "automod.fly.hover.warn1" }
     },
     {
@@ -62,7 +66,7 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
     },
     {
       "flagThreshold": 10,
-      "actionType": "tempBan",
+      "actionType": "tempBan", // camelCase for multi-word
       "parameters": { "duration": "1h", "reasonKey": "automod.fly.hover.tempban1" },
       "resetFlagsAfterAction": true
     }
