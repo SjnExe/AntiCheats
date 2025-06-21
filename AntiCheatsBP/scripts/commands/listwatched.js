@@ -1,25 +1,46 @@
 /**
  * @file AntiCheatsBP/scripts/commands/listwatched.js
  * @description Command to list all currently online players being watched.
- * @version 1.0.0
+ * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-import { registerCommand } from './commandRegistry.js';
-// getString and permissionLevels will be accessed via dependencies
+// getString and permissionLevels will be accessed via dependencies.
 
-// Command Configuration
-const commandName = 'listwatched';
-const commandDescriptionKey = "Lists all currently online players being watched."; // Static fallback
-const requiredPermissionLevel = 1; // Static fallback (Admin)
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
+export const definition = {
+    name: "listwatched",
+    syntax: "!listwatched", // Assuming prefix is '!'
+    description: "command.listwatched.description", // Localization key
+    aliases: ["lw", "watchedlist"],
+    permissionLevel: null, // To be set dynamically from dependencies.permissionLevels.admin
+    enabled: true,
+};
 
-async function executeListWatched(player, args, dependencies) {
-    const { playerDataManager, playerUtils, getString } = dependencies; // Added getString
+/**
+ * Executes the listwatched command.
+ * @param {import('@minecraft/server').Player} player The player issuing the command.
+ * @param {string[]} args The command arguments (unused).
+ * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
+ */
+export async function execute(player, args, dependencies) {
+    const { playerDataManager, playerUtils, getString, permissionLevels, config } = dependencies;
+
+    // Dynamically set permission level if not already set by command manager
+    // (Though command manager should ideally handle this based on initial definition)
+    if (definition.permissionLevel === null) {
+        definition.permissionLevel = permissionLevels.admin;
+    }
+    // Description would be resolved by the help command using getString.
+
+    // Permission check is handled by commandManager, so no need for manual check here.
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
 
     for (const p of onlinePlayers) {
-        const pData = playerDataManager.getPlayerData(p.id);
+        const pData = playerDataManager.getPlayerData(p.id); // Does not require full dependencies for simple get
         if (pData && pData.isWatched) {
             watchedPlayersNames.push(p.nameTag);
         }
@@ -29,24 +50,22 @@ async function executeListWatched(player, args, dependencies) {
         playerUtils.sendMessage(player, getString("command.listwatched.noPlayers"));
     } else {
         const header = getString("command.listwatched.header");
-        playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
+        // Ensure sendMessage is a valid function on playerUtils or directly use player.sendMessage
+        if (playerUtils.sendMessage && typeof playerUtils.sendMessage === 'function') {
+            playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
+        } else {
+            player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`); // Fallback
+        }
+    }
+    // Optional: Log command usage
+    if (dependencies.logManager && dependencies.logManager.addLog) {
+        dependencies.logManager.addLog({
+            adminName: player.nameTag,
+            actionType: 'command_listwatched',
+            details: `Listed watched players. Count: ${watchedPlayersNames.length}`
+        }, dependencies);
     }
 }
 
-// Register the command
-registerCommand({
-    commandName: commandName,
-    aliases: ["lw", "watchedlist"],
-    descriptionKey: commandDescriptionKey, // commandManager should handle localization if this is a key
-    permissionLevel: requiredPermissionLevel, // commandManager uses this
-    execute: async (player, args, dependencies) => {
-        const { playerUtils, getString, permissionLevels, rankManager } = dependencies; // Ensure all are here
-
-        // Manual permission check using rankManager from dependencies
-        if (rankManager.getPlayerPermissionLevel(player, dependencies) > (permissionLevels.admin /* or static 1 */)) {
-            playerUtils.sendMessage(player, getString("common.error.noPermissionCommand"));
-            return;
-        }
-        await executeListWatched(player, args, dependencies); // executeListWatched already destructures getString
-    }
-});
+// Remove the old registerCommand call if it existed in the original file.
+// The commandManager in core will load this module based on its exported definition and execute.

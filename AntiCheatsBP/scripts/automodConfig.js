@@ -4,7 +4,12 @@
  * @version 1.0.0
  */
 
+/**
+ * @typedef {import('./types.js').AutoModRule} AutoModRule // Assuming AutoModRule is defined in types.js
+ */
+
 // Defines the sequence of actions for each checkType based on flag thresholds.
+/** @type {Object.<string, AutoModRule[]>} */
 export const automodRules = {
   "flyYVelocity": [ // Example checkType, ensure this matches a real checkType string
     {
@@ -79,6 +84,7 @@ export const automodRules = {
 };
 
 // Centralized messages for AutoMod actions.
+/** @type {Object.<string, string>} */
 export const automodActionMessages = {
   "automod.fly.warn1": "Automated Warning: Unusual vertical movement detected. Please play fair.",
   "automod.fly.kick1": "Automated Kick: Persistent unusual vertical movement detected.",
