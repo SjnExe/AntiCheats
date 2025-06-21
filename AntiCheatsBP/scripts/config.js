@@ -55,12 +55,12 @@ export const helpLinks = [
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
 ];
-/** @type {string[]} Array of localization keys for general help messages. */
+/** @type {string[]} Array of general help message strings. */
 export const generalHelpMessages = [
-    "message.generalHelp.welcome",
-    "message.generalHelp.helpCommandPrompt",
-    "message.generalHelp.reportPrompt",
-    "message.generalHelp.rulesPrompt"
+    "Welcome to the server! Type `!help` for commands.",
+    "Use `!help <command>` for more info on a specific command.",
+    "To report a player, please use the report command or contact staff.",
+    "Make sure to read the server rules using the `!rules` command."
 ];
 
 // Logging
@@ -210,8 +210,8 @@ export const pistonLagLogCooldownSeconds = 60;
 // World Border System (User-Facing Parts)
 /** @type {boolean} Master switch for the entire World Border feature. */
 export const enableWorldBorderSystem = false;
-/** @type {string} Localization key for the warning message shown to players approaching the border. */
-export const worldBorderWarningMessage = "message.worldBorderWarning";
+/** @type {string} The warning message string shown to players approaching the border. */
+export const worldBorderWarningMessage = "You are approaching the world border!";
 /** @type {boolean} Default setting for whether players take damage when outside the world border. */
 export const worldBorderDefaultEnableDamage = false;
 /** @type {number} Default damage amount per interval for players outside the border. */
