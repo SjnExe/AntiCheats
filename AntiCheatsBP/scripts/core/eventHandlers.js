@@ -136,10 +136,18 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, dependencies, player.nameTag);
 
         if (initialSpawn && config.enableWelcomerMessage) {
-            const welcomeMsgKey = config.welcomeMessage || "message.welcome";
-            let message = (translationsDict[welcomeMsgKey] || "Welcome, {playerName}, to our amazing server! We're glad to have you.").replace("{playerName}", player.nameTag);
+            // const welcomeMsgKey = config.welcomeMessage || "message.welcome";
+            // let message = (translationsDict[welcomeMsgKey] || "Welcome, {playerName}, to our amazing server! We're glad to have you.").replace("{playerName}", player.nameTag);
+            // mc.system.runTimeout(() => {
+            //     player.sendMessage(message);
+            // }, 20);
+
+            // New logic using firstJoinMessage:
+            let baseMessage = config.firstJoinMessage;
+            let fullMessage = `Welcome, ${player.nameTag}!\n\n${baseMessage}`;
+
             mc.system.runTimeout(() => {
-                player.sendMessage(message);
+                player.sendMessage(fullMessage);
             }, 20);
 
             if (pData) {

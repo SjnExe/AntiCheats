@@ -55,13 +55,8 @@ export const helpLinks = [
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
 ];
-/** @type {string[]} Array of general help message strings. */
-export const generalHelpMessages = [
-    "Welcome to the server! Type `!help` for commands.",
-    "Use `!help <command>` for more info on a specific command.",
-    "To report a player, please use the report command or contact staff.",
-    "Make sure to read the server rules using the `!rules` command."
-];
+/** @type {string} The multi-line message shown to players on their first join (lines separated by \n). */
+export const firstJoinMessage = "Welcome to the server! Type `!help` for commands.\nUse `!help <command>` for more info on a specific command.\nTo report a player, please use the report command or contact staff.\nMake sure to read the server rules using the `!rules` command.";
 
 // Logging
 /** @type {boolean} If true, enables detailed logging of player join and leave events to the console. */
@@ -861,7 +856,7 @@ export let editableConfigValues = {
     discordLink: discordLink,
     websiteLink: websiteLink,
     helpLinks: helpLinks,
-    generalHelpMessages: generalHelpMessages,
+    firstJoinMessage: firstJoinMessage,
     enableDetailedJoinLeaveLogging: enableDetailedJoinLeaveLogging,
     enableSwearCheck: enableSwearCheck,
     swearWordList: swearWordList,
