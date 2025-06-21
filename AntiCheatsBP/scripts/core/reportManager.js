@@ -8,9 +8,7 @@
 import { world } from '@minecraft/server';
 // debugLog will be accessed via dependencies.playerUtils.debugLog
 
-/**
- * @const {string} reportsPropertyKeyName - The dynamic property key used for storing player reports.
- */
+// The dynamic property key used for storing player reports.
 const reportsPropertyKeyName = "anticheat:reports_v1";
 
 // maxReportsCount will be accessed via dependencies.config.maxReportsCount
