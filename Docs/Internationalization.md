@@ -4,15 +4,15 @@ This addon is designed with internationalization (i18n) in mind, allowing UI ele
 
 ## Changing Language
 
-The active language for the addon (locale) can typically be set via the `defaultLanguage` option in the main configuration file:
+The active language for addon messages can be set via the `defaultServerLanguage` option in the main configuration file:
 `AntiCheatsBP/scripts/config.js`
 
 > [!NOTE]
-> You may need to restart your server or reload the addon (if supported) for language changes to take full effect.
+> You may need to restart your server or reload the addon (if supported) for server-wide language changes to take full effect. Individual players can also set their preferred language using the `!setlang` command, if available.
 
 Example in `config.js`:
 ```javascript
-export const defaultLanguage = "en_US"; // "en_US" for English (US), "es_ES" for Spanish (Spain), etc.
+export const defaultServerLanguage = "en_US"; // "en_US" for English (US), "es_ES" for Spanish (Spain), etc.
 ```
 
 ## Available Languages
@@ -46,7 +46,7 @@ To contribute a new language:
     //     // ...
     // };
     ```
-4.  **Test** your translation in-game by setting it as the `defaultLanguage` in `config.js`.
+4.  **Test** your translation in-game by setting it as the `defaultServerLanguage` in `config.js` or using `!setlang` if testing for individual player language.
 5.  **Submit a Pull Request** with your new language file.
 
 > [!IMPORTANT]
