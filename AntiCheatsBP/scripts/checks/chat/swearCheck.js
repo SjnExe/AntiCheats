@@ -57,7 +57,7 @@ function normalizeWordForSwearCheck(word, config) {
  * @param {CommandDependencies} dependenciesFull Full dependencies object.
  * @returns {Promise<boolean>} True if a violation is detected and action taken, false otherwise.
  */
-export async function checkSwear(player, eventData, pData, dependenciesFull) { // Standardized signature
+export async function checkSwear(player, eventData, pData, dependenciesFull) {
     const { config, playerUtils, actionManager, playerDataManager } = dependenciesFull; // Destructure from dependenciesFull
 
     if (!config.enableSwearCheck) {

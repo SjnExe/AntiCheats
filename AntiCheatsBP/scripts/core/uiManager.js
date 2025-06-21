@@ -50,18 +50,18 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
 
         if (response.canceled || !response.formValues[0]) {
             adminPlayer.sendMessage(getString("ui.common.actionCancelled"));
-            depPlayerUtils.debugLog(dependencies, `[UiManager] Confirmation modal (title: ${titleKey}) cancelled by ${adminPlayer.nameTag}.`, adminPlayer.nameTag);
+            depPlayerUtils.debugLog(`[UiManager] Confirmation modal (title: ${titleKey}) cancelled by ${adminPlayer.nameTag}.`, dependencies, adminPlayer.nameTag);
             return;
         }
 
         await onConfirmCallback();
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Confirmation modal (title: ${titleKey}) confirmed by ${adminPlayer.nameTag}. Action executed.`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Confirmation modal (title: ${titleKey}) confirmed by ${adminPlayer.nameTag}. Action executed.`, dependencies, adminPlayer.nameTag);
 
     } catch (error) {
         console.error(`[UiManager] Error in _showConfirmationModal (title: ${titleKey}) for ${adminPlayer.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in _showConfirmationModal (title: ${titleKey}) for ${adminPlayer.nameTag}: ${error.message}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in _showConfirmationModal (title: ${titleKey}) for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager._showConfirmationModal', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack, titleKey: titleKey }, dependencies);
+            logManager.addLog({ context: 'uiManager._showConfirmationModal', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack, titleKey: titleKey }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("common.error.genericForm"));
     }
@@ -70,7 +70,7 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
 
 async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `[UiManager] Inspect Player form requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`[UiManager] Inspect Player form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const modalForm = new ModalFormData();
     modalForm.title(getString("ui.inspectPlayerForm.title"));
     modalForm.textField(getString("ui.inspectPlayerForm.textField.label"), getString("ui.inspectPlayerForm.textField.placeholder"));
@@ -78,7 +78,7 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
     try {
         const response = await modalForm.show(adminPlayer);
         if (response.canceled) {
-            depPlayerUtils.debugLog(dependencies, `[UiManager] Inspect Player (Text) form cancelled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, adminPlayer.nameTag);
+            depPlayerUtils.debugLog(`[UiManager] Inspect Player (Text) form cancelled by ${adminPlayer.nameTag}. Reason: ${response.cancelationReason}`, dependencies, adminPlayer.nameTag);
             return;
         }
         const targetPlayerName = response.formValues[0];
@@ -96,9 +96,9 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
         }
     } catch (error) {
         console.error(`[UiManager] Error in showInspectPlayerForm for ${adminPlayer.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in showInspectPlayerForm for ${adminPlayer.nameTag}: ${error.message}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in showInspectPlayerForm for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showInspectPlayerForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showInspectPlayerForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);  // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("common.error.genericForm"));
     }
@@ -106,7 +106,7 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
 
 async function showMyStats(player, dependencies) {
     const { playerDataManager, playerUtils: depPlayerUtils, getString, logManager } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `[UiManager] showMyStats for ${player.nameTag}`, player.nameTag);
+    depPlayerUtils.debugLog(`[UiManager] showMyStats for ${player.nameTag}`, dependencies, player.nameTag);
 
     const pData = playerDataManager.getPlayerData(player.id);
     let sessionPlaytimeFormatted = getString("common.value.notAvailable");
@@ -140,18 +140,18 @@ async function showMyStats(player, dependencies) {
         await showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
     } catch (error) {
         console.error(`[UiManager] Error in showMyStats for ${player.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in showMyStats for ${player.nameTag}: ${error.message}`, player.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in showMyStats for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showMyStats', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showMyStats', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
-        player.sendMessage(getString("common.error.genericForm"));
+        player.sendMessage(getString("common.error.genericForm")); // Corrected from adminPlayer
         await showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
     }
 }
 
 async function showServerRules(player, dependencies) {
     const { config, playerUtils: depPlayerUtils, playerDataManager, getString, logManager } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `[UiManager] showServerRules for ${player.nameTag}`, player.nameTag);
+    depPlayerUtils.debugLog(`[UiManager] showServerRules for ${player.nameTag}`, dependencies, player.nameTag);
 
     const rules = config.serverRules;
     let rulesBody = "";
@@ -172,18 +172,18 @@ async function showServerRules(player, dependencies) {
         await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
     } catch (error) {
         console.error(`[UiManager] Error in showServerRules for ${player.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in showServerRules for ${player.nameTag}: ${error.message}`, player.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in showServerRules for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showServerRules', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showServerRules', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
-        player.sendMessage(getString("common.error.genericForm"));
+        player.sendMessage(getString("common.error.genericForm")); // Corrected from adminPlayer
         await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
     }
 }
 
 async function showHelpAndLinks(player, dependencies) {
     const { config, playerUtils: depPlayerUtils, playerDataManager, getString, logManager } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `[UiManager] showHelpAndLinks for ${player.nameTag}`, player.nameTag);
+    depPlayerUtils.debugLog(`[UiManager] showHelpAndLinks for ${player.nameTag}`, dependencies, player.nameTag);
 
     const form = new ActionFormData();
     form.title(getString("ui.helpfulLinks.title"));
@@ -202,9 +202,9 @@ async function showHelpAndLinks(player, dependencies) {
             await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
         } catch (error) {
             console.error(`[UiManager] Error showing noLinks form in showHelpAndLinks for ${player.nameTag}: ${error.stack || error}`);
-            depPlayerUtils.debugLog(dependencies, `[UiManager] Error showing noLinks form in showHelpAndLinks for ${player.nameTag}: ${error.message}`, player.nameTag);
+            depPlayerUtils.debugLog(`[UiManager] Error showing noLinks form in showHelpAndLinks for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
             if (logManager?.addLog) { // Added logManager
-                logManager.addLog('error', { context: 'uiManager.showHelpAndLinks.noLinksForm', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+                logManager.addLog({ context: 'uiManager.showHelpAndLinks.noLinksForm', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
             }
             await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
         }
@@ -231,16 +231,16 @@ async function showHelpAndLinks(player, dependencies) {
             player.sendMessage(getString("ui.helpfulLinks.linkMessageFormat", { title: selectedLink.title, url: selectedLink.url }));
             await showHelpAndLinks(player, dependencies);
         } else {
-            depPlayerUtils.debugLog(dependencies, `[UiManager] Error: Invalid link item at index ${response.selection} in showHelpAndLinks.`, player.nameTag);
+            depPlayerUtils.debugLog(`[UiManager] Error: Invalid link item at index ${response.selection} in showHelpAndLinks.`, dependencies, player.nameTag);
             player.sendMessage(getString("common.error.genericForm"));
             await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
         }
 
     } catch (error) {
         console.error(`[UiManager] Error in showHelpAndLinks for ${player.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in showHelpAndLinks for ${player.nameTag}: ${error.message}`, player.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in showHelpAndLinks for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showHelpAndLinks', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showHelpAndLinks', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         player.sendMessage(getString("common.error.genericForm"));
         await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
@@ -249,7 +249,7 @@ async function showHelpAndLinks(player, dependencies) {
 
 showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataManager, dependencies) {
     const { config, playerUtils: depPlayerUtils, logManager, getString, permissionLevels } = dependencies; // logManager already here
-    depPlayerUtils.debugLog(dependencies, `[UiManager] showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`[UiManager] showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
     const form = new ActionFormData();
     form.title(getString("ui.playerActions.title", { targetPlayerName: targetPlayer.nameTag }));
@@ -322,9 +322,9 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                 return true;
             } catch (modalError) {
                 console.error(`[UiManager] Error in showModalAndExecute (command: ${commandName}) for ${adminPlayer.nameTag}: ${modalError.stack || modalError}`);
-                depPlayerUtils.debugLog(dependencies, `[UiManager] Error in showModalAndExecute (command: ${commandName}) for ${adminPlayer.nameTag}: ${modalError.message}`, adminPlayer.nameTag);
+                depPlayerUtils.debugLog(`[UiManager] Error in showModalAndExecute (command: ${commandName}) for ${adminPlayer.nameTag}: ${modalError.message}`, dependencies, adminPlayer.nameTag);
                 if (logManager?.addLog) {
-                     logManager.addLog('error', { context: `uiManager.showModalAndExecute.${commandName}`, player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: modalError.message, stack: modalError.stack }, dependencies);
+                     logManager.addLog({ context: `uiManager.showModalAndExecute.${commandName}`, player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: modalError.message, stack: modalError.stack }, dependencies); // Type will be 'error'
                 }
                 adminPlayer.sendMessage(getString("common.error.genericForm"));
                 return false; // Error occurred
@@ -349,12 +349,12 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     adminPlayer.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.toPlayerSuccess", { targetPlayerName: targetPlayer.nameTag }));
                     if (logManager?.addLog) {
-                        logManager.addLog('info', { adminName: adminPlayer.nameTag, actionType: 'teleportSelfToPlayer', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag}` }, dependencies);
+                        logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleportSelfToPlayer', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported to ${targetPlayer.nameTag}` }, dependencies); // Type will be 'info'
                     }
                 } catch (e) {
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.error", { errorMessage: e.message }));
                     if (logManager?.addLog) {
-                        logManager.addLog('error', { context: 'uiManager.teleportToPlayer', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+                        logManager.addLog({ context: 'uiManager.teleportToPlayer', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
                     }
                 }
                 break;
@@ -364,12 +364,12 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.playerToAdminSuccess", { targetPlayerName: targetPlayer.nameTag }));
                     targetPlayer.sendMessage(getString("ui.playerActions.teleport.playerToAdminNotifyTarget"));
                     if (logManager?.addLog) {
-                        logManager.addLog('info', { adminName: adminPlayer.nameTag, actionType: 'teleportPlayerToAdmin', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to them.` }, dependencies);
+                        logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'teleportPlayerToAdmin', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} teleported ${targetPlayer.nameTag} to them.` }, dependencies); // Type will be 'info'
                     }
                 } catch (e) {
                     adminPlayer.sendMessage(getString("ui.playerActions.teleport.error", { errorMessage: e.message }));
                      if (logManager?.addLog) {
-                        logManager.addLog('error', { context: 'uiManager.teleportPlayerHere', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+                        logManager.addLog({ context: 'uiManager.teleportPlayerHere', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
                     }
                 }
                 break;
@@ -426,7 +426,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                             }
                             adminPlayer.sendMessage(getString("ui.playerActions.clearInventory.success", { targetPlayerName: targetPlayer.nameTag }));
                             if (logManager?.addLog) { // logManager was depLogManager before
-                                logManager.addLog('info', { adminName: adminPlayer.nameTag, actionType: 'clearInventory', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}` }, dependencies);
+                                logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'clearInventory', targetName: targetPlayer.nameTag, details: `Admin ${adminPlayer.nameTag} cleared inventory for ${targetPlayer.nameTag}` }, dependencies); // Type will be 'info'
                             }
                         } else {
                             adminPlayer.sendMessage(getString("ui.playerActions.clearInventory.fail", { targetPlayerName: targetPlayer.nameTag }));
@@ -452,9 +452,9 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         }
 
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}: ${error.stack || error}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}: ${error.stack || error}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showPlayerActionsForm', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showPlayerActionsForm', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.playerActions.error.generic"));
         await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
@@ -463,7 +463,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
 
 showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString and logManager
-    depPlayerUtils.debugLog(dependencies, `UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const onlinePlayers = mc.world.getAllPlayers();
 
     const form = new ActionFormData();
@@ -500,9 +500,9 @@ showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependen
             await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
         }
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showOnlinePlayersList: ${error.stack || error}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showOnlinePlayersList: ${error.stack || error}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showOnlinePlayersList', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showOnlinePlayersList', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.onlinePlayers.error.generic"));
         await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
@@ -511,7 +511,7 @@ showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependen
 
 showAdminPanelMain = async function (player, playerDataManager, config, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager, permissionLevels } = dependencies; // Added getString, logManager, permissionLevels
-    depPlayerUtils.debugLog(dependencies, `UI: Admin Panel Main requested by ${player.nameTag}`, player.nameTag);
+    depPlayerUtils.debugLog(`UI: Admin Panel Main requested by ${player.nameTag}`, dependencies, player.nameTag);
     const form = new ActionFormData();
     const userPermLevel = depPlayerUtils.getPlayerPermissionLevel(player, dependencies); // Added dependencies
 
@@ -534,7 +534,7 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
 
             const response = await form.show(player);
             if (response.canceled || response.selection === closeButtonIndex) {
-                depPlayerUtils.debugLog(dependencies, `Admin Panel Main cancelled or closed by ${player.nameTag}.`, player.nameTag);
+                depPlayerUtils.debugLog(`Admin Panel Main cancelled or closed by ${player.nameTag}.`, dependencies, player.nameTag);
                 return;
             }
             switch (response.selection) {
@@ -556,9 +556,9 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
         }
 
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showAdminPanelMain for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
+        depPlayerUtils.debugLog(`Error in showAdminPanelMain for ${player.nameTag}: ${error.stack || error}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showAdminPanelMain', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showAdminPanelMain', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         player.sendMessage(getString("ui.adminPanel.error.generic"));
     }
@@ -566,7 +566,7 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
 
 async function showNormalUserPanelMain(player, playerDataManager, config, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Normal User Panel Main requested by ${player.nameTag}`, player.nameTag);
+    depPlayerUtils.debugLog(`UI: Normal User Panel Main requested by ${player.nameTag}`, dependencies, player.nameTag);
     const form = new ActionFormData();
     form.title(getString("ui.normalPanel.title"));
     form.body(getString("ui.normalPanel.body", { playerName: player.nameTag }));
@@ -584,9 +584,9 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
             case 2: await showHelpAndLinks(player, dependencies); break;
         }
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showNormalUserPanelMain for ${player.nameTag}: ${error.stack || error}`, player.nameTag);
+        depPlayerUtils.debugLog(`Error in showNormalUserPanelMain for ${player.nameTag}: ${error.stack || error}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showNormalUserPanelMain', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showNormalUserPanelMain', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         player.sendMessage(getString("common.error.genericForm"));
     }
@@ -596,7 +596,7 @@ export { showAdminPanelMain };
 
 showSystemInfo = async function (adminPlayer, config, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, logManager, reportManager, getString, worldBorderManager } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `UI: System Info requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: System Info requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
     const onlinePlayers = mc.world.getAllPlayers();
     const pDataEntries = playerDataManager.getAllPlayerDataEntries ? playerDataManager.getAllPlayerDataEntries().length : getString("common.value.notApplicable");
@@ -640,9 +640,9 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
         await form.show(adminPlayer);
     } catch (error) {
         console.error(`[UiManager] Error in showSystemInfo for ${adminPlayer.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in showSystemInfo for ${adminPlayer.nameTag}: ${error.message}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in showSystemInfo for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showSystemInfo', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showSystemInfo', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
     }
     await showServerManagementForm(adminPlayer, playerDataManager, dependencies.config, dependencies); // Use dependencies.config
@@ -651,7 +651,7 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
 showEditConfigForm = async function (adminPlayer, playerDataManager, currentEditableConfig, dependencies) {
     // currentEditableConfig is globalEditableConfigValues passed from showAdminPanelMain
     const { playerUtils: depPlayerUtils, getString, logManager, config: currentRuntimeConfig, permissionLevels } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `UI: Edit Config Form requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Edit Config Form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     if (depPlayerUtils.getPlayerPermissionLevel(adminPlayer, dependencies) !== permissionLevels.owner) { // Pass dependencies
         adminPlayer.sendMessage(getString("ui.configEditor.error.ownerOnly"));
         await showAdminPanelMain(adminPlayer, playerDataManager, currentRuntimeConfig, dependencies);
@@ -707,9 +707,9 @@ showEditConfigForm = async function (adminPlayer, playerDataManager, currentEdit
             await showEditConfigForm(adminPlayer, playerDataManager, currentEditableConfig, dependencies);
         }
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showEditConfigForm: ${error.stack || error}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showEditConfigForm: ${error.stack || error}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showEditConfigForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showEditConfigForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.configEditor.error.generic"));
         await showServerManagementForm(adminPlayer, playerDataManager, currentRuntimeConfig, dependencies);
@@ -719,7 +719,7 @@ showEditConfigForm = async function (adminPlayer, playerDataManager, currentEdit
 async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, currentValue, dependencies) {
     // currentValue is now from dependencies.config, passed by showEditConfigForm
     const { playerDataManager, playerUtils: depPlayerUtils, logManager, getString, config: currentRuntimeConfig } = dependencies;
-    depPlayerUtils.debugLog(dependencies, `UI: showEditSingleConfigValueForm for key ${keyName} (type: ${keyType}) requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: showEditSingleConfigValueForm for key ${keyName} (type: ${keyType}) requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const modalForm = new ModalFormData();
     modalForm.title(getString("ui.configEditor.valueInput.title", { keyName: keyName }));
     let originalValueForComparison = currentValue; // This is the runtime value
@@ -775,7 +775,7 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
                 if (success) {
                     adminPlayer.sendMessage(getString("ui.configEditor.valueInput.success", { keyName: keyName, newValue: (typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)) }));
                     if (logManager?.addLog) {
-                        logManager.addLog('info', { adminName: adminPlayer.nameTag, actionType: 'configUpdate', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` }, dependencies);
+                        logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'configUpdate', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` }, dependencies); // Type will be 'info'
                     }
                 } else {
                     adminPlayer.sendMessage(getString("ui.configEditor.valueInput.error.updateFailedInternal", { keyName: keyName }));
@@ -783,9 +783,9 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
             }
         }
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showEditSingleConfigValueForm for ${keyName}: ${error.stack || error}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showEditSingleConfigValueForm for ${keyName}: ${error.stack || error}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showEditSingleConfigValueForm', player: adminPlayer?.nameTag, keyName: keyName, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showEditSingleConfigValueForm', player: adminPlayer?.nameTag, keyName: keyName, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.configEditor.valueInput.error.generic", { keyName: keyName }));
     }
@@ -795,7 +795,7 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
 
 async function handleClearChatAction(adminPlayer, playerDataManager, config, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Clear Chat Action requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Clear Chat Action requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
     try {
         await _showConfirmationModal(
@@ -815,9 +815,9 @@ async function handleClearChatAction(adminPlayer, playerDataManager, config, dep
         );
     } catch (error) {
         console.error(`[UiManager] Error in handleClearChatAction for ${adminPlayer.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in handleClearChatAction for ${adminPlayer.nameTag}: ${error.message}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in handleClearChatAction for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.handleClearChatAction', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.handleClearChatAction', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
     }
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
@@ -825,7 +825,7 @@ async function handleClearChatAction(adminPlayer, playerDataManager, config, dep
 
 async function handleLagClearAction(adminPlayer, playerDataManager, config, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Lag Clear Action requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Lag Clear Action requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
     try {
         await _showConfirmationModal(
@@ -845,9 +845,9 @@ async function handleLagClearAction(adminPlayer, playerDataManager, config, depe
         );
     } catch (error) {
          console.error(`[UiManager] Error in handleLagClearAction for ${adminPlayer.nameTag}: ${error.stack || error}`);
-        depPlayerUtils.debugLog(dependencies, `[UiManager] Error in handleLagClearAction for ${adminPlayer.nameTag}: ${error.message}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`[UiManager] Error in handleLagClearAction for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.handleLagClearAction', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.handleLagClearAction', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
     }
     await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
@@ -886,9 +886,9 @@ showModLogTypeSelectionForm = async function (adminPlayer, dependencies, current
             case 3: await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies); break;
         }
     } catch (e) {
-        depPlayerUtils.debugLog(dependencies, `Error in showModLogTypeSelectionForm: ${e.stack || e}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showModLogTypeSelectionForm: ${e.stack || e}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showModLogTypeSelectionForm', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showModLogTypeSelectionForm', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.modLogSelect.error.generic"));
         await showServerManagementForm(adminPlayer, playerDataManager, config, dependencies);
@@ -938,9 +938,9 @@ async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray,
         }
     } catch (e) {
         bodyContent = getString("common.error.genericForm");
-        depPlayerUtils.debugLog(dependencies, `Error in showLogViewerForm log processing: ${e.stack || e}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showLogViewerForm log processing: ${e.stack || e}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) { // Ensure logManager is used here
-            logManager.addLog('error', { context: 'uiManager.showLogViewerForm.processing', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showLogViewerForm.processing', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
         }
     }
 
@@ -949,9 +949,9 @@ async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray,
     try {
         await form.show(adminPlayer);
     } catch (e) {
-        depPlayerUtils.debugLog(dependencies, `Error displaying LogViewerForm: ${e.stack || e}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error displaying LogViewerForm: ${e.stack || e}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showLogViewerForm.display', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showLogViewerForm.display', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
         }
     }
     await showModLogTypeSelectionForm(adminPlayer, dependencies, filterPlayerName);
@@ -959,7 +959,7 @@ async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray,
 
 showServerManagementForm = async function (adminPlayer, playerDataManager, config, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager, permissionLevels } = dependencies; // Added getString, logManager, permissionLevels
-    depPlayerUtils.debugLog(dependencies, `UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const form = new ActionFormData();
     form.title(getString("ui.serverManagement.title"));
     form.body(getString("ui.serverManagement.body"));
@@ -995,9 +995,9 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
                 break;
         }
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showServerManagementForm for ${adminPlayer.nameTag}: ${error.stack || error}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showServerManagementForm for ${adminPlayer.nameTag}: ${error.stack || error}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showServerManagementForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showServerManagementForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.serverManagement.error.generic"));
         await showAdminPanelMain(adminPlayer, playerDataManager, config, dependencies);
@@ -1006,7 +1006,7 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
 
 showActionLogsForm = async function (adminPlayer, config, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, logManager, getString } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Action Logs (All) requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Action Logs (All) requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const form = new MessageFormData();
     form.title(getString("ui.actionLogs.title"));
 
@@ -1039,9 +1039,9 @@ showActionLogsForm = async function (adminPlayer, config, playerDataManager, dep
     try {
         await form.show(adminPlayer);
     } catch (e) {
-        depPlayerUtils.debugLog(dependencies, `Error in showActionLogsForm: ${e.stack || e}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showActionLogsForm: ${e.stack || e}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) { // Ensure logManager is used here
-            logManager.addLog('error', { context: 'uiManager.showActionLogsForm', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showActionLogsForm', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
         }
     }
     await showServerManagementForm(adminPlayer, config, playerDataManager, dependencies);
@@ -1049,7 +1049,7 @@ showActionLogsForm = async function (adminPlayer, config, playerDataManager, dep
 
 showResetFlagsForm = async function (adminPlayer, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Reset Flags form requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Reset Flags form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const resetFlagsExecute = dependencies.commandExecutionMap?.get('resetflags');
     if (!resetFlagsExecute) {
         adminPlayer.sendMessage(getString("common.error.commandModuleNotFound", { moduleName: "resetflags" }));
@@ -1074,9 +1074,9 @@ showResetFlagsForm = async function (adminPlayer, playerDataManager, dependencie
             }
         }
     } catch (error) {
-        depPlayerUtils.debugLog(dependencies, `Error in showResetFlagsForm: ${error.stack || error}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error in showResetFlagsForm: ${error.stack || error}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog('error', { context: 'uiManager.showResetFlagsForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showResetFlagsForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
         }
         adminPlayer.sendMessage(getString("ui.resetFlagsForm.error.generic"));
     }
@@ -1085,7 +1085,7 @@ showResetFlagsForm = async function (adminPlayer, playerDataManager, dependencie
 
 showWatchedPlayersList = async function (adminPlayer, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Watched Players list requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Watched Players list requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     let body = getString("ui.watchedPlayers.header") + "\n";
     let watchedCount = 0;
     mc.world.getAllPlayers().forEach(p => {
@@ -1107,9 +1107,9 @@ showWatchedPlayersList = async function (adminPlayer, playerDataManager, depende
     try {
         await form.show(adminPlayer);
     } catch (e) {
-        depPlayerUtils.debugLog(dependencies, `Error showing watched players list: ${e.stack || e}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error showing watched players list: ${e.stack || e}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) { // Ensure logManager is used here
-            logManager.addLog('error', { context: 'uiManager.showWatchedPlayersList', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showWatchedPlayersList', player: adminPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
         }
     }
     await showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
@@ -1117,7 +1117,7 @@ showWatchedPlayersList = async function (adminPlayer, playerDataManager, depende
 
 showDetailedFlagsForm = async function(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     const { playerUtils: depPlayerUtils, getString, logManager } = dependencies; // Added getString, logManager
-    depPlayerUtils.debugLog(dependencies, `UI: Detailed flags for ${targetPlayer.nameTag} requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag);
+    depPlayerUtils.debugLog(`UI: Detailed flags for ${targetPlayer.nameTag} requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const pData = playerDataManager.getPlayerData(targetPlayer.id);
     const form = new MessageFormData();
     form.title(getString("ui.detailedFlags.title", { targetPlayerName: targetPlayer.nameTag }));
@@ -1140,9 +1140,9 @@ showDetailedFlagsForm = async function(adminPlayer, targetPlayer, playerDataMana
     try {
         await form.show(adminPlayer);
     } catch (e) {
-        depPlayerUtils.debugLog(dependencies, `Error showing detailed flags: ${e.stack || e}`, adminPlayer.nameTag);
+        depPlayerUtils.debugLog(`Error showing detailed flags: ${e.stack || e}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) { // Ensure logManager is used here
-            logManager.addLog('error', { context: 'uiManager.showDetailedFlagsForm', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies);
+            logManager.addLog({ context: 'uiManager.showDetailedFlagsForm', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: e.message, stack: e.stack }, dependencies); // Type will be 'error'
         }
     }
     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);

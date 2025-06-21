@@ -6,7 +6,7 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-import * as playerUtils from '../utils/playerUtils.js'; // For debugLog
+// playerUtils.debugLog will be accessed via dependencies.
 
 /**
  * @const {string} logPropertyKeyName - The dynamic property key used for storing action logs.
@@ -43,42 +43,42 @@ let logsAreDirty = false;
 
 /**
  * Loads logs from the dynamic property into the in-memory cache.
- * Should be called once during script initialization.
+ * Must be called once during script initialization from a context that can provide dependencies.
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {void}
  */
-function initializeLogCache() {
+export function initializeLogCache(dependencies) {
+    const { playerUtils } = dependencies;
     try {
         const rawLogs = mc.world.getDynamicProperty(logPropertyKeyName);
         if (typeof rawLogs === 'string') {
             const parsedLogs = JSON.parse(rawLogs);
             if (Array.isArray(parsedLogs)) {
                 logsInMemory = parsedLogs;
-                playerUtils.debugLog(`LogManager: Successfully loaded ${logsInMemory.length} logs into memory cache.`, "System");
+                playerUtils.debugLog(`LogManager: Successfully loaded ${logsInMemory.length} logs into memory cache.`, dependencies, "System");
                 return;
             }
         }
-        playerUtils.debugLog(`LogManager: No valid logs found in dynamic properties, or property not set. Initializing with empty cache.`, "System");
+        playerUtils.debugLog(`LogManager: No valid logs found in dynamic properties, or property not set. Initializing with empty cache.`, dependencies, "System");
     } catch (error) {
-        playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error}`, "System");
+        playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error}`, dependencies, "System");
         console.error(`LogManager: Error initializing log cache: ${error.stack || error}`);
     }
     logsInMemory = []; // Ensure logsInMemory is an array even if loading fails
 }
 
-// Initialize the log cache when the script module loads.
-// This is a self-invoking pattern. Consider if a more explicit init call from main.js is preferred.
-(function() {
-    initializeLogCache();
-})();
+// Removed self-invocation; initialization must be called from main.js with dependencies.
 
 
 /**
  * Persists the current in-memory log cache to dynamic properties if `logsAreDirty` is true,
  * or if the dynamic property doesn't exist yet (to ensure initial creation).
  * This is the actual I/O operation.
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {boolean} True if saving was successful or not strictly needed (already saved and not dirty), false on error during saving.
  */
-export function persistLogCacheToDisk() {
+export function persistLogCacheToDisk(dependencies) {
+    const { playerUtils } = dependencies;
     if (!logsAreDirty && mc.world.getDynamicProperty(logPropertyKeyName) !== undefined) {
         // No changes in memory, and logs are already on disk (or were intentionally cleared and saved as empty).
         // Avoids unnecessary writes if already persisted and not dirty.
@@ -87,10 +87,10 @@ export function persistLogCacheToDisk() {
     try {
         mc.world.setDynamicProperty(logPropertyKeyName, JSON.stringify(logsInMemory));
         logsAreDirty = false; // Reset dirty flag after successful save
-        playerUtils.debugLog(`LogManager: Successfully persisted ${logsInMemory.length} logs to dynamic property.`, "System");
+        playerUtils.debugLog(`LogManager: Successfully persisted ${logsInMemory.length} logs to dynamic property.`, dependencies, "System");
         return true;
     } catch (error) {
-        playerUtils.debugLog(`LogManager: Error saving logs to dynamic property: ${error}`, "System");
+        playerUtils.debugLog(`LogManager: Error saving logs to dynamic property: ${error}`, dependencies, "System");
         console.error(`LogManager: Error persisting log cache: ${error.stack || error}`);
         return false;
     }
@@ -101,11 +101,13 @@ export function persistLogCacheToDisk() {
  * Manages log rotation to not exceed `maxLogEntriesCount`.
  * @param {ActionLogEntry} logEntry - The log entry to add. Must include timestamp, adminName, and actionType.
  *                                   targetName is highly recommended.
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {void}
  */
-export function addLog(logEntry) {
+export function addLog(logEntry, dependencies) {
+    const { playerUtils } = dependencies;
     if (!logEntry || typeof logEntry.timestamp !== 'number' || !logEntry.adminName || !logEntry.actionType) {
-        playerUtils.debugLog("LogManager: Attempted to add invalid log entry. Required fields (timestamp, adminName, actionType) missing.", "System");
+        playerUtils.debugLog("LogManager: Attempted to add invalid log entry. Required fields (timestamp, adminName, actionType) missing.", dependencies, "System");
         console.warn("LogManager: Invalid log entry object:", JSON.stringify(logEntry));
         return;
     }
@@ -137,11 +139,13 @@ export function getLogs(count) {
 /**
  * Clears all action logs from memory and attempts to clear from persistent storage.
  * Primarily intended for development and testing purposes.
+ * @param {object} dependencies - The standard dependencies object.
  * @returns {boolean} True if clearing was successful, false otherwise.
  */
-export function clearAllLogs_DEV_ONLY() { // Renamed to reflect its purpose
+export function clearAllLogs_DEV_ONLY(dependencies) { // Renamed to reflect its purpose
+    const { playerUtils } = dependencies;
     logsInMemory = [];
     logsAreDirty = true; // Mark as dirty to ensure the empty array is persisted
-    playerUtils.debugLog("LogManager: All action logs cleared from memory (DEV_ONLY). Attempting to persist.", "System");
-    return persistLogCacheToDisk();
+    playerUtils.debugLog("LogManager: All action logs cleared from memory (DEV_ONLY). Attempting to persist.", dependencies, "System");
+    return persistLogCacheToDisk(dependencies);
 }

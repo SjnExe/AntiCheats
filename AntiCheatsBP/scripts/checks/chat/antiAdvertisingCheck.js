@@ -17,9 +17,9 @@
  * @param {CommandDependencies} dependencies
  * @returns {Promise<void>}
  */
-export async function checkAntiAdvertising(player, eventData, pData, dependencies) { // Changed message to eventData
+export async function checkAntiAdvertising(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
-    const message = eventData.message; // Get message from eventData
+    const message = eventData.message;
 
     // Ensure config.antiAdvertisingActionProfileName (from config.js) is the camelCase version for consistency.
     const actionProfileName = config.antiAdvertisingActionProfileName || "chatAdvertisingDetected";
@@ -33,7 +33,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
         for (const regexString of config.advancedLinkRegexList) {
             try {
                 const regex = new RegExp(regexString, 'i'); // Case-insensitive
-                const match = regex.exec(message); // Use message from eventData
+                const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
                     let isWhitelisted = false;
@@ -60,7 +60,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                         continue;
                     }
                     // Link not whitelisted, proceed to flag
-                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, watchedPlayerName, dependencies);
+                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, dependencies, watchedPlayerName);
                     const violationDetails = {
                         detectedLink: detectedLink,
                         method: "regex",

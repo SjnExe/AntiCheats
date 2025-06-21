@@ -100,9 +100,7 @@ export async function checkInventoryMoveWhileActionLocked(
             reasonDetail: getString("check.inventoryMod.details.movedWhileLocked", { slotNum: slotIdentifier, action: localizedLockingAction }), // getString from dependencies
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
-            actionInProgress: localizedLockingAction,
-            // changeType: inventoryChangeData.changeType // If 'changeType' was part of the original event. Standard event might not have it.
-                                                      // PlayerInventoryItemChangeAfterEvent has newItem and oldItem.
+            actionInProgress: localizedLockingAction
         };
         await actionManager.executeCheckAction(player, "playerInventoryModMoveLocked", violationDetails, dependencies);
 

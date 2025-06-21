@@ -12,9 +12,9 @@
  * @param {import('../../types.js').CommandDependencies} dependencies Shared command dependencies (includes config, actionManager, etc.).
  * @returns {Promise<void>}
  */
-export async function checkCapsAbuse(player, eventData, pData, dependencies) { // Changed signature
+export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
-    const message = eventData.message; // Get message from eventData
+    const message = eventData.message;
 
     if (!config.enableCapsCheck) {
         return;

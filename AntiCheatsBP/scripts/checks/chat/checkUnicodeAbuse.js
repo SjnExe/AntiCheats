@@ -26,7 +26,6 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     }
     if (!pData) { // pData might not be used by this specific check's logic
         playerUtils.debugLog("[UnicodeAbuseCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
-        // return;
     }
 
     const minMessageLength = config.unicodeAbuseMinMessageLength ?? 5;
