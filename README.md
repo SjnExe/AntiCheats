@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![GitHub Issues](https://img.shields.io/github/issues/SjnExe/AntiCheats?style=flat-square)](https://github.com/SjnExe/AntiCheats/issues)
 [![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square)](https://github.com/SjnExe/AntiCheats/pulse)
-[![Discord](https://img.shields.io/badge/Discord-Join_Chat-7289DA?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/SMUHUnGyyz)
+[![Discord](https://img.shields.io/badge/Discord-Join-7289DA?style=flat-square&logo=discord&logoColor=white)](https://discord.gg/SMUHUnGyyz)
 
 # Anti-Cheats Addon
 
