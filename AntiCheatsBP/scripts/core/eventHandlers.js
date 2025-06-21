@@ -135,21 +135,24 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         rankManager.updatePlayerNametag(player, dependencies); // Pass full dependencies
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, dependencies, player.nameTag);
 
-        if (initialSpawn && config.enableWelcomerMessage) {
-            // const welcomeMsgKey = config.welcomeMessage || "message.welcome";
-            // let message = (translationsDict[welcomeMsgKey] || "Welcome, {playerName}, to our amazing server! We're glad to have you.").replace("{playerName}", player.nameTag);
-            // mc.system.runTimeout(() => {
-            //     player.sendMessage(message);
-            // }, 20);
+        if (initialSpawn) {
+            if (config.enableDetailedFirstJoinMessage) {
+                // Send the detailed first join message
+                let baseDetailedMessage = config.firstJoinMessage;
+                let fullDetailedMessage = `Welcome, ${player.nameTag}!\n\n${baseDetailedMessage}`;
+                mc.system.runTimeout(() => {
+                    player.sendMessage(fullDetailedMessage);
+                }, 20);
 
-            // New logic using firstJoinMessage:
-            let baseMessage = config.firstJoinMessage;
-            let fullMessage = `Welcome, ${player.nameTag}!\n\n${baseMessage}`;
+            } else if (config.enableWelcomerMessage) {
+                // Fallback to the original simple welcome message if detailed is off BUT old welcomer is on
+                const simpleWelcomeMsg = (config.welcomeMessage || "Welcome, {playerName}, to our amazing server! We're glad to have you.").replace("{playerName}", player.nameTag);
+                mc.system.runTimeout(() => {
+                    player.sendMessage(simpleWelcomeMsg);
+                }, 20);
+            }
 
-            mc.system.runTimeout(() => {
-                player.sendMessage(fullMessage);
-            }, 20);
-
+            // Common logic for initialSpawn
             if (pData) {
                 pData.joinTime = Date.now();
                 pData.isDirtyForSave = true;
@@ -159,20 +162,29 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                 const spawnLocation = player.location;
                 const spawnDimensionId = player.dimension.id.split(':')[1];
                 const spawnGameMode = mc.GameMode[player.gameMode];
+                let logDetails = `Joined for the first time. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GameMode: ${spawnGameMode}.`;
+                if (config.enableDetailedFirstJoinMessage) {
+                    logDetails += " Detailed join message sent.";
+                } else if (config.enableWelcomerMessage) {
+                    logDetails += " Simple welcome message sent.";
+                } else {
+                    logDetails += " No welcome message sent (disabled).";
+                }
                 logManager.addLog({
                     actionType: 'playerInitialJoin',
                     targetName: player.nameTag,
                     targetId: player.id,
-                    details: `Joined for the first time. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GameMode: ${spawnGameMode}. Welcome sent.`,
+                    details: logDetails,
                     location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
                     gameMode: spawnGameMode
                 }, dependencies);
             }
 
             if (playerUtils?.notifyAdmins && config.notifyAdminOnNewPlayerJoin) {
-                playerUtils.notifyAdmins((translationsDict["system.admin_notify_newPlayerJoined"] || "§e[Admin] New player {playerName} has joined the server for the first time!").replace("{playerName}", player.nameTag), dependencies, player, pData);
+                // The content of this admin notification does not need to change based on which welcome message was sent.
+                playerUtils.notifyAdmins(("§e[Admin] New player {playerName} has joined the server for the first time!").replace("{playerName}", player.nameTag), dependencies, player, pData);
             }
-        } else if (!initialSpawn && logManager?.addLog && pData) {
+        } else if (!initialSpawn && logManager?.addLog && pData) { // This is for respawn, not initial join
             const spawnLocation = player.location;
             const spawnDimensionId = player.dimension.id.split(':')[1];
             const spawnGameMode = mc.GameMode[player.gameMode];

@@ -15,6 +15,8 @@ export const prefix = "!";
 // Welcomer & Player Info
 /** @type {boolean} If true, a welcome message is sent to players when they join. */
 export const enableWelcomerMessage = true;
+/** @type {boolean} If true, sends the multi-line 'firstJoinMessage' to new players. */
+export const enableDetailedFirstJoinMessage = true;
 /** @type {string} The welcome message string (supports {playerName} placeholder). */
 export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
 /** @type {boolean} If true, admins are notified when a new player joins for the first time. */
@@ -841,6 +843,7 @@ export let editableConfigValues = {
     enableDebugLogging: enableDebugLogging,
     prefix: prefix,
     enableWelcomerMessage: enableWelcomerMessage,
+    enableDetailedFirstJoinMessage: enableDetailedFirstJoinMessage,
     welcomeMessage: welcomeMessage,
     notifyAdminOnNewPlayerJoin: notifyAdminOnNewPlayerJoin,
     enableDeathCoordsMessage: enableDeathCoordsMessage,
