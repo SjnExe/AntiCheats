@@ -21,7 +21,6 @@ import { ItemComponentTypes as ImportedItemComponentTypes } from '@minecraft/ser
 
 // Import all checks from the barrel file
 import * as checks from './checks/index.js';
-import { getString, initializeI18n } from './core/i18n.js'; // Added initializeI18n
 // reportManager functions initializeReportCache and persistReportsToDisk are already imported via `import * as reportManager from './core/reportManager.js';`
 // Import new world border functions
 import { getBorderSettings, saveBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer } from './utils/worldBorderManager.js';
@@ -47,7 +46,6 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         MessageFormData: ImportedMessageFormData,
         ModalFormData: ImportedModalFormData,
         ItemComponentTypes: ImportedItemComponentTypes,
-        getString,
     };
 
     if (eventData.message.startsWith(baseDependencies.config.prefix)) {
@@ -76,8 +74,8 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
         config: configModule.editableConfigValues,
         playerUtils: playerUtils,
         playerDataManager: playerDataManager,
-        // getString: getString, // Not strictly needed for this part unless kick messages are localized here
-        // logManager: logManager // For console.warn consistency if desired, but not essential for this change
+        // getString removed
+        // logManager: logManager
     };
 
     await dependencies.playerDataManager.ensurePlayerDataInitialized(player, currentTick);
@@ -123,7 +121,6 @@ const getStandardDependencies = () => ({
     MessageFormData: ImportedMessageFormData,
     ModalFormData: ImportedModalFormData,
     ItemComponentTypes: ImportedItemComponentTypes,
-    getString,
     chatProcessor: chatProcessor,
 });
 
@@ -232,7 +229,17 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
 
             if (playerIsTeleporting) {
                 const damageCause = damageSource?.cause || 'unknown';
-                const reasonMsgPlayer = tpaEntityHurtDependencies.getString("tpa.manager.error.warmupDamageTaken", { damageCause: damageCause });
+                // Directly use the string, assuming tpaManager will handle placeholder replacement or this string does not need it.
+                // Original key: "tpa.manager.error.warmupDamageTaken" -> "§cTeleport cancelled: You took damage ({damageCause}) during warmup."
+                // This string is not in en_US.js, so using a descriptive placeholder.
+                // Actual string for "tpa.manager.error.warmupDamageTaken" is not found in provided en_US.js.
+                // Assuming a placeholder or that tpaManager will construct this message.
+                // For now, let's assume tpaManager handles this message construction internally or it's a static message.
+                // If this message was meant to be dynamic and fetched via getString, it needs to be handled in tpaManager.
+                // For this refactor, we remove getString. If tpaManager previously relied on getString for this specific message,
+                // it will need adjustment. The key "tpa.manager.error.warmupDamageTaken" does not appear in the provided en_US.js.
+                // Placeholder for what might have been intended:
+                const reasonMsgPlayer = `Teleport cancelled: You took damage (${damageCause}) during warmup.`;
                 const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
                 tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog, tpaEntityHurtDependencies);
                 break;
@@ -393,10 +400,4 @@ if (typeof reportManager.initializeReportCache === 'function') {
     reportManager.initializeReportCache(startupDependencies);
     reportManager.isInitialized = true; // Set a flag to prevent re-initialization from tick loop if not strictly necessary
     playerUtils.debugLog("ReportManager cache initialized on startup.", "System", startupDependencies);
-}
-
-// Initialize i18n with server's default language from config
-if (typeof initializeI18n === 'function') {
-    initializeI18n(startupDependencies);
-    playerUtils.debugLog("i18n system initialized with configured default language.", "System", startupDependencies);
 }

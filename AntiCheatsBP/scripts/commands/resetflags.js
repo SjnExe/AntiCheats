@@ -24,22 +24,23 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, getString, permissionLevels } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies; // getString removed
     const findPlayer = playerUtils.findPlayer;
     const prefix = config.prefix;
 
-    // definition.description = getString("command.resetflags.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.resetflags.usage", { prefix: prefix }));
+        // Placeholder for "command.resetflags.usage" -> "§cUsage: {prefix}resetflags <playername>"
+        player.sendMessage(`§cUsage: ${prefix}resetflags <playername>`);
         return;
     }
     const targetPlayerName = args[0];
     const targetPlayer = findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
+        // "common.error.playerNotFoundOnline" -> "§cPlayer '{playerName}' not found or is not online."
+        player.sendMessage(`§cPlayer '${targetPlayerName}' not found or is not online.`);
         return;
     }
 
@@ -74,17 +75,18 @@ export async function execute(player, args, dependencies) {
         pData.consecutiveDownwardBlocks = 0; pData.lastDownwardScaffoldTick = 0; pData.lastDownwardScaffoldBlockLocation = null;
 
         pData.isDirtyForSave = true;
-        // prepareAndSavePlayerData might need dependencies if it logs or uses config
         await playerDataManager.prepareAndSavePlayerData(targetPlayer, dependencies);
 
-
-        player.sendMessage(getString("command.resetflags.success", { targetName: targetPlayer.nameTag }));
-        playerUtils.notifyAdmins(getString("command.resetflags.adminNotify", { targetName: targetPlayer.nameTag, adminName: player.nameTag }), dependencies, player, pData);
+        // Placeholder for "command.resetflags.success" -> "§aSuccessfully reset flags for {targetName}."
+        player.sendMessage(`§aSuccessfully reset flags for ${targetPlayer.nameTag}.`);
+        // Placeholder for "command.resetflags.adminNotify" -> "§7[Admin] §e{adminName}§7 reset flags for §e{targetName}."
+        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 reset flags for §e${targetPlayer.nameTag}.`, dependencies, player, pData);
         logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'reset_flags', targetName: targetPlayer.nameTag, details: `Reset flags for ${targetPlayer.nameTag}` }, dependencies);
 
         playerUtils.debugLog(`[ResetFlagsCommand] Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, pData.isWatched ? targetPlayer.nameTag : null, dependencies);
 
     } else {
-        player.sendMessage(getString("command.resetflags.failNoData", { targetName: targetPlayer.nameTag }));
+        // Placeholder for "command.resetflags.failNoData" -> "§cCould not reset flags for {targetName} (no player data found)."
+        player.sendMessage(`§cCould not reset flags for ${targetPlayer.nameTag} (no player data found).`);
     }
 }

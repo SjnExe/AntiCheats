@@ -25,9 +25,9 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { uiManager, playerDataManager, config, logManager, playerUtils, getString } = dependencies;
+    const { uiManager, playerDataManager, config, logManager, playerUtils } = dependencies; // getString removed
     // permissionLevels is now imported and set statically in definition.
-    // description is also static.
+    // description is static.
 
     try {
         if (uiManager && typeof uiManager.showAdminPanelMain === 'function') {
@@ -38,7 +38,8 @@ export async function execute(player, _args, dependencies) {
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_panel_ui', targetName: player.nameTag, details: 'Player opened main panel via command' }, dependencies);
             }
         } else {
-            const errorMessage = getString("command.panel.error.uiManagerUnavailable");
+            // "command.panel.error.uiManagerUnavailable" -> "§cError: The UI Panel manager is currently unavailable."
+            const errorMessage = "§cError: The UI Panel manager is currently unavailable.";
             if (playerUtils && typeof playerUtils.warnPlayer === 'function') {
                 playerUtils.warnPlayer(player, errorMessage);
             } else {
@@ -51,7 +52,8 @@ export async function execute(player, _args, dependencies) {
         }
     } catch (error) {
         console.error(`[PanelCommand] Error executing panel command for ${player.nameTag}: ${error.stack || error}`);
-        player.sendMessage(getString("common.error.genericCommand"));
+        // "common.error.generic" -> "§cAn unexpected error occurred." (Using as base for generic command error)
+        player.sendMessage("§cAn unexpected error occurred while executing this command.");
         if(logManager?.addLog){
             logManager.addLog({actionType: 'error', details: `[PanelCommand] Panel command error for ${player.nameTag}: ${error.stack || error}`}, dependencies);
         }

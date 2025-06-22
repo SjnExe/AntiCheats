@@ -24,16 +24,18 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, getString, permissionLevels, config } = dependencies; // Destructure all needed
+    const { playerUtils, permissionLevels, config } = dependencies; // getString removed
 
-    // definition.description = getString("command.testnotify.description");
-    // definition.permissionLevel = permissionLevels.owner;
+    // Static definitions are used
 
     if (playerUtils && playerUtils.notifyAdmins) {
-        playerUtils.notifyAdmins(getString("command.testnotify.adminNotification.message", { playerName: player.nameTag }), dependencies, player, null);
-        player.sendMessage(getString("command.testnotify.success"));
+        // "command.testnotify.adminNotification_message" -> "§6This is a test notification from {playerName} via the AntiCheat system."
+        playerUtils.notifyAdmins(`§6This is a test notification from ${player.nameTag} via the AntiCheat system.`, dependencies, player, null);
+        // "command.testnotify.success" -> "§aTest notification sent to online admins/owners."
+        player.sendMessage("§aTest notification sent to online admins/owners.");
     } else {
-        player.sendMessage(getString("command.testnotify.error.unavailable"));
+        // "command.testnotify.error.unavailable" -> "§cError: Notification utility not available."
+        player.sendMessage("§cError: Notification utility not available.");
         // Use standardized debugLog
         playerUtils.debugLog("[TestNotifyCommand] playerUtils.notifyAdmins is not available in dependencies.", player.nameTag, dependencies);
         console.warn("[TestNotifyCommand] playerUtils.notifyAdmins is not available in dependencies."); // Keep console for visibility

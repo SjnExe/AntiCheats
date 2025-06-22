@@ -23,27 +23,21 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager, getString, permissionLevels } = dependencies;
-    const notifKey = 'ac_notifications_enabled'; // Using a more specific key for player data
-    // This key should ideally be a constant or from a config if used elsewhere.
-    // If this is intended to map to the "ac_notifications_on"/"off" tags, the logic needs adjustment.
-    // For now, assuming it's a new boolean field in pData.
+    const { playerUtils, logManager, config, playerDataManager, permissionLevels } = dependencies; // getString removed
+    const notifKey = 'ac_notifications_enabled';
 
     const subCommand = args[0] ? args[0].toLowerCase() : "toggle";
 
-    // definition.description = getString("command.notify.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     let pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
         playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. This should not happen.`, player.nameTag, dependencies);
-        // Initialize a temporary minimal pData if necessary for currentPreference logic, though setPlayerData should handle creation.
-        pData = { id: player.id, isWatched: false };
+        pData = { id: player.id, isWatched: false }; // Minimal pData for logic continuation
     }
 
     let currentPreference = pData[notifKey];
     if (typeof currentPreference !== 'boolean') {
-        // Infer current preference from tags if the specific pData field is not set
         const notificationsOffTag = "ac_notifications_off";
         const notificationsOnTag = "ac_notifications_on";
         if (player.hasTag(notificationsOnTag)) currentPreference = true;
@@ -52,28 +46,35 @@ export async function execute(player, args, dependencies) {
     }
 
     let newPreference;
-    let messageKey;
+    let responseMessage;
 
     switch (subCommand) {
         case "on":
             newPreference = true;
-            messageKey = "command.notify.status.enabled";
+            // Placeholder for "command.notify.status.enabled"
+            responseMessage = "§aAntiCheat notifications are now ENABLED for you.";
             break;
         case "off":
             newPreference = false;
-            messageKey = "command.notify.status.disabled";
+            // Placeholder for "command.notify.status.disabled"
+            responseMessage = "§cAntiCheat notifications are now DISABLED for you.";
             break;
         case "toggle":
             newPreference = !currentPreference;
-            messageKey = newPreference ? "command.notify.status.enabled" : "command.notify.status.disabled";
+            // Placeholders for "command.notify.status.enabled" / "command.notify.status.disabled"
+            responseMessage = newPreference ? "§aAntiCheat notifications are now ENABLED for you." : "§cAntiCheat notifications are now DISABLED for you.";
             break;
         case "status":
-            const statusText = getString(currentPreference ? "common.status.enabled" : "common.status.disabled");
-            player.sendMessage(getString("command.notify.currentStatus", { status: statusText.toUpperCase() }));
+            // "common.status.enabled" -> "ENABLED"
+            // "common.status.disabled" -> "DISABLED"
+            const statusText = currentPreference ? "ENABLED" : "DISABLED";
+            // Placeholder for "command.notify.currentStatus"
+            player.sendMessage(`§eYour AntiCheat notifications are currently: ${statusText.toUpperCase()}`);
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'notify_status_checked', details: `Checked own notification status: ${statusText}` }, dependencies);
             return;
         default:
-            player.sendMessage(getString("command.notify.usage", { prefix: config.prefix }));
+            // Placeholder for "command.notify.usage"
+            player.sendMessage(`§cUsage: ${config.prefix}notify <on|off|toggle|status>`);
             return;
     }
 
@@ -95,7 +96,7 @@ export async function execute(player, args, dependencies) {
     // Also save to pData for direct querying if needed, though tags are primary for notifyAdmins
     playerDataManager.setPlayerData(player.id, notifKey, newPreference, dependencies);
 
-    player.sendMessage(getString(messageKey));
+    player.sendMessage(responseMessage);
 
     const logMessageAction = newPreference ? "enabled" : "disabled";
     playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. Current pref: ${newPreference}`, player.nameTag, dependencies);

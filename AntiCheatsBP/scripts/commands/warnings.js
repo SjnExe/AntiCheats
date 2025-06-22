@@ -23,45 +23,55 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, getString, permissionLevels } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies; // getString removed
     const findPlayer = playerUtils.findPlayer;
 
-    // definition.description = getString("command.warnings.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.warnings.usage", { prefix: config.prefix }));
+        // "command.warnings.usage" -> "§cUsage: {prefix}warnings <playername>"
+        player.sendMessage(`§cUsage: ${config.prefix}warnings <playername>`);
         return;
     }
     const targetPlayerName = args[0];
     const foundPlayer = findPlayer(targetPlayerName);
 
     if (!foundPlayer) {
-        player.sendMessage(getString("common.error.invalidPlayer", { targetName: targetPlayerName }));
+        // "common.error.invalidPlayer" -> "Player \"{targetName}\" not found."
+        player.sendMessage(`Player "${targetPlayerName}" not found.`);
         return;
     }
 
-    const pData = playerDataManager.getPlayerData(foundPlayer.id); // Pass dependencies if getPlayerData expects it
+    const pData = playerDataManager.getPlayerData(foundPlayer.id);
     if (pData && pData.flags) {
-        let warningDetails = getString("command.warnings.header", { playerName: foundPlayer.nameTag }) + "\n";
-        warningDetails += getString("command.inspect.totalFlags", { count: pData.flags.totalFlags || 0 }) + "\n";
-        warningDetails += getString("command.inspect.lastFlagType", { type: pData.lastFlagType || getString("common.value.none") }) + "\n";
-        warningDetails += getString("command.warnings.individualFlagsHeader") + "\n";
+        // "command.warnings.header" -> "§e--- Warnings for {playerName} ---"
+        let warningDetails = `§e--- Warnings for ${foundPlayer.nameTag} ---\n`;
+        // "command.inspect.totalFlags" -> "§fTotal Flags: §c{count}"
+        warningDetails += `§fTotal Flags: §c${pData.flags.totalFlags || 0}\n`;
+        // "command.inspect.lastFlagType" -> "§fLast Flag Type: §7{type}"
+        // "common.value.none" -> "None"
+        warningDetails += `§fLast Flag Type: §7${pData.lastFlagType || "None"}\n`;
+        // "command.warnings.individualFlagsHeader" -> "§eIndividual Flags:"
+        warningDetails += "§eIndividual Flags:\n";
         let hasSpecificFlags = false;
         for (const flagKey in pData.flags) {
             if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                 const flagData = pData.flags[flagKey];
-                const lastTime = flagData.lastDetectionTime && flagData.lastDetectionTime > 0 ? new Date(flagData.lastDetectionTime).toLocaleString() : getString("common.value.notApplicable");
-                warningDetails += getString("command.inspect.flagEntry", { flagKey: flagKey, count: flagData.count, timestamp: lastTime }) + "\n";
+                // "common.value.notApplicable" -> "N/A"
+                const lastTime = flagData.lastDetectionTime && flagData.lastDetectionTime > 0 ? new Date(flagData.lastDetectionTime).toLocaleString() : "N/A";
+                // "command.inspect.flagEntry" -> "  §f- {flagKey}: §c{count} §7(Last: {timestamp})"
+                warningDetails += `  §f- ${flagKey}: §c${flagData.count} §7(Last: ${lastTime})\n`;
                 hasSpecificFlags = true;
             }
         }
         if (!hasSpecificFlags) {
-            warningDetails += getString("command.inspect.noSpecificFlags") + "\n";
+            // "command.inspect.noSpecificFlags" -> "    §7No specific flag types recorded."
+            warningDetails += "    §7No specific flag types recorded.\n";
         }
         player.sendMessage(warningDetails.trim());
         logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'view_warnings', targetName: foundPlayer.nameTag, details: `Viewed warnings for ${foundPlayer.nameTag}` }, dependencies);
     } else {
-        player.sendMessage(getString("command.warnings.noData", { playerName: foundPlayer.nameTag }));
+        // "command.warnings.noData" -> "§cNo warning data found for {playerName}."
+        player.sendMessage(`§cNo warning data found for ${foundPlayer.nameTag}.`);
     }
 }

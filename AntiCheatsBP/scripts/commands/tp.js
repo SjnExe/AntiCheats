@@ -41,24 +41,24 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, findPlayer: depFindPlayer, getString, permissionLevels } = dependencies; // Added getString, permissionLevels, changed addLog to logManager
+    const { config, playerUtils, logManager, findPlayer: depFindPlayer, permissionLevels } = dependencies; // getString removed
     const findPlayerFunc = depFindPlayer || (playerUtils && playerUtils.findPlayer);
     const prefix = config.prefix;
 
-    // Set definition properties from dependencies if needed
     if (definition.permissionLevel === null && permissionLevels) {
         definition.permissionLevel = permissionLevels.admin;
     }
-    // Description is a key, resolved by help command
 
     if (!findPlayerFunc) {
-        player.sendMessage(getString("command.tp.error.lookupUtilityNotAvailable"));
+        // Placeholder for "command.tp.error.lookupUtilityNotAvailable"
+        player.sendMessage("§cTeleport error: Player lookup utility not available.");
         console.error("[tpCmd] findPlayer utility is not available in dependencies.");
         return;
     }
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.tp.usage", { prefix: prefix }));
+        // Placeholder for "command.tp.usage" -> Using syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]"
+        player.sendMessage(`§cUsage: ${prefix}tp <target_player | x> [destination_player | y] [z] [dimension]`);
         return;
     }
 
@@ -69,11 +69,12 @@ export async function execute(player, args, dependencies) {
     let dimensionInfoForMessage = "";
 
     if (args.length === 2 && isNaN(parseFloat(args[0])) && isNaN(parseFloat(args[1]))) {
-        playerToMove = findPlayerFunc(args[0]); // Removed playerUtils from findPlayerFunc call
-        const destinationPlayer = findPlayerFunc(args[1]); // Removed playerUtils from findPlayerFunc call
-        if (!playerToMove) { player.sendMessage(getString("command.tp.error.playerToMoveNotFound", { playerName: args[0] })); return; }
-        if (!destinationPlayer) { player.sendMessage(getString("command.tp.error.destinationPlayerNotFound", { playerName: args[1] })); return; }
-        if (playerToMove.id === destinationPlayer.id) { player.sendMessage(getString("command.tp.error.cannotTeleportToSelf", { playerName: playerToMove.nameTag })); return; }
+        playerToMove = findPlayerFunc(args[0]);
+        const destinationPlayer = findPlayerFunc(args[1]);
+        // Placeholders for error messages
+        if (!playerToMove) { player.sendMessage(`§cPlayer to move "${args[0]}" not found.`); return; }
+        if (!destinationPlayer) { player.sendMessage(`§cDestination player "${args[1]}" not found.`); return; }
+        if (playerToMove.id === destinationPlayer.id) { player.sendMessage(`§cCannot teleport ${playerToMove.nameTag} to themselves.`); return; }
         destinationLocation = destinationPlayer.location;
         targetDimension = destinationPlayer.dimension;
         destinationDescription = `player ${destinationPlayer.nameTag}`;
@@ -81,32 +82,35 @@ export async function execute(player, args, dependencies) {
     }
     else if ((args.length === 3 || args.length === 4) &&
              !isNaN(parseFloat(args[0])) && !isNaN(parseFloat(args[1])) && !isNaN(parseFloat(args[2])) &&
-             (args.length === 3 || (args.length === 4 && (parseDimensionLocal(args[3], playerUtils, dependencies) !== null || findPlayerFunc(args[3]) === null))) // Pass dependencies to parseDimensionLocal
+             (args.length === 3 || (args.length === 4 && (parseDimensionLocal(args[3], playerUtils, dependencies) !== null || findPlayerFunc(args[3]) === null)))
             ) {
         playerToMove = player;
         destinationLocation = { x: parseFloat(args[0]), y: parseFloat(args[1]), z: parseFloat(args[2]) };
         destinationDescription = `coordinates ${args[0]}, ${args[1]}, ${args[2]}`;
         targetDimension = playerToMove.dimension;
         if (args.length === 4) {
-            const parsedDim = parseDimensionLocal(args[3], playerUtils, dependencies); // Pass dependencies
-            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = getString("command.tp.dimensionIn", { dimensionName: args[3].toLowerCase() }); }
-            else { player.sendMessage(getString("command.tp.error.invalidDimension", { dimensionName: args[3] })); return; } // Added return
+            const parsedDim = parseDimensionLocal(args[3], playerUtils, dependencies);
+            // Placeholder for "command.tp.dimensionIn" -> " in dimension {dimensionName}"
+            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = ` in dimension ${args[3].toLowerCase()}`; }
+            // Placeholder for "command.tp.error.invalidDimension"
+            else { player.sendMessage(`§cInvalid dimension specified: ${args[3]}.`); return; }
         } else {
              dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`;
         }
         destinationDescription += dimensionInfoForMessage;
     }
     else if ((args.length === 4 || args.length === 5) && isNaN(parseFloat(args[0]))) {
-        playerToMove = findPlayerFunc(args[0]); // Removed playerUtils
-        if (!playerToMove) { player.sendMessage(getString("command.tp.error.playerToMoveNotFound", { playerName: args[0] })); return; }
-        if (isNaN(parseFloat(args[1])) || isNaN(parseFloat(args[2])) || isNaN(parseFloat(args[3]))) { player.sendMessage(getString("command.tp.error.invalidCoordinates")); return; }
+        playerToMove = findPlayerFunc(args[0]);
+        if (!playerToMove) { player.sendMessage(`§cPlayer to move "${args[0]}" not found.`); return; }
+        // Placeholder for "command.tp.error.invalidCoordinates"
+        if (isNaN(parseFloat(args[1])) || isNaN(parseFloat(args[2])) || isNaN(parseFloat(args[3]))) { player.sendMessage("§cInvalid coordinates provided."); return; }
         destinationLocation = { x: parseFloat(args[1]), y: parseFloat(args[2]), z: parseFloat(args[3]) };
         destinationDescription = `coordinates ${args[1]}, ${args[2]}, ${args[3]}`;
         targetDimension = playerToMove.dimension;
         if (args.length === 5) {
-            const parsedDim = parseDimensionLocal(args[4], playerUtils, dependencies); // Pass dependencies
-            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = getString("command.tp.dimensionIn", { dimensionName: args[4].toLowerCase() }); }
-            else { player.sendMessage(getString("command.tp.error.invalidDimension", { dimensionName: args[4] })); return; } // Added return
+            const parsedDim = parseDimensionLocal(args[4], playerUtils, dependencies);
+            if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = ` in dimension ${args[4].toLowerCase()}`; }
+            else { player.sendMessage(`§cInvalid dimension specified: ${args[4]}.`); return; }
         } else {
             dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`;
         }
@@ -115,7 +119,7 @@ export async function execute(player, args, dependencies) {
 
 
     if (!playerToMove || !destinationLocation || !targetDimension) {
-        player.sendMessage(getString("command.tp.usage", { prefix: prefix }));
+        player.sendMessage(`§cUsage: ${prefix}tp <target_player | x> [destination_player | y] [z] [dimension]`);
         if (config.enableDebugLogging) {
             playerUtils.debugLog(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, dependencies, player.nameTag);
         }
@@ -129,27 +133,31 @@ export async function execute(player, args, dependencies) {
         playerToMove.teleport(destinationLocation, { dimension: targetDimension });
 
         let successMsg;
-        if (destinationDescription.startsWith("player")) { // Player to player
-             successMsg = getString("command.tp.success.playerToPlayer", { playerToMoveName: playerToMove.nameTag, destinationPlayerName: destinationDescription.substring(7) }); // Extract name
-        } else { // Player to coords
-            successMsg = getString("command.tp.success.playerToCoords", { playerToMoveName: playerToMove.nameTag, x: destinationLocation.x.toFixed(1), y: destinationLocation.y.toFixed(1), z: destinationLocation.z.toFixed(1), dimensionId: dimensionInfoForMessage });
+        if (destinationDescription.startsWith("player")) {
+            // Placeholder "command.tp.success.playerToPlayer" -> "§aTeleported {playerToMoveName} to {destinationPlayerName}."
+             successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationDescription.substring(7)}.`;
+        } else {
+            // Placeholder "command.tp.success.playerToCoords" -> "§aTeleported {playerToMoveName} to {x}, {y}, {z}{dimensionId}."
+            successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationLocation.x.toFixed(1)}, ${destinationLocation.y.toFixed(1)}, ${destinationLocation.z.toFixed(1)}${dimensionInfoForMessage}.`;
         }
         player.sendMessage(successMsg);
 
         if (player.id !== playerToMove.id) {
-            playerToMove.sendMessage(getString("command.tp.notifyTarget.byAdmin", { adminName: player.nameTag, destinationDescription: destinationDescription }));
+            // Placeholder "command.tp.notifyTarget.byAdmin" -> "§eYou have been teleported by {adminName} to {destinationDescription}."
+            playerToMove.sendMessage(`§eYou have been teleported by ${player.nameTag} to ${destinationDescription}.`);
         }
-        if (logManager && logManager.addLog) { // Use logManager.addLog
+        if (logManager && logManager.addLog) {
             logManager.addLog({
                 timestamp: Date.now(),
                 adminName: player.nameTag,
                 actionType: 'teleport',
                 targetName: playerToMove.nameTag,
                 details: `To: ${destinationDescription}. From: ${oldLoc.x.toFixed(1)},${oldLoc.y.toFixed(1)},${oldLoc.z.toFixed(1)} in ${oldDim.split(':')[1]}`
-            }, dependencies); // Pass dependencies to addLog
+            }, dependencies);
         }
     } catch (e) {
-        player.sendMessage(getString("command.tp.error.failed", { errorMessage: (e.message || e) }));
+        // Placeholder "command.tp.error.failed" -> "§cTeleport failed: {errorMessage}"
+        player.sendMessage(`§cTeleport failed: ${(e.message || e)}`);
         if (config.enableDebugLogging) {
             playerUtils.debugLog(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, dependencies, player.nameTag);
         }

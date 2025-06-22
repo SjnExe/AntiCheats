@@ -24,46 +24,52 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, getString, permissionLevels } = dependencies;
+    const { config, playerUtils, logManager, permissionLevels } = dependencies; // getString removed
     const subCommand = args[0] ? args[0].toLowerCase() : "status";
     const prefix = config.prefix;
 
-    // definition.description = getString("command.netherlock.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
-    let statusTextKey;
+    let statusText;
 
     switch (subCommand) {
         case "on":
         case "lock":
-            // setNetherLocked might need dependencies if it starts logging or using config
             if (setNetherLocked(true)) {
-                player.sendMessage(getString("command.netherlock.locked"));
+                // Placeholder for "command.netherlock.locked"
+                player.sendMessage("§cNether dimension is now LOCKED.");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'nether_lock_on', details: 'Nether locked' }, dependencies);
-                playerUtils.notifyAdmins(getString("command.netherlock.adminNotify.locked", { adminName: player.nameTag }), dependencies, player, null);
+                // Placeholder for "command.netherlock.adminNotify.locked"
+                playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has LOCKED the Nether.`, dependencies, player, null);
             } else {
-                player.sendMessage(getString("command.netherlock.fail"));
+                // Placeholder for "command.netherlock.fail"
+                player.sendMessage("§cFailed to update Nether lock state.");
             }
             break;
         case "off":
         case "unlock":
-            // setNetherLocked might need dependencies
             if (setNetherLocked(false)) {
-                player.sendMessage(getString("command.netherlock.unlocked"));
+                // Placeholder for "command.netherlock.unlocked"
+                player.sendMessage("§aNether dimension is now UNLOCKED.");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'nether_lock_off', details: 'Nether unlocked' }, dependencies);
-                playerUtils.notifyAdmins(getString("command.netherlock.adminNotify.unlocked", { adminName: player.nameTag }), dependencies, player, null);
+                // Placeholder for "command.netherlock.adminNotify.unlocked"
+                playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has UNLOCKED the Nether.`, dependencies, player, null);
             } else {
-                player.sendMessage(getString("command.netherlock.fail"));
+                // Placeholder for "command.netherlock.fail"
+                player.sendMessage("§cFailed to update Nether lock state.");
             }
             break;
         case "status":
-            // isNetherLocked might need dependencies
             const locked = isNetherLocked();
-            statusTextKey = locked ? "common.status.locked" : "common.status.unlocked";
-            player.sendMessage(getString("command.netherlock.status", { status: getString(statusTextKey) }));
+            // "common.status.locked" -> "§cLOCKED"
+            // "common.status.unlocked" -> "§aUNLOCKED"
+            statusText = locked ? "§cLOCKED" : "§aUNLOCKED";
+            // Placeholder for "command.netherlock.status"
+            player.sendMessage(`§eNether dimension status: ${statusText}`);
             break;
         default:
-            player.sendMessage(getString("command.netherlock.usage", { prefix: prefix }));
+            // Placeholder for "command.netherlock.usage"
+            player.sendMessage(`§cUsage: ${prefix}netherlock <on|off|status>`);
             return;
     }
 }

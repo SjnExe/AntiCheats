@@ -27,7 +27,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkNoSlow(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies; // getString removed
 
     if (!config.enableNoSlowCheck || !pData) {
         return;
@@ -66,10 +66,14 @@ export async function checkNoSlow(player, pData, dependencies) {
         // If no speed effect, effectiveMaxAllowedSpeed remains maxAllowedBaseSpeed (plus any inherent small buffer in that base speed)
 
         if (horizontalSpeed > effectiveMaxAllowedSpeed) {
-            const localizedSlowingAction = getString(slowingActionKey); // getString from dependencies
-            // Pass the full dependencies object to executeCheckAction
+            let resolvedSlowingAction = slowingActionKey; // Fallback
+            if (slowingActionKey === "check.noSlow.action.eatingDrinking") resolvedSlowingAction = "Eating/Drinking";
+            else if (slowingActionKey === "check.noSlow.action.chargingBow") resolvedSlowingAction = "Charging Bow";
+            else if (slowingActionKey === "check.noSlow.action.usingShield") resolvedSlowingAction = "Using Shield";
+            else if (slowingActionKey === "check.noSlow.action.sneaking") resolvedSlowingAction = "Sneaking";
+
             const violationDetails = {
-                action: localizedSlowingAction,
+                action: resolvedSlowingAction,
                 speed: horizontalSpeed.toFixed(2),
                 maxAllowedSpeed: effectiveMaxAllowedSpeed.toFixed(2),
                 baseMaxSpeedForAction: maxAllowedBaseSpeed.toFixed(2),
@@ -80,7 +84,7 @@ export async function checkNoSlow(player, pData, dependencies) {
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(
-                `[NoSlowCheck] Flagged ${player.nameTag}. Action: ${localizedSlowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
+                `[NoSlowCheck] Flagged ${player.nameTag}. Action: ${resolvedSlowingAction}, Speed: ${horizontalSpeed.toFixed(2)}bps, Max: ${effectiveMaxAllowedSpeed.toFixed(2)}bps`,
                 watchedPrefix, dependencies
             );
         }

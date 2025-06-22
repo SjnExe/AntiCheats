@@ -24,46 +24,52 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, getString, permissionLevels } = dependencies;
+    const { config, playerUtils, logManager, permissionLevels } = dependencies; // getString removed
     const subCommand = args[0] ? args[0].toLowerCase() : "status";
     const prefix = config.prefix;
 
-    // definition.description = getString("command.endlock.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
-    let statusTextKey;
+    let statusText;
 
     switch (subCommand) {
         case "on":
         case "lock":
-            // setEndLocked might need dependencies if it starts logging or using config for property keys
             if (setEndLocked(true)) {
-                player.sendMessage(getString("command.endlock.locked"));
+                // Placeholder for "command.endlock.locked"
+                player.sendMessage("§cThe End dimension is now LOCKED.");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'end_lock_on', details: 'The End locked' }, dependencies);
-                playerUtils.notifyAdmins(getString("command.endlock.adminNotify.locked", { adminName: player.nameTag }), dependencies, player, null);
+                // Placeholder for "command.endlock.adminNotify.locked"
+                playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has LOCKED The End.`, dependencies, player, null);
             } else {
-                player.sendMessage(getString("command.endlock.fail"));
+                // Placeholder for "command.endlock.fail"
+                player.sendMessage("§cFailed to update The End lock state.");
             }
             break;
         case "off":
         case "unlock":
-            // setEndLocked might need dependencies
             if (setEndLocked(false)) {
-                player.sendMessage(getString("command.endlock.unlocked"));
+                // Placeholder for "command.endlock.unlocked"
+                player.sendMessage("§aThe End dimension is now UNLOCKED.");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'end_lock_off', details: 'The End unlocked' }, dependencies);
-                playerUtils.notifyAdmins(getString("command.endlock.adminNotify.unlocked", { adminName: player.nameTag }), dependencies, player, null);
+                // Placeholder for "command.endlock.adminNotify.unlocked"
+                playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has UNLOCKED The End.`, dependencies, player, null);
             } else {
-                player.sendMessage(getString("command.endlock.fail"));
+                // Placeholder for "command.endlock.fail"
+                player.sendMessage("§cFailed to update The End lock state.");
             }
             break;
         case "status":
-            // isEndLocked might need dependencies
             const locked = isEndLocked();
-            statusTextKey = locked ? "common.status.locked" : "common.status.unlocked";
-            player.sendMessage(getString("command.endlock.status", { status: getString(statusTextKey) }));
+            // "common.status.locked" -> "§cLOCKED"
+            // "common.status.unlocked" -> "§aUNLOCKED"
+            statusText = locked ? "§cLOCKED" : "§aUNLOCKED";
+            // Placeholder for "command.endlock.status"
+            player.sendMessage(`§eThe End dimension status: ${statusText}`);
             break;
         default:
-            player.sendMessage(getString("command.endlock.usage", { prefix: prefix }));
+            // Placeholder for "command.endlock.usage"
+            player.sendMessage(`§cUsage: ${prefix}endlock <on|off|status>`);
             return;
     }
 }

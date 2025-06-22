@@ -25,7 +25,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies; // getString removed
 
     if (!config.enableInvalidSprintCheck || !pData) {
         return;
@@ -77,9 +77,17 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         // but prevents initiation. NoSlow check handles speed while shield is up.
 
         if (invalidConditionKey) {
-            const localizedCondition = getString(invalidConditionKey);
+            // Resolve localizedCondition directly
+            let resolvedLocalizedCondition = invalidConditionKey; // Fallback to key
+            if (invalidConditionKey === "check.invalidSprint.condition.blindness") resolvedLocalizedCondition = "Blindness";
+            else if (invalidConditionKey === "check.invalidSprint.condition.sneaking") resolvedLocalizedCondition = "Sneaking";
+            else if (invalidConditionKey === "check.invalidSprint.condition.riding") resolvedLocalizedCondition = "Riding Entity";
+            else if (invalidConditionKey === "check.invalidSprint.condition.hunger") resolvedLocalizedCondition = "Low Hunger"; // Invented, as key not in en_US.js
+            else if (invalidConditionKey === "check.invalidSprint.condition.usingItem") resolvedLocalizedCondition = "Using Item"; // Invented
+            else if (invalidConditionKey === "check.invalidSprint.condition.chargingBow") resolvedLocalizedCondition = "Charging Bow"; // Invented
+
             const violationDetails = {
-                condition: localizedCondition,
+                condition: resolvedLocalizedCondition,
                 details: conditionDetails,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
@@ -93,7 +101,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(
-                `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${localizedCondition}. Details: ${conditionDetails}`,
+                `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${resolvedLocalizedCondition}. Details: ${conditionDetails}`,
                 watchedPrefix, dependencies
             );
         }

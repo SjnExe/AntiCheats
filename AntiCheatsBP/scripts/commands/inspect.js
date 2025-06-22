@@ -23,68 +23,87 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, getString, permissionLevels } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies; // getString removed
     const findPlayer = playerUtils.findPlayer;
 
-    // definition.description = getString("command.inspect.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.inspect.usage", { prefix: config.prefix }));
+        // "command.inspect.usage" -> "§cUsage: {prefix}inspect <playername>"
+        player.sendMessage(`§cUsage: ${config.prefix}inspect <playername>`);
         return;
     }
     const targetPlayerName = args[0];
-    const targetPlayer = findPlayer(targetPlayerName); // Assumes findPlayer is part of playerUtils
+    const targetPlayer = findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(getString("common.error.invalidPlayer", { targetName: targetPlayerName }));
+        // "common.error.invalidPlayer" -> "Player \"{targetName}\" not found."
+        player.sendMessage(`Player "${targetPlayerName}" not found.`);
         return;
     }
 
-    const pData = playerDataManager.getPlayerData(targetPlayer.id); // Pass dependencies if getPlayerData expects it
+    const pData = playerDataManager.getPlayerData(targetPlayer.id);
     let messageLines = [];
-    messageLines.push(getString("command.inspect.header", { playerName: targetPlayer.nameTag }));
+    // "command.inspect.header" -> "§e--- AntiCheat Data for {playerName} ---"
+    messageLines.push(`§e--- AntiCheat Data for ${targetPlayer.nameTag} ---`);
 
     if (pData) {
-        messageLines.push(getString("command.inspect.playerId", { id: targetPlayer.id }));
-        messageLines.push(getString("command.inspect.watchedStatus", { status: pData.isWatched ? getString("common.boolean.yes") : getString("common.boolean.no") }));
-        messageLines.push(getString("command.inspect.totalFlags", { count: pData.flags ? pData.flags.totalFlags || 0 : 0 }));
-        messageLines.push(getString("command.inspect.lastFlagType", { type: pData.lastFlagType || getString("common.value.none") }));
+        // "command.inspect.playerId" -> "§fPlayer ID: §7{id}"
+        messageLines.push(`§fPlayer ID: §7${targetPlayer.id}`);
+        // "command.inspect.watchedStatus" -> "§fIs Watched: §7{status}"
+        // "common.boolean.yes" -> "Yes", "common.boolean.no" -> "No"
+        messageLines.push(`§fIs Watched: §7${pData.isWatched ? "Yes" : "No"}`);
+        // "command.inspect.totalFlags" -> "§fTotal Flags: §c{count}"
+        messageLines.push(`§fTotal Flags: §c${pData.flags ? pData.flags.totalFlags || 0 : 0}`);
+        // "command.inspect.lastFlagType" -> "§fLast Flag Type: §7{type}"
+        // "common.value.none" -> "None"
+        messageLines.push(`§fLast Flag Type: §7${pData.lastFlagType || "None"}`);
 
         let specificFlagsFound = false;
         if (pData.flags) {
-            messageLines.push(getString("command.inspect.flagsByTypeHeader"));
+            // "command.inspect.flagsByTypeHeader" -> "§fFlags by type:"
+            messageLines.push("§fFlags by type:");
             for (const flagKey in pData.flags) {
                 if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                     const flagData = pData.flags[flagKey];
-                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : getString("common.value.notApplicable");
-                    messageLines.push(getString("command.inspect.flagEntry", { flagKey: flagKey, count: flagData.count, timestamp: timestamp }));
+                    // "common.value.notApplicable" -> "N/A"
+                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : "N/A";
+                    // "command.inspect.flagEntry" -> "  §f- {flagKey}: §c{count} §7(Last: {timestamp})"
+                    messageLines.push(`  §f- ${flagKey}: §c${flagData.count} §7(Last: ${timestamp})`);
                     specificFlagsFound = true;
                 }
             }
             if (!specificFlagsFound) {
-                messageLines.push(getString("command.inspect.noSpecificFlags"));
+                // "command.inspect.noSpecificFlags" -> "    §7No specific flag types recorded."
+                messageLines.push("    §7No specific flag types recorded.");
             }
         }
 
-        const muteInfo = playerDataManager.getMuteInfo(targetPlayer, dependencies); // Pass dependencies
+        const muteInfo = playerDataManager.getMuteInfo(targetPlayer, dependencies);
         if (muteInfo) {
-            const expiry = muteInfo.unmuteTime === Infinity ? getString("common.value.permanent") : new Date(muteInfo.unmuteTime).toLocaleString();
-            messageLines.push(getString("command.inspect.mutedYes", { expiryDate: expiry, reason: muteInfo.reason }));
+            // "common.value.permanent" -> "Permanent"
+            const expiry = muteInfo.unmuteTime === Infinity ? "Permanent" : new Date(muteInfo.unmuteTime).toLocaleString();
+            // "command.inspect.mutedYes" -> "§fMuted: §cYes (Expires: {expiryDate}, Reason: {reason})"
+            messageLines.push(`§fMuted: §cYes (Expires: ${expiry}, Reason: ${muteInfo.reason})`);
         } else {
-            messageLines.push(getString("command.inspect.mutedNo"));
+            // "command.inspect.mutedNo" -> "§fMuted: §aNo"
+            messageLines.push("§fMuted: §aNo");
         }
 
-        const banInfo = playerDataManager.getBanInfo(targetPlayer, dependencies); // Pass dependencies
+        const banInfo = playerDataManager.getBanInfo(targetPlayer, dependencies);
         if (banInfo) {
-            const expiry = banInfo.unbanTime === Infinity ? getString("common.value.permanent") : new Date(banInfo.unbanTime).toLocaleString();
-            messageLines.push(getString("command.inspect.bannedYes", { expiryDate: expiry, reason: banInfo.reason }));
+            // "common.value.permanent" -> "Permanent"
+            const expiry = banInfo.unbanTime === Infinity ? "Permanent" : new Date(banInfo.unbanTime).toLocaleString();
+            // "command.inspect.bannedYes" -> "§fBanned: §cYes (Expires: {expiryDate}, Reason: {reason})"
+            messageLines.push(`§fBanned: §cYes (Expires: ${expiry}, Reason: ${banInfo.reason})`);
         } else {
-            messageLines.push(getString("command.inspect.bannedNo"));
+            // "command.inspect.bannedNo" -> "§fBanned: §aNo"
+            messageLines.push("§fBanned: §aNo");
         }
 
     } else {
-        messageLines.push(getString("command.inspect.noData"));
+        // "command.inspect.noData" -> "§7No AntiCheat data found for this player (they might not have triggered any checks or joined recently)."
+        messageLines.push("§7No AntiCheat data found for this player (they might not have triggered any checks or joined recently).");
     }
 
     player.sendMessage(messageLines.join("\n"));

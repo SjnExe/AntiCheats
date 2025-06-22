@@ -23,10 +23,10 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { config, getString, permissionLevels } = dependencies; // Destructure getString and permissionLevels
-    // Definition properties can be dynamically set here by commandManager or if needed:
-    // definition.description = getString("command.version.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    const { config, permissionLevels } = dependencies; // getString removed
+    // Static definitions are used
 
-    player.sendMessage(getString("command.version.message", { version: config.acVersion || getString("command.myflags.value.notApplicable") }));
+    // "command.version.message" -> "§7AntiCheat Addon Version: §e{version}"
+    // "common.value.notApplicable" (intended for fallback) -> "N/A"
+    player.sendMessage(`§7AntiCheat Addon Version: §e${config.acVersion || "N/A"}`);
 }
