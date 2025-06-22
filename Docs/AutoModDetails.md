@@ -38,17 +38,18 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
 ### 3. AutoMod Rules (`automodRules`)
 - **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodRules`
-- **Structure:** An object where each key is a `checkType` string (e.g., `"movementFlyHover"`, `"worldNuker"`), following `camelCase` convention as per `Dev/CodingStyle.md`. Specifically, acronyms like GMC, TPA, etc., should be uppercase within the camelCase identifier (e.g., `playerAntiGMC`). The value for each `checkType` is an array of `actionStep` objects, processed in order.
-- **`actionStep` Object Properties:**
-  - `flagThreshold` (number): The number of flags for this `checkType` at which this action step is triggered.
-  - `actionType` (string): The type of action to take (e.g., `warn`, `kick`, `tempBan`). See "Supported Action Types" below. These should be `camelCase` if multi-word (e.g. `tempBan`).
+- **Structure:** An object where each key is a `checkType` string (e.g., `"movementFlyHover"`, `"worldNuker"`), following `camelCase` convention as per `Dev/CodingStyle.md`. The value for each `checkType` is an array of `AutoModRule` objects.
+- **`AutoModRule` Object Properties:**
+  - `flagThreshold` (number): The number of flags for this `checkType` at which this rule is triggered.
+  - `actionType` (string): The type of action to take (e.g., `warn`, `kick`, `tempBan`). See "Supported Action Types" below.
   - `parameters` (object): Action-specific parameters.
-    - `reasonKey` (string): A key to look up the message/reason in `automodActionMessages`.
+    - `messageTemplate` (string): The message template string for this rule. This string can contain placeholders (see "Using Placeholders in Message Templates" below).
+    - `adminMessageTemplate` (string, optional): An optional, admin-specific message template. If not provided, a default admin message format is used. Can also use placeholders.
     - `duration` (string, optional): For actions like `tempBan` or `mute` (e.g., "30m", "1h", "7d").
-    - `coordinates` (object, optional): For `teleportSafe` action, e.g., `{ x: 0, y: 100, z: 0 }`.
+    - `coordinates` (object, optional): For `teleportSafe` action, e.g., `{ y: 100 }` or `{ x: 0, y: 100, z: 0 }`.
     - `itemToRemoveTypeId` (string, optional): For `removeIllegalItem` action, specifying the item `TypeId`.
     - *(Other parameters might be used by specific actions in the future).*
-  - `resetFlagsAfterAction` (boolean, optional): If `true`, the flag count for this specific `checkType` will be reset to 0 after this action is performed. Defaults to `false`.
+  - `resetFlagsAfterAction` (boolean, optional): If `true`, the flag count for this specific `checkType` will be reset to 0 after this action. Defaults to `false`.
 
 - **Example Rule:**
   ```javascript
@@ -56,18 +57,19 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
   "movementFlyHover": [ // checkType in camelCase
     {
       "flagThreshold": 3,
-      "actionType": "warn", // actionType in camelCase (or single word lowercase)
-      "parameters": { "reasonKey": "automod.fly.hover.warn1" }
-    },
-    {
-      "flagThreshold": 5,
-      "actionType": "kick",
-      "parameters": { "reasonKey": "automod.fly.hover.kick1" }
+      "actionType": "warn",
+      "parameters": {
+        "messageTemplate": "AutoMod [{actionType}|{checkType}]: {playerName}, you have {flagCount} flags for hovering. Please land."
+        // "adminMessageTemplate": "Admin: {playerName} warned for {checkType} ({flagCount}/{flagThreshold})" // Optional
+      }
     },
     {
       "flagThreshold": 10,
-      "actionType": "tempBan", // camelCase for multi-word
-      "parameters": { "duration": "1h", "reasonKey": "automod.fly.hover.tempban1" },
+      "actionType": "tempBan",
+      "parameters": {
+        "duration": "1h",
+        "messageTemplate": "AutoMod [{actionType}|{checkType}]: {playerName} banned for {duration} due to {checkType} (Flags: {flagCount}/{flagThreshold})."
+      },
       "resetFlagsAfterAction": true
     }
   ],
@@ -76,26 +78,50 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
 ### 4. Supported Action Types (`actionType`)
 The following `actionType` strings can be used in your `automodRules`:
 - `flagOnly`: Takes no direct punitive action. Useful for sensitive checks or as an initial step. Logs that the rule was processed.
-- `warn`: Sends a configurable warning message to the player's chat.
-- `kick`: Kicks the player from the server with a configurable reason.
-- `tempBan`: Temporarily bans the player for a configurable duration and reason. The player is also kicked.
-- `permBan`: Permanently bans the player with a configurable reason. The player is also kicked.
-- `mute`: Temporarily mutes the player for a configurable duration and reason. Player receives an in-game notification.
-- `freeze`: Freezes the player (prevents movement). Player receives an in-game notification. This action is delegated to the `!freeze` command logic.
-- `removeIllegalItem`: Removes all instances of a specific illegal item from the player's inventory. The item type is determined by the `violationDetails` of the flag that triggered this action.
-- `teleportSafe`: Teleports the player to a safe location (e.g., inside a world border, or to specific coordinates defined in parameters). Behavior depends on context and parameters.
+- `warn`: Sends a configurable warning message (from `parameters.messageTemplate`) to the player's chat.
+- `kick`: Kicks the player from the server with a reason generated from `parameters.messageTemplate`.
+- `tempBan`: Temporarily bans the player for a duration specified in `parameters.duration`. Kick reason generated from `parameters.messageTemplate`.
+- `permBan`: Permanently bans the player. Kick reason generated from `parameters.messageTemplate`.
+- `mute`: Temporarily mutes the player for a duration specified in `parameters.duration`. Player notification generated from `parameters.messageTemplate`.
+- `freeze`: Freezes the player (prevents movement). Player notification generated from `parameters.messageTemplate`. (Note: Actual freeze mechanic might be command-based).
+- `removeIllegalItem`: Removes all instances of a specific illegal item (specified by `parameters.itemToRemoveTypeId`) from the player's inventory. Player notification generated from `parameters.messageTemplate`.
+- `teleportSafe`: Teleports the player to a safe location (e.g., specific coordinates in `parameters.coordinates`). Player notification generated from `parameters.messageTemplate`.
 
-### 5. Action Messages (`automodActionMessages`)
-- **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
-- **Setting:** `automodActionMessages`
-- **Usage:** This is an object mapping `reasonKey` strings (used in `automodRules`) to the actual text messages that will be shown to players or used in logs. This allows for easy customization and potential localization of messages.
-  ```javascript
-  export const automodActionMessages = {
-    "automod.fly.hover.warn1": "Automated Warning: Unusual flight activity detected.",
-    "automod.default.kick": "You have been kicked by AutoMod.",
-    // ... other messages
-  };
-  ```
+### 5. Using Placeholders in Message Templates
+Message templates defined in `parameters.messageTemplate` (and optional `parameters.adminMessageTemplate`) support dynamic placeholders to create informative messages. AutoMod replaces these with actual data at runtime.
+
+**How to Use:**
+Include placeholders (e.g., `{playerName}`) within your template strings in the rule definition.
+
+**Example (already shown in Rule Structure above):**
+```javascript
+// parameters: {
+//   "messageTemplate": "AutoMod [{actionType}|{checkType}]: {playerName}, you have {flagCount} flags. Max is {flagThreshold}."
+// }
+```
+
+**Available Placeholders:**
+The following placeholders can be used in `messageTemplate` and `adminMessageTemplate`:
+
+*   **Core Placeholders:**
+    *   `{playerName}`: The name of the player affected.
+    *   `{actionType}`: The type of action taken (e.g., "warn", "kick").
+    *   `{checkType}`: The check that triggered the rule (e.g., "movementFlyHover").
+    *   `{flagCount}`: The player's current flag count for the `checkType`.
+    *   `{flagThreshold}`: The flag threshold that triggered this rule.
+
+*   **Punishment/Duration Specific Placeholders:**
+    *   `{duration}`: Human-readable duration (e.g., "5m", "1h", "Permanent"). Used by `tempBan`, `mute`.
+
+*   **Action-Specific Placeholders:**
+    *   `{itemTypeId}`: For `removeIllegalItem`, the `typeId` of the item.
+    *   `{itemQuantity}`: For `removeIllegalItem`, the quantity of the item removed.
+    *   `{teleportCoordinates}`: For `teleportSafe`, string representation of target/actual coordinates.
+
+*   **Error Message Placeholder (primarily for teleport error messages):**
+    *   `{errorMessage}`: If an error occurs during an action (e.g., teleport fails), this can provide the error message.
+
+Admins will be notified using the `adminMessageTemplate` if provided in the rule's parameters, otherwise a default comprehensive message is generated by the system.
 
 ## Important Notes
 - The AutoMod system processes rules based on escalating `flagThresholds` for each `checkType`.
