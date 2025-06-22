@@ -55,12 +55,12 @@ export const helpLinks = [
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
 ];
-/** @type {string[]} Array of localization keys for general help messages. */
+/** @type {string[]} Array of general help messages/tips. */
 export const generalHelpMessages = [
-    "message.generalHelp.welcome",
-    "message.generalHelp.helpCommandPrompt",
-    "message.generalHelp.reportPrompt",
-    "message.generalHelp.rulesPrompt"
+    "Welcome to the server! Type !help for commands.",
+    "Use !help for a list of commands.",
+    "Report issues or players using !report.",
+    "Type !rules to see the server rules."
 ];
 
 // Logging

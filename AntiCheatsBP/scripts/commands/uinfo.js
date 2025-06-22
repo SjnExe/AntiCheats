@@ -137,26 +137,16 @@ async function showHelpLinksUI(player, dependencies) {
 async function showGeneralTipsUI(player, dependencies) {
     const { config, playerUtils } = dependencies; // getString removed
     let tips = "";
-    // config.generalHelpMessages contains keys like "message.generalHelp.welcome"
-    // These need to be resolved from the en_US.js file.
-    // This is tricky because we are removing getString.
-    // For this specific case, we might need to hardcode these or assume they are direct strings if not found.
-    // Let's assume for now that these keys are NOT being replaced with their actual strings in config.js
-    // and we need to provide default/placeholder behavior here.
-    // The ideal solution would be that config.generalHelpMessages itself contains the final strings.
-
-    const generalHelpMessagesStrings = { // Manually mapped from en_US.js for this function
-        "message.generalHelp.welcome": `Welcome to the server! Use ${config.prefix}help for commands.`, // Example, actual string not in provided en_US
-        "message.generalHelp.helpCommandPrompt": `Type ${config.prefix}help [command] for details on a specific command.`, // Example
-        "message.generalHelp.reportPrompt": `To report a player, please use our Discord or website.`, // Example
-        "message.generalHelp.rulesPrompt": `Type ${config.prefix}rules to see the server rules.` // Example
-    };
+    // config.generalHelpMessages now directly contains an array of tip strings.
 
     if (config.generalHelpMessages && config.generalHelpMessages.length > 0) {
+        // Filter out any potentially empty strings just in case, then join.
         tips = config.generalHelpMessages
-            .map(key => generalHelpMessagesStrings[key] || `${key} (Localization missing)`) // Replace key with string or note missing
+            .filter(tip => typeof tip === 'string' && tip.trim() !== '')
             .join("\n");
-    } else {
+    }
+
+    if (!tips) { // If after filtering, tips is empty or was initially empty
         // Placeholder "uinfo.generalTips.noTipsConfigured" -> "No general tips available at the moment."
         tips = "No general tips available at the moment.";
     }
