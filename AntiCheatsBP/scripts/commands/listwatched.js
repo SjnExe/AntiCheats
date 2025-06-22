@@ -25,7 +25,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerDataManager, playerUtils, getString, permissionLevels, config } = dependencies;
+    const { playerDataManager, playerUtils, permissionLevels, config } = dependencies; // getString removed
 
     // Dynamically set permission level if not already set by command manager
     // (Though command manager should ideally handle this based on initial definition)
@@ -47,9 +47,11 @@ export async function execute(player, args, dependencies) {
     }
 
     if (watchedPlayersNames.length === 0) {
-        playerUtils.sendMessage(player, getString("command.listwatched.noPlayers"));
+        // "command.listwatched.noPlayers" -> "No players are currently being watched."
+        playerUtils.sendMessage(player, "No players are currently being watched.");
     } else {
-        const header = getString("command.listwatched.header");
+        // "command.listwatched.header" -> "Currently watched players: "
+        const header = "Currently watched players: ";
         // Ensure sendMessage is a valid function on playerUtils or directly use player.sendMessage
         if (playerUtils.sendMessage && typeof playerUtils.sendMessage === 'function') {
             playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);

@@ -24,39 +24,43 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, findPlayer, config, getString, permissionLevels } = dependencies;
+    const { playerUtils, logManager, findPlayer, config, permissionLevels } = dependencies; // getString removed
     const targetPlayerName = args[0];
     const gamemodeName = "Adventure"; // For messaging
 
-    // Update definition properties if needed (assuming commandManager handles this at load time if dynamic)
-    // definition.description = getString("command.gma.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     if (targetPlayerName) {
-        const targetPlayer = findPlayer(targetPlayerName); // findPlayer is often part of playerUtils or global
+        const targetPlayer = findPlayer(targetPlayerName);
         if (targetPlayer) {
             try {
                 targetPlayer.setGameMode(mc.GameMode.adventure);
-                player.sendMessage(getString("command.gma.success.other", { targetPlayerName: targetPlayer.nameTag, gamemode: gamemodeName }));
+                // Placeholder for "command.gma.success.other"
+                player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`);
                 if (player.id !== targetPlayer.id) {
-                    targetPlayer.sendMessage(getString("command.gma.success.self", { gamemode: gamemodeName }));
+                    // Placeholder for "command.gma.success.self" (contextually for other player)
+                    targetPlayer.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
                 }
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change', targetName: targetPlayer.nameTag, details: `Set to ${gamemodeName}` }, dependencies);
             } catch (e) {
-                player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: targetPlayer.nameTag }));
+                // "command.error.gamemodeSettingFailed" -> "§cError setting game mode for {playerName}."
+                player.sendMessage(`§cError setting game mode for ${targetPlayer.nameTag}.`);
                 playerUtils.debugLog(`[GMACommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.message}`, player.nameTag, dependencies);
                 console.error(`[GMACommand] Error setting gamemode for ${targetPlayer.nameTag}: ${e.stack || e}`);
             }
         } else {
-            player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetPlayerName }));
+            // "common.error.playerNotFoundOnline" -> "§cPlayer '{playerName}' not found or is not online."
+            player.sendMessage(`§cPlayer '${targetPlayerName}' not found or is not online.`);
         }
     } else {
         try {
             player.setGameMode(mc.GameMode.adventure);
-            player.sendMessage(getString("command.gma.success.self", { gamemode: gamemodeName }));
+            // Placeholder for "command.gma.success.self"
+            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'gamemode_change_self', targetName: player.nameTag, details: `Set to ${gamemodeName}` }, dependencies);
         } catch (e) {
-            player.sendMessage(getString("command.error.gamemodeSettingFailed", { playerName: player.nameTag }));
+            // "command.error.gamemodeSettingFailed" -> "§cError setting game mode for {playerName}."
+            player.sendMessage(`§cError setting game mode for ${player.nameTag}.`);
             playerUtils.debugLog(`[GMACommand] Error setting own gamemode: ${e.message}`, player.nameTag, dependencies);
             console.error(`[GMACommand] Error setting own gamemode: ${e.stack || e}`);
         }

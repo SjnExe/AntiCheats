@@ -14,34 +14,46 @@ import { ActionFormData, MessageFormData } from '@minecraft/server-ui'; // Speci
  */
 // Helper UI functions (scoped within this module)
 async function showMyStatsUI(player, dependencies) {
-    const { playerDataManager, playerUtils, getString, config } = dependencies; // Added getString and config
+    const { playerDataManager, playerUtils, config } = dependencies; // getString removed
     const pData = playerDataManager.getPlayerData(player.id);
-    let statsOutput = getString("uinfo.myStats.header") + "\n";
+    // Placeholder "uinfo.myStats.header" -> "Your AntiCheat Stats:"
+    let statsOutput = "Your AntiCheat Stats:\n";
 
     if (pData && pData.flags) {
-        statsOutput += getString("uinfo.myStats.totalFlags", { totalFlags: pData.flags.totalFlags || 0 }) + "\n";
-        statsOutput += getString("uinfo.myStats.lastFlagType", { lastFlagType: pData.lastFlagType || getString("command.myflags.value.none") }) + "\n\n"; // Use getString for "None"
-        statsOutput += getString("uinfo.myStats.breakdownHeader") + "\n";
+        // Placeholder "uinfo.myStats.totalFlags" -> "Total Flags: {totalFlags}"
+        statsOutput += `Total Flags: ${pData.flags.totalFlags || 0}\n`;
+        // Placeholder "uinfo.myStats.lastFlagType" -> "Last Flag Type: {lastFlagType}"
+        // "common.value.none" -> "None"
+        statsOutput += `Last Flag Type: ${pData.lastFlagType || "None"}\n\n`;
+        // Placeholder "uinfo.myStats.breakdownHeader" -> "Flag Breakdown:"
+        statsOutput += "Flag Breakdown:\n";
         let specificFlagsFound = false;
         for (const flagKey in pData.flags) {
             if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                 const flagData = pData.flags[flagKey];
-                statsOutput += getString("uinfo.myStats.flagEntry", { flagKey: flagKey, count: flagData.count, lastDetectionTime: flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : getString("command.myflags.value.notApplicable") }) + "\n";
+                // Placeholder "uinfo.myStats.flagEntry" -> "- {flagKey}: {count} (Last: {lastDetectionTime})"
+                // "common.value.notApplicable" -> "N/A"
+                statsOutput += `- ${flagKey}: ${flagData.count} (Last: ${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : "N/A"})\n`;
                 specificFlagsFound = true;
             }
         }
         if (!specificFlagsFound && (pData.flags.totalFlags === 0 || !pData.flags.totalFlags)) {
-             statsOutput = getString("uinfo.myStats.noFlags");
+            // Placeholder "uinfo.myStats.noFlags" -> "You have no active flags."
+             statsOutput = "You have no active flags.";
         } else if (!specificFlagsFound && pData.flags.totalFlags > 0) {
-             statsOutput = getString("uinfo.myStats.noSpecificFlags", { totalFlags: pData.flags.totalFlags, lastFlagType: pData.lastFlagType || getString("command.myflags.value.none") });
+            // Placeholder "uinfo.myStats.noSpecificFlags" -> "Total Flags: {totalFlags}. Last Type: {lastFlagType}. (No specific flag details)"
+             statsOutput = `Total Flags: ${pData.flags.totalFlags || 0}. Last Type: ${pData.lastFlagType || "None"}. (No specific flag details)`;
         }
     } else {
-        statsOutput = getString("uinfo.myStats.noData");
+        // Placeholder "uinfo.myStats.noData" -> "No AntiCheat data found for you."
+        statsOutput = "No AntiCheat data found for you.";
     }
     const form = new MessageFormData()
-        .title(getString("uinfo.myStats.title"))
+        // Placeholder "uinfo.myStats.title" -> "My AntiCheat Stats"
+        .title("My AntiCheat Stats")
         .body(statsOutput.trim())
-        .button1(getString("common.button.close"));
+        // "common.button.close" -> "Close"
+        .button1("Close");
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
@@ -51,18 +63,21 @@ async function showMyStatsUI(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showServerRulesUI(player, dependencies) {
-    const { config, playerUtils, getString } = dependencies; // Added getString
-    const rulesKey = config.serverRules;
-    // If serverRules is a localization key:
-    // const rulesText = getString(rulesKey) || getString("uinfo.serverRules.noRulesConfigured");
-    // If serverRules is a direct string:
-    const rulesText = (rulesKey && rulesKey.trim() !== "" && !rulesKey.startsWith("config.")) ? rulesKey : getString("uinfo.serverRules.noRulesConfigured");
+    const { config, playerUtils } = dependencies; // getString removed
+    const rulesValue = config.serverRules; // This is an array of strings in config.js
+
+    // "command.rules.ui.title" -> "Server Rules" (from en_US.js)
+    let rulesText = (Array.isArray(rulesValue) && rulesValue.length > 0)
+        ? rulesValue.join("\n")
+        // "command.rules.noRulesConfigured" -> "No server rules are currently configured. Please check back later!" (from en_US.js)
+        : "No server rules are currently configured. Please check back later!";
 
 
     const form = new MessageFormData()
-        .title(getString("uinfo.serverRules.title"))
+        .title("Server Rules")
         .body(rulesText)
-        .button1(getString("common.button.close"));
+        // "common.button.close" -> "Close"
+        .button1("Close");
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
@@ -72,37 +87,45 @@ async function showServerRulesUI(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showHelpLinksUI(player, dependencies) {
-    const { config, playerUtils, getString } = dependencies; // Added getString
-    let linksBody = getString("uinfo.helpLinks.header") + "\n";
+    const { config, playerUtils } = dependencies; // getString removed
+    // Placeholder "uinfo.helpLinks.header" -> "Helpful Links:"
+    let linksBody = "Helpful Links:\n";
     let hasContent = false;
 
     if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
-        linksBody += getString("uinfo.helpLinks.discord", { discordLink: config.discordLink }) + "\n";
+        // Placeholder "uinfo.helpLinks.discord" -> "Discord: {discordLink}"
+        linksBody += `Discord: ${config.discordLink}\n`;
         hasContent = true;
     }
     if (config.websiteLink && config.websiteLink.trim() !== "" && config.websiteLink !== "https://example.com") {
-        linksBody += getString("uinfo.helpLinks.website", { websiteLink: config.websiteLink }) + "\n";
+        // Placeholder "uinfo.helpLinks.website" -> "Website: {websiteLink}"
+        linksBody += `Website: ${config.websiteLink}\n`;
         hasContent = true;
     }
 
     if (config.helpLinks && config.helpLinks.length > 0) {
         if (hasContent) {
-            linksBody += getString("uinfo.helpLinks.otherLinksHeader") + "\n";
+            // Placeholder "uinfo.helpLinks.otherLinksHeader" -> "\nOther Links:"
+            linksBody += "\nOther Links:\n";
         }
         config.helpLinks.forEach(link => {
-            linksBody += getString("uinfo.helpLinks.linkEntry", { title: link.title, url: link.url }) + "\n";
+            // Placeholder "uinfo.helpLinks.linkEntry" -> "- {title}: {url}"
+            linksBody += `- ${link.title}: ${link.url}\n`;
             hasContent = true;
         });
     }
 
     if (!hasContent) {
-        linksBody = getString("uinfo.helpLinks.noLinksConfigured");
+        // Placeholder "uinfo.helpLinks.noLinksConfigured" -> "No helpful links are currently configured."
+        linksBody = "No helpful links are currently configured.";
     }
 
     const form = new MessageFormData()
-        .title(getString("uinfo.helpLinks.title"))
+        // "ui.helpfulLinks.title" -> "Helpful Links" (from en_US.js, assuming this is the intended key)
+        .title("Helpful Links")
         .body(linksBody.trim())
-        .button1(getString("common.button.close"));
+        // "common.button.close" -> "Close"
+        .button1("Close");
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
@@ -112,18 +135,28 @@ async function showHelpLinksUI(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showGeneralTipsUI(player, dependencies) {
-    const { config, playerUtils, getString } = dependencies; // Added getString, removed configModule
+    const { config, playerUtils } = dependencies; // getString removed
     let tips = "";
+    // config.generalHelpMessages now directly contains an array of tip strings.
+
     if (config.generalHelpMessages && config.generalHelpMessages.length > 0) {
-        tips = config.generalHelpMessages.map(key => getString(key, {prefix: config.prefix})).join("\n"); // Use config.prefix
-    } else {
-        tips = getString("uinfo.generalTips.noTipsConfigured");
+        // Filter out any potentially empty strings just in case, then join.
+        tips = config.generalHelpMessages
+            .filter(tip => typeof tip === 'string' && tip.trim() !== '')
+            .join("\n");
+    }
+
+    if (!tips) { // If after filtering, tips is empty or was initially empty
+        // Placeholder "uinfo.generalTips.noTipsConfigured" -> "No general tips available at the moment."
+        tips = "No general tips available at the moment.";
     }
 
     const form = new MessageFormData()
-        .title(getString("uinfo.generalTips.title"))
+        // Placeholder "uinfo.generalTips.title" -> "General Tips"
+        .title("General Tips")
         .body(tips)
-        .button1(getString("common.button.close"));
+        // "common.button.close" -> "Close"
+        .button1("Close");
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
@@ -145,18 +178,23 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { logManager, playerUtils, config, getString, permissionLevels } = dependencies; // Added getString, permissionLevels
+    const { logManager, playerUtils, config, permissionLevels } = dependencies; // getString removed
 
-    // definition.description = getString("uinfo.mainPanel.description"); // Example if dynamic
-    // definition.permissionLevel = permissionLevels.normal;
+    // Static definitions are used
 
     const mainPanel = new ActionFormData()
-        .title(getString("uinfo.mainPanel.title"))
-        .body(getString("uinfo.mainPanel.body", { playerName: player.nameTag }))
-        .button(getString("uinfo.mainPanel.button.myStats"), "textures/ui/WarningGlyph")
-        .button(getString("uinfo.mainPanel.button.serverRules"), "textures/ui/book_glyph_color")
-        .button(getString("uinfo.mainPanel.button.helpLinks"), "textures/ui/icon_link")
-        .button(getString("uinfo.mainPanel.button.generalTips"), "textures/ui/lightbulb_idea_color");
+        // Placeholder "uinfo.mainPanel.title" -> "Player Information Panel"
+        .title("Player Information Panel")
+        // Placeholder "uinfo.mainPanel.body" -> "Welcome, {playerName}! Select an option:"
+        .body(`Welcome, ${player.nameTag}! Select an option:`)
+        // Placeholder "uinfo.mainPanel.button.myStats" -> "My AntiCheat Stats"
+        .button("My AntiCheat Stats", "textures/ui/WarningGlyph")
+        // Placeholder "uinfo.mainPanel.button.serverRules" -> "Server Rules"
+        .button("Server Rules", "textures/ui/book_glyph_color")
+        // Placeholder "uinfo.mainPanel.button.helpLinks" -> "Helpful Links"
+        .button("Helpful Links", "textures/ui/icon_link")
+        // Placeholder "uinfo.mainPanel.button.generalTips" -> "General Tips"
+        .button("General Tips", "textures/ui/lightbulb_idea_color");
 
     const response = await mainPanel.show(player).catch(e => {
         playerUtils.debugLog(`[UInfoCommand] Error showing main uinfo panel for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);

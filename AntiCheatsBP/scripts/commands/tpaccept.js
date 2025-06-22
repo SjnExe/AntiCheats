@@ -25,15 +25,18 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, tpaManager, permissionLevels, getString, logManager } = dependencies;
+    const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies; // getString removed
 
-    definition.description = getString(definition.description);
-    definition.permissionLevel = permissionLevels.normal;
+    // definition.description is static (or resolved by help command if it was a key)
+    if (definition.permissionLevel === null) {
+        definition.permissionLevel = permissionLevels.normal;
+    }
 
     const prefix = config.prefix;
 
     if (!config.enableTPASystem) {
-        player.sendMessage(getString("command.tpa.systemDisabled"));
+        // "command.tpa.systemDisabled" -> "§cThe TPA system is currently disabled."
+        player.sendMessage("§cThe TPA system is currently disabled.");
         return;
     }
 
@@ -41,29 +44,32 @@ export async function execute(player, args, dependencies) {
     const specificRequesterName = args[0];
     let requestToAccept = null;
 
-    // findRequestsForPlayer does not need dependencies as it's a local lookup in tpaManager
     const incomingRequests = tpaManager.findRequestsForPlayer(acceptingPlayerName)
         .filter(req => req.targetName === acceptingPlayerName && Date.now() < req.expiryTimestamp);
 
     if (incomingRequests.length === 0) {
-        player.sendMessage(getString("command.tpaccept.error.noPending"));
+        // "command.tpaccept.error.noPending" -> "§cYou have no pending TPA requests."
+        player.sendMessage("§cYou have no pending TPA requests.");
         return;
     }
 
     if (specificRequesterName) {
         requestToAccept = incomingRequests.find(req => req.requesterName.toLowerCase() === specificRequesterName.toLowerCase());
         if (!requestToAccept) {
-            player.sendMessage(getString("command.tpaccept.error.noRequestFrom", { playerName: specificRequesterName }));
-            player.sendMessage(getString("command.tpaccept.error.pendingFromList", { playerList: incomingRequests.map(r => r.requesterName).join(', ') }));
+            // "command.tpaccept.error.noRequestFrom" -> "§cNo pending TPA request found from \"{playerName}\"."
+            player.sendMessage(`§cNo pending TPA request found from "${specificRequesterName}".`);
+            // "command.tpaccept.error.pendingFromList" -> "§7Pending requests are from: {playerList}"
+            player.sendMessage(`§7Pending requests are from: ${incomingRequests.map(r => r.requesterName).join(', ')}`);
             return;
         }
     } else {
-        incomingRequests.sort((a, b) => b.creationTimestamp - a.creationTimestamp); // Sort to get the latest if no name specified
+        incomingRequests.sort((a, b) => b.creationTimestamp - a.creationTimestamp);
         requestToAccept = incomingRequests[0];
     }
 
     if (!requestToAccept) {
-        player.sendMessage(getString("command.tpaccept.error.couldNotFind", { prefix: prefix }));
+        // "command.tpaccept.error.couldNotFind" -> "§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests."
+        player.sendMessage(`§cCould not find a suitable TPA request to accept. Type ${prefix}tpastatus to see your requests.`);
         return;
     }
 
@@ -71,17 +77,19 @@ export async function execute(player, args, dependencies) {
         const warmUpInitiated = await tpaManager.acceptRequest(requestToAccept.requestId, dependencies);
 
         if (warmUpInitiated) {
-            player.sendMessage(getString("command.tpaccept.success", { playerName: requestToAccept.requesterName, warmupSeconds: config.TPATeleportWarmupSeconds }));
+            // "command.tpaccept.success" -> "§aAccepted TPA request from \"{playerName}\". Teleport will occur in {warmupSeconds} seconds if the teleporting player avoids damage and stays online."
+            player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.TPATeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
         } else {
-            // Attempt to provide a more specific message if acceptRequest returned an error object (though current acceptRequest returns bool)
-            player.sendMessage(getString("command.tpaccept.fail", { playerName: requestToAccept.requesterName }));
+            // "command.tpaccept.fail" -> "§cCould not accept TPA request from \"{playerName}\". It might have expired or been cancelled."
+            player.sendMessage(`§cCould not accept TPA request from "${requestToAccept.requesterName}". It might have expired or been cancelled.`);
              if (config.enableDebugLogging) {
                 playerUtils.debugLog(`[TpAcceptCommand] Call to tpaManager.acceptRequest for ${requestToAccept.requestId} returned falsy.`, player.nameTag, dependencies);
             }
         }
     } catch (error) {
         console.error(`[TpAcceptCommand] Error during tpaccept for ${player.nameTag}: ${error.stack || error}`);
-        player.sendMessage(getString("common.error.genericCommand"));
+        // "common.error.generic" -> "§cAn unexpected error occurred."
+        player.sendMessage("§cAn unexpected error occurred.");
         if(logManager) {
             logManager.addLog({actionType: 'error', details: `[TpAcceptCommand] ${player.nameTag} failed to accept TPA: ${error.stack || error}`});
         }

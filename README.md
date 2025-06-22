@@ -38,7 +38,6 @@ For more details on specific systems, see the linked documentation pages.
 
 This addon provides a suite of tools and detections to help maintain a fair gameplay environment:
 
-*   **🌍 Internationalization (i18n):** UI and messages adaptable for multiple languages. Default is English (`en_US`), with support for community translations. See `Docs/Internationalization.md`.
 *   **Comprehensive Cheat Detections:** Identifies a wide range of cheats including:
     *   **Movement:** Fly, Speed, NoFall.
     *   **Combat:** Reach, CPS/AutoClicker.
@@ -72,7 +71,7 @@ The default command prefix is `!` (configurable in `AntiCheatsBP/scripts/config.
 ## 🔧 Main Configuration File
 
 The main configuration for this addon is centralized in **[`AntiCheatsBP/scripts/config.js`](AntiCheatsBP/scripts/config.js)**. This file allows you to customize:
-*   Core settings (command prefix, language, global feature toggles).
+*   Core settings (command prefix, global feature toggles).
 *   Cheat detection sensitivity and thresholds.
 *   General behavior for systems like AutoMod and World Border.
 

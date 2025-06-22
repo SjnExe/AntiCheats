@@ -19,7 +19,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidRenderDistance(player, pData, dependencies) {
-    const { config, playerUtils, logManager, actionManager, getString } = dependencies; // Added getString
+    const { config, playerUtils, logManager, actionManager } = dependencies; // getString removed
 
     if (!config.enableInvalidRenderDistanceCheck) {
         return;
@@ -45,10 +45,8 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             playerName: player.nameTag,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
-            detailsString: getString("check.clientInfo.renderDistance.details", { // getString from dependencies
-                reportedDistance: clientRenderDistance.toString(),
-                maxAllowed: config.maxAllowedClientRenderDistance.toString()
-            })
+            // "check.clientInfo.renderDistance.details" -> "Reported: {reportedDistance}, Max: {maxAllowed}"
+            detailsString: `Reported: ${clientRenderDistance.toString()}, Max: ${config.maxAllowedClientRenderDistance.toString()}`
         };
 
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {

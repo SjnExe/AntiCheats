@@ -25,62 +25,72 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, tpaManager, permissionLevels, getString, logManager } = dependencies;
+    const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies; // getString removed
 
-    definition.description = getString(definition.description);
-    definition.permissionLevel = permissionLevels.normal; // Set actual permission level
+    // definition.description is static (or resolved by help command if it was a key)
+    if (definition.permissionLevel === null) { // Ensure permission level is set if not done by command loader
+        definition.permissionLevel = permissionLevels.normal;
+    }
 
     const prefix = config.prefix;
 
     if (!config.enableTPASystem) {
-        player.sendMessage(getString("command.tpa.systemDisabled"));
+        // "command.tpa.systemDisabled" -> "§cThe TPA system is currently disabled."
+        player.sendMessage("§cThe TPA system is currently disabled.");
         return;
     }
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.tpa.usage", { prefix: prefix }));
+        // "command.tpa.usage" -> "§cUsage: {prefix}tpa <playerName>"
+        player.sendMessage(`§cUsage: ${prefix}tpa <playerName>`);
         return;
     }
 
     const targetName = args[0];
-    const target = playerUtils.findPlayer(targetName); // Use playerUtils.findPlayer
+    const target = playerUtils.findPlayer(targetName);
 
     if (!target) {
-        player.sendMessage(getString("common.error.playerNotFoundOnline", { playerName: targetName }));
+        // "common.error.playerNotFoundOnline" -> "§cPlayer '{playerName}' not found or is not online."
+        player.sendMessage(`§cPlayer '${targetName}' not found or is not online.`);
         return;
     }
 
     if (target.name === player.name) {
-        player.sendMessage(getString("command.tpa.error.selfRequest"));
+        // "command.tpa.error.selfRequest" -> "§cYou cannot send a TPA request to yourself."
+        player.sendMessage("§cYou cannot send a TPA request to yourself.");
         return;
     }
 
-    const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name, dependencies); // Pass dependencies
+    const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name, dependencies);
     if (!targetTpaStatus.acceptsTpaRequests) {
-        player.sendMessage(getString("command.tpa.error.targetDisabled", { targetName: target.nameTag }));
+        // "command.tpa.error.targetDisabled" -> "§cPlayer \"{targetName}\" is not currently accepting TPA requests."
+        player.sendMessage(`§cPlayer "${target.nameTag}" is not currently accepting TPA requests.`);
         return;
     }
 
-    // findRequest does not need dependencies as it's a local lookup
     const existingRequest = tpaManager.findRequest(player.name, target.name);
     if (existingRequest) {
-         player.sendMessage(getString("command.tpa.error.existingRequest", { targetName: target.nameTag }));
+        // "command.tpa.error.existingRequest" -> "§cYou already have an active TPA request with \"{targetName}\"."
+         player.sendMessage(`§cYou already have an active TPA request with "${target.nameTag}".`);
          return;
     }
 
-    const requestResult = tpaManager.addRequest(player, target, 'tpa', dependencies); // Pass dependencies
+    const requestResult = tpaManager.addRequest(player, target, 'tpa', dependencies);
 
     if (requestResult && requestResult.error === 'cooldown') {
-        player.sendMessage(getString("command.tpa.error.cooldown", { remaining: requestResult.remaining }));
+        // "command.tpa.error.cooldown" -> "§cYou must wait {remaining} more seconds before sending another TPA request."
+        player.sendMessage(`§cYou must wait ${requestResult.remaining} more seconds before sending another TPA request.`);
         return;
     }
 
     if (requestResult) {
-        player.sendMessage(getString("command.tpa.requestSent", { targetName: target.nameTag, timeout: config.TPARequestTimeoutSeconds, prefix: prefix }));
+        // "command.tpa.requestSent" -> "§aTPA request sent to \"{targetName}\". They have {timeout} seconds to accept. Type {prefix}tpacancel to cancel."
+        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
 
         system.run(() => {
             try {
-                target.onScreenDisplay.setActionBar(getString("command.tpa.requestReceived", { requesterName: player.nameTag, prefix: prefix }));
+                // "command.tpa.requestReceived" -> "§e{requesterName} has requested to teleport to you. Use {prefix}tpaccept {requesterName} or {prefix}tpacancel {requesterName}."
+                target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
             } catch (e) {
                 if (config.enableDebugLogging && playerUtils?.debugLog) {
                     playerUtils.debugLog(`[TpaCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
@@ -89,8 +99,8 @@ export async function execute(player, args, dependencies) {
         });
 
     } else {
-        player.sendMessage(getString("command.tpa.failToSend"));
-        // Log this failure for admins/debug
+        // "command.tpa.failToSend" -> "§cCould not send TPA request. There might be an existing request or other issue."
+        player.sendMessage("§cCould not send TPA request. There might be an existing request or other issue.");
         playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
         if(logManager) {
             logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`});

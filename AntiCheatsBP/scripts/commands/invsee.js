@@ -25,46 +25,51 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, getString, permissionLevels } = dependencies; // Destructure all needed
+    const { config, playerUtils, logManager, permissionLevels } = dependencies; // getString removed
     const findPlayer = playerUtils.findPlayer;
     const prefix = config.prefix;
 
-    // definition.description = getString("command.invsee.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     if (args.length < 1) {
-        player.sendMessage(getString("command.invsee.usage", { prefix: prefix }));
+        // Placeholder: "command.invsee.usage" (Not in en_US.js) -> Using syntax
+        player.sendMessage(`§cUsage: ${prefix}invsee <playername>`);
         return;
     }
     const targetPlayerName = args[0];
     const foundPlayer = findPlayer(targetPlayerName);
 
     if (!foundPlayer) {
-        player.sendMessage(getString("command.invsee.error.notFound", { playerName: targetPlayerName }));
+        // Placeholder: "command.invsee.error.notFound" (Not in en_US.js)
+        player.sendMessage(`§cPlayer "${targetPlayerName}" not found.`);
         return;
     }
 
     const inventoryComponent = foundPlayer.getComponent("minecraft:inventory");
     if (!inventoryComponent || !inventoryComponent.container) {
-        player.sendMessage(getString("command.invsee.error.noInventory", { playerName: foundPlayer.nameTag }));
+        // Placeholder: "command.invsee.error.noInventory" (Not in en_US.js)
+        player.sendMessage(`§cCould not access inventory for ${foundPlayer.nameTag}.`);
         return;
     }
 
     const container = inventoryComponent.container;
-    let inventoryDetails = getString("command.invsee.form.bodyHeader", { playerName: foundPlayer.nameTag });
+    // Placeholder: "command.invsee.form.bodyHeader" (Not in en_US.js)
+    let inventoryDetails = `Inventory of ${foundPlayer.nameTag}:\n`;
     let itemCount = 0;
 
     for (let i = 0; i < container.size; i++) {
         const itemStack = container.getItem(i);
         if (itemStack) {
             itemCount++;
-            let nameTagText = itemStack.nameTag ? getString("command.invsee.form.itemEntry.nameTag", { nameTag: itemStack.nameTag }) : "";
+            // Placeholder: "command.invsee.form.itemEntry.nameTag" (Not in en_US.js)
+            let nameTagText = itemStack.nameTag ? ` (Name: ${itemStack.nameTag})` : "";
 
             let durabilityText = "";
             try {
                 const durabilityComponent = itemStack.getComponent(ItemComponentTypes.Durability);
                 if (durabilityComponent) {
-                    durabilityText = getString("command.invsee.form.itemEntry.durability", { currentDurability: durabilityComponent.maxDurability - durabilityComponent.damage, maxDurability: durabilityComponent.maxDurability });
+                    // Placeholder: "command.invsee.form.itemEntry.durability" (Not in en_US.js)
+                    durabilityText = ` Dur: ${durabilityComponent.maxDurability - durabilityComponent.damage}/${durabilityComponent.maxDurability}`;
                 }
             } catch (e) {/* Component not present or error accessing */}
 
@@ -72,7 +77,8 @@ export async function execute(player, args, dependencies) {
             try {
                 const lore = itemStack.getLore();
                 if (lore && lore.length > 0) {
-                    loreText = getString("command.invsee.form.itemEntry.lore", { loreString: lore.join('", "') });
+                    // Placeholder: "command.invsee.form.itemEntry.lore" (Not in en_US.js)
+                    loreText = ` Lore: ["${lore.join('", "')}"]`;
                 }
             } catch (e) {/* Error accessing lore */}
 
@@ -83,33 +89,30 @@ export async function execute(player, args, dependencies) {
                     const enchantments = enchantableComponent.getEnchantments();
                     if (enchantments.length > 0) {
                         const enchStrings = enchantments.map(ench => `${ench.type.id.replace("minecraft:", "")} ${ench.level}`);
-                        enchantsText = getString("command.invsee.form.itemEntry.enchants", { enchantsString: enchStrings.join(", ") });
+                        // Placeholder: "command.invsee.form.itemEntry.enchants" (Not in en_US.js)
+                        enchantsText = ` Enchants: ${enchStrings.join(", ")}`;
                     }
                 }
             } catch (e) {/* Component not present or error accessing */}
 
-            inventoryDetails += getString("command.invsee.form.itemEntry", {
-                slotNum: i,
-                itemName: itemStack.typeId.replace("minecraft:", ""),
-                itemAmount: itemStack.amount,
-                nameTag: nameTagText,
-                durability: durabilityText,
-                enchants: enchantsText,
-                lore: loreText
-            }).replace(/\s+\|/g, ' |').replace(/\|\s*$/, '').trim() + "\n";
-
+            // Placeholder: "command.invsee.form.itemEntry" (Not in en_US.js)
+            // Constructing a readable format based on the placeholders previously used.
+            inventoryDetails += `Slot ${i}: ${itemStack.typeId.replace("minecraft:", "")} x${itemStack.amount}${nameTagText}${durabilityText}${enchantsText}${loreText}\n`;
         }
     }
     if (itemCount === 0) {
-        inventoryDetails += getString("command.invsee.form.emptyInventory");
+        // Placeholder: "command.invsee.form.emptyInventory" (Not in en_US.js)
+        inventoryDetails += "Inventory is empty.\n";
     }
 
     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'invsee', targetName: foundPlayer.nameTag, details: `Viewed inventory of ${foundPlayer.nameTag}` }, dependencies);
 
     const invForm = new MessageFormData();
-    invForm.title(getString("command.invsee.form.title", { playerName: foundPlayer.nameTag }));
+    // Placeholder: "command.invsee.form.title" (Not in en_US.js)
+    invForm.title(`Inventory: ${foundPlayer.nameTag}`);
     invForm.body(inventoryDetails.trim());
-    invForm.button1(getString("common.button.close"));
+    // "common.button.close" -> "Close"
+    invForm.button1("Close");
     invForm.show(player).catch(e => {
         playerUtils.debugLog(`[InvSeeCommand] Error showing invsee form: ${e.message}`, player.nameTag, dependencies);
         console.error(`[InvSeeCommand] Error showing invsee form: ${e.stack || e}`);

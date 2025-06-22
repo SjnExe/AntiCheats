@@ -30,24 +30,24 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, config, getString, permissionLevels } = dependencies; // Destructure all needed services
+    const { playerUtils, config, permissionLevels } = dependencies; // getString removed
 
-    // definition.description = getString("command.rules.description");
-    // definition.permissionLevel = permissionLevels.normal;
+    // Static definitions are used
 
     const form = new MessageFormData();
-    form.title(getString("command.rules.ui.title"));
+    // "command.rules.ui.title" -> "Server Rules"
+    form.title("Server Rules");
 
     if (config.serverRules && config.serverRules.trim() !== "") {
-        // Assuming config.serverRules is already a string.
-        // If it were a loc key: form.body(getString(config.serverRules));
-        form.body(config.serverRules);
+        form.body(config.serverRules); // serverRules is already a string array joined by newline or a single string
     } else {
-        form.body(getString("command.rules.noRulesConfigured"));
+        // "command.rules.noRulesConfigured" -> "No server rules are currently configured. Please check back later!"
+        form.body("No server rules are currently configured. Please check back later!");
     }
 
-    form.button1(getString("common.button.close"));
-    form.button2(getString("common.button.close")); // MessageFormData requires two buttons
+    // "common.button.close" -> "Close"
+    form.button1("Close");
+    form.button2("Close"); // MessageFormData requires two buttons
 
     try {
         await form.show(player);

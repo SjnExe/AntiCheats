@@ -28,10 +28,9 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager, getString, permissionLevels } = dependencies;
+    const { playerUtils, logManager, config, playerDataManager, permissionLevels } = dependencies; // getString removed
 
-    // definition.description = getString("command.vanish.description");
-    // definition.permissionLevel = permissionLevels.admin;
+    // Static definitions are used
 
     let mode = args[0] ? args[0].toLowerCase() : 'silent';
     if (mode !== 'silent' && mode !== 'notify') {
@@ -52,19 +51,24 @@ export async function execute(player, args, dependencies) {
 
             if (mode === 'notify') {
                 player.addTag(vanishModeNotifyTag);
-                world.sendMessage(getString("command.vanish.fakeLeave", { playerName: player.nameTag }));
-                player.onScreenDisplay.setActionBar(getString("command.vanish.enabled.notify"));
+                // Placeholder "command.vanish.fakeLeave" -> "§e{playerName} left the game"
+                world.sendMessage(`§e${player.nameTag} left the game`);
+                // Placeholder "command.vanish.enabled.notify" -> "§7You are now vanished (notify mode)."
+                player.onScreenDisplay.setActionBar("§7You are now vanished (notify mode).");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_on_notify', details: `${player.nameTag} enabled vanish (notify).` }, dependencies);
             } else {
-                player.onScreenDisplay.setActionBar(getString("command.vanish.enabled.silent"));
+                // Placeholder "command.vanish.enabled.silent" -> "§7You are now vanished (silent mode)."
+                player.onScreenDisplay.setActionBar("§7You are now vanished (silent mode).");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_on_silent', details: `${player.nameTag} enabled vanish (silent).` }, dependencies);
             }
 
             const pData = playerDataManager.getPlayerData(player.id);
-            playerUtils.notifyAdmins(getString("command.vanish.adminNotify.on", {adminName: player.nameTag, mode: mode }), dependencies, player, pData);
+            // Placeholder "command.vanish.adminNotify.on" -> "§7[Admin] §e{adminName}§7 has enabled vanish ({mode} mode)."
+            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has enabled vanish (${mode} mode).`, dependencies, player, pData);
 
         } catch (e) {
-            player.sendMessage(getString("command.vanish.error.apply", { error: e.message }));
+            // Placeholder "command.vanish.error.apply" -> "§cError applying vanish effect: {error}"
+            player.sendMessage(`§cError applying vanish effect: ${e.message}`);
             playerUtils.debugLog(`[VanishCommand] Error applying vanish for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             console.error(`[VanishCommand] Error applying vanish for ${player.nameTag}: ${e.stack || e}`);
         }
@@ -81,20 +85,25 @@ export async function execute(player, args, dependencies) {
             player.removeEffect("fire_resistance");
 
             if (wasNotifyMode) {
-                world.sendMessage(getString("command.vanish.fakeJoin", { playerName: player.nameTag }));
-                player.sendMessage(getString("command.vanish.disabled.notify"));
+                // Placeholder "command.vanish.fakeJoin" -> "§e{playerName} joined the game"
+                world.sendMessage(`§e${player.nameTag} joined the game`);
+                // Placeholder "command.vanish.disabled.notify" -> "§7You are no longer vanished (notify mode)."
+                player.sendMessage("§7You are no longer vanished (notify mode).");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_off_notify', details: `${player.nameTag} disabled vanish (notify).` }, dependencies);
                 player.removeTag(vanishModeNotifyTag);
             } else {
-                player.sendMessage(getString("command.vanish.disabled.silent"));
+                // Placeholder "command.vanish.disabled.silent" -> "§7You are no longer vanished (silent mode)."
+                player.sendMessage("§7You are no longer vanished (silent mode).");
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanish_off_silent', details: `${player.nameTag} disabled vanish (silent).` }, dependencies);
             }
 
             const pData = playerDataManager.getPlayerData(player.id);
-            playerUtils.notifyAdmins(getString("command.vanish.adminNotify.off", {adminName: player.nameTag, mode: (wasNotifyMode ? 'notify' : 'silent') }), dependencies, player, pData);
+            // Placeholder "command.vanish.adminNotify.off" -> "§7[Admin] §e{adminName}§7 has disabled vanish ({mode} mode)."
+            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has disabled vanish (${wasNotifyMode ? 'notify' : 'silent'} mode).`, dependencies, player, pData);
 
         } catch (e) {
-            player.sendMessage(getString("command.vanish.error.remove", { error: e.message }));
+            // Placeholder "command.vanish.error.remove" -> "§cError removing vanish effect: {error}"
+            player.sendMessage(`§cError removing vanish effect: ${e.message}`);
             playerUtils.debugLog(`[VanishCommand] Error removing vanish for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             console.error(`[VanishCommand] Error removing vanish for ${player.nameTag}: ${e.stack || e}`);
         }

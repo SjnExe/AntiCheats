@@ -11,20 +11,18 @@ export const ownerPlayerName = "PlayerNameHere";
 export const enableDebugLogging = true;
 /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
 export const prefix = "!";
-/** @type {string} Default language code for server messages if player's language is not set or translation missing. */
-export const defaultServerLanguage = "en_US";
 
 // Welcomer & Player Info
 /** @type {boolean} If true, a welcome message is sent to players when they join. */
 export const enableWelcomerMessage = true;
-/** @type {string} Localization key for the welcome message. */
-export const welcomeMessage = "message.welcome";
+/** @type {string} The welcome message. Placeholders: {playerName} */
+export const welcomeMessage = "Welcome, {playerName}, to our amazing server! We're glad to have you.";
 /** @type {boolean} If true, admins are notified when a new player joins for the first time. */
 export const notifyAdminOnNewPlayerJoin = true;
 /** @type {boolean} If true, players are sent their death coordinates upon respawning. */
 export const enableDeathCoordsMessage = true;
-/** @type {string} Localization key for the death coordinates message. */
-export const deathCoordsMessage = "message.deathCoords";
+/** @type {string} The death coordinates message. Placeholders: {x}, {y}, {z}, {dimensionId} */
+export const deathCoordsMessage = "§7You died at X: {x}, Y: {y}, Z: {z} in dimension {dimensionId}.";
 
 // Combat Log
 /** @type {boolean} If true, enables detection of players leaving shortly after combat. */
@@ -33,8 +31,8 @@ export const enableCombatLogDetection = false;
 export const combatLogThresholdSeconds = 15;
 /** @type {number} Number of flags to add for a combat log violation. */
 export const combatLogFlagIncrement = 1;
-/** @type {string} Localization key for the admin notification message on combat log detection. */
-export const combatLogMessage = "message.combatLogAdminNotify";
+/** @type {string} The admin notification message on combat log detection. Placeholders: {playerName}, {timeSinceCombat}, {incrementAmount} */
+export const combatLogMessage = "§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}";
 
 // TPA System
 /** @type {boolean} If true, the TPA (Teleport Ask) system is enabled. */
@@ -57,12 +55,12 @@ export const helpLinks = [
     { title: "Website/Forums", url: "https://yourwebsite.com/forums" },
     { title: "Report a Player", url: "https://yourwebsite.com/report" }
 ];
-/** @type {string[]} Array of localization keys for general help messages. */
+/** @type {string[]} Array of general help messages/tips. */
 export const generalHelpMessages = [
-    "message.generalHelp.welcome",
-    "message.generalHelp.helpCommandPrompt",
-    "message.generalHelp.reportPrompt",
-    "message.generalHelp.rulesPrompt"
+    "Welcome to the server! Type !help for commands.",
+    "Use !help for a list of commands.",
+    "Report issues or players using !report.",
+    "Type !rules to see the server rules."
 ];
 
 // Logging
@@ -212,8 +210,8 @@ export const pistonLagLogCooldownSeconds = 60;
 // World Border System (User-Facing Parts)
 /** @type {boolean} Master switch for the entire World Border feature. */
 export const enableWorldBorderSystem = false;
-/** @type {string} Localization key for the warning message shown to players approaching the border. */
-export const worldBorderWarningMessage = "message.worldBorderWarning";
+/** @type {string} Warning message shown to players approaching the border. */
+export const worldBorderWarningMessage = "§cYou are approaching the world border!"; // Actual string needed - "message.worldBorderWarning" is not in en_US.js, using a placeholder
 /** @type {boolean} Default setting for whether players take damage when outside the world border. */
 export const worldBorderDefaultEnableDamage = false;
 /** @type {number} Default damage amount per interval for players outside the border. */
@@ -312,7 +310,7 @@ export const commandSettings = {
     netherlock: { enabled: true },
     endlock: { enabled: true },
     worldborder: { enabled: true },
-    setlang: { enabled: true }
+    setlang: { enabled: false } // Disabled setlang command
 };
 
 /** @type {boolean} If true, the Automated Moderation system is active. */
@@ -847,7 +845,6 @@ export let editableConfigValues = {
     ownerPlayerName: ownerPlayerName,
     enableDebugLogging: enableDebugLogging,
     prefix: prefix,
-    defaultServerLanguage: defaultServerLanguage,
     enableWelcomerMessage: enableWelcomerMessage,
     welcomeMessage: welcomeMessage,
     notifyAdminOnNewPlayerJoin: notifyAdminOnNewPlayerJoin,
