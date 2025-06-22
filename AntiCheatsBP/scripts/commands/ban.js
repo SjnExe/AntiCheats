@@ -46,10 +46,13 @@ export async function execute(
     const durationString = args[1] || "perm";
 
     let reason;
-    if (invokedBy === "AutoMod" && args.length <=2) {
-        reason = `AutoMod action for ${autoModCheckType || 'violations'}.`;
+    if (invokedBy === "AutoMod") {
+        // For AutoMod, if args[2] (custom reason part) is missing, use a default AutoMod reason.
+        // Otherwise, use the provided reason starting from args[2].
+        reason = args.length > 2 ? args.slice(2).join(" ") : `AutoMod action for ${autoModCheckType || 'violations'}.`;
     } else {
-        reason = args.slice(2).join(" ") || (invokedBy === "AutoMod" ? `AutoMod action for ${autoModCheckType || 'violations'}.` : "Banned by an administrator.");
+        // For PlayerCommand or other invocations, reason starts from args[2] or defaults.
+        reason = args.slice(2).join(" ") || "Banned by an administrator.";
     }
 
     const foundPlayer = playerUtils.findPlayer(targetPlayerName);
@@ -114,6 +117,9 @@ export async function execute(
         const banInfo = playerDataManager.getBanInfo(foundPlayer, dependencies);
         const actualReason = banInfo ? banInfo.reason : reason;
         const actualBannedBy = banInfo ? banInfo.bannedBy : bannedBy;
+        // Ensure unbanTimeDisplay is always defined before use
+        const unbanTimeDisplay = banInfo ? banInfo.unbanTime : (Date.now() + durationMs);
+
 
         let kickMessageParts = [
             "§cYou have been banned from this server.",
@@ -124,7 +130,7 @@ export async function execute(
         if (durationMs === Infinity) {
             kickMessageParts.push("§fThis ban is permanent.");
         } else {
-            const unbanTimeDisplay = banInfo ? banInfo.unbanTime : (Date.now() + durationMs);
+            // unbanTimeDisplay is now guaranteed to be defined
             kickMessageParts.push(`§fExpires: §e${new Date(unbanTimeDisplay).toLocaleString()}`);
         }
         const kickMessage = kickMessageParts.join('\n');

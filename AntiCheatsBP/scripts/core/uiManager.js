@@ -90,12 +90,24 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
     const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] Inspect Player form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    const title = getString("ui.inspectPlayerForm.title");
-    const textFieldLabel = getString("ui.inspectPlayerForm.textField.label");
-    const textFieldPlaceholder = getString("ui.inspectPlayerForm.textField.placeholder");
-    const nameEmptyMsg = getString("common.error.nameEmpty");
-    const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
-    const genericFormErrorMsg = getString("common.error.genericForm");
+    const safeGetString = (key, params) => {
+        if (typeof getString === 'function') {
+            return getString(key, params);
+        }
+        console.warn(`[UiManager] getString function not available in dependencies. Key: ${key}`);
+        // Fallback to a simple string representation or the key itself
+        if (params && Object.keys(params).length > 0) {
+            return `${key} ${JSON.stringify(params)}`;
+        }
+        return key;
+    };
+
+    const title = safeGetString("ui.inspectPlayerForm.title");
+    const textFieldLabel = safeGetString("ui.inspectPlayerForm.textField.label");
+    const textFieldPlaceholder = safeGetString("ui.inspectPlayerForm.textField.placeholder");
+    const nameEmptyMsg = safeGetString("common.error.nameEmpty");
+    const commandNotFoundMsg = (moduleName) => safeGetString("common.error.commandModuleNotFound", { moduleName });
+    const genericFormErrorMsg = safeGetString("common.error.genericForm");
 
     const modalForm = new ModalFormData();
     modalForm.title(title);
