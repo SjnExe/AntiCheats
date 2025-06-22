@@ -7,14 +7,11 @@
  * Assumes `pData.hasSlowFalling` is updated by `updateTransientPlayerData`.
  * @version 1.0.1
  */
-
 import * as mc from '@minecraft/server';
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
-
 /**
  * Checks for NoFall violations by verifying if a player takes appropriate fall damage
  * after accumulating significant fall distance.
@@ -26,7 +23,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkNoFall(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // Destructure only what's needed
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableNofallCheck || !pData) {
         return;
@@ -34,13 +31,12 @@ export async function checkNoFall(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Exemptions for legitimate flight, gliding, swimming, climbing, riding, or active Slow Falling effect
     if (player.isFlying ||
         player.isGliding ||
-        player.isInWater || // Consider player.isSwimming for more specific water scenarios if API evolves
+        player.isInWater ||
         player.isClimbing ||
-        pData.hasSlowFalling || // Use pre-calculated pData.hasSlowFalling
-        player.hasComponent('minecraft:rider')) { // Check if player is riding an entity
+        pData.hasSlowFalling ||
+        player.hasComponent('minecraft:rider')) {
 
         playerUtils.debugLog(
             `[NoFallCheck] ${player.nameTag} in exempt state. ` +
@@ -52,18 +48,13 @@ export async function checkNoFall(player, pData, dependencies) {
     }
 
     if (player.isOnGround) {
-        // Slime Block Check (Grace period of 1 second after last bounce)
-        // NOTE: pData.lastOnSlimeBlockTick needs to be updated elsewhere (e.g., main tick loop or specific event)
-        if ((dependencies.currentTick - (pData.lastOnSlimeBlockTick || 0)) < 20) { // 20 ticks = 1 second grace
+        if ((dependencies.currentTick - (pData.lastOnSlimeBlockTick || 0)) < 20) {
             if (playerUtils.debugLog && pData.isWatched) {
                 playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} recently on slime block (LastTick: ${pData.lastOnSlimeBlockTick}, Current: ${dependencies.currentTick}). Fall damage check modified/bypassed.`, player.nameTag, dependencies);
             }
-            // Assuming full bypass for simplicity if recently on slime.
-            // More nuanced logic could adjust expected damage or fallDistance.
             return;
         }
 
-        // Other Mitigation Blocks Check (Hay Bale, Powder Snow, Sweet Berry Bush)
         try {
             const blockBelowLocation = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
             const blockBelow = player.dimension.getBlock(blockBelowLocation);
@@ -71,7 +62,7 @@ export async function checkNoFall(player, pData, dependencies) {
                 if (playerUtils.debugLog && pData.isWatched) {
                     playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} landed on a fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified.`, player.nameTag, dependencies);
                 }
-                return; // Bypass for now
+                return;
             }
         } catch (e) {
             if (playerUtils.debugLog) {
@@ -87,7 +78,6 @@ export async function checkNoFall(player, pData, dependencies) {
 
         const minDamageDistance = config.minFallDistanceForDamage ?? 3.5;
 
-        // If fallDistance exceeds threshold and player did NOT take fall damage this landing cycle
         if (pData.fallDistance > minDamageDistance && !pData.isTakingFallDamage) {
             let currentHealth = 'N/A';
             try {
@@ -100,7 +90,6 @@ export async function checkNoFall(player, pData, dependencies) {
                 console.error(`[NoFallCheck] Error getting health for ${player.nameTag}: ${e.stack || e}`);
             }
 
-            // Gather effect information for details
             let activeEffectsString = "none";
             try {
                 const effects = player.getEffects();
@@ -112,19 +101,14 @@ export async function checkNoFall(player, pData, dependencies) {
                  console.error(`[NoFallCheck] Error getting effects for ${player.nameTag}: ${e.stack || e}`);
             }
 
-
             const violationDetails = {
                 fallDistance: pData.fallDistance.toFixed(2),
                 minDamageDistance: minDamageDistance.toFixed(2),
                 playerHealth: currentHealth,
-                lastVerticalVelocity: pData.previousVelocity?.y?.toFixed(2) ?? 'N/A', // Use previous tick's velocity for impact
+                lastVerticalVelocity: pData.previousVelocity?.y?.toFixed(2) ?? 'N/A',
                 activeEffects: activeEffectsString
             };
-            // Pass the full dependencies object to executeCheckAction
             await actionManager.executeCheckAction(player, "movementNofall", violationDetails, dependencies);
         }
-        // pData.fallDistance is reset in main.js tick loop when player is onGround and not pData.isTakingFallDamage.
-        // pData.isTakingFallDamage is also reset in main.js tick loop after checks if player is onGround.
     }
-    // No pData fields are directly modified here that need isDirtyForSave, relies on external updates.
 }

@@ -4,18 +4,12 @@
  * Banned items are defined in the server configuration.
  * @version 1.0.1
  */
-
 import * as mc from '@minecraft/server';
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  * @typedef {mc.ItemUseBeforeEvent | mc.ItemUseOnBeforeEvent | mc.PlayerPlaceBlockBeforeEvent} ItemRelatedEventData
- * // PlayerPlaceBlockBeforeEvent is also relevant for "place" actions, though ItemUseOnBeforeEvent is more common for item-specific place denial.
- * // This type definition is a bit broad; specific event types are usually handled by the calling event handler.
- * // The key is that `eventData` must have a `cancel` property and relevant source/block info.
  */
-
 /**
  * Checks if a player is attempting to use or place an item that is on a configured ban list.
  * If a banned item action is detected, the event is cancelled, and configured actions are executed.
@@ -36,7 +30,7 @@ export async function checkIllegalItems(
     itemStack,
     eventData,
     actionType,
-    pData, // pData can be undefined if not available, check handles this for debug logging.
+    pData,
     dependencies
 ) {
     const { config, playerUtils, actionManager, playerDataManager, logManager } = dependencies;
@@ -48,7 +42,6 @@ export async function checkIllegalItems(
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
     if (!itemStack) {
-        // This case might occur if the event doesn't involve an item or hand is empty.
         playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}.`, watchedPrefix, dependencies);
         return;
     }
@@ -57,39 +50,34 @@ export async function checkIllegalItems(
     playerUtils.debugLog(`[IllegalItemCheck] Processing for ${player.nameTag}. Action: ${actionType}, Item: ${itemId}.`, watchedPrefix, dependencies);
 
     let isBanned = false;
-    let checkProfileKey = ""; // The key for checkActionProfiles in config
+    let checkProfileKey = "";
     let violationDetails = {};
-    // No need to reconstruct dependencies, the main one is passed to executeCheckAction
 
     const bannedItemsForPlace = config.bannedItemsPlace ?? [];
     const bannedItemsForUse = config.bannedItemsUse ?? [];
 
     if (actionType === "place" && bannedItemsForPlace.includes(itemId)) {
         isBanned = true;
-        // Action Profile Name: config.illegalItemPlaceActionProfileName ?? "world_illegal_item_place"
         checkProfileKey = "worldIllegalItemPlace";
         violationDetails = {
             itemTypeId: itemId,
             action: "place",
-            // Safely access block location properties using optional chaining and nullish coalescing
             blockLocationX: eventData.block?.location?.x?.toString() ?? 'N/A',
             blockLocationY: eventData.block?.location?.y?.toString() ?? 'N/A',
             blockLocationZ: eventData.block?.location?.z?.toString() ?? 'N/A'
         };
     } else if (actionType === "use" && bannedItemsForUse.includes(itemId)) {
         isBanned = true;
-        // Action Profile Name: config.illegalItemUseActionProfileName ?? "world_illegal_item_use"
         checkProfileKey = "worldIllegalItemUse";
         violationDetails = {
             itemTypeId: itemId,
             action: "use",
-            // eventData.source might be the player or another entity if item use can be indirect.
             sourceTypeId: eventData.source?.typeId ?? 'unknown'
         };
     }
 
     if (isBanned) {
-        eventData.cancel = true; // Crucial: cancel the event immediately to prevent illegal action.
+        eventData.cancel = true;
         await actionManager.executeCheckAction(player, checkProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(
@@ -97,5 +85,4 @@ export async function checkIllegalItems(
             watchedPrefix, dependencies
         );
     }
-    // This check doesn't modify pData directly.
 }

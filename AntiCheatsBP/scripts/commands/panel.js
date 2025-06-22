@@ -4,20 +4,17 @@
  * Also aliased as !ui.
  * @version 1.0.2
  */
-import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
-// getString imports removed. uiManager is accessed via dependencies.
-
+import { permissionLevels } from '../core/rankManager.js';
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: "panel",
     syntax: "!panel",
-    description: "help.descriptionOverride.panel", // Key, localization handled by help system
-    permissionLevel: permissionLevels.normal, // Statically set permission level
+    description: "help.descriptionOverride.panel",
+    permissionLevel: permissionLevels.normal,
     enabled: true,
 };
-
 /**
  * Executes the panel command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
@@ -25,20 +22,16 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { uiManager, playerDataManager, config, logManager, playerUtils } = dependencies; // getString removed
-    // permissionLevels is now imported and set statically in definition.
-    // description is static.
+    const { uiManager, playerDataManager, config, logManager, playerUtils } = dependencies;
 
     try {
         if (uiManager && typeof uiManager.showAdminPanelMain === 'function') {
-            // Call showAdminPanelMain with all required arguments from dependencies
             await uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies);
 
             if (logManager?.addLog) {
                 logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_panel_ui', targetName: player.nameTag, details: 'Player opened main panel via command' }, dependencies);
             }
         } else {
-            // "command.panel.error.uiManagerUnavailable" -> "§cError: The UI Panel manager is currently unavailable."
             const errorMessage = "§cError: The UI Panel manager is currently unavailable.";
             if (playerUtils && typeof playerUtils.warnPlayer === 'function') {
                 playerUtils.warnPlayer(player, errorMessage);
@@ -52,7 +45,6 @@ export async function execute(player, _args, dependencies) {
         }
     } catch (error) {
         console.error(`[PanelCommand] Error executing panel command for ${player.nameTag}: ${error.stack || error}`);
-        // "common.error.generic" -> "§cAn unexpected error occurred." (Using as base for generic command error)
         player.sendMessage("§cAn unexpected error occurred while executing this command.");
         if(logManager?.addLog){
             logManager.addLog({actionType: 'error', details: `[PanelCommand] Panel command error for ${player.nameTag}: ${error.stack || error}`}, dependencies);

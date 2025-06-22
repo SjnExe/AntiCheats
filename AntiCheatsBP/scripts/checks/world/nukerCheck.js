@@ -4,12 +4,10 @@
  * Relies on `pData.blockBreakEvents` (an array of timestamps) being populated by block break event handlers.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks for Nuker-like behavior by analyzing the rate of block breaking.
  * It filters `pData.blockBreakEvents` to a configured time window and flags if the count exceeds a threshold.
@@ -48,14 +46,14 @@ export async function checkNuker(
 
     const brokenBlocksInWindow = pData.blockBreakEvents.length;
 
-    if (pData.isWatched && brokenBlocksInWindow > 0) { // playerUtils.debugLog is implicitly available via dependencies
+    if (pData.isWatched && brokenBlocksInWindow > 0) {
         playerUtils.debugLog(`[NukerCheck] Processing for ${player.nameTag}. Broke ${brokenBlocksInWindow} blocks in last ${checkIntervalMs}ms.`, watchedPrefix, dependencies);
     }
 
     const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4;
 
     if (brokenBlocksInWindow > maxBreaks) {
-        if (pData.isWatched) { // playerUtils.debugLog is implicitly available via dependencies
+        if (pData.isWatched) {
             const eventSummary = pData.blockBreakEvents.slice(-5).map(ts => now - ts).join(', ');
             playerUtils.debugLog(`[NukerCheck] ${player.nameTag}: Flagging. EventsInWindow: ${brokenBlocksInWindow}, Threshold: ${maxBreaks}, TimeWindow: ${checkIntervalMs}ms. Recent Event Ages (ms from now): [${eventSummary}]`, player.nameTag, dependencies);
         }
@@ -63,11 +61,9 @@ export async function checkNuker(
             blocksBroken: brokenBlocksInWindow.toString(),
             checkWindowMs: checkIntervalMs.toString(),
             threshold: maxBreaks.toString(),
-            // lastBrokenBlockType: pData.lastBrokenBlockType ?? "N/A"
         };
 
         const nukerActionProfile = config.nukerActionProfileName ?? "worldNuker";
-        // Pass the main 'dependencies' object to executeCheckAction
         await actionManager.executeCheckAction(player, nukerActionProfile, violationDetails, dependencies);
 
         pData.blockBreakEvents = [];

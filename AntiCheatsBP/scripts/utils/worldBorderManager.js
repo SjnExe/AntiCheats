@@ -6,32 +6,30 @@
 import * as mc from '@minecraft/server';
 
 const worldBorderDynamicPropertyPrefix = "anticheat:worldborder_";
-
 /**
  * @typedef {object} WorldBorderSettings
  * @property {"square" | "circle"} shape - The shape of the border.
  * @property {number} centerX
  * @property {number} centerZ
- * @property {number} [halfSize] // Optional: For square borders, must be positive if present.
- * @property {number} [radius]   // Optional: For circular borders, must be positive if present.
+ * @property {number} [halfSize]
+ * @property {number} [radius]
  * @property {boolean} enabled
  * @property {string} dimensionId - The dimension these settings apply to.
  * @property {boolean} [enableDamage]
- * @property {number} [damageAmount] - Optional: Damage per interval.
- * @property {number} [damageIntervalTicks] - Optional: Interval in ticks for damage.
- * @property {number} [teleportAfterNumDamageEvents] - Optional: Teleport after this many damage events.
- * @property {boolean} [isResizing] - Optional: True if a resize operation is currently in progress.
- * @property {number} [originalSize] - Optional: The halfSize or radius at the start of the resize.
- * @property {number} [targetSize] - Optional: The target halfSize or radius for the resize.
- * @property {number} [resizeStartTimeMs] - Optional: Timestamp (ms) when the resize operation began.
- * @property {number} [resizeDurationMs] - Optional: Total duration (ms) for the resize operation.
- * @property {boolean} [isPaused] - Optional: True if an ongoing resize is currently paused.
- * @property {number} [resizePausedTimeMs] - Optional: Total accumulated time (ms) the resize has been paused.
- * @property {number} [resizeLastPauseStartTimeMs] - Optional: Timestamp (ms) when the current pause period began.
- * @property {string} [particleNameOverride] - Optional: Specific particle name to use for this dimension's border visuals, overriding global default.
- * @property {"linear" | "easeOutQuad" | "easeInOutQuad"} [resizeInterpolationType] - Optional: The type of interpolation to use for gradual resizing. Defaults to "linear".
+ * @property {number} [damageAmount]
+ * @property {number} [damageIntervalTicks]
+ * @property {number} [teleportAfterNumDamageEvents]
+ * @property {boolean} [isResizing]
+ * @property {number} [originalSize]
+ * @property {number} [targetSize]
+ * @property {number} [resizeStartTimeMs]
+ * @property {number} [resizeDurationMs]
+ * @property {boolean} [isPaused]
+ * @property {number} [resizePausedTimeMs]
+ * @property {number} [resizeLastPauseStartTimeMs]
+ * @property {string} [particleNameOverride]
+ * @property {"linear" | "easeOutQuad" | "easeInOutQuad"} [resizeInterpolationType]
  */
-
 /**
  * Retrieves the world border settings for a given dimension.
  * @param {string} dimensionId - The ID of the dimension (e.g., "minecraft:overworld").
@@ -50,14 +48,12 @@ export function getBorderSettings(dimensionId, dependencies) {
         if (typeof settingsJson === 'string') {
             const settings = JSON.parse(settingsJson);
 
-            // Basic validation for common properties
             if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
                 typeof settings.enabled !== 'boolean' || settings.dimensionId !== dimensionId) {
                 playerUtils.debugLog(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}. Settings: ${JSON.stringify(settings)}`, dependencies, "System");
                 return null;
             }
 
-            // Shape-specific validation
             if (settings.shape === "square") {
                 if (typeof settings.halfSize !== 'number' || settings.halfSize <= 0) {
                     playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in ${dimensionId}. Value: ${settings.halfSize}`, dependencies, "System");
@@ -73,10 +69,6 @@ export function getBorderSettings(dimensionId, dependencies) {
                 return null;
             }
 
-            // Damage and resize properties are optional and will be handled by the caller if not present
-            // No specific validation for resize fields here, as they are managed by commands and the tick loop
-
-            // Default resizeInterpolationType if isResizing and it's missing
             if (settings.isResizing && settings.resizeInterpolationType === undefined) {
                 settings.resizeInterpolationType = "linear";
             }
@@ -88,7 +80,6 @@ export function getBorderSettings(dimensionId, dependencies) {
     }
     return null;
 }
-
 /**
  * Saves or updates the world border settings for a given dimension.
  * @param {string} dimensionId - The ID of the dimension.
@@ -107,31 +98,29 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
     const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace("minecraft:", "");
     const fullSettings = {
         ...settingsToSave,
-        dimensionId: dimensionId // Ensure dimensionId is part of the stored object
+        dimensionId: dimensionId
     };
 
-    // Validate and clean shape-specific properties
     if (fullSettings.shape === "square") {
         if (typeof fullSettings.halfSize !== 'number' || fullSettings.halfSize <= 0) {
             playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Invalid 'halfSize' for square shape. Value: ${fullSettings.halfSize}`, dependencies, "System");
             return false;
         }
-        fullSettings.radius = undefined; // Ensure radius is explicitly not part of square settings
+        fullSettings.radius = undefined;
     } else if (fullSettings.shape === "circle") {
         if (typeof fullSettings.radius !== 'number' || fullSettings.radius <= 0) {
             playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Invalid or non-positive 'radius' for circle shape. Value: ${fullSettings.radius}`, dependencies, "System");
             return false;
         }
-        fullSettings.halfSize = undefined; // Ensure halfSize is explicitly not part of circle settings
-    } else if (fullSettings.shape) { // Shape exists but is not 'square' or 'circle'
+        fullSettings.halfSize = undefined;
+    } else if (fullSettings.shape) {
         playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Unknown shape '${fullSettings.shape}' provided.`, dependencies, "System");
         return false;
-    } else { // Shape is missing
+    } else {
         playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Shape is required.", dependencies, "System");
         return false;
     }
 
-    // Ensure resize fields are either all present or all absent (or handle partial cases if necessary)
     const resizeFields = ['isResizing', 'originalSize', 'targetSize', 'resizeStartTimeMs', 'resizeDurationMs'];
     const hasSomeResizeFields = resizeFields.some(field => fullSettings[field] !== undefined);
     const hasAllResizeFieldsIfResizing = fullSettings.isResizing ?
@@ -139,57 +128,45 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
          typeof fullSettings.targetSize === 'number' &&
          typeof fullSettings.resizeStartTimeMs === 'number' &&
          typeof fullSettings.resizeDurationMs === 'number' && fullSettings.resizeDurationMs > 0)
-        : true; // If not resizing, other fields don't strictly need to be there or can be cleaned up
+        : true;
 
     if (hasSomeResizeFields && !hasAllResizeFieldsIfResizing && fullSettings.isResizing) {
         playerUtils.debugLog("[WorldBorderManager] saveBorderSettings: Incomplete or invalid resize operation data. All resize fields must be valid if isResizing is true.", dependencies, "System");
-        // Optionally, clean up partial resize fields if isResizing is false
-        // For now, we'll rely on the command layer to set these correctly or clear them.
         return false;
     }
 
-    // If not resizing, ensure resize fields are cleaned up (set to undefined)
     if (!fullSettings.isResizing) {
-        fullSettings.isResizing = undefined; // or false, but undefined is cleaner for JSON
+        fullSettings.isResizing = undefined;
         fullSettings.originalSize = undefined;
         fullSettings.targetSize = undefined;
         fullSettings.resizeStartTimeMs = undefined;
         fullSettings.resizeDurationMs = undefined;
-        // Also clear all pause-related fields if not resizing
         fullSettings.isPaused = undefined;
         fullSettings.resizePausedTimeMs = undefined;
         fullSettings.resizeLastPauseStartTimeMs = undefined;
     } else {
-        // If resizing, but not paused, ensure resizeLastPauseStartTimeMs is cleared.
-        // resizePausedTimeMs should persist as it's an accumulator.
         if (!fullSettings.isPaused) {
             fullSettings.resizeLastPauseStartTimeMs = undefined;
         }
-        // If isPaused is true, resizeLastPauseStartTimeMs should have a value.
-        // If isPaused is explicitly set to false, resizeLastPauseStartTimeMs is cleared.
-        // resizePausedTimeMs accumulates and is only cleared when isResizing becomes false.
 
-        // Validate or default resizeInterpolationType if resizing
         if (fullSettings.isResizing) {
             const validInterpolationTypes = ["linear", "easeOutQuad", "easeInOutQuad"];
             if (!fullSettings.resizeInterpolationType || !validInterpolationTypes.includes(fullSettings.resizeInterpolationType)) {
-                fullSettings.resizeInterpolationType = "linear"; // Default to linear
+                fullSettings.resizeInterpolationType = "linear";
             }
         } else {
-            fullSettings.resizeInterpolationType = undefined; // Clear if not resizing
+            fullSettings.resizeInterpolationType = undefined;
         }
     }
 
-    // Handle particleNameOverride
     if (typeof settingsToSave.particleNameOverride === 'string') {
         const particleOverride = settingsToSave.particleNameOverride.trim();
         if (particleOverride === "" || particleOverride.toLowerCase() === "reset" || particleOverride.toLowerCase() === "default") {
-            fullSettings.particleNameOverride = undefined; // Clear override
+            fullSettings.particleNameOverride = undefined;
         } else {
-            fullSettings.particleNameOverride = particleOverride; // Set override
+            fullSettings.particleNameOverride = particleOverride;
         }
     }
-    // If settingsToSave.particleNameOverride is undefined, fullSettings.particleNameOverride will retain its current value from ...settingsToSave or be undefined.
 
     try {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));
@@ -201,8 +178,6 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
         return false;
     }
 }
-
-// --- Helper functions moved from main.js ---
 function easeOutQuad(t) {
     return t * (2 - t);
 }
@@ -216,16 +191,15 @@ function mapRange(value, inMin, inMax, outMin, outMax) {
 }
 
 function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) {
-    const { playerUtils } = dependencies; // For potential debug logging
+    const { playerUtils } = dependencies;
     const minDimensionHeight = dimension.heightRange.min;
-    const maxDimensionHeight = dimension.heightRange.max - 2; // Leave space for player height
+    const maxDimensionHeight = dimension.heightRange.max - 2;
     let currentY = Math.floor(initialY);
     currentY = Math.max(minDimensionHeight, Math.min(currentY, maxDimensionHeight));
 
     const maxSearchDepthDown = 10;
     const maxSearchDepthUp = 5;
 
-    // Search down first
     for (let i = 0; i < maxSearchDepthDown; i++) {
         const checkY = currentY - i;
         if (checkY < minDimensionHeight) break;
@@ -234,17 +208,15 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) 
             const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
             if (blockFeet && blockHead && blockFeet.isAir && blockHead.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
-                if (blockBelowFeet && blockBelowFeet.isSolid) return checkY; // Found solid ground under air
-                // If no solid ground but it's air, it's still a possible (though less ideal) spot
+                if (blockBelowFeet && blockBelowFeet.isSolid) return checkY;
                 else if (blockFeet.isAir && blockHead.isAir) return checkY;
             }
-        } catch (e) { /* Errors (e.g. unloaded chunk) mean this spot is not safe */ }
+        } catch (e) {}
     }
 
-    // If searching down failed, search up from original Y (or slightly above if initialY was unsafe)
-    let searchUpStartY = Math.floor(initialY); // Start from original Y for upward search
-    searchUpStartY = Math.max(minDimensionHeight, Math.min(searchUpStartY, maxDimensionHeight)); // Clamp
-    for (let i = 1; i < maxSearchDepthUp; i++) { // Start 1 block above initial Y
+    let searchUpStartY = Math.floor(initialY);
+    searchUpStartY = Math.max(minDimensionHeight, Math.min(searchUpStartY, maxDimensionHeight));
+    for (let i = 1; i < maxSearchDepthUp; i++) {
         const checkY = searchUpStartY + i;
         if (checkY > maxDimensionHeight) break;
         try {
@@ -255,17 +227,11 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) 
                 if (blockBelowFeet && blockBelowFeet.isSolid) return checkY;
                  else if (blockFeet.isAir && blockHead.isAir) return checkY;
             }
-        } catch(e) { /* Errors mean this spot is not safe */ }
+        } catch(e) {}
     }
 
-    // Fallback if no clearly safe spot is found - return original initialY, hoping it's somewhat valid.
-    // Could also return a default like dimension.heightRange.min + some offset if truly stuck.
-    // playerUtils.debugLog(`[WorldBorderManager] findSafeTeleportY: No ideal safe spot found for X:${targetX} Z:${targetZ} around Y:${initialY}. Returning original Y.`, dependencies, "System");
     return Math.floor(initialY);
 }
-
-
-// --- New exported functions ---
 
 export function processWorldBorderResizing(dependencies) {
     const { config, playerUtils, logManager, mc } = dependencies;
@@ -337,7 +303,7 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
     }
 
     const playerPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
-    if (playerPermLevel <= permissionLevels.admin) { // Assuming 'admin' is a key in permissionLevels
+    if (playerPermLevel <= permissionLevels.admin) {
         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
             pData.ticksOutsideBorder = 0; pData.borderDamageApplications = 0; pData.isDirtyForSave = true;
         }
@@ -370,14 +336,12 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
         if (borderSettings.shape === "square") currentEffectiveHalfSize = interpolatedSize;
         else if (borderSettings.shape === "circle") currentEffectiveRadius = interpolatedSize;
     } else if (borderSettings.isResizing) {
-        // If resizing but parameters are incomplete, use target size or stored size as fallback
         if (typeof borderSettings.targetSize === 'number') {
             if (borderSettings.shape === "square") currentEffectiveHalfSize = borderSettings.targetSize;
             else if (borderSettings.shape === "circle") currentEffectiveRadius = borderSettings.targetSize;
         }
         if(pData.isWatched) playerUtils.debugLog(`[WorldBorderManager] In-progress resize for dim ${player.dimension.id} has incomplete parameters in player loop. Using targetSize or stored size.`, dependencies, player.nameTag);
     }
-
 
     if (borderSettings.shape === "square" && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
         const { centerX, centerZ } = borderSettings;
@@ -394,7 +358,7 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
         const distSq = dx * dx + dz * dz; const radiusSq = currentEffectiveRadius * currentEffectiveRadius;
         if (distSq > radiusSq) {
             isPlayerOutside = true; const currentDist = Math.sqrt(distSq); const teleportOffset = 0.5;
-            if (currentDist === 0 || currentEffectiveRadius <= teleportOffset) { // Avoid division by zero or negative scaling
+            if (currentDist === 0 || currentEffectiveRadius <= teleportOffset) {
                 targetX = centerX + (currentEffectiveRadius > teleportOffset ? currentEffectiveRadius - teleportOffset : 0); targetZ = centerZ;
             } else {
                 const scale = (currentEffectiveRadius - teleportOffset) / currentDist;
@@ -450,10 +414,8 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
         }
     }
 
-    // Particle visualization
     if (config.worldBorderEnableVisuals) {
-        // borderSettings was already fetched
-        if (borderSettings && borderSettings.enabled) { // Ensure settings are valid and border is enabled
+        if (borderSettings && borderSettings.enabled) {
             if (currentTick - (pData.lastBorderVisualTick || 0) >= config.worldBorderVisualUpdateIntervalTicks) {
                 pData.lastBorderVisualTick = currentTick;
                 const playerLoc = player.location;
@@ -483,10 +445,8 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
                 const segmentLength = config.worldBorderParticleSegmentLength;
                 const yBase = Math.floor(playerLoc.y);
 
-                // Use currentEffectiveHalfSize/Radius for visuals if resizing, otherwise use stored size
                 const displayHalfSize = (borderSettings.isResizing && typeof currentEffectiveHalfSize === 'number') ? currentEffectiveHalfSize : borderSettings.halfSize;
                 const displayRadius = (borderSettings.isResizing && typeof currentEffectiveRadius === 'number') ? currentEffectiveRadius : borderSettings.radius;
-
 
                 if (borderSettings.shape === "square" && typeof displayHalfSize === 'number' && displayHalfSize > 0) {
                     const { centerX, centerZ } = borderSettings;
@@ -528,7 +488,6 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
         }
     }
 }
-
 /**
  * Clears the world border settings for a given dimension.
  * This effectively disables the border by removing its configuration.
@@ -544,7 +503,7 @@ export function clearBorderSettings(dimensionId, dependencies) {
     }
     const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace("minecraft:", "");
     try {
-        mc.world.setDynamicProperty(propertyKey, undefined); // Setting to undefined removes the property
+        mc.world.setDynamicProperty(propertyKey, undefined);
         playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, "System", dependencies);
         return true;
     } catch (error) {

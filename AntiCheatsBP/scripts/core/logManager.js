@@ -6,18 +6,14 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-// playerUtils.debugLog will be accessed via dependencies.
-
 /**
  * @const {string} logPropertyKeyName - The dynamic property key used for storing action logs.
  */
 const logPropertyKeyName = "anticheat:action_logs_v1";
-
 /**
  * @const {number} maxLogEntriesCount - Maximum number of log entries to keep in memory and persisted storage.
  */
 const maxLogEntriesCount = 200;
-
 /**
  * @typedef {object} ActionLogEntry
  * @property {number} timestamp - Unix timestamp (ms) of when the action occurred.
@@ -28,19 +24,16 @@ const maxLogEntriesCount = 200;
  * @property {string} [reason] - Optional: Reason for the action.
  * @property {string} [details] - Optional: Additional details about the log entry.
  */
-
 /**
  * @type {ActionLogEntry[]}
  * In-memory cache for log entries. Initialized on script load.
  */
 let logsInMemory = [];
-
 /**
  * @type {boolean}
  * Flag indicating if the in-memory logs have changed and need to be persisted.
  */
 let logsAreDirty = false;
-
 /**
  * Loads logs from the dynamic property into the in-memory cache.
  * Must be called once during script initialization from a context that can provide dependencies.
@@ -64,12 +57,8 @@ export function initializeLogCache(dependencies) {
         playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error}`, dependencies, "System");
         console.error(`LogManager: Error initializing log cache: ${error.stack || error}`);
     }
-    logsInMemory = []; // Ensure logsInMemory is an array even if loading fails
+    logsInMemory = [];
 }
-
-// Removed self-invocation; initialization must be called from main.js with dependencies.
-
-
 /**
  * Persists the current in-memory log cache to dynamic properties if `logsAreDirty` is true,
  * or if the dynamic property doesn't exist yet (to ensure initial creation).
@@ -80,13 +69,11 @@ export function initializeLogCache(dependencies) {
 export function persistLogCacheToDisk(dependencies) {
     const { playerUtils } = dependencies;
     if (!logsAreDirty && mc.world.getDynamicProperty(logPropertyKeyName) !== undefined) {
-        // No changes in memory, and logs are already on disk (or were intentionally cleared and saved as empty).
-        // Avoids unnecessary writes if already persisted and not dirty.
         return true;
     }
     try {
         mc.world.setDynamicProperty(logPropertyKeyName, JSON.stringify(logsInMemory));
-        logsAreDirty = false; // Reset dirty flag after successful save
+        logsAreDirty = false;
         playerUtils.debugLog(`LogManager: Successfully persisted ${logsInMemory.length} logs to dynamic property.`, dependencies, "System");
         return true;
     } catch (error) {
@@ -95,7 +82,6 @@ export function persistLogCacheToDisk(dependencies) {
         return false;
     }
 }
-
 /**
  * Adds a new log entry to the in-memory cache and marks logs as dirty for saving.
  * Manages log rotation to not exceed `maxLogEntriesCount`.
@@ -112,17 +98,13 @@ export function addLog(logEntry, dependencies) {
         return;
     }
 
-    logsInMemory.unshift(logEntry); // Add new log to the beginning (newest first)
+    logsInMemory.unshift(logEntry);
 
     if (logsInMemory.length > maxLogEntriesCount) {
-        logsInMemory.length = maxLogEntriesCount; // Truncate array to max size (keeps newest)
+        logsInMemory.length = maxLogEntriesCount;
     }
     logsAreDirty = true;
-    // Note: `addLog` only marks logs as dirty. Actual persistence to disk
-    // should be managed externally by calling `persistLogCacheToDisk` periodically
-    // or during specific game events (e.g., world save, player leave).
 }
-
 /**
  * Retrieves logs from the in-memory cache. Logs are returned newest first.
  * @param {number} [count] - Optional: The number of latest log entries to retrieve.
@@ -133,19 +115,18 @@ export function getLogs(count) {
     if (typeof count === 'number' && count > 0 && count < logsInMemory.length) {
         return logsInMemory.slice(0, count);
     }
-    return [...logsInMemory]; // Return a copy to prevent external modification of the cache
+    return [...logsInMemory];
 }
-
 /**
  * Clears all action logs from memory and attempts to clear from persistent storage.
  * Primarily intended for development and testing purposes.
  * @param {object} dependencies - The standard dependencies object.
  * @returns {boolean} True if clearing was successful, false otherwise.
  */
-export function clearAllLogs_DEV_ONLY(dependencies) { // Renamed to reflect its purpose
+export function clearAllLogs_DEV_ONLY(dependencies) {
     const { playerUtils } = dependencies;
     logsInMemory = [];
-    logsAreDirty = true; // Mark as dirty to ensure the empty array is persisted
+    logsAreDirty = true;
     playerUtils.debugLog("LogManager: All action logs cleared from memory (DEV_ONLY). Attempting to persist.", dependencies, "System");
     return persistLogCacheToDisk(dependencies);
 }

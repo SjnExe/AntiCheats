@@ -1,4 +1,3 @@
-// AntiCheatsBP/scripts/core/action_profiles.js
 /**
  * @file Defines action profiles for various cheat/behavior detections.
  * These profiles determine the consequences (flagging, notifications, logging, etc.)

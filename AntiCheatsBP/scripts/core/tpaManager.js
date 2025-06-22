@@ -2,19 +2,7 @@
  * @file Manages TPA (teleport request) operations, including creating, tracking, and processing requests.
  * @version 1.0.1
  */
-
-// IMPORTANT NOTE ON PLAYER IDENTIFIERS:
-// This module currently uses `player.name` (assumed to be the unique gamertag/username)
-// as the primary identifier for players in maps and request objects (e.g., `requesterName`, `targetName`).
-// In standard @minecraft/server, `player.id` is the persistent unique identifier, while `player.nameTag`
-// is the display name that can change. If `player.name` is not guaranteed to be unique and persistent
-// in the environment this script runs, it should be refactored to use `player.id` for all internal
-// tracking and lookups, reserving `player.nameTag` for display purposes only.
-// This change would affect `lastPlayerRequestTimestamp`, `playerTpaStatuses`, and parts of `activeRequests`.
-
 import { world } from '@minecraft/server';
-// configModule, getString, debugLog will be replaced by dependencies.
-
 /**
  * @typedef {import('../types.js').TpaRequest} TpaRequest
  * @typedef {import('../types.js').PlayerTpaStatus} PlayerTpaStatus
@@ -26,7 +14,6 @@ import { world } from '@minecraft/server';
 const activeRequests = new Map();
 const lastPlayerRequestTimestamp = new Map();
 const playerTpaStatuses = new Map();
-
 /**
  * Generates a new unique ID for a TPA request.
  * @returns {string} A UUID string.
@@ -70,18 +57,17 @@ export function addRequest(requester, target, type, dependencies) {
     activeRequests.set(requestId, request);
     lastPlayerRequestTimestamp.set(requester.name, now);
     playerUtils.debugLog(`[TpaManager] Added request ${requestId}: ${requester.name} -> ${target.name}, type: ${type}`, dependencies, requester.name);
-    if (logManager) { // logManager might not be on dependencies if called from an unrefactored context
+    if (logManager) {
         logManager.addLog({actionType: 'tpa_request_sent', targetName: target.nameTag, adminName: requester.nameTag, details: `Type: ${type}, ID: ${requestId}`}, dependencies);
     }
     return request;
 }
-
 /**
  * Finds an active TPA request.
  * - If `playerBname` is provided, it looks for a request specifically between `playerAname` and `playerBname` (in either direction).
  * - If `playerBname` is null or undefined, it looks for *any* request where `playerAname` is either the requester or the target.
- * @param {string} playerAname - The name of the first player. (See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file)
- * @param {string} [playerBname] - Optional. The name of the second player. (See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file)
+ * @param {string} playerAname - The name of the first player.
+ * @param {string} [playerBname] - Optional. The name of the second player.
  * @returns {TpaRequest | undefined} The found request, or undefined if no matching request is found.
  */
 export function findRequest(playerAname, playerBname) {
@@ -92,12 +78,10 @@ export function findRequest(playerAname, playerBname) {
         const isTargetB = playerBname ? request.targetName === playerBname : false;
 
         if (playerBname) {
-            // Looking for a specific pair: (A to B) or (B to A)
             if ((isRequesterA && isTargetB) || (isRequesterB && isTargetA)) {
                 return request;
             }
         } else {
-            // Looking for any request involving playerA
             if (isRequesterA || isTargetA) {
                 return request;
             }
@@ -105,10 +89,9 @@ export function findRequest(playerAname, playerBname) {
     }
     return undefined;
 }
-
 /**
  * Finds all active TPA requests involving a specific player (either as requester or target).
- * @param {string} playerName - The name of the player. (See IMPORTANT NOTE ON PLAYER IDENTIFIERS at the top of the file)
+ * @param {string} playerName - The name of the player.
  * @returns {TpaRequest[]} An array of matching TPA requests.
  */
 export function findRequestsForPlayer(playerName) {
@@ -121,7 +104,7 @@ export function findRequestsForPlayer(playerName) {
     return results;
 }
 
-export function removeRequest(requestId, dependencies) { // Added dependencies for potential logging
+export function removeRequest(requestId, dependencies) {
     if (activeRequests.has(requestId)) {
         activeRequests.delete(requestId);
         if (dependencies?.playerUtils) {
@@ -156,7 +139,7 @@ export function acceptRequest(requestId, dependencies) {
         }
         playerUtils.debugLog(`[TpaManager] Player ${offlinePlayerName} (or target) not found for accepted request ${requestId}. Cancelling.`, dependencies, offlinePlayerName);
         request.status = 'cancelled';
-        removeRequest(requestId, dependencies); // Pass dependencies
+        removeRequest(requestId, dependencies);
         return false;
     }
 
@@ -173,20 +156,20 @@ export function acceptRequest(requestId, dependencies) {
         targetPlayer.sendMessage(getString("tpa.manager.target.acceptedByRequester", { requesterPlayerName: requesterPlayer.nameTag, warmupMessage: warmupMsgString }));
         requesterPlayer.sendMessage(getString("tpa.manager.requester.acceptedHere", { targetPlayerName: targetPlayer.nameTag, warmupSeconds: config.TPATeleportWarmupSeconds }));
     }
-    if(logManager) { // logManager might not be on dependencies if called from an unrefactored context
+    if(logManager) {
         logManager.addLog({actionType: 'tpa_request_accepted', targetName: targetPlayer.nameTag, adminName: requesterPlayer.nameTag, details: `Type: ${request.requestType}, ID: ${requestId}`}, dependencies);
     }
     playerUtils.debugLog(`[TpaManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`, dependencies, request.targetName);
     return true;
 }
 
-export function executeTeleport(requestId, dependencies) { // Added dependencies
+export function executeTeleport(requestId, dependencies) {
     const { playerUtils, getString, logManager } = dependencies;
     const request = activeRequests.get(requestId);
     if (!request) { return; }
     if (request.status !== 'pending_teleport_warmup') {
         playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Request ${requestId} is not in 'pending_teleport_warmup' state (current: ${request.status}). Aborting teleport.`, dependencies, request.requesterName);
-        if (request.status === 'completed' || request.status === 'cancelled') { removeRequest(requestId, dependencies); } // Pass dependencies
+        if (request.status === 'completed' || request.status === 'cancelled') { removeRequest(requestId, dependencies); }
         return;
     }
 
@@ -200,7 +183,7 @@ export function executeTeleport(requestId, dependencies) { // Added dependencies
         if (onlinePlayer) { onlinePlayer.sendMessage(message); }
         playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Player ${offlinePlayerName} (or target) not found for request ${requestId}. ${message}`, dependencies, offlinePlayerName);
         request.status = 'cancelled';
-        removeRequest(requestId, dependencies); // Pass dependencies
+        removeRequest(requestId, dependencies);
         return;
     }
 
@@ -245,14 +228,14 @@ export function executeTeleport(requestId, dependencies) { // Added dependencies
             playerUtils.debugLog(`[TpaManager] ExecuteTeleport: Failed to notify players after teleport error: ${notifyError.stack || notifyError}`, dependencies, request.requesterName);
         }
     } finally {
-        removeRequest(requestId, dependencies); // Pass dependencies
+        removeRequest(requestId, dependencies);
         if (logManager) {
             logManager.addLog({actionType: 'tpa_teleport_finalized', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}`}, dependencies);
         }
     }
 }
 
-export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog, dependencies) { // Added dependencies
+export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog, dependencies) {
     const { playerUtils, logManager } = dependencies;
     const request = activeRequests.get(requestId);
     if (!request || request.status === 'cancelled' || request.status === 'completed') {
@@ -267,10 +250,10 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
     if (logManager) {
         logManager.addLog({actionType: 'tpa_teleport_cancelled', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Reason: ${reasonMessageLog}, ID: ${requestId}`}, dependencies);
     }
-    removeRequest(requestId, dependencies); // Pass dependencies
+    removeRequest(requestId, dependencies);
 }
 
-export function declineRequest(requestId, dependencies) { // Added dependencies
+export function declineRequest(requestId, dependencies) {
     const { playerUtils, getString, logManager } = dependencies;
     const request = activeRequests.get(requestId);
     if (!request) { return; }
@@ -278,7 +261,6 @@ export function declineRequest(requestId, dependencies) { // Added dependencies
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
 
-    // It's possible players logged off, use nameTag if player object exists, otherwise fallback to stored name.
     const targetDisplayName = targetPlayer ? targetPlayer.nameTag : request.targetName;
     const requesterDisplayName = requesterPlayer ? requesterPlayer.nameTag : request.requesterName;
 
@@ -303,10 +285,10 @@ export function declineRequest(requestId, dependencies) { // Added dependencies
     if(logManager) {
         logManager.addLog({actionType: 'tpa_request_declined', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}, Status: ${request.status}`}, dependencies);
     }
-    removeRequest(requestId, dependencies); // Pass dependencies
+    removeRequest(requestId, dependencies);
 }
 
-export function clearExpiredRequests(dependencies) { // Added dependencies
+export function clearExpiredRequests(dependencies) {
     const { playerUtils, getString, logManager } = dependencies;
     const now = Date.now();
     const requestIdsToExpire = [];
@@ -336,20 +318,19 @@ export function clearExpiredRequests(dependencies) { // Added dependencies
         if (logManager) {
             logManager.addLog({actionType: 'tpa_request_expired', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}`}, dependencies);
         }
-        removeRequest(request.requestId, dependencies); // Pass dependencies
+        removeRequest(request.requestId, dependencies);
     }
 }
 
-export function getPlayerTpaStatus(playerName, dependencies) { // Added dependencies for potential future use (logging)
-    const { playerUtils } = dependencies; // playerUtils might be used for logging if needed
+export function getPlayerTpaStatus(playerName, dependencies) {
+    const { playerUtils } = dependencies;
     if (!playerTpaStatuses.has(playerName)) {
-        // playerUtils.debugLog(`[TpaManager] No TPA status for ${playerName}, returning default.`, dependencies, playerName); // Optional: too verbose?
         return { playerName, acceptsTpaRequests: true, lastTpaToggleTimestamp: 0 };
     }
     return playerTpaStatuses.get(playerName);
 }
 
-export function setPlayerTpaStatus(playerName, accepts, dependencies) { // Added dependencies
+export function setPlayerTpaStatus(playerName, accepts, dependencies) {
     const { playerUtils, logManager } = dependencies;
     const status = {
         playerName,
@@ -363,7 +344,7 @@ export function setPlayerTpaStatus(playerName, accepts, dependencies) { // Added
     }
 }
 
-export function getRequestsInWarmup() { // No dependencies needed as it operates on local state
+export function getRequestsInWarmup() {
     const warmupRequests = [];
     for (const request of activeRequests.values()) {
         if (request.status === 'pending_teleport_warmup') {

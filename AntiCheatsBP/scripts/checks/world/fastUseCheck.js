@@ -4,13 +4,11 @@
  * Relies on `pData.itemUseTimestamps` to track the last usage time for each item type.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks for overly fast item usage based on configured cooldowns for specific item types.
  * Timestamps of item usage are stored in `pData.itemUseTimestamps`.
@@ -38,8 +36,6 @@ export async function checkFastUse(
     const cooldown = config.fastUseItemCooldowns?.[itemTypeId];
 
     if (typeof cooldown !== 'number') {
-        // This log is fine as is, or could be prefixed if desired, but it's a config/setup notice.
-        // For consistency, we'll update it.
         playerUtils.debugLog(`[FastUseCheck] Item ${itemTypeId} not tracked or invalid cooldown in config for player ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
         return;
     }
@@ -56,7 +52,7 @@ export async function checkFastUse(
             cooldownMs: cooldown.toString(),
             actualTimeMs: timeSinceLastUse.toString()
         };
-        const profileName = config.fastUseActionProfileName ?? "actionFastUse"; // Ensure consistent profile naming
+        const profileName = config.fastUseActionProfileName ?? "actionFastUse";
         await actionManager.executeCheckAction(player, profileName, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;

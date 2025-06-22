@@ -6,11 +6,7 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
-// playerUtils.debugLog, getString will be accessed via dependencies.
-// processAutoModActions is imported but its direct usage might be re-evaluated if actionManager handles AutoMod triggering.
-// globalDebugLog import is removed as it's no longer used.
 import { processAutoModActions } from './automodManager.js';
-
 
 const playerData = new Map();
 
@@ -23,7 +19,6 @@ const persistedPlayerDataKeys = [
     "consecutiveOnGroundSpeedingTicks", "muteInfo", "banInfo",
     "lastCombatInteractionTime", "lastViolationDetailsMap", "automodState"
 ];
-
 /**
  * Retrieves a player's anti-cheat data.
  * @param {string} playerId - The ID of the player.
@@ -32,7 +27,6 @@ const persistedPlayerDataKeys = [
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
 }
-
 /**
  * Retrieves all player data objects currently managed.
  * @returns {IterableIterator<PlayerAntiCheatData>} An iterator for all player data values.
@@ -40,7 +34,6 @@ export function getPlayerData(playerId) {
 export function getAllPlayerDataValues() {
     return playerData.values();
 }
-
 /**
  * Saves specified player data to dynamic properties.
  * @param {mc.Player} player - The player whose data is being saved.
@@ -75,7 +68,6 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         return false;
     }
 }
-
 /**
  * Loads player data from dynamic properties.
  * @param {mc.Player} player - The player whose data is being loaded.
@@ -116,7 +108,6 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         return null;
     }
 }
-
 /**
  * Prepares and saves the full runtime player data (pData) to persistent storage.
  * This typically involves filtering for persistable keys.
@@ -140,7 +131,6 @@ export async function prepareAndSavePlayerData(player, dependencies) {
         playerUtils.debugLog(`PDM:prepSave: No runtime pData found for ${player.nameTag}. Cannot save.`, dependencies, player.nameTag);
     }
 }
-
 /**
  * Initializes and returns a new default PlayerAntiCheatData object for a player.
  * @param {mc.Player} player - The player for whom to initialize data.
@@ -246,7 +236,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastCheckFlatRotationBuildingTick: 0,
     };
 }
-
 /**
  * Ensures that a player's data is initialized, loading from persistence if available,
  * or creating default data otherwise.
@@ -286,8 +275,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         if (typeof newPData.joinTime === 'undefined') newPData.joinTime = 0;
         if (typeof newPData.lastGameMode === 'undefined') newPData.lastGameMode = player.gameMode;
         if (typeof newPData.lastDimensionId === 'undefined') newPData.lastDimensionId = player.dimension.id;
-        newPData.isDirtyForSave = false; // Reset after loading
-        // Reset session-specific fields that should not persist across sessions
+        newPData.isDirtyForSave = false;
         newPData.lastPosition = player.location;
         newPData.previousPosition = player.location;
         newPData.velocity = player.getVelocity();
@@ -323,10 +311,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.lastOnSlimeBlockTick = 0;
         newPData.lastBlindnessTicks = 0;
         newPData.previousSelectedSlotIndex = player.selectedSlotIndex;
-        newPData.lastSelectedSlotChangeTick = currentTick; // Initialize to current tick on load
+        newPData.lastSelectedSlotChangeTick = currentTick;
         newPData.isAttemptingBlockBreak = false;
         newPData.breakingBlockTypeId = null;
-        newPData.slotAtBreakAttemptStart = player.selectedSlotIndex; // Initialize to current slot
+        newPData.slotAtBreakAttemptStart = player.selectedSlotIndex;
         newPData.breakAttemptTick = 0;
         newPData.switchedToOptimalToolForBreak = false;
         newPData.optimalToolSlotForLastBreak = null;
@@ -338,11 +326,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.breakStartTickGameTime = 0;
         newPData.expectedBreakDurationTicks = 0;
         newPData.toolUsedForBreakAttempt = null;
-        newPData.lastKnownNameTag = player.nameTag; // Update to current nameTag on load
-        newPData.lastNameTagChangeTick = currentTick; // Reset to current tick on load
+        newPData.lastKnownNameTag = player.nameTag;
+        newPData.lastNameTagChangeTick = currentTick;
         newPData.recentMessages = [];
-        newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0; // Keep persisted value
-        // Reset tick counters for periodic checks
+        newPData.lastCombatInteractionTime = loadedData.lastCombatInteractionTime || 0;
         if (typeof newPData.lastCheckNameSpoofTick === 'undefined') newPData.lastCheckNameSpoofTick = 0;
         if (typeof newPData.lastCheckAntiGMCTick === 'undefined') newPData.lastCheckAntiGMCTick = 0;
         if (typeof newPData.lastCheckNetherRoofTick === 'undefined') newPData.lastCheckNetherRoofTick = 0;
@@ -365,7 +352,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
     playerData.set(player.id, newPData);
     return newPData;
 }
-
 /**
  * Removes runtime data for players who are no longer online.
  * @param {mc.Player[]} activePlayers - An array of currently active players.
@@ -386,7 +372,6 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
         }
     }
 }
-
 /**
  * Updates transient (non-persisted, per-session) player data fields.
  * This is typically called every tick for each online player.
@@ -426,7 +411,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             }
         } catch (e) {
             if (logManager && logManager.addLog) {
-                logManager.addLog('error', { // Corrected: Pass object for structured log
+                logManager.addLog('error', {
                     message: e.message,
                     player: pData.playerNameTag || player.nameTag,
                     context: 'slime_block_check'
@@ -434,7 +419,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             }
             if (playerUtils.debugLog && config.enableDebugLogging) {
                 playerUtils.debugLog(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`, dependencies, pData.playerNameTag || player.nameTag);
-            } else if (!logManager || !logManager.addLog) { // Check if logManager or addLog is missing
+            } else if (!logManager || !logManager.addLog) {
                 console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`);
             }
         }
@@ -469,7 +454,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         playerUtils.debugLog(`Transient update for ${pData.playerNameTag || player.nameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, dependencies, pData.playerNameTag || player.nameTag);
     }
 }
-
 /**
  * Adds a flag to a player's data, processes automod actions, and notifies relevant parties.
  * @param {mc.Player} player - The player to flag.
@@ -537,7 +521,6 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         playerUtils.debugLog(`addFlag: Skipping processAutoModActions for ${player.nameTag} (checkType: ${flagType}). enableAutoMod: ${autoModEnabled}, automodConfig present: ${autoModConfigPresent}.`, dependencies, player.nameTag);
     }
 }
-
 /**
  * Adds a mute to a player's data.
  * @param {mc.Player} player - The player to mute.
@@ -580,7 +563,6 @@ export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoM
     playerUtils.debugLog(logMsg, dependencies, pData.isWatched ? player.nameTag : null);
     return true;
 }
-
 /**
  * Removes a mute from a player's data.
  * @param {mc.Player} player - The player to unmute.
@@ -608,7 +590,6 @@ export function removeMute(player, dependencies) {
         return false;
     }
 }
-
 /**
  * Retrieves a player's current mute information, if any.
  * Automatically clears expired mutes.
@@ -630,7 +611,6 @@ export function getMuteInfo(player, dependencies) {
     }
     return mute;
 }
-
 /**
  * Checks if a player is currently muted.
  * @param {mc.Player} player - The player to check.
@@ -640,7 +620,6 @@ export function getMuteInfo(player, dependencies) {
 export function isMuted(player, dependencies) {
     return getMuteInfo(player, dependencies) !== null;
 }
-
 /**
  * Adds a ban to a player's data.
  * @param {mc.Player} player - The player to ban.
@@ -687,7 +666,6 @@ export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoM
     playerUtils.debugLog(logMsg, dependencies, pData.isWatched ? player.nameTag : null);
     return true;
 }
-
 /**
  * Removes a ban from a player's data.
  * @param {mc.Player} player - The player to unban.
@@ -715,7 +693,6 @@ export function removeBan(player, dependencies) {
         return false;
     }
 }
-
 /**
  * Retrieves a player's current ban information, if any.
  * Automatically clears expired bans.
@@ -737,7 +714,6 @@ export function getBanInfo(player, dependencies) {
     }
     return currentBanInfo;
 }
-
 /**
  * Checks if a player is currently banned.
  * @param {mc.Player} player - The player to check.
@@ -747,7 +723,6 @@ export function getBanInfo(player, dependencies) {
 export function isBanned(player, dependencies) {
     return getBanInfo(player, dependencies) !== null;
 }
-
 /**
  * Directly sets the runtime data for a player. Used internally or for specific scenarios like data migration.
  * @param {string} playerId - The ID of the player.
@@ -755,10 +730,9 @@ export function isBanned(player, dependencies) {
  * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {void}
  */
-export function setPlayerData(playerId, data, dependencies) { // Added dependencies
-    const { playerUtils } = dependencies; // Destructure for use
+export function setPlayerData(playerId, data, dependencies) {
+    const { playerUtils } = dependencies;
     if (!playerId || !data) {
-        // Use playerUtils.debugLog with dependencies if available, otherwise console.warn
         if (playerUtils && playerUtils.debugLog) {
             playerUtils.debugLog("PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data.", dependencies, null);
         } else {
@@ -768,7 +742,6 @@ export function setPlayerData(playerId, data, dependencies) { // Added dependenc
     }
     playerData.set(playerId, data);
 }
-
 /**
  * Saves player data to persistent storage if it has been marked as dirty.
  * Resets the isDirtyForSave flag upon successful save.
@@ -783,12 +756,11 @@ export async function saveDirtyPlayerData(player, dependencies) {
     if (pData && pData.isDirtyForSave) {
         playerUtils.debugLog(`PDM:saveDirty: Saving dirty data for ${player.nameTag}.`, dependencies, pData.isWatched ? player.nameTag : null);
         await prepareAndSavePlayerData(player, dependencies);
-        pData.isDirtyForSave = false; // Reset flag after successful save
+        pData.isDirtyForSave = false;
         return true;
     }
     return false;
 }
-
 /**
  * Clears flags and resets AutoMod state for a specific checkType for a player.
  * @param {import('@minecraft/server').Player} player The player.
@@ -808,12 +780,9 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
             pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - clearedCount);
         }
         pData.flags[checkType].count = 0;
-        // Optionally reset lastDetectionTime for the specific flag type
-        // pData.flags[checkType].lastDetectionTime = 0;
     }
 
     if (pData.automodState && pData.automodState[checkType]) {
-        // Resetting the lastActionThreshold allows AutoMod to re-evaluate from the lowest threshold again if flags re-accumulate
         pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0 };
     }
 
@@ -822,7 +791,6 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
     const playerContext = pData.isWatched ? player.nameTag : null;
     playerUtils.debugLog(`[PlayerDataManager] Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, dependencies, playerContext);
 }
-
 /**
  * Clears item use states (consumable, bow, shield) if they have expired.
  * @param {PlayerAntiCheatData} pData - The player's anti-cheat data object.

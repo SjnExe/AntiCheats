@@ -3,14 +3,12 @@
  * Implements a check to detect excessive symbol usage (non-alphanumeric, excluding spaces) in chat messages.
  * @version 1.0.1
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks a chat message for excessive symbol usage.
  * @param {import('@minecraft/server').Player} player The player who sent the message.
@@ -31,30 +29,28 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         return;
     }
 
-    let totalChars = 0; // Count of non-space characters
+    let totalChars = 0;
     let symbolChars = 0;
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
         if (char === ' ') {
-            continue; // Ignore spaces from total count and symbol count
+            continue;
         }
         totalChars++;
 
-        // A symbol is a non-alphanumeric character
         if (!char.match(/[a-zA-Z0-9]/)) {
             symbolChars++;
         }
     }
 
-    if (totalChars === 0) { // Avoid division by zero if message is all spaces or empty after filtering
+    if (totalChars === 0) {
         return;
     }
 
     const symbolPercentage = (symbolChars / totalChars) * 100;
 
     if (symbolPercentage >= config.symbolSpamPercentage) {
-        // playerUtils.debugLog will internally check config.enableDebugLogging
         playerUtils.debugLog(
             `[SymbolSpamCheck] Player ${player.nameTag} triggered symbol spam. ` +
             `Msg: "${message}", Symbols: ${symbolPercentage.toFixed(1)}%, ` +

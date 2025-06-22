@@ -4,13 +4,10 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks if a player's reported maximum render distance exceeds the configured allowed limit.
  * @param {mc.Player} player - The player to check.
@@ -19,7 +16,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidRenderDistance(player, pData, dependencies) {
-    const { config, playerUtils, logManager, actionManager } = dependencies; // getString removed
+    const { config, playerUtils, logManager, actionManager } = dependencies;
 
     if (!config.enableInvalidRenderDistanceCheck) {
         return;
@@ -45,22 +42,20 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             playerName: player.nameTag,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
-            // "check.clientInfo.renderDistance.details" -> "Reported: {reportedDistance}, Max: {maxAllowed}"
             detailsString: `Reported: ${clientRenderDistance.toString()}, Max: ${config.maxAllowedClientRenderDistance.toString()}`
         };
 
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {
             await actionManager.executeCheckAction(player, "playerInvalidRenderDistance", violationDetails, dependencies);
         } else {
-            // This case should ideally not happen if actionManager is always in dependencies
             playerUtils.debugLog("[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available in dependencies for critical logging.", null, dependencies);
-            if (logManager && typeof logManager.addLog === 'function') { // Fallback critical log
+            if (logManager && typeof logManager.addLog === 'function') {
                  logManager.addLog({
                     adminName: "System (AntiCheat)",
                     actionType: "errorMissingActionManager",
                     targetName: player.nameTag,
                     details: "executeCheckAction was not available for InvalidRenderDistance check."
-                }, dependencies); // Pass dependencies to addLog
+                }, dependencies);
             }
         }
 

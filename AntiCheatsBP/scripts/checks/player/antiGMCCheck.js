@@ -5,14 +5,10 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
-// getPlayerPermissionLevel will be accessed via dependencies.rankManager.getPlayerPermissionLevel
-// permissionLevels will be accessed via dependencies.permissionLevels
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks if a player is in Creative Mode without authorization.
  * If unauthorized Creative Mode is detected, it flags the player and can optionally
@@ -84,7 +80,7 @@ export async function checkAntiGmc(
             const actionProfileName = config.antiGmcActionProfileName ?? "playerAntiGMC";
             await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
-            if (pData.isWatched) { // playerUtils.debugLog is implicitly available
+            if (pData.isWatched) {
                 if (!autoSwitchedGameMode && config.antiGMCAutoSwitch) {
                     playerUtils.debugLog(`[AntiGMCCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch was enabled but might have failed.`, watchedPrefix, dependencies);
                 } else if (!config.antiGMCAutoSwitch) {

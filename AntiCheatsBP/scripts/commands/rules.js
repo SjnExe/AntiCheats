@@ -1,28 +1,22 @@
-// Script for the !rules command
 import { MessageFormData } from '@minecraft/server-ui';
-// permissionLevels and getString are now accessed via dependencies
-
 /**
  * @file Script for the !rules command, displays server rules to the player.
  * @version 1.0.3
  */
-
 /**
  * @typedef {import('../types.js').CommandDefinition} CommandDefinition
  */
-
 /**
  * @type {CommandDefinition}
  */
 export const definition = {
     name: 'rules',
-    description: "Displays the server rules.", // Static fallback
+    description: "Displays the server rules.",
     syntax: '!rules',
     aliases: ['rule'],
-    permissionLevel: 0, // Static fallback (Normal)
+    permissionLevel: 0,
     enabled: true,
 };
-
 /**
  * Executes the !rules command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
@@ -30,24 +24,19 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, config, permissionLevels } = dependencies; // getString removed
-
-    // Static definitions are used
+    const { playerUtils, config, permissionLevels } = dependencies;
 
     const form = new MessageFormData();
-    // "command.rules.ui.title" -> "Server Rules"
     form.title("Server Rules");
 
     if (config.serverRules && config.serverRules.trim() !== "") {
-        form.body(config.serverRules); // serverRules is already a string array joined by newline or a single string
+        form.body(config.serverRules);
     } else {
-        // "command.rules.noRulesConfigured" -> "No server rules are currently configured. Please check back later!"
         form.body("No server rules are currently configured. Please check back later!");
     }
 
-    // "common.button.close" -> "Close"
     form.button1("Close");
-    form.button2("Close"); // MessageFormData requires two buttons
+    form.button2("Close");
 
     try {
         await form.show(player);

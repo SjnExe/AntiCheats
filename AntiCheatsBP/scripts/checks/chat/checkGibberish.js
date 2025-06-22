@@ -25,7 +25,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     if (!enableGibberishCheck) {
         return;
     }
-    if (!pData) { // pData might not be used by this specific check's logic
+    if (!pData) {
         playerUtils.debugLog("[GibberishCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
     }
 
@@ -53,7 +53,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         if (char !== ' ') {
             totalNonSpaceChars++;
         }
-        if (char >= 'a' && char <= 'z') { // Basic check for English alphabet
+        if (char >= 'a' && char <= 'z') {
             totalAlphaChars++;
             if (vowels.includes(char)) {
                 totalVowels++;

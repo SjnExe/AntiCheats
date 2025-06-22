@@ -6,10 +6,8 @@
  * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
-// rankManager functions (getPlayerRankFormattedChatElements, updatePlayerNametag) and permissionLevels are now accessed via dependencies.rankManager
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js';
-// getString will be accessed via dependencies.getString
-import { formatSessionDuration } from '../utils/playerUtils.js'; // formatSessionDuration is a standalone utility
+import { formatSessionDuration } from '../utils/playerUtils.js';
 
 export async function handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config: currentConfig, logManager, getString } = dependencies;
@@ -22,14 +20,14 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
     if (playerDataManager.saveDirtyPlayerData) {
         try {
-            await playerDataManager.saveDirtyPlayerData(player, dependencies); // Pass dependencies
+            await playerDataManager.saveDirtyPlayerData(player, dependencies);
             playerUtils.debugLog(`Data saved for ${player.nameTag} on leave via saveDirtyPlayerData.`, player.nameTag, dependencies);
         } catch (error) {
             console.error(`[AntiCheat] Error in saveDirtyPlayerData for ${player.nameTag} on leave: ${error}`);
         }
     }
 
-    const pData = playerDataManager.getPlayerData(player.id); // This typically doesn't need full dependencies for a simple get
+    const pData = playerDataManager.getPlayerData(player.id);
 
     if (pData && currentConfig.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) {
         const currentTime = Date.now();
@@ -88,7 +86,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
         }, dependencies);
     }
 
-    await playerDataManager.prepareAndSavePlayerData(player, dependencies); // Pass dependencies
+    await playerDataManager.prepareAndSavePlayerData(player, dependencies);
     playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, player.nameTag, dependencies);
 
     if (currentConfig.enableDetailedJoinLeaveLogging) {
@@ -98,7 +96,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
 export async function handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
-    const { playerDataManager, playerUtils, config, logManager, actionManager, checks, getString, rankManager } = dependencies; // Added rankManager
+    const { playerDataManager, playerUtils, config, logManager, actionManager, checks, getString, rankManager } = dependencies;
 
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
@@ -115,7 +113,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             pData.lastDimensionId = player.dimension.id;
         }
 
-        const banInfo = playerDataManager.getBanInfo(player, dependencies); // Pass dependencies
+        const banInfo = playerDataManager.getBanInfo(player, dependencies);
         if (banInfo) {
             playerUtils.debugLog(`Player ${player.nameTag} is banned. Kicking. Ban reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`, player.nameTag, dependencies);
             const durationStringKick = getString(banInfo.unbanTime === Infinity ? "ban.duration.permanent" : "ban.duration.expires", { expiryDate: new Date(banInfo.unbanTime).toLocaleString() });
@@ -128,11 +126,11 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             return;
         }
 
-        rankManager.updatePlayerNametag(player, dependencies); // Pass full dependencies
+        rankManager.updatePlayerNametag(player, dependencies);
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, player.nameTag, dependencies);
 
         if (initialSpawn && config.enableWelcomerMessage) {
-            const welcomeMsgKey = config.welcomeMessage || "welcome.joinMessage"; // Changed from config.welcomeMessageKey
+            const welcomeMsgKey = config.welcomeMessage || "welcome.joinMessage";
             let message = getString(welcomeMsgKey, { playerName: player.nameTag });
             mc.system.runTimeout(() => {
                 player.sendMessage(message);
@@ -178,7 +176,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             mc.system.runTimeout(() => {
                 player.sendMessage(pData.deathMessageToShowOnSpawn);
             }, 5);
-            playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, pData.isWatched ? player.nameTag : null, dependencies); // No change needed here
+            playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: "${pData.deathMessageToShowOnSpawn}"`, pData.isWatched ? player.nameTag : null, dependencies);
             pData.deathMessageToShowOnSpawn = null;
             pData.isDirtyForSave = true;
         }
@@ -270,14 +268,14 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
 }
 
 export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
-    const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies; // Added rankManager, getString, permissionLevels
+    const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies;
     const { player, itemStack, block } = eventData;
 
     if (!player || !itemStack || !block) return;
 
     if (itemStack.typeId === "minecraft:tnt" && config.enableTntAntiGrief) {
-        const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies); // Use rankManager
-        if (config.allowAdminTntPlacement && playerPermission <= permissionLevels.admin) { // permissionLevels from dependencies
+        const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
+        if (config.allowAdminTntPlacement && playerPermission <= permissionLevels.admin) {
             playerUtils.debugLog(`AntiGrief: Admin ${player.nameTag} placed TNT. Allowed by config.`, player.nameTag, dependencies);
             return;
         }
@@ -288,7 +286,6 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         const profile = config.checkActionProfiles?.world_antigrief_tnt_place;
         if (profile?.cancelEvent) {
             eventData.cancel = true;
-            // getString is already from dependencies
             playerUtils.warnPlayer(player, getString(profile.messageKey || "antigrief.tntPlacementDenied"));
         }
     }
@@ -370,7 +367,6 @@ export async function handleEntityHurt(eventData, dependencies) {
                 const selfHurtEventSpecificData = {
                     damagingEntity: directDamagingEntity,
                     cause: cause,
-                    // hurtEntity: victimPlayer // Pass hurtEntity if checkSelfHurt needs it explicitly
                 };
                 await checks.checkSelfHurt(victimPlayer, victimPData, dependencies, selfHurtEventSpecificData);
             }
@@ -384,7 +380,6 @@ export async function handleEntityHurt(eventData, dependencies) {
 
 export async function handlePlayerDeath(eventData, dependencies) {
     const { player } = eventData;
-    // config is now directly from dependencies.config
     const { playerDataManager, config, logManager, getString } = dependencies;
 
     if (!player) return;
@@ -402,8 +397,8 @@ export async function handlePlayerDeath(eventData, dependencies) {
         const y = Math.floor(location.y);
         const z = Math.floor(location.z);
 
-        const deathCoordsMsgKey = config.deathCoordsMessage || "message.deathCoords"; // Changed from config.deathCoordsMessageKey
-        let message = getString(deathCoordsMsgKey, { // getString from dependencies
+        const deathCoordsMsgKey = config.deathCoordsMessage || "message.deathCoords";
+        let message = getString(deathCoordsMsgKey, {
             x: x.toString(), y: y.toString(), z: z.toString(), dimensionId: dimensionId
         });
         pData.deathMessageToShowOnSpawn = message;
@@ -423,7 +418,7 @@ export async function handlePlayerDeath(eventData, dependencies) {
 }
 
 export function subscribeToCombatLogEvents(dependencies) {
-    const { config, playerDataManager } = dependencies; // Already using dependencies correctly
+    const { config, playerDataManager } = dependencies;
     if (!config.enableCombatLogDetection) return;
 
     mc.world.afterEvents.entityHurt.subscribe(eventData => {
@@ -470,40 +465,33 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
 }
 
 export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
-    const { config, playerDataManager, playerUtils, checks, actionManager, logManager, currentTick, getString } = dependencies; // Added getString for completeness
-    const { player, block, brokenBlockPermutation } = eventData; // Use brokenBlockPermutation for type
+    const { config, playerDataManager, playerUtils, checks, actionManager, logManager, currentTick, getString } = dependencies;
+    const { player, block, brokenBlockPermutation } = eventData;
 
     if (!player || !brokenBlockPermutation) return;
 
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
 
-    const eventSpecificBlockData = { block: block, brokenBlockPermutation: brokenBlockPermutation }; // block might be undefined here if it's fully broken. Use brokenBlockPermutation.
+    const eventSpecificBlockData = { block: block, brokenBlockPermutation: brokenBlockPermutation };
 
     if (checks?.checkXray && config.enableXRayCheck) {
-        // checkXray might need brokenBlockPermutation.type (BlockType)
         await checks.checkXray(player, brokenBlockPermutation.type, pData, dependencies);
     }
 
     if (checks?.checkInstaBreak && config.enableInstaBreakCheck && pData.blockBeingBroken) {
-        // Insta-break verification logic
     }
-    pData.blockBeingBroken = null; // Clear state related to blockBeingBroken
+    pData.blockBeingBroken = null;
     pData.isDirtyForSave = true;
 
     if (checks?.checkAutoTool && config.enableAutoToolCheck) {
-        // checkAutoTool might need itemStackAfterBreak which is not directly on PlayerBreakBlockAfterEvent
-        // It uses pData.lastUsedTool, so that needs to be accurate.
-        // For now, assuming it works with pData state primarily.
-        await checks.checkAutoTool(player, pData, dependencies); // Pass tickDependencies
+        await checks.checkAutoTool(player, pData, dependencies);
     }
 
-    // checkFlatRotationBuilding is called from main tick loop as it analyzes pData.recentBlockPlacements
-    // Misplaced building checks and golem logic have been removed from this handler.
 }
 
 export async function handleItemUse(eventData, dependencies) {
-    const { checks, config, getString, playerUtils } = dependencies; // Added getString, playerUtils
+    const { checks, config, getString, playerUtils } = dependencies;
     const { source: player, itemStack } = eventData;
 
     if (!player || !itemStack) return;
@@ -535,12 +523,12 @@ export async function handleItemUse(eventData, dependencies) {
     }
 
     if (config.preventedItemUses && config.preventedItemUses.includes(itemStack.typeId)) {
-        playerUtils.warnPlayer(player, getString("antigrief.itemUseDenied", {item: itemStack.typeId})); // getString, playerUtils from dependencies
+        playerUtils.warnPlayer(player, getString("antigrief.itemUseDenied", {item: itemStack.typeId}));
     }
 }
 
 export async function handleItemUseOn(eventData, dependencies) {
-    const { checks, config } = dependencies; // getString, playerUtils, etc., are already in scope if needed by checks
+    const { checks, config } = dependencies;
     const { source: player, itemStack, block } = eventData;
 
     if (!player || !itemStack || !block) return;
@@ -562,7 +550,7 @@ export async function handleItemUseOn(eventData, dependencies) {
 }
 
 export async function handleInventoryItemChange(player, newItem, _oldItem, slotName, dependencies) {
-    const { checks, config } = dependencies; // getString, playerUtils not directly used here but available in dependencies
+    const { checks, config } = dependencies;
 
     if (!player) return;
 
@@ -585,7 +573,7 @@ export async function handleInventoryItemChange(player, newItem, _oldItem, slotN
 }
 
 export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
-    const { checks, config } = dependencies; // getString, playerUtils not directly used here but available in dependencies
+    const { checks, config } = dependencies;
     const { player, block, itemStack } = eventData;
 
     if (!player || !block || !itemStack) return;
@@ -599,11 +587,11 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
         if (eventData.cancel) return;
     }
 
-    await handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies); // This function was already updated
+    await handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies);
 }
 
 async function _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies) {
-    const { config, playerUtils, checks, currentTick } = dependencies; // Destructure what's needed
+    const { config, playerUtils, checks, currentTick } = dependencies;
 
     const eventSpecificBlockData = { block: block };
 
@@ -622,11 +610,8 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
     if (checks?.checkBlockSpamDensity && config.enableBlockSpamDensityCheck) {
         await checks.checkBlockSpamDensity(player, pData, dependencies, eventSpecificBlockData);
     }
-    // Note: checkFlatRotationBuilding is called from the main tick loop in main.js
 
-    // AntiGrief: Track potential golem construction
     if (config.enableEntitySpamAntiGrief && block.typeId === "minecraft:carved_pumpkin") {
-        // pData is already passed as a parameter and validated before this helper is called
         const blockBelow = player.dimension.getBlock(block.location.offset(0, -1, 0));
         const blockTwoBelow = player.dimension.getBlock(block.location.offset(0, -2, 0));
         let potentialGolemType = null;
@@ -639,10 +624,9 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
             pData.expectingConstructedEntity = {
                 type: potentialGolemType,
                 location: block.location,
-                tick: currentTick // Use currentTick from dependencies
+                tick: currentTick
             };
             pData.isDirtyForSave = true;
-            // Corrected debugLog call to pass dependencies first
             playerUtils.debugLog(dependencies, `[EventHandler][AntiGrief] Player ${player.nameTag} placed pumpkin for potential ${potentialGolemType}. Expecting entity.`, player.nameTag);
         }
     }
@@ -661,20 +645,20 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 }
 
 export async function handleBeforeChatSend(eventData, dependencies) {
-    const { playerDataManager, config, playerUtils, checks, logManager, actionManager, getString, rankManager } = dependencies; // Added rankManager
+    const { playerDataManager, config, playerUtils, checks, logManager, actionManager, getString, rankManager } = dependencies;
     const { sender: player, message: originalMessage } = eventData;
 
     if (!player) return;
 
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
-        playerUtils.warnPlayer(player, getString("error.playerDataNotFound")); // getString from dependencies
+        playerUtils.warnPlayer(player, getString("error.playerDataNotFound"));
         eventData.cancel = true;
         return;
     }
 
-    if (playerDataManager.isMuted(player, dependencies)) { // isMuted might need dependencies
-        const muteInfo = playerDataManager.getMuteInfo(player, dependencies); // getMuteInfo might need dependencies
+    if (playerDataManager.isMuted(player, dependencies)) {
+        const muteInfo = playerDataManager.getMuteInfo(player, dependencies);
         const reason = muteInfo?.reason || getString("common.value.noReasonProvided");
         playerUtils.warnPlayer(player, getString("chat.error.muted"));
         eventData.cancel = true;
@@ -688,35 +672,25 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         return;
     }
 
-    // All chat processing logic, including mute checks, content checks, and final message formatting,
-    // has been moved to chatProcessor.processChatMessage.
-
-    // Ensure chatProcessor is available in dependencies
     if (!dependencies.chatProcessor || typeof dependencies.chatProcessor.processChatMessage !== 'function') {
         console.warn("[AntiCheat] handleBeforeChatSend: chatProcessor.processChatMessage is not available in dependencies. Chat will not be processed.");
-        playerUtils.warnPlayer(player, getString("error.chatProcessingUnavailable")); // Inform player if possible
-        eventData.cancel = true; // Cancel to prevent raw message if processing fails
+        playerUtils.warnPlayer(player, getString("error.chatProcessingUnavailable"));
+        eventData.cancel = true;
         return;
     }
 
     await dependencies.chatProcessor.processChatMessage(player, pData, originalMessage, eventData, dependencies);
 
-    // The processChatMessage function now handles:
-    // - All chat checks
-    // - Setting eventData.cancel = true if a check cancels the message OR if the formatted message is sent
-    // - Sending the formatted message itself
-    // Therefore, no further logic is needed here for non-command messages.
 }
 
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
-    const { playerUtils, config, getString, rankManager, permissionLevels } = dependencies; // Added rankManager, permissionLevels
+    const { playerUtils, config, getString, rankManager, permissionLevels } = dependencies;
 
     if (!player || !toDimension || !fromDimension || !fromLocation) return;
 
-    // Use rankManager from dependencies
     const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
-    if (playerPermission <= permissionLevels.bypass) { // permissionLevels from dependencies
+    if (playerPermission <= permissionLevels.bypass) {
         playerUtils.debugLog(`Player ${player.nameTag} has bypass permission for dimension locks.`, player.nameTag, dependencies);
         return;
     }
@@ -725,10 +699,10 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     let lockedDimensionName = "";
     const toDimensionId = toDimension.id.split(':')[1];
 
-    if (toDimensionId === 'nether' && isNetherLocked(config)) { // isNetherLocked might need config from dependencies if refactored
+    if (toDimensionId === 'nether' && isNetherLocked(config)) {
         dimensionIsLocked = true;
         lockedDimensionName = getString("dimensionLock.name.nether");
-    } else if (toDimensionId === 'the_end' && isEndLocked(config)) { // isEndLocked might need config from dependencies
+    } else if (toDimensionId === 'the_end' && isEndLocked(config)) {
         dimensionIsLocked = true;
         lockedDimensionName = getString("dimensionLock.name.end");
     }

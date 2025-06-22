@@ -4,7 +4,6 @@
  * This module is responsible for interpreting check results and applying configured consequences.
  * @version 1.1.0
  */
-
 /**
  * Formats a violation details object into a concise string.
  * Converts an object containing violation specifics (e.g., counts, thresholds)
@@ -21,7 +20,6 @@ function formatViolationDetails(violationDetails) {
         .map(([key, value]) => `${key}: ${String(value)}`)
         .join(', ');
 }
-
 /**
  * Formats a message template with player name, checkType, and violation details.
  * Replaces placeholders in a template string with actual values.
@@ -53,7 +51,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     }
     return message;
 }
-
 /**
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
  * This is the core function for handling consequences of cheat detections.
@@ -87,14 +84,12 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     }
 
     if (!profile.enabled) {
-        // This debug log is conditional on profile.enabled being false, which is fine.
         playerUtils?.debugLog?.(`[ActionManager] Actions for checkType "${checkType}" are disabled in its profile. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
-    let flagReasonMessage = `Violation detected for ${checkType}.`; // Default, can be overridden
+    let flagReasonMessage = `Violation detected for ${checkType}.`;
 
-    // Format reason messages early, using playerNameForLog
     const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
     flagReasonMessage = formatActionMessage(
         baseReasonTemplate,
@@ -103,7 +98,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         violationDetails
     );
 
-    // 1. Handle Flagging (only if player is not null)
     if (player && profile.flag && playerDataManager?.addFlag) {
         const flagType = profile.flag.type || checkType;
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
@@ -117,7 +111,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         playerUtils?.debugLog?.(`[ActionManager] Skipping flagging for checkType "${checkType}" because player is null. Profile had flagging enabled.`, null, dependencies);
     }
 
-    // 2. Handle Logging
     if (profile.log && logManager?.addLog) {
         const logActionType = profile.log.actionType || `detected_${checkType}`;
         let logDetailsString = profile.log.detailsPrefix || "";
@@ -127,15 +120,14 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         }
 
         logManager.addLog({
-            adminName: 'System', // Anti-cheat checks are system-detected events
+            adminName: 'System',
             actionType: logActionType,
-            targetName: playerNameForLog, // Use playerNameForLog here
+            targetName: playerNameForLog,
             details: logDetailsString.trim(),
-            reason: flagReasonMessage, // Use the potentially formatted flagReasonMessage
+            reason: flagReasonMessage,
         });
     }
 
-    // 3. Handle Admin Notification
     if (profile.notifyAdmins?.message && playerUtils?.notifyAdmins) {
         const notifyMsg = formatActionMessage(
             profile.notifyAdmins.message,
@@ -143,15 +135,13 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             checkType,
             violationDetails
         );
-        // Pass null for pData if player is null, or attempt to fetch if player exists.
         const pData = player && playerDataManager?.getPlayerData ? playerDataManager.getPlayerData(player.id) : null;
-        playerUtils.notifyAdmins(notifyMsg, player, pData); // player can be null here
+        playerUtils.notifyAdmins(notifyMsg, player, pData);
     }
 
-    // Store specific violation details if itemTypeId is present (only if player and pData exist)
     if (player && playerDataManager && violationDetails?.itemTypeId) {
         const pData = playerDataManager.getPlayerData?.(player.id);
-        if (pData) { // Ensure pData was fetched successfully
+        if (pData) {
             if (!pData.lastViolationDetailsMap) {
                 pData.lastViolationDetailsMap = {};
             }

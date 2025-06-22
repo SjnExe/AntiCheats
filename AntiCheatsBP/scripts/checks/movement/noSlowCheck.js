@@ -6,15 +6,11 @@
  * assumes `pData.speedAmplifier` is updated by `updateTransientPlayerData`.
  * @version 1.0.2
  */
-
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
-
 /**
  * Checks if a player is moving faster than allowed for actions that should slow them down
  * (e.g., eating, sneaking, using a bow, using a shield).
@@ -27,7 +23,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkNoSlow(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // getString removed
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableNoSlowCheck || !pData) {
         return;
@@ -55,18 +51,15 @@ export async function checkNoSlow(player, pData, dependencies) {
 
     if (slowingActionKey && horizontalSpeed > maxAllowedBaseSpeed) {
         let effectiveMaxAllowedSpeed = maxAllowedBaseSpeed;
-        const speedAmplifier = pData.speedAmplifier ?? -1; // pData.speedAmplifier is 0 for Speed I, 1 for Speed II, etc.
+        const speedAmplifier = pData.speedAmplifier ?? -1;
 
         if (speedAmplifier >= 0) {
-            // Calculate vanilla speed with effect: Speed effect is 20% per level (amplifier + 1)
             const vanillaSpeedWithEffect = maxAllowedBaseSpeed * (1 + (speedAmplifier + 1) * 0.20);
-            // Add percentage-based tolerance
             effectiveMaxAllowedSpeed = vanillaSpeedWithEffect * (1 + (config.noSlowSpeedEffectTolerancePercent ?? 0.10));
         }
-        // If no speed effect, effectiveMaxAllowedSpeed remains maxAllowedBaseSpeed (plus any inherent small buffer in that base speed)
 
         if (horizontalSpeed > effectiveMaxAllowedSpeed) {
-            let resolvedSlowingAction = slowingActionKey; // Fallback
+            let resolvedSlowingAction = slowingActionKey;
             if (slowingActionKey === "check.noSlow.action.eatingDrinking") resolvedSlowingAction = "Eating/Drinking";
             else if (slowingActionKey === "check.noSlow.action.chargingBow") resolvedSlowingAction = "Charging Bow";
             else if (slowingActionKey === "check.noSlow.action.usingShield") resolvedSlowingAction = "Using Shield";

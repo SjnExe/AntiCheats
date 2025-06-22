@@ -3,15 +3,12 @@
  * Implements a check to detect if a player is attacking entities from an excessive distance.
  * @version 1.1.0
  */
-
 import * as mc from '@minecraft/server';
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks if a player is attacking an entity from an excessive distance (Reach).
  * Calculates the distance between the player's eye location and the target entity's location.
@@ -45,7 +42,7 @@ export async function checkReach(
     const eyeLocation = player.getHeadLocation();
     const distanceToTarget = eyeLocation.distance(targetEntity.location);
 
-    if (pData?.isWatched) { // playerUtils.debugLog is implicitly checked by being part of dependencies
+    if (pData?.isWatched) {
         playerUtils.debugLog(`[ReachCheck] ${player.nameTag} distance to ${targetEntity.typeId}: ${distanceToTarget.toFixed(2)}. Mode: ${gameMode}.`, watchedPrefix, dependencies);
     }
 
@@ -66,7 +63,7 @@ export async function checkReach(
     const reachBuffer = config.reachBuffer ?? 0.5;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
-    if (pData?.isWatched) { // playerUtils.debugLog is implicitly checked
+    if (pData?.isWatched) {
         playerUtils.debugLog(`[ReachCheck] ${player.nameTag}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(3)}, ActualDist: ${distanceToTarget.toFixed(3)}`, player.nameTag, dependencies);
     }
 
@@ -80,8 +77,6 @@ export async function checkReach(
             targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
             playerGameMode: String(gameMode)
         };
-
-        // Pass the main dependencies object to executeCheckAction
         await actionManager.executeCheckAction(player, "combatReachAttack", violationDetails, dependencies);
     }
 }

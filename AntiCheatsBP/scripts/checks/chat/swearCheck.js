@@ -10,7 +10,6 @@
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Normalizes a word for swear checking, including leet speak conversion and character collapsing.
  * @param {string} word The word to normalize.
@@ -23,17 +22,14 @@ function normalizeWordForSwearCheck(word, config) {
     }
     let normalized = word.toLowerCase();
 
-    // Remove common ignored characters (spaces, dots, underscores, hyphens)
     normalized = normalized.replace(/[\s._-]+/g, '');
-    if (!normalized) return ''; // Return if empty after removing ignored chars
-    // Collapse sequences of identical characters to a single character (e.g., "heelloo" -> "helo")
+    if (!normalized) return '';
     normalized = normalized.replace(/(.)\1+/g, '$1');
     if (!normalized) return '';
     if (config.swearCheckEnableLeetSpeak) {
         const leetMap = config.swearCheckLeetSpeakMap || {
             '@': 'a', '4': 'a', '8': 'b', '3': 'e', '1': 'l', '!': 'i', '0': 'o', '5': 's', '7': 't', '$': 's',
-            'ph': 'f', // common multi-char, handle before single char collapse if needed, but current regex doesn't support this directly.
-                       // For simplicity, this map handles single char leet. More complex leet (e.g. 'ph'->'f') would require more advanced replacement.
+            'ph': 'f',
         };
 
         let leetConverted = "";
@@ -41,7 +37,6 @@ function normalizeWordForSwearCheck(word, config) {
             leetConverted += leetMap[char] || char;
         }
         normalized = leetConverted;
-        // Collapse repeated characters again after leet conversion (e.g., "s$$" -> "s" -> "s")
         normalized = normalized.replace(/(.)\1+/g, '$1');
         if (!normalized) return '';
     }
@@ -58,7 +53,7 @@ function normalizeWordForSwearCheck(word, config) {
  * @returns {Promise<boolean>} True if a violation is detected and action taken, false otherwise.
  */
 export async function checkSwear(player, eventData, pData, dependenciesFull) {
-    const { config, playerUtils, actionManager, playerDataManager } = dependenciesFull; // Destructure from dependenciesFull
+    const { config, playerUtils, actionManager, playerDataManager } = dependenciesFull;
 
     if (!config.enableSwearCheck) {
         return false;
@@ -72,7 +67,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
     const normalizedSwearWordList = config.swearWordList
         .map(sw => ({
             original: sw,
-            normalized: normalizeWordForSwearCheck(sw, config) // Pass config from dependenciesFull
+            normalized: normalizeWordForSwearCheck(sw, config)
         }))
         .filter(item => item.normalized.length > 0);
 
@@ -85,10 +80,9 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
     const actionProfileName = config.swearCheckActionProfileName || "chatSwearViolation";
     for (const wordInMessage of wordsInMessage) {
         if (wordInMessage.trim() === '') continue;
-        const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config); // Pass config from dependenciesFull
+        const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config);
         if (normalizedInputWord.length === 0) continue;
         for (const swearItem of normalizedSwearWordList) {
-            // Exact Normalized Match
             if (normalizedInputWord === swearItem.normalized) {
                 const violationDetails = {
                     detectedSwear: swearItem.original,
@@ -104,14 +98,13 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
                      await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependenciesFull);
                 } else {
                     playerUtils.debugLog("[SwearCheck] actionManager.executeCheckAction is not available in dependencies.", null, dependenciesFull);
-                     // Fallback to direct flagging if actionManager is not set up as expected in dependencies
                      if (playerDataManager && playerDataManager.addFlag) {
-                         playerDataManager.addFlag(player, actionProfileName, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependenciesFull); // Pass full dependencies to addFlag
+                         playerDataManager.addFlag(player, actionProfileName, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependenciesFull);
                      }
                 }
-                return true; // Violation detected and handled
+                return true;
             }
         }
     }
-    return false; // No swear words found
+    return false;
 }

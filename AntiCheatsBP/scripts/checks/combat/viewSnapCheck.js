@@ -4,13 +4,11 @@
  * that can occur shortly after a player performs an attack.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks for invalid pitch (looking too far up or down) and for excessively rapid
  * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
@@ -27,7 +25,7 @@ export async function checkViewSnap(
     player,
     pData,
     dependencies,
-    eventSpecificData // Unused by ViewSnap check
+    eventSpecificData
 ) {
     const { config, playerUtils, playerDataManager, logManager, actionManager, currentTick } = dependencies;
 
@@ -40,7 +38,6 @@ export async function checkViewSnap(
     const currentYaw = currentRotation.y;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // 1. Check for invalid absolute pitch
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
 
@@ -53,18 +50,17 @@ export async function checkViewSnap(
         await actionManager.executeCheckAction(player, "combatInvalidPitch", violationDetails, dependencies);
     }
 
-    // 2. Check for view snaps after an attack
     const viewSnapWindow = config.viewSnapWindowTicks ?? 10;
     if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < viewSnapWindow)) {
         const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
         let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
 
-        if (deltaYaw > 180) { // Normalize yaw difference
+        if (deltaYaw > 180) {
             deltaYaw = 360 - deltaYaw;
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
-        const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms
+        const postAttackTimeMs = ticksSinceLastAttack * 50;
 
         const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
         if (deltaPitch > maxPitchSnap) {
@@ -92,5 +88,4 @@ export async function checkViewSnap(
             playerUtils.debugLog(`[ViewSnapCheck] (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)} within ${ticksSinceLastAttack} ticks.`, watchedPrefix, dependencies);
         }
     }
-    // pData.lastPitch and pData.lastYaw are updated in main.js's updateTransientPlayerData.
 }

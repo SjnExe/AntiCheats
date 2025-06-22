@@ -5,9 +5,6 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-// editableConfigValues and permissionLevels will be accessed via dependencies in isAdmin/isOwner
-// Other functions in this file might need updates later if they relied on the global import
-
 /**
  * Checks if a player has admin privileges based on a specific tag.
  * @param {mc.Player} player The player instance to check.
@@ -24,10 +21,9 @@ export function isAdmin(player, dependencies) {
     }
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.admin;
 }
-
 /**
  * Checks if a player is the owner.
- * @param {mc.Player} player The player instance to check. (Note: Original took playerName, now takes Player object for consistency with rankManager)
+ * @param {mc.Player} player The player instance to check.
  * @param {object} dependencies The standard dependencies object.
  * @returns {boolean} True if the player is the owner, false otherwise.
  */
@@ -41,7 +37,6 @@ export function isOwner(player, dependencies) {
     }
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.owner;
 }
-
 /**
  * Clears all dropped item entities across standard dimensions (Overworld, Nether, End).
  * Useful for reducing server lag.
@@ -55,7 +50,7 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
     let clearedItemsCount = 0;
     let dimensionsProcessed = 0;
     let errorMessages = [];
-    const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"]; // Consider making configurable via dependencies.config
+    const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
     debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, dependencies, adminPerformingAction?.nameTag);
 
@@ -93,7 +88,6 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
         error: errorMessages.length > 0 ? errorMessages.join('\n') : null
     };
 }
-
 /**
  * Sends a formatted warning message directly to a specific player.
  * The message is prefixed with "[AntiCheat] Warning: " and colored red.
@@ -104,7 +98,6 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
 export function warnPlayer(player, reason) {
     player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
 }
-
 /**
  * Notifies all online admins with a formatted message.
  * Admin notification delivery respects individual admin preferences (via tags like "ac_notifications_off")
@@ -119,7 +112,6 @@ export function warnPlayer(player, reason) {
  */
 export function notifyAdmins(baseMessage, dependencies, player, pData) {
     if (!dependencies || !dependencies.config) {
-        // If called without dependencies, log an error and exit to prevent further issues.
         console.warn("[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.");
         return;
     }
@@ -134,16 +126,14 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    const notificationsOffTag = "ac_notifications_off"; // Consider making these configurable via dependencies.config
-    const notificationsOnTag = "ac_notifications_on";   // Consider making these configurable via dependencies.config
+    const notificationsOffTag = "ac_notifications_off";
+    const notificationsOnTag = "ac_notifications_on";
 
     for (const p of allPlayers) {
-        // isAdmin now requires dependencies
         if (isAdmin(p, dependencies)) {
             const hasExplicitOn = p.hasTag(notificationsOnTag);
             const hasExplicitOff = p.hasTag(notificationsOffTag);
 
-            // Use dependencies.config for acGlobalNotificationsDefaultOn
             const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && dependencies.config.acGlobalNotificationsDefaultOn);
 
             if (shouldReceiveMessage) {
@@ -151,15 +141,12 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
                     p.sendMessage(fullMessage);
                 } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
-                    // debugLog now requires dependencies
                     debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, dependencies, p.nameTag);
                 }
             }
         }
     }
 }
-
-
 /**
  * Logs a message to the console if debug logging (`enableDebugLogging` in config) is enabled.
  * Prefixes messages with "[AC Debug]" or "[AC Watch - PlayerName]" if `contextPlayerNameIfWatched` is provided.
@@ -170,13 +157,11 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
  * @returns {void}
  */
 export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
-    // Ensure dependencies and config are available before trying to access enableDebugLogging
     if (dependencies && dependencies.config && dependencies.config.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
-        console.warn(`${prefix} ${message}`); // console.warn is often used for better visibility in Bedrock consoles
+        console.warn(`${prefix} ${message}`);
     }
 }
-
 /**
  * Finds an online player by their nameTag (case-insensitive).
  * @param {string} playerName The nameTag of the player to find.
@@ -188,7 +173,6 @@ export function findPlayer(playerName) {
     const nameToFind = playerName.toLowerCase();
     return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
-
 /**
  * Parses a duration string (e.g., "5m", "1h", "2d", "perm") into milliseconds.
  * If only a number is provided, it's assumed to be in minutes.
@@ -215,11 +199,10 @@ export function parseDuration(durationString) {
         }
     } else if (/^\d+$/.test(lowerDurationString)) {
         const value = parseInt(lowerDurationString);
-        if (!isNaN(value)) return value * 60 * 1000; // Assume minutes
+        if (!isNaN(value)) return value * 60 * 1000;
     }
     return null;
 }
-
 /**
  * Formats a duration in milliseconds into a human-readable string (e.g., "1h 23m 45s").
  * @param {number} ms - The duration in milliseconds.

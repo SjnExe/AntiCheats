@@ -3,9 +3,7 @@
  * Implements a check to detect players sending chat messages too frequently (spamming).
  * @version 1.0.1
  */
-
 import * as mc from '@minecraft/server';
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
@@ -14,7 +12,6 @@ import * as mc from '@minecraft/server';
  * @typedef {import('../../types.js').LogManager} LogManager
  * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
  */
-
 /**
  * Checks if a player is sending messages too frequently.
  * If a violation is detected, configured actions (flagging, logging, message cancellation) are executed.
@@ -38,15 +35,13 @@ export async function checkMessageRate(
     const { config, playerUtils, playerDataManager, logManager, actionManager } = dependencies;
 
     if (!config.enableFastMessageSpamCheck) {
-        return false; // Check is disabled.
+        return false;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
     const actionProfileName = config.fastMessageSPAMActionProfileName ?? "chatSpamFastMessage";
-    // Action profile is typically fetched within executeCheckAction or actionManager itself.
-    // If needed directly for `cancelMessage` logic before calling executeCheckAction:
     const actionProfile = config.checkActionProfiles?.[actionProfileName];
 
     let shouldCancel = false;
@@ -55,7 +50,6 @@ export async function checkMessageRate(
         const timeSinceLastMsgMs = currentTime - pData.lastChatMessageTimestamp;
 
         if (timeSinceLastMsgMs < threshold) {
-            // playerUtils.debugLog is implicitly checked by being part of dependencies
             playerUtils.debugLog(`[MessageRateCheck] ${player.nameTag} sent message too fast. Diff: ${timeSinceLastMsgMs}ms, Threshold: ${threshold}ms`, watchedPrefix, dependencies);
 
             const violationDetails = {
@@ -63,18 +57,11 @@ export async function checkMessageRate(
                 thresholdMs: threshold.toString(),
                 messageContent: eventData.message
             };
-            // Pass the main dependencies object to executeCheckAction
             await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
 
-            // Check if the action profile (fetched from config or determined by actionManager) resulted in cancellation.
-            // This assumes executeCheckAction might modify eventData.cancel or the profile dictates cancellation.
-            // For explicit control here, we check the profile.
-            if (actionProfile?.cancelMessage) { // This logic might be redundant if executeCheckAction handles cancellation
+            if (actionProfile?.cancelMessage) {
                 shouldCancel = true;
             }
-            // If executeCheckAction directly modifies eventData.cancel, then this `shouldCancel` variable might not be needed,
-            // and the function could simply not return a boolean, relying on eventData.cancel being set by the action.
-            // However, sticking to the requirement of returning boolean for now.
         }
     }
 

@@ -3,8 +3,7 @@
  * @description Handles all chat message processing, including checks and formatting.
  * @version 1.0.0
  */
-import * as mc from '@minecraft/server'; // Only if mc.world.sendMessage is directly used here, otherwise mc comes from dependencies
-
+import * as mc from '@minecraft/server';
 /**
  * Processes a chat message, performing various checks and formatting.
  * @param {mc.Player} player The player who sent the message.
@@ -23,7 +22,6 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         return;
     }
 
-    // Mute Check (Moved from eventHandlers.js)
     if (playerDataManager.isMuted(player, dependencies)) {
         const muteInfo = playerDataManager.getMuteInfo(player, dependencies);
         const reason = muteInfo?.reason || getString("common.value.noReasonProvided");
@@ -34,7 +32,6 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         return;
     }
 
-    // Combat/Item Use Checks (Moved from eventHandlers.js)
     if (config.enableChatDuringCombatCheck && pData.lastCombatInteractionTime) {
         const timeSinceCombat = (Date.now() - pData.lastCombatInteractionTime) / 1000;
         if (timeSinceCombat < config.chatDuringCombatCooldownSeconds) {
@@ -65,17 +62,11 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         }
     }
 
-    // Clear isChargingBow if chat is attempted (Moved from eventHandlers.js, seems like a specific game mechanic interaction)
-    // This might be better placed in item use end event if available, or handled differently.
-    // For now, keeping the logic as it was.
     if (pData.isChargingBow) {
         pData.isChargingBow = false;
         pData.isDirtyForSave = true;
         dependencies.playerUtils.debugLog(`[ChatProcessor] Cleared isChargingBow for ${player.nameTag} due to chat attempt.`, player.nameTag, dependencies);
     }
-
-    // --- Start of individual chat content checks --- (Moved from eventHandlers.js)
-    // Each check can set eventData.cancel = true and return if message should be stopped.
 
     if (!eventData.cancel && checks?.checkSwear && config.enableSwearCheck) {
         await checks.checkSwear(player, eventData, pData, dependencies);
@@ -87,7 +78,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
     if (!eventData.cancel && checks?.checkMessageRate && config.enableFastMessageSpamCheck) {
         const cancelFromMessageRate = await checks.checkMessageRate(player, eventData, pData, dependencies);
-        if (cancelFromMessageRate) { // checkMessageRate might directly set eventData.cancel or return a boolean
+        if (cancelFromMessageRate) {
             eventData.cancel = true;
         }
         if (eventData.cancel) {
@@ -200,16 +191,12 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         }
     }
 
-    // --- End of individual chat content checks ---
-
-    // Final message formatting and sending (Moved from eventHandlers.js)
     if (!eventData.cancel) {
         const rankElements = rankManager.getPlayerRankFormattedChatElements(player, dependencies);
         const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;
 
-        // Use minecraftSystem which is mc from dependencies
         minecraftSystem.world.sendMessage(finalMessage);
-        eventData.cancel = true; // Cancel original event because we've sent our formatted one
+        eventData.cancel = true;
 
         logManager?.addLog?.({ actionType: 'chatMessageSent', targetName: player.nameTag, details: originalMessage }, dependencies);
         dependencies.playerUtils.debugLog(`[ChatProcessor] Sent formatted message for ${player.nameTag}. Original event cancelled.`, player.nameTag, dependencies);

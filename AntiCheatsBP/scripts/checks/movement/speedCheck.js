@@ -5,14 +5,11 @@
  * (assumed to be updated by `updateTransientPlayerData` based on player effects).
  * @version 1.0.2
  */
-
 import * as mc from '@minecraft/server';
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
-
 /**
  * Checks for speed-related hacks by analyzing player's horizontal movement speed.
  * Considers game mode, effects (Speed), and whether the player is on ground or airborne.
@@ -32,24 +29,20 @@ export async function checkSpeed(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Exempt players in states where normal speed limits don't apply or are hard to baseline
     if (player.isFlying || player.isGliding || player.isClimbing || player.isInWater || player.isRiding) {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
-            pData.consecutiveOnGroundSpeedingTicks = 0; // Reset if previously speeding on ground
+            pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
         }
         playerUtils.debugLog(`[SpeedCheck] ${player.nameTag} in exempt state (flying, gliding, climbing, inWater, riding). Skipping.`, watchedPrefix, dependencies);
         return;
     }
 
-    // pData.velocity should be updated each tick in updateTransientPlayerData
-    const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2)); // Horizontal speed in blocks per tick
-    const hSpeedBPS = hSpeed * 20; // Convert to blocks per second
+    const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2));
+    const hSpeedBPS = hSpeed * 20;
 
     let maxAllowedSpeedBPS = config.maxHorizontalSpeed ?? 7.0;
 
-    // Adjust max speed based on Speed effect amplifier stored in pData
-    // pData.speedAmplifier = -1 (no effect), 0 (Speed I), 1 (Speed II), etc.
     const speedAmplifier = pData.speedAmplifier ?? -1;
     if (speedAmplifier >= 0) {
         maxAllowedSpeedBPS += (speedAmplifier + 1) * (config.speedEffectBonus ?? 2.0);
@@ -73,7 +66,7 @@ export async function checkSpeed(player, pData, dependencies) {
             if (pData.consecutiveOnGroundSpeedingTicks > groundTicksThreshold) {
                 let activeEffectsString = "none";
                  try {
-                    const effects = player.getEffects(); // Get current effects for logging context
+                    const effects = player.getEffects();
                     if (effects.length > 0) {
                         activeEffectsString = effects.map(e => `${e.typeId} (Amp: ${e.amplifier}, Dur: ${e.duration})`).join(', ') || "none";
                     }
@@ -90,22 +83,19 @@ export async function checkSpeed(player, pData, dependencies) {
                     activeEffects: activeEffectsString
                 };
                 await actionManager.executeCheckAction(player, groundActionProfileKey, violationDetails, dependencies);
-                pData.consecutiveOnGroundSpeedingTicks = 0; // Reset after flagging
+                pData.consecutiveOnGroundSpeedingTicks = 0;
                 pData.isDirtyForSave = true;
             }
         } else {
-            if (pData.consecutiveOnGroundSpeedingTicks > 0) { // Only mark dirty if it actually changes
+            if (pData.consecutiveOnGroundSpeedingTicks > 0) {
                  pData.consecutiveOnGroundSpeedingTicks = 0;
                  pData.isDirtyForSave = true;
             }
         }
-    } else { // Player is airborne (and not flying, gliding, climbing, inWater, riding)
-        // Reset ground speeding ticks if airborne
+    } else {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
             pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
         }
-
-        // Implement airborne speed check if desired (potentially with different thresholds/profile key)
     }
 }

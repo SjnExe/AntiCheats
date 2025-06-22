@@ -4,8 +4,6 @@
  * files and exports them as an array to be used by the commandManager.
  * @version 1.0.2
  */
-
-// Import command modules
 import * as banCmd from './ban.js';
 import * as clearchatCmd from './clearchat.js';
 import * as copyinvCmd from './copyinv.js';
@@ -19,15 +17,15 @@ import * as helpCmd from './help.js';
 import * as inspectCmd from './inspect.js';
 import * as invseeCmd from './invsee.js';
 import * as kickCmd from './kick.js';
-import * as listwatchedCmd from './listwatched.js'; // New import
+import * as listwatchedCmd from './listwatched.js';
 import * as muteCmd from './mute.js';
 import * as myflagsCmd from './myflags.js';
 import * as netherlockCmd from './netherlock.js';
 import * as notifyCmd from './notify.js';
 import * as panelCmd from './panel.js';
-import * as resetflagsCmd from './resetflags.js'; // Handles resetflags (and clearwarnings via alias)
+import * as resetflagsCmd from './resetflags.js';
 import * as rulesCmd from './rules.js';
-import * as setlangCmd from './setlang.js'; // Renamed import to avoid conflict with future 'setlang' variable if any
+import * as setlangCmd from './setlang.js';
 import * as testnotifyCmd from './testnotify.js';
 import * as tpacceptCmd from './tpaccept.js';
 import * as tpacancelCmd from './tpacancel.js';
@@ -64,7 +62,7 @@ export const commandModules = [
     inspectCmd,
     invseeCmd,
     kickCmd,
-    listwatchedCmd, // New module added
+    listwatchedCmd,
     muteCmd,
     myflagsCmd,
     netherlockCmd,
@@ -72,7 +70,7 @@ export const commandModules = [
     panelCmd,
     resetflagsCmd,
     rulesCmd,
-    setlangCmd, // Adjusted to match renamed import
+    setlangCmd,
     testnotifyCmd,
     tpaCmd,
     tpacceptCmd,

@@ -6,13 +6,10 @@
  * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
-
 /**
  * Checks player's nameTag for spoofing attempts (length, disallowed characters, rapid changes).
  * Updates `pData.lastKnownNameTag` and `pData.lastNameTagChangeTick` if a name change is detected.
@@ -35,11 +32,10 @@ export async function checkNameSpoof(
 
     const currentNameTag = player.nameTag;
     const watchedPrefix = pData.isWatched ? player.name : null;
-    // No need to reconstruct dependencies for executeCheckAction, pass the main one.
 
     let reasonDetailKey = null;
     let reasonDetailParams = {};
-    let flaggedReasonForLog = ""; // For more detailed internal logging
+    let flaggedReasonForLog = "";
 
     const maxLength = config.nameSpoofMaxLength ?? 48;
     if (currentNameTag.length > maxLength) {
@@ -80,7 +76,7 @@ export async function checkNameSpoof(
     }
 
     if (reasonDetailKey) {
-        const localizedReasonDetail = getString(reasonDetailKey, reasonDetailParams); // getString from dependencies
+        const localizedReasonDetail = getString(reasonDetailKey, reasonDetailParams);
         const violationDetails = {
             reasonDetail: localizedReasonDetail,
             currentNameTagDisplay: currentNameTag,

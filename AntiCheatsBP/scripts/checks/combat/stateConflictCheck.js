@@ -4,13 +4,11 @@
  * such as sleeping, using consumables, charging bows, or using shields.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks if the player is attacking while in a sleeping state.
  * Player's sleep state is determined by `player.isSleeping`.
@@ -44,7 +42,6 @@ export async function checkAttackWhileSleeping(
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Sleeping.`, watchedPrefix, dependencies);
     }
 }
-
 /**
  * Checks if the player is attacking while using an item (consumable, bow, shield).
  * Relies on state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`, `isUsingShield`).
