@@ -97,6 +97,43 @@ The following `actionType` strings can be used in your `automodRules`:
   };
   ```
 
+### 6. Using Placeholders in `automodActionMessages`
+The `automodActionMessages` now support dynamic placeholders to create more informative and context-specific messages. When AutoMod triggers an action, it will replace these placeholders with actual data.
+
+**How to Use:**
+Simply include the desired placeholders (e.g., `{playerName}`) within your message strings in `automodActionMessages`.
+
+**Example:**
+```javascript
+// In automodConfig.js
+"automod.fly.hover.warn1": "AutoMod [{actionType}|{checkType}]: {playerName}, persistent hovering detected (Flags: {flagCount}/{flagThreshold}). Please adhere to server rules.",
+"automod.chatfast.mute1": "AutoMod [{actionType}|{checkType}]: {playerName} muted for {duration} for sending messages too quickly (Flags: {flagCount}/{flagThreshold}).",
+"automod.illegalitem.kick1": "AutoMod [{actionType}|{checkType}]: Kicked {playerName} for using illegal item {itemTypeId} (Flags: {flagCount}/{flagThreshold})."
+```
+
+**Available Placeholders:**
+The following placeholders can be used in your `automodActionMessages` templates:
+
+*   **Core Placeholders:**
+    *   `{playerName}`: The name of the player affected by the AutoMod action.
+    *   `{actionType}`: The type of action taken by AutoMod (e.g., "warn", "kick", "tempBan").
+    *   `{checkType}`: The specific check that triggered the AutoMod rule (e.g., "movementFlyHover").
+    *   `{reasonKey}`: The key from `automodActionMessages` that was used to fetch the message template (e.g., "automod.fly.hover.warn1").
+    *   `{flagCount}`: The current number of flags the player has accumulated for the specific `checkType`.
+    *   `{flagThreshold}`: The flag threshold defined in the AutoMod rule that triggered this action.
+
+*   **Punishment/Duration Specific Placeholders:**
+    *   `{duration}`: The human-readable duration of the punishment (e.g., "5m", "1h", "Permanent"). Available for actions like `tempBan` and `mute`.
+
+*   **Action-Specific Placeholders:**
+    *   `{itemTypeId}`: For `removeIllegalItem` actions, the `typeId` of the item that was (or is intended to be) removed (e.g., "minecraft:bedrock").
+    *   `{itemQuantity}`: For `removeIllegalItem` actions, the quantity of the item removed.
+    *   `{teleportCoordinates}`: For `teleportSafe` actions, a string representation of the target/actual teleport coordinates (e.g., "X:100 Y:65 Z:200").
+
+*   **Admin Notification Templates:**
+    *   You can also define admin-specific message templates by appending `.admin` to a reasonKey (e.g., `"automod.fly.hover.tempban1.admin": "..."`). These templates can use the same placeholders and will be used for notifying admins if defined. If not, a default comprehensive admin message is used.
+
+
 ## Important Notes
 - The AutoMod system processes rules based on escalating `flagThresholds` for each `checkType`.
 - The `pData.automodState[checkType].lastActionThreshold` is used to prevent the same action from being repeatedly applied if the flag count hasn't increased beyond that threshold (unless flags are reset).

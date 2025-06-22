@@ -34,6 +34,31 @@ function formatDuration(ms) { // getStringFn removed
 }
 
 /**
+ * Formats an AutoMod message template with context-specific data.
+ * Replaces placeholders in a template string with actual values.
+ * @param {string} template - The message template string.
+ * @param {object} context - An object containing placeholder keys and their values.
+ *                           Example: { playerName: "Steve", actionType: "warn", duration: "5m" }
+ * @returns {string} The formatted message. Returns the original template if it's falsy or context is missing.
+ */
+function formatAutomodMessage(template, context) {
+    if (!template || typeof template !== 'string' || !context || typeof context !== 'object') {
+        return template || ""; // Return original template or empty string if template is null/undefined
+    }
+
+    let message = template;
+    for (const key in context) {
+        if (Object.prototype.hasOwnProperty.call(context, key)) {
+            const placeholder = `{${key}}`;
+            // Using a global regex to replace all occurrences of the placeholder
+            const regex = new RegExp(placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+            message = message.replace(regex, String(context[key]));
+        }
+    }
+    return message;
+}
+
+/**
  * Internal function to dispatch and execute specific automod actions.
  */
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
