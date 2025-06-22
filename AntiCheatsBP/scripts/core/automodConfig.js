@@ -2,8 +2,8 @@
 /**
  * @file Stores the configuration for the AutoMod system.
  * This includes rules for automated actions based on flag counts,
- * messages for those actions, and per-check type toggles for AutoMod.
- * @version 1.1.0
+ * (with rule-specific message templates) and per-check type toggles for AutoMod.
+ * @version 1.1.1
  */
 
 /**
@@ -25,8 +25,9 @@
 
 /**
  * Configuration for the AutoMod system.
- * Defines rules for automated actions based on flag counts, messages for those actions,
- * and per-check type toggles for AutoMod.
+ * Defines rules for automated actions based on flag counts,
+ * and per-check type toggles for AutoMod. Rule-specific message templates
+ * are defined within each rule's parameters.
  * @type {{
  *   automodRules: Object.<string, AutoModRule[]>,
  *   automodPerCheckTypeToggles: Object.<string, boolean>
