@@ -6,7 +6,6 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-
 /**
  * @const {Object.<string, number>} blockHardnessMap
  * Defines the hardness values for various block types.
@@ -45,7 +44,6 @@ const blockHardnessMap = {
     "minecraft:wool": 0.8,
     "minecraft:vine": 0.2,
 };
-
 /**
  * @const {Object.<string, number>} toolMaterialMultipliersMap
  * Defines speed multipliers for different tool materials.
@@ -58,10 +56,9 @@ const toolMaterialMultipliersMap = {
     "stone": 4,
     "iron": 6,
     "diamond": 8,
-    "golden": 12, // Golden tools are fast but have low durability
+    "golden": 12,
     "netherite": 9
 };
-
 /**
  * @const {Object.<string, string>} correctToolForBlockMap
  * Maps block type IDs to the correct tool type (e.g., "pickaxe", "axe") for efficient breaking.
@@ -84,9 +81,9 @@ const correctToolForBlockMap = {
     "minecraft:grass_block": "shovel",
     "minecraft:sand": "shovel",
     "minecraft:gravel": "shovel",
-    "minecraft:sandstone": "pickaxe", "minecraft:glass": "pickaxe", // Glass doesn't drop with pickaxe unless Silk Touch, but pickaxe is fastest "tool type" for breaking it.
-    "minecraft:cobweb": "sword", // Or shears
-    "minecraft:glowstone": "pickaxe", // Any tool works, pickaxe is often used.
+    "minecraft:sandstone": "pickaxe", "minecraft:glass": "pickaxe",
+    "minecraft:cobweb": "sword",
+    "minecraft:glowstone": "pickaxe",
     "minecraft:ice": "pickaxe", "minecraft:packed_ice": "pickaxe", "minecraft:blue_ice": "pickaxe",
     "minecraft:netherite_block": "pickaxe", "minecraft:iron_block": "pickaxe", "minecraft:gold_block": "pickaxe", "minecraft:diamond_block": "pickaxe", "minecraft:emerald_block": "pickaxe",
     "minecraft:chest": "axe", "minecraft:crafting_table": "axe", "minecraft:furnace": "pickaxe",
@@ -95,7 +92,6 @@ const correctToolForBlockMap = {
     "minecraft:leaves": "shears", "minecraft:oak_leaves": "shears", "minecraft:spruce_leaves": "shears", "minecraft:birch_leaves": "shears", "minecraft:jungle_leaves": "shears", "minecraft:acacia_leaves": "shears", "minecraft:dark_oak_leaves": "shears", "minecraft:mangrove_leaves": "shears", "minecraft:cherry_leaves": "shears", "minecraft:azalea_leaves": "shears",
     "minecraft:vine": "shears",
 };
-
 /**
  * Determines the general type of a tool from its itemTypeId (e.g., "pickaxe", "axe").
  * @param {string} itemTypeId - The item's type ID (e.g., "minecraft:diamond_pickaxe").
@@ -110,7 +106,6 @@ function getToolType(itemTypeId) {
     if (itemTypeId.includes("_sword")) return "sword";
     return null;
 }
-
 /**
  * Determines the material of a tool from its itemTypeId (e.g., "wooden", "diamond").
  * @param {string} itemTypeId - The item's type ID (e.g., "minecraft:diamond_pickaxe").
@@ -125,7 +120,6 @@ function getToolMaterial(itemTypeId) {
     if (itemTypeId.startsWith("minecraft:netherite_")) return "netherite";
     return null;
 }
-
 /**
  * Calculates a relative breaking power score for a player breaking a block with an item.
  * This is a simplified model and does not perfectly replicate all vanilla mechanics.
@@ -137,9 +131,9 @@ function getToolMaterial(itemTypeId) {
  */
 export function calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack) {
     const blockTypeId = blockPermutation.type.id;
-    const blockHardness = blockHardnessMap[blockTypeId] || 50; // Default to high hardness if not in map
+    const blockHardness = blockHardnessMap[blockTypeId] || 50;
 
-    if (!itemStack) { // Breaking by hand
+    if (!itemStack) {
         return 1 / (blockHardness * 1.5 * 0.2);
     }
 
@@ -149,11 +143,11 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
 
     if (toolType === "shears") {
         if (blockTypeId.includes("leaves") || blockTypeId.includes("wool") || blockTypeId === "minecraft:cobweb" || blockTypeId === "minecraft:vine") {
-            return Infinity; // Shears are effectively instant for these
+            return Infinity;
         }
     }
     if (toolType === "sword" && blockTypeId === "minecraft:cobweb") {
-        return (toolMaterialMultipliersMap[toolMaterial] || 1) * 5; // Swords are effective on cobwebs
+        return (toolMaterialMultipliersMap[toolMaterial] || 1) * 5;
     }
 
     let speed = toolMaterialMultipliersMap[toolMaterial] || 1;
@@ -163,10 +157,10 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
     if (requiredTool && toolType === requiredTool) {
         correctToolMultiplier = 1.5;
     } else if (requiredTool && toolType !== requiredTool && toolType !== null) {
-        speed = 1; // Penalty for wrong tool type
+        speed = 1;
         correctToolMultiplier = 1;
-    } else if (toolType === null && requiredTool) { // Breaking by hand a block that needs a specific tool
-        return 1 / (blockHardness * 5 * 0.2); // Significantly slower
+    } else if (toolType === null && requiredTool) {
+        return 1 / (blockHardness * 5 * 0.2);
     }
 
     let efficiencyLevel = 0;
@@ -178,7 +172,7 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
                 efficiencyLevel = efficiency.level;
             }
         }
-    } catch (e) { /* Item might not have enchantable component */ }
+    } catch (e) {}
 
     if (efficiencyLevel > 0) {
         speed += (efficiencyLevel * efficiencyLevel + 1);
@@ -197,18 +191,14 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
         speed /= 5;
     }
 
-    // Simplified water check, doesn't include Aqua Affinity for this power score
-    if (player.isInWater) { // This is a simplified check. Vanilla also checks eye location in water.
-        // speed /= 5; // Aqua affinity would negate this. For power score, this might be too complex.
+    if (player.isInWater) {
     }
 
     const damage = speed * correctToolMultiplier / blockHardness;
     if (damage < 0) return 0;
 
-    return damage * 20; // Approximate score per second
+    return damage * 20;
 }
-
-
 /**
  * Finds the optimal tool in the player's hotbar for breaking a given block, based on calculated breaking power.
  * @param {mc.Player} player - The player whose hotbar is to be checked.
@@ -241,7 +231,6 @@ export function getOptimalToolForBlock(player, blockPermutation) {
     }
     return null;
 }
-
 /**
  * Calculates the expected time in game ticks to break a block, using a simplified model.
  * Considers tool type, material, enchantments (Efficiency), player effects (Haste, Mining Fatigue),
@@ -257,13 +246,13 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, confi
     const blockHardness = blockHardnessMap[blockTypeId];
 
     if (blockHardness === undefined || blockHardness < 0) return Infinity;
-    if (blockHardness === 0) return 1; // Insta-break for 0 hardness blocks
+    if (blockHardness === 0) return 1;
 
     if (config.instaBreakUnbreakableBlocks?.includes(blockTypeId) && player.gameMode !== mc.GameMode.creative) {
         return Infinity;
     }
 
-    let toolSpeed = 1; // Base speed, equivalent to hand or non-applicable tool
+    let toolSpeed = 1;
     let isCorrectToolTypeAndMaterial = false;
 
     const requiredToolClass = correctToolForBlockMap[blockTypeId];
@@ -278,17 +267,17 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, confi
             if (toolType === requiredToolClass) {
                 isCorrectToolTypeAndMaterial = true;
             } else if (requiredToolClass) {
-                toolSpeed = 1; // Penalty for wrong tool type for a block that needs a specific one
+                toolSpeed = 1;
             }
         } else if (toolType === "shears" && (blockTypeId.includes("leaves") || blockTypeId.includes("wool") || blockTypeId === "minecraft:cobweb" || blockTypeId === "minecraft:vine")) {
-            return 1; // Shears are instant on these
+            return 1;
         } else if (toolType === "sword" && blockTypeId === "minecraft:cobweb") {
-            return 1; // Swords are instant on cobwebs
+            return 1;
         } else {
-            toolSpeed = 1; // Not a recognized mining tool or material, acts like hand
+            toolSpeed = 1;
         }
-    } else { // No itemStack (breaking by hand)
-        isCorrectToolTypeAndMaterial = !requiredToolClass; // Correct if no specific tool is required
+    } else {
+        isCorrectToolTypeAndMaterial = !requiredToolClass;
         toolSpeed = 1;
     }
 
@@ -300,15 +289,13 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, confi
                 const eff = enchantComp.getEnchantment("efficiency");
                 if (eff) efficiencyLevel = eff.level;
             }
-        } catch (e) { /* Item may not have enchantable component */ }
+        } catch (e) {}
     }
 
     if (efficiencyLevel > 0) {
         toolSpeed += (efficiencyLevel * efficiencyLevel + 1);
     }
-    // Ensure toolSpeed is at least 1 if it was modified by efficiency or penalties
     if (toolSpeed < 1) toolSpeed = 1;
-
 
     const baseTimeFactor = (isCorrectToolTypeAndMaterial) ? 1.5 : 5.0;
     let breakTimeSeconds = (blockHardness * baseTimeFactor) / toolSpeed;
@@ -336,15 +323,15 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, confi
             if (enchantComp?.getEnchantment("aqua_affinity")) {
                 hasAquaAffinity = true;
             }
-        } catch (e) { /* Item may not have enchantable component */ }
+        } catch (e) {}
     }
 
-    if (player.isInWater && !hasAquaAffinity) { // isInWater checks if player's eyes are in water
+    if (player.isInWater && !hasAquaAffinity) {
         breakTimeSeconds *= 5;
     }
 
-    if (breakTimeSeconds < 0.05) breakTimeSeconds = 0.05; // Minimum break time (1 game tick)
+    if (breakTimeSeconds < 0.05) breakTimeSeconds = 0.05;
 
     const ticks = Math.ceil(breakTimeSeconds * 20);
-    return ticks < 1 ? 1 : ticks; // Ensure at least 1 tick
+    return ticks < 1 ? 1 : ticks;
 }

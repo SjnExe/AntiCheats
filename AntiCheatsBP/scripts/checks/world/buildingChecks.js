@@ -4,17 +4,13 @@
  * AirPlace (scaffolding), Downward Scaffold, and Flat/Static Rotation Building.
  * @version 1.2.1
  */
-
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  * @typedef {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} PlaceEventData
  */
-
 /**
  * Checks for tower-like upward building.
  * @param {mc.Player} player
@@ -85,11 +81,10 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
         pData.consecutivePillarBlocks = 0; pData.lastPillarTick = 0;
         pData.currentPillarX = null; pData.currentPillarZ = null;
         pData.isDirtyForSave = true;
-    } else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight) { // playerUtils.debugLog implicitly checked
+    } else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight) {
         playerUtils.debugLog(`[TowerCheck] Tower for ${player.nameTag} (height ${pData.consecutivePillarBlocks}), pitch ${pitch.toFixed(1)} OK (Threshold: >${maxPitchValue}).`, watchedPrefix, dependencies);
     }
 }
-
 /**
  * Checks for overly fast block placement.
  * @param {import('@minecraft/server').Player} player
@@ -123,7 +118,6 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
         playerUtils.debugLog(`[FastPlaceCheck] Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, pData.isWatched ? player.nameTag : null, dependencies);
     }
 }
-
 /**
  * Checks for blocks placed against air or liquid without proper solid adjacent support.
  * @param {import('@minecraft/server').Player} player
@@ -181,7 +175,6 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
         }
     }
 }
-
 /**
  * Checks for downward scaffolding behavior.
  * @param {import('@minecraft/server').Player} player
@@ -235,7 +228,6 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
         pData.consecutiveDownwardBlocks = 0; pData.lastDownwardScaffoldBlockLocation = null; pData.isDirtyForSave = true;
     }
 }
-
 /**
  * Checks for building with flat or static camera rotation.
  * @param {import('@minecraft/server').Player} player
@@ -243,7 +235,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
  * @param {Dependencies} dependencies
  */
 export async function checkFlatRotationBuilding(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick, getString } = dependencies; // Added getString
+    const { config, playerUtils, actionManager, currentTick, getString } = dependencies;
 
     if (!config.enableFlatRotationCheck || !pData) { return; }
 
@@ -294,7 +286,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     else if (allPitchesInDownwardRange) { detectionReasonKey = "check.flatRotation.reason.flatDownward"; shouldFlag = true; }
 
     if (shouldFlag) {
-        const localizedDetectionReason = getString(detectionReasonKey); // getString from dependencies
+        const localizedDetectionReason = getString(detectionReasonKey);
         const violationDetails = {
             pitchVariance: pitchVariance.toFixed(1), yawMaxDifferenceFromFirst: maxIndividualYawDifference.toFixed(1),
             isYawConsideredStatic: yawIsEffectivelyStatic.toString(), detectionReason: localizedDetectionReason,
@@ -305,7 +297,6 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
         playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${localizedDetectionReason}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
     }
 }
-
 /**
  * Checks for block spamming based on placement rate.
  * @param {import('@minecraft/server').Player} player
@@ -328,7 +319,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
         return;
     }
 
-    const currentTime = Date.now(); // Uses Date.now(), currentTick from dependencies is not needed here
+    const currentTime = Date.now();
     pData.recentBlockSpamTimestamps.push(currentTime);
     pData.isDirtyForSave = true;
 
@@ -350,7 +341,6 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
         pData.isDirtyForSave = true;
     }
 }
-
 /**
  * Checks for high-density block spam.
  * @param {import('@minecraft/server').Player} player

@@ -3,13 +3,11 @@
  * Checks for abnormally high Clicks Per Second (CPS) or attack rates.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks if a player is clicking or attacking at an abnormally high rate (CPS).
  * This function analyzes attack event timestamps stored in `pData.attackEvents`.
@@ -23,7 +21,7 @@ export async function checkCPS(
     player,
     pData,
     dependencies,
-    eventSpecificData // Unused by CPS check, but part of standardized signature
+    eventSpecificData
 ) {
     const { config, playerUtils, playerDataManager, logManager, actionManager, currentTick } = dependencies;
 
@@ -36,7 +34,7 @@ export async function checkCPS(
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-    const now = Date.now(); // CPS is time-sensitive, Date.now() is appropriate. currentTick is for game tick context if needed.
+    const now = Date.now();
     const calculationWindowMs = config.cpsCalculationWindowMs ?? 1000;
     const windowStartTime = now - calculationWindowMs;
 
@@ -49,7 +47,7 @@ export async function checkCPS(
 
     const eventsInWindow = pData.attackEvents.length;
 
-    if (pData.isWatched && eventsInWindow > 0) { // playerUtils.debugLog is implicitly checked by being part of dependencies
+    if (pData.isWatched && eventsInWindow > 0) {
         playerUtils.debugLog(`[CPSCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
     }
 
@@ -61,7 +59,6 @@ export async function checkCPS(
             windowSeconds: (calculationWindowMs / 1000).toFixed(1),
             threshold: maxThreshold.toString(),
         };
-        // Pass the main dependencies object to executeCheckAction
         await actionManager.executeCheckAction(player, "combatCpsHigh", violationDetails, dependencies);
     }
 }

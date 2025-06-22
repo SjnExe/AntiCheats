@@ -4,21 +4,14 @@
  * It dynamically loads command modules and handles permission checking and alias resolution.
  * @version 1.1.0
  */
-import * as mc from '@minecraft/server'; // mc is used for e.g. world, system. Commands also get it via dependencies.
-// Imports for permissionLevels, specific UI modules, reportManager, ItemComponentTypes, addLog, configModule,
-// and getPlayerPermissionLevel are removed as they are now expected to be part of the 'dependencies' object.
-// findPlayer and parseDuration are not used in this file; commands can import them from playerUtils if needed.
-
-// Import command modules from the commandRegistry
+import * as mc from '@minecraft/server';
 import { commandModules } from '../commands/commandRegistry.js';
-
 /**
  * @type {Map<string, import('../types.js').CommandDefinition>}
  * Stores all command definitions, mapping command name to its definition object.
  * Loaded dynamically from commandModules.
  */
 const commandDefinitionMap = new Map();
-
 /**
  * @type {Map<string, function>}
  * Stores all command execution functions, mapping command name to its execute function.
@@ -29,7 +22,7 @@ const commandExecutionMap = new Map();
 if (commandModules && Array.isArray(commandModules)) {
     for (const cmdModule of commandModules) {
         if (cmdModule && cmdModule.definition && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
-            const cmdName = cmdModule.definition.name.toLowerCase(); // Normalize command names to lowercase
+            const cmdName = cmdModule.definition.name.toLowerCase();
             if (commandDefinitionMap.has(cmdName)) {
                 console.warn(`[CommandManager] Duplicate command name detected and overwritten: ${cmdName}`);
             }
@@ -42,7 +35,6 @@ if (commandModules && Array.isArray(commandModules)) {
 } else {
     console.error("[CommandManager] commandModules is not an array or is undefined. No commands loaded.");
 }
-
 /**
  * Handles incoming chat messages to process potential commands.
  * It parses the message, checks for command validity and permissions, and then executes the command.
@@ -52,7 +44,7 @@ if (commandModules && Array.isArray(commandModules)) {
  */
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies; // Destructure needed parts for local use
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
 
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     let commandNameInput = args.shift()?.toLowerCase();
@@ -98,7 +90,6 @@ export async function handleChatCommand(eventData, dependencies) {
         return;
     }
 
-    // Use rankManager from dependencies to get permission level
     const userPermissionLevel = dependencies.rankManager.getPlayerPermissionLevel(player, dependencies);
     if (userPermissionLevel > commandDef.permissionLevel) {
         playerUtils.warnPlayer(player, "You do not have permission to use this command.");
@@ -111,27 +102,17 @@ export async function handleChatCommand(eventData, dependencies) {
 
     eventData.cancel = true;
 
-    // Log admin command usage
-    // permissionLevels is from dependencies
     if (userPermissionLevel <= permissionLevels.admin) {
         const timestamp = new Date().toISOString();
-        // 'message' from eventData contains the raw command string including prefix.
         console.warn(`[AdminCommandLog] ${timestamp} - Player: ${player.name} - Command: ${message}`);
     }
 
-    // Echo Admin Command for Watched Admins
     const pDataForAdminLog = playerDataManager.getPlayerData(player.id);
-    // playerUtils.isAdmin now requires dependencies
     if (pDataForAdminLog && pDataForAdminLog.isWatched && playerUtils.isAdmin(player, dependencies)) {
         playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, player.nameTag, dependencies);
     }
 
-    // The `dependencies` object received from main.js is passed directly to commandExecute
-    // It should already contain everything needed by commands, including mc, uiManager, specific config values etc.
-    // And also specific command-related items like commandDefinitionMap, allCommands (if added in main.js)
-
     try {
-        // Pass the comprehensive dependencies object directly to the command
         await commandExecute(player, args, dependencies);
         if (playerUtils.debugLog) {
             playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, senderPDataForLog?.isWatched ? player.nameTag : null, dependencies);
@@ -140,16 +121,14 @@ export async function handleChatCommand(eventData, dependencies) {
         player.sendMessage(`§cAn error occurred while executing command '${finalCommandName}'. Please report this.`);
         console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${error.stack || error}`);
         if (playerUtils.debugLog) {
-            // Pass dependencies to debugLog, contextPlayerName can be null if not specific to a watched player in this exact message
             playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error.message || error}`, null, dependencies);
         }
-        // Use logManager from the destructured dependencies
-        logManager.addLog('command_execution_error', { // Pass as an object for structured logging
+        logManager.addLog('command_execution_error', {
             command: finalCommandName,
             player: player.nameTag,
             args: args,
             error: error.message,
-            stack: error.stack // Storing stack might be too verbose for logManager, consider if needed
-        }, dependencies); // Assuming addLog also needs dependencies for config checks or other context
+            stack: error.stack
+        }, dependencies);
     }
 }

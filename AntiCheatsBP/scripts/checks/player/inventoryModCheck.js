@@ -5,15 +5,11 @@
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating).
  * @version 1.1.1
  */
-
-// getString will be accessed via dependencies.getString
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks for item usage occurring in the exact same tick as a hotbar slot change.
  * This can indicate a client modification allowing faster-than-normal actions.
@@ -31,19 +27,18 @@ export async function checkSwitchAndUseInSameTick(
     dependencies,
     eventSpecificData
 ) {
-    const { config, playerUtils, actionManager, currentTick, getString } = dependencies; // Added getString
-    const itemStack = eventSpecificData?.itemStack; // Item being used
+    const { config, playerUtils, actionManager, currentTick, getString } = dependencies;
+    const itemStack = eventSpecificData?.itemStack;
 
     if (!config.enableInventoryModCheck || !pData || !itemStack) {
         return;
     }
 
-    // pData.lastSelectedSlotChangeTick is updated in main.js's updateTransientPlayerData
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
-            reasonDetail: getString("check.inventoryMod.details.switchAndUseSameTick"), // getString from dependencies
+            reasonDetail: getString("check.inventoryMod.details.switchAndUseSameTick"),
             itemType: itemStack.typeId,
-            slot: player.selectedSlotIndex.toString(), // Current slot after the switch and now use
+            slot: player.selectedSlotIndex.toString(),
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
             currentTick: currentTick.toString()
         };
@@ -56,7 +51,6 @@ export async function checkSwitchAndUseInSameTick(
         );
     }
 }
-
 /**
  * Checks for inventory item changes while actions that should "lock" the inventory are in progress (e.g., eating, drawing a bow).
  * Relies on `pData` state flags like `isUsingConsumable` or `isChargingBow`.
@@ -73,8 +67,7 @@ export async function checkInventoryMoveWhileActionLocked(
     dependencies,
     eventSpecificData
 ) {
-    const { config, playerUtils, actionManager, getString } = dependencies; // Added getString
-    // The original eventData from PlayerInventoryItemChangeAfterEvent is passed as eventSpecificData
+    const { config, playerUtils, actionManager, getString } = dependencies;
     const inventoryChangeData = eventSpecificData;
 
     if (!config.enableInventoryModCheck || !pData || !inventoryChangeData) {
@@ -87,17 +80,14 @@ export async function checkInventoryMoveWhileActionLocked(
     } else if (pData.isChargingBow) {
         lockingActionKey = "check.inventoryMod.action.chargingBow";
     }
-    // Potentially add other states like pData.isUsingShield if intended to lock inventory movement.
 
     if (lockingActionKey) {
-        const localizedLockingAction = getString(lockingActionKey); // getString from dependencies
-        // Extract details from inventoryChangeData (which is the original eventData)
+        const localizedLockingAction = getString(lockingActionKey);
         const changedItemType = inventoryChangeData.newItem?.typeId ?? inventoryChangeData.oldItem?.typeId ?? "unknown";
         const slotIdentifier = inventoryChangeData.slotName ?? inventoryChangeData.slot?.toString() ?? "unknown_slot";
 
-
         const violationDetails = {
-            reasonDetail: getString("check.inventoryMod.details.movedWhileLocked", { slotNum: slotIdentifier, action: localizedLockingAction }), // getString from dependencies
+            reasonDetail: getString("check.inventoryMod.details.movedWhileLocked", { slotNum: slotIdentifier, action: localizedLockingAction }),
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
             actionInProgress: localizedLockingAction

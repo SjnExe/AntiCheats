@@ -6,15 +6,10 @@
  * @version 1.0.2
  */
 import { world } from '@minecraft/server';
-// playerUtils.debugLog will be accessed via dependencies.
-
 /**
  * @const {string} reportsPropertyKeyName - The dynamic property key used for storing player reports.
  */
 const reportsPropertyKeyName = "anticheat:reports_v1";
-
-// maxReportsCount will be accessed via dependencies.config.maxReportsCount
-
 /**
  * @typedef {object} ReportEntry
  * @property {string} id - Unique ID for the report.
@@ -25,19 +20,16 @@ const reportsPropertyKeyName = "anticheat:reports_v1";
  * @property {string} reportedName - NameTag of the player who was reported.
  * @property {string} reason - The reason provided for the report.
  */
-
 /**
  * @type {ReportEntry[]}
  * In-memory cache for report entries. Initialized on script load.
  */
 let reportsInMemory = [];
-
 /**
  * @type {boolean}
  * Flag indicating if the in-memory reports have changed and need to be persisted.
  */
 let reportsAreDirty = false;
-
 /**
  * Generates a somewhat unique report ID combining timestamp and random characters.
  * @returns {string} A unique report ID.
@@ -45,7 +37,6 @@ let reportsAreDirty = false;
 function generateReportId() {
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
 }
-
 /**
  * Loads reports from the dynamic property into the in-memory cache.
  * Must be called once during script initialization from a context that can provide dependencies.
@@ -69,11 +60,8 @@ export function initializeReportCache(dependencies) {
         console.error(`[ReportManager] Error reading/parsing reports during initialization: ${error.stack || error}`);
         playerUtils.debugLog(`[ReportManager] Error reading/parsing reports during initialization: ${error.message}`, dependencies, "System");
     }
-    reportsInMemory = []; // Ensure reportsInMemory is an array
+    reportsInMemory = [];
 }
-
-// Removed self-invocation; initialization must be called from main.js with dependencies.
-
 /**
  * Persists the current in-memory report cache to dynamic properties if changes have been made.
  * @param {object} dependencies - The standard dependencies object.
@@ -86,7 +74,7 @@ export function persistReportsToDisk(dependencies) {
     }
     try {
         world.setDynamicProperty(reportsPropertyKeyName, JSON.stringify(reportsInMemory));
-        reportsAreDirty = false; // Reset dirty flag after successful save
+        reportsAreDirty = false;
         playerUtils.debugLog(`[ReportManager] Persisted ${reportsInMemory.length} reports to dynamic property.`, dependencies, "System");
         return true;
     } catch (error) {
@@ -95,16 +83,13 @@ export function persistReportsToDisk(dependencies) {
         return false;
     }
 }
-
 /**
  * Retrieves reports from the in-memory cache. Reports are stored newest first if added via `addReport`.
  * @returns {ReportEntry[]} An array of report objects (a copy of the cache).
  */
 export function getReports() {
-    // Return a copy to prevent external modification of the cache
     return [...reportsInMemory];
 }
-
 /**
  * Adds a new player report to the in-memory cache and marks reports as dirty for saving.
  * Manages report limits by removing the oldest if `maxReportsCount` is exceeded.
@@ -117,7 +102,7 @@ export function getReports() {
  */
 export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) {
     const { playerUtils, config } = dependencies;
-    const currentMaxReportsCount = config.maxReportsCount !== undefined ? config.maxReportsCount : 100; // Fallback if not in config
+    const currentMaxReportsCount = config.maxReportsCount !== undefined ? config.maxReportsCount : 100;
 
     if (!reporterPlayer?.id || !reporterPlayer?.nameTag ||
         !reportedPlayer?.id || !reportedPlayer?.nameTag || !reason) {
@@ -132,24 +117,20 @@ export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) 
         reporterName: reporterPlayer.nameTag,
         reportedId: reportedPlayer.id,
         reportedName: reportedPlayer.nameTag,
-        reason: reason.trim() // Trim reason
+        reason: reason.trim()
     };
 
-    reportsInMemory.unshift(newReport); // Add new report to the beginning (newest first)
+    reportsInMemory.unshift(newReport);
 
     if (reportsInMemory.length > currentMaxReportsCount) {
-        reportsInMemory.length = currentMaxReportsCount; // Truncate to keep only newest N entries
+        reportsInMemory.length = currentMaxReportsCount;
     }
 
     reportsAreDirty = true;
     playerUtils.debugLog(`[ReportManager] Added report by ${newReport.reporterName} against ${newReport.reportedName}. Cache: ${reportsInMemory.length}`, dependencies, newReport.reporterName);
 
-    // Note: `addReport` only marks reports as dirty. Actual persistence to disk
-    // should be managed externally by calling `persistReportsToDisk` periodically
-    // or during specific game events.
     return newReport;
 }
-
 /**
  * Clears all stored player reports from memory and persists the empty list.
  * @param {object} dependencies - The standard dependencies object.
@@ -162,7 +143,6 @@ export function clearAllReports(dependencies) {
     playerUtils.debugLog("[ReportManager] All reports cleared from memory. Attempting to persist change.", dependencies, "System");
     return persistReportsToDisk(dependencies);
 }
-
 /**
  * Clears a specific report from storage by its ID.
  * Operates on the in-memory cache and then persists changes.

@@ -6,13 +6,10 @@
  */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
-// permissionLevels, getString will be from dependencies.
-// updateConfigValue remains a direct import.
-import { updateConfigValue } from '../config.js'; // editableConfigValues also from config.js if needed by showEditConfigForm's logic for what's editable
+import { updateConfigValue } from '../config.js';
 import { formatSessionDuration } from '../utils/playerUtils.js';
-import { permissionLevels as importedPermissionLevels, editableConfigValues as globalEditableConfigValues } from '../config.js'; // For showEditConfigForm editable keys, and permissionLevels access
+import { permissionLevels as importedPermissionLevels, editableConfigValues as globalEditableConfigValues } from '../config.js';
 
-// Helper function to format dimension names
 function formatDimensionName(dimensionId) {
     if (typeof dimensionId !== 'string') return "Unknown";
     let name = dimensionId.replace("minecraft:", "");
@@ -21,7 +18,26 @@ function formatDimensionName(dimensionId) {
     return name;
 }
 
-// Forward declarations
+/**
+ * @file AntiCheatsBP/scripts/core/uiManager.js
+ * @description Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
+ * actions and player information within the AntiCheat system.
+ * @version 1.1.1
+ */
+import * as mc from '@minecraft/server';
+import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
+import { updateConfigValue } from '../config.js';
+import { formatSessionDuration } from '../utils/playerUtils.js';
+import { permissionLevels as importedPermissionLevels, editableConfigValues as globalEditableConfigValues } from '../config.js';
+
+function formatDimensionName(dimensionId) {
+    if (typeof dimensionId !== 'string') return "Unknown";
+    let name = dimensionId.replace("minecraft:", "");
+    name = name.replace(/_/g, " ");
+    name = name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    return name;
+}
+
 let showAdminPanelMain;
 let showEditConfigForm;
 let showOnlinePlayersList;
@@ -34,24 +50,14 @@ let showActionLogsForm;
 let showResetFlagsForm;
 let showWatchedPlayersList;
 
-/**
- * A reusable helper function to show a confirmation modal.
- */
 async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmToggleLabelKey, onConfirmCallback, dependencies, bodyParams = {}) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
 
-    // Invented strings based on keys
-    const title = titleKey.substring(titleKey.lastIndexOf('.') + 1).replace(/([A-Z])/g, ' $1').trim(); // "ui.common.confirmAction" -> "Confirm Action"
-    let body = bodyKey.substring(bodyKey.lastIndexOf('.') + 1).replace(/([A-Z])/g, ' $1').trim(); // "ui.common.confirmBody" -> "Confirm Body"
-    if (bodyParams) {
-        for (const key in bodyParams) {
-            body = body.replace(`{${key}}`, bodyParams[key]);
-        }
-    }
-    const toggleLabel = confirmToggleLabelKey.substring(confirmToggleLabelKey.lastIndexOf('.') + 1).replace(/([A-Z])/g, ' $1').trim(); // "ui.common.confirmToggle" -> "Confirm Toggle"
-    const actionCancelledMsg = "Action cancelled."; // Based on "ui.common.actionCancelled"
-    const genericFormErrorMsg = "An error occurred while displaying this form."; // Based on "common.error.genericForm"
-
+    const title = getString(titleKey);
+    let body = getString(bodyKey, bodyParams);
+    const toggleLabel = getString(confirmToggleLabelKey);
+    const actionCancelledMsg = getString("ui.common.actionCancelled");
+    const genericFormErrorMsg = getString("common.error.genericForm");
 
     const modalForm = new ModalFormData();
     modalForm.title(title);
@@ -74,24 +80,22 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
         console.error(`[UiManager] Error in _showConfirmationModal (title: ${titleKey}) for ${adminPlayer.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in _showConfirmationModal (title: ${titleKey}) for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog({ context: 'uiManager._showConfirmationModal', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack, titleKey: titleKey }, dependencies); // Type will be 'error'
+            logManager.addLog({ context: 'uiManager._showConfirmationModal', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack, titleKey: titleKey }, dependencies);
         }
         adminPlayer.sendMessage(genericFormErrorMsg);
     }
 }
 
-
 async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] Inspect Player form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented strings
-    const title = "Inspect Player"; // Based on "ui.inspectPlayerForm.title"
-    const textFieldLabel = "Player Name"; // Based on "ui.inspectPlayerForm.textField.label"
-    const textFieldPlaceholder = "Enter player name"; // Based on "ui.inspectPlayerForm.textField.placeholder"
-    const nameEmptyMsg = "§cName cannot be empty."; // Based on "common.error.nameEmpty"
-    const commandNotFoundMsg = (moduleName) => `§cError: Command module '${moduleName}' not found or failed to load.`; // Based on "common.error.commandModuleNotFound"
-    const genericFormErrorMsg = "An error occurred while displaying this form."; // Based on "common.error.genericForm"
+    const title = getString("ui.inspectPlayerForm.title");
+    const textFieldLabel = getString("ui.inspectPlayerForm.textField.label");
+    const textFieldPlaceholder = getString("ui.inspectPlayerForm.textField.placeholder");
+    const nameEmptyMsg = getString("common.error.nameEmpty");
+    const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
+    const genericFormErrorMsg = getString("common.error.genericForm");
 
     const modalForm = new ModalFormData();
     modalForm.title(title);
@@ -120,48 +124,35 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
         console.error(`[UiManager] Error in showInspectPlayerForm for ${adminPlayer.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showInspectPlayerForm for ${adminPlayer.nameTag}: ${error.message}`, dependencies, adminPlayer.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog({ context: 'uiManager.showInspectPlayerForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);  // Type will be 'error'
+            logManager.addLog({ context: 'uiManager.showInspectPlayerForm', player: adminPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
         }
         adminPlayer.sendMessage(genericFormErrorMsg);
     }
 }
 
 async function showMyStats(player, dependencies) {
-    const { playerDataManager, playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerDataManager, playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] showMyStats for ${player.nameTag}`, dependencies, player.nameTag);
 
     const pData = playerDataManager.getPlayerData(player.id);
-    // Invented string
-    let sessionPlaytimeFormatted = "N/A"; // Based on "common.value.notAvailable"
+    let sessionPlaytimeFormatted = getString("common.value.notAvailable");
 
     if (pData && typeof pData.joinTime === 'number' && pData.joinTime > 0) {
         const durationMs = Date.now() - pData.joinTime;
         sessionPlaytimeFormatted = formatSessionDuration(durationMs);
     }
 
-    // Invented strings
-    const title = "My Stats"; // Based on "ui.myStats.title"
-    const bodyText = (playtime) => `Session Playtime: ${playtime}`; // Based on "ui.myStats.body"
-    const locationLabel = (x, y, z) => `Location: X:${x}, Y:${y}, Z:${z}`; // Based on "ui.myStats.labelLocation"
-    const dimensionLabel = (dimName) => `Dimension: ${dimName}`; // Based on "ui.myStats.labelDimension"
-    const backButton = "Back"; // Based on "common.button.back"
-    const genericFormErrorMsg = "An error occurred while displaying this form."; // Based on "common.error.genericForm"
+    const title = getString("ui.myStats.title");
+    const bodyText = getString("ui.myStats.body", { playtime: sessionPlaytimeFormatted });
+    const locationLabel = getString("ui.myStats.labelLocation", { x: Math.floor(player.location.x), y: Math.floor(player.location.y), z: Math.floor(player.location.z) });
+    const dimensionLabel = getString("ui.myStats.labelDimension", { dimensionName: formatDimensionName(player.dimension.id) });
+    const backButton = getString("common.button.back");
+    const genericFormErrorMsg = getString("common.error.genericForm");
 
     const statsForm = new MessageFormData();
     statsForm.title(title);
 
-    const location = player.location;
-    const locX = Math.floor(location.x);
-    const locY = Math.floor(location.y);
-    const locZ = Math.floor(location.z);
-    const dimensionId = player.dimension.id;
-    const friendlyDimensionName = formatDimensionName(dimensionId);
-
-    let bodyLines = [];
-    bodyLines.push(bodyText(sessionPlaytimeFormatted));
-    bodyLines.push("");
-    bodyLines.push(locationLabel(locX, locY, locZ));
-    bodyLines.push(dimensionLabel(friendlyDimensionName));
+    let bodyLines = [bodyText, "", locationLabel, dimensionLabel];
 
     statsForm.body(bodyLines.join('\n'));
     statsForm.button1(backButton);
@@ -173,7 +164,7 @@ async function showMyStats(player, dependencies) {
         console.error(`[UiManager] Error in showMyStats for ${player.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showMyStats for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog({ context: 'uiManager.showMyStats', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
+            logManager.addLog({ context: 'uiManager.showMyStats', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
         }
         player.sendMessage(genericFormErrorMsg);
         await showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
@@ -181,14 +172,13 @@ async function showMyStats(player, dependencies) {
 }
 
 async function showServerRules(player, dependencies) {
-    const { config, playerUtils: depPlayerUtils, playerDataManager, logManager } = dependencies; // getString removed
+    const { config, playerUtils: depPlayerUtils, playerDataManager, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] showServerRules for ${player.nameTag}`, dependencies, player.nameTag);
 
-    // Invented strings
-    const noRulesDefinedMsg = "No server rules are currently defined."; // Based on "ui.serverRules.noRulesDefined"
-    const title = "Server Rules"; // Based on "ui.serverRules.title"
-    const backButton = "Back"; // Based on "common.button.back"
-    const genericFormErrorMsg = "An error occurred while displaying this form."; // Based on "common.error.genericForm"
+    const noRulesDefinedMsg = getString("ui.serverRules.noRulesDefined");
+    const title = getString("ui.serverRules.title");
+    const backButton = getString("common.button.back");
+    const genericFormErrorMsg = getString("common.error.genericForm");
 
     const rules = config.serverRules;
     let rulesBody = "";
@@ -211,7 +201,7 @@ async function showServerRules(player, dependencies) {
         console.error(`[UiManager] Error in showServerRules for ${player.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showServerRules for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog({ context: 'uiManager.showServerRules', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
+            logManager.addLog({ context: 'uiManager.showServerRules', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
         }
         player.sendMessage(genericFormErrorMsg);
         await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
@@ -219,16 +209,15 @@ async function showServerRules(player, dependencies) {
 }
 
 async function showHelpAndLinks(player, dependencies) {
-    const { config, playerUtils: depPlayerUtils, playerDataManager, logManager } = dependencies; // getString removed
+    const { config, playerUtils: depPlayerUtils, playerDataManager, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] showHelpAndLinks for ${player.nameTag}`, dependencies, player.nameTag);
 
-    // Invented strings
-    const title = "Helpful Links"; // Based on "ui.helpfulLinks.title"
-    const body = "Select a link to view its URL:"; // Based on "ui.helpfulLinks.body"
-    const noLinksMsg = "No helpful links are currently configured."; // Based on "ui.helpfulLinks.noLinks"
-    const backButton = "Back"; // Based on "common.button.back"
-    const linkMessageFormat = (linkTitle, linkUrl) => `§e${linkTitle}: §b${linkUrl}`; // Based on "ui.helpfulLinks.linkMessageFormat"
-    const genericFormErrorMsg = "An error occurred while displaying this form."; // Based on "common.error.genericForm"
+    const title = getString("ui.helpfulLinks.title");
+    const body = getString("ui.helpfulLinks.body");
+    const noLinksMsg = getString("ui.helpfulLinks.noLinks");
+    const backButton = getString("common.button.back");
+    const linkMessageFormat = (linkTitle, linkUrl) => getString("ui.helpfulLinks.linkMessageFormat", { title: linkTitle, url: linkUrl });
+    const genericFormErrorMsg = getString("common.error.genericForm");
 
     const form = new ActionFormData();
     form.title(title);
@@ -249,7 +238,7 @@ async function showHelpAndLinks(player, dependencies) {
             console.error(`[UiManager] Error showing noLinks form in showHelpAndLinks for ${player.nameTag}: ${error.stack || error}`);
             depPlayerUtils.debugLog(`[UiManager] Error showing noLinks form in showHelpAndLinks for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
             if (logManager?.addLog) {
-                logManager.addLog({ context: 'uiManager.showHelpAndLinks.noLinksForm', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
+                logManager.addLog({ context: 'uiManager.showHelpAndLinks.noLinksForm', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
             }
             await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
         }
@@ -285,7 +274,7 @@ async function showHelpAndLinks(player, dependencies) {
         console.error(`[UiManager] Error in showHelpAndLinks for ${player.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showHelpAndLinks for ${player.nameTag}: ${error.message}`, dependencies, player.nameTag);
         if (logManager?.addLog) {
-            logManager.addLog({ context: 'uiManager.showHelpAndLinks', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies); // Type will be 'error'
+            logManager.addLog({ context: 'uiManager.showHelpAndLinks', player: player?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
         }
         player.sendMessage(genericFormErrorMsg);
         await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
@@ -293,35 +282,32 @@ async function showHelpAndLinks(player, dependencies) {
 }
 
 showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataManager, dependencies) {
-    const { config, playerUtils: depPlayerUtils, logManager, permissionLevels } = dependencies; // getString removed
+    const { config, playerUtils: depPlayerUtils, logManager, permissionLevels, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] showPlayerActionsForm for ${targetPlayer.nameTag} by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented strings
-    const title = (targetName) => `Player Actions: ${targetName}`; // Based on "ui.playerActions.title"
-    const body = (flags, watched) => `Flags: ${flags}\nWatched: ${watched ? 'Yes' : 'No'}`; // Based on "ui.playerActions.body"
-    const unfreezeButtonText = "Unfreeze Player"; // Based on "ui.playerActions.button.unfreeze"
-    const freezeButtonText = "Freeze Player"; // Based on "ui.playerActions.button.freeze"
-    const unmutePermanentButtonText = "Unmute (Permanent)"; // Based on "ui.playerActions.button.unmutePermanent"
-    const unmuteTimedButtonText = (time) => `Unmute (Expires: ${time})`; // Based on "ui.playerActions.button.unmuteTimed"
-    const muteButtonText = "Mute Player"; // Based on "ui.playerActions.button.mute"
-    const viewFlagsButton = "View Flags"; // Based on "ui.playerActions.button.viewFlags"
-    const viewInventoryButton = "View Inventory"; // Based on "ui.playerActions.button.viewInventory"
-    const teleportToButton = "Teleport To Player"; // Based on "ui.playerActions.button.teleportTo"
-    const teleportHereButton = "Teleport Player Here"; // Based on "ui.playerActions.button.teleportHere"
-    const kickButton = "Kick Player"; // Based on "ui.playerActions.button.kick"
-    const banButton = "Ban Player"; // Based on "ui.playerActions.button.ban"
-    const resetFlagsButton = "Reset Flags"; // Based on "ui.playerActions.button.resetFlags"
-    const clearInventoryButton = "Clear Inventory"; // Based on "ui.playerActions.button.clearInventory"
-    const backToListButton = "Back to Player List"; // Based on "ui.playerActions.button.backToList"
-
+    const title = getString("ui.playerActions.title", { targetPlayerName: targetPlayer.nameTag });
+    const unfreezeButtonText = getString("ui.playerActions.button.unfreeze");
+    const freezeButtonText = getString("ui.playerActions.button.freeze");
+    const unmutePermanentButtonText = getString("ui.playerActions.button.unmutePermanent");
+    const unmuteTimedButtonText = (time) => getString("ui.playerActions.button.unmuteTimed", { expiryDate: time });
+    const muteButtonText = getString("ui.playerActions.button.mute");
+    const viewFlagsButton = getString("ui.playerActions.button.viewFlags");
+    const viewInventoryButton = getString("ui.playerActions.button.viewInventory");
+    const teleportToButton = getString("ui.playerActions.button.teleportTo");
+    const teleportHereButton = getString("ui.playerActions.button.teleportHere");
+    const kickButton = getString("ui.playerActions.button.kick");
+    const banButton = getString("ui.playerActions.button.ban");
+    const resetFlagsButton = getString("ui.playerActions.button.resetFlags");
+    const clearInventoryButton = getString("ui.playerActions.button.clearInventory");
+    const backToListButton = getString("ui.playerActions.button.backToList");
 
     const form = new ActionFormData();
-    form.title(title(targetPlayer.nameTag));
+    form.title(title);
 
     const targetPData = playerDataManager.getPlayerData(targetPlayer.id);
     const flagCount = targetPData?.flags?.totalFlags ?? 0;
     const isWatched = targetPData?.isWatched ?? false;
-    form.body(body(flagCount, isWatched));
+    form.body(getString("ui.playerActions.body", { flags: flagCount.toString(), watchedStatus: isWatched ? getString("common.boolean.yes") : getString("common.boolean.no") }));
 
     const frozenTag = "frozen";
     const currentFreezeButtonText = targetPlayer.hasTag(frozenTag) ? unfreezeButtonText : freezeButtonText;
@@ -359,16 +345,9 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         }
 
         const showModalAndExecute = async (commandName, titleKey, fields, argsTransform = (vals) => vals, titleParams = {}) => {
-            // logManager is already in scope from the outer function
-            // Invented strings for this inner function
-            const commandNotFoundMsg = (moduleName) => `§cError: Command module '${moduleName}' not found or failed to load.`;
-            let modalTitle = titleKey.substring(titleKey.lastIndexOf('.') + 1).replace(/([A-Z])/g, ' $1').trim();
-            if (titleParams) {
-                for (const key in titleParams) {
-                    modalTitle = modalTitle.replace(`{${key}}`, titleParams[key]);
-                }
-            }
-            const genericFormErrorMsg = "An error occurred while displaying this form.";
+            const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
+            const modalTitle = getString(titleKey, titleParams);
+            const genericFormErrorMsg = getString("common.error.genericForm");
 
             const cmdExec = dependencies.commandExecutionMap?.get(commandName);
             if (!cmdExec) {
@@ -377,22 +356,17 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
             }
             const modal = new ModalFormData().title(modalTitle);
             fields.forEach(field => {
-                // Invent strings for field labels and placeholders
-                const label = field.labelKey.substring(field.labelKey.lastIndexOf('.') + 1).replace(/([A-Z])/g, ' $1').trim();
-                const placeholder = field.placeholderKey.substring(field.placeholderKey.lastIndexOf('.') + 1).replace(/([A-Z])/g, ' $1').trim();
+                const label = getString(field.labelKey);
+                const placeholder = getString(field.placeholderKey);
                 if (field.type === 'textField') modal.textField(label, placeholder);
                 if (field.type === 'toggle') modal.toggle(label, field.defaultValue);
             });
             try {
                 const modalResponse = await modal.show(adminPlayer);
                 if (modalResponse.canceled) {
-                    let cancelledMsg = `${commandName} action cancelled.`; // Generic cancellation
-                    if (commandName === 'kick') cancelledMsg = "Kick action cancelled."; // Based on "ui.playerActions.kick.cancelled"
-                    else if (commandName === 'ban') cancelledMsg = "Ban action cancelled."; // Based on "ui.playerActions.ban.cancelled"
-                    else if (commandName === 'mute') cancelledMsg = "Mute action cancelled."; // Based on "ui.playerActions.mute.cancelled"
-
-                    adminPlayer.sendMessage(cancelledMsg);
-                    return true; // Still true as the sequence was user-cancelled, not an error
+                    let cancelledMsgKey = `ui.playerActions.${commandName}.cancelled`;
+                    adminPlayer.sendMessage(getString(cancelledMsgKey, `§7${commandName} action cancelled.`));
+                    return true;
                 }
                 await cmdExec(adminPlayer, argsTransform([targetPlayer.nameTag, ...modalResponse.formValues]), dependencies);
                 return true;
@@ -400,26 +374,24 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                 console.error(`[UiManager] Error in showModalAndExecute (command: ${commandName}) for ${adminPlayer.nameTag}: ${modalError.stack || modalError}`);
                 depPlayerUtils.debugLog(`[UiManager] Error in showModalAndExecute (command: ${commandName}) for ${adminPlayer.nameTag}: ${modalError.message}`, dependencies, adminPlayer.nameTag);
                 if (logManager?.addLog) {
-                     logManager.addLog({ context: `uiManager.showModalAndExecute.${commandName}`, player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: modalError.message, stack: modalError.stack }, dependencies); // Type will be 'error'
+                     logManager.addLog({ context: `uiManager.showModalAndExecute.${commandName}`, player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: modalError.message, stack: modalError.stack }, dependencies);
                 }
                 adminPlayer.sendMessage(genericFormErrorMsg);
-                return false; // Error occurred
+                return false;
             }
         };
 
         let shouldReturnToPlayerList = false;
         let shouldReturnToPlayerActions = true;
 
-        // Invented strings for messages within the switch cases
-        const commandNotFoundMsg = (moduleName) => `§cError: Command module '${moduleName}' not found or failed to load.`;
-        const teleportToPlayerSuccessMsg = (name) => `§aTeleported to ${name}.`;
-        const teleportPlayerToAdminSuccessMsg = (name) => `§aTeleported ${name} to you.`;
-        const teleportPlayerToAdminNotifyTargetMsg = "§aYou have been teleported.";
-        const teleportErrorMsg = (errMsg) => `§cTeleport error: ${errMsg}`;
-        const clearInventorySuccessMsg = (name) => `§aCleared ${name}'s inventory.`;
-        const clearInventoryFailMsg = (name) => `§cFailed to clear ${name}'s inventory.`;
-        const invalidSelectionMsg = "§cInvalid selection.";
-
+        const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
+        const teleportToPlayerSuccessMsg = (name) => getString("ui.playerActions.teleportTo.success", { targetPlayerName: name });
+        const teleportPlayerToAdminSuccessMsg = (name) => getString("ui.playerActions.teleportHere.success", { targetPlayerName: name });
+        const teleportPlayerToAdminNotifyTargetMsg = getString("ui.playerActions.teleportHere.targetNotification");
+        const teleportErrorMsg = (errMsg) => getString("ui.playerActions.teleport.error", { error: errMsg });
+        const clearInventorySuccessMsg = (name) => getString("ui.playerActions.clearInventory.success", { targetPlayerName: name });
+        const clearInventoryFailMsg = (name) => getString("ui.playerActions.clearInventory.fail", { targetPlayerName: name });
+        const invalidSelectionMsg = getString("ui.playerActions.error.invalidSelection");
 
         switch (response.selection) {
             case 0:
@@ -460,20 +432,20 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     }
                 }
                 break;
-            case 4: // Kick
-                await showModalAndExecute('kick', "ui.playerActions.kick.title", // Title key will be converted by showModalAndExecute
+            case 4:
+                await showModalAndExecute('kick', "ui.playerActions.kick.title",
                     [{ type: 'textField', labelKey: "ui.playerActions.kick.reasonPrompt", placeholderKey: "ui.playerActions.kick.reasonPlaceholder" }],
-                    (vals) => [vals[0], vals[1]], // playerName, reason
+                    (vals) => [vals[0], vals[1]],
                     { targetPlayerName: targetPlayer.nameTag }
                 );
                 shouldReturnToPlayerList = true;
                 break;
-            case 5: // Freeze
+            case 5:
                 const freezeExec = dependencies.commandExecutionMap?.get('freeze');
                 if (freezeExec) await freezeExec(adminPlayer, [targetPlayer.nameTag], dependencies);
                 else adminPlayer.sendMessage(commandNotFoundMsg("freeze"));
                 break;
-            case 6: // Mute/Unmute
+            case 6:
                 if (isTargetMuted) {
                     const unmuteExec = dependencies.commandExecutionMap?.get('unmute');
                     if (unmuteExec) await unmuteExec(adminPlayer, [targetPlayer.nameTag], dependencies);
@@ -481,30 +453,30 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                 } else {
                     await showModalAndExecute('mute', "ui.playerActions.mute.title",
                         [{ type: 'textField', labelKey: "ui.playerActions.mute.durationPrompt", placeholderKey: "ui.playerActions.mute.durationPlaceholder" }, { type: 'textField', labelKey: "ui.playerActions.mute.reasonPrompt", placeholderKey: "ui.playerActions.mute.reasonPlaceholder" }],
-                        (vals) => [vals[0], vals[1], vals[2]], // playerName, duration, reason
+                        (vals) => [vals[0], vals[1], vals[2]],
                         { targetPlayerName: targetPlayer.nameTag }
                     );
                 }
                 break;
-            case 7: // Ban
+            case 7:
                 await showModalAndExecute('ban', "ui.playerActions.ban.title",
                     [{ type: 'textField', labelKey: "ui.playerActions.ban.durationPrompt", placeholderKey: "ui.playerActions.ban.durationPlaceholder" }, { type: 'textField', labelKey: "ui.playerActions.ban.reasonPrompt", placeholderKey: "ui.playerActions.ban.reasonPlaceholder" }],
-                    (vals) => [vals[0], vals[1], vals[2]], // playerName, duration, reason
+                    (vals) => [vals[0], vals[1], vals[2]],
                     { targetPlayerName: targetPlayer.nameTag }
                 );
                 shouldReturnToPlayerList = true;
                 break;
-            case 8: // Reset Flags
+            case 8:
                 const resetFlagsExec = dependencies.commandExecutionMap?.get('resetflags');
                 if (resetFlagsExec) await resetFlagsExec(adminPlayer, [targetPlayer.nameTag], dependencies);
                 else adminPlayer.sendMessage(commandNotFoundMsg("resetflags"));
                 break;
-            case 9: // Clear Inventory
+            case 9:
                 await _showConfirmationModal(
                     adminPlayer,
-                    "ui.playerActions.clearInventory.confirmTitle", // Will be "Clear Inventory Confirm Title"
-                    "ui.playerActions.clearInventory.confirmBody",   // Will be "Clear Inventory Confirm Body"
-                    "ui.playerActions.clearInventory.confirmToggle", // Will be "Clear Inventory Confirm Toggle"
+                    "ui.playerActions.clearInventory.confirmTitle",
+                    "ui.playerActions.clearInventory.confirmBody",
+                    "ui.playerActions.clearInventory.confirmToggle",
                     async () => {
                         const inventoryComp = targetPlayer.getComponent("minecraft:inventory");
                         if (inventoryComp && inventoryComp.container) {
@@ -523,7 +495,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
                     { targetPlayerName: targetPlayer.nameTag }
                 );
                 break;
-            case 10: // Back to Player List
+            case 10:
                 shouldReturnToPlayerList = true;
                 shouldReturnToPlayerActions = false;
                 break;
@@ -543,28 +515,26 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         if (logManager?.addLog) {
             logManager.addLog({ context: 'uiManager.showPlayerActionsForm', player: adminPlayer?.nameTag, targetPlayer: targetPlayer?.nameTag, errorMessage: error.message, stack: error.stack }, dependencies);
         }
-        adminPlayer.sendMessage("An error occurred in Player Actions form."); // Based on "ui.playerActions.error.generic"
+        adminPlayer.sendMessage(getString("ui.playerActions.error.generic"));
         await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
     }
 };
 
 showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: showOnlinePlayersList requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
     const onlinePlayers = mc.world.getAllPlayers();
 
-    // Invented Strings
-    const title = (count) => `Online Players (${count})`; // Based on "ui.onlinePlayers.title"
-    const noPlayersBody = "No players online."; // Based on "ui.onlinePlayers.noPlayers"
-    const body = "Select a player to manage:"; // Based on "ui.onlinePlayers.body"
-    const playerEntryButton = (name, flags) => `${name} (Flags: ${flags})`; // Based on "ui.onlinePlayers.button.playerEntry"
-    const backToAdminPanelButton = "Back to Admin Panel"; // Based on "ui.button.backToAdminPanel"
-    const playerNotFoundMsg = (name) => `§cPlayer '${name}' not found or is not online.`; // Based on "common.error.playerNotFoundOnline"
-    const genericErrorMsg = "An error occurred in Online Players list."; // Based on "ui.onlinePlayers.error.generic"
-
+    const title = getString("ui.onlinePlayers.title", { count: onlinePlayers.length.toString() });
+    const noPlayersBody = getString("ui.onlinePlayers.noPlayers");
+    const body = getString("ui.onlinePlayers.body");
+    const playerEntryButton = (name, flags) => getString("ui.onlinePlayers.button.playerEntry", { playerName: name, flagCount: flags.toString() });
+    const backToAdminPanelButton = getString("ui.button.backToAdminPanel");
+    const playerNotFoundMsg = (name) => getString("common.error.playerNotFoundOnline", { playerName: name });
+    const genericErrorMsg = getString("ui.onlinePlayers.error.generic");
 
     const form = new ActionFormData();
-    form.title(title(onlinePlayers.length));
+    form.title(title);
 
     if (onlinePlayers.length === 0) {
         form.body(noPlayersBody);
@@ -607,20 +577,19 @@ showOnlinePlayersList = async function (adminPlayer, playerDataManager, dependen
 };
 
 showAdminPanelMain = async function (player, playerDataManager, config, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager, permissionLevels } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, permissionLevels, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Admin Panel Main requested by ${player.nameTag}`, dependencies, player.nameTag);
 
-    // Invented Strings
-    const adminPanelTitle = "AntiCheat Admin Panel"; // Based on "ui.adminPanel.title"
-    const adminPanelBody = (name) => `Welcome, ${name}. Select an action:`; // Based on "ui.adminPanel.body"
-    const viewPlayersButton = "View Online Players"; // Based on "ui.adminPanel.button.viewPlayers"
-    const inspectPlayerButton = "Inspect Player (Text)"; // Based on "ui.adminPanel.button.inspectPlayerText"
-    const resetFlagsButton = "Reset Player Flags (Text)"; // Based on "ui.adminPanel.button.resetFlagsText"
-    const listWatchedButton = "List Watched Players"; // Based on "ui.adminPanel.button.listWatched"
-    const serverManagementButton = "Server Management"; // Based on "ui.adminPanel.button.serverManagement"
-    const editConfigButton = "Edit System Config (Owner)"; // Based on "ui.adminPanel.button.editConfig"
-    const closeButton = "Close"; // Based on "common.button.close"
-    const genericErrorMsg = "An error occurred opening the admin panel."; // Based on "ui.adminPanel.error.generic"
+    const adminPanelTitle = getString("ui.adminPanel.title");
+    const adminPanelBody = getString("ui.adminPanel.body", { playerName: player.nameTag });
+    const viewPlayersButton = getString("ui.adminPanel.button.viewPlayers");
+    const inspectPlayerButton = getString("ui.adminPanel.button.inspectPlayerText");
+    const resetFlagsButton = getString("ui.adminPanel.button.resetFlagsText");
+    const listWatchedButton = getString("ui.adminPanel.button.listWatched");
+    const serverManagementButton = getString("ui.adminPanel.button.serverManagement");
+    const editConfigButton = getString("ui.adminPanel.button.editConfig");
+    const closeButton = getString("common.button.close");
+    const genericErrorMsg = getString("ui.adminPanel.error.generic");
 
     const form = new ActionFormData();
     const userPermLevel = depPlayerUtils.getPlayerPermissionLevel(player, dependencies);
@@ -628,7 +597,7 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
     try {
         if (userPermLevel <= permissionLevels.admin) {
             form.title(adminPanelTitle);
-            form.body(adminPanelBody(player.nameTag));
+            form.body(adminPanelBody);
             form.button(viewPlayersButton, "textures/ui/icon_multiplayer");
             form.button(inspectPlayerButton, "textures/ui/spyglass");
             form.button(resetFlagsButton, "textures/ui/refresh");
@@ -674,22 +643,20 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
 };
 
 async function showNormalUserPanelMain(player, playerDataManager, config, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Normal User Panel Main requested by ${player.nameTag}`, dependencies, player.nameTag);
 
-    // Invented Strings
-    const normalPanelTitle = "User Panel"; // Based on "ui.normalPanel.title"
-    const normalPanelBody = (name) => `Welcome, ${name}!`; // Based on "ui.normalPanel.body"
-    const myStatsButton = "My Stats"; // Based on "ui.normalPanel.button.myStats"
-    const serverRulesButton = "Server Rules"; // Based on "ui.normalPanel.button.serverRules"
-    const helpLinksButton = "Helpful Links"; // Based on "ui.normalPanel.button.helpLinks"
-    const closeButton = "Close"; // Based on "common.button.close"
-    const genericFormErrorMsg = "An error occurred while displaying this form."; // Based on "common.error.genericForm"
-
+    const normalPanelTitle = getString("ui.normalPanel.title");
+    const normalPanelBody = getString("ui.normalPanel.body", { playerName: player.nameTag });
+    const myStatsButton = getString("ui.normalPanel.button.myStats");
+    const serverRulesButton = getString("ui.normalPanel.button.serverRules");
+    const helpLinksButton = getString("ui.normalPanel.button.helpLinks");
+    const closeButton = getString("common.button.close");
+    const genericFormErrorMsg = getString("common.error.genericForm");
 
     const form = new ActionFormData();
     form.title(normalPanelTitle);
-    form.body(normalPanelBody(player.nameTag));
+    form.body(normalPanelBody);
     form.button(myStatsButton, "textures/ui/icon_multiplayer");
     form.button(serverRulesButton, "textures/ui/book_glyph");
     form.button(helpLinksButton, "textures/ui/lightbulb_idea");
@@ -715,26 +682,25 @@ async function showNormalUserPanelMain(player, playerDataManager, config, depend
 export { showAdminPanelMain };
 
 showSystemInfo = async function (adminPlayer, config, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager, reportManager, worldBorderManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, reportManager, worldBorderManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: System Info requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const notApplicable = "N/A"; // Based on "common.value.notApplicable"
-    const title = "System Information"; // Based on "ui.systemInfo.title"
-    const acVersionText = (ver) => `AntiCheat Version: ${ver}`; // Based on "ui.systemInfo.entry.acVersion"
-    const mcVersionText = (ver) => `Minecraft Version: ${ver}`; // Based on "ui.systemInfo.entry.mcVersion"
-    const serverTimeText = (time) => `Server Time: ${time}`; // Based on "ui.systemInfo.entry.serverTime"
-    const currentTickLabel = "Current Server Tick:"; // Based on "ui.systemInfo.label.currentTick"
-    const worldTimeLabel = "World Time (ticks):"; // Based on "ui.systemInfo.label.worldTime"
-    const onlinePlayersText = (online, max) => `Online Players: ${online}/${max}`; // Based on "ui.systemInfo.entry.onlinePlayers"
-    const totalPlayerDataText = (count) => `Total Player Data Entries: ${count}`; // Based on "ui.systemInfo.entry.totalPlayerData"
-    const watchedPlayersText = (count) => `Watched Players (Online): ${count}`; // Based on "ui.systemInfo.entry.watchedPlayers"
-    const mutedPersistentText = (count) => `Persistent Mutes (Online): ${count}`; // Based on "ui.systemInfo.entry.mutedPersistent"
-    const bannedPersistentText = (count) => `Persistent Bans (Online): ${count}`; // Based on "ui.systemInfo.entry.bannedPersistent"
-    const activeBordersText = (count) => `Active World Borders: ${count}`; // Based on "ui.systemInfo.entry.activeWorldBorders"
-    const logEntriesText = (count) => `Log Manager Entries: ${count}`; // Based on "ui.systemInfo.entry.logManagerEntries"
-    const reportEntriesText = (count) => `Report Manager Entries: ${count}`; // Based on "ui.systemInfo.entry.reportManagerEntries"
-    const backButtonText = "Back to Server Management"; // Based on "ui.systemInfo.button.backToServerMgmt"
+    const notApplicable = getString("common.value.notApplicable");
+    const title = getString("ui.systemInfo.title");
+    const acVersionText = getString("ui.systemInfo.entry.acVersion", { version: dependencies.config.acVersion || notApplicable });
+    const mcVersionText = getString("ui.systemInfo.entry.mcVersion", { version: mc.game.version });
+    const serverTimeText = getString("ui.systemInfo.entry.serverTime", { time: new Date().toLocaleTimeString() });
+    const currentTickLabel = getString("ui.systemInfo.label.currentTick");
+    const worldTimeLabel = getString("ui.systemInfo.label.worldTime");
+    const onlinePlayersText = (online, max) => getString("ui.systemInfo.entry.onlinePlayers", { onlinePlayers: online.toString(), maxPlayers: max.toString() });
+    const totalPlayerDataText = (count) => getString("ui.systemInfo.entry.totalPlayerData", { count: count.toString() });
+    const watchedPlayersText = (count) => getString("ui.systemInfo.entry.watchedPlayers", { count: count.toString() });
+    const mutedPersistentText = (count) => getString("ui.systemInfo.entry.mutedPersistent", { count: count.toString() });
+    const bannedPersistentText = (count) => getString("ui.systemInfo.entry.bannedPersistent", { count: count.toString() });
+    const activeBordersText = (count) => getString("ui.systemInfo.entry.activeWorldBorders", { count: count.toString() });
+    const logEntriesText = (count) => getString("ui.systemInfo.entry.logManagerEntries", { count: count.toString() });
+    const reportEntriesText = (count) => getString("ui.systemInfo.entry.reportManagerEntries", { count: count.toString() });
+    const backButtonText = getString("ui.systemInfo.button.backToServerMgmt");
 
     const onlinePlayers = mc.world.getAllPlayers();
     const pDataEntries = playerDataManager.getAllPlayerDataEntries ? playerDataManager.getAllPlayerDataEntries().length : notApplicable;
@@ -759,9 +725,9 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
     const form = new MessageFormData()
         .title(title)
         .body(
-            `${acVersionText(dependencies.config.acVersion || "N/A")}\n` +
-            `${mcVersionText(mc.game.version)}\n` +
-            `${serverTimeText(new Date().toLocaleTimeString())}\n` +
+            `${acVersionText}\n` +
+            `${mcVersionText}\n` +
+            `${serverTimeText}\n` +
             `${currentTickLabel}§r §e${mc.system.currentTick}\n` +
             `${worldTimeLabel}§r §e${mc.world.getTime()}\n` +
             `${onlinePlayersText(onlinePlayers.length, mc.world.maxPlayers)}\n` +
@@ -787,21 +753,19 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
 };
 
 showEditConfigForm = async function (adminPlayer, playerDataManager, currentEditableConfig, dependencies) {
-    // currentEditableConfig is globalEditableConfigValues passed from showAdminPanelMain
-    const { playerUtils: depPlayerUtils, logManager, config: currentRuntimeConfig, permissionLevels } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, config: currentRuntimeConfig, permissionLevels, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Edit Config Form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const ownerOnlyError = "§cOnly the server owner can edit the configuration."; // Based on "ui.configEditor.error.ownerOnly"
-    const title = "Edit Configuration"; // Based on "ui.configEditor.title"
-    const body = "Select a configuration value to edit. Current values are shown."; // Based on "ui.configEditor.body"
-    const objectPlaceholder = "[Object - Click to Edit Array]"; // Based on "ui.configEditor.button.objectPlaceholder"
-    const buttonFormat = (key, type, value) => `${key} (${type}): ${value}`; // Based on "ui.configEditor.button.format"
-    const buttonFormatTruncated = (key, type, value) => `${key} (${type}): ${value}...`; // Based on "ui.configEditor.button.formatTruncated"
-    const backButtonText = "Back to Server Management"; // Based on "ui.configEditor.button.backToAdminPanel" (assuming it goes to server mgmt)
-    const nonArrayObjectError = (key) => `§cCannot edit non-array object '${key}' via this UI.`; // Based on "ui.configEditor.error.nonArrayObject"
-    const invalidSelectionError = "§cInvalid selection."; // Based on "ui.configEditor.error.invalidSelection"
-    const genericError = "§cAn error occurred while editing the configuration."; // Based on "ui.configEditor.error.generic"
+    const ownerOnlyError = getString("ui.configEditor.error.ownerOnly");
+    const title = getString("ui.configEditor.title");
+    const body = getString("ui.configEditor.body");
+    const objectPlaceholder = getString("ui.configEditor.button.objectPlaceholder");
+    const buttonFormat = (key, type, value) => getString("ui.configEditor.button.format", { key, type, value });
+    const buttonFormatTruncated = (key, type, value) => getString("ui.configEditor.button.formatTruncated", { key, type, value });
+    const backButtonText = getString("ui.configEditor.button.backToAdminPanel");
+    const nonArrayObjectError = (key) => getString("ui.configEditor.error.nonArrayObject", { key });
+    const invalidSelectionError = getString("ui.configEditor.error.invalidSelection");
+    const genericError = getString("ui.configEditor.error.generic");
 
     if (depPlayerUtils.getPlayerPermissionLevel(adminPlayer, dependencies) !== permissionLevels.owner) {
         adminPlayer.sendMessage(ownerOnlyError);
@@ -867,51 +831,48 @@ showEditConfigForm = async function (adminPlayer, playerDataManager, currentEdit
 };
 
 async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, currentValue, dependencies) {
-    // currentValue is now from dependencies.config, passed by showEditConfigForm
-    const { playerDataManager, playerUtils: depPlayerUtils, logManager, config: currentRuntimeConfig } = dependencies; // getString removed
+    const { playerDataManager, playerUtils: depPlayerUtils, logManager, config: currentRuntimeConfig, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: showEditSingleConfigValueForm for key ${keyName} (type: ${keyType}) requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const title = (kName) => `Edit Value: ${kName}`; // Based on "ui.configEditor.valueInput.title"
-    const booleanLabel = (kName) => `Set ${kName} (true/false):`; // Based on "ui.configEditor.valueInput.boolean.label"
-    const stringLabel = (kName) => `New value for ${kName} (string):`; // Based on "ui.configEditor.valueInput.string.label"
-    const stringPlaceholder = "Enter string value"; // Based on "ui.configEditor.valueInput.string.placeholder"
-    const numberLabel = (kName) => `New value for ${kName} (number):`; // Based on "ui.configEditor.valueInput.number.label"
-    const numberPlaceholder = "Enter numeric value"; // Based on "ui.configEditor.valueInput.number.placeholder"
-    const arrayLabel = (kName) => `New value for ${kName} (JSON array, e.g., ["a","b"]):`; // Based on "ui.configEditor.valueInput.array.label"
-    const arrayPlaceholder = `Enter JSON array, e.g. ["item1", "item2"] or [1, 2, 3]`; // Based on "ui.configEditor.valueInput.array.placeholder"
-    const nonArrayObjectEditError = (kName) => `§cCannot edit complex object '${kName}' directly. Arrays of simple types are supported.`; // Based on "ui.configEditor.error.nonArrayObjectEdit"
-    const typeUnknownError = (type, kName) => `§cUnknown configuration type '${type}' for key '${kName}'. Cannot edit.`; // Based on "ui.configEditor.valueInput.error.typeUnknown"
-    const notANumberError = "Invalid input: Not a number."; // Based on "ui.configEditor.valueInput.error.notANumber"
-    const notAnArrayError = "Invalid input: Not a valid JSON array."; // Based on "ui.configEditor.valueInput.error.notAnArray"
-    const jsonFormatError = (errMsg) => `Invalid JSON array format: ${errMsg}`; // Based on "ui.configEditor.valueInput.error.jsonFormat"
-    const updateFailedMsg = (kName, reason) => `§cUpdate for '${kName}' failed: ${reason}`; // Based on "ui.configEditor.valueInput.error.updateFailed"
-    const noChangeMsg = (kName) => `§eNo change made to '${kName}'. Value is the same.`; // Based on "ui.configEditor.valueInput.noChange"
-    const successMsg = (kName, val) => `§aSuccessfully updated '${kName}' to: ${val}`; // Based on "ui.configEditor.valueInput.success"
-    const updateFailedInternalMsg = (kName) => `§cInternal error updating '${kName}'. Check console.`; // Based on "ui.configEditor.valueInput.error.updateFailedInternal"
-    const genericErrorMsg = (kName) => `§cAn error occurred while editing '${kName}'.`; // Based on "ui.configEditor.valueInput.error.generic"
-
+    const title = getString("ui.configEditor.valueInput.title", { keyName });
+    const booleanLabel = getString("ui.configEditor.valueInput.boolean.label", { keyName });
+    const stringLabel = getString("ui.configEditor.valueInput.string.label", { keyName });
+    const stringPlaceholder = getString("ui.configEditor.valueInput.string.placeholder");
+    const numberLabel = getString("ui.configEditor.valueInput.number.label", { keyName });
+    const numberPlaceholder = getString("ui.configEditor.valueInput.number.placeholder");
+    const arrayLabel = getString("ui.configEditor.valueInput.array.label", { keyName });
+    const arrayPlaceholder = getString("ui.configEditor.valueInput.array.placeholder");
+    const nonArrayObjectEditError = getString("ui.configEditor.error.nonArrayObjectEdit", { keyName });
+    const typeUnknownError = getString("ui.configEditor.valueInput.error.typeUnknown", { type: keyType, keyName });
+    const notANumberError = getString("ui.configEditor.valueInput.error.notANumber");
+    const notAnArrayError = getString("ui.configEditor.valueInput.error.notAnArray");
+    const jsonFormatError = (errMsg) => getString("ui.configEditor.valueInput.error.jsonFormat", { error: errMsg });
+    const updateFailedMsg = (kName, reason) => getString("ui.configEditor.valueInput.error.updateFailed", { keyName: kName, reason });
+    const noChangeMsg = (kName) => getString("ui.configEditor.valueInput.noChange", { keyName: kName });
+    const successMsg = (kName, val) => getString("ui.configEditor.valueInput.success", { keyName: kName, value: val });
+    const updateFailedInternalMsg = (kName) => getString("ui.configEditor.valueInput.error.updateFailedInternal", { keyName: kName });
+    const genericErrorMsg = (kName) => getString("ui.configEditor.valueInput.error.generic", { keyName: kName });
 
     const modalForm = new ModalFormData();
-    modalForm.title(title(keyName));
+    modalForm.title(title);
     let originalValueForComparison = currentValue;
 
     switch (keyType) {
-        case 'boolean': modalForm.toggle(booleanLabel(keyName), currentValue); break;
-        case 'string': modalForm.textField(stringLabel(keyName), stringPlaceholder, String(currentValue)); break;
-        case 'number': modalForm.textField(numberLabel(keyName), numberPlaceholder, String(currentValue)); break;
+        case 'boolean': modalForm.toggle(booleanLabel, currentValue); break;
+        case 'string': modalForm.textField(stringLabel, stringPlaceholder, String(currentValue)); break;
+        case 'number': modalForm.textField(numberLabel, numberPlaceholder, String(currentValue)); break;
         case 'object':
             if (Array.isArray(currentValue)) {
                 originalValueForComparison = JSON.stringify(currentValue);
-                modalForm.textField(arrayLabel(keyName), arrayPlaceholder, JSON.stringify(currentValue));
+                modalForm.textField(arrayLabel, arrayPlaceholder, JSON.stringify(currentValue));
             } else {
-                adminPlayer.sendMessage(nonArrayObjectEditError(keyName));
+                adminPlayer.sendMessage(nonArrayObjectEditError);
                 await showEditConfigForm(adminPlayer, playerDataManager, globalEditableConfigValues, dependencies);
                 return;
             }
             break;
         default:
-            adminPlayer.sendMessage(typeUnknownError(keyType, keyName));
+            adminPlayer.sendMessage(typeUnknownError);
             await showEditConfigForm(adminPlayer, playerDataManager, globalEditableConfigValues, dependencies);
             return;
     }
@@ -963,20 +924,18 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
     await showEditConfigForm(adminPlayer, playerDataManager, globalEditableConfigValues, dependencies);
 }
 
-
 async function handleClearChatAction(adminPlayer, playerDataManager, config, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Clear Chat Action requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented string for command not found
-    const commandNotFoundMsg = (moduleName) => `§cError: Command module '${moduleName}' not found or failed to load.`;
+    const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
 
     try {
         await _showConfirmationModal(
             adminPlayer,
-            "ui.serverManagement.clearChat.confirmTitle", // Title will be "Clear Chat Confirm Title"
-            "ui.serverManagement.clearChat.confirmBody",   // Body will be "Clear Chat Confirm Body"
-            "ui.serverManagement.clearChat.confirmToggle", // Toggle will be "Clear Chat Confirm Toggle"
+            "ui.serverManagement.clearChat.confirmTitle",
+            "ui.serverManagement.clearChat.confirmBody",
+            "ui.serverManagement.clearChat.confirmToggle",
             async () => {
                 const clearChatExec = dependencies.commandExecutionMap?.get('clearchat');
                 if (clearChatExec) {
@@ -998,18 +957,17 @@ async function handleClearChatAction(adminPlayer, playerDataManager, config, dep
 }
 
 async function handleLagClearAction(adminPlayer, playerDataManager, config, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Lag Clear Action requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented string for command not found
-    const commandNotFoundMsg = (moduleName) => `§cError: Command module '${moduleName}' not found or failed to load.`;
+    const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
 
     try {
         await _showConfirmationModal(
             adminPlayer,
-            "ui.serverManagement.lagClear.confirmTitle", // Title will be "Lag Clear Confirm Title"
-            "ui.serverManagement.lagClear.confirmBody",   // Body will be "Lag Clear Confirm Body"
-            "ui.serverManagement.lagClear.confirmToggle", // Toggle will be "Lag Clear Confirm Toggle"
+            "ui.serverManagement.lagClear.confirmTitle",
+            "ui.serverManagement.lagClear.confirmBody",
+            "ui.serverManagement.lagClear.confirmToggle",
             async () => {
                 const lagClearExec = dependencies.commandExecutionMap?.get('lagclear');
                 if (lagClearExec) {
@@ -1031,26 +989,25 @@ async function handleLagClearAction(adminPlayer, playerDataManager, config, depe
 }
 
 showModLogTypeSelectionForm = async function (adminPlayer, dependencies, currentFilterName = null) {
-    const { playerDataManager, config, playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerDataManager, config, playerUtils: depPlayerUtils, logManager, getString } = dependencies;
 
-    // Invented Strings
-    const title = "Moderation Log Type Selection"; // Based on "ui.modLogSelect.title"
-    const bodyFiltered = (filter) => `Currently filtering by: ${filter}. Select log type or clear filter.`; // Based on "ui.modLogSelect.body.filtered"
-    const bodyAll = "Select a log type to view, or filter by player name."; // Based on "ui.modLogSelect.body.all"
-    const banUnbanButton = "Ban/Unban Logs"; // Based on "ui.modLogSelect.button.banUnban"
-    const muteUnmuteButton = "Mute/Unmute Logs"; // Based on "ui.modLogSelect.button.muteUnmute"
-    const clearFilterButton = (filter) => `Clear Filter: ${filter}`; // Based on "ui.modLogSelect.button.clearFilter"
-    const filterByNameButton = "Filter by Player Name"; // Based on "ui.modLogSelect.button.filterByName"
-    const backToServerMgmtButton = "Back to Server Management"; // Based on "ui.modLogSelect.button.backToServerMgmt"
-    const banUnbanLogTitle = "Ban/Unban Logs"; // Based on "ui.logViewer.title.banUnban"
-    const muteUnmuteLogTitle = "Mute/Unmute Logs"; // Based on "ui.logViewer.title.muteUnmute"
-    const filterClearedMsg = "§aFilter cleared. Showing all relevant logs."; // Based on "ui.modLogSelect.filterModal.filterCleared"
-    const filterModalTitle = "Filter Logs by Player Name"; // Based on "ui.modLogSelect.filterModal.title"
-    const filterModalLabel = "Player Name:"; // Based on "ui.modLogSelect.filterModal.textField.label"
-    const filterModalPlaceholder = "Enter player name (case-insensitive)"; // Based on "ui.modLogSelect.filterModal.textField.placeholder"
-    const filterSetMsg = (filter) => `§aFilter set to: ${filter}`; // Based on "ui.modLogSelect.filterModal.filterSet"
-    const filterBlankMsg = "§eFilter not set (blank input). Showing all relevant logs."; // Based on "ui.modLogSelect.filterModal.filterBlank"
-    const genericErrorMsg = "§cAn error occurred in log selection."; // Based on "ui.modLogSelect.error.generic"
+    const title = getString("ui.modLogSelect.title");
+    const bodyFiltered = (filter) => getString("ui.modLogSelect.body.filtered", { filterName: filter });
+    const bodyAll = getString("ui.modLogSelect.body.all");
+    const banUnbanButton = getString("ui.modLogSelect.button.banUnban");
+    const muteUnmuteButton = getString("ui.modLogSelect.button.muteUnmute");
+    const clearFilterButton = (filter) => getString("ui.modLogSelect.button.clearFilter", { filterName: filter });
+    const filterByNameButton = getString("ui.modLogSelect.button.filterByName");
+    const backToServerMgmtButton = getString("ui.modLogSelect.button.backToServerMgmt");
+    const banUnbanLogTitle = getString("ui.logViewer.title.banUnban");
+    const muteUnmuteLogTitle = getString("ui.logViewer.title.muteUnmute");
+    const filterClearedMsg = getString("ui.modLogSelect.filterModal.filterCleared");
+    const filterModalTitle = getString("ui.modLogSelect.filterModal.title");
+    const filterModalLabel = getString("ui.modLogSelect.filterModal.textField.label");
+    const filterModalPlaceholder = getString("ui.modLogSelect.filterModal.textField.placeholder");
+    const filterSetMsg = (filter) => getString("ui.modLogSelect.filterModal.filterSet", { filterName: filter });
+    const filterBlankMsg = getString("ui.modLogSelect.filterModal.filterBlank");
+    const genericErrorMsg = getString("ui.modLogSelect.error.generic");
 
     const form = new ActionFormData();
     form.title(title);
@@ -1093,24 +1050,23 @@ showModLogTypeSelectionForm = async function (adminPlayer, dependencies, current
 };
 
 async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray, filterPlayerName = null, logTypeName = "Logs") {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
 
-    // Invented Strings
-    const titleFiltered = (logType, filterName) => `${logType} (Filtered by: ${filterName})`; // Based on "ui.logViewer.title.filtered"
-    const noLogsMsg = "No logs found matching your criteria."; // Based on "ui.logViewer.noLogs"
-    const logEntryFormat = (log) => { // Based on "ui.actionLogs.logEntry" and its sub-keys
+    const titleFiltered = (logType, filterName) => getString("ui.logViewer.title.filtered", { logTypeName: logType, filterName: filterName });
+    const noLogsMsg = getString("ui.logViewer.noLogs");
+    const logEntryFormat = (log) => {
         const timestamp = new Date(log.timestamp).toLocaleString();
         const actor = log.adminName || log.playerName || 'SYSTEM';
         const target = log.targetName || '';
-        const duration = log.duration ? ` (Duration: ${log.duration})` : "";
-        const reason = log.reason ? ` (Reason: ${log.reason})` : "";
-        const details = log.details ? ` (Details: ${log.details})` : "";
-        return `[${timestamp}] ${actor} -> ${log.actionType} ${target}${duration}${reason}${details}`.replace(/\s+\(\s*\)/g, '');
+        const duration = log.duration ? getString("ui.actionLogs.logEntry.duration", { duration: log.duration }) : "";
+        const reason = log.reason ? getString("ui.actionLogs.logEntry.reason", { reason: log.reason }) : "";
+        const details = log.details ? getString("ui.actionLogs.logEntry.details", { details: log.details }) : "";
+        return getString("ui.actionLogs.logEntry", { timestamp, actor, actionType: log.actionType, target, duration, reason, details }).replace(/\s+\(\s*\)/g, '');
     };
-    const footerShowingLatest = (count) => `\n(Showing latest ${count} logs. More may exist.)`; // Based on "ui.actionLogs.footer.showingLatest"
-    const genericFormError = "An error occurred while retrieving logs."; // Based on "common.error.genericForm"
-    const bodyEmptyMsg = "No logs to display."; // Based on "ui.actionLogs.body.empty"
-    const backButtonText = "Back to Log Selection"; // Based on "ui.logViewer.button.backToLogSelect"
+    const footerShowingLatest = (count) => getString("ui.actionLogs.footer.showingLatest", { count: count.toString() });
+    const genericFormError = getString("common.error.genericForm");
+    const bodyEmptyMsg = getString("ui.actionLogs.body.empty");
+    const backButtonText = getString("ui.logViewer.button.backToLogSelect");
 
     const form = new MessageFormData();
     form.title(filterPlayerName ? titleFiltered(logTypeName, filterPlayerName) : logTypeName);
@@ -1162,20 +1118,19 @@ async function showLogViewerForm(adminPlayer, dependencies, logActionTypesArray,
 }
 
 showServerManagementForm = async function (adminPlayer, playerDataManager, config, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager, permissionLevels } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, permissionLevels, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: showServerManagementForm requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const title = "Server Management"; // Based on "ui.serverManagement.title"
-    const body = "Manage server settings and view information."; // Based on "ui.serverManagement.body"
-    const systemInfoButton = "System Information"; // Based on "ui.serverManagement.button.systemInfo"
-    const clearChatButton = "Clear Global Chat"; // Based on "ui.serverManagement.button.clearChat"
-    const lagClearButton = "Clear Ground Items (Lag Clear)"; // Based on "ui.serverManagement.button.lagClear"
-    const actionLogsButton = "View All Action Logs"; // Based on "ui.serverManagement.button.actionLogs"
-    const modLogsButton = "View Moderation Logs (Ban/Mute)"; // Based on "ui.serverManagement.button.modLogs"
-    const editConfigButton = "Edit System Config (Owner)"; // Based on "ui.serverManagement.button.editConfig"
-    const backToAdminPanelButton = "Back to Admin Panel"; // Based on "ui.serverManagement.button.backToAdminPanel"
-    const genericErrorMsg = "§cAn error occurred in Server Management."; // Based on "ui.serverManagement.error.generic"
+    const title = getString("ui.serverManagement.title");
+    const body = getString("ui.serverManagement.body");
+    const systemInfoButton = getString("ui.serverManagement.button.systemInfo");
+    const clearChatButton = getString("ui.serverManagement.button.clearChat");
+    const lagClearButton = getString("ui.serverManagement.button.lagClear");
+    const actionLogsButton = getString("ui.serverManagement.button.actionLogs");
+    const modLogsButton = getString("ui.serverManagement.button.modLogs");
+    const editConfigButton = getString("ui.serverManagement.button.editConfig");
+    const backToAdminPanelButton = getString("ui.serverManagement.button.backToAdminPanel");
+    const genericErrorMsg = getString("ui.serverManagement.error.generic");
 
     const form = new ActionFormData();
     form.title(title);
@@ -1222,26 +1177,24 @@ showServerManagementForm = async function (adminPlayer, playerDataManager, confi
 };
 
 showActionLogsForm = async function (adminPlayer, config, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Action Logs (All) requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const title = "All Action Logs"; // Based on "ui.actionLogs.title"
-    const bodyHeader = "Displaying recent server actions:\n"; // Based on "ui.actionLogs.bodyHeader"
-    const noLogsMsg = "No action logs found."; // Based on "ui.actionLogs.noLogs"
-    const logEntryFormat = (log) => { // Based on "ui.actionLogs.logEntry" and its sub-keys
+    const title = getString("ui.actionLogs.title");
+    const bodyHeader = getString("ui.actionLogs.bodyHeader");
+    const noLogsMsg = getString("ui.actionLogs.noLogs");
+    const logEntryFormat = (log) => {
         const timestamp = new Date(log.timestamp).toLocaleString();
         const actor = log.adminName || log.playerName || 'SYSTEM';
         const target = log.targetName || '';
-        // Invented prefixes/suffixes for duration, reason, details
-        const durationText = log.duration ? ` (Duration: ${log.duration})` : "";
-        const reasonText = log.reason ? ` (Reason: ${log.reason})` : "";
-        const detailsText = log.details ? ` (Details: ${log.details})` : "";
-        return `[${timestamp}] ${actor} -> ${log.actionType} ${target}${durationText}${reasonText}${detailsText}`.replace(/\s+\(\s*\)/g, '');
+        const durationText = log.duration ? getString("ui.actionLogs.logEntry.duration", { duration: log.duration }) : "";
+        const reasonText = log.reason ? getString("ui.actionLogs.logEntry.reason", { reason: log.reason }) : "";
+        const detailsText = log.details ? getString("ui.actionLogs.logEntry.details", { details: log.details }) : "";
+        return getString("ui.actionLogs.logEntry", { timestamp, actor, actionType: log.actionType, target, duration: durationText, reason: reasonText, details: detailsText }).replace(/\s+\(\s*\)/g, '');
     };
-    const footerShowingLatest = (count) => `\n(Showing latest ${count} logs. More may exist.)`; // Based on "ui.actionLogs.footer.showingLatest"
-    const bodyEmptyMsg = "No logs to display."; // Based on "ui.actionLogs.body.empty"
-    const backButtonText = "Back to Server Management"; // Based on "ui.actionLogs.button.backToServerMgmt"
+    const footerShowingLatest = (count) => getString("ui.actionLogs.footer.showingLatest", { count: count.toString() });
+    const bodyEmptyMsg = getString("ui.actionLogs.body.empty");
+    const backButtonText = getString("ui.actionLogs.button.backToServerMgmt");
 
     const form = new MessageFormData();
     form.title(title);
@@ -1273,18 +1226,17 @@ showActionLogsForm = async function (adminPlayer, config, playerDataManager, dep
 };
 
 showResetFlagsForm = async function (adminPlayer, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Reset Flags form requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const commandNotFoundMsg = (moduleName) => `§cError: Command module '${moduleName}' not found or failed to load.`;
-    const title = "Reset Player Flags"; // Based on "ui.resetFlagsForm.title"
-    const textFieldLabel = "Player Name:"; // Based on "ui.resetFlagsForm.textField.label"
-    const textFieldPlaceholder = "Enter player name to reset flags"; // Based on "ui.resetFlagsForm.textField.placeholder"
-    const toggleLabel = "Confirm Reset Flags"; // Based on "ui.resetFlagsForm.toggle.label"
-    const cancelledMsg = "Reset flags action cancelled."; // Based on "ui.resetFlagsForm.cancelled"
-    const nameEmptyMsg = "§cPlayer name cannot be empty."; // Based on "ui.resetFlagsForm.error.nameEmpty"
-    const genericErrorMsg = "§cAn error occurred while resetting flags."; // Based on "ui.resetFlagsForm.error.generic"
+    const commandNotFoundMsg = (moduleName) => getString("common.error.commandModuleNotFound", { moduleName });
+    const title = getString("ui.resetFlagsForm.title");
+    const textFieldLabel = getString("ui.resetFlagsForm.textField.label");
+    const textFieldPlaceholder = getString("ui.resetFlagsForm.textField.placeholder");
+    const toggleLabel = getString("ui.resetFlagsForm.toggle.label");
+    const cancelledMsg = getString("ui.resetFlagsForm.cancelled");
+    const nameEmptyMsg = getString("ui.resetFlagsForm.error.nameEmpty");
+    const genericErrorMsg = getString("ui.resetFlagsForm.error.generic");
 
     const resetFlagsExecute = dependencies.commandExecutionMap?.get('resetflags');
     if (!resetFlagsExecute) {
@@ -1299,7 +1251,7 @@ showResetFlagsForm = async function (adminPlayer, playerDataManager, dependencie
 
     try {
         const response = await modalForm.show(adminPlayer);
-        if (response.canceled || !response.formValues[1]) { // Assuming toggle is index 1
+        if (response.canceled || !response.formValues[1]) {
             adminPlayer.sendMessage(cancelledMsg);
         } else {
             const targetPlayerName = response.formValues[0];
@@ -1320,15 +1272,14 @@ showResetFlagsForm = async function (adminPlayer, playerDataManager, dependencie
 };
 
 showWatchedPlayersList = async function (adminPlayer, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Watched Players list requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const header = "Currently Watched Players:\n"; // Based on "ui.watchedPlayers.header"
-    const playerEntry = (name) => `- ${name}`; // Based on "ui.watchedPlayers.playerEntry"
-    const noPlayersWatched = "No players are currently being watched."; // Based on "ui.watchedPlayers.noPlayers"
-    const title = "Watched Players List"; // Based on "ui.watchedPlayers.title"
-    const okButton = "OK"; // Based on "ui.watchedPlayers.button.ok"
+    const header = getString("ui.watchedPlayers.header");
+    const playerEntry = (name) => getString("ui.watchedPlayers.playerEntry", { playerName: name });
+    const noPlayersWatched = getString("ui.watchedPlayers.noPlayers");
+    const title = getString("ui.watchedPlayers.title");
+    const okButton = getString("ui.watchedPlayers.button.ok");
 
     let body = header;
     let watchedCount = 0;
@@ -1360,22 +1311,21 @@ showWatchedPlayersList = async function (adminPlayer, playerDataManager, depende
 };
 
 showDetailedFlagsForm = async function(adminPlayer, targetPlayer, playerDataManager, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager } = dependencies; // getString removed
+    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`UI: Detailed flags for ${targetPlayer.nameTag} requested by ${adminPlayer.nameTag}`, dependencies, adminPlayer.nameTag);
 
-    // Invented Strings
-    const title = (name) => `Detailed Flags for ${name}`; // Based on "ui.detailedFlags.title"
-    const notApplicable = "N/A"; // Based on "common.value.notApplicable"
-    const flagEntryText = (type, count, time) => `- ${type}: ${count} (Last: ${time})`; // Based on "ui.detailedFlags.flagEntry"
-    const noFlagsMsg = "No specific flags recorded for this player."; // Based on "ui.detailedFlags.noFlags"
-    const backButton = "Back"; // Based on "common.button.back"
+    const title = getString("ui.detailedFlags.title", { playerName: targetPlayer.nameTag });
+    const notApplicable = getString("common.value.notApplicable");
+    const flagEntryText = (type, count, time) => getString("ui.detailedFlags.flagEntry", { flagName: type, count: count.toString(), lastDetectionTime: time });
+    const noFlagsMsg = getString("ui.detailedFlags.noFlags");
+    const backButton = getString("common.button.back");
 
     const pData = playerDataManager.getPlayerData(targetPlayer.id);
     const form = new MessageFormData();
-    form.title(title(targetPlayer.nameTag));
+    form.title(title);
 
     let body = "";
-    if (pData && pData.flags && Object.keys(pData.flags).length > 1) { // Greater than 1 to exclude 'totalFlags' if it's the only one
+    if (pData && pData.flags && Object.keys(pData.flags).length > 1) {
         for (const flagKey in pData.flags) {
             if (flagKey !== 'totalFlags' && pData.flags[flagKey].count > 0) {
                 const flagDetail = pData.flags[flagKey];

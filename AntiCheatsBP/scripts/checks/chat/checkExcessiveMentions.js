@@ -25,7 +25,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     if (!enableExcessiveMentionsCheck) {
         return;
     }
-    if (!pData) { // pData might not be used by this specific check's logic but is part of standard signature
+    if (!pData) {
         playerUtils.debugLog("[ExcessiveMentionsCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
     }
 
@@ -37,12 +37,12 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     const maxUniquePerMessage = config.mentionsMaxUniquePerMessage ?? 4;
     const maxRepeatedPerMessage = config.mentionsMaxRepeatedPerMessage ?? 3;
     const actionProfileName = config.mentionsActionProfileName ?? "chatExcessiveMentions";
-    const mentionRegex = /@([A-Za-z0-9_]{3,16})/g; // Assuming 3-16 char Minecraft names
+    const mentionRegex = /@([A-Za-z0-9_]{3,16})/g;
     const allMentions = [];
     let match;
 
     while ((match = mentionRegex.exec(rawMessageContent)) !== null) {
-        allMentions.push(match[1]); // match[1] is the captured username
+        allMentions.push(match[1]);
     }
 
     if (allMentions.length === 0) {

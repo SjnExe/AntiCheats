@@ -10,7 +10,6 @@
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Normalizes a chat message for comparison.
  * @param {string} message
@@ -20,7 +19,6 @@ function normalizeMessage(message) {
     if (typeof message !== 'string') return '';
     return message.toLowerCase().trim().replace(/\s+/g, ' ');
 }
-
 /**
  * Checks if a player is repeating the same message content.
  * @param {import('@minecraft/server').Player} player
@@ -46,7 +44,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
     const actionProfileName = config.chatContentRepeatActionProfileName ?? "chatContentRepeat";
     const normalizedMessage = normalizeMessage(rawMessageContent);
 
-    if (normalizedMessage.length === 0) { // Ignore empty messages after normalization
+    if (normalizedMessage.length === 0) {
         return;
     }
 

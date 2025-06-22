@@ -5,9 +5,8 @@
  * @version 1.0.3
  */
 import * as mc from '@minecraft/server';
-// getString and permissionLevels will be accessed via dependencies.
 
-function parseDimensionLocal(dimStr, playerUtils, dependencies) { // Added dependencies
+function parseDimensionLocal(dimStr, playerUtils, dependencies) {
     if (!dimStr || typeof dimStr !== 'string') return null;
     switch (dimStr.toLowerCase()) {
         case "overworld": return mc.world.overworld;
@@ -17,23 +16,20 @@ function parseDimensionLocal(dimStr, playerUtils, dependencies) { // Added depen
         case "minecraft:the_nether": return mc.world.nether;
         case "minecraft:the_end": return mc.world.theEnd;
         default:
-            // Pass dependencies to debugLog
             playerUtils?.debugLog(`parseDimensionLocal: Invalid dimension string "${dimStr}".`, dependencies);
             return null;
     }
 }
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: "tp",
-    syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]", // Syntax is static
-    description: "command.tp.description", // Key for localization
-    permissionLevel: null, // To be set from dependencies.permissionLevels.admin
+    syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]",
+    description: "command.tp.description",
+    permissionLevel: null,
     enabled: true,
 };
-
 /**
  * Executes the tp (teleport) command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
@@ -41,7 +37,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, findPlayer: depFindPlayer, permissionLevels } = dependencies; // getString removed
+    const { config, playerUtils, logManager, findPlayer: depFindPlayer, permissionLevels } = dependencies;
     const findPlayerFunc = depFindPlayer || (playerUtils && playerUtils.findPlayer);
     const prefix = config.prefix;
 
@@ -50,14 +46,12 @@ export async function execute(player, args, dependencies) {
     }
 
     if (!findPlayerFunc) {
-        // Placeholder for "command.tp.error.lookupUtilityNotAvailable"
         player.sendMessage("§cTeleport error: Player lookup utility not available.");
         console.error("[tpCmd] findPlayer utility is not available in dependencies.");
         return;
     }
 
     if (args.length < 1) {
-        // Placeholder for "command.tp.usage" -> Using syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]"
         player.sendMessage(`§cUsage: ${prefix}tp <target_player | x> [destination_player | y] [z] [dimension]`);
         return;
     }
@@ -71,7 +65,6 @@ export async function execute(player, args, dependencies) {
     if (args.length === 2 && isNaN(parseFloat(args[0])) && isNaN(parseFloat(args[1]))) {
         playerToMove = findPlayerFunc(args[0]);
         const destinationPlayer = findPlayerFunc(args[1]);
-        // Placeholders for error messages
         if (!playerToMove) { player.sendMessage(`§cPlayer to move "${args[0]}" not found.`); return; }
         if (!destinationPlayer) { player.sendMessage(`§cDestination player "${args[1]}" not found.`); return; }
         if (playerToMove.id === destinationPlayer.id) { player.sendMessage(`§cCannot teleport ${playerToMove.nameTag} to themselves.`); return; }
@@ -90,9 +83,7 @@ export async function execute(player, args, dependencies) {
         targetDimension = playerToMove.dimension;
         if (args.length === 4) {
             const parsedDim = parseDimensionLocal(args[3], playerUtils, dependencies);
-            // Placeholder for "command.tp.dimensionIn" -> " in dimension {dimensionName}"
             if (parsedDim) { targetDimension = parsedDim; dimensionInfoForMessage = ` in dimension ${args[3].toLowerCase()}`; }
-            // Placeholder for "command.tp.error.invalidDimension"
             else { player.sendMessage(`§cInvalid dimension specified: ${args[3]}.`); return; }
         } else {
              dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`;
@@ -102,7 +93,6 @@ export async function execute(player, args, dependencies) {
     else if ((args.length === 4 || args.length === 5) && isNaN(parseFloat(args[0]))) {
         playerToMove = findPlayerFunc(args[0]);
         if (!playerToMove) { player.sendMessage(`§cPlayer to move "${args[0]}" not found.`); return; }
-        // Placeholder for "command.tp.error.invalidCoordinates"
         if (isNaN(parseFloat(args[1])) || isNaN(parseFloat(args[2])) || isNaN(parseFloat(args[3]))) { player.sendMessage("§cInvalid coordinates provided."); return; }
         destinationLocation = { x: parseFloat(args[1]), y: parseFloat(args[2]), z: parseFloat(args[3]) };
         destinationDescription = `coordinates ${args[1]}, ${args[2]}, ${args[3]}`;
@@ -116,7 +106,6 @@ export async function execute(player, args, dependencies) {
         }
          destinationDescription += dimensionInfoForMessage;
     }
-
 
     if (!playerToMove || !destinationLocation || !targetDimension) {
         player.sendMessage(`§cUsage: ${prefix}tp <target_player | x> [destination_player | y] [z] [dimension]`);
@@ -134,16 +123,13 @@ export async function execute(player, args, dependencies) {
 
         let successMsg;
         if (destinationDescription.startsWith("player")) {
-            // Placeholder "command.tp.success.playerToPlayer" -> "§aTeleported {playerToMoveName} to {destinationPlayerName}."
              successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationDescription.substring(7)}.`;
         } else {
-            // Placeholder "command.tp.success.playerToCoords" -> "§aTeleported {playerToMoveName} to {x}, {y}, {z}{dimensionId}."
             successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationLocation.x.toFixed(1)}, ${destinationLocation.y.toFixed(1)}, ${destinationLocation.z.toFixed(1)}${dimensionInfoForMessage}.`;
         }
         player.sendMessage(successMsg);
 
         if (player.id !== playerToMove.id) {
-            // Placeholder "command.tp.notifyTarget.byAdmin" -> "§eYou have been teleported by {adminName} to {destinationDescription}."
             playerToMove.sendMessage(`§eYou have been teleported by ${player.nameTag} to ${destinationDescription}.`);
         }
         if (logManager && logManager.addLog) {
@@ -156,7 +142,6 @@ export async function execute(player, args, dependencies) {
             }, dependencies);
         }
     } catch (e) {
-        // Placeholder "command.tp.error.failed" -> "§cTeleport failed: {errorMessage}"
         player.sendMessage(`§cTeleport failed: ${(e.message || e)}`);
         if (config.enableDebugLogging) {
             playerUtils.debugLog(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, dependencies, player.nameTag);

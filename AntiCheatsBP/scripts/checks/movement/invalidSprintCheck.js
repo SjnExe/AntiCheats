@@ -6,15 +6,11 @@
  * assumes `pData.blindnessTicks` (or similar for other effects) is updated by `updateTransientPlayerData`.
  * @version 1.0.1
  */
-
 import * as mc from '@minecraft/server';
-// getString will be accessed via dependencies.getString
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
-
 /**
  * Checks if a player is sprinting under invalid conditions (e.g., while sneaking, blind, riding).
  *
@@ -25,14 +21,11 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // getString removed
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableInvalidSprintCheck || !pData) {
         return;
     }
-
-    // The pData.blindnessTicks field is assumed to be updated by updateTransientPlayerData in main.js
-    // No need to call player.getEffects() here if that's the case.
 
     if (player.isSprinting) {
         let invalidConditionKey = null;
@@ -73,18 +66,15 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             invalidConditionKey = "check.invalidSprint.condition.chargingBow";
             conditionDetails = "Player is charging a bow";
         }
-        // Note: Shield check (pData.isUsingShield) is not typically here as shield doesn't prevent sprint if already sprinting,
-        // but prevents initiation. NoSlow check handles speed while shield is up.
 
         if (invalidConditionKey) {
-            // Resolve localizedCondition directly
-            let resolvedLocalizedCondition = invalidConditionKey; // Fallback to key
+            let resolvedLocalizedCondition = invalidConditionKey;
             if (invalidConditionKey === "check.invalidSprint.condition.blindness") resolvedLocalizedCondition = "Blindness";
             else if (invalidConditionKey === "check.invalidSprint.condition.sneaking") resolvedLocalizedCondition = "Sneaking";
             else if (invalidConditionKey === "check.invalidSprint.condition.riding") resolvedLocalizedCondition = "Riding Entity";
-            else if (invalidConditionKey === "check.invalidSprint.condition.hunger") resolvedLocalizedCondition = "Low Hunger"; // Invented, as key not in en_US.js
-            else if (invalidConditionKey === "check.invalidSprint.condition.usingItem") resolvedLocalizedCondition = "Using Item"; // Invented
-            else if (invalidConditionKey === "check.invalidSprint.condition.chargingBow") resolvedLocalizedCondition = "Charging Bow"; // Invented
+            else if (invalidConditionKey === "check.invalidSprint.condition.hunger") resolvedLocalizedCondition = "Low Hunger";
+            else if (invalidConditionKey === "check.invalidSprint.condition.usingItem") resolvedLocalizedCondition = "Using Item";
+            else if (invalidConditionKey === "check.invalidSprint.condition.chargingBow") resolvedLocalizedCondition = "Charging Bow";
 
             const violationDetails = {
                 condition: resolvedLocalizedCondition,

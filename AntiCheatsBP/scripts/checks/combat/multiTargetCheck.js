@@ -3,13 +3,11 @@
  * Implements a check to detect Killaura-like behavior where a player rapidly hits multiple distinct targets.
  * @version 1.1.0
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
-
 /**
  * Checks for Multi-Target Killaura by analyzing recent hit entity patterns.
  * It tracks entities hit by the player within a configured time window and flags
@@ -34,7 +32,7 @@ export async function checkMultiTarget(
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-    const now = Date.now(); // Time-sensitive check
+    const now = Date.now();
 
     if (!targetEntity || typeof targetEntity.id === 'undefined') {
         playerUtils.debugLog(`[MultiTargetCheck] Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, watchedPrefix, dependencies);

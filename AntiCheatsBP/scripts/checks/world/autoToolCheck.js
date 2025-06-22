@@ -5,15 +5,12 @@
  * Relies on various `pData` fields being updated by block break event handlers and the main tick loop.
  * @version 1.1.0
  */
-
 import * as mc from '@minecraft/server';
 import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks for AutoTool behavior by analyzing tool switches around block break events.
  * This involves two parts:
@@ -31,7 +28,7 @@ export async function checkAutoTool(
     dependencies
 ) {
     const { config, playerUtils, playerDataManager, logManager, actionManager, currentTick } = dependencies;
-    const dimension = player.dimension; // Get dimension from player object
+    const dimension = player.dimension;
 
     if (!config.enableAutoToolCheck || !pData) { return; }
 
@@ -39,7 +36,6 @@ export async function checkAutoTool(
     const switchToOptimalWindow = config.autoToolSwitchToOptimalWindowTicks ?? 2;
     const switchBackWindow = config.autoToolSwitchBackWindowTicks ?? 5;
 
-    // Part 1: Detect switch to optimal tool just before/at the start of break
     if (pData.isAttemptingBlockBreak &&
         pData.breakingBlockLocation &&
         !pData.switchedToOptimalToolForBreak &&
@@ -59,14 +55,9 @@ export async function checkAutoTool(
                     const initialToolStack = inventory?.container?.getItem(pData.slotAtBreakAttemptStart);
                     const newToolStack = optimalToolInfo.itemStack;
 
-                    // 'speed' from getOptimalToolForBlock is actually breaking power
                     const initialPower = calculateRelativeBlockBreakingPower(player, blockPermutation, initialToolStack);
-                    const newPower = optimalToolInfo.speed; // This 'speed' is the power score from getOptimalToolForBlock
+                    const newPower = optimalToolInfo.speed;
 
-                    // Higher power is better.
-                    // 1. New tool is at least 50% more powerful.
-                    // 2. New tool is "infinitely" powerful (e.g., shears on wool) and old tool wasn't already super effective.
-                    // 3. New tool has a basic power level (e.g. >5) and initial was extremely low (e.g. <1, like punching stone).
                     const isSignificantlyBetter = (newPower > initialPower * 1.5) ||
                                                 (newPower === Infinity && initialPower < 1000) ||
                                                 (newPower > 5 && initialPower < 1);
@@ -80,7 +71,6 @@ export async function checkAutoTool(
         }
     }
 
-    // Part 2: Detect switch back from optimal tool just after break
     if (pData.optimalToolSlotForLastBreak !== null &&
         pData.lastSelectedSlotChangeTick === currentTick &&
         (pData.lastBreakCompleteTick ?? 0) > 0 &&

@@ -24,7 +24,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     if (!config.enableUnicodeAbuseCheck) {
         return;
     }
-    if (!pData) { // pData might not be used by this specific check's logic
+    if (!pData) {
         playerUtils.debugLog("[UnicodeAbuseCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
     }
 
@@ -37,19 +37,19 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     const absoluteMaxDiacritics = config.unicodeAbuseAbsoluteMaxDiacritics ?? 10;
     const actionProfileName = config.unicodeAbuseActionProfileName ?? "chatUnicodeAbuse";
     let diacriticCount = 0;
-    let otherCharCount = 0; // Non-diacritic, non-whitespace characters
+    let otherCharCount = 0;
 
     for (const char of rawMessageContent) {
-        if (char.match(/\p{M}/u) || char.match(/\p{Mn}/u)) { // Check for combining marks
+        if (char.match(/\p{M}/u) || char.match(/\p{Mn}/u)) {
             diacriticCount++;
-        } else if (char.match(/\S/)) { // Check if character is not whitespace
+        } else if (char.match(/\S/)) {
             otherCharCount++;
         }
     }
 
     const totalRelevantChars = diacriticCount + otherCharCount;
     if (totalRelevantChars === 0) {
-        return; // Message was empty or whitespace only
+        return;
     }
 
     const actualRatio = diacriticCount / totalRelevantChars;

@@ -1,4 +1,3 @@
-// AntiCheatsBP/scripts/core/automodConfig.js
 /**
  * @file Stores the configuration for the AutoMod system.
  * This includes rules for automated actions based on flag counts,

@@ -26,7 +26,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
     if (!enableSimpleImpersonationCheck) {
         return;
     }
-    if (!pData) { // pData might not be used by this specific check's logic
+    if (!pData) {
         playerUtils.debugLog("[SimpleImpersonationCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
     }
 
@@ -35,8 +35,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    // Resolve permission levels: Access from dependencies.permissionLevels
-    const adminPermissionLevelDefault = dependencies.permissionLevels?.admin ?? 1; // Default to 1 if not found in deps
+    const adminPermissionLevelDefault = dependencies.permissionLevels?.admin ?? 1;
     const exemptPermissionLevel = config.impersonationExemptPermissionLevel ?? adminPermissionLevelDefault;
 
     const playerPermission = dependencies.rankManager.getPlayerPermissionLevel(player, dependencies);
@@ -59,7 +58,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
             continue;
         }
         try {
-            const regex = new RegExp(patternString, 'i'); // Case-insensitive
+            const regex = new RegExp(patternString, 'i');
             if (regex.test(rawMessageContent)) {
                 const violationDetails = {
                     messageSnippet: rawMessageContent.substring(0, 75),
@@ -70,7 +69,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
                 await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
                 playerUtils.debugLog(`[SimpleImpersonationCheck] Flagged ${player.nameTag} for impersonation attempt. Pattern: '${patternString}'. Msg: "${rawMessageContent.substring(0,50)}..."`, watchedPlayerName, dependencies);
-                return; // Stop on first match
+                return;
             }
         } catch (e) {
             playerUtils.debugLog(`[SimpleImpersonationCheck] Invalid regex pattern '${patternString}' in config. Error: ${e.message}`, watchedPlayerName, dependencies);

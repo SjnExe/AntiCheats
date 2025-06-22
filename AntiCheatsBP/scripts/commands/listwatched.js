@@ -4,20 +4,17 @@
  * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-// getString and permissionLevels will be accessed via dependencies.
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: "listwatched",
-    syntax: "!listwatched", // Assuming prefix is '!'
-    description: "command.listwatched.description", // Localization key
+    syntax: "!listwatched",
+    description: "command.listwatched.description",
     aliases: ["lw", "watchedlist"],
-    permissionLevel: null, // To be set dynamically from dependencies.permissionLevels.admin
+    permissionLevel: null,
     enabled: true,
 };
-
 /**
  * Executes the listwatched command.
  * @param {import('@minecraft/server').Player} player The player issuing the command.
@@ -25,41 +22,32 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { playerDataManager, playerUtils, permissionLevels, config } = dependencies; // getString removed
+    const { playerDataManager, playerUtils, permissionLevels, config } = dependencies;
 
-    // Dynamically set permission level if not already set by command manager
-    // (Though command manager should ideally handle this based on initial definition)
     if (definition.permissionLevel === null) {
         definition.permissionLevel = permissionLevels.admin;
     }
-    // Description would be resolved by the help command using getString.
-
-    // Permission check is handled by commandManager, so no need for manual check here.
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
 
     for (const p of onlinePlayers) {
-        const pData = playerDataManager.getPlayerData(p.id); // Does not require full dependencies for simple get
+        const pData = playerDataManager.getPlayerData(p.id);
         if (pData && pData.isWatched) {
             watchedPlayersNames.push(p.nameTag);
         }
     }
 
     if (watchedPlayersNames.length === 0) {
-        // "command.listwatched.noPlayers" -> "No players are currently being watched."
         playerUtils.sendMessage(player, "No players are currently being watched.");
     } else {
-        // "command.listwatched.header" -> "Currently watched players: "
         const header = "Currently watched players: ";
-        // Ensure sendMessage is a valid function on playerUtils or directly use player.sendMessage
         if (playerUtils.sendMessage && typeof playerUtils.sendMessage === 'function') {
             playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
         } else {
-            player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`); // Fallback
+            player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
         }
     }
-    // Optional: Log command usage
     if (dependencies.logManager && dependencies.logManager.addLog) {
         dependencies.logManager.addLog({
             adminName: player.nameTag,
@@ -68,6 +56,3 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
     }
 }
-
-// Remove the old registerCommand call if it existed in the original file.
-// The commandManager in core will load this module based on its exported definition and execute.

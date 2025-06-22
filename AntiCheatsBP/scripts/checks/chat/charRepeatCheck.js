@@ -3,14 +3,12 @@
  * Implements a check to detect excessive repetition of the same character in chat messages.
  * @version 1.0.1
  */
-
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
-
 /**
  * Checks a chat message for excessive character repetition.
  * @param {import('@minecraft/server').Player} player The player who sent the message.
@@ -55,7 +53,6 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     }
 
     if (maxRepeatCount >= config.charRepeatThreshold) {
-        // playerUtils.debugLog will internally check config.enableDebugLogging
         playerUtils.debugLog(
             `[CharRepeatCheck] Player ${player.nameTag} triggered char repeat. ` +
             `Msg: "${message}", Char: '${charThatRepeated}', Count: ${maxRepeatCount}, ` +
