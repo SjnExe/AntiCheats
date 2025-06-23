@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/antiAdvertisingCheck.js
  * Implements a check to detect potential advertising in chat messages.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

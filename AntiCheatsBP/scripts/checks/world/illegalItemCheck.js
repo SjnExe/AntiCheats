@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/illegalItemCheck.js
  * Implements a check to prevent players from using or placing banned items.
  * Banned items are defined in the server configuration.
- * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
 /**

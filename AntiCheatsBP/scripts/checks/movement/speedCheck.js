@@ -1,9 +1,7 @@
 /**
- * @file AntiCheatsBP/scripts/checks/movement/speedCheck.js
  * Implements a check to detect players moving horizontally faster than allowed.
  * Relies on `pData.velocity` (updated in main tick loop) and `pData.speedAmplifier`
  * (assumed to be updated by `updateTransientPlayerData` based on player effects).
- * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
 /**

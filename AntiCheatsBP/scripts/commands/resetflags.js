@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/commands/resetflags.js
  * Defines the !resetflags command for administrators to clear a player's accumulated AntiCheat flags
  * and associated violation tracking data. Also aliased by !clearwarnings.
- * @version 1.0.3
  */
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -16,9 +14,6 @@ export const definition = {
 };
 /**
  * Executes the resetflags command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
@@ -52,13 +47,13 @@ export async function execute(player, args, dependencies) {
         }
         pData.lastFlagType = "";
 
-        if (pData.hasOwnProperty('consecutiveOffGroundTicks')) pData.consecutiveOffGroundTicks = 0;
-        if (pData.hasOwnProperty('fallDistance')) pData.fallDistance = 0;
-        if (pData.hasOwnProperty('consecutiveOnGroundSpeedingTicks')) pData.consecutiveOnGroundSpeedingTicks = 0;
-        if (pData.hasOwnProperty('attackEvents')) pData.attackEvents = [];
-        if (pData.hasOwnProperty('blockBreakEvents')) pData.blockBreakEvents = [];
-        if (pData.hasOwnProperty('recentHits')) pData.recentHits = [];
-        if (pData.hasOwnProperty('recentPlaceTimestamps')) pData.recentPlaceTimestamps = [];
+        pData.consecutiveOffGroundTicks = 0;
+        pData.fallDistance = 0;
+        pData.consecutiveOnGroundSpeedingTicks = 0;
+        pData.attackEvents = [];
+        pData.blockBreakEvents = [];
+        pData.recentHits = [];
+        pData.recentPlaceTimestamps = [];
         pData.isAttemptingBlockBreak = false; pData.switchedToOptimalToolForBreak = false;
         pData.optimalToolSlotForLastBreak = null; pData.lastBreakCompleteTick = 0;
         pData.breakStartTimeMs = 0; pData.breakStartTickGameTime = 0; pData.expectedBreakDurationTicks = 0;

@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/player/antiGMCCheck.js
  * Implements a check to detect and optionally correct players who are in Creative Mode
  * without proper authorization (e.g., not an admin or owner).
- * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
 /**

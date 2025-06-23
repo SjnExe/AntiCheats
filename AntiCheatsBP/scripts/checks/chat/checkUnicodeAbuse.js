@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/checkUnicodeAbuse.js
  * Implements a check to detect Unicode abuse (e.g., Zalgo text with excessive diacritics).
- * @version 1.0.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

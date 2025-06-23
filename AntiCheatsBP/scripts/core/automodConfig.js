@@ -1,37 +1,13 @@
 /**
- * @file Stores the configuration for the AutoMod system.
+ * Stores the configuration for the AutoMod system.
  * This includes rules for automated actions based on flag counts,
  * (with rule-specific message templates) and per-check type toggles for AutoMod.
- * @version 1.1.1
  */
 
-/**
- * @typedef {object} AutoModRuleParameter
- * @property {string} messageTemplate - The message template string for this rule.
- * @property {string} [adminMessageTemplate] - Optional admin-specific message template.
- * @property {string} [duration] - Duration for actions like TEMP_BAN or MUTE (e.g., "5m", "1h").
- * @property {string} [itemToRemoveTypeId] - Specific item TypeId for REMOVE_ILLEGAL_ITEM action.
- * @property {object} [coordinates] - Coordinates for TELEPORT_SAFE action.
- */
-
-/**
- * @typedef {object} AutoModRule
- * @property {number} flagThreshold - Number of flags of a specific checkType to trigger this rule.
- * @property {string} actionType - Type of action (e.g., "warn", "kick", "tempBan", "mute", "removeIllegalItem", "flagOnly").
- * @property {AutoModRuleParameter} parameters - Parameters for the action.
- * @property {boolean} resetFlagsAfterAction - Whether to reset the flag count for this checkType after the action.
- */
-
-/**
- * Configuration for the AutoMod system.
- * Defines rules for automated actions based on flag counts,
- * and per-check type toggles for AutoMod. Rule-specific message templates
- * are defined within each rule's parameters.
- * @type {{
- *   automodRules: Object.<string, AutoModRule[]>,
- *   automodPerCheckTypeToggles: Object.<string, boolean>
- * }}
- */
+// Configuration for the AutoMod system.
+// Defines rules for automated actions based on flag counts,
+// and per-check type toggles for AutoMod. Rule-specific message templates
+// are defined within each rule's parameters.
 export const automodConfig = {
     /**
      * Defines sets of rules for different checkTypes.

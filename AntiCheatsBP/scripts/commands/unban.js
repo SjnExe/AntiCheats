@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/commands/unban.js
  * Defines the !unban command for administrators to remove a ban from a player.
  * Note: Current version primarily supports unbanning players who are online.
- * @version 1.0.2
  */
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -16,9 +14,6 @@ export const definition = {
 };
 /**
  * Executes the unban command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
@@ -38,7 +33,7 @@ export async function execute(player, args, dependencies) {
 
     if (!foundPlayer) {
         player.sendMessage(`§cCannot unban offline player "${targetPlayerName}". Player must be online or unbanned via console/external tool.`);
-        if (config.enableDebugLogging && playerUtils.debugLog) {
+        if (config.enableDebugLogging) {
             playerUtils.debugLog(`[UnbanCommand] Unban attempt for offline player ${targetPlayerName} by ${player.nameTag}. This version primarily handles online players.`, player.nameTag, dependencies);
         }
         return;
@@ -56,40 +51,33 @@ export async function execute(player, args, dependencies) {
 
         if (unbanned) {
             player.sendMessage(`§aSuccessfully unbanned ${foundPlayer.nameTag}.`);
-            if (playerUtils.notifyAdmins) {
-                const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-                playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 unbanned §e${foundPlayer.nameTag}.`, player, targetPData);
-            }
-            if (logManager?.addLog) {
-                logManager.addLog({
-                    timestamp: Date.now(),
-                    adminName: player.nameTag,
-                    actionType: 'unban',
-                    targetName: foundPlayer.nameTag,
-                    reason: oldBanInfo.reason,
-                    details: `Original ban by: ${oldBanInfo.bannedBy}, AutoMod: ${oldBanInfo.isAutoMod}, Check: ${oldBanInfo.triggeringCheckType || 'N/A'}`
-                });
-            }
+            const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
+            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 unbanned §e${foundPlayer.nameTag}.`, dependencies, player, targetPData);
+            logManager.addLog({
+                timestamp: Date.now(),
+                adminName: player.nameTag,
+                actionType: 'unban',
+                targetName: foundPlayer.nameTag,
+                reason: oldBanInfo.reason,
+                details: `Original ban by: ${oldBanInfo.bannedBy}, AutoMod: ${oldBanInfo.isAutoMod}, Check: ${oldBanInfo.triggeringCheckType || 'N/A'}`
+            }, dependencies);
 
             if (oldBanInfo.isAutoMod && oldBanInfo.triggeringCheckType) {
                 await playerDataManager.clearFlagsForCheckType(foundPlayer, oldBanInfo.triggeringCheckType, dependencies);
                 const message = `§7Flags for check type '${oldBanInfo.triggeringCheckType}' were cleared for ${foundPlayer.nameTag} due to unban from AutoMod action.`;
                 player.sendMessage(message);
                 const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
-                if (config.enableDebugLogging && playerUtils.debugLog) {
+                if (config.enableDebugLogging) {
                     playerUtils.debugLog(`[UnbanCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
-                if (playerUtils.notifyAdmins) {
-                    playerUtils.notifyAdmins(`§7[Admin] Flags for check type '${oldBanInfo.triggeringCheckType}' were cleared for ${foundPlayer.nameTag} by ${player.nameTag} (AutoMod unban).`, player, targetPDataForFlagClearLog);
-                }
+                playerUtils.notifyAdmins(`§7[Admin] Flags for check type '${oldBanInfo.triggeringCheckType}' were cleared for ${foundPlayer.nameTag} by ${player.nameTag} (AutoMod unban).`, dependencies, player, targetPDataForFlagClearLog);
             }
-
         } else {
             player.sendMessage(`§cFailed to unban ${foundPlayer.nameTag}.`);
         }
     } catch (e) {
         player.sendMessage(`§cAn unexpected error occurred.: ${e.message}`);
         console.error(`[UnbanCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
-        logManager?.addLog?.({ actionType: 'error', details: `[UnbanCommand] Failed to unban ${foundPlayer?.nameTag || targetPlayerName}: ${e.stack || e}`});
+        logManager.addLog({ actionType: 'error', details: `[UnbanCommand] Failed to unban ${foundPlayer?.nameTag || targetPlayerName}: ${e.stack || e}`}, dependencies);
     }
 }

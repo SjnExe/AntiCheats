@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/notify.js
  * Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
- * @version 1.0.3
  */
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -15,9 +13,6 @@ export const definition = {
 };
 /**
  * Executes the !notify command.
- * @param {import('@minecraft/server').Player} player The player who executed the command.
- * @param {string[]} args The arguments provided with the command ([on|off|toggle|status]).
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, playerDataManager, permissionLevels } = dependencies;
@@ -68,18 +63,13 @@ export async function execute(player, args, dependencies) {
 
     const notificationsOffTag = "ac_notifications_off";
     const notificationsOnTag = "ac_notifications_on";
-    try {
-        if (newPreference) {
-            player.removeTag(notificationsOffTag);
-            player.addTag(notificationsOnTag);
-        } else {
-            player.removeTag(notificationsOnTag);
-            player.addTag(notificationsOffTag);
-        }
-    } catch (e) {
-         playerUtils.debugLog(`[NotifyCommand] Error updating tags for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
+    if (newPreference) {
+        player.removeTag(notificationsOffTag);
+        player.addTag(notificationsOnTag);
+    } else {
+        player.removeTag(notificationsOnTag);
+        player.addTag(notificationsOffTag);
     }
-
     playerDataManager.setPlayerData(player.id, notifKey, newPreference, dependencies);
 
     player.sendMessage(responseMessage);

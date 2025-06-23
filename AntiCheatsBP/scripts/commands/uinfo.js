@@ -1,14 +1,11 @@
 /**
- * @file AntiCheatsBP/scripts/commands/uinfo.js
  * Defines the !uinfo command, providing a user interface for players to view their
  * AntiCheat statistics, server rules, and other helpful information.
- * @version 1.0.2
  */
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
+
 /**
  * Shows the player their anti-cheat statistics.
- * @param {import('@minecraft/server').Player} player The player to show the stats to.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showMyStatsUI(player, dependencies) {
     const { playerDataManager, playerUtils, config } = dependencies;
@@ -43,8 +40,6 @@ async function showMyStatsUI(player, dependencies) {
 }
 /**
  * Shows the server rules to the player.
- * @param {import('@minecraft/server').Player} player The player to show the rules to.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showServerRulesUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
@@ -60,10 +55,9 @@ async function showServerRulesUI(player, dependencies) {
         .button1("Close");
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.stack || e}`); });
 }
+
 /**
  * Shows helpful links to the player.
- * @param {import('@minecraft/server').Player} player The player to show the links to.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showHelpLinksUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
@@ -101,8 +95,6 @@ async function showHelpLinksUI(player, dependencies) {
 }
 /**
  * Shows general tips to the player.
- * @param {import('@minecraft/server').Player} player The player to show the tips to.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 async function showGeneralTipsUI(player, dependencies) {
     const { config, playerUtils } = dependencies;
@@ -124,6 +116,7 @@ async function showGeneralTipsUI(player, dependencies) {
         .button1("Close");
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -136,9 +129,6 @@ export const definition = {
 };
 /**
  * Executes the uinfo command, showing a UI panel with various info for the player.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} _args The command arguments (unused in this command).
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
     const { logManager, playerUtils, config, permissionLevels } = dependencies;

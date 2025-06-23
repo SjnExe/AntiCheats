@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/invsee.js
  * Defines the !invsee command for administrators to view a player's inventory.
- * @version 1.0.3
  */
 import { MessageFormData } from '@minecraft/server-ui';
 import { ItemComponentTypes } from '@minecraft/server';
@@ -17,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the invsee command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, permissionLevels } = dependencies;
@@ -53,22 +48,17 @@ export async function execute(player, args, dependencies) {
         if (itemStack) {
             itemCount++;
             let nameTagText = itemStack.nameTag ? ` (Name: ${itemStack.nameTag})` : "";
-
             let durabilityText = "";
-            try {
-                const durabilityComponent = itemStack.getComponent(ItemComponentTypes.Durability);
-                if (durabilityComponent) {
-                    durabilityText = ` Dur: ${durabilityComponent.maxDurability - durabilityComponent.damage}/${durabilityComponent.maxDurability}`;
-                }
-            } catch (e) {}
+            const durabilityComponent = itemStack.getComponent(ItemComponentTypes.Durability);
+            if (durabilityComponent) {
+                durabilityText = ` Dur: ${durabilityComponent.maxDurability - durabilityComponent.damage}/${durabilityComponent.maxDurability}`;
+            }
 
             let loreText = "";
-            try {
-                const lore = itemStack.getLore();
-                if (lore && lore.length > 0) {
-                    loreText = ` Lore: ["${lore.join('", "')}"]`;
-                }
-            } catch (e) {}
+            const lore = itemStack.getLore();
+            if (lore && lore.length > 0) {
+                loreText = ` Lore: ["${lore.join('", "')}"]`;
+            }
 
             let enchantsText = "";
             try {

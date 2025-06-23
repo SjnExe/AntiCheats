@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/listwatched.js
- * @description Command to list all currently online players being watched.
- * @version 1.0.1
+ * Command to list all currently online players being watched.
  */
 import * as mc from '@minecraft/server';
 /**
@@ -17,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the listwatched command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments (unused).
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerDataManager, playerUtils, permissionLevels, config } = dependencies;
@@ -42,17 +37,12 @@ export async function execute(player, args, dependencies) {
         playerUtils.sendMessage(player, "No players are currently being watched.");
     } else {
         const header = "Currently watched players: ";
-        if (playerUtils.sendMessage && typeof playerUtils.sendMessage === 'function') {
-            playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
-        } else {
-            player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
-        }
+        playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
     }
-    if (dependencies.logManager && dependencies.logManager.addLog) {
-        dependencies.logManager.addLog({
-            adminName: player.nameTag,
-            actionType: 'command_listwatched',
-            details: `Listed watched players. Count: ${watchedPlayersNames.length}`
-        }, dependencies);
-    }
+
+    dependencies.logManager.addLog({
+        adminName: player.nameTag,
+        actionType: 'command_listwatched',
+        details: `Listed watched players. Count: ${watchedPlayersNames.length}`
+    }, dependencies);
 }

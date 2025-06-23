@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/kick.js
  * Defines the !kick command for administrators to remove a player from the server.
- * @version 1.0.2
  */
 import { permissionLevels } from '../core/rankManager.js';
 /**
@@ -45,12 +43,12 @@ export async function execute(player, args, dependencies) {
             player.sendMessage("§cYou do not have permission to kick this player.");
             return;
         }
-         if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) {
+        if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) {
             player.sendMessage("§cOnly the server owner can kick another owner.");
             return;
         }
         if (targetPermissionLevel === depPermLevels.owner && issuerPermissionLevel === depPermLevels.owner && player.id !== foundPlayer.id) {
-             player.sendMessage("§cServer owners cannot kick each other directly.");
+            player.sendMessage("§cServer owners cannot kick each other directly.");
             return;
         }
 

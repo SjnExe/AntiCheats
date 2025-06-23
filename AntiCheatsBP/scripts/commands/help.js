@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/commands/help.js
  * Defines the !help command, which provides players with a list of available commands
  * or detailed information about a specific command based on their permission level.
- * @version 1.0.1
  */
 import { permissionLevels } from '../core/rankManager.js';
 /**
@@ -17,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the help command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies, expected to include an array of command definitions.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, commandDefinitionMap, config, permissionLevels: depPermLevels, getString } = dependencies;

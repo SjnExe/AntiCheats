@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/checkGibberish.js
  * Implements a check to detect gibberish or keyboard-mashed messages.
- * @version 1.0.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

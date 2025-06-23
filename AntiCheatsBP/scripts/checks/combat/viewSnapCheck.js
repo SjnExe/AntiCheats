@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/combat/viewSnapCheck.js
  * Implements checks for invalid player view pitch and rapid view snaps (aimbot-like behavior)
  * that can occur shortly after a player performs an attack.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

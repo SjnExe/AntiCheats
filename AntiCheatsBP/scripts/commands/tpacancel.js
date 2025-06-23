@@ -1,6 +1,5 @@
 /**
- * @file Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
- * @version 1.0.2
+ * Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
  */
 import { world, system } from '@minecraft/server';
 /**
@@ -16,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the !tpacancel command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments. args[0] can be the other player's name.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
@@ -84,8 +80,6 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[TpaCancelCommand] Error for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage("§cAn unexpected error occurred.");
-        if(logManager) {
-            logManager.addLog({actionType: 'error', details: `[TpaCancelCommand] ${player.nameTag} error: ${error.stack || error}`});
-        }
+        logManager.addLog({actionType: 'error', details: `[TpaCancelCommand] ${player.nameTag} error: ${error.stack || error}`}, dependencies);
     }
 }

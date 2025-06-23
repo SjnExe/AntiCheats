@@ -1,9 +1,7 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/autoToolCheck.js
  * Implements a check to detect AutoTool behavior, where a player might rapidly switch
  * to an optimal tool just before breaking a block and potentially switch back immediately after.
  * Relies on various `pData` fields being updated by block break event handlers and the main tick loop.
- * @version 1.1.0
  */
 import * as mc from '@minecraft/server';
 import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';

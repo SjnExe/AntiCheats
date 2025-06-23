@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/commands/commandRegistry.js
  * Central registry for all command modules. This file imports all individual command
  * files and exports them as an array to be used by the commandManager.
- * @version 1.0.2
  */
 import * as banCmd from './ban.js';
 import * as clearchatCmd from './clearchat.js';
@@ -42,12 +40,9 @@ import * as warningsCmd from './warnings.js';
 import * as worldborderCmd from './worldborder.js';
 import * as xraynotifyCmd from './xraynotify.js';
 
-/**
- * Array containing all registered command modules.
- * Each module is expected to export a `definition` object and an `execute` function.
- * Modules are listed alphabetically for maintainability.
- * @type {Array<import('../types.js').CommandModule>}
- */
+// Array containing all registered command modules.
+// Each module is expected to export a `definition` object and an `execute` function.
+// Modules are listed alphabetically for maintainability.
 export const commandModules = [
     banCmd,
     clearchatCmd,
@@ -87,5 +82,3 @@ export const commandModules = [
     worldborderCmd,
     xraynotifyCmd,
 ];
-
-export function registerCommand() { console.warn('Dummy registerCommand called - this is a diagnostic placeholder and should be removed after identifying the caller.'); }

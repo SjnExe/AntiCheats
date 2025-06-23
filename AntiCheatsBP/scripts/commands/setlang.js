@@ -1,11 +1,9 @@
 /**
- * @file AntiCheatsBP/scripts/commands/setlang.js
  * Defines the !setlang command for changing the server's default language for AntiCheat messages.
- * @version 1.0.3
+ * This command is currently non-functional.
  */
-// permissionLevels, getString, setCurrentLanguage, and translations were previously accessed via dependencies or specific i18n import
+// permissionLevels, getString, setCurrentLanguage, and translations were previously accessed via dependencies or specific i18n import.
 // i18n.js has been removed, so these imports are no longer valid or needed.
-
 export const definition = {
     name: "setlang",
     description: "This command is no longer functional.",

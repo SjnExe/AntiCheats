@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/messageWordCountCheck.js
  * Implements a check to detect if a player's chat message exceeds the maximum allowed word count.
- * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
 /**

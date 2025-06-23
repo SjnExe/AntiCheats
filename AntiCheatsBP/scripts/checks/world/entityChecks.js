@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/entityChecks.js
  * Implements checks related to entity spawning and interactions.
- * @version 1.0.0
  */
 import * as mc from '@minecraft/server';
 /**

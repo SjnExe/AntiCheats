@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/buildingChecks.js
  * Implements various checks related to player building activities, such as Tower, FastPlace,
  * AirPlace (scaffolding), Downward Scaffold, and Flat/Static Rotation Building.
- * @version 1.2.1
  */
 import * as mc from '@minecraft/server';
 /**

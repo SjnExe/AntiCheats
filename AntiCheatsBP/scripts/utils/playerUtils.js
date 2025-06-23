@@ -1,16 +1,9 @@
 /**
- * @file AntiCheatsBP/scripts/utils/playerUtils.js
  * Provides utility functions for common player-related operations such as permission checks,
  * debug logging, admin notifications, player searching, and duration parsing.
- * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
-/**
- * Checks if a player has admin privileges based on a specific tag.
- * @param {mc.Player} player The player instance to check.
- * @param {object} dependencies The standard dependencies object.
- * @returns {boolean} True if the player has admin permission, false otherwise.
- */
+
 export function isAdmin(player, dependencies) {
     if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
         console.warn("[PlayerUtils] isAdmin called without full dependencies object containing rankManager and permissionLevels.");
@@ -21,12 +14,7 @@ export function isAdmin(player, dependencies) {
     }
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.admin;
 }
-/**
- * Checks if a player is the owner.
- * @param {mc.Player} player The player instance to check.
- * @param {object} dependencies The standard dependencies object.
- * @returns {boolean} True if the player is the owner, false otherwise.
- */
+
 export function isOwner(player, dependencies) {
     if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
         console.warn("[PlayerUtils] isOwner called without full dependencies object containing rankManager and permissionLevels.");
@@ -37,15 +25,7 @@ export function isOwner(player, dependencies) {
     }
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.owner;
 }
-/**
- * Clears all dropped item entities across standard dimensions (Overworld, Nether, End).
- * Useful for reducing server lag.
- * @param {object} dependencies The standard dependencies object, used for logging.
- * @param {mc.Player} [adminPerformingAction] Optional: The admin player who initiated the action, for logging context.
- * @returns {Promise<{clearedItemsCount: number, dimensionsProcessed: number, error: string | null}>}
- *          An object containing the count of cleared items, the number of dimensions processed,
- *          and any error messages encountered (null if no errors).
- */
+
 export async function executeLagClear(dependencies, adminPerformingAction) {
     let clearedItemsCount = 0;
     let dimensionsProcessed = 0;
@@ -88,28 +68,11 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
         error: errorMessages.length > 0 ? errorMessages.join('\n') : null
     };
 }
-/**
- * Sends a formatted warning message directly to a specific player.
- * The message is prefixed with "[AntiCheat] Warning: " and colored red.
- * @param {mc.Player} player The player instance to warn.
- * @param {string} reason The reason for the warning, which will be displayed to the player.
- * @returns {void}
- */
+
 export function warnPlayer(player, reason) {
     player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
 }
-/**
- * Notifies all online admins with a formatted message.
- * Admin notification delivery respects individual admin preferences (via tags like "ac_notifications_off")
- * and the global default setting `acGlobalNotificationsDefaultOn`.
- * Optionally includes context about a specific player and their flag data if provided.
- * @param {string} baseMessage The core message to send.
- * @param {object} dependencies The standard dependencies object.
- * @param {mc.Player} [player] Optional: The player related to this notification.
- * @param {object} [pData] Optional: The player-specific data, typically from playerDataManager,
- *                         expected to have `flags.totalFlags` and `lastFlagType` if player context is relevant.
- * @returns {void}
- */
+
 export function notifyAdmins(baseMessage, dependencies, player, pData) {
     if (!dependencies || !dependencies.config) {
         console.warn("[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.");
@@ -133,9 +96,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         if (isAdmin(p, dependencies)) {
             const hasExplicitOn = p.hasTag(notificationsOnTag);
             const hasExplicitOff = p.hasTag(notificationsOffTag);
-
             const shouldReceiveMessage = hasExplicitOn || (!hasExplicitOff && dependencies.config.acGlobalNotificationsDefaultOn);
-
             if (shouldReceiveMessage) {
                 try {
                     p.sendMessage(fullMessage);
@@ -147,39 +108,20 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         }
     }
 }
-/**
- * Logs a message to the console if debug logging (`enableDebugLogging` in config) is enabled.
- * Prefixes messages with "[AC Debug]" or "[AC Watch - PlayerName]" if `contextPlayerNameIfWatched` is provided.
- * @param {string} message The message to log.
- * @param {object} dependencies The standard dependencies object, used to access config.enableDebugLogging.
- * @param {string} [contextPlayerNameIfWatched=null] Optional: The nameTag of a player being watched.
- *                                                  If provided, the log prefix changes to indicate context.
- * @returns {void}
- */
+
 export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
-    if (dependencies && dependencies.config && dependencies.config.enableDebugLogging) {
+    if (dependencies?.config?.enableDebugLogging) { // Simplified
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
         console.warn(`${prefix} ${message}`);
     }
 }
-/**
- * Finds an online player by their nameTag (case-insensitive).
- * @param {string} playerName The nameTag of the player to find.
- * @returns {mc.Player | null} The player object if found online, otherwise null.
- *                             Returns null if playerName is invalid.
- */
+
 export function findPlayer(playerName) {
     if (!playerName || typeof playerName !== 'string') return null;
     const nameToFind = playerName.toLowerCase();
     return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
-/**
- * Parses a duration string (e.g., "5m", "1h", "2d", "perm") into milliseconds.
- * If only a number is provided, it's assumed to be in minutes.
- * @param {string} durationString The duration string to parse.
- * @returns {number | null | Infinity} Duration in milliseconds, `Infinity` for "perm" or "permanent",
- *                                     or `null` if the format is invalid.
- */
+
 export function parseDuration(durationString) {
     if (!durationString || typeof durationString !== 'string') return null;
     const lowerDurationString = durationString.toLowerCase();

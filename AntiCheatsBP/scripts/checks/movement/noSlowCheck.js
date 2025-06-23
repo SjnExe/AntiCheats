@@ -1,10 +1,8 @@
 /**
- * @file AntiCheatsBP/scripts/checks/movement/noSlowCheck.js
  * Implements a check to detect if a player is moving faster than allowed while performing actions
  * that should typically slow them down (e.g., eating, sneaking, charging a bow).
  * Relies on player state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`) and
  * assumes `pData.speedAmplifier` is updated by `updateTransientPlayerData`.
- * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
 /**

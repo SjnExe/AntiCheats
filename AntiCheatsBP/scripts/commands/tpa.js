@@ -1,6 +1,5 @@
 /**
- * @file Script for the !tpa command, allowing players to request teleportation to another player.
- * @version 1.0.2
+ * Script for the !tpa command, allowing players to request teleportation to another player.
  */
 import { world, system } from '@minecraft/server';
 /**
@@ -16,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the !tpa command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
@@ -78,17 +74,14 @@ export async function execute(player, args, dependencies) {
             try {
                 target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
             } catch (e) {
-                if (config.enableDebugLogging && playerUtils?.debugLog) {
+                if (config.enableDebugLogging) {
                     playerUtils.debugLog(`[TpaCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                 }
             }
         });
-
     } else {
         player.sendMessage("§cCould not send TPA request. There might be an existing request or other issue.");
         playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
-        if(logManager) {
-            logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`});
-        }
+        logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`}, dependencies);
     }
 }

@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/messageRateCheck.js
  * Implements a check to detect players sending chat messages too frequently (spamming).
- * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
 /**
