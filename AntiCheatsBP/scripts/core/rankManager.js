@@ -98,7 +98,7 @@ export function getPlayerRankId(player, dependencies) {
         if (!(player instanceof Player)) {
             if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
                 dependencies.playerUtils.debugLog("[RankManager] Invalid player object passed to getPlayerRankId. Defaulting to member.", player?.nameTag || "UnknownSource", dependencies);
-            } else if (!(dependencies.playerUtils && dependencies.config.enableDebugLogging)) { // Corrected condition
+            } else if (!dependencies.playerUtils || !dependencies.config.enableDebugLogging) {
                  console.warn("[RankManager] Invalid player object passed to getPlayerRankId (debug logging disabled or playerUtils not available). Defaulting to member.");
             }
             return 'member';
@@ -106,7 +106,7 @@ export function getPlayerRankId(player, dependencies) {
         if (typeof player.nameTag !== 'string') {
             if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
                 dependencies.playerUtils.debugLog(`[RankManager] Player object for ID ${player.id} has no nameTag. Defaulting to member.`, player.nameTag, dependencies);
-            } else if (!(dependencies.playerUtils && dependencies.config.enableDebugLogging)) { // Corrected condition
+            } else if (!dependencies.playerUtils || !dependencies.config.enableDebugLogging) {
                 console.warn(`[RankManager] Player object for ID ${player.id} has no nameTag (debug logging disabled or playerUtils not available). Defaulting to member.`);
             }
             return 'member';

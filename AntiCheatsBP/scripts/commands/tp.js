@@ -99,7 +99,7 @@ export async function execute(player, args, dependencies) {
     if (!playerToMove || !destinationLocation || !targetDimension) {
         player.sendMessage(`§cUsage: ${prefix}tp <target_player | x> [destination_player | y] [z] [dimension]`);
         if (config.enableDebugLogging) {
-            playerUtils.debugLog(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`TP command failed processing for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag, dependencies);
         }
         return;
     }

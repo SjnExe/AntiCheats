@@ -55,7 +55,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                         playerUtils.debugLog(`[AntiAdvCheck] Whitelisted link "${detectedLink}" found. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
                         continue;
                     }
-                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, dependencies, watchedPlayerName);
+                    playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: "${detectedLink}" in message: "${message}"`, watchedPlayerName, dependencies);
                     const violationDetails = {
                         detectedLink: detectedLink,
                         method: "regex",
@@ -66,19 +66,19 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     return;
                 }
             } catch (e) {
-                playerUtils.debugLog(`[AntiAdvCheck] Error executing regex '${regexString}' for ${player.nameTag}: ${e.message}`, dependencies, watchedPlayerName);
+                playerUtils.debugLog(`[AntiAdvCheck] Error executing regex '${regexString}' for ${player.nameTag}: ${e.message}`, watchedPlayerName, dependencies);
                 console.error(`[AntiAdvCheck] Regex error for pattern "${regexString}": ${e.stack || e}`);
             }
         }
     } else {
         if (!config.antiAdvertisingPatterns || config.antiAdvertisingPatterns.length === 0) {
-            playerUtils.debugLog("[AntiAdvCheck] No simple patterns configured, skipping simple check.", dependencies, watchedPlayerName);
+            playerUtils.debugLog("[AntiAdvCheck] No simple patterns configured, skipping simple check.", watchedPlayerName, dependencies);
             return;
         }
         const lowerCaseMessage = message.toLowerCase();
         for (const pattern of config.antiAdvertisingPatterns) {
             if (lowerCaseMessage.includes(pattern.toLowerCase())) {
-                playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered simple pattern '${pattern}' with message: "${message}"`, dependencies, watchedPlayerName);
+                playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered simple pattern '${pattern}' with message: "${message}"`, watchedPlayerName, dependencies);
                 const violationDetails = {
                     matchedPattern: pattern,
                     method: "simple_pattern",

@@ -27,13 +27,13 @@ export function initializeLogCache(dependencies) {
             const parsedLogs = JSON.parse(rawLogs);
             if (Array.isArray(parsedLogs)) {
                 logsInMemory = parsedLogs;
-                playerUtils.debugLog(`LogManager: Successfully loaded ${logsInMemory.length} logs into memory cache.`, dependencies, "System");
+                playerUtils.debugLog(`LogManager: Successfully loaded ${logsInMemory.length} logs into memory cache.`, "System", dependencies);
                 return;
             }
         }
-        playerUtils.debugLog(`LogManager: No valid logs found in dynamic properties, or property not set. Initializing with empty cache.`, dependencies, "System");
+        playerUtils.debugLog(`LogManager: No valid logs found in dynamic properties, or property not set. Initializing with empty cache.`, "System", dependencies);
     } catch (error) {
-        playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error}`, dependencies, "System");
+        playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error}`, "System", dependencies);
         console.error(`LogManager: Error initializing log cache: ${error.stack || error}`);
     }
     logsInMemory = [];
@@ -66,7 +66,7 @@ export function persistLogCacheToDisk(dependencies) {
 export function addLog(logEntry, dependencies) {
     const { playerUtils } = dependencies;
     if (!logEntry || typeof logEntry.timestamp !== 'number' || !logEntry.adminName || !logEntry.actionType) {
-        playerUtils.debugLog("LogManager: Attempted to add invalid log entry. Required fields missing.", "System", dependencies); // Corrected order
+        playerUtils.debugLog("LogManager: Attempted to add invalid log entry. Required fields missing.", "System", dependencies);
         console.warn("LogManager: Invalid log entry object:", JSON.stringify(logEntry));
         return;
     }
@@ -95,6 +95,6 @@ export function clearAllLogs_DEV_ONLY(dependencies) {
     const { playerUtils } = dependencies;
     logsInMemory = [];
     logsAreDirty = true;
-    playerUtils.debugLog("LogManager: All action logs cleared from memory (DEV_ONLY). Attempting to persist.", dependencies, "System");
+    playerUtils.debugLog("LogManager: All action logs cleared from memory (DEV_ONLY). Attempting to persist.", "System", dependencies);
     return persistLogCacheToDisk(dependencies);
 }
