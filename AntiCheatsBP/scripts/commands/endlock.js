@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/endlock.js
  * Defines the !endlock command for administrators to manage End dimension access.
- * @version 1.0.3
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
 /**
@@ -16,9 +14,6 @@ export const definition = {
 };
 /**
  * Executes the endlock command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, permissionLevels } = dependencies;

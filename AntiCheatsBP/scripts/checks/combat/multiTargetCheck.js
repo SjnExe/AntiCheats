@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/combat/multiTargetCheck.js
  * Implements a check to detect Killaura-like behavior where a player rapidly hits multiple distinct targets.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

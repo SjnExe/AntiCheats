@@ -1,13 +1,7 @@
 import { MessageFormData } from '@minecraft/server-ui';
+
 /**
- * @file Script for the !rules command, displays server rules to the player.
- * @version 1.0.3
- */
-/**
- * @typedef {import('../types.js').CommandDefinition} CommandDefinition
- */
-/**
- * @type {CommandDefinition}
+ * Script for the !rules command, displays server rules to the player.
  */
 export const definition = {
     name: 'rules',
@@ -19,9 +13,6 @@ export const definition = {
 };
 /**
  * Executes the !rules command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} _args The command arguments (not used in this command).
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
     const { playerUtils, config, permissionLevels } = dependencies;
@@ -36,12 +27,10 @@ export async function execute(player, _args, dependencies) {
     }
 
     form.button1("Close");
-    form.button2("Close");
+    form.button2("Close"); // Typically, button2 is for a different action or cancel. If both are close, one might be redundant.
 
-    try {
-        await form.show(player);
-    } catch (error) {
+    await form.show(player).catch(error => {
         playerUtils.debugLog(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.message}`, player.nameTag, dependencies);
         console.error(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.stack || error}`);
-    }
+    });
 }

@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/swearCheck.js
  * Implements swear word detection in chat messages with obfuscation resistance
  * using exact normalized matching.
- * @version 1.1.2
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/nukerCheck.js
  * Implements a check to detect Nuker hacks by analyzing the rate of block breaking by a player.
  * Relies on `pData.blockBreakEvents` (an array of timestamps) being populated by block break event handlers.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

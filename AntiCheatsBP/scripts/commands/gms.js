@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/gms.js
  * Defines the !gms command for administrators to set a player's gamemode to Survival.
- * @version 1.0.3
  */
 import * as mc from '@minecraft/server';
 /**
@@ -16,9 +14,6 @@ export const definition = {
 };
 /**
  * Executes the gms (gamemode survival) command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, findPlayer, config, permissionLevels } = dependencies;

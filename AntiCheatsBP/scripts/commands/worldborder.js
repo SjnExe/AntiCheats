@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/worldborder.js
  * Manages world border settings via commands.
- * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
 import { world, system } from '@minecraft/server';
@@ -80,11 +78,7 @@ export async function execute(player, args, dependencies) {
             playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
     }
 }
-/**
- * Formats milliseconds into a brief human-readable string (e.g., "1h 30m 15s").
- * @param {number} ms - Duration in milliseconds.
- * @returns {string} Formatted duration string.
- */
+
 function formatDurationBrief(ms) {
     if (ms <= 0) return "0s";
     let seconds = Math.floor(ms / 1000);
@@ -108,12 +102,7 @@ function normalizeDimensionId(player, inputDimId) {
     if (normalized === "minecraft:overworld" || normalized === "minecraft:the_nether" || normalized === "minecraft:the_end") return normalized;
     return null;
 }
-/**
- * Handles the 'set' subcommand for the worldborder.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args Remaining arguments after the subcommand.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
- */
+
 async function handleSetCommand(player, args, dependencies) {
     const { playerUtils, logManager, config: currentRunTimeConfig, configModule, worldBorderManager } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
@@ -183,10 +172,7 @@ async function handleSetCommand(player, args, dependencies) {
         if (cancelledResize) {
             playerUtils.notifyPlayer(player, "§eAny active border resize for this dimension was cancelled.");
         }
-
-        if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(worldBorderManager.getBorderSettings(dimensionId, dependencies) || settingsToSave) }, dependencies);
-        }
+        logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_set', targetName: dimensionId, details: JSON.stringify(worldBorderManager.getBorderSettings(dimensionId, dependencies) || settingsToSave) }, dependencies);
     } else {
         playerUtils.warnPlayer(player, "§cFailed to save world border settings.");
     }
@@ -475,9 +461,7 @@ async function handleResizePauseCommand(player, args, dependencies) {
     settings.resizeLastPauseStartTimeMs = Date.now();
     if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
         playerUtils.notifyPlayer(player, `§aBorder resize in ${dimensionId.replace("minecraft:", "")} paused.`);
-        if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_pause', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
-        }
+        logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_pause', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
     } else {
         playerUtils.warnPlayer(player, `§cFailed to pause border resize in ${dimensionId.replace("minecraft:", "")}.`);
     }
@@ -508,9 +492,7 @@ async function handleResizeResumeCommand(player, args, dependencies) {
     settings.resizeLastPauseStartTimeMs = undefined;
     if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
         playerUtils.notifyPlayer(player, `§aBorder resize in ${dimensionId.replace("minecraft:", "")} resumed.`);
-        if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_resume', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
-        }
+        logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_resize_resume', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
     } else {
         playerUtils.warnPlayer(player, `§cFailed to resume border resize in ${dimensionId.replace("minecraft:", "")}.`);
     }
@@ -537,9 +519,7 @@ async function handleSetGlobalParticleCommand(player, args, dependencies) {
     const success = configModule.updateConfigValue('worldBorderParticleName', particleName);
     if (success) {
         playerUtils.notifyPlayer(player, `§aGlobal world border particle set to: ${particleName}`);
-        if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setglobalparticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);
-        }
+        logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setglobalparticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);
     } else {
         const currentParticleName = configModule.editableConfigValues.worldBorderParticleName;
         if (currentParticleName === particleName) {
@@ -587,9 +567,7 @@ async function handleSetParticleCommand(player, args, dependencies) {
     settings.particleNameOverride = newParticleOverride;
     if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
         playerUtils.notifyPlayer(player, `§aParticle for border in ${dimensionId.replace('minecraft:','')} set to: ${messageParticleName}`);
-        if (logManager && typeof logManager.addLog === 'function') {
-            logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setparticle', targetName: dimensionId, details: `Set particle override to: ${newParticleOverride === undefined ? 'Global Default' : newParticleOverride}` }, dependencies);
-        }
+        logManager.addLog({ adminName: player.nameTag, actionType: 'worldborder_setparticle', targetName: dimensionId, details: `Set particle override to: ${newParticleOverride === undefined ? 'Global Default' : newParticleOverride}` }, dependencies);
     } else {
         playerUtils.warnPlayer(player, "§cFailed to set particle for world border.");
     }

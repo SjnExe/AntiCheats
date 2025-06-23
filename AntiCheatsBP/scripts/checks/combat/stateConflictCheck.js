@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/combat/stateConflictCheck.js
  * Implements checks for players attacking while in states that should normally prevent combat actions,
  * such as sleeping, using consumables, charging bows, or using shields.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/checkSimpleImpersonation.js
  * Implements a check to detect simple impersonation attempts in chat.
- * @version 1.0.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/charRepeatCheck.js
  * Implements a check to detect excessive repetition of the same character in chat messages.
- * @version 1.0.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

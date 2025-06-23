@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/clearchat.js
  * Defines the !clearchat command for administrators to clear the global chat.
- * @version 1.0.2
  */
 import * as mc from '@minecraft/server';
 /**
@@ -16,9 +14,6 @@ export const definition = {
 };
 /**
  * Executes the clearchat command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments (unused in this command).
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, _args, dependencies) {
     const { playerUtils, logManager, permissionLevels, config } = dependencies;

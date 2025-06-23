@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/player/clientInfoChecks.js
  * Implements checks related to player client system information, such as render distance.
- * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
 /**

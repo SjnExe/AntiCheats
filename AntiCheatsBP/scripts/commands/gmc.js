@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/gmc.js
  * Defines the !gmc command for administrators to set a player's gamemode to Creative.
- * @version 1.0.3
  */
 import * as mc from '@minecraft/server';
 /**
@@ -16,10 +14,6 @@ export const definition = {
 };
 /**
  * Executes the gmc (gamemode creative) command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
- * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, permissionLevels } = dependencies;

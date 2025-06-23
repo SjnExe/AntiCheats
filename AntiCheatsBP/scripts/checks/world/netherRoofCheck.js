@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/netherRoofCheck.js
  * Checks if a player is on the Nether roof.
- * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
 /**

@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/capsAbuseCheck.js
  * Implements a check to detect excessive capitalization (CAPS abuse) in chat messages.
- * @version 1.0.0
  */
 /**
  * Checks a chat message for excessive capitalization.

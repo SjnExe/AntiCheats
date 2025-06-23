@@ -1,9 +1,7 @@
 /**
- * @file AntiCheatsBP/scripts/checks/player/inventoryModCheck.js
  * Implements checks for suspicious inventory manipulations, such as:
  * 1. Using an item in the same game tick as a hotbar slot change.
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating).
- * @version 1.1.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

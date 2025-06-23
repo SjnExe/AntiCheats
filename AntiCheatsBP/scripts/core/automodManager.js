@@ -1,13 +1,7 @@
 /**
- * @file AntiCheatsBP/scripts/core/automodManager.js
  * Manages automated moderation actions based on player flags and configured rules.
- * @version 1.0.2
  */
-/**
- * Formats a duration in milliseconds into a human-readable string (e.g., "1d 2h 30m 15s").
- * @param {number} ms - The duration in milliseconds.
- * @returns {string} A human-readable duration string. Returns "Permanent" if ms is Infinity.
- */
+
 function formatDuration(ms) {
     if (ms === Infinity) return "Permanent";
     if (ms < 1000) return `${ms}ms`;
@@ -26,22 +20,13 @@ function formatDuration(ms) {
     if (hours > 0) parts.push(`${hours}h`);
     if (minutes > 0) parts.push(`${minutes}m`);
     if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-
     return parts.join(' ');
 }
-/**
- * Formats an AutoMod message template with context-specific data.
- * Replaces placeholders in a template string with actual values.
- * @param {string} template - The message template string.
- * @param {object} context - An object containing placeholder keys and their values.
- *                           Example: { playerName: "Steve", actionType: "warn", duration: "5m" }
- * @returns {string} The formatted message. Returns the original template if it's falsy or context is missing.
- */
+
 function formatAutomodMessage(template, context) {
     if (!template || typeof template !== 'string' || !context || typeof context !== 'object') {
         return template || "";
     }
-
     let message = template;
     for (const key in context) {
         if (Object.prototype.hasOwnProperty.call(context, key)) {
@@ -52,9 +37,7 @@ function formatAutomodMessage(template, context) {
     }
     return message;
 }
-/**
- * Internal function to dispatch and execute specific automod actions.
- */
+
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
     const { playerUtils, logManager, config, playerDataManager } = dependencies;
     playerUtils.debugLog(`[AutoModManager] Dispatching action '${actionType}' for ${player.nameTag} due to ${checkType}. Rule Params: ${JSON.stringify(parameters)}`, player.nameTag, dependencies);
@@ -104,9 +87,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             } catch (e) {
                 playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                 logDetails = `Failed to kick player ${player.nameTag}. Check: ${checkType}. Reason: "${kickReason}". Error: ${e.message}`;
-                if (logManager?.addLog) {
-                    logManager.addLog('error', { event: 'automod_kick_failure', player: player.nameTag, reason: kickReason, error: e.message, context: 'kick_action' }, dependencies);
-                }
+                logManager.addLog('error', { event: 'automod_kick_failure', player: player.nameTag, reason: kickReason, error: e.message, context: 'kick_action' }, dependencies);
             }
             break;
         case "tempBan":
@@ -121,7 +102,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             const kickMsgTempBan = formatAutomodMessage(messageTemplate, tempBanContext);
             const banReasonForStorageTemp = `AutoMod ${checkType} - ${actionType} (${friendlyDurationTempBan})`;
 
-            const banSuccessTemp = playerDataManager?.addBan && playerDataManager.addBan(player, parsedDurationMsTempBan, banReasonForStorageTemp, "AutoMod", true, checkType, dependencies);
+            const banSuccessTemp = playerDataManager.addBan(player, parsedDurationMsTempBan, banReasonForStorageTemp, "AutoMod", true, checkType, dependencies);
 
             if (banSuccessTemp) {
                 durationForLog = parsedDurationMsTempBan;
@@ -133,17 +114,13 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 } catch (e) {
                     playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag} after tempBan: ${e.stack || e}`, player.nameTag, dependencies);
                     logDetails = `Temp banned player (kick failed). Duration: ${friendlyDurationTempBan}, Check: ${checkType}. Stored Reason: ${banReasonForStorageTemp}. Error: ${e.message}`;
-                     if (logManager?.addLog) {
-                        logManager.addLog('error', { event: 'automod_kick_failure', player: player.nameTag, reason: kickMsgTempBan, error: e.message, context: 'tempBan_action_kick' }, dependencies);
-                    }
+                    logManager.addLog('error', { event: 'automod_kick_failure', player: player.nameTag, reason: kickMsgTempBan, error: e.message, context: 'tempBan_action_kick' }, dependencies);
                     actionProcessed = true;
                 }
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply tempBan to ${player.nameTag} via playerDataManager.addBan.`, player.nameTag, dependencies);
                 logDetails = `Failed to apply tempBan. Check: ${checkType}. Reason: ${banReasonForStorageTemp}`;
-                if (logManager?.addLog) {
-                    logManager.addLog('error', { event: 'automod_addBan_failure', player: player.nameTag, action: 'tempBan', reason: banReasonForStorageTemp, duration: parsedDurationMsTempBan }, dependencies);
-                }
+                logManager.addLog('error', { event: 'automod_addBan_failure', player: player.nameTag, action: 'tempBan', reason: banReasonForStorageTemp, duration: parsedDurationMsTempBan }, dependencies);
             }
             break;
         case "permBan":
@@ -151,7 +128,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             const kickMsgPermBan = formatAutomodMessage(messageTemplate, permBanContext);
             const permBanReasonForStorage = `AutoMod ${checkType} - ${actionType} (Permanent)`;
 
-            const banSuccessPerm = playerDataManager?.addBan && playerDataManager.addBan(player, Infinity, permBanReasonForStorage, "AutoMod", true, checkType, dependencies);
+            const banSuccessPerm = playerDataManager.addBan(player, Infinity, permBanReasonForStorage, "AutoMod", true, checkType, dependencies);
 
             if (banSuccessPerm) {
                 durationForLog = Infinity;
@@ -163,17 +140,13 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 } catch (e) {
                     playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag} after permBan: ${e.stack || e}`, player.nameTag, dependencies);
                     logDetails = `Permanently banned player (kick failed). Check: ${checkType}. Stored Reason: ${permBanReasonForStorage}. Error: ${e.message}`;
-                    if (logManager?.addLog) {
-                        logManager.addLog('error', { event: 'automod_kick_failure', player: player.nameTag, reason: kickMsgPermBan, error: e.message, context: 'permBan_action_kick' }, dependencies);
-                    }
+                    logManager.addLog('error', { event: 'automod_kick_failure', player: player.nameTag, reason: kickMsgPermBan, error: e.message, context: 'permBan_action_kick' }, dependencies);
                     actionProcessed = true;
                 }
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply permBan to ${player.nameTag} via playerDataManager.addBan.`, player.nameTag, dependencies);
                 logDetails = `Failed to apply permBan. Check: ${checkType}. Reason: ${permBanReasonForStorage}`;
-                 if (logManager?.addLog) {
-                    logManager.addLog('error', { event: 'automod_addBan_failure', player: player.nameTag, action: 'permBan', reason: permBanReasonForStorage, duration: Infinity }, dependencies);
-                }
+                logManager.addLog('error', { event: 'automod_addBan_failure', player: player.nameTag, action: 'permBan', reason: permBanReasonForStorage, duration: Infinity }, dependencies);
             }
             break;
         case "mute":
@@ -183,7 +156,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             const muteContext = { ...baseMessageContext, duration: friendlyDurationMute };
             const muteReasonForStorage = `AutoMod ${checkType} - ${actionType} (${friendlyDurationMute})`;
 
-            const muteSuccess = playerDataManager?.addMute && playerDataManager.addMute(player, parsedDurationMsMute, muteReasonForStorage, "AutoMod", true, checkType, dependencies);
+            const muteSuccess = playerDataManager.addMute(player, parsedDurationMsMute, muteReasonForStorage, "AutoMod", true, checkType, dependencies);
 
             if (muteSuccess) {
                 durationForLog = parsedDurationMsMute;
@@ -196,9 +169,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply mute to ${player.nameTag} via playerDataManager.addMute.`, player.nameTag, dependencies);
                 logDetails = `Failed to apply mute. Duration: ${durationStringMute}, Check: ${checkType}. Reason: ${muteReasonForStorage}`;
-                 if (logManager?.addLog) {
-                    logManager.addLog('error', { event: 'automod_addMute_failure', player: player.nameTag, reason: muteReasonForStorage, duration: parsedDurationMsMute }, dependencies);
-                }
+                logManager.addLog('error', { event: 'automod_addMute_failure', player: player.nameTag, reason: muteReasonForStorage, duration: parsedDurationMsMute }, dependencies);
             }
             break;
         case "freeze":
@@ -301,7 +272,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
     const finalReasonForLog = `automod.${checkType}.${actionType}`;
 
-    if (actionProcessed && logManager?.addLog) {
+    if (actionProcessed) {
         logManager.addLog('info', {
             event: `automod_${actionType.toLowerCase()}`,
             adminName: 'AutoMod',
@@ -313,19 +284,17 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             actionParams: parameters
         }, dependencies);
 
-        if (playerUtils && playerUtils.notifyAdmins) {
-            const adminContext = {
-                ...baseMessageContext,
-                duration: (durationForLog === Infinity) ? "Permanent" : (durationForLog ? formatDuration(durationForLog) : "N/A"),
-                itemTypeId: parameters.itemToRemoveTypeId || "N/A",
-                itemQuantity: removedItemCount,
-                teleportCoordinates: finalTeleportDesc,
-            };
-            const finalAdminMessage = formatAutomodMessage(adminMessageTemplate, adminContext);
-            playerUtils.notifyAdmins(finalAdminMessage, dependencies, player, pData);
-        }
+        const adminContext = {
+            ...baseMessageContext,
+            duration: (durationForLog === Infinity) ? "Permanent" : (durationForLog ? formatDuration(durationForLog) : "N/A"),
+            itemTypeId: parameters.itemToRemoveTypeId || "N/A",
+            itemQuantity: removedItemCount,
+            teleportCoordinates: finalTeleportDesc,
+        };
+        const finalAdminMessage = formatAutomodMessage(adminMessageTemplate, adminContext);
+        playerUtils.notifyAdmins(finalAdminMessage, dependencies, player, pData);
 
-    } else if (!actionProcessed && logManager?.addLog) {
+    } else {
         const criticalActions = ["warn", "kick", "tempBan", "permBan", "mute", "removeIllegalItem", "teleportSafe"];
         if (criticalActions.includes(actionType)) {
              playerUtils.debugLog(`AutomodManager: Action '${actionType}' failed to process correctly for ${player.nameTag}. Details: ${logDetails}`, player.nameTag, dependencies);
@@ -340,9 +309,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     }
     return actionProcessed;
 }
-/**
- * Processes automated moderation actions for a player based on a specific check type trigger.
- */
+
 export async function processAutoModActions(player, pData, checkType, dependencies) {
     const { config, playerUtils } = dependencies;
     const currentAutomodConfig = dependencies.config.automodConfig;

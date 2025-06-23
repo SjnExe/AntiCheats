@@ -1,11 +1,9 @@
 /**
- * @file AntiCheatsBP/scripts/checks/movement/noFallCheck.js
  * Implements a check to detect players negating fall damage (NoFall).
  * It compares accumulated fall distance with whether the player actually took damage upon landing.
  * Relies on `pData.fallDistance` being accumulated in the main tick loop and
  * `pData.isTakingFallDamage` being set by `handleEntityHurt` and reset in the main tick loop.
  * Assumes `pData.hasSlowFalling` is updated by `updateTransientPlayerData`.
- * @version 1.0.1
  */
 import * as mc from '@minecraft/server';
 /**

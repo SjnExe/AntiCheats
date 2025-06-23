@@ -1,6 +1,5 @@
 /**
- * @file Script for the !tpahere command, allowing players to request another player to teleport to them.
- * @version 1.0.2
+ * Script for the !tpahere command, allowing players to request another player to teleport to them.
  */
 import { world, system } from '@minecraft/server';
 /**
@@ -16,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the !tpahere command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
@@ -78,7 +74,7 @@ export async function execute(player, args, dependencies) {
                 try {
                     target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested you to teleport to them. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
                 } catch (e) {
-                    if (config.enableDebugLogging && playerUtils?.debugLog) {
+                    if (config.enableDebugLogging) {
                         playerUtils.debugLog(`[TpaHereCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                     }
                 }
@@ -86,15 +82,11 @@ export async function execute(player, args, dependencies) {
         } else {
             player.sendMessage("§cCould not send TPA Here request. There might be an existing request or other issue.");
             playerUtils.debugLog(`[TpaHereCommand] Failed to send TPAHere request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
-            if(logManager) {
-                logManager.addLog({actionType: 'error', details: `[TPAHereCommand] TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`});
-            }
+            logManager.addLog({actionType: 'error', details: `[TPAHereCommand] TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`}, dependencies);
         }
     } catch (error) {
         console.error(`[TpaHereCommand] Error for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage("§cAn unexpected error occurred.");
-        if(logManager) {
-            logManager.addLog({actionType: 'error', details: `[TpaHereCommand] ${player.nameTag} error: ${error.stack || error}`});
-        }
+        logManager.addLog({actionType: 'error', details: `[TpaHereCommand] ${player.nameTag} error: ${error.stack || error}`}, dependencies);
     }
 }

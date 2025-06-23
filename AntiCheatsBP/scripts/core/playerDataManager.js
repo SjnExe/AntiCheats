@@ -1,16 +1,12 @@
 /**
- * @file AntiCheatsBP/scripts/core/playerDataManager.js
  * Manages all player-specific data used by the AntiCheat system. This includes runtime data (pData),
  * persistence via dynamic properties, and helper functions for data manipulation like adding flags,
  * mutes, and bans.
- * @version 1.1.1
  */
 import * as mc from '@minecraft/server';
 import { processAutoModActions } from './automodManager.js';
 
 const playerData = new Map();
-
-/** @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData */
 
 const persistedPlayerDataKeys = [
     "flags", "isWatched", "lastFlagType", "playerNameTag",
@@ -19,32 +15,19 @@ const persistedPlayerDataKeys = [
     "consecutiveOnGroundSpeedingTicks", "muteInfo", "banInfo",
     "lastCombatInteractionTime", "lastViolationDetailsMap", "automodState"
 ];
-/**
- * Retrieves a player's anti-cheat data.
- * @param {string} playerId - The ID of the player.
- * @returns {PlayerAntiCheatData | undefined} The player's data, or undefined if not found.
- */
+
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
 }
-/**
- * Retrieves all player data objects currently managed.
- * @returns {IterableIterator<PlayerAntiCheatData>} An iterator for all player data values.
- */
+
 export function getAllPlayerDataValues() {
     return playerData.values();
 }
-/**
- * Saves specified player data to dynamic properties.
- * @param {mc.Player} player - The player whose data is being saved.
- * @param {object} pDataToSave - The player data object to save (typically a subset of PlayerAntiCheatData).
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if saving was successful, false otherwise.
- */
+
 export async function savePlayerDataToDynamicProperties(player, pDataToSave, dependencies) {
     const { playerUtils } = dependencies;
     if (!player || !pDataToSave) {
-        playerUtils.debugLog("PDM:save: Invalid player or pDataToSave", dependencies, player?.nameTag);
+        playerUtils.debugLog("PDM:save: Invalid player or pDataToSave", player?.nameTag, dependencies); // Corrected order
         return false;
     }
     const dynamicPropertyKey = "anticheat:pdata_v1";
@@ -64,20 +47,15 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         return true;
     } catch (error) {
         playerUtils.debugLog(`PDM:save: Fail setDynamicProp for ${player.nameTag}. E: ${error}`, dependencies, player.nameTag);
-        if (error.message) playerUtils.debugLog(`PDM:save: Error message: ${error.message}`, dependencies, player.nameTag);
+        if (error.message) playerUtils.debugLog(`PDM:save: Error message: ${error.message}`, player.nameTag, dependencies);
         return false;
     }
 }
-/**
- * Loads player data from dynamic properties.
- * @param {mc.Player} player - The player whose data is being loaded.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<object|null>} The loaded player data object, or null if not found or an error occurs.
- */
+
 export async function loadPlayerDataFromDynamicProperties(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) {
-        playerUtils.debugLog("PDM:load: Invalid player object provided.", dependencies, null);
+        playerUtils.debugLog("PDM:load: Invalid player object provided.", null, dependencies); // Corrected order
         return null;
     }
     const dynamicPropertyKey = "anticheat:pdata_v1";
@@ -86,35 +64,29 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         jsonString = player.getDynamicProperty(dynamicPropertyKey);
     } catch (error) {
         playerUtils.debugLog(`PDM:load: Failed to getDynamicProperty for ${player.nameTag}. E: ${error}`, dependencies, player.nameTag);
-        if (error.message) playerUtils.debugLog(`PDM:load: Error message: ${error.message}`, dependencies, player.nameTag);
+        if (error.message) playerUtils.debugLog(`PDM:load: Error message: ${error.message}`, player.nameTag, dependencies);
         return null;
     }
 
     if (typeof jsonString === 'string') {
         try {
             const parsedData = JSON.parse(jsonString);
-            playerUtils.debugLog(`PDM:load: Successfully loaded and parsed data for ${player.nameTag}.`, dependencies, player.nameTag);
+            playerUtils.debugLog(`PDM:load: Successfully loaded and parsed data for ${player.nameTag}.`, player.nameTag, dependencies);
             return parsedData;
         } catch (error) {
-            playerUtils.debugLog(`PDM:load: Failed to parse JSON for ${player.nameTag}. JSON: "${jsonString}". E: ${error}`, dependencies, player.nameTag);
-            if (error.message) playerUtils.debugLog(`PDM:load: Parse error message: ${error.message}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`PDM:load: Failed to parse JSON for ${player.nameTag}. JSON: "${jsonString}". E: ${error}`, player.nameTag, dependencies);
+            if (error.message) playerUtils.debugLog(`PDM:load: Parse error message: ${error.message}`, player.nameTag, dependencies);
             return null;
         }
     } else if (typeof jsonString === 'undefined') {
-        playerUtils.debugLog(`PDM:load: No dynamic property '${dynamicPropertyKey}' found for ${player.nameTag}.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:load: No dynamic property '${dynamicPropertyKey}' found for ${player.nameTag}.`, player.nameTag, dependencies);
         return null;
     } else {
-        playerUtils.debugLog(`PDM:load: Unexpected data type for dynamic property '${dynamicPropertyKey}' for ${player.nameTag}: ${typeof jsonString}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:load: Unexpected data type for dynamic property '${dynamicPropertyKey}' for ${player.nameTag}: ${typeof jsonString}`, player.nameTag, dependencies);
         return null;
     }
 }
-/**
- * Prepares and saves the full runtime player data (pData) to persistent storage.
- * This typically involves filtering for persistable keys.
- * @param {mc.Player} player - The player whose data is to be saved.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<void>}
- */
+
 export async function prepareAndSavePlayerData(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) return;
@@ -128,19 +100,13 @@ export async function prepareAndSavePlayerData(player, dependencies) {
         }
         await savePlayerDataToDynamicProperties(player, persistedPData, dependencies);
     } else {
-        playerUtils.debugLog(`PDM:prepSave: No runtime pData found for ${player.nameTag}. Cannot save.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:prepSave: No runtime pData found for ${player.nameTag}. Cannot save.`, player.nameTag, dependencies);
     }
 }
-/**
- * Initializes and returns a new default PlayerAntiCheatData object for a player.
- * @param {mc.Player} player - The player for whom to initialize data.
- * @param {number} currentTick - The current game tick.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {PlayerAntiCheatData} The default player data object.
- */
+
 export function initializeDefaultPlayerData(player, currentTick, dependencies) {
     const { playerUtils } = dependencies;
-    playerUtils.debugLog(`Initializing default pData for ${player.nameTag} (ID: ${player.id})`, dependencies, player.nameTag);
+    playerUtils.debugLog(`Initializing default pData for ${player.nameTag} (ID: ${player.id})`, player.nameTag, dependencies);
     return {
         playerNameTag: player.nameTag,
         lastPosition: player.location,
@@ -336,28 +302,23 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         if (typeof newPData.lastCheckAutoToolTick === 'undefined') newPData.lastCheckAutoToolTick = 0;
         if (typeof newPData.lastCheckFlatRotationBuildingTick === 'undefined') newPData.lastCheckFlatRotationBuildingTick = 0;
     } else {
-        playerUtils.debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Using fresh default data.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Using fresh default data.`, player.nameTag, dependencies);
     }
 
     if (newPData.muteInfo && newPData.muteInfo.unmuteTime !== Infinity && Date.now() >= newPData.muteInfo.unmuteTime) {
-        playerUtils.debugLog(`PDM:ensureInit: Mute for ${newPData.playerNameTag || player.nameTag} expired on load. Clearing.`, dependencies, newPData.isWatched ? (newPData.playerNameTag || player.nameTag) : null);
+        playerUtils.debugLog(`PDM:ensureInit: Mute for ${newPData.playerNameTag || player.nameTag} expired on load. Clearing.`, newPData.isWatched ? (newPData.playerNameTag || player.nameTag) : null, dependencies);
         newPData.muteInfo = null;
         newPData.isDirtyForSave = true;
     }
     if (newPData.banInfo && newPData.banInfo.unbanTime !== Infinity && Date.now() >= newPData.banInfo.unbanTime) {
-        playerUtils.debugLog(`PDM:ensureInit: Ban for ${newPData.playerNameTag || player.nameTag} expired on load. Clearing.`, dependencies, newPData.isWatched ? (newPData.playerNameTag || player.nameTag) : null);
+        playerUtils.debugLog(`PDM:ensureInit: Ban for ${newPData.playerNameTag || player.nameTag} expired on load. Clearing.`, newPData.isWatched ? (newPData.playerNameTag || player.nameTag) : null, dependencies);
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }
     playerData.set(player.id, newPData);
     return newPData;
 }
-/**
- * Removes runtime data for players who are no longer online.
- * @param {mc.Player[]} activePlayers - An array of currently active players.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {void}
- */
+
 export function cleanupActivePlayerData(activePlayers, dependencies) {
     const { playerUtils } = dependencies;
     const activePlayerIds = new Set();
@@ -367,19 +328,12 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
     for (const playerId of playerData.keys()) {
         if (!activePlayerIds.has(playerId)) {
             const removedPData = playerData.get(playerId);
-            playerUtils.debugLog(`PDM:cleanup: Removed runtime data for ${removedPData?.playerNameTag || playerId}.`, dependencies, removedPData?.isWatched ? (removedPData.playerNameTag || playerId) : null);
+            playerUtils.debugLog(`PDM:cleanup: Removed runtime data for ${removedPData?.playerNameTag || playerId}.`, removedPData?.isWatched ? (removedPData.playerNameTag || playerId) : null, dependencies);
             playerData.delete(playerId);
         }
     }
 }
-/**
- * Updates transient (non-persisted, per-session) player data fields.
- * This is typically called every tick for each online player.
- * @param {mc.Player} player - The player instance.
- * @param {PlayerAntiCheatData} pData - The player's current anti-cheat data.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {void}
- */
+
 export function updateTransientPlayerData(player, pData, dependencies) {
     const { currentTick, playerUtils, config, logManager } = dependencies;
 
@@ -405,25 +359,23 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
             if ((blockBelowFeet && blockBelowFeet.typeId === 'minecraft:slime_block') || (blockAtFeet && blockAtFeet.typeId === 'minecraft:slime_block')) {
                 pData.lastOnSlimeBlockTick = currentTick;
-                if (playerUtils.debugLog && pData.isWatched && config.enableDebugLogging) {
-                    playerUtils.debugLog(`[PlayerDataManager] Player ${pData.playerNameTag || player.nameTag} on slime block at tick ${currentTick}.`, dependencies, pData.playerNameTag || player.nameTag);
+                if (pData.isWatched && config.enableDebugLogging) { // Simplified playerUtils.debugLog
+                    playerUtils.debugLog(`[PlayerDataManager] Player ${pData.playerNameTag || player.nameTag} on slime block at tick ${currentTick}.`, pData.playerNameTag || player.nameTag, dependencies);
                 }
             }
         } catch (e) {
-            if (logManager && logManager.addLog) {
-                logManager.addLog('error', {
-                    message: e.message,
-                    player: pData.playerNameTag || player.nameTag,
-                    context: 'slime_block_check'
-                }, dependencies);
-            }
-            if (playerUtils.debugLog && config.enableDebugLogging) {
-                playerUtils.debugLog(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`, dependencies, pData.playerNameTag || player.nameTag);
-            } else if (!logManager || !logManager.addLog) {
+            logManager.addLog({ // Simplified
+                actionType: 'error',
+                message: e.message,
+                player: pData.playerNameTag || player.nameTag,
+                context: 'slime_block_check'
+            }, dependencies);
+            if (config.enableDebugLogging) { // Simplified playerUtils.debugLog
+                playerUtils.debugLog(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`, pData.playerNameTag || player.nameTag, dependencies);
+            } else { // Simplified
                 console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag || player.nameTag}: ${e.message}`);
             }
         }
-
     } else {
         pData.consecutiveOffGroundTicks++;
     }
@@ -451,28 +403,19 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             isOnGround: player.isOnGround,
             fallDistance: player.fallDistance.toFixed(3)
         };
-        playerUtils.debugLog(`Transient update for ${pData.playerNameTag || player.nameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, dependencies, pData.playerNameTag || player.nameTag);
+        playerUtils.debugLog(`Transient update for ${pData.playerNameTag || player.nameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, pData.playerNameTag || player.nameTag, dependencies);
     }
 }
-/**
- * Adds a flag to a player's data, processes automod actions, and notifies relevant parties.
- * @param {mc.Player} player - The player to flag.
- * @param {string} flagType - The type of flag (e.g., "fly", "speed").
- * @param {string} reasonMessage - The reason for the flag, often shown to the player.
- * @param {string | object} [detailsForNotify=""] - Additional details for notifications or logs.
- *                                                 If an object with itemTypeId, it's stored in lastViolationDetailsMap.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<void>}
- */
+
 export async function addFlag(player, flagType, reasonMessage, detailsForNotify = "", dependencies) {
     const { playerUtils, getString, config, logManager } = dependencies;
     const pData = getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`PDM:addFlag: No pData for ${player.nameTag}. Cannot add flag: ${flagType}.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:addFlag: No pData for ${player.nameTag}. Cannot add flag: ${flagType}.`, player.nameTag, dependencies);
         return;
     }
     if (!pData.flags[flagType]) {
-        playerUtils.debugLog(`PDM:addFlag: New flagType "${flagType}" for ${player.nameTag}. Initializing structure in pData.flags.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:addFlag: New flagType "${flagType}" for ${player.nameTag}. Initializing structure in pData.flags.`, player.nameTag, dependencies);
         pData.flags[flagType] = { count: 0, lastDetectionTime: 0 };
     }
     pData.flags[flagType].count++;
@@ -489,9 +432,8 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
             quantityFound: detailsForNotify.quantityFound || 0,
             timestamp: Date.now()
         };
-        playerUtils.debugLog(`PDM:addFlag: Stored violation details for ${flagType} on ${player.nameTag}: ${JSON.stringify(pData.lastViolationDetailsMap[flagType])}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:addFlag: Stored violation details for ${flagType} on ${player.nameTag}: ${JSON.stringify(pData.lastViolationDetailsMap[flagType])}`, player.nameTag, dependencies);
     }
-
     pData.isDirtyForSave = true;
 
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null)
@@ -501,47 +443,34 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
 
     playerUtils.warnPlayer(player, reasonMessage);
     playerUtils.notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${notifyString}`, dependencies, player, pData);
-    playerUtils.debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${fullReasonForLog}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, dependencies, player.nameTag);
+    playerUtils.debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: "${fullReasonForLog}". Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag, dependencies);
 
     if (config && config.enableAutoMod && config.automodConfig) {
         try {
-            if (playerUtils.debugLog && pData.isWatched) {
-                playerUtils.debugLog(`addFlag: Calling processAutoModActions for ${player.nameTag}, checkType: ${flagType}`, dependencies, player.nameTag);
+            if (pData.isWatched) { // Simplified debugLog
+                playerUtils.debugLog(`addFlag: Calling processAutoModActions for ${player.nameTag}, checkType: ${flagType}`, player.nameTag, dependencies);
             }
             await processAutoModActions(player, pData, flagType, dependencies);
         } catch (e) {
             console.error(`[PlayerDataManager] Error calling processAutoModActions from addFlag for ${player.nameTag} / ${flagType}: ${e.stack || e}`);
-            if (playerUtils.debugLog) {
-                playerUtils.debugLog(`Error in processAutoModActions called from addFlag: ${e.stack || e}`, dependencies, player.nameTag);
-            }
+            playerUtils.debugLog(`Error in processAutoModActions called from addFlag: ${e.stack || e}`, player.nameTag, dependencies);
         }
-    } else if (playerUtils.debugLog && pData.isWatched) {
+    } else if (pData.isWatched) { // Simplified debugLog
         const autoModEnabled = config ? config.enableAutoMod : 'N/A (no config in deps)';
         const autoModConfigPresent = !!config?.automodConfig;
-        playerUtils.debugLog(`addFlag: Skipping processAutoModActions for ${player.nameTag} (checkType: ${flagType}). enableAutoMod: ${autoModEnabled}, automodConfig present: ${autoModConfigPresent}.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`addFlag: Skipping processAutoModActions for ${player.nameTag} (checkType: ${flagType}). enableAutoMod: ${autoModEnabled}, automodConfig present: ${autoModConfigPresent}.`, player.nameTag, dependencies);
     }
 }
-/**
- * Adds a mute to a player's data.
- * @param {mc.Player} player - The player to mute.
- * @param {number} durationMs - The duration of the mute in milliseconds. Use Infinity for permanent.
- * @param {string} reason - The reason for the mute.
- * @param {string} [mutedBy="Unknown"] - Who issued the mute.
- * @param {boolean} [isAutoMod=false] - Was this mute issued by AutoMod.
- * @param {string|null} [triggeringCheckType=null] - If by AutoMod, which checkType.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the mute was successfully added, false otherwise.
- */
+
 export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoMod = false, triggeringCheckType = null, dependencies) {
     const { playerUtils, getString } = dependencies;
-
     if (!player || typeof durationMs !== 'number' || durationMs <= 0) {
-        playerUtils.debugLog(`[PlayerDataManager] addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, dependencies, player?.nameTag);
+        playerUtils.debugLog(`[PlayerDataManager] addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag, dependencies);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`[PlayerDataManager] addMute: No pData found for player ${player.nameTag}. Cannot apply mute.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[PlayerDataManager] addMute: No pData found for player ${player.nameTag}. Cannot apply mute.`, player.nameTag, dependencies);
         return false;
     }
     const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
@@ -560,43 +489,32 @@ export function addMute(player, durationMs, reason, mutedBy = "Unknown", isAutoM
     } else {
         logMsg += ` Unmute time: ${new Date(unmuteTime).toISOString()}.`;
     }
-    playerUtils.debugLog(logMsg, dependencies, pData.isWatched ? player.nameTag : null);
+    playerUtils.debugLog(logMsg, pData.isWatched ? player.nameTag : null, dependencies);
     return true;
 }
-/**
- * Removes a mute from a player's data.
- * @param {mc.Player} player - The player to unmute.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the mute was successfully removed or if the player was not muted, false on error.
- */
+
 export function removeMute(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) {
-        playerUtils.debugLog(`[PlayerDataManager] removeMute: Invalid player object provided.`, dependencies, null);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: Invalid player object provided.`, null, dependencies);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`[PlayerDataManager] removeMute: No pData found for player ${player.nameTag}. Cannot unmute.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: No pData found for player ${player.nameTag}. Cannot unmute.`, player.nameTag, dependencies);
         return false;
     }
     if (pData.muteInfo) {
         pData.muteInfo = null;
         pData.isDirtyForSave = true;
-        playerUtils.debugLog(`[PlayerDataManager] removeMute: Player ${player.nameTag} has been unmuted.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: Player ${player.nameTag} has been unmuted.`, pData.isWatched ? player.nameTag : null, dependencies);
         return true;
     } else {
-        playerUtils.debugLog(`[PlayerDataManager] removeMute: Player ${player.nameTag} was not muted or already unmuted. No action taken.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[PlayerDataManager] removeMute: Player ${player.nameTag} was not muted or already unmuted. No action taken.`, pData.isWatched ? player.nameTag : null, dependencies);
         return false;
     }
 }
-/**
- * Retrieves a player's current mute information, if any.
- * Automatically clears expired mutes.
- * @param {mc.Player} player - The player whose mute info to retrieve.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {object | null} The mute information object (e.g., { unmuteTime, reason }), or null if not muted or mute expired.
- */
+
 export function getMuteInfo(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) return null;
@@ -606,41 +524,25 @@ export function getMuteInfo(player, dependencies) {
     if (mute.unmuteTime !== Infinity && Date.now() >= mute.unmuteTime) {
         pData.muteInfo = null;
         pData.isDirtyForSave = true;
-        playerUtils.debugLog(`[PlayerDataManager] getMuteInfo: Mute for player ${player.nameTag} expired and has been removed.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`[PlayerDataManager] getMuteInfo: Mute for player ${player.nameTag} expired and has been removed.`, pData.isWatched ? player.nameTag : null, dependencies);
         return null;
     }
     return mute;
 }
-/**
- * Checks if a player is currently muted.
- * @param {mc.Player} player - The player to check.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the player is muted, false otherwise.
- */
+
 export function isMuted(player, dependencies) {
     return getMuteInfo(player, dependencies) !== null;
 }
-/**
- * Adds a ban to a player's data.
- * @param {mc.Player} player - The player to ban.
- * @param {number} durationMs - The duration of the ban in milliseconds. Use Infinity for permanent.
- * @param {string} reason - The reason for the ban.
- * @param {string} [bannedBy="Unknown"] - The name of the admin or system component that issued the ban.
- * @param {boolean} [isAutoMod=false] - Was this ban issued by AutoMod.
- * @param {string|null} [triggeringCheckType=null] - If by AutoMod, which checkType.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the ban was successfully added, false otherwise.
- */
+
 export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoMod = false, triggeringCheckType = null, dependencies) {
     const { playerUtils, getString } = dependencies;
-
     if (!player || typeof durationMs !== 'number' || durationMs <= 0 || typeof bannedBy !== 'string') {
-        playerUtils.debugLog(`PDM:addBan: Invalid arguments. Player: ${player?.nameTag}, Duration: ${durationMs}, BannedBy: ${bannedBy}`, dependencies, player?.nameTag);
+        playerUtils.debugLog(`PDM:addBan: Invalid arguments. Player: ${player?.nameTag}, Duration: ${durationMs}, BannedBy: ${bannedBy}`, player?.nameTag, dependencies);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`PDM:addBan: No pData for ${player.nameTag}. Cannot apply ban.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:addBan: No pData for ${player.nameTag}. Cannot apply ban.`, player.nameTag, dependencies);
         return false;
     }
     const currentTime = Date.now();
@@ -663,43 +565,32 @@ export function addBan(player, durationMs, reason, bannedBy = "Unknown", isAutoM
     } else {
         logMsg += ` Unban time: ${new Date(unbanTime).toISOString()}.`;
     }
-    playerUtils.debugLog(logMsg, dependencies, pData.isWatched ? player.nameTag : null);
+    playerUtils.debugLog(logMsg, pData.isWatched ? player.nameTag : null, dependencies);
     return true;
 }
-/**
- * Removes a ban from a player's data.
- * @param {mc.Player} player - The player to unban.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the ban was successfully removed or if the player was not banned, false on error.
- */
+
 export function removeBan(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) {
-        playerUtils.debugLog(`PDM:removeBan: Invalid player object provided.`, dependencies, null);
+        playerUtils.debugLog(`PDM:removeBan: Invalid player object provided.`, null, dependencies);
         return false;
     }
     const pData = getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`PDM:removeBan: No pData found for player ${player.nameTag}. Cannot unban.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:removeBan: No pData found for player ${player.nameTag}. Cannot unban.`, player.nameTag, dependencies);
         return false;
     }
     if (pData.banInfo) {
         pData.banInfo = null;
         pData.isDirtyForSave = true;
-        playerUtils.debugLog(`PDM:removeBan: Player ${player.nameTag} has been unbanned.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`PDM:removeBan: Player ${player.nameTag} has been unbanned.`, pData.isWatched ? player.nameTag : null, dependencies);
         return true;
     } else {
-        playerUtils.debugLog(`PDM:removeBan: Player ${player.nameTag} was not banned or already unbanned. No action taken.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`PDM:removeBan: Player ${player.nameTag} was not banned or already unbanned. No action taken.`, pData.isWatched ? player.nameTag : null, dependencies);
         return false;
     }
 }
-/**
- * Retrieves a player's current ban information, if any.
- * Automatically clears expired bans.
- * @param {mc.Player} player - The player whose ban info to retrieve.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {object | null} The ban information object (e.g., { xuid, playerName, banTime, unbanTime, reason, bannedBy }), or null if not banned or ban expired.
- */
+
 export function getBanInfo(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) return null;
@@ -709,32 +600,21 @@ export function getBanInfo(player, dependencies) {
     if (currentBanInfo.unbanTime !== Infinity && Date.now() >= currentBanInfo.unbanTime) {
         pData.banInfo = null;
         pData.isDirtyForSave = true;
-        playerUtils.debugLog(`PDM:getBanInfo: Ban for player ${player.nameTag} expired and has been removed.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`PDM:getBanInfo: Ban for player ${player.nameTag} expired and has been removed.`, pData.isWatched ? player.nameTag : null, dependencies);
         return null;
     }
     return currentBanInfo;
 }
-/**
- * Checks if a player is currently banned.
- * @param {mc.Player} player - The player to check.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the player is banned, false otherwise.
- */
+
 export function isBanned(player, dependencies) {
     return getBanInfo(player, dependencies) !== null;
 }
-/**
- * Directly sets the runtime data for a player. Used internally or for specific scenarios like data migration.
- * @param {string} playerId - The ID of the player.
- * @param {PlayerAntiCheatData} data - The player data object to set.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {void}
- */
+
 export function setPlayerData(playerId, data, dependencies) {
     const { playerUtils } = dependencies;
     if (!playerId || !data) {
-        if (playerUtils && playerUtils.debugLog) {
-            playerUtils.debugLog("PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data.", dependencies, null);
+        if (playerUtils) { // Simplified
+            playerUtils.debugLog("PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data.", null, dependencies);
         } else {
             console.warn("PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data. (playerUtils not in deps)");
         }
@@ -742,31 +622,20 @@ export function setPlayerData(playerId, data, dependencies) {
     }
     playerData.set(playerId, data);
 }
-/**
- * Saves player data to persistent storage if it has been marked as dirty.
- * Resets the isDirtyForSave flag upon successful save.
- * @param {mc.Player} player - The player whose data to potentially save.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if data was saved, false if no data needed saving or an error occurred.
- */
+
 export async function saveDirtyPlayerData(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) return false;
     const pData = playerData.get(player.id);
     if (pData && pData.isDirtyForSave) {
-        playerUtils.debugLog(`PDM:saveDirty: Saving dirty data for ${player.nameTag}.`, dependencies, pData.isWatched ? player.nameTag : null);
+        playerUtils.debugLog(`PDM:saveDirty: Saving dirty data for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
         await prepareAndSavePlayerData(player, dependencies);
         pData.isDirtyForSave = false;
         return true;
     }
     return false;
 }
-/**
- * Clears flags and resets AutoMod state for a specific checkType for a player.
- * @param {import('@minecraft/server').Player} player The player.
- * @param {string} checkType The checkType whose flags need to be cleared.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- */
+
 export async function clearFlagsForCheckType(player, checkType, dependencies) {
     const { playerUtils } = dependencies;
     if (!player || !checkType) return;
@@ -785,39 +654,34 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
     if (pData.automodState && pData.automodState[checkType]) {
         pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0 };
     }
-
     pData.isDirtyForSave = true;
 
     const playerContext = pData.isWatched ? player.nameTag : null;
-    playerUtils.debugLog(`[PlayerDataManager] Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, dependencies, playerContext);
+    playerUtils.debugLog(`[PlayerDataManager] Cleared ${clearedCount} flags and reset AutoMod state for checkType '${checkType}' for player ${player.nameTag}.`, playerContext, dependencies);
 }
-/**
- * Clears item use states (consumable, bow, shield) if they have expired.
- * @param {PlayerAntiCheatData} pData - The player's anti-cheat data object.
- * @param {import('../../types.js').CommandDependencies} dependencies - Standard dependencies object.
- */
+
 export function clearExpiredItemUseStates(pData, dependencies) {
     const { currentTick, config, playerUtils } = dependencies;
 
     if (pData.isUsingConsumable && (currentTick - (pData.lastItemUseTick || 0) > config.itemUseStateClearTicks)) {
-        if (playerUtils.debugLog && pData.isWatched) {
-            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isUsingConsumable for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, dependencies, pData.playerNameTag);
+        if (pData.isWatched) { // Simplified debugLog
+            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isUsingConsumable for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, pData.playerNameTag, dependencies);
         }
         pData.isUsingConsumable = false;
         pData.isDirtyForSave = true;
     }
 
     if (pData.isChargingBow && (currentTick - (pData.lastItemUseTick || 0) > config.itemUseStateClearTicks)) {
-        if (playerUtils.debugLog && pData.isWatched) {
-            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isChargingBow for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, dependencies, pData.playerNameTag);
+        if (pData.isWatched) { // Simplified debugLog
+            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isChargingBow for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, pData.playerNameTag, dependencies);
         }
         pData.isChargingBow = false;
         pData.isDirtyForSave = true;
     }
 
     if (pData.isUsingShield && (currentTick - (pData.lastItemUseTick || 0) > config.itemUseStateClearTicks)) {
-        if (playerUtils.debugLog && pData.isWatched) {
-            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isUsingShield for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, dependencies, pData.playerNameTag);
+        if (pData.isWatched) { // Simplified debugLog
+            playerUtils.debugLog(`[PlayerDataManager] StateConflict: Auto-clearing isUsingShield for ${pData.playerNameTag || 'UnknownPlayer'} after timeout. Tick: ${currentTick}`, pData.playerNameTag, dependencies);
         }
         pData.isUsingShield = false;
         pData.isDirtyForSave = true;

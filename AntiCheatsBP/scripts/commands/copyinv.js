@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/copyinv.js
  * Defines the !copyinv command for administrators to copy another player's inventory.
- * @version 1.0.2
  */
 import { ModalFormData } from '@minecraft/server-ui';
 /**
@@ -16,19 +14,10 @@ export const definition = {
 };
 /**
  * Executes the copyinv command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, permissionLevels, playerDataManager } = dependencies;
     const findPlayer = playerUtils.findPlayer;
-
-    if (!findPlayer) {
-        player.sendMessage("§cCommand error: Player lookup utility not available.");
-        console.error("[CopyInvCommand] findPlayer utility is not available in playerUtils from dependencies.");
-        return;
-    }
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${config.prefix}copyinv <playername>`);

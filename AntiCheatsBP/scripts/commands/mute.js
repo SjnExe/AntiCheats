@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/mute.js
  * Defines the !mute command for administrators to prevent a player from sending chat messages.
- * @version 1.0.2
  */
 /**
  * @type {import('../types.js').CommandDefinition}

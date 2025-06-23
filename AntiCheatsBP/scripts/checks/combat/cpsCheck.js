@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/combat/cpsCheck.js
  * Checks for abnormally high Clicks Per Second (CPS) or attack rates.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

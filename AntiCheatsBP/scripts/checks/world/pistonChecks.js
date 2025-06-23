@@ -1,14 +1,10 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/pistonChecks.js
  * Piston related checks, primarily for detecting potential lag machines.
- * @version 1.0.2
  */
 let pistonActivityData = new Map();
+
 /**
  * Checks for rapid and sustained piston activations that might indicate a lag machine.
- * @param {import('@minecraft/server').Block} pistonBlock - The piston block that activated.
- * @param {string} dimensionId - The ID of the dimension where the piston activated.
- * @param {import('../../types.js').Dependencies} dependencies - Full dependencies object.
  */
 export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
     const { config, playerUtils, logManager, actionManager, getString } = dependencies;
@@ -56,9 +52,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
                     duration: config.pistonActivationSustainedDurationSeconds
                 })
             };
-
             await actionManager.executeCheckAction("worldAntigriefPistonLag", null, violationDetails, dependencies);
-
             playerUtils.debugLog(`[PistonLagCheck] Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, null, dependencies);
         }
     }

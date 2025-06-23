@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/checks/chat/symbolSpamCheck.js
  * Implements a check to detect excessive symbol usage (non-alphanumeric, excluding spaces) in chat messages.
- * @version 1.0.1
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

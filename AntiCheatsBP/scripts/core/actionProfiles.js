@@ -1,10 +1,8 @@
 /**
- * @file Defines action profiles for various cheat/behavior detections.
+ * Defines action profiles for various cheat/behavior detections.
  * These profiles determine the consequences (flagging, notifications, logging, etc.)
  * when a specific check is triggered. Used by the ActionManager.
- * @version 1.0.0
  */
-
 export const checkActionProfiles = {
     "movementFlyHover": {
         enabled: true,

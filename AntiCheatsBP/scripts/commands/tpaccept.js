@@ -1,6 +1,5 @@
 /**
- * @file Script for the !tpaccept command, allowing players to accept incoming TPA requests.
- * @version 1.0.2
+ * Script for the !tpaccept command, allowing players to accept incoming TPA requests.
  */
 import { world, system } from '@minecraft/server';
 /**
@@ -16,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the !tpaccept command.
- * @param {import('@minecraft/server').Player} player The player issuing the command (the one accepting).
- * @param {string[]} args The command arguments. args[0] can be the requester's name.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
@@ -77,8 +73,6 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[TpAcceptCommand] Error during tpaccept for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage("§cAn unexpected error occurred.");
-        if(logManager) {
-            logManager.addLog({actionType: 'error', details: `[TpAcceptCommand] ${player.nameTag} failed to accept TPA: ${error.stack || error}`});
-        }
+        logManager.addLog({actionType: 'error', details: `[TpAcceptCommand] ${player.nameTag} failed to accept TPA: ${error.stack || error}`}, dependencies);
     }
 }

@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/world/fastUseCheck.js
  * Implements a check to detect if a player is using items faster than their configured cooldowns allow.
  * Relies on `pData.itemUseTimestamps` to track the last usage time for each item type.
- * @version 1.1.0
  */
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

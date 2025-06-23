@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/netherlock.js
  * Defines the !netherlock command for administrators to manage Nether dimension access.
- * @version 1.0.3
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
 /**
@@ -16,9 +14,6 @@ export const definition = {
 };
 /**
  * Executes the netherlock command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, permissionLevels } = dependencies;

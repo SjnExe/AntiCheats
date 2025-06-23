@@ -1,7 +1,5 @@
 /**
- * @file AntiCheatsBP/scripts/commands/inspect.js
  * Defines the !inspect command for administrators to view a player's AntiCheat data.
- * @version 1.0.3
  */
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -15,9 +13,6 @@ export const definition = {
 };
 /**
  * Executes the inspect command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;

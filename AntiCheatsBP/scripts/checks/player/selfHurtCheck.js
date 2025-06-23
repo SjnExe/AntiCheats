@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/checks/player/selfHurtCheck.js
  * Implements a check to detect suspicious self-inflicted damage, specifically when a player
  * damages themselves via a direct entity attack (which is normally not possible without cheats).
- * @version 1.1.0
  */
 import * as mc from '@minecraft/server';
 /**

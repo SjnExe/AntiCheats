@@ -1,6 +1,5 @@
 /**
- * @file Script for the !tpastatus command, allowing players to manage their TPA request availability.
- * @version 1.0.2
+ * Script for the !tpastatus command, allowing players to manage their TPA request availability.
  */
 import { world, system } from '@minecraft/server';
 /**
@@ -16,9 +15,6 @@ export const definition = {
 };
 /**
  * Executes the !tpastatus command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments. args[0] can be 'on', 'off', or 'status'.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
@@ -59,7 +55,7 @@ export async function execute(player, args, dependencies) {
                                 try {
                                     requesterPlayer.onScreenDisplay.setActionBar(`§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`);
                                 } catch (e) {
-                                    if (config.enableDebugLogging && playerUtils?.debugLog) {
+                                    if (config.enableDebugLogging) {
                                         playerUtils.debugLog(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e.stack || e}`, player.nameTag, dependencies);
                                     }
                                 }
@@ -88,8 +84,6 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[TpaStatusCommand] Error for ${player.nameTag} processing option ${option}: ${error.stack || error}`);
         player.sendMessage("§cAn unexpected error occurred.");
-        if(logManager) {
-            logManager.addLog({actionType: 'error', details: `[TpaStatusCommand] ${player.nameTag} error (option: ${option}): ${error.stack || error}`});
-        }
+        logManager.addLog({actionType: 'error', details: `[TpaStatusCommand] ${player.nameTag} error (option: ${option}): ${error.stack || error}`}, dependencies);
     }
 }

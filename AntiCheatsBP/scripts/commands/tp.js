@@ -1,8 +1,6 @@
 /**
- * @file AntiCheatsBP/scripts/commands/tp.js
  * Defines the !tp (teleport) command for administrators, allowing teleportation of players
  * to other players or to specific coordinates, potentially across dimensions.
- * @version 1.0.3
  */
 import * as mc from '@minecraft/server';
 
@@ -16,7 +14,7 @@ function parseDimensionLocal(dimStr, playerUtils, dependencies) {
         case "minecraft:the_nether": return mc.world.nether;
         case "minecraft:the_end": return mc.world.theEnd;
         default:
-            playerUtils?.debugLog(`parseDimensionLocal: Invalid dimension string "${dimStr}".`, dependencies);
+            playerUtils.debugLog(`parseDimensionLocal: Invalid dimension string "${dimStr}".`, null, dependencies); // Removed player context for system log
             return null;
     }
 }
@@ -32,23 +30,14 @@ export const definition = {
 };
 /**
  * Executes the tp (teleport) command.
- * @param {import('@minecraft/server').Player} player The player issuing the command.
- * @param {string[]} args The command arguments.
- * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, findPlayer: depFindPlayer, permissionLevels } = dependencies;
-    const findPlayerFunc = depFindPlayer || (playerUtils && playerUtils.findPlayer);
+    const findPlayerFunc = depFindPlayer || playerUtils.findPlayer;
     const prefix = config.prefix;
 
     if (definition.permissionLevel === null && permissionLevels) {
         definition.permissionLevel = permissionLevels.admin;
-    }
-
-    if (!findPlayerFunc) {
-        player.sendMessage("§cTeleport error: Player lookup utility not available.");
-        console.error("[tpCmd] findPlayer utility is not available in dependencies.");
-        return;
     }
 
     if (args.length < 1) {
@@ -132,19 +121,17 @@ export async function execute(player, args, dependencies) {
         if (player.id !== playerToMove.id) {
             playerToMove.sendMessage(`§eYou have been teleported by ${player.nameTag} to ${destinationDescription}.`);
         }
-        if (logManager && logManager.addLog) {
-            logManager.addLog({
-                timestamp: Date.now(),
-                adminName: player.nameTag,
-                actionType: 'teleport',
-                targetName: playerToMove.nameTag,
-                details: `To: ${destinationDescription}. From: ${oldLoc.x.toFixed(1)},${oldLoc.y.toFixed(1)},${oldLoc.z.toFixed(1)} in ${oldDim.split(':')[1]}`
-            }, dependencies);
-        }
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: player.nameTag,
+            actionType: 'teleport',
+            targetName: playerToMove.nameTag,
+            details: `To: ${destinationDescription}. From: ${oldLoc.x.toFixed(1)},${oldLoc.y.toFixed(1)},${oldLoc.z.toFixed(1)} in ${oldDim.split(':')[1]}`
+        }, dependencies);
     } catch (e) {
         player.sendMessage(`§cTeleport failed: ${(e.message || e)}`);
         if (config.enableDebugLogging) {
-            playerUtils.debugLog(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, dependencies, player.nameTag);
+            playerUtils.debugLog(`Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${e}`, player.nameTag, dependencies);
         }
     }
 }
