@@ -1,12 +1,10 @@
 import { MessageFormData } from '@minecraft/server-ui';
 
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+
 /**
  * Script for the !rules command, displays server rules to the player.
  */
-export const definition = {
-    name: 'rules',
-import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
-
 export const definition = {
     name: 'rules',
     description: "Displays the server rules.",
