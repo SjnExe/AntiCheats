@@ -5,11 +5,13 @@
 /**
  * @type {import('../types.js').CommandDefinition}
  */
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+
 export const definition = {
     name: "testnotify",
     syntax: "!testnotify",
     description: "Sends a test admin notification to verify system functionality.",
-    permissionLevel: 2,
+    permissionLevel: permissionLevels.owner, // Corrected to owner level
     enabled: true,
 };
 /**

@@ -62,8 +62,9 @@ export const ranks = {
 export function getPlayerPermissionLevel(player, dependencies) {
     if (!dependencies || !dependencies.config || !dependencies.permissionLevels) {
         console.warn("[RankManager] getPlayerPermissionLevel called without full dependencies object (config or permissionLevels missing)!");
-        const perms = dependencies.permissionLevels || permissionLevels; // Fallback to local permissionLevels if not in dependencies
-        return perms.member;
+        // Fallback to local permissionLevels if not in dependencies, and use 'normal' as the default level.
+        const perms = dependencies?.permissionLevels || permissionLevels;
+        return perms.normal; // Corrected to use 'normal' which is defined.
     }
 
     if (!(player instanceof Player)) {
@@ -72,7 +73,7 @@ export function getPlayerPermissionLevel(player, dependencies) {
         } else {
             console.warn("[RankManager] Invalid player object passed to getPlayerPermissionLevel.");
         }
-        return dependencies.permissionLevels.member;
+        return dependencies.permissionLevels.normal; // Corrected to use 'normal'
     }
 
     if (typeof dependencies.config.ownerPlayerName !== 'string' || typeof dependencies.config.adminTag !== 'string') {
@@ -81,7 +82,7 @@ export function getPlayerPermissionLevel(player, dependencies) {
         } else {
             console.warn("[RankManager] ownerPlayerName or adminTag not configured in dependencies.config!");
         }
-        return dependencies.permissionLevels.member;
+        return dependencies.permissionLevels.normal; // Corrected to use 'normal'
     }
 
     if (player.nameTag === dependencies.config.ownerPlayerName) {

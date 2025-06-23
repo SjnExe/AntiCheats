@@ -4,11 +4,13 @@
 /**
  * @type {import('../types.js').CommandDefinition}
  */
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+
 export const definition = {
     name: "myflags",
     syntax: "!myflags",
     description: "Allows players to view their own AntiCheat flag status.",
-    permissionLevel: 0,
+    permissionLevel: permissionLevels.normal, // Corrected: Should be available to normal players
     enabled: true,
 };
 /**

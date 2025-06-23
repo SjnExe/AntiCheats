@@ -6,6 +6,7 @@ import { world } from "@minecraft/server";
 const vanishedTag = "vanished";
 const vanishModeNotifyTag = "vanish_mode_notify";
 const effectDuration = 2000000;
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -13,7 +14,7 @@ export const definition = {
     name: "vanish",
     syntax: "!vanish [silent|notify]",
     description: "Toggles your visibility and related effects.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

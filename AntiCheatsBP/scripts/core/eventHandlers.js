@@ -584,8 +584,10 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     const { playerUtils, config, getString, rankManager, permissionLevels } = dependencies;
     if (!player || !toDimension || !fromDimension || !fromLocation) return;
     const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
-    if (playerPermission <= permissionLevels.bypass) {
-        playerUtils.debugLog(`Player ${player.nameTag} has bypass permission for dimension locks.`, player.nameTag, dependencies);
+    // Assuming admins (and by extension, owners) should bypass dimension locks.
+    // 'bypass' is not a standard permissionLevel, so using 'admin'.
+    if (playerPermission <= permissionLevels.admin) {
+        playerUtils.debugLog(`Player ${player.nameTag} has admin/owner permission, bypassing dimension locks.`, player.nameTag, dependencies);
         return;
     }
     let dimensionIsLocked = false;

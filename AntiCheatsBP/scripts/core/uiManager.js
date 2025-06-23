@@ -6,8 +6,9 @@ import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 import { updateConfigValue } from '../config.js';
 import { formatSessionDuration } from '../utils/playerUtils.js';
-// permissionLevels and editableConfigValues are imported from config.js, not directly from rankManager or a global editableConfigValues
-import { permissionLevels as importedPermissionLevels, editableConfigValues as globalEditableConfigValues } from '../config.js';
+// editableConfigValues is imported from config.js.
+// permissionLevels are accessed via the 'dependencies' object passed to functions, originating from rankManager.
+import { editableConfigValues as globalEditableConfigValues } from '../config.js';
 
 function formatDimensionName(dimensionId) {
     if (typeof dimensionId !== 'string') return "Unknown";

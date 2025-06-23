@@ -4,11 +4,13 @@
  */
 // permissionLevels, getString, setCurrentLanguage, and translations were previously accessed via dependencies or specific i18n import.
 // i18n.js has been removed, so these imports are no longer valid or needed.
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+
 export const definition = {
     name: "setlang",
     description: "This command is no longer functional.",
     aliases: ["setlanguage"],
-    permissionLevel: 1, // Admin
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     requiresCheats: false,
     syntax: "!setlang", // Simplified as it takes no args now
     parameters: [],
