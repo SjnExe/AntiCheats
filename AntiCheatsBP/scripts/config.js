@@ -208,16 +208,7 @@ export const xrayDetectionNotifyOnOreMineEnabled = true; // If true, admins are 
 export const xrayDetectionMonitoredOres = ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"];
 export const xrayDetectionAdminNotifyByDefault = true; // If true, admins receive X-Ray notifications by default (can be toggled per admin).
 
-// Chat Formatting (These have been moved to ranksConfig.js as part of the rank definitions)
-// export const chatFormatOwnerPrefixColor = "§c";
-// export const chatFormatOwnerNameColor = "§c";
-// export const chatFormatOwnerMessageColor = "§f";
-// export const chatFormatAdminPrefixColor = "§b";
-// export const chatFormatAdminNameColor = "§b";
-// export const chatFormatAdminMessageColor = "§f";
-// export const chatFormatMemberPrefixColor = "§7";
-// export const chatFormatMemberNameColor = "§7";
-// export const chatFormatMemberMessageColor = "§f";
+// Chat Formatting has been moved to ranksConfig.js
 
 export const commandSettings = {
     version: { enabled: true }, myflags: { enabled: true }, testnotify: { enabled: true }, kick: { enabled: true },
@@ -596,7 +587,6 @@ export let editableConfigValues = {
     worldBorderParticleSegmentLength, worldBorderVisualUpdateIntervalTicks, worldBorderParticleSequence,
     worldBorderEnablePulsingDensity, worldBorderPulseDensityMin, worldBorderPulseDensityMax, worldBorderPulseSpeed,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionMonitoredOres, xrayDetectionAdminNotifyByDefault,
-    // Chat formatting keys removed as they are now part of ranksConfig.js
     enableAutoMod, enableReachCheck, enableCPSCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck, enableNukerCheck, enableIllegalItemCheck,
     enableSelfHurtCheck, enableNetherRoofCheck, enableAutoToolCheck, autoToolSwitchToOptimalWindowTicks,
