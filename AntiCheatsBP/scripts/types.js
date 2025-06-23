@@ -198,7 +198,7 @@
  * @property {string} [xuid]
  * @property {string} [playerName]
  * @property {number} banTime
- * @property {number | Infinity} unmuteTime
+ * @property {number | Infinity} unbanTime
  * @property {string} reason
  * @property {string} bannedBy
  * @property {boolean} isAutoMod

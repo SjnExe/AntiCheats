@@ -57,14 +57,22 @@ export async function checkNoSlow(player, pData, dependencies) {
         }
 
         if (horizontalSpeed > effectiveMaxAllowedSpeed) {
-            let resolvedSlowingAction = slowingActionKey;
-            if (slowingActionKey === "check.noSlow.action.eatingDrinking") resolvedSlowingAction = "Eating/Drinking";
-            else if (slowingActionKey === "check.noSlow.action.chargingBow") resolvedSlowingAction = "Charging Bow";
-            else if (slowingActionKey === "check.noSlow.action.usingShield") resolvedSlowingAction = "Using Shield";
-            else if (slowingActionKey === "check.noSlow.action.sneaking") resolvedSlowingAction = "Sneaking";
+            let resolvedSlowingActionString;
+            if (dependencies.getString && typeof slowingActionKey === 'string' && slowingActionKey.startsWith("check.noSlow.action.")) {
+                resolvedSlowingActionString = dependencies.getString(slowingActionKey);
+            } else {
+                // Fallback to manual English strings if getString is not available or key doesn't match
+                switch (slowingActionKey) {
+                    case "check.noSlow.action.eatingDrinking": resolvedSlowingActionString = "Eating/Drinking"; break;
+                    case "check.noSlow.action.chargingBow": resolvedSlowingActionString = "Charging Bow"; break;
+                    case "check.noSlow.action.usingShield": resolvedSlowingActionString = "Using Shield"; break;
+                    case "check.noSlow.action.sneaking": resolvedSlowingActionString = "Sneaking"; break;
+                    default: resolvedSlowingActionString = "Unknown Action"; break;
+                }
+            }
 
             const violationDetails = {
-                action: resolvedSlowingAction,
+                action: resolvedSlowingActionString,
                 speed: horizontalSpeed.toFixed(2),
                 maxAllowedSpeed: effectiveMaxAllowedSpeed.toFixed(2),
                 baseMaxSpeedForAction: maxAllowedBaseSpeed.toFixed(2),

@@ -139,9 +139,10 @@ export function parseDuration(durationString) {
             case 'h': return value * 60 * 60 * 1000;
             case 'd': return value * 24 * 60 * 60 * 1000;
         }
-    } else if (/^\d+$/.test(lowerDurationString)) {
+    } else if (/^\d+$/.test(lowerDurationString)) { // If it's just a number
         const value = parseInt(lowerDurationString);
-        if (!isNaN(value)) return value * 60 * 1000;
+        // Default to seconds if no unit is specified, as this is a common convention.
+        if (!isNaN(value)) return value * 1000;
     }
     return null;
 }

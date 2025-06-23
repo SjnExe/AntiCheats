@@ -65,11 +65,26 @@ export function persistLogCacheToDisk(dependencies) {
  */
 export function addLog(logEntry, dependencies) {
     const { playerUtils } = dependencies;
-    if (!logEntry || typeof logEntry.timestamp !== 'number' || !logEntry.adminName || !logEntry.actionType) {
-        playerUtils.debugLog("LogManager: Attempted to add invalid log entry. Required fields missing.", "System", dependencies);
-        console.warn("LogManager: Invalid log entry object:", JSON.stringify(logEntry));
+
+    // Ensure essential fields actionType are present. adminName can be 'System' or a player name.
+    // Timestamp will be added if not provided.
+    if (!logEntry || !logEntry.actionType) {
+        playerUtils.debugLog("LogManager: Attempted to add invalid log entry. Missing actionType.", "System", dependencies);
+        console.warn("LogManager: Invalid log entry object (missing actionType):", JSON.stringify(logEntry));
         return;
     }
+
+    // Add timestamp if not already present or not a number
+    if (typeof logEntry.timestamp !== 'number') {
+        logEntry.timestamp = Date.now();
+    }
+
+    // Ensure adminName is present, default to "System" if necessary, though callers should strive to provide it.
+    if (!logEntry.adminName) {
+        logEntry.adminName = "System"; // Default if not provided, though ideally it should be.
+        playerUtils.debugLog("LogManager: logEntry missing adminName, defaulted to 'System'. Entry: " + JSON.stringify(logEntry), "System", dependencies);
+    }
+
     logsInMemory.unshift(logEntry);
     if (logsInMemory.length > maxLogEntriesCount) {
         logsInMemory.length = maxLogEntriesCount;

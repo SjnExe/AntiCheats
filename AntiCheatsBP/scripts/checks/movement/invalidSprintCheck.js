@@ -66,16 +66,29 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         }
 
         if (invalidConditionKey) {
-            let resolvedLocalizedCondition = invalidConditionKey;
-            if (invalidConditionKey === "check.invalidSprint.condition.blindness") resolvedLocalizedCondition = "Blindness";
-            else if (invalidConditionKey === "check.invalidSprint.condition.sneaking") resolvedLocalizedCondition = "Sneaking";
-            else if (invalidConditionKey === "check.invalidSprint.condition.riding") resolvedLocalizedCondition = "Riding Entity";
-            else if (invalidConditionKey === "check.invalidSprint.condition.hunger") resolvedLocalizedCondition = "Low Hunger";
-            else if (invalidConditionKey === "check.invalidSprint.condition.usingItem") resolvedLocalizedCondition = "Using Item";
-            else if (invalidConditionKey === "check.invalidSprint.condition.chargingBow") resolvedLocalizedCondition = "Charging Bow";
+            let resolvedConditionString;
+            // Attempt to use getString if a localization key is provided and getString is available
+            if (dependencies.getString && typeof invalidConditionKey === 'string' && invalidConditionKey.startsWith("check.invalidSprint.condition.")) {
+                resolvedConditionString = dependencies.getString(invalidConditionKey, {
+                    // Provide any necessary parameters for the string, if applicable
+                    hungerLevel: currentFoodLevel,
+                    limit: (config.sprintHungerLimit ?? 6).toString()
+                });
+            } else {
+                // Fallback to a more generic English description if getString is not available or key doesn't match
+                switch (invalidConditionKey) {
+                    case "check.invalidSprint.condition.blindness": resolvedConditionString = "Blindness"; break;
+                    case "check.invalidSprint.condition.sneaking": resolvedConditionString = "Sneaking"; break;
+                    case "check.invalidSprint.condition.riding": resolvedConditionString = "Riding Entity"; break;
+                    case "check.invalidSprint.condition.hunger": resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`; break;
+                    case "check.invalidSprint.condition.usingItem": resolvedConditionString = "Using Item"; break;
+                    case "check.invalidSprint.condition.chargingBow": resolvedConditionString = "Charging Bow"; break;
+                    default: resolvedConditionString = "Unknown Condition"; break;
+                }
+            }
 
             const violationDetails = {
-                condition: resolvedLocalizedCondition,
+                condition: resolvedConditionString,
                 details: conditionDetails,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),

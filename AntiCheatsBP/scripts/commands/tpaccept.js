@@ -2,6 +2,7 @@
  * Script for the !tpaccept command, allowing players to accept incoming TPA requests.
  */
 import { world, system } from '@minecraft/server';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,7 +10,7 @@ export const definition = {
     name: 'tpaccept',
     description: "command.tpaccept.description",
     aliases: ['tpaaccept'],
-    permissionLevel: null,
+    permissionLevel: importedPermissionLevels.normal, // Set directly
     syntax: '!tpaccept [playerName]',
     enabled: true,
 };
@@ -17,11 +18,11 @@ export const definition = {
  * Executes the !tpaccept command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
+    // Use permissionLevels from dependencies for runtime checks if necessary
+    const { playerUtils, config, tpaManager, permissionLevels: execPermissionLevels, logManager } = dependencies;
 
-    if (definition.permissionLevel === null) {
-        definition.permissionLevel = permissionLevels.normal;
-    }
+    // definition.permissionLevel is now set at module load time.
+    // The check `if (definition.permissionLevel === null)` is no longer needed.
 
     const prefix = config.prefix;
 

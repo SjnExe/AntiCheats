@@ -2,6 +2,7 @@
  * Command to list all currently online players being watched.
  */
 import * as mc from '@minecraft/server';
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,18 +11,14 @@ export const definition = {
     syntax: "!listwatched",
     description: "command.listwatched.description",
     aliases: ["lw", "watchedlist"],
-    permissionLevel: null,
+    permissionLevel: permissionLevels.admin, // Set directly
     enabled: true,
 };
 /**
  * Executes the listwatched command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerDataManager, playerUtils, permissionLevels, config } = dependencies;
-
-    if (definition.permissionLevel === null) {
-        definition.permissionLevel = permissionLevels.admin;
-    }
+    const { playerDataManager, playerUtils, config } = dependencies; // Removed permissionLevels from here
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];

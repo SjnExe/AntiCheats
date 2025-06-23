@@ -3,6 +3,7 @@
  * to other players or to specific coordinates, potentially across dimensions.
  */
 import * as mc from '@minecraft/server';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 
 function parseDimensionLocal(dimStr, playerUtils, dependencies) {
     if (!dimStr || typeof dimStr !== 'string') return null;
@@ -25,20 +26,20 @@ export const definition = {
     name: "tp",
     syntax: "!tp <target_player | x> [destination_player | y] [z] [dimension]",
     description: "command.tp.description",
-    permissionLevel: null,
+    permissionLevel: importedPermissionLevels.admin, // Set directly
     enabled: true,
 };
 /**
  * Executes the tp (teleport) command.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, findPlayer: depFindPlayer, permissionLevels } = dependencies;
+    // Use permissionLevels from dependencies for runtime checks if necessary, definition is set at load.
+    const { config, playerUtils, logManager, findPlayer: depFindPlayer, permissionLevels: execPermissionLevels } = dependencies;
     const findPlayerFunc = depFindPlayer || playerUtils.findPlayer;
     const prefix = config.prefix;
 
-    if (definition.permissionLevel === null && permissionLevels) {
-        definition.permissionLevel = permissionLevels.admin;
-    }
+    // definition.permissionLevel is now set at module load time.
+    // The check `if (definition.permissionLevel === null && permissionLevels)` is no longer needed.
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${prefix}tp <target_player | x> [destination_player | y] [z] [dimension]`);

@@ -1,6 +1,7 @@
 /**
  * Defines the !unmute command for administrators to allow a previously muted player to chat again.
  */
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -8,18 +9,18 @@ export const definition = {
     name: "unmute",
     syntax: "!unmute <playername>",
     description: "command.unmute.description",
-    permissionLevel: null,
+    permissionLevel: importedPermissionLevels.admin, // Set directly
     enabled: true,
 };
 /**
  * Executes the unmute command.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
+    // Use permissionLevels from dependencies for runtime checks if necessary
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels: execPermissionLevels } = dependencies;
 
-    if (definition.permissionLevel === null) {
-        definition.permissionLevel = permissionLevels.admin;
-    }
+    // definition.permissionLevel is now set at module load time.
+    // The check `if (definition.permissionLevel === null)` is no longer needed.
 
     const prefix = config.prefix;
 

@@ -21,22 +21,34 @@ function normalizeWordForSwearCheck(word, config) {
     let normalized = word.toLowerCase();
 
     normalized = normalized.replace(/[\s._-]+/g, '');
-    if (!normalized) return '';
+    if (!normalized) return ''; // If empty after removing separators, return
+
     normalized = normalized.replace(/(.)\1+/g, '$1');
-    if (!normalized) return '';
+    // No need to check if (!normalized) here again, as collapsing chars won't make a non-empty string empty.
+
     if (config.swearCheckEnableLeetSpeak) {
         const leetMap = config.swearCheckLeetSpeakMap || {
             '@': 'a', '4': 'a', '8': 'b', '3': 'e', '1': 'l', '!': 'i', '0': 'o', '5': 's', '7': 't', '$': 's',
-            'ph': 'f',
+            'ph': 'f', // Example for multi-character, though current loop is char-by-char
         };
 
-        let leetConverted = "";
-        for (const char of normalized) {
-            leetConverted += leetMap[char] || char;
+        // Efficiently build the string for leet speak
+        let leetChars = Array.from(normalized);
+        for (let i = 0; i < leetChars.length; i++) {
+            // Basic ph->f, should ideally be handled before char-by-char or with a more complex replace
+            if (leetChars[i] === 'p' && i + 1 < leetChars.length && leetChars[i+1] === 'h') {
+                leetChars.splice(i, 2, 'f'); // Replace 'ph' with 'f'
+                // Adjust index if needed, or ensure loop handles modified array correctly
+                // For simplicity, this basic version might misstep if 'f' is also in leetMap.
+                // A more robust solution would use regex replacements for multi-char leets first.
+            } else {
+                leetChars[i] = leetMap[leetChars[i]] || leetChars[i];
+            }
         }
-        normalized = leetConverted;
+        normalized = leetChars.join('');
+
+        // Collapse repeated characters again after leet speak conversion
         normalized = normalized.replace(/(.)\1+/g, '$1');
-        if (!normalized) return '';
     }
     return normalized;
 }

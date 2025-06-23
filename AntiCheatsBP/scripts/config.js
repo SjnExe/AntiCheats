@@ -629,8 +629,11 @@ export let editableConfigValues = {
     flatRotationCheckIntervalTicks, enableChatContentRepeatCheck, enableUnicodeAbuseCheck, enableGibberishCheck,
     gibberishMinMessageLength, gibberishMinAlphaRatio, gibberishVowelRatioLowerBound, gibberishVowelRatioUpperBound,
     gibberishMaxConsecutiveConsonants, gibberishActionProfileName, enableExcessiveMentionsCheck, mentionsMinMessageLength,
-    mentionsMaxUniquePerMessage, mentionsMaxRepeatedPerMessage, mentionsActionProfileName, swearCheckActionProfileName,
-    automodConfig: importedAutoModConfig, checkActionProfiles,
+    mentionsMaxUniquePerMessage, mentionsMaxRepeatedPerMessage, mentionsActionProfileName, swearCheckActionProfileName
+    // automodConfig and checkActionProfiles are complex objects and not suitable for direct editing via the current updateConfigValue.
+    // They are imported and used directly. Runtime edits would require a more specialized mechanism.
+    // automodConfig: importedAutoModConfig, // Removed
+    // checkActionProfiles, // Removed
 };
 
 export function updateConfigValue(key, newValue) {
