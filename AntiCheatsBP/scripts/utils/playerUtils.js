@@ -4,20 +4,32 @@
  */
 import * as mc from '@minecraft/server';
 
+/**
+ * Checks if a player has admin-level permissions.
+ * @param {import('@minecraft/server').Player} player - The player to check.
+ * @param {import('../types.js').CommandDependencies} dependencies - Object containing rankManager and permissionLevels.
+ * @returns {boolean} True if the player is an admin, false otherwise.
+ */
 export function isAdmin(player, dependencies) {
     if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
-        console.warn("[PlayerUtils] isAdmin called without full dependencies object containing rankManager and permissionLevels.");
+        console.warn('[PlayerUtils] isAdmin called without full dependencies object containing rankManager and permissionLevels.');
         return false;
     }
     if (!(player instanceof mc.Player) || !player.isValid()) {
         return false;
     }
-    return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.admin;
+    return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) <= dependencies.permissionLevels.admin;
 }
 
+/**
+ * Checks if a player has owner-level permissions.
+ * @param {import('@minecraft/server').Player} player - The player to check.
+ * @param {import('../types.js').CommandDependencies} dependencies - Object containing rankManager and permissionLevels.
+ * @returns {boolean} True if the player is an owner, false otherwise.
+ */
 export function isOwner(player, dependencies) {
     if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
-        console.warn("[PlayerUtils] isOwner called without full dependencies object containing rankManager and permissionLevels.");
+        console.warn('[PlayerUtils] isOwner called without full dependencies object containing rankManager and permissionLevels.');
         return false;
     }
     if (!(player instanceof mc.Player) || !player.isValid()) {
@@ -26,11 +38,17 @@ export function isOwner(player, dependencies) {
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.owner;
 }
 
+/**
+ * Executes a lag clearing operation by removing all item entities across specified dimensions.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies.
+ * @param {import('@minecraft/server').Player | null} adminPerformingAction - The admin player who initiated the action, or null if system-initiated.
+ * @returns {Promise<{clearedItemsCount: number, dimensionsProcessed: number, error: string | null}>} An object detailing the outcome.
+ */
 export async function executeLagClear(dependencies, adminPerformingAction) {
     let clearedItemsCount = 0;
     let dimensionsProcessed = 0;
     let errorMessages = [];
-    const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
+    const dimensionIds = ['minecraft:overworld', 'minecraft:nether', 'minecraft:the_end'];
 
     debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, adminPerformingAction?.nameTag, dependencies);
 
@@ -38,7 +56,7 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
         try {
             const dimension = mc.world.getDimension(dimensionId);
             dimensionsProcessed++;
-            const itemEntities = dimension.getEntities({ type: "minecraft:item" });
+            const itemEntities = dimension.getEntities({ type: 'minecraft:item' });
 
             let countInDimension = 0;
             for (const entity of itemEntities) {
@@ -53,7 +71,6 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
                 }
             }
             debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag, dependencies);
-
         } catch (dimError) {
             const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
             errorMessages.push(errMsg);
@@ -65,23 +82,35 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
     return {
         clearedItemsCount,
         dimensionsProcessed,
-        error: errorMessages.length > 0 ? errorMessages.join('\n') : null
+        error: errorMessages.length > 0 ? errorMessages.join('\n') : null,
     };
 }
 
+/**
+ * Sends a standardized warning message to a player.
+ * @param {import('@minecraft/server').Player} player - The player to warn.
+ * @param {string} reason - The reason for the warning.
+ */
 export function warnPlayer(player, reason) {
     player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
 }
 
+/**
+ * Notifies online administrators of an event.
+ * @param {string} baseMessage - The core message to send.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies.
+ * @param {import('@minecraft/server').Player | null} player - The player primarily involved in the event (for context), or null.
+ * @param {import('../types.js').PlayerAntiCheatData | null} pData - The AntiCheat data for the involved player, or null.
+ */
 export function notifyAdmins(baseMessage, dependencies, player, pData) {
     if (!dependencies || !dependencies.config) {
-        console.warn("[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.");
+        console.warn('[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.');
         return;
     }
     let fullMessage = `§7[AC Notify] ${baseMessage}§r`;
 
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
-        const flagType = pData.lastFlagType || "N/A";
+        const flagType = pData.lastFlagType || 'N/A';
         const specificFlagCount = pData.flags[flagType] ? pData.flags[flagType].count : 0;
         fullMessage += ` §c(Player: ${player.nameTag}, Total Flags: ${pData.flags.totalFlags}, Last: ${flagType} [${specificFlagCount}])§r`;
     } else if (player) {
@@ -89,8 +118,8 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    const notificationsOffTag = "ac_notifications_off";
-    const notificationsOnTag = "ac_notifications_on";
+    const notificationsOffTag = 'ac_notifications_off';
+    const notificationsOnTag = 'ac_notifications_on';
 
     for (const p of allPlayers) {
         if (isAdmin(p, dependencies)) {
@@ -109,29 +138,47 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
     }
 }
 
+/**
+ * Logs a debug message to the console if debug logging is enabled.
+ * Prefixes messages with context if a watched player's name is provided.
+ * @param {string} message - The message to log.
+ * @param {string | null} contextPlayerNameIfWatched - The name of the player if they are being watched, for contextual prefixing.
+ * @param {import('../types.js').CommandDependencies} dependencies - Access to config for `enableDebugLogging`.
+ */
 export function debugLog(message, contextPlayerNameIfWatched = null, dependencies) {
     if (dependencies?.config?.enableDebugLogging) {
-        const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
+        const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : '[AC Debug]';
         console.warn(`${prefix} ${message}`);
     }
 }
 
+/**
+ * Finds an online player by their nameTag (case-insensitive).
+ * @param {string} playerName - The nameTag of the player to find.
+ * @returns {import('@minecraft/server').Player | null} The player object if found, otherwise null.
+ */
 export function findPlayer(playerName) {
     if (!playerName || typeof playerName !== 'string') return null;
     const nameToFind = playerName.toLowerCase();
     return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
 
+/**
+ * Parses a duration string (e.g., "7d", "2h", "30m", "perm") into milliseconds.
+ * Also accepts a plain number, which is interpreted as seconds.
+ * @param {string} durationString - The duration string to parse.
+ * @returns {number | null} The duration in milliseconds, Infinity for "perm", or null if invalid.
+ */
 export function parseDuration(durationString) {
     if (!durationString || typeof durationString !== 'string') return null;
     const lowerDurationString = durationString.toLowerCase();
-    if (lowerDurationString === "perm" || lowerDurationString === "permanent") return Infinity;
+    if (lowerDurationString === 'perm' || lowerDurationString === 'permanent') return Infinity;
 
     const regex = /^(\d+)([smhd])$/;
     const match = lowerDurationString.match(regex);
 
     if (match) {
-        const value = parseInt(match[1]);
+        const value = parseInt(match[1], 10);
         const unit = match[2];
         switch (unit) {
             case 's': return value * 1000;
@@ -140,20 +187,21 @@ export function parseDuration(durationString) {
             case 'd': return value * 24 * 60 * 60 * 1000;
         }
     } else if (/^\d+$/.test(lowerDurationString)) { // If it's just a number
-        const value = parseInt(lowerDurationString);
-        // Default to seconds if no unit is specified, as this is a common convention.
+        const value = parseInt(lowerDurationString, 10);
+        // Default to seconds if no unit is specified
         if (!isNaN(value)) return value * 1000;
     }
     return null;
 }
+
 /**
  * Formats a duration in milliseconds into a human-readable string (e.g., "1h 23m 45s").
  * @param {number} ms - The duration in milliseconds.
- * @returns {string} A formatted string representing the duration, or "N/A" if ms is non-positive.
+ * @returns {string} A formatted string representing the duration, or "N/A" if ms is non-positive or invalid.
  */
 export function formatSessionDuration(ms) {
-    if (ms <= 0) {
-        return "N/A";
+    if (ms <= 0 || typeof ms !== 'number' || isNaN(ms)) {
+        return 'N/A';
     }
     let seconds = Math.floor(ms / 1000);
     let minutes = Math.floor(seconds / 60);
@@ -164,6 +212,6 @@ export function formatSessionDuration(ms) {
     const parts = [];
     if (hours > 0) parts.push(`${hours}h`);
     if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`); // Show 0s if duration is < 1s
     return parts.join(' ');
 }
