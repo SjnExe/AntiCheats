@@ -17,10 +17,10 @@ export const definition = {
  * Executes the help command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, commandDefinitionMap, config, permissionLevels: depPermLevels, getString } = dependencies;
+    const { playerUtils, commandDefinitionMap, config, permissionLevels: depPermLevels, getString, rankManager } = dependencies;
 
     const commandDefinitionsArray = Array.from(commandDefinitionMap.values());
-    const userPermissionLevel = playerUtils.getPlayerPermissionLevel(player);
+    const userPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies); // Corrected: Use rankManager
     const prefix = config.prefix;
 
     if (args[0]) {
