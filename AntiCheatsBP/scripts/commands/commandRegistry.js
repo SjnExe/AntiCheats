@@ -2,6 +2,7 @@
  * Central registry for all command modules. This file imports all individual command
  * files and exports them as an array to be used by the commandManager.
  */
+import * as addrankCmd from './addrank.js'; // Added
 import * as banCmd from './ban.js';
 import * as clearchatCmd from './clearchat.js';
 import * as copyinvCmd from './copyinv.js';
@@ -15,12 +16,14 @@ import * as helpCmd from './help.js';
 import * as inspectCmd from './inspect.js';
 import * as invseeCmd from './invsee.js';
 import * as kickCmd from './kick.js';
+import * as listranksCmd from './listranks.js'; // Added
 import * as listwatchedCmd from './listwatched.js';
 import * as muteCmd from './mute.js';
 import * as myflagsCmd from './myflags.js';
 import * as netherlockCmd from './netherlock.js';
 import * as notifyCmd from './notify.js';
 import * as panelCmd from './panel.js';
+import * as removerankCmd from './removerank.js'; // Added
 import * as resetflagsCmd from './resetflags.js';
 import * as rulesCmd from './rules.js';
 import * as setlangCmd from './setlang.js';
@@ -44,6 +47,7 @@ import * as xraynotifyCmd from './xraynotify.js';
 // Each module is expected to export a `definition` object and an `execute` function.
 // Modules are listed alphabetically for maintainability.
 export const commandModules = [
+    addrankCmd, // Added
     banCmd,
     clearchatCmd,
     copyinvCmd,
@@ -57,12 +61,14 @@ export const commandModules = [
     inspectCmd,
     invseeCmd,
     kickCmd,
+    listranksCmd, // Added
     listwatchedCmd,
     muteCmd,
     myflagsCmd,
     netherlockCmd,
     notifyCmd,
     panelCmd,
+    removerankCmd, // Added
     resetflagsCmd,
     rulesCmd,
     setlangCmd,
