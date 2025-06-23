@@ -41,7 +41,7 @@ export async function checkMessageWordCount(
 
     if (wordCount > threshold) {
         if (playerUtils.debugLog) {
-            playerUtils.debugLog(`MessageWordCountCheck: ${player.nameTag}'s message too long. Words: ${wordCount}, Threshold: ${threshold}`, dependencies, watchedPrefix);
+            playerUtils.debugLog(`MessageWordCountCheck: ${player.nameTag}'s message too long. Words: ${wordCount}, Threshold: ${threshold}`, watchedPrefix, dependencies);
         }
 
         const violationDetails = {

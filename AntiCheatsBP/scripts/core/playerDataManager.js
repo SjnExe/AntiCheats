@@ -27,7 +27,7 @@ export function getAllPlayerDataValues() {
 export async function savePlayerDataToDynamicProperties(player, pDataToSave, dependencies) {
     const { playerUtils } = dependencies;
     if (!player || !pDataToSave) {
-        playerUtils.debugLog("PDM:save: Invalid player or pDataToSave", player?.nameTag, dependencies); // Corrected order
+        playerUtils.debugLog("PDM:save: Invalid player or pDataToSave", player?.nameTag, dependencies);
         return false;
     }
     const dynamicPropertyKey = "anticheat:pdata_v1";
@@ -39,14 +39,14 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         return false;
     }
     if (jsonString.length > 32760) {
-        playerUtils.debugLog(`PDM:save: pData too large for ${player.nameTag} (${jsonString.length}b). Cannot save to dynamic properties.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:save: pData too large for ${player.nameTag} (${jsonString.length}b). Cannot save to dynamic properties.`, player.nameTag, dependencies);
         return false;
     }
     try {
         player.setDynamicProperty(dynamicPropertyKey, jsonString);
         return true;
     } catch (error) {
-        playerUtils.debugLog(`PDM:save: Fail setDynamicProp for ${player.nameTag}. E: ${error}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:save: Fail setDynamicProp for ${player.nameTag}. E: ${error}`, player.nameTag, dependencies);
         if (error.message) playerUtils.debugLog(`PDM:save: Error message: ${error.message}`, player.nameTag, dependencies);
         return false;
     }
@@ -55,7 +55,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
 export async function loadPlayerDataFromDynamicProperties(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) {
-        playerUtils.debugLog("PDM:load: Invalid player object provided.", null, dependencies); // Corrected order
+        playerUtils.debugLog("PDM:load: Invalid player object provided.", null, dependencies);
         return null;
     }
     const dynamicPropertyKey = "anticheat:pdata_v1";
@@ -63,7 +63,7 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
     try {
         jsonString = player.getDynamicProperty(dynamicPropertyKey);
     } catch (error) {
-        playerUtils.debugLog(`PDM:load: Failed to getDynamicProperty for ${player.nameTag}. E: ${error}`, dependencies, player.nameTag);
+        playerUtils.debugLog(`PDM:load: Failed to getDynamicProperty for ${player.nameTag}. E: ${error}`, player.nameTag, dependencies);
         if (error.message) playerUtils.debugLog(`PDM:load: Error message: ${error.message}`, player.nameTag, dependencies);
         return null;
     }
@@ -220,7 +220,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
     const loadedData = await loadPlayerDataFromDynamicProperties(player, dependencies);
 
     if (loadedData) {
-        playerUtils.debugLog(`Merged persisted pData for ${player.nameTag}. Session-only fields (e.g., lastAttackTick, recentHits, isUsingConsumable, etc.) reset to defaults.`, dependencies, player.nameTag);
+        playerUtils.debugLog(`Merged persisted pData for ${player.nameTag}. Session-only fields (e.g., lastAttackTick, recentHits, isUsingConsumable, etc.) reset to defaults.`, player.nameTag, dependencies);
         newPData = { ...newPData, ...loadedData };
         const defaultFlags = initializeDefaultPlayerData(player, currentTick, dependencies).flags;
         newPData.flags = { ...defaultFlags, ...loadedData.flags };

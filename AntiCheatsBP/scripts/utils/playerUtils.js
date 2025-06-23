@@ -32,7 +32,7 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
     let errorMessages = [];
     const dimensionIds = ["minecraft:overworld", "minecraft:nether", "minecraft:the_end"];
 
-    debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, dependencies, adminPerformingAction?.nameTag);
+    debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, adminPerformingAction?.nameTag, dependencies);
 
     for (const dimensionId of dimensionIds) {
         try {
@@ -49,19 +49,19 @@ export async function executeLagClear(dependencies, adminPerformingAction) {
                 } catch (killError) {
                     const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`;
                     errorMessages.push(errMsg);
-                    debugLog(errMsg, dependencies, adminPerformingAction?.nameTag);
+                    debugLog(errMsg, adminPerformingAction?.nameTag, dependencies);
                 }
             }
-            debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, dependencies, adminPerformingAction?.nameTag);
+            debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag, dependencies);
 
         } catch (dimError) {
             const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
             errorMessages.push(errMsg);
-            debugLog(errMsg, dependencies, adminPerformingAction?.nameTag);
+            debugLog(errMsg, adminPerformingAction?.nameTag, dependencies);
         }
     }
 
-    debugLog(`LagClear: Finished. Processed ${dimensionsProcessed} dimensions. Total items cleared: ${clearedItemsCount}. Errors: ${errorMessages.length}`, dependencies, adminPerformingAction?.nameTag);
+    debugLog(`LagClear: Finished. Processed ${dimensionsProcessed} dimensions. Total items cleared: ${clearedItemsCount}. Errors: ${errorMessages.length}`, adminPerformingAction?.nameTag, dependencies);
     return {
         clearedItemsCount,
         dimensionsProcessed,
@@ -102,15 +102,15 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
                     p.sendMessage(fullMessage);
                 } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
-                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, dependencies, p.nameTag);
+                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag, dependencies);
                 }
             }
         }
     }
 }
 
-export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
-    if (dependencies?.config?.enableDebugLogging) { // Simplified
+export function debugLog(message, contextPlayerNameIfWatched = null, dependencies) {
+    if (dependencies?.config?.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : `[AC Debug]`;
         console.warn(`${prefix} ${message}`);
     }

@@ -25,7 +25,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
     if (!pData) {
-        playerUtils.debugLog("[SimpleImpersonationCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", dependencies, player.nameTag);
+        playerUtils.debugLog("[SimpleImpersonationCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", player.nameTag, dependencies);
     }
 
     const minMessageLength = config.impersonationMinMessageLengthForPatternMatch ?? 10;
@@ -38,7 +38,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
     const playerPermission = dependencies.rankManager.getPlayerPermissionLevel(player, dependencies);
     if (playerPermission <= exemptPermissionLevel) {
-        playerUtils.debugLog(`[SimpleImpersonationCheck] Player ${player.nameTag} (perm: ${playerPermission}) is exempt (threshold: ${exemptPermissionLevel}).`, dependencies, player.nameTag);
+        playerUtils.debugLog(`[SimpleImpersonationCheck] Player ${player.nameTag} (perm: ${playerPermission}) is exempt (threshold: ${exemptPermissionLevel}).`, player.nameTag, dependencies);
         return;
     }
 
@@ -52,7 +52,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
     for (const patternString of serverMessagePatterns) {
         if (typeof patternString !== 'string' || patternString.trim() === '') {
-            playerUtils.debugLog("[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config.", dependencies, watchedPlayerName);
+            playerUtils.debugLog("[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config.", watchedPlayerName, dependencies);
             continue;
         }
         try {

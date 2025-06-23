@@ -51,14 +51,14 @@ export function initializeReportCache(dependencies) {
             const parsedReports = JSON.parse(rawReports);
             if (Array.isArray(parsedReports)) {
                 reportsInMemory = parsedReports;
-                playerUtils.debugLog(`[ReportManager] Successfully loaded ${reportsInMemory.length} reports into memory cache.`, dependencies, "System");
+                playerUtils.debugLog(`[ReportManager] Successfully loaded ${reportsInMemory.length} reports into memory cache.`, "System", dependencies);
                 return;
             }
         }
-        playerUtils.debugLog(`[ReportManager] No valid reports found for key '${reportsPropertyKeyName}'. Initializing empty cache.`, dependencies, "System");
+        playerUtils.debugLog(`[ReportManager] No valid reports found for key '${reportsPropertyKeyName}'. Initializing empty cache.`, "System", dependencies);
     } catch (error) {
         console.error(`[ReportManager] Error reading/parsing reports during initialization: ${error.stack || error}`);
-        playerUtils.debugLog(`[ReportManager] Error reading/parsing reports during initialization: ${error.message}`, dependencies, "System");
+        playerUtils.debugLog(`[ReportManager] Error reading/parsing reports during initialization: ${error.message}`, "System", dependencies);
     }
     reportsInMemory = [];
 }
@@ -75,11 +75,11 @@ export function persistReportsToDisk(dependencies) {
     try {
         world.setDynamicProperty(reportsPropertyKeyName, JSON.stringify(reportsInMemory));
         reportsAreDirty = false;
-        playerUtils.debugLog(`[ReportManager] Persisted ${reportsInMemory.length} reports to dynamic property.`, dependencies, "System");
+        playerUtils.debugLog(`[ReportManager] Persisted ${reportsInMemory.length} reports to dynamic property.`, "System", dependencies);
         return true;
     } catch (error) {
         console.error(`[ReportManager] Error saving reports to dynamic property: ${error.stack || error}`);
-        playerUtils.debugLog(`[ReportManager] Error saving reports to dynamic property: ${error.message}`, dependencies, "System");
+        playerUtils.debugLog(`[ReportManager] Error saving reports to dynamic property: ${error.message}`, "System", dependencies);
         return false;
     }
 }
@@ -106,7 +106,7 @@ export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) 
 
     if (!reporterPlayer?.id || !reporterPlayer?.nameTag ||
         !reportedPlayer?.id || !reportedPlayer?.nameTag || !reason) {
-        playerUtils.debugLog("[ReportManager] addReport called with invalid arguments (player objects or reason missing/invalid).", dependencies, "System");
+        playerUtils.debugLog("[ReportManager] addReport called with invalid arguments (player objects or reason missing/invalid).", "System", dependencies);
         return null;
     }
 
@@ -127,7 +127,7 @@ export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) 
     }
 
     reportsAreDirty = true;
-    playerUtils.debugLog(`[ReportManager] Added report by ${newReport.reporterName} against ${newReport.reportedName}. Cache: ${reportsInMemory.length}`, dependencies, newReport.reporterName);
+    playerUtils.debugLog(`[ReportManager] Added report by ${newReport.reporterName} against ${newReport.reportedName}. Cache: ${reportsInMemory.length}`, newReport.reporterName, dependencies);
 
     return newReport;
 }
@@ -140,7 +140,7 @@ export function clearAllReports(dependencies) {
     const { playerUtils } = dependencies;
     reportsInMemory = [];
     reportsAreDirty = true;
-    playerUtils.debugLog("[ReportManager] All reports cleared from memory. Attempting to persist change.", dependencies, "System");
+    playerUtils.debugLog("[ReportManager] All reports cleared from memory. Attempting to persist change.", "System", dependencies);
     return persistReportsToDisk(dependencies);
 }
 /**
@@ -157,9 +157,9 @@ export function clearReportById(reportId, dependencies) {
 
     if (reportsInMemory.length < initialCount) {
         reportsAreDirty = true;
-        playerUtils.debugLog(`[ReportManager] Cleared report ID: ${reportId} from memory. Attempting to persist.`, dependencies, "System");
+        playerUtils.debugLog(`[ReportManager] Cleared report ID: ${reportId} from memory. Attempting to persist.`, "System", dependencies);
         return persistReportsToDisk(dependencies);
     }
-    playerUtils.debugLog(`[ReportManager] Report ID: ${reportId} not found for clearing.`, dependencies, "System");
+    playerUtils.debugLog(`[ReportManager] Report ID: ${reportId} not found for clearing.`, "System", dependencies);
     return false;
 }

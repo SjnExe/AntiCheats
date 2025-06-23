@@ -33,7 +33,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         return;
     }
     if (!pData) {
-        playerUtils.debugLog("[ChatContentRepeatCheck] pData is null, skipping check.", dependencies, player.nameTag);
+        playerUtils.debugLog("[ChatContentRepeatCheck] pData is null, skipping check.", player.nameTag, dependencies);
         return;
     }
 
