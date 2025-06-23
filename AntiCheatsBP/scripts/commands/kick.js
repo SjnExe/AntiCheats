@@ -19,7 +19,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies Command dependencies.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager, permissionLevels: depPermLevels } = dependencies;
+    const { config, playerUtils, logManager, playerDataManager, permissionLevels: depPermLevels, rankManager } = dependencies;
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`);
@@ -36,8 +36,8 @@ export async function execute(player, args, dependencies) {
             return;
         }
 
-        const targetPermissionLevel = playerUtils.getPlayerPermissionLevel(foundPlayer);
-        const issuerPermissionLevel = playerUtils.getPlayerPermissionLevel(player);
+        const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies); // Corrected: Use rankManager
+        const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies); // Corrected: Use rankManager
 
         if (targetPermissionLevel <= depPermLevels.admin && issuerPermissionLevel > depPermLevels.owner) {
             player.sendMessage("§cYou do not have permission to kick this player.");

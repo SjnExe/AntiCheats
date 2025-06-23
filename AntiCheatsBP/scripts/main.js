@@ -13,7 +13,8 @@ import * as logManager from './core/logManager.js';
 import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
 import * as actionManager from './core/actionManager.js';
-import { permissionLevels as importedPermissionLevels } from './core/rankManager.js';
+// import { permissionLevels as importedPermissionLevels } from './core/rankManager.js'; // Replaced by full module import
+import * as rankManagerModule from './core/rankManager.js'; // Import all exports from rankManager
 import { ActionFormData as ImportedActionFormData, MessageFormData as ImportedMessageFormData, ModalFormData as ImportedModalFormData } from '@minecraft/server-ui';
 import { ItemComponentTypes as ImportedItemComponentTypes } from '@minecraft/server';
 import * as checks from './checks/index.js';
@@ -96,20 +97,21 @@ function getStandardDependencies() {
         checks,
         mc, // Pass the Minecraft server module itself
         currentTick, // Pass the currentTick value
-        permissionLevels: importedPermissionLevels,
+        permissionLevels: rankManagerModule.permissionLevels, // Use permissionLevels from the rankManagerModule
         ActionFormData: ImportedActionFormData,
         MessageFormData: ImportedMessageFormData,
         ModalFormData: ImportedModalFormData,
         ItemComponentTypes: ImportedItemComponentTypes,
         chatProcessor: chatProcessor,
         getString: playerUtils.getString, // Make getString consistently available
-        rankManager: { // Provide necessary rankManager functions
-            getPlayerRankId: dependencies.rankManager.getPlayerRankId, // Assuming rankManager is imported and available in wider scope or passed to main
-            getPlayerPermissionLevel: dependencies.rankManager.getPlayerPermissionLevel,
-            updatePlayerNametag: dependencies.rankManager.updatePlayerNametag,
-            getPlayerRankFormattedChatElements: dependencies.rankManager.getPlayerRankFormattedChatElements
+        rankManager: {
+            getPlayerRankId: rankManagerModule.getPlayerRankId,
+            getPlayerPermissionLevel: rankManagerModule.getPlayerPermissionLevel, // This function is now exported from rankManager.js
+            updatePlayerNametag: rankManagerModule.updatePlayerNametag,
+            getPlayerRankFormattedChatElements: rankManagerModule.getPlayerRankFormattedChatElements
         },
-        worldBorderManager: { getBorderSettings, saveBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer }
+        worldBorderManager: { getBorderSettings, saveBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer },
+        system: mc.system // Add mc.system to dependencies
     };
 }
 

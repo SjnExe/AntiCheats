@@ -57,18 +57,20 @@ export const ranks = {
     }
 };
 
-function _standardizedGetPlayerPermissionLevel(player, dependencies) {
+// Renamed and exported for direct use by other modules like commandManager via main.js dependencies
+// Original name was _standardizedGetPlayerPermissionLevel
+export function getPlayerPermissionLevel(player, dependencies) {
     if (!dependencies || !dependencies.config || !dependencies.permissionLevels) {
-        console.warn("[RankManager] _standardizedGetPlayerPermissionLevel called without full dependencies object (config or permissionLevels missing)!");
-        const perms = dependencies.permissionLevels || permissionLevels;
+        console.warn("[RankManager] getPlayerPermissionLevel called without full dependencies object (config or permissionLevels missing)!");
+        const perms = dependencies.permissionLevels || permissionLevels; // Fallback to local permissionLevels if not in dependencies
         return perms.member;
     }
 
     if (!(player instanceof Player)) {
         if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
-            dependencies.playerUtils.debugLog("[RankManager] Invalid player object passed to _standardizedGetPlayerPermissionLevel.", player?.nameTag || "UnknownSource", dependencies);
+            dependencies.playerUtils.debugLog("[RankManager] Invalid player object passed to getPlayerPermissionLevel.", player?.nameTag || "UnknownSource", dependencies);
         } else {
-            console.warn("[RankManager] Invalid player object passed to _standardizedGetPlayerPermissionLevel.");
+            console.warn("[RankManager] Invalid player object passed to getPlayerPermissionLevel.");
         }
         return dependencies.permissionLevels.member;
     }
@@ -96,7 +98,7 @@ export function getPlayerRankId(player, dependencies) {
         if (!(player instanceof Player)) {
             if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
                 dependencies.playerUtils.debugLog("[RankManager] Invalid player object passed to getPlayerRankId. Defaulting to member.", player?.nameTag || "UnknownSource", dependencies);
-            } else if (!(dependencies.playerUtils && dependencies.config.enableDebugLogging)) {
+            } else if (!(dependencies.playerUtils && dependencies.config.enableDebugLogging)) { // Corrected condition
                  console.warn("[RankManager] Invalid player object passed to getPlayerRankId (debug logging disabled or playerUtils not available). Defaulting to member.");
             }
             return 'member';
@@ -104,13 +106,13 @@ export function getPlayerRankId(player, dependencies) {
         if (typeof player.nameTag !== 'string') {
             if (dependencies.playerUtils && dependencies.config.enableDebugLogging) {
                 dependencies.playerUtils.debugLog(`[RankManager] Player object for ID ${player.id} has no nameTag. Defaulting to member.`, player.nameTag, dependencies);
-            } else if (!(dependencies.playerUtils && dependencies.config.enableDebugLogging)) {
+            } else if (!(dependencies.playerUtils && dependencies.config.enableDebugLogging)) { // Corrected condition
                 console.warn(`[RankManager] Player object for ID ${player.id} has no nameTag (debug logging disabled or playerUtils not available). Defaulting to member.`);
             }
             return 'member';
         }
 
-        const permLevel = _standardizedGetPlayerPermissionLevel(player, dependencies);
+        const permLevel = getPlayerPermissionLevel(player, dependencies); // Use the exported version
 
         if (permLevel === permissionLevels.owner) return 'owner';
         if (permLevel === permissionLevels.admin) return 'admin';
