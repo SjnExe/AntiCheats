@@ -251,7 +251,7 @@ mc.system.runInterval(async () => {
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    // playerDataManager.cleanupActivePlayerData(allPlayers); // This line seems to be missing its dependencies argument
+    playerDataManager.cleanupActivePlayerData(allPlayers, tickDependencies);
 
     for (const player of allPlayers) {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
