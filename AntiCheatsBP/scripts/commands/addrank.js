@@ -8,12 +8,12 @@ export const definition = {
     name: "addrank",
     syntax: "!addrank <playername> <rankId>",
     description: "Assigns a manual rank to a player by adding the associated tag.",
-    permissionLevel: permissionLevels.owner, // Only owners can assign ranks initially
+    permissionLevel: permissionLevels.admin, // Base permission: Admin
     enabled: true,
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager, getString } = dependencies;
 
     if (args.length < 2) {
         player.sendMessage(`§cUsage: ${config.prefix}addrank <playername> <rankId>`);
@@ -42,9 +42,14 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Optional: Check if the command issuer has permission to assign this specific rank
-    // For now, only owner (command's perm level) can run this.
-    // Future: rankDef.assignableBy could be used here if command was lower perm.
+    // Check if the command issuer has permission to assign this specific rank
+    const issuerPermissionLevel = depRankManager.getPlayerPermissionLevel(player, dependencies);
+    if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
+        player.sendMessage(getString("commands.generic.permissionDeniedRankAction", {rankName: rankDef.name, action: "assign"}));
+        // Log this specific denial reason if needed
+        playerUtils.debugLog(`[AddRankCommand] ${player.nameTag} (Level ${issuerPermissionLevel}) attempted to assign rank ${rankDef.id} (AssignableBy ${rankDef.assignableBy}) but lacked permission.`, player.nameTag, dependencies);
+        return;
+    }
 
     const rankTagToAdd = manualTagCondition.prefix + rankDef.id;
 

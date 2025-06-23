@@ -8,12 +8,12 @@ export const definition = {
     name: "removerank",
     syntax: "!removerank <playername> <rankId>",
     description: "Removes a manually assigned rank from a player by removing the associated tag.",
-    permissionLevel: permissionLevels.owner, // Only owners can remove ranks initially
+    permissionLevel: permissionLevels.admin, // Base permission: Admin
     enabled: true,
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager, getString } = dependencies;
 
     if (args.length < 2) {
         player.sendMessage(`§cUsage: ${config.prefix}removerank <playername> <rankId>`);
@@ -41,8 +41,13 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Optional: Check if the command issuer has permission to remove this specific rank (beyond command's base permission)
-    // For now, only owner (command's perm level) can run this.
+    // Check if the command issuer has permission to manage this specific rank
+    const issuerPermissionLevel = depRankManager.getPlayerPermissionLevel(player, dependencies);
+    if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
+        player.sendMessage(getString("commands.generic.permissionDeniedRankAction", {rankName: rankDef.name, action: "remove"}));
+        playerUtils.debugLog(`[RemoveRankCommand] ${player.nameTag} (Level ${issuerPermissionLevel}) attempted to remove rank ${rankDef.id} (AssignableBy ${rankDef.assignableBy}) but lacked permission.`, player.nameTag, dependencies);
+        return;
+    }
 
     const rankTagToRemove = manualTagCondition.prefix + rankDef.id;
 
