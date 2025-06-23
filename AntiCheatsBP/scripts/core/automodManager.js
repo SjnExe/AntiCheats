@@ -374,18 +374,11 @@ export async function processAutoModActions(player, pData, checkType, dependenci
 
         let finalParameters = bestRuleToApply.parameters || {};
 
-        if (bestRuleToApply.actionType === "REMOVE_ILLEGAL_ITEM") {
-            if (pData.lastViolationDetailsMap && pData.lastViolationDetailsMap[checkType] && pData.lastViolationDetailsMap[checkType].itemTypeId) {
-                const itemDetail = pData.lastViolationDetailsMap[checkType];
-                finalParameters = {
-                    ...finalParameters,
-                    itemToRemoveTypeId: itemDetail.itemTypeId,
-                };
-                playerUtils.debugLog(`AutomodManager: Extracted item ${itemDetail.itemTypeId} from pData.lastViolationDetailsMap for REMOVE_ILLEGAL_ITEM action.`, player.nameTag, dependencies);
-            } else {
-                playerUtils.debugLog(`AutomodManager: REMOVE_ILLEGAL_ITEM action for ${checkType} on ${player.nameTag} but no specific itemTypeId found in pData.lastViolationDetailsMap. Action might be ignored or fail in _executeAutomodAction.`, player.nameTag, dependencies);
-            }
-        }
+        // The actionType "removeIllegalItem" (camelCase) is handled in _executeAutomodAction.
+        // The check for "REMOVE_ILLEGAL_ITEM" (uppercase) here was redundant as no such actionType is defined in automodConfig.
+        // If itemToRemoveTypeId needs to be dynamically added to parameters for "removeIllegalItem",
+        // it should be done based on bestRuleToApply.actionType === "removeIllegalItem" if that's the intended logic.
+        // However, current _executeAutomodAction for "removeIllegalItem" expects itemToRemoveTypeId to already be in parameters.
 
         const actionSuccess = await _executeAutomodAction(player, pData, bestRuleToApply.actionType, finalParameters, checkType, dependencies);
 

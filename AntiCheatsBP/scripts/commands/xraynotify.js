@@ -1,6 +1,7 @@
 /**
  * Defines the !xraynotify command for administrators to manage their X-Ray mining notifications.
  */
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -8,7 +9,7 @@ export const definition = {
     name: "xraynotify",
     syntax: "!xraynotify <on|off|status>",
     description: "Manages your X-Ray mining notification preferences.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

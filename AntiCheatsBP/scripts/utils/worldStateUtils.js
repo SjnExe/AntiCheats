@@ -20,8 +20,10 @@ export function isNetherLocked() {
 export function setNetherLocked(isLocked) {
     try {
         world.setDynamicProperty(netherLockedProp, isLocked);
+        return true;
     } catch (e) {
         console.error(`[worldStateUtils] Error setting Nether lock state: ${e}`);
+        return false;
     }
 }
 
@@ -38,7 +40,9 @@ export function isEndLocked() {
 export function setEndLocked(isLocked) {
     try {
         world.setDynamicProperty(endLockedProp, isLocked);
+        return true;
     } catch (e) {
         console.error(`[worldStateUtils] Error setting End lock state: ${e}`);
+        return false;
     }
 }

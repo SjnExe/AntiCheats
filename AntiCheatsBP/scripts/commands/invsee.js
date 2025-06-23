@@ -3,6 +3,7 @@
  */
 import { MessageFormData } from '@minecraft/server-ui';
 import { ItemComponentTypes } from '@minecraft/server';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +11,7 @@ export const definition = {
     name: "invsee",
     syntax: "!invsee <playername>",
     description: "Views a player's inventory.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

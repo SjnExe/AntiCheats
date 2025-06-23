@@ -1,6 +1,7 @@
 /**
  * Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
  */
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -8,7 +9,7 @@ export const definition = {
     name: "notify",
     syntax: "!notify [on|off|toggle|status]",
     description: "Manages your AntiCheat system notification preferences.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**
@@ -70,7 +71,15 @@ export async function execute(player, args, dependencies) {
         player.removeTag(notificationsOnTag);
         player.addTag(notificationsOffTag);
     }
-    playerDataManager.setPlayerData(player.id, notifKey, newPreference, dependencies);
+
+    // Update the pData object directly
+    if (pData) {
+        pData[notifKey] = newPreference;
+        pData.isDirtyForSave = true; // Ensure the change is saved
+    } else {
+        // This case should ideally not be reached if pData was fetched or initialized correctly earlier
+        playerUtils.debugLog(`[NotifyCommand] Critical: pData was unexpectedly null when trying to set ${notifKey} for ${player.nameTag}.`, player.nameTag, dependencies);
+    }
 
     player.sendMessage(responseMessage);
 

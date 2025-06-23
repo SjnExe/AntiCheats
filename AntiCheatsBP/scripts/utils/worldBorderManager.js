@@ -139,10 +139,11 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) 
         try {
             const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
             const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
-            if (blockFeet?.isAir && blockHead?.isAir) { // Added optional chaining
+            if (blockFeet?.isAir && blockHead?.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
-                if (blockBelowFeet?.isSolid) return checkY; // Added optional chaining
-                else if (blockFeet.isAir && blockHead.isAir) return checkY; // This condition seems redundant if blockBelowFeet is not solid
+                if (blockBelowFeet?.isSolid) return checkY;
+                // Removed the 'else if' that would return checkY even if blockBelowFeet wasn't solid,
+                // making the function prioritize solid ground more strictly.
             }
         } catch (e) { /* Ignored */ }
     }
@@ -153,10 +154,10 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) 
         try {
             const blockFeet = dimension.getBlock({ x: targetX, y: checkY, z: targetZ });
             const blockHead = dimension.getBlock({ x: targetX, y: checkY + 1, z: targetZ });
-             if (blockFeet?.isAir && blockHead?.isAir) { // Added optional chaining
+             if (blockFeet?.isAir && blockHead?.isAir) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
-                if (blockBelowFeet?.isSolid) return checkY; // Added optional chaining
-                 else if (blockFeet.isAir && blockHead.isAir) return checkY; // Redundant
+                if (blockBelowFeet?.isSolid) return checkY;
+                // Removed the 'else if' for consistency.
             }
         } catch(e) { /* Ignored */ }
     }

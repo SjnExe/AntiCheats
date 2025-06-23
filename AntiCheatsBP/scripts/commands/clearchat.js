@@ -2,6 +2,7 @@
  * Defines the !clearchat command for administrators to clear the global chat.
  */
 import * as mc from '@minecraft/server';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,7 +10,7 @@ export const definition = {
     name: "clearchat",
     syntax: "!clearchat",
     description: "Clears the global chat for all players.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

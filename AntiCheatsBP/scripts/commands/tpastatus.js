@@ -2,6 +2,7 @@
  * Script for the !tpastatus command, allowing players to manage their TPA request availability.
  */
 import { world, system } from '@minecraft/server';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,7 +10,7 @@ export const definition = {
     name: 'tpastatus',
     description: "command.tpastatus.description",
     aliases: ['tpatoggle'],
-    permissionLevel: null,
+    permissionLevel: importedPermissionLevels.normal, // Set directly
     syntax: '!tpastatus [on|off|status]',
     enabled: true,
 };
@@ -17,11 +18,11 @@ export const definition = {
  * Executes the !tpastatus command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, tpaManager, permissionLevels, logManager } = dependencies;
+    // Use permissionLevels from dependencies for runtime checks if necessary
+    const { playerUtils, config, tpaManager, permissionLevels: execPermissionLevels, logManager } = dependencies;
 
-    if (definition.permissionLevel === null) {
-        definition.permissionLevel = permissionLevels.normal;
-    }
+    // definition.permissionLevel is now set at module load time.
+    // The check `if (definition.permissionLevel === null)` is no longer needed.
 
     const prefix = config.prefix;
 

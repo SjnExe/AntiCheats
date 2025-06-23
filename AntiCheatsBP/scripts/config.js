@@ -208,16 +208,7 @@ export const xrayDetectionNotifyOnOreMineEnabled = true; // If true, admins are 
 export const xrayDetectionMonitoredOres = ["minecraft:diamond_ore", "minecraft:deepslate_diamond_ore", "minecraft:ancient_debris"];
 export const xrayDetectionAdminNotifyByDefault = true; // If true, admins receive X-Ray notifications by default (can be toggled per admin).
 
-// Chat Formatting
-export const chatFormatOwnerPrefixColor = "§c";
-export const chatFormatOwnerNameColor = "§c";
-export const chatFormatOwnerMessageColor = "§f";
-export const chatFormatAdminPrefixColor = "§b";
-export const chatFormatAdminNameColor = "§b";
-export const chatFormatAdminMessageColor = "§f";
-export const chatFormatMemberPrefixColor = "§7";
-export const chatFormatMemberNameColor = "§7";
-export const chatFormatMemberMessageColor = "§f";
+// Chat Formatting has been moved to ranksConfig.js
 
 export const commandSettings = {
     version: { enabled: true }, myflags: { enabled: true }, testnotify: { enabled: true }, kick: { enabled: true },
@@ -596,9 +587,7 @@ export let editableConfigValues = {
     worldBorderParticleSegmentLength, worldBorderVisualUpdateIntervalTicks, worldBorderParticleSequence,
     worldBorderEnablePulsingDensity, worldBorderPulseDensityMin, worldBorderPulseDensityMax, worldBorderPulseSpeed,
     xrayDetectionNotifyOnOreMineEnabled, xrayDetectionMonitoredOres, xrayDetectionAdminNotifyByDefault,
-    chatFormatOwnerPrefixColor, chatFormatOwnerNameColor, chatFormatOwnerMessageColor, chatFormatAdminPrefixColor,
-    chatFormatAdminNameColor, chatFormatAdminMessageColor, chatFormatMemberPrefixColor, chatFormatMemberNameColor,
-    chatFormatMemberMessageColor, enableAutoMod, enableReachCheck, enableCPSCheck, enableViewSnapCheck, enableMultiTargetCheck,
+    enableAutoMod, enableReachCheck, enableCPSCheck, enableViewSnapCheck, enableMultiTargetCheck,
     enableStateConflictCheck, enableFlyCheck, enableSpeedCheck, enableNofallCheck, enableNukerCheck, enableIllegalItemCheck,
     enableSelfHurtCheck, enableNetherRoofCheck, enableAutoToolCheck, autoToolSwitchToOptimalWindowTicks,
     autoToolSwitchBackWindowTicks, enableInstaBreakUnbreakableCheck, instaBreakUnbreakableBlocks, enableInstaBreakSpeedCheck,
@@ -629,8 +618,11 @@ export let editableConfigValues = {
     flatRotationCheckIntervalTicks, enableChatContentRepeatCheck, enableUnicodeAbuseCheck, enableGibberishCheck,
     gibberishMinMessageLength, gibberishMinAlphaRatio, gibberishVowelRatioLowerBound, gibberishVowelRatioUpperBound,
     gibberishMaxConsecutiveConsonants, gibberishActionProfileName, enableExcessiveMentionsCheck, mentionsMinMessageLength,
-    mentionsMaxUniquePerMessage, mentionsMaxRepeatedPerMessage, mentionsActionProfileName, swearCheckActionProfileName,
-    automodConfig: importedAutoModConfig, checkActionProfiles,
+    mentionsMaxUniquePerMessage, mentionsMaxRepeatedPerMessage, mentionsActionProfileName, swearCheckActionProfileName
+    // automodConfig and checkActionProfiles are complex objects and not suitable for direct editing via the current updateConfigValue.
+    // They are imported and used directly. Runtime edits would require a more specialized mechanism.
+    // automodConfig: importedAutoModConfig, // Removed
+    // checkActionProfiles, // Removed
 };
 
 export function updateConfigValue(key, newValue) {

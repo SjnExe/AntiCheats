@@ -2,6 +2,7 @@
  * Defines the !copyinv command for administrators to copy another player's inventory.
  */
 import { ModalFormData } from '@minecraft/server-ui';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,7 +10,7 @@ export const definition = {
     name: "copyinv",
     syntax: "!copyinv <playername>",
     description: "Copies another player's inventory to your own.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

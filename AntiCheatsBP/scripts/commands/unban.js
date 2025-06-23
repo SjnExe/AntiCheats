@@ -2,6 +2,7 @@
  * Defines the !unban command for administrators to remove a ban from a player.
  * Note: Current version primarily supports unbanning players who are online.
  */
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,18 +10,18 @@ export const definition = {
     name: "unban",
     syntax: "!unban <playername>",
     description: "command.unban.description",
-    permissionLevel: null,
+    permissionLevel: importedPermissionLevels.admin, // Set directly
     enabled: true,
 };
 /**
  * Executes the unban command.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
+    // Use permissionLevels from dependencies for runtime checks if necessary
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels: execPermissionLevels } = dependencies;
 
-    if (definition.permissionLevel === null) {
-        definition.permissionLevel = permissionLevels.admin;
-    }
+    // definition.permissionLevel is now set at module load time.
+    // The check `if (definition.permissionLevel === null)` is no longer needed.
 
     const prefix = config.prefix;
 

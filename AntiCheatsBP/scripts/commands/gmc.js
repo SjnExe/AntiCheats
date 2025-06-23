@@ -2,6 +2,7 @@
  * Defines the !gmc command for administrators to set a player's gamemode to Creative.
  */
 import * as mc from '@minecraft/server';
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,7 +10,7 @@ export const definition = {
     name: "gmc",
     syntax: "!gmc [playername]",
     description: "Sets a player's gamemode to Creative.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

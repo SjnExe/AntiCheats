@@ -1,6 +1,7 @@
 /**
  * Defines the !inspect command for administrators to view a player's AntiCheat data.
  */
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -8,7 +9,7 @@ export const definition = {
     name: "inspect",
     syntax: "!inspect <playername>",
     description: "Views a player's AntiCheat data and status.",
-    permissionLevel: 1,
+    permissionLevel: importedPermissionLevels.admin, // Use imported enum
     enabled: true,
 };
 /**

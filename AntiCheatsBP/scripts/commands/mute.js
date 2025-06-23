@@ -1,6 +1,8 @@
 /**
  * Defines the !mute command for administrators to prevent a player from sending chat messages.
  */
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -8,7 +10,7 @@ export const definition = {
     name: "mute",
     syntax: "!mute <playername> [duration] [reason]",
     description: "command.mute.description",
-    permissionLevel: null,
+    permissionLevel: importedPermissionLevels.admin, // Set directly
     enabled: true,
 };
 /**
@@ -28,11 +30,11 @@ export async function execute(
     isAutoModAction = false,
     autoModCheckType = null
 ) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager, permissionLevels } = dependencies;
+    // Use importedPermissionLevels if needed from definition, or from dependencies if passed for execution context
+    const { config, playerUtils, playerDataManager, logManager, rankManager, permissionLevels: execPermissionLevels } = dependencies;
 
-    if (definition.permissionLevel === null) {
-        definition.permissionLevel = permissionLevels.admin;
-    }
+    // definition.permissionLevel is now set at module load time.
+    // The check `if (definition.permissionLevel === null)` is no longer needed.
 
     if (args.length < 1) {
         const usageMessage = `§cUsage: ${config.prefix}mute <playername> [duration] [reason]`;
@@ -74,7 +76,8 @@ export async function execute(
     if (invokedBy === "PlayerCommand" && player) {
         const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies);
         const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
-        if (targetPermissionLevel <= issuerPermissionLevel && player.id !== foundPlayer.id && targetPermissionLevel <= permissionLevels.admin) {
+        // Use execPermissionLevels (from dependencies) for runtime checks against other players
+        if (targetPermissionLevel <= issuerPermissionLevel && player.id !== foundPlayer.id && targetPermissionLevel <= execPermissionLevels.admin) {
             player.sendMessage("§cYou do not have permission to mute this player.");
             return;
         }

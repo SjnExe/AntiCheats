@@ -4,11 +4,13 @@
 /**
  * @type {import('../types.js').CommandDefinition}
  */
+import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+
 export const definition = {
     name: "version",
     syntax: "!version",
     description: "Displays the AntiCheat addon version.",
-    permissionLevel: 1,
+    permissionLevel: permissionLevels.normal, // Changed to normal
     enabled: true,
 };
 /**

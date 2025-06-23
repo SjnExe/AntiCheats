@@ -346,7 +346,8 @@ playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tic
 // Initialize LogManager and ReportManager caches on startup
 const startupDependencies = getStandardDependencies();
 logManager.initializeLogCache(startupDependencies); // Ensure logs are loaded
-reportManager.initializeReportCache(startupDependencies);
+reportManager.initializeReportCache(startupDependencies); // Ensure reports are loaded
+rankManagerModule.initializeRanks(startupDependencies); // Initialize ranks and permissionLevels map
 // isInitialized for reportManager is set inside its initializeReportCache
 // No need to set it here again if initializeReportCache handles it.
-playerUtils.debugLog("LogManager and ReportManager caches initialized on startup.", "System", startupDependencies);
+playerUtils.debugLog("LogManager, ReportManager, and RankManager initialized on startup.", "System", startupDependencies);
