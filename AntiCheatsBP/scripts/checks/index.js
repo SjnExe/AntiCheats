@@ -1,7 +1,8 @@
 /**
- * Barrel file for exporting all individual cheat detection modules.
+ * @file Barrel file for exporting all individual cheat detection modules.
  * This allows other parts of the system to import all checks from a single source.
  */
+
 // Movement Checks
 export * from './movement/flyCheck.js';
 export * from './movement/speedCheck.js';
@@ -16,10 +17,18 @@ export * from './combat/viewSnapCheck.js';
 export * from './combat/multiTargetCheck.js';
 export * from './combat/stateConflictCheck.js';
 
-// World Checks
+// World Interaction Checks
 export * from './world/nukerCheck.js';
 export * from './world/illegalItemCheck.js';
-export { checkTower, checkFlatRotationBuilding, checkDownwardScaffold, checkAirPlace, checkFastPlace, checkBlockSpam, checkBlockSpamDensity } from './world/buildingChecks.js';
+export {
+    checkTower,
+    checkFlatRotationBuilding,
+    checkDownwardScaffold,
+    checkAirPlace,
+    checkFastPlace,
+    checkBlockSpam,
+    checkBlockSpamDensity,
+} from './world/buildingChecks.js';
 export { checkFastUse } from './world/fastUseCheck.js';
 export { checkAutoTool } from './world/autoToolCheck.js';
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
@@ -31,10 +40,10 @@ export * from './world/netherRoofCheck.js';
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';
 export { checkSelfHurt } from './player/selfHurtCheck.js';
 export { checkInvalidRenderDistance } from './player/clientInfoChecks.js';
-export { checkAntiGMC } from './player/antiGMCCheck.js';
+export { checkAntiGmc } from './player/antiGMCCheck.js'; // Standardized to checkAntiGmc if file is renamed later
 export { checkNameSpoof } from './player/nameSpoofCheck.js';
 
-// Chat Checks
+// Chat Message Checks
 export { checkMessageRate } from './chat/messageRateCheck.js';
 export { checkMessageWordCount } from './chat/messageWordCountCheck.js';
 export * from './chat/swearCheck.js';

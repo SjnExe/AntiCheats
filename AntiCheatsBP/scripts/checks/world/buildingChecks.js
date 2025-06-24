@@ -1,37 +1,46 @@
 /**
- * Implements various checks related to player building activities, such as Tower, FastPlace,
- * AirPlace (scaffolding), Downward Scaffold, and Flat/Static Rotation Building.
+ * @file Implements various checks related to player building activities, such as Tower, FastPlace,
+ * AirPlace (scaffolding), Downward Scaffold, and Flat/Static Rotation Building, and Block Spam.
  */
 import * as mc from '@minecraft/server';
+
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
- * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
- * @typedef {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} PlaceEventData
+ * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
+ * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
+ * @typedef {import('../../types.js').EventSpecificData} EventSpecificData;
+ * @typedef {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} PlaceEventData; // Type for events that involve placing a block
+ * @typedef {import('../../types.js').Config} Config;
  */
+
 /**
- * Checks for tower-like upward building.
- * @param {mc.Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
- * @param {EventSpecificData} eventSpecificData - Expects `block`.
+ * Checks for tower-like upward building (pillaring straight up with suspicious pitch).
+ * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
+ * @async
+ * @param {mc.Player} player - The player who placed the block.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @returns {Promise<void>}
  */
 export async function checkTower(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
     const block = eventSpecificData?.block;
 
-    if (!config.enableTowerCheck || !pData || !block) { return; }
+    if (!config.enableTowerCheck || !pData || !block) {
+        return;
+    }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const rotation = player.getRotation();
-    const pitch = rotation.x;
+    const pitch = rotation.x; // Player's look pitch
     const blockLocation = block.location;
 
+    // Update recent block placements history
     pData.recentBlockPlacements = pData.recentBlockPlacements || [];
     const newPlacement = {
         x: blockLocation.x, y: blockLocation.y, z: blockLocation.z,
         typeId: block.typeId,
-        pitch: pitch, yaw: rotation.y, tick: currentTick
+        pitch: pitch, yaw: rotation.y, tick: currentTick,
     };
     pData.recentBlockPlacements.push(newPlacement);
     if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? 20)) {
@@ -39,62 +48,86 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
     }
     pData.isDirtyForSave = true;
 
-    const towerMaxGap = config.towerMaxTickGap ?? 10;
+    const towerMaxGapTicks = config.towerMaxTickGap ?? 10; // Max ticks between pillar blocks
+
+    // Check if current block continues an existing pillar
     if (pData.currentPillarX === blockLocation.x &&
         pData.currentPillarZ === blockLocation.z &&
-        blockLocation.y === (pData.lastPillarBaseY ?? -1) + (pData.consecutivePillarBlocks ?? 0) &&
-        (currentTick - (pData.lastPillarTick ?? 0) <= towerMaxGap)) {
+        blockLocation.y === (pData.lastPillarBaseY ?? -Infinity) + (pData.consecutivePillarBlocks ?? 0) && // Y should be one above last
+        (currentTick - (pData.lastPillarTick ?? 0) <= towerMaxGapTicks)) {
         pData.consecutivePillarBlocks = (pData.consecutivePillarBlocks ?? 0) + 1;
         pData.lastPillarTick = currentTick;
     } else {
+        // Check if this block placement could start a new pillar
         const playerFeetY = Math.floor(player.location.y);
         const playerFeetX = Math.floor(player.location.x);
         const playerFeetZ = Math.floor(player.location.z);
+
+        // Block placed directly under player's feet or one block below that (jump-place)
         if (blockLocation.x === playerFeetX && blockLocation.z === playerFeetZ &&
             (blockLocation.y === playerFeetY - 1 || blockLocation.y === playerFeetY - 2)) {
             pData.consecutivePillarBlocks = 1;
-            pData.lastPillarBaseY = blockLocation.y;
+            pData.lastPillarBaseY = blockLocation.y; // The Y of the first block in this new pillar
             pData.lastPillarTick = currentTick;
             pData.currentPillarX = blockLocation.x;
             pData.currentPillarZ = blockLocation.z;
-            playerUtils.debugLog(`[TowerCheck] Started new pillar for ${player.nameTag} at ${blockLocation.x},${blockLocation.y},${blockLocation.z}. Pitch: ${pitch.toFixed(1)}`, watchedPrefix, dependencies);
+            if (pData.isWatched) {
+                playerUtils.debugLog(`[TowerCheck] Started new pillar for ${player.nameTag} at ${blockLocation.x},${blockLocation.y},${blockLocation.z}. Pitch: ${pitch.toFixed(1)}`, watchedPrefix, dependencies);
+            }
         } else {
-            pData.consecutivePillarBlocks = 0; pData.lastPillarTick = 0;
-            pData.currentPillarX = null; pData.currentPillarZ = null;
+            // Not part of a continuous pillar, reset tracking
+            pData.consecutivePillarBlocks = 0;
+            pData.lastPillarTick = 0;
+            pData.currentPillarX = null;
+            pData.currentPillarZ = null;
+            pData.lastPillarBaseY = -Infinity; // Reset base Y
         }
     }
     pData.isDirtyForSave = true;
 
     const minHeight = config.towerMinHeight ?? 5;
-    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? -30;
+    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? -30; // Pitch must be looking down more than this
 
     if ((pData.consecutivePillarBlocks ?? 0) >= minHeight && pitch > maxPitchValue) {
         const violationDetails = {
-            height: (pData.consecutivePillarBlocks ?? 0).toString(), pitch: pitch.toFixed(1),
-            pitchThreshold: maxPitchValue.toString(), x: blockLocation.x.toString(),
-            y: blockLocation.y.toString(), z: blockLocation.z.toString()
+            height: (pData.consecutivePillarBlocks ?? 0).toString(),
+            pitch: pitch.toFixed(1),
+            pitchThreshold: maxPitchValue.toString(),
+            x: blockLocation.x.toString(),
+            y: blockLocation.y.toString(),
+            z: blockLocation.z.toString(),
         };
-        await actionManager.executeCheckAction(player, "worldTowerBuild", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldTowerBuild', violationDetails, dependencies);
         playerUtils.debugLog(`[TowerCheck] Flagged ${player.nameTag} for tower height ${pData.consecutivePillarBlocks} with pitch ${pitch.toFixed(1)} (Threshold: >${maxPitchValue}).`, watchedPrefix, dependencies);
-        pData.consecutivePillarBlocks = 0; pData.lastPillarTick = 0;
-        pData.currentPillarX = null; pData.currentPillarZ = null;
+        // Reset after flagging to prevent immediate re-flagging for the same tower
+        pData.consecutivePillarBlocks = 0;
+        pData.lastPillarTick = 0;
+        pData.currentPillarX = null;
+        pData.currentPillarZ = null;
+        pData.lastPillarBaseY = -Infinity;
         pData.isDirtyForSave = true;
     } else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight) {
         playerUtils.debugLog(`[TowerCheck] Tower for ${player.nameTag} (height ${pData.consecutivePillarBlocks}), pitch ${pitch.toFixed(1)} OK (Threshold: >${maxPitchValue}).`, watchedPrefix, dependencies);
     }
 }
+
 /**
- * Checks for overly fast block placement.
- * @param {import('@minecraft/server').Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
- * @param {EventSpecificData} eventSpecificData - Expects `block`.
+ * Checks for overly fast block placement rate.
+ * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
+ * @async
+ * @param {mc.Player} player - The player who placed the block.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @returns {Promise<void>}
  */
 export async function checkFastPlace(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
     const block = eventSpecificData?.block;
 
-    if (!config.enableFastPlaceCheck || !pData || !block) { return; }
+    if (!config.enableFastPlaceCheck || !pData || !block) {
+        return;
+    }
 
     const currentTime = Date.now();
     pData.recentPlaceTimestamps = pData.recentPlaceTimestamps || [];
@@ -109,82 +142,122 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
     const maxBlocks = config.fastPlaceMaxBlocksInWindow ?? 10;
     if (pData.recentPlaceTimestamps.length > maxBlocks) {
         const violationDetails = {
-            count: pData.recentPlaceTimestamps.length.toString(), windowMs: windowMs.toString(),
-            maxBlocks: maxBlocks.toString(), blockType: block.typeId ?? "unknown"
+            count: pData.recentPlaceTimestamps.length.toString(),
+            windowMs: windowMs.toString(),
+            maxBlocks: maxBlocks.toString(),
+            blockType: block.typeId ?? 'unknown',
         };
-        await actionManager.executeCheckAction(player, "worldFastPlace", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldFastPlace', violationDetails, dependencies);
         playerUtils.debugLog(`[FastPlaceCheck] Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, pData.isWatched ? player.nameTag : null, dependencies);
+        // Optionally, clear timestamps after flagging to avoid repeated flags for the same burst
+        // pData.recentPlaceTimestamps = [];
     }
 }
+
 /**
- * Checks for blocks placed against air or liquid without proper solid adjacent support.
- * @param {import('@minecraft/server').Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
+ * Checks for blocks placed against air or liquid without proper solid adjacent support (Scaffold/AirPlace).
+ * This function is typically called from a `PlayerPlaceBlockBeforeEvent` or `ItemUseOnBeforeEvent` handler.
+ * @async
+ * @param {mc.Player} player - The player placing the block.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
  * @param {PlaceEventData} eventData - The original block place/use event data.
+ * @returns {Promise<void>}
  */
 export async function checkAirPlace(player, pData, dependencies, eventData) {
     const { config, playerUtils, actionManager } = dependencies;
 
-    if (!config.enableAirPlaceCheck || !pData) { return; }
+    if (!config.enableAirPlaceCheck || !pData) {
+        return;
+    }
 
-    const itemStack = eventData?.itemStack;
-    const faceLocation = eventData?.faceLocation;
-    let blockLocation = eventData?.blockLocation;
-    if (!blockLocation && eventData?.block) blockLocation = eventData.block.location;
+    const itemStack = eventData?.itemStack; // ItemStack being placed
+    const faceLocation = eventData?.faceLocation; // The location of the block face being targeted
+    let blockLocation = eventData?.blockLocation; // The location where the new block will be placed
+
+    // For ItemUseOnBeforeEvent, blockLocation might not be directly available, use eventData.block.location
+    if (!blockLocation && eventData?.block) {
+        blockLocation = eventData.block.location;
+    }
 
     if (!itemStack || !faceLocation || !blockLocation) {
-        playerUtils.debugLog(`[AirPlaceCheck] Event data incomplete for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
+        playerUtils.debugLog(`[AirPlaceCheck] Event data incomplete for ${player.nameTag}. ItemStack, FaceLocation, or BlockLocation missing.`, pData.isWatched ? player.nameTag : null, dependencies);
         return;
     }
 
     const placedBlockTypeId = itemStack.typeId;
-    const solidBlocksList = config.airPlaceSolidBlocks ?? [];
-    if (!solidBlocksList.includes(placedBlockTypeId)) return;
+    const solidBlocksList = config.airPlaceSolidBlocks ?? []; // Blocks that are expected to have support
 
-    const dimension = player.dimension;
-    const targetBlock = dimension.getBlock(faceLocation);
-    if (!targetBlock) {
-        playerUtils.debugLog(`[AirPlaceCheck] Target block at faceLocation undefined for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
+    // Only check for "solid" blocks as defined in config; scaffolds often use these
+    if (!solidBlocksList.includes(placedBlockTypeId)) {
         return;
     }
 
+    const dimension = player.dimension;
+    const targetBlock = dimension.getBlock(faceLocation); // The block being clicked on
+
+    if (!targetBlock) {
+        playerUtils.debugLog(`[AirPlaceCheck] Target block at faceLocation (${faceLocation.x},${faceLocation.y},${faceLocation.z}) undefined for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
+        return;
+    }
+
+    // If the block being targeted is air or liquid, it's suspicious for "solid" blocks
     if (targetBlock.isAir || targetBlock.isLiquid) {
+        // Check if there's any solid neighbor to the *new block's location* (excluding the target face block itself)
         const neighborOffsets = [
             { x: 0, y: -1, z: 0 }, { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 },
-            { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 }
+            { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 },
+            // Optional: { x: 0, y: 1, z: 0 } // If placing against a block above is also considered support
         ];
         let hasSolidSupport = false;
         for (const offset of neighborOffsets) {
             const neighborLoc = { x: blockLocation.x + offset.x, y: blockLocation.y + offset.y, z: blockLocation.z + offset.z };
-            if (neighborLoc.x === faceLocation.x && neighborLoc.y === faceLocation.y && neighborLoc.z === faceLocation.z) continue;
-            const neighborBlock = dimension.getBlock(neighborLoc);
-            if (neighborBlock && !neighborBlock.isAir && !neighborBlock.isLiquid) {
-                hasSolidSupport = true; break;
+            // Ensure we are not checking the faceLocation itself as support if it's air/liquid
+            if (neighborLoc.x === faceLocation.x && neighborLoc.y === faceLocation.y && neighborLoc.z === faceLocation.z) {
+                continue;
             }
+            try {
+                const neighborBlock = dimension.getBlock(neighborLoc);
+                if (neighborBlock && !neighborBlock.isAir && !neighborBlock.isLiquid) {
+                    hasSolidSupport = true;
+                    break;
+                }
+            } catch (e) { /* Block might be unloaded, treat as non-support */ }
         }
+
         if (!hasSolidSupport) {
             const violationDetails = {
-                blockType: placedBlockTypeId, x: blockLocation.x.toString(), y: blockLocation.y.toString(),
-                z: blockLocation.z.toString(), targetFaceType: targetBlock.typeId
+                blockType: placedBlockTypeId,
+                x: blockLocation.x.toString(),
+                y: blockLocation.y.toString(),
+                z: blockLocation.z.toString(),
+                targetFaceType: targetBlock.typeId, // Type of the block face targeted (air/liquid)
             };
-            await actionManager.executeCheckAction(player, "worldAirPlace", violationDetails, dependencies);
-            playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}).`, pData.isWatched ? player.nameTag : null, dependencies);
+            await actionManager.executeCheckAction(player, 'worldAirPlace', violationDetails, dependencies);
+            playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}) without solid support.`, pData.isWatched ? player.nameTag : null, dependencies);
+            if (config.checkActionProfiles['worldAirPlace']?.cancelEvent) {
+                eventData.cancel = true;
+            }
         }
     }
 }
+
 /**
- * Checks for downward scaffolding behavior.
- * @param {import('@minecraft/server').Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
- * @param {EventSpecificData} eventSpecificData - Expects `block`.
+ * Checks for downward scaffolding behavior (placing blocks below while airborne and moving).
+ * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
+ * @async
+ * @param {mc.Player} player - The player who placed the block.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @returns {Promise<void>}
  */
 export async function checkDownwardScaffold(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
     const block = eventSpecificData?.block;
 
     if (!config.enableDownwardScaffoldCheck || !pData || !block || player.isOnGround) {
+        // Reset if player is on ground or check is disabled
         if (pData && player.isOnGround) {
             if (pData.consecutiveDownwardBlocks && pData.consecutiveDownwardBlocks > 0) pData.isDirtyForSave = true;
             pData.consecutiveDownwardBlocks = 0;
@@ -192,6 +265,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
         }
         return;
     }
+
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const blockLocation = block.location;
     const velocity = player.getVelocity();
@@ -199,10 +273,11 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
 
     let isContinuingSequence = false;
     const maxTickGap = config.downwardScaffoldMaxTickGap ?? 10;
+
     if (pData.lastDownwardScaffoldBlockLocation &&
-        (currentTick - (pData.lastDownwardScaffoldTick ?? 0) <= maxTickGap) &&
-        blockLocation.y < pData.lastDownwardScaffoldBlockLocation.y &&
-        Math.abs(blockLocation.x - Math.floor(player.location.x)) < 2 &&
+        (currentTick - (pData.lastDownwardScaffoldTick ?? 0) <= maxTickGap) && // Within time window
+        blockLocation.y < pData.lastDownwardScaffoldBlockLocation.y && // Placed lower
+        Math.abs(blockLocation.x - Math.floor(player.location.x)) < 2 && // Horizontally close to player
         Math.abs(blockLocation.z - Math.floor(player.location.z)) < 2) {
         isContinuingSequence = true;
     }
@@ -213,42 +288,58 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
     pData.isDirtyForSave = true;
 
     const minBlocks = config.downwardScaffoldMinBlocks ?? 3;
-    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? 3.0;
+    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? 3.0; // BPS
 
     if ((pData.consecutiveDownwardBlocks ?? 0) >= minBlocks && horizontalSpeedBPS >= minHSpeed) {
         const violationDetails = {
-            count: (pData.consecutiveDownwardBlocks ?? 0).toString(), horizontalSpeedBPS: horizontalSpeedBPS.toFixed(2),
-            minHorizontalSpeedBPS: minHSpeed.toFixed(2), x: blockLocation.x.toString(),
-            y: blockLocation.y.toString(), z: blockLocation.z.toString()
+            count: (pData.consecutiveDownwardBlocks ?? 0).toString(),
+            horizontalSpeedBPS: horizontalSpeedBPS.toFixed(2),
+            minHorizontalSpeedBPS: minHSpeed.toFixed(2),
+            x: blockLocation.x.toString(),
+            y: blockLocation.y.toString(),
+            z: blockLocation.z.toString(),
         };
-        await actionManager.executeCheckAction(player, "worldDownwardScaffold", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldDownwardScaffold', violationDetails, dependencies);
         playerUtils.debugLog(`[DownwardScaffoldCheck] Flagged ${player.nameTag}. Blocks: ${pData.consecutiveDownwardBlocks}, Speed: ${horizontalSpeedBPS.toFixed(2)} BPS`, watchedPrefix, dependencies);
-        pData.consecutiveDownwardBlocks = 0; pData.lastDownwardScaffoldBlockLocation = null; pData.isDirtyForSave = true;
+        // Reset after flagging
+        pData.consecutiveDownwardBlocks = 0;
+        pData.lastDownwardScaffoldBlockLocation = null;
+        pData.isDirtyForSave = true;
     }
 }
+
 /**
- * Checks for building with flat or static camera rotation.
- * @param {import('@minecraft/server').Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {Dependencies} dependencies
+ * Checks for building with flat or static camera rotation, which can indicate scaffold/tower cheats.
+ * This check analyzes the pitch and yaw from `pData.recentBlockPlacements`.
+ * This function is typically run on a tick-based interval.
+ * @async
+ * @param {mc.Player} player - The player instance.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @returns {Promise<void>}
  */
 export async function checkFlatRotationBuilding(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick, getString } = dependencies;
+    const { config, playerUtils, actionManager, getString } = dependencies; // Removed currentTick as it's not used directly
 
-    if (!config.enableFlatRotationCheck || !pData) { return; }
+    if (!config.enableFlatRotationCheck || !pData) {
+        return;
+    }
 
     const consecutiveBlocksToAnalyze = config.flatRotationConsecutiveBlocks ?? 4;
     if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length < consecutiveBlocksToAnalyze) {
-        return;
+        return; // Not enough data
     }
+
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    // Take the most recent N placements for analysis
     const relevantPlacements = pData.recentBlockPlacements.slice(-consecutiveBlocksToAnalyze);
 
     let minObservedPitch = 91, maxObservedPitch = -91;
-    let allPitchesInHorizontalRange = true, allPitchesInDownwardRange = true;
+    let allPitchesInHorizontalRange = true;
+    let allPitchesInDownwardRange = true;
     const horizontalMin = config.flatRotationPitchHorizontalMin ?? -5.0;
     const horizontalMax = config.flatRotationPitchHorizontalMax ?? 5.0;
-    const downwardMin = config.flatRotationPitchDownwardMin ?? -90.0;
+    const downwardMin = config.flatRotationPitchDownwardMin ?? -90.0; // Typically around -85 to -90 for looking straight down
     const downwardMax = config.flatRotationPitchDownwardMax ?? -85.0;
 
     for (const placement of relevantPlacements) {
@@ -260,47 +351,58 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
 
     const pitchVariance = maxObservedPitch - minObservedPitch;
     const firstYaw = relevantPlacements[0].yaw;
-    let maxIndividualYawDifference = 0, yawIsEffectivelyStatic = true;
+    let maxIndividualYawDifference = 0;
+    let yawIsEffectivelyStatic = true;
 
     if (relevantPlacements.length > 1) {
         for (let i = 1; i < relevantPlacements.length; i++) {
             let diff = Math.abs(relevantPlacements[i].yaw - firstYaw);
-            if (diff > 180) diff = 360 - diff;
+            if (diff > 180) diff = 360 - diff; // Normalize yaw difference
             if (diff > maxIndividualYawDifference) maxIndividualYawDifference = diff;
             if (diff > (config.flatRotationMaxYawVariance ?? 2.0)) yawIsEffectivelyStatic = false;
         }
-    } else {
-        yawIsEffectivelyStatic = (consecutiveBlocksToAnalyze === 1);
+    } else { // Only one block placement in recent history considered for analysis
+        yawIsEffectivelyStatic = (consecutiveBlocksToAnalyze === 1); // If analyzing 1 block, yaw is static by definition
     }
 
     const pitchIsStatic = pitchVariance <= (config.flatRotationMaxPitchVariance ?? 2.0);
-    let detectionReasonKey = "";
+    let detectionReasonKey = '';
     let shouldFlag = false;
 
-    if (pitchIsStatic && yawIsEffectivelyStatic) { detectionReasonKey = "check.flatRotation.reason.staticPitchYaw"; shouldFlag = true; }
-    else if (pitchIsStatic) { detectionReasonKey = "check.flatRotation.reason.staticPitch"; shouldFlag = true; }
-    else if (yawIsEffectivelyStatic) { detectionReasonKey = "check.flatRotation.reason.staticYaw"; shouldFlag = true; }
-    else if (allPitchesInHorizontalRange) { detectionReasonKey = "check.flatRotation.reason.flatHorizontal"; shouldFlag = true; }
-    else if (allPitchesInDownwardRange) { detectionReasonKey = "check.flatRotation.reason.flatDownward"; shouldFlag = true; }
+    if (pitchIsStatic && yawIsEffectivelyStatic) { detectionReasonKey = 'check.flatRotation.reason.staticPitchYaw'; shouldFlag = true; }
+    else if (pitchIsStatic) { detectionReasonKey = 'check.flatRotation.reason.staticPitch'; shouldFlag = true; }
+    else if (yawIsEffectivelyStatic) { detectionReasonKey = 'check.flatRotation.reason.staticYaw'; shouldFlag = true; }
+    else if (allPitchesInHorizontalRange) { detectionReasonKey = 'check.flatRotation.reason.flatHorizontal'; shouldFlag = true; }
+    else if (allPitchesInDownwardRange) { detectionReasonKey = 'check.flatRotation.reason.flatDownward'; shouldFlag = true; }
 
     if (shouldFlag) {
-        const localizedDetectionReason = getString(detectionReasonKey);
+        const localizedDetectionReason = getString(detectionReasonKey) || detectionReasonKey.split('.').pop(); // Fallback
         const violationDetails = {
-            pitchVariance: pitchVariance.toFixed(1), yawMaxDifferenceFromFirst: maxIndividualYawDifference.toFixed(1),
-            isYawConsideredStatic: yawIsEffectivelyStatic.toString(), detectionReason: localizedDetectionReason,
-            analyzedBlockCount: relevantPlacements.length.toString(), minPitchObserved: minObservedPitch.toFixed(1),
-            maxPitchObserved: maxObservedPitch.toFixed(1)
+            pitchVariance: pitchVariance.toFixed(1),
+            yawMaxDifferenceFromFirst: maxIndividualYawDifference.toFixed(1),
+            isYawConsideredStatic: yawIsEffectivelyStatic.toString(),
+            detectionReason: localizedDetectionReason,
+            analyzedBlockCount: relevantPlacements.length.toString(),
+            minPitchObserved: minObservedPitch.toFixed(1),
+            maxPitchObserved: maxObservedPitch.toFixed(1),
         };
-        await actionManager.executeCheckAction(player, "worldFlatRotationBuilding", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldFlatRotationBuilding', violationDetails, dependencies);
         playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${localizedDetectionReason}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
+        // Optionally clear recentBlockPlacements to avoid re-flagging immediately
+        // pData.recentBlockPlacements = [];
+        // pData.isDirtyForSave = true;
     }
 }
+
 /**
- * Checks for block spamming based on placement rate.
- * @param {import('@minecraft/server').Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
- * @param {EventSpecificData} eventSpecificData - Expects `block`.
+ * Checks for block spamming based on placement rate for monitored block types.
+ * Typically called from `PlayerPlaceBlockAfterEvent`.
+ * @async
+ * @param {mc.Player} player - The player who placed the block.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @returns {Promise<void>}
  */
 export async function checkBlockSpam(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
@@ -312,6 +414,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
     pData.recentBlockSpamTimestamps = pData.recentBlockSpamTimestamps || [];
     const blockType = block.typeId;
 
+    // Only monitor specific block types if configured, otherwise monitor all
     if (config.blockSpamMonitoredBlockTypes && config.blockSpamMonitoredBlockTypes.length > 0 &&
         !config.blockSpamMonitoredBlockTypes.includes(blockType)) {
         return;
@@ -329,22 +432,31 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
     const maxBlocks = config.blockSpamMaxBlocksInWindow || 8;
     if (pData.recentBlockSpamTimestamps.length > maxBlocks) {
         const violationDetails = {
-            playerName: player.nameTag, count: pData.recentBlockSpamTimestamps.length.toString(),
-            maxBlocks: maxBlocks.toString(), windowMs: windowMs.toString(),
-            blockType: blockType, actionTaken: config.blockSpamAction
+            playerName: player.nameTag, // For message template convenience
+            count: pData.recentBlockSpamTimestamps.length.toString(),
+            maxBlocks: maxBlocks.toString(),
+            windowMs: windowMs.toString(),
+            blockType: blockType,
+            actionTaken: config.blockSpamAction, // Informative, actual action decided by profile
         };
-        await actionManager.executeCheckAction(player, "worldAntigriefBlockspam", violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldAntigriefBlockspam', violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamCheck] Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, pData.isWatched ? player.nameTag : null, dependencies);
+
+        // Reset timestamps after flagging to prevent immediate re-flagging for the same burst
         pData.recentBlockSpamTimestamps = [];
         pData.isDirtyForSave = true;
     }
 }
+
 /**
- * Checks for high-density block spam.
- * @param {import('@minecraft/server').Player} player
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies
- * @param {EventSpecificData} eventSpecificData - Expects `block`.
+ * Checks for high-density block spam within a defined radius and time window.
+ * Typically called from `PlayerPlaceBlockAfterEvent`.
+ * @async
+ * @param {mc.Player} player - The player who placed the block.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @returns {Promise<void>}
  */
 export async function checkBlockSpamDensity(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
@@ -354,23 +466,24 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
     if ((config.blockSpamBypassInCreative ?? true) && player.gameMode === mc.GameMode.creative) return;
     if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length === 0) return;
 
-    const R = config.blockSpamDensityCheckRadius ?? 1;
-    const totalVolumeBlocks = Math.pow((2 * R + 1), 3);
-    if (totalVolumeBlocks === 0) return;
+    const radius = config.blockSpamDensityCheckRadius ?? 1; // Radius for the cubic check area
+    const totalVolumeBlocks = Math.pow((2 * radius + 1), 3); // Volume of the cube
+    if (totalVolumeBlocks === 0) return; // Avoid division by zero if radius is misconfigured
 
     const newBlockLocation = block.location;
     let playerPlacedBlocksInVolumeCount = 0;
-    const densityTimeWindow = config.blockSpamDensityTimeWindowTicks ?? 60;
-    const monitoredTypes = config.blockSpamDensityMonitoredBlockTypes ?? [];
+    const densityTimeWindowTicks = config.blockSpamDensityTimeWindowTicks ?? 60; // How far back to look in ticks
+    const monitoredTypes = config.blockSpamDensityMonitoredBlockTypes ?? []; // Specific types to count, or all if empty
 
     for (const record of pData.recentBlockPlacements) {
-        if (!record.typeId) continue;
-        if ((currentTick - record.tick) > densityTimeWindow) continue;
-        if (monitoredTypes.length > 0 && !monitoredTypes.includes(record.typeId)) continue;
+        if (!record.typeId) continue; // Skip if typeId is missing
+        if ((currentTick - record.tick) > densityTimeWindowTicks) continue; // Too old
+        if (monitoredTypes.length > 0 && !monitoredTypes.includes(record.typeId)) continue; // Not a monitored type
 
-        if (Math.abs(record.x - newBlockLocation.x) <= R &&
-            Math.abs(record.y - newBlockLocation.y) <= R &&
-            Math.abs(record.z - newBlockLocation.z) <= R) {
+        // Check if the recorded block is within the cubic volume around the newly placed block
+        if (Math.abs(record.x - newBlockLocation.x) <= radius &&
+            Math.abs(record.y - newBlockLocation.y) <= radius &&
+            Math.abs(record.z - newBlockLocation.z) <= radius) {
             playerPlacedBlocksInVolumeCount++;
         }
     }
@@ -380,12 +493,16 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
 
     if (densityPercentage > thresholdPercentage) {
         const violationDetails = {
-            playerName: player.nameTag, densityPercentage: densityPercentage.toFixed(1),
-            radius: R.toString(), countInVolume: playerPlacedBlocksInVolumeCount.toString(),
-            totalVolumeBlocks: totalVolumeBlocks.toString(), blockType: block.typeId,
-            actionTaken: config.blockSpamDensityAction ?? "warn"
+            playerName: player.nameTag, // For message template
+            densityPercentage: densityPercentage.toFixed(1),
+            radius: radius.toString(),
+            countInVolume: playerPlacedBlocksInVolumeCount.toString(),
+            totalVolumeBlocks: totalVolumeBlocks.toString(),
+            blockType: block.typeId,
+            actionTaken: config.blockSpamDensityAction ?? 'warn', // Informative
         };
-        await actionManager.executeCheckAction(player, "worldAntigriefBlockspamDensity", violationDetails, dependencies);
-        playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${R} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null, dependencies);
+        await actionManager.executeCheckAction(player, 'worldAntigriefBlockspamDensity', violationDetails, dependencies);
+        playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${radius} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null, dependencies);
+        // Consider if recentBlockPlacements should be partially cleared or managed to prevent re-flagging on every subsequent block in a large dense build.
     }
 }
