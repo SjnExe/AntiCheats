@@ -1,33 +1,44 @@
 /**
- * Defines the !setlang command for changing the server's default language for AntiCheat messages.
- * This command is currently non-functional.
+ * @file Defines the !setlang command. This command is currently non-functional
+ * as multi-language support has been removed.
  */
-// permissionLevels, getString, setCurrentLanguage, and translations were previously accessed via dependencies or specific i18n import.
-// i18n.js has been removed, so these imports are no longer valid or needed.
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 
+import { permissionLevels } from '../core/rankManager.js';
+
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
-    name: "setlang",
-    description: "This command is no longer functional.",
-    aliases: ["setlanguage"],
-    permissionLevel: importedPermissionLevels.admin, // Use imported enum
-    requiresCheats: false,
-    syntax: "!setlang", // Simplified as it takes no args now
-    parameters: [],
-    enabled: false, // Command is disabled
+    name: 'setlang',
+    description: 'This command is no longer functional.', // Hardcoded string
+    aliases: ['setlanguage'],
+    permissionLevel: permissionLevels.admin, // Retain admin level for potential future use or restricted info
+    requiresCheats: false, // Standard field
+    syntax: '!setlang', // Simplified syntax
+    parameters: [], // No parameters as it's disabled
+    enabled: false, // Command is explicitly disabled
 };
 
+/**
+ * Executes the setlang command (currently informs user it's disabled).
+ * @param {import('@minecraft/server').Player} player The player executing the command.
+ * @param {string[]} args Command arguments (ignored).
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
 export async function execute(player, args, dependencies) {
-    const { playerUtils } = dependencies; // getString, etc. removed
+    const { playerUtils, logManager } = dependencies;
+
     // Inform user command is deprecated/removed
-    playerUtils.warnPlayer(player, "§cThe !setlang command has been removed as multi-language support is no longer available.");
-    // Optionally log the attempt if desired
-    if (dependencies.logManager) {
-        dependencies.logManager.addLog({
-            adminName: player.nameTag,
+    playerUtils.warnPlayer(player, '§cThe !setlang command has been removed as multi-language support is no longer available.');
+
+    // Log the attempt to use the disabled command
+    if (logManager) {
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: player.nameTag, // Assuming admin if they could try to run it
             actionType: 'command_attempt_disabled',
-            targetName: 'setlang',
-            details: `Attempted to use disabled command: !setlang ${args.join(" ")}`
+            targetName: 'setlang', // Command name
+            details: `Attempted to use disabled command: !setlang ${args.join(' ')}`,
         }, dependencies);
     }
 }
