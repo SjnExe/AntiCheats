@@ -1,28 +1,27 @@
 /**
- * Implements checks for players attacking while in states that should normally prevent combat actions,
+ * @file Implements checks for players attacking while in states that should normally prevent combat actions,
  * such as sleeping, using consumables, charging bows, or using shields.
  */
+
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
+
 /**
  * Checks if the player is attacking while in a sleeping state.
  * Player's sleep state is determined by `player.isSleeping`.
+ *
+ * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
  * @param {EventSpecificData} [eventSpecificData] - Optional event-specific data (e.g., targetEntity).
  * @returns {Promise<void>}
  */
-export async function checkAttackWhileSleeping(
-    player,
-    pData,
-    dependencies,
-    eventSpecificData
-) {
-    const { config, playerUtils, playerDataManager, logManager, actionManager } = dependencies;
+export async function checkAttackWhileSleeping(player, pData, dependencies, eventSpecificData) {
+    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
 
     if (!config.enableStateConflictCheck || !pData) {
         return;
@@ -32,30 +31,30 @@ export async function checkAttackWhileSleeping(
 
     if (player.isSleeping) {
         const violationDetails = {
-            state: "isSleeping",
+            state: 'isSleeping',
             targetEntityId: eventSpecificData?.targetEntity?.id,
-            targetEntityType: eventSpecificData?.targetEntity?.typeId
+            targetEntityType: eventSpecificData?.targetEntity?.typeId,
         };
-        await actionManager.executeCheckAction(player, "combatAttackWhileSleeping", violationDetails, dependencies);
+        // Standardized action profile key
+        await actionManager.executeCheckAction(player, 'combatAttackWhileSleeping', violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Sleeping.`, watchedPrefix, dependencies);
     }
 }
+
 /**
  * Checks if the player is attacking while using an item (consumable, bow, shield).
  * Relies on state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`, `isUsingShield`).
+ * These flags are expected to be managed by other parts of the system (e.g., eventHandlers.js).
+ *
+ * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
  * @param {EventSpecificData} [eventSpecificData] - Optional event-specific data (e.g., targetEntity).
  * @returns {Promise<void>}
  */
-export async function checkAttackWhileUsingItem(
-    player,
-    pData,
-    dependencies,
-    eventSpecificData
-) {
-    const { config, playerUtils, playerDataManager, logManager, actionManager } = dependencies;
+export async function checkAttackWhileUsingItem(player, pData, dependencies, eventSpecificData) {
+    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
 
     if (!config.enableStateConflictCheck || !pData) {
         return;
@@ -64,36 +63,39 @@ export async function checkAttackWhileUsingItem(
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const targetDetails = {
         targetEntityId: eventSpecificData?.targetEntity?.id,
-        targetEntityType: eventSpecificData?.targetEntity?.typeId
+        targetEntityType: eventSpecificData?.targetEntity?.typeId,
     };
 
     if (pData.isUsingConsumable) {
         const violationDetails = {
             ...targetDetails,
-            state: "isUsingConsumable",
-            itemCategory: "consumable",
+            state: 'isUsingConsumable',
+            itemCategory: 'consumable',
         };
-        await actionManager.executeCheckAction(player, "combatAttackWhileConsuming", violationDetails, dependencies);
+        // Standardized action profile key
+        await actionManager.executeCheckAction(player, 'combatAttackWhileConsuming', violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Consuming.`, watchedPrefix, dependencies);
     }
 
     if (pData.isChargingBow) {
         const violationDetails = {
             ...targetDetails,
-            state: "isChargingBow",
-            itemCategory: "bow",
+            state: 'isChargingBow',
+            itemCategory: 'bow',
         };
-        await actionManager.executeCheckAction(player, "combatAttackWhileBowCharging", violationDetails, dependencies);
+        // Standardized action profile key
+        await actionManager.executeCheckAction(player, 'combatAttackWhileBowCharging', violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Charging Bow.`, watchedPrefix, dependencies);
     }
 
     if (pData.isUsingShield) {
         const violationDetails = {
             ...targetDetails,
-            state: "isUsingShield",
-            itemCategory: "shield",
+            state: 'isUsingShield',
+            itemCategory: 'shield',
         };
-        await actionManager.executeCheckAction(player, "combatAttackWhileShielding", violationDetails, dependencies);
+        // Standardized action profile key
+        await actionManager.executeCheckAction(player, 'combatAttackWhileShielding', violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Shielding.`, watchedPrefix, dependencies);
     }
 }
