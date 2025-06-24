@@ -1,46 +1,47 @@
 /**
- * Implements a check to detect players sending chat messages too frequently (spamming).
+ * @file Implements a check to detect players sending chat messages too frequently (spamming).
  */
 import * as mc from '@minecraft/server';
+
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').PlayerUtils} PlayerUtils
  * @typedef {import('../../types.js').PlayerDataManager} PlayerDataManager
  * @typedef {import('../../types.js').LogManager} LogManager
- * @typedef {import('../../types.js').ExecuteCheckAction} ExecuteCheckAction
+ * @typedef {import('../../types.js').ActionManager} ActionManager
+ * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
+
 /**
  * Checks if a player is sending messages too frequently.
  * If a violation is detected, configured actions (flagging, logging, message cancellation) are executed.
+ *
+ * @async
  * @param {mc.Player} player - The player sending the message.
  * @param {mc.ChatSendBeforeEvent} eventData - The chat event data, used for message content and cancellation.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastChatMessageTimestamp`.
- * @param {import('../../types.js').CommandDependencies} dependencies - The full dependencies object, including:
- * @param {Config} dependencies.config - The server configuration object.
- * @param {PlayerUtils} dependencies.playerUtils - Utility functions for player interactions.
- * @param {PlayerDataManager} dependencies.playerDataManager - Manager for player data.
- * @param {LogManager} dependencies.logManager - Manager for logging.
- * @param {import('../../types.js').ActionManager} dependencies.actionManager - Manager for executing check actions.
+ * @param {CommandDependencies} dependencies - The full dependencies object.
  * @returns {Promise<boolean>} A promise that resolves to `true` if the message should be cancelled due to spam, `false` otherwise.
  */
-export async function checkMessageRate(
-    player,
-    eventData,
-    pData,
-    dependencies
-) {
-    const { config, playerUtils, playerDataManager, logManager, actionManager } = dependencies;
+export async function checkMessageRate(player, eventData, pData, dependencies) {
+    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
 
     if (!config.enableFastMessageSpamCheck) {
+        return false;
+    }
+
+    if (!pData) { // Ensure pData is available
+        playerUtils.debugLog(`[MessageRateCheck] pData is null for ${player.nameTag}, skipping check.`, player.nameTag, dependencies);
         return false;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
-    const actionProfileName = config.fastMessageSPAMActionProfileName ?? "chatSpamFastMessage";
-    const actionProfile = config.checkActionProfiles?.[actionProfileName];
+    // Standardized action profile key (ensure this matches actionProfiles.js)
+    const actionProfileKey = config.fastMessageSPAMActionProfileName || 'chatSpamFastMessage';
+    const profile = config.checkActionProfiles?.[actionProfileKey]; // Get the profile for cancelMessage check
 
     let shouldCancel = false;
 
@@ -53,18 +54,18 @@ export async function checkMessageRate(
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
-                messageContent: eventData.message
+                messageContent: eventData.message.length > 100 ? eventData.message.substring(0, 97) + '...' : eventData.message, // Truncate long messages
             };
-            await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-            if (actionProfile?.cancelMessage) {
+            if (profile?.cancelMessage) {
                 shouldCancel = true;
             }
         }
     }
 
     pData.lastChatMessageTimestamp = currentTime;
-    pData.isDirtyForSave = true;
+    pData.isDirtyForSave = true; // Mark data as dirty since a timestamp was updated
 
     return shouldCancel;
 }
