@@ -1,24 +1,33 @@
 /**
- * Command to list all currently online players being watched.
+ * @file Command to list all currently online players being watched by the AntiCheat system.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels } from '../core/rankManager.js';
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: "listwatched",
-    syntax: "!listwatched",
-    description: "command.listwatched.description",
-    aliases: ["lw", "watchedlist"],
-    permissionLevel: permissionLevels.admin, // Set directly
+    name: 'listwatched',
+    syntax: '!listwatched',
+    description: 'Lists all online players currently being watched.', // Hardcoded string
+    aliases: ['lw', 'watchedlist'],
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
+
 /**
- * Executes the listwatched command.
+ * Executes the !listwatched command.
+ * Iterates through all online players, checks their 'isWatched' status via playerDataManager,
+ * and reports the list of watched players to the command issuer.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} _args - Command arguments (not used in this command).
+ * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
  */
-export async function execute(player, args, dependencies) {
-    const { playerDataManager, playerUtils, config } = dependencies; // Removed permissionLevels from here
+export async function execute(player, _args, dependencies) {
+    const { playerDataManager, playerUtils, logManager } = dependencies;
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
@@ -31,15 +40,22 @@ export async function execute(player, args, dependencies) {
     }
 
     if (watchedPlayersNames.length === 0) {
-        playerUtils.sendMessage(player, "No players are currently being watched.");
+        player.sendMessage('No players are currently being watched.');
     } else {
-        const header = "Currently watched players: ";
-        playerUtils.sendMessage(player, `${header}${watchedPlayersNames.join(', ')}`);
+        const header = 'Currently watched players: ';
+        player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
     }
 
-    dependencies.logManager.addLog({
-        adminName: player.nameTag,
-        actionType: 'command_listwatched',
-        details: `Listed watched players. Count: ${watchedPlayersNames.length}`
-    }, dependencies);
+    try {
+        logManager.addLog({
+            adminName: player.nameTag,
+            actionType: 'listWatched',
+            details: `Listed watched players. Count: ${watchedPlayersNames.length}`,
+        }, dependencies);
+    } catch (logError) {
+        console.error(`[ListWatchedCommand] Error logging: ${logError.stack || logError}`);
+        if (playerUtils && playerUtils.debugLog) {
+            playerUtils.debugLog(`[ListWatchedCommand] Logging error: ${logError.message}`, player.nameTag, dependencies);
+        }
+    }
 }
