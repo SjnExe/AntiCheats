@@ -1,850 +1,898 @@
 /**
- * Defines action profiles for various cheat/behavior detections.
+ * @file Defines action profiles for various cheat/behavior detections.
  * These profiles determine the consequences (flagging, notifications, logging, etc.)
  * when a specific check is triggered. Used by the ActionManager.
+ *
+ * @typedef {object} ActionProfileFlag
+ * @property {number} [increment=1] - How much to increment the flag count by.
+ * @property {string} reason - Template for the flag reason.
+ * @property {string} [type] - Specific flag type key for storage; defaults to the main checkType if not provided.
+ *
+ * @typedef {object} ActionProfileNotify
+ * @property {string} message - Template for the admin notification message.
+ *
+ * @typedef {object} ActionProfileLog
+ * @property {string} [actionType] - Specific actionType for logging; defaults to `detected_<checkType>`.
+ * @property {string} [detailsPrefix=''] - Prefix for the log details string.
+ * @property {boolean} [includeViolationDetails=true] - Whether to include formatted violation details in the log.
+ *
+ * @typedef {object} ActionProfileEntry
+ * @property {boolean} enabled - Whether this action profile is active.
+ * @property {ActionProfileFlag} [flag] - Configuration for flagging the player.
+ * @property {ActionProfileNotify} [notifyAdmins] - Configuration for notifying admins.
+ * @property {ActionProfileLog} [log] - Configuration for logging the event.
+ * @property {boolean} [cancelMessage] - If true, cancels the chat message (for chat-related checks).
+ * @property {string} [customAction] - A custom action string (e.g., 'MUTE') for special handling.
+ * @property {boolean} [cancelEvent] - If true, cancels the underlying game event (e.g., block placement).
+ *
+ * @type {Object.<string, ActionProfileEntry>}
  */
 export const checkActionProfiles = {
-    "movementFlyHover": {
+    'movementFlyHover': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected Fly (Hover).",
-            type: "movementFlyHover"
+            reason: 'System detected Fly (Hover).',
+            type: 'movementFlyHover',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}"
+            message: '§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}',
         },
         log: {
-            actionType: "detectedFlyHover",
-            detailsPrefix: "Fly (Hover Violation): "
-        }
+            actionType: 'detectedFlyHover',
+            detailsPrefix: 'Fly (Hover Violation): ',
+        },
     },
-    "movementSpeedGround": {
+    'movementSpeedGround': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected excessive ground speed.",
-            type: "speed"
+            reason: 'System detected excessive ground speed.',
+            type: 'speed',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})"
+            message: '§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})',
         },
         log: {
-            actionType: "detectedSpeedGround",
-            detailsPrefix: "Speed (Ground Violation): "
-        }
+            actionType: 'detectedSpeedGround',
+            detailsPrefix: 'Speed (Ground Violation): ',
+        },
     },
-    "combatReachAttack": {
+    'combatReachAttack': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected excessive reach during combat.",
-            type: "reach"
+            reason: 'System detected excessive reach during combat.',
+            type: 'reach',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Reach. Distance: {actualDistance} (Max: {allowedDistance})"
+            message: '§eAC: {playerName} flagged for Reach. Distance: {distance} (Max: {maxAllowed})',
         },
         log: {
-            actionType: "detectedReachAttack",
-            detailsPrefix: "Reach (Attack Violation): "
-        }
+            actionType: 'detectedReachAttack',
+            detailsPrefix: 'Reach (Attack Violation): ',
+        },
     },
-    "movementNofall": {
+    'movementNofall': {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious fall damage negation (NoFall).",
-            type: "movement_violation"
+            reason: 'System detected suspicious fall damage negation (NoFall).',
+            type: 'movementViolation',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}"
+            message: '§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}',
         },
         log: {
-            actionType: "detectedMovementNofall",
-            detailsPrefix: "NoFall Violation: "
-        }
+            actionType: 'detectedMovementNofall',
+            detailsPrefix: 'NoFall Violation: ',
+        },
     },
-    "worldNuker": {
+    'worldNuker': {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected Nuker activity (rapid/wide-area block breaking).",
-            type: "world_violation"
+            reason: 'System detected Nuker activity (rapid/wide-area block breaking).',
+            type: 'worldViolation',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}"
+            message: '§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}',
         },
         log: {
-            actionType: "detectedWorldNuker",
-            detailsPrefix: "Nuker Violation: "
-        }
+            actionType: 'detectedWorldNuker',
+            detailsPrefix: 'Nuker Violation: ',
+        },
     },
-    "combatCpsHigh": {
+    'combatCpsHigh': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected abnormally high CPS (Clicks Per Second).",
-            type: "combat_cps"
+            reason: 'System detected abnormally high CPS (Clicks Per Second).',
+            type: 'combatCps',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}"
+            message: '§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}',
         },
         log: {
-            actionType: "detectedCombatCpsHigh",
-            detailsPrefix: "High CPS Violation: "
-        }
+            actionType: 'detectedCombatCpsHigh',
+            detailsPrefix: 'High CPS Violation: ',
+        },
     },
-    "combatViewsnapPitch": {
+    'combatViewsnapPitch': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected suspicious pitch snap after attack.",
-            type: "combat_viewsnap"
+            reason: 'System detected suspicious pitch snap after attack.',
+            type: 'combatViewsnap',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+            message: '§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
         },
         log: {
-            actionType: "detectedViewsnapPitch",
-            detailsPrefix: "Pitch Snap Violation: "
-        }
+            actionType: 'detectedViewsnapPitch',
+            detailsPrefix: 'Pitch Snap Violation: ',
+        },
     },
-    "combatViewsnapYaw": {
+    'combatViewsnapYaw': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected suspicious yaw snap after attack.",
-            type: "combat_viewsnap"
+            reason: 'System detected suspicious yaw snap after attack.',
+            type: 'combatViewsnap',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)"
+            message: '§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
         },
         log: {
-            actionType: "detectedViewsnapYaw",
-            detailsPrefix: "Yaw Snap Violation: "
-        }
+            actionType: 'detectedViewsnapYaw',
+            detailsPrefix: 'Yaw Snap Violation: ',
+        },
     },
-    "combatInvalidPitch": {
+    'combatInvalidPitch': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected invalid view pitch (e.g., looking straight up/down).",
-            type: "combat_view_violation"
+            reason: 'System detected invalid view pitch (e.g., looking straight up/down).',
+            type: 'combatViewViolation',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)"
+            message: '§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)',
         },
         log: {
-            actionType: "detectedInvalidPitch",
-            detailsPrefix: "Invalid Pitch Violation: "
-        }
+            actionType: 'detectedInvalidPitch',
+            detailsPrefix: 'Invalid Pitch Violation: ',
+        },
     },
-    "combatMultitargetAura": {
+    'combatMultitargetAura': {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected Multi-Target Aura (hitting multiple entities rapidly).",
-            type: "combat_aura"
+            reason: 'System detected Multi-Target Aura (hitting multiple entities rapidly).',
+            type: 'combatAura',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})"
+            message: '§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
         },
         log: {
-            actionType: "detectedMultitargetAura",
-            detailsPrefix: "Multi-Target Aura Violation: "
-        }
+            actionType: 'detectedMultitargetAura',
+            detailsPrefix: 'Multi-Target Aura Violation: ',
+        },
     },
-    "combatAttackWhileSleeping": {
+    'combatAttackWhileSleeping': {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected player attacking while sleeping.",
-            type: "combat_state_conflict"
+            reason: 'System detected player attacking while sleeping.',
+            type: 'combatStateConflict',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntity}"
+            message: '§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntityType}',
         },
         log: {
-            actionType: "detectedAttackWhileSleeping",
-            detailsPrefix: "Attack While Sleeping Violation: "
-        }
+            actionType: 'detectedAttackWhileSleeping',
+            detailsPrefix: 'Attack While Sleeping Violation: ',
+        },
     },
-    "combatAttackWhileConsuming": {
+    'combatAttackWhileConsuming': {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected player attacking while consuming an item.",
-            type: "combat_state_conflict_consuming"
+            reason: 'System detected player attacking while consuming an item.',
+            type: 'combatStateConflictConsuming',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemUsed}"
+            message: '§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemCategory}',
         },
         log: {
-            actionType: "detectedAttackWhileConsuming",
-            detailsPrefix: "Attack While Consuming Violation: "
-        }
+            actionType: 'detectedAttackWhileConsuming',
+            detailsPrefix: 'Attack While Consuming Violation: ',
+        },
     },
-    "combatAttackWhileBowCharging": {
+    'combatAttackWhileBowCharging': {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected player attacking while charging a bow.",
-            type: "combat_state_conflict_bow"
+            reason: 'System detected player attacking while charging a bow.',
+            type: 'combatStateConflictBow',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemUsed}"
+            message: '§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemCategory}',
         },
         log: {
-            actionType: "detectedAttackWhileBowCharging",
-            detailsPrefix: "Attack While Charging Bow Violation: "
-        }
+            actionType: 'detectedAttackWhileBowCharging',
+            detailsPrefix: 'Attack While Charging Bow Violation: ',
+        },
     },
-    "combatAttackWhileShielding": {
+    'combatAttackWhileShielding': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected player attacking while actively using a shield.",
-            type: "combat_state_conflict_shield"
+            reason: 'System detected player attacking while actively using a shield.',
+            type: 'combatStateConflictShield',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemUsed}"
+            message: '§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemCategory}',
         },
         log: {
-            actionType: "detectedAttackWhileShielding",
-            detailsPrefix: "Attack While Shielding Violation: "
-        }
+            actionType: 'detectedAttackWhileShielding',
+            detailsPrefix: 'Attack While Shielding Violation: ',
+        },
     },
-    "worldIllegalItemUse": {
+    'worldIllegalItemUse': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected use of a banned item: {itemTypeId}.",
-            type: "world_illegal_item"
+            reason: 'System detected use of a banned item: {itemTypeId}.',
+            type: 'worldIllegalItem',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}"
+            message: '§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}',
         },
         log: {
-            actionType: "detectedIllegalItemUse",
-            detailsPrefix: "Illegal Item Use Violation: "
-        }
+            actionType: 'detectedIllegalItemUse',
+            detailsPrefix: 'Illegal Item Use Violation: ',
+        },
     },
-    "worldIllegalItemPlace": {
+    'worldIllegalItemPlace': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected placement of a banned item: {itemTypeId}.",
-            type: "world_illegal_item"
+            reason: 'System detected placement of a banned item: {itemTypeId}.',
+            type: 'worldIllegalItem',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}"
+            message: '§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}',
         },
         log: {
-            actionType: "detectedIllegalItemPlace",
-            detailsPrefix: "Illegal Item Placement Violation: "
-        }
+            actionType: 'detectedIllegalItemPlace',
+            detailsPrefix: 'Illegal Item Placement Violation: ',
+        },
     },
-    "worldTowerBuild": {
+    'worldTowerBuild': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected suspicious tower-like building.",
-            type: "world_scaffold_tower"
+            reason: 'System detected suspicious tower-like building.',
+            type: 'worldScaffoldTower',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)"
+            message: '§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)',
         },
         log: {
-            actionType: "detectedWorldTowerBuild",
-            detailsPrefix: "Tower Building Violation: "
-        }
+            actionType: 'detectedWorldTowerBuild',
+            detailsPrefix: 'Tower Building Violation: ',
+        },
     },
-    "worldFlatRotationBuilding": {
+    'worldFlatRotationBuilding': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected unnatural (flat or static) head rotation while building.",
-            type: "world_scaffold_rotation"
+            reason: 'System detected unnatural (flat or static) head rotation while building.',
+            type: 'worldScaffoldRotation',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Variance: {pitchVariance}, Yaw Variance: {yawVariance}, Details: {details}"
+            message: '§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Var: {pitchVariance}, Yaw Var: {yawMaxDifferenceFromFirst}, Reason: {detectionReason}',
         },
         log: {
-            actionType: "detectedWorldFlatRotationBuilding",
-            detailsPrefix: "Flat/Static Rotation Building Violation: "
-        }
+            actionType: 'detectedWorldFlatRotationBuilding',
+            detailsPrefix: 'Flat/Static Rotation Building Violation: ',
+        },
     },
-    "worldDownwardScaffold": {
+    'worldDownwardScaffold': {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious downward scaffolding while airborne.",
-            type: "world_scaffold_downward"
+            reason: 'System detected suspicious downward scaffolding while airborne.',
+            type: 'worldScaffoldDownward',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {hSpeed}bps (MinSpeed: {minHSpeed}bps)"
+            message: '§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {horizontalSpeedBPS}bps (MinSpeed: {minHorizontalSpeedBPS}bps)',
         },
         log: {
-            actionType: "detectedWorldDownwardScaffold",
-            detailsPrefix: "Downward Scaffold Violation: "
-        }
+            actionType: 'detectedWorldDownwardScaffold',
+            detailsPrefix: 'Downward Scaffold Violation: ',
+        },
     },
-    "worldAirPlace": {
+    'worldAirPlace': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected block placed against air/liquid without solid support.",
-            type: "world_scaffold_airplace"
+            reason: 'System detected block placed against air/liquid without solid support.',
+            type: 'worldScaffoldAirplace',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting air/liquid."
+            message: '§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting {targetFaceType}.',
         },
         log: {
-            actionType: "detectedWorldAirPlace",
-            detailsPrefix: "Air Placement Violation: "
-        }
+            actionType: 'detectedWorldAirPlace',
+            detailsPrefix: 'Air Placement Violation: ',
+        },
     },
-    "actionFastUse": {
+    'actionFastUse': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected item being used too quickly: {itemType}.",
-            type: "action_fast_use"
+            reason: 'System detected item being used too quickly: {itemType}.',
+            type: 'actionFastUse',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldown}ms, Actual: {actualTime}ms"
+            message: '§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldownMs}ms, Actual: {actualTimeMs}ms',
         },
         log: {
-            actionType: "detectedFastUse",
-            detailsPrefix: "Fast Use Violation: "
-        }
+            actionType: 'detectedFastUse',
+            detailsPrefix: 'Fast Use Violation: ',
+        },
     },
-    "worldFastPlace": {
+    'worldFastPlace': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "System detected blocks being placed too quickly.",
-            type: "world_fast_place"
+            reason: 'System detected blocks being placed too quickly.',
+            type: 'worldFastPlace',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {window}ms (Max: {maxBlocks})"
+            message: '§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {windowMs}ms (Max: {maxBlocks})',
         },
         log: {
-            actionType: "detectedWorldFastPlace",
-            detailsPrefix: "Fast Place Violation: "
-        }
+            actionType: 'detectedWorldFastPlace',
+            detailsPrefix: 'Fast Place Violation: ',
+        },
     },
-    "movementNoslow": {
+    'movementNoslow': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).",
-            type: "movement_noslow"
+            reason: 'System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).',
+            type: 'movementNoslow',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxSpeed}bps)"
+            message: '§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxAllowedSpeed}bps)',
         },
         log: {
-            actionType: "detectedMovementNoslow",
-            detailsPrefix: "NoSlow Violation: "
-        }
+            actionType: 'detectedMovementNoslow',
+            detailsPrefix: 'NoSlow Violation: ',
+        },
     },
-    "movementInvalidSprint": {
+    'movementInvalidSprint': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected sprinting under invalid conditions (e.g., blind, sneaking, riding).",
-            type: "movement_invalid_sprint"
+            reason: 'System detected sprinting under invalid conditions (e.g., blind, sneaking, riding).',
+            type: 'movementInvalidSprint',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}"
+            message: '§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}',
         },
         log: {
-            actionType: "detectedMovementInvalidSprint",
-            detailsPrefix: "Invalid Sprint Violation: "
-        }
+            actionType: 'detectedMovementInvalidSprint',
+            detailsPrefix: 'Invalid Sprint Violation: ',
+        },
     },
-    "worldAutotool": {
+    'worldAutotool': {
         enabled: true,
         flag: {
             increment: 2,
-            reason: "System detected suspicious tool switching before/after breaking a block (AutoTool).",
-            type: "world_autotool"
+            reason: 'System detected suspicious tool switching before/after breaking a block (AutoTool).',
+            type: 'worldAutotool',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolType}, Switched: {switchPattern}"
+            message: '§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolUsed}, Pattern: {switchPattern}',
         },
         log: {
-            actionType: "detectedWorldAutotool",
-            detailsPrefix: "AutoTool Violation: "
-        }
+            actionType: 'detectedWorldAutotool',
+            detailsPrefix: 'AutoTool Violation: ',
+        },
     },
-    "worldInstabreakUnbreakable": {
+    'worldInstabreakUnbreakable': {
         enabled: true,
         flag: {
             increment: 10,
-            reason: "Attempted to break an unbreakable block: {blockType}.",
-            type: "world_instabreak_unbreakable"
+            reason: 'Attempted to break an unbreakable block: {blockType}.',
+            type: 'worldInstabreakUnbreakable',
         },
         notifyAdmins: {
-            message: "§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled."
+            message: '§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled.',
         },
         log: {
-            actionType: "detectedInstabreakUnbreakable",
-            detailsPrefix: "InstaBreak (Unbreakable) Violation: "
-        }
+            actionType: 'detectedInstabreakUnbreakable',
+            detailsPrefix: 'InstaBreak (Unbreakable) Violation: ',
+        },
     },
-    "worldInstabreakSpeed": {
+    'worldInstabreakSpeed': {
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected block broken significantly faster than possible: {blockType}.",
-            type: "world_instabreak_speed"
+            reason: 'System detected block broken significantly faster than possible: {blockType}.',
+            type: 'worldInstabreakSpeed',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t"
+            message: '§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t',
         },
         log: {
-            actionType: "detectedInstabreakSpeed",
-            detailsPrefix: "InstaBreak (Speed) Violation: "
-        }
+            actionType: 'detectedInstabreakSpeed',
+            detailsPrefix: 'InstaBreak (Speed) Violation: ',
+        },
     },
-    "playerNamespoof": {
+    'playerNamespoof': {
         enabled: true,
         flag: {
             increment: 5,
-            reason: "System detected an invalid or suspicious player nameTag ({reasonDetail}).",
-            type: "player_namespoof"
+            reason: 'System detected an invalid or suspicious player nameTag ({reasonDetail}).',
+            type: 'playerNamespoof',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: '{nameTag}'"
+            message: '§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: \'{currentNameTagDisplay}\'',
         },
         log: {
-            actionType: "detectedPlayerNamespoof",
-            detailsPrefix: "NameSpoof Violation: "
-        }
+            actionType: 'detectedPlayerNamespoof',
+            detailsPrefix: 'NameSpoof Violation: ',
+        },
     },
-    "playerAntiGMC": {
+    'playerAntigmc': { // Changed from playerAntiGMC
         enabled: true,
         flag: {
             increment: 10,
-            reason: "System detected unauthorized Creative Mode.",
-            type: "player_antigmc"
+            reason: 'System detected unauthorized Creative Mode.',
+            type: 'playerAntigmc',
         },
         notifyAdmins: {
-            message: "§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}"
+            message: '§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}',
         },
         log: {
-            actionType: "detectedPlayerAntiGMC", // Corrected case
-            detailsPrefix: "Anti-GMC Violation: "
-        }
+            actionType: 'detectedPlayerAntigmc',
+            detailsPrefix: 'Anti-GMC Violation: ',
+        },
     },
-    "playerInventoryMod": {
+    'playerInventoryModSwitchUse': { // More specific key
         enabled: true,
         flag: {
             increment: 3,
-            reason: "System detected suspicious inventory/hotbar manipulation ({reasonDetail}).",
-            type: "player_inventory_mod"
+            reason: 'System detected suspicious inventory/hotbar manipulation ({reasonDetail}).',
+            type: 'playerInventoryMod', // General type for grouping
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for InventoryMod. Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}"
+            message: '§eAC: {playerName} flagged for InventoryMod (Switch-Use). Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}',
         },
         log: {
-            actionType: "detectedPlayerInventoryMod",
-            detailsPrefix: "InventoryMod Violation: "
-        }
+            actionType: 'detectedPlayerInventoryModSwitchUse',
+            detailsPrefix: 'InventoryMod (Switch-Use) Violation: ',
+        },
     },
-    "chatSpamFastMessage": {
+    'playerInventoryModMoveLocked': { // More specific key
         enabled: true,
         flag: {
-            type: "chat_spam_fast",
-            increment: 1,
-            reason: "Sent messages too quickly ({timeSinceLastMsgMs}ms apart)"
-        },
-        log: {
-            actionType: "detectedFastMessageSpam",
-            detailsPrefix: "Msg: '{messageContent}'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ",
-            includeViolationDetails: false
+            increment: 3,
+            reason: 'System detected suspicious inventory/hotbar manipulation ({reasonDetail}).',
+            type: 'playerInventoryMod', // General type for grouping
         },
         notifyAdmins: {
-            message: "§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)"
+            message: '§eAC: {playerName} flagged for InventoryMod (Move-Locked). Detail: {reasonDetail}. Item: {itemTypeInvolved}, Slot: {slotChanged}, Action: {actionInProgress}',
         },
-        cancelMessage: true
+        log: {
+            actionType: 'detectedPlayerInventoryModMoveLocked',
+            detailsPrefix: 'InventoryMod (Move-Locked) Violation: ',
+        },
     },
-    "chatSpamMaxWords": {
+    'chatSpamFastMessage': {
         enabled: true,
         flag: {
-            type: "chat_spam_max_words",
+            type: 'chatSpamFast',
             increment: 1,
-            reason: "Message too long ({wordCount} words, max: {maxWords})"
+            reason: 'Sent messages too quickly ({timeSinceLastMsgMs}ms apart)',
         },
         log: {
-            actionType: "detectedMaxWordsSpam",
-            detailsPrefix: "Words: {wordCount}, Max: {maxWords}. Msg (truncated): '{messageContent}'. ",
-            includeViolationDetails: false
+            actionType: 'detectedFastMessageSpam',
+            detailsPrefix: 'Msg: \'{messageContent}\'. Interval: {timeSinceLastMsgMs}ms. Threshold: {thresholdMs}ms. ',
+            includeViolationDetails: false, // Custom details are in prefix
         },
         notifyAdmins: {
-            message: "§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)"
+            message: '§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)',
         },
-        cancelMessage: true
+        cancelMessage: true,
     },
-    "worldAntigriefTntPlace": {
-        enabled: true, // This will be controlled by enableTntAntiGrief at a higher level
+    'chatSpamMaxWords': {
+        enabled: true,
+        flag: {
+            type: 'chatSpamMaxWords',
+            increment: 1,
+            reason: 'Message too long ({wordCount} words, max: {maxWords})',
+        },
+        log: {
+            actionType: 'detectedMaxWordsSpam',
+            detailsPrefix: 'Words: {wordCount}, Max: {maxWords}. Msg (truncated): \'{messageContent}\'. ',
+            includeViolationDetails: false, // Custom details are in prefix
+        },
+        notifyAdmins: {
+            message: '§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)',
+        },
+        cancelMessage: true,
+    },
+    'worldAntigriefTntPlace': {
+        enabled: true,
         flag: {
             increment: 1,
-            reason: "Player attempted to place TNT without authorization.",
-            type: "antigrief_tnt"
+            reason: 'Player attempted to place TNT without authorization.',
+            type: 'antigriefTnt',
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}."
+            message: '§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}.',
         },
         log: {
-            actionType: "antigriefTntPlacement",
-            detailsPrefix: "AntiGrief TNT: "
-        }
+            actionType: 'antigriefTntPlacement',
+            detailsPrefix: 'AntiGrief TNT: ',
+        },
+        cancelEvent: true, // Added to ensure the action profile can control event cancellation
     },
-    "worldAntigriefWitherSpawn": {
-        enabled: true, // This will be effectively controlled by enableWitherAntiGrief at a higher level
+    'worldAntigriefWitherSpawn': {
+        enabled: true,
         flag: {
-            increment: 5, // Wither griefing is severe
-            reason: "Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.",
-            type: "antigrief_wither"
+            increment: 5,
+            reason: 'Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.',
+            type: 'antigriefWither',
         },
         notifyAdmins: {
-            message: "§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}."
+            message: '§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}.',
         },
         log: {
-            actionType: "antigriefWitherSpawn",
-            detailsPrefix: "AntiGrief Wither: "
-        }
+            actionType: 'antigriefWitherSpawn',
+            detailsPrefix: 'AntiGrief Wither: ',
+        },
     },
-    "worldAntigriefFire": {
-        enabled: true, // Effectively controlled by enableFireAntiGrief
+    'worldAntigriefFire': {
+        enabled: true,
         flag: {
             increment: 2,
-            reason: "Player involved in unauthorized or excessive fire incident.",
-            type: "antigrief_fire"
+            reason: 'Player involved in unauthorized or excessive fire incident.',
+            type: 'antigriefFire',
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: '§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
         },
         log: {
-            actionType: "antigriefFireIncident",
-            detailsPrefix: "AntiGrief Fire: "
-        }
+            actionType: 'antigriefFireIncident',
+            detailsPrefix: 'AntiGrief Fire: ',
+        },
+        cancelEvent: true,
     },
-    "worldAntigriefLava": {
-        enabled: true, // Effectively controlled by enableLavaAntiGrief
+    'worldAntigriefLava': {
+        enabled: true,
         flag: {
             increment: 2,
-            reason: "Player involved in unauthorized lava placement.",
-            type: "antigrief_lava"
+            reason: 'Player involved in unauthorized lava placement.',
+            type: 'antigriefLava',
         },
         notifyAdmins: {
-            message: "§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
+            message: '§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
         },
         log: {
-            actionType: "antigriefLavaPlacement",
-            detailsPrefix: "AntiGrief Lava: "
-        }
+            actionType: 'antigriefLavaPlacement',
+            detailsPrefix: 'AntiGrief Lava: ',
+        },
+        cancelEvent: true,
     },
-    "worldAntigriefWater": {
-        enabled: true, // Effectively controlled by enableWaterAntiGrief
-        flag: {
-            increment: 1, // Water grief is often less permanent than lava/TNT
-            reason: "Player involved in unauthorized water placement.",
-            type: "antigrief_water"
-        },
-        notifyAdmins: {
-            message: "§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}"
-        },
-        log: {
-            actionType: "antigriefWaterPlacement",
-            detailsPrefix: "AntiGrief Water: "
-        }
-    },
-    "worldAntigriefBlockspam": {
-        enabled: true, // Effectively controlled by enableBlockSpamAntiGrief
-        flag: {
-            increment: 1,
-            reason: "Player suspected of block spamming.",
-            type: "antigrief_blockspam"
-        },
-        notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}."
-        },
-        log: {
-            actionType: "antigriefBlockspamDetected",
-            detailsPrefix: "AntiGrief BlockSpam: "
-        }
-    },
-    "worldAntigriefEntityspam": {
-        enabled: true, // Effectively controlled by enableEntitySpamAntiGrief
-        flag: {
-            increment: 1,
-            reason: "Player suspected of entity spamming.",
-            type: "antigrief_entityspam"
-        },
-        notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}."
-        },
-        log: {
-            actionType: "antigriefEntityspamDetected",
-            detailsPrefix: "AntiGrief EntitySpam: "
-        }
-    },
-    "worldAntigriefBlockspamDensity": {
-        enabled: true, // Effectively controlled by enableBlockSpamDensityCheck
-        flag: {
-            increment: 2, // Potentially more severe than just rate
-            reason: "Player suspected of block spamming (high density).",
-            type: "antigrief_blockspam_density" // Distinct flag type
-        },
-        notifyAdmins: {
-            message: "§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}."
-        },
-        log: {
-            actionType: "antigriefBlockspamDensityDetected",
-            detailsPrefix: "AntiGrief BlockSpam (Density): "
-        }
-    },
-    "worldAntigriefPistonLag": {
-        "enabled": true,
-        "flag": null,
-        "notifyAdmins": {
-            "message": "§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)"
-        },
-        "log": {
-            "actionType": "antigriefPistonLagDetected",
-            "detailsPrefix": "AntiGrief Piston Lag: "
-        }
-    },
-    "playerInvalidRenderDistance": {
-        "enabled": true,
-        "flag": {
-            "increment": 1,
-            "reason": "Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).",
-            "type": "player_client_anomaly"
-        },
-        "notifyAdmins": {
-            "message": "§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification."
-        },
-        "log": {
-            "actionType": "detectedInvalidRenderDistance",
-            "detailsPrefix": "Invalid Render Distance: "
-        }
-    },
-    "playerChatDuringCombat": {
-        "enabled": true,
-        "flag": {
-            "increment": 1,
-            "reason": "Attempted to chat too soon after combat ({timeSinceCombat}s ago).",
-            "type": "player_chat_state_violation"
-        },
-        "notifyAdmins": {
-            "message": "§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled."
-        },
-        "cancelMessage": true,
-        "log": {
-            "actionType": "detectedChatDuringCombat",
-            "detailsPrefix": "Chat During Combat: "
-        }
-    },
-    "playerChatDuringItemUse": {
-        "enabled": true,
-        "flag": {
-            "increment": 1,
-            "reason": "Attempted to chat while actively using an item ({itemUseState}).",
-            "type": "player_chat_state_violation"
-        },
-        "notifyAdmins": {
-            "message": "§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled."
-        },
-        "cancelMessage": true,
-        "log": {
-            "actionType": "detectedChatDuringItemUse",
-            "detailsPrefix": "Chat During Item Use: "
-        }
-    },
-    "chatSwearViolation": {
-        enabled: true, // The check itself is controlled by enableSwearCheck
-        flag: {
-            increment: 1,
-            reason: "Swear word detected in message: {detectedWord}",
-            type: "chat_language_violation" // A more general type for language issues
-        },
-        notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Swear Word. Word: '{detectedWord}'. Message: §f{messageContent}"
-        },
-        log: {
-            actionType: "detectedSwearWord",
-            detailsPrefix: "Swear Word Violation: ",
-            includeViolationDetails: true // To include detectedWord and messageContent
-        },
-        cancelMessage: true, // Cancel the message containing the swear word
-        customAction: "MUTE" // Signal to handleBeforeChatSend to apply mute using swearCheckMuteDuration
-    },
-    "chatAdvertisingDetected": {
-        enabled: true,
-        flag: {
-            type: "chat_advertising",
-            reason: "Potential advertisement detected in chat: {matchedPattern}",
-            increment: 1
-        },
-        log: {
-            actionType: "detectedChatAdvertising",
-            detailsPrefix: "Matched patterns: ", // Matched pattern will be in violationDetails
-            includeViolationDetails: true
-        },
-        notifyAdmins: {
-            message: "§eAC: {playerName} may have advertised. Matched: '{matchedPattern}'. Message: §f{originalMessage}"
-        }
-        // No cancelMessage or customAction by default
-    },
-    "chatCapsAbuseDetected": {
-        enabled: true,
-        flag: {
-            type: "chat_caps_abuse",
-            reason: "Message contained excessive capitalization ({percentage}% CAPS).",
-            increment: 1
-        },
-        log: {
-            actionType: "detectedChatCapsAbuse",
-            detailsPrefix: "CAPS Abuse: ", // ViolationDetails will include percentage, message
-            includeViolationDetails: true
-        },
-        notifyAdmins: {
-            message: "§eAC: {playerName} flagged for CAPS abuse ({percentage}% CAPS). Message: §f{originalMessage}"
-        }
-        // No cancelMessage by default
-    },
-    "chatCharRepeatDetected": {
-        enabled: true,
-        flag: {
-            type: "chat_char_repeat",
-            reason: "Message contained repeated characters: '{char}' x{count}.",
-            increment: 1
-        },
-        log: {
-            actionType: "detectedChatCharRepeat",
-            detailsPrefix: "Char Repeat: ", // ViolationDetails will include char, count, message
-            includeViolationDetails: true
-        },
-        notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Char Repeat: '{char}' x{count}. Message: §f{originalMessage}"
-        }
-        // No cancelMessage by default
-    },
-    "chatSymbolSpamDetected": {
-        enabled: true,
-        flag: {
-            type: "chat_symbol_spam",
-            reason: "Sent a message with a high percentage of symbols.",
-            increment: 1
-        },
-        log: {
-            actionType: "detectedChatSymbolSpam",
-            detailsPrefix: "Symbol Spam: ", // ViolationDetails will include percentage, message
-            includeViolationDetails: true
-        },
-        notifyAdmins: {
-            message: "Player {playerName} triggered symbol spam check. Message: {originalMessage}"
-        }
-        // No cancelMessage by default
-    },
-    "chatContentRepeat": {
+    'worldAntigriefWater': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "Repeated message content detected.",
-            type: "chat_content_repeat"
+            reason: 'Player involved in unauthorized water placement.',
+            type: 'antigriefWater',
         },
         notifyAdmins: {
-            message: "{playerName} flagged for Chat Content Repeat. Details: {detailsString}"
+            message: '§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
         },
         log: {
-            actionType: "detectedChatContentRepeat",
-            detailsPrefix: "Chat Content Repeat: ",
-            includeViolationDetails: true
-        }
+            actionType: 'antigriefWaterPlacement',
+            detailsPrefix: 'AntiGrief Water: ',
+        },
+        cancelEvent: true,
     },
-    "chatUnicodeAbuse": {
+    'worldAntigriefBlockspam': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "Unicode (e.g., Zalgo) abuse detected.",
-            type: "chat_unicode_abuse"
+            reason: 'Player suspected of block spamming.',
+            type: 'antigriefBlockspam',
         },
         notifyAdmins: {
-            message: "{playerName} flagged for Unicode Abuse. Details: {detailsString}"
+            message: '§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}.',
         },
         log: {
-            actionType: "detectedChatUnicodeAbuse",
-            detailsPrefix: "Unicode Abuse: ",
-            includeViolationDetails: true
-        }
+            actionType: 'antigriefBlockspamDetected',
+            detailsPrefix: 'AntiGrief BlockSpam: ',
+        },
     },
-    "chatGibberish": {
+    'worldAntigriefEntityspam': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "Gibberish or unreadable message detected.",
-            type: "chat_gibberish"
+            reason: 'Player suspected of entity spamming.',
+            type: 'antigriefEntityspam',
         },
         notifyAdmins: {
-            message: "{playerName} flagged for Gibberish. Details: {detailsString}"
+            message: '§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}.',
         },
         log: {
-            actionType: "detectedChatGibberish",
-            detailsPrefix: "Gibberish Chat: ",
-            includeViolationDetails: true
-        }
+            actionType: 'antigriefEntityspamDetected',
+            detailsPrefix: 'AntiGrief EntitySpam: ',
+        },
     },
-    "chatExcessiveMentions": {
+    'worldAntigriefBlockspamDensity': {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: 'Player suspected of block spamming (high density).',
+            type: 'antigriefBlockspamDensity',
+        },
+        notifyAdmins: {
+            message: '§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}.',
+        },
+        log: {
+            actionType: 'antigriefBlockspamDensityDetected',
+            detailsPrefix: 'AntiGrief BlockSpam (Density): ',
+        },
+    },
+    'worldAntigriefPistonLag': {
+        enabled: true,
+        flag: null, // No direct player flag, system log only
+        notifyAdmins: {
+            message: '§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)',
+        },
+        log: {
+            actionType: 'antigriefPistonLagDetected',
+            detailsPrefix: 'AntiGrief Piston Lag: ',
+        },
+    },
+    'playerInvalidRenderDistance': {
         enabled: true,
         flag: {
             increment: 1,
-            reason: "Excessive user mentions in message.",
-            type: "chat_excessive_mentions"
+            reason: 'Client reported an excessive render distance: {reportedDistance} chunks (Max: {maxAllowed} chunks).',
+            type: 'playerClientAnomaly',
         },
         notifyAdmins: {
-            message: "{playerName} flagged for Excessive Mentions. Details: {detailsString}"
+            message: '§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification.',
         },
         log: {
-            actionType: "detectedChatExcessiveMentions",
-            detailsPrefix: "Excessive Mentions: ",
-            includeViolationDetails: true
-        }
+            actionType: 'detectedInvalidRenderDistance',
+            detailsPrefix: 'Invalid Render Distance: ',
+        },
     },
-    "chatImpersonationAttempt": {
+    'playerChatDuringCombat': {
         enabled: true,
         flag: {
-            increment: 2, // Slightly higher increment due to potential severity
-            reason: "Attempt to impersonate server/staff message.",
-            type: "chat_impersonation_attempt"
+            increment: 1,
+            reason: 'Attempted to chat too soon after combat ({timeSinceCombat}s ago).',
+            type: 'playerChatStateViolation',
         },
         notifyAdmins: {
-            message: "{playerName} flagged for Impersonation Attempt. Details: {detailsString}"
+            message: '§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled.',
         },
+        cancelMessage: true,
         log: {
-            actionType: "detectedChatImpersonationAttempt",
-            detailsPrefix: "Impersonation Attempt: ",
-            includeViolationDetails: true
-        }
+            actionType: 'detectedChatDuringCombat',
+            detailsPrefix: 'Chat During Combat: ',
+        },
     },
-    "playerSelfHurt": {
+    'playerChatDuringItemUse': {
         enabled: true,
         flag: {
-            increment: 2, // Moderate flagging
-            reason: "System detected suspicious self-inflicted damage.",
-            type: "player_self_damage" // Specific type for this flag
+            increment: 1,
+            reason: 'Attempted to chat while actively using an item ({itemUseState}).',
+            type: 'playerChatStateViolation',
         },
         notifyAdmins: {
-            message: "§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}"
+            message: '§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled.',
+        },
+        cancelMessage: true,
+        log: {
+            actionType: 'detectedChatDuringItemUse',
+            detailsPrefix: 'Chat During Item Use: ',
+        },
+    },
+    'chatSwearViolation': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Swear word detected in message: {detectedSwear}', // Use specific placeholder
+            type: 'chatLanguageViolation',
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} flagged for Swear Word. Word: \'{detectedSwear}\'. Message: §f{originalMessage}',
         },
         log: {
-            actionType: "detectedPlayerSelfHurt",
-            detailsPrefix: "Self-Hurt Violation: "
-        }
-    }
+            actionType: 'detectedSwearWord',
+            detailsPrefix: 'Swear Word Violation: ',
+            includeViolationDetails: true,
+        },
+        cancelMessage: true,
+        customAction: 'MUTE',
+    },
+    'chatAdvertisingDetected': {
+        enabled: true,
+        flag: {
+            type: 'chatAdvertising',
+            reason: 'Potential advertisement detected in chat: {detectedLink}', // Use specific placeholder
+            increment: 1,
+        },
+        log: {
+            actionType: 'detectedChatAdvertising',
+            detailsPrefix: 'Matched: ',
+            includeViolationDetails: true,
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} may have advertised. Matched: \'{detectedLink}\'. Message: §f{originalMessage}',
+        },
+        cancelMessage: true, // Typically, advertising should be cancelled
+    },
+    'chatCapsAbuseDetected': {
+        enabled: true,
+        flag: {
+            type: 'chatCapsAbuse',
+            reason: 'Message contained excessive capitalization ({percentage}% CAPS).',
+            increment: 1,
+        },
+        log: {
+            actionType: 'detectedChatCapsAbuse',
+            detailsPrefix: 'CAPS Abuse: ',
+            includeViolationDetails: true,
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} flagged for CAPS abuse ({percentage}% CAPS). Message: §f{originalMessage}',
+        },
+        cancelMessage: true,
+    },
+    'chatCharRepeatDetected': {
+        enabled: true,
+        flag: {
+            type: 'chatCharRepeat',
+            reason: 'Message contained repeated characters: \'{char}\' x{count}.',
+            increment: 1,
+        },
+        log: {
+            actionType: 'detectedChatCharRepeat',
+            detailsPrefix: 'Char Repeat: ',
+            includeViolationDetails: true,
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} flagged for Char Repeat: \'{char}\' x{count}. Message: §f{originalMessage}',
+        },
+        cancelMessage: true,
+    },
+    'chatSymbolSpamDetected': {
+        enabled: true,
+        flag: {
+            type: 'chatSymbolSpam',
+            reason: 'Sent a message with a high percentage of symbols ({percentage}%).',
+            increment: 1,
+        },
+        log: {
+            actionType: 'detectedChatSymbolSpam',
+            detailsPrefix: 'Symbol Spam: ',
+            includeViolationDetails: true,
+        },
+        notifyAdmins: {
+            message: 'Player {playerName} triggered symbol spam check ({percentage}%). Message: {originalMessage}',
+        },
+        cancelMessage: true,
+    },
+    'chatContentRepeat': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Repeated message content detected: {repeatedMessageSnippet}',
+            type: 'chatContentRepeat',
+        },
+        notifyAdmins: {
+            message: '{playerName} flagged for Chat Content Repeat. Snippet: {repeatedMessageSnippet}',
+        },
+        log: {
+            actionType: 'detectedChatContentRepeat',
+            detailsPrefix: 'Chat Content Repeat: ',
+            includeViolationDetails: true,
+        },
+        cancelMessage: true,
+    },
+    'chatUnicodeAbuse': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Unicode (e.g., Zalgo) abuse detected. Reason: {flagReason}',
+            type: 'chatUnicodeAbuse',
+        },
+        notifyAdmins: {
+            message: '{playerName} flagged for Unicode Abuse. Reason: {flagReason}. Message: {messageSnippet}',
+        },
+        log: {
+            actionType: 'detectedChatUnicodeAbuse',
+            detailsPrefix: 'Unicode Abuse: ',
+            includeViolationDetails: true,
+        },
+        cancelMessage: true,
+    },
+    'chatGibberish': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Gibberish or unreadable message detected. Reasons: {triggerReasons}',
+            type: 'chatGibberish',
+        },
+        notifyAdmins: {
+            message: '{playerName} flagged for Gibberish. Reasons: {triggerReasons}. Message: {messageSnippet}',
+        },
+        log: {
+            actionType: 'detectedChatGibberish',
+            detailsPrefix: 'Gibberish Chat: ',
+            includeViolationDetails: true,
+        },
+        cancelMessage: true,
+    },
+    'chatExcessiveMentions': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Excessive user mentions in message. Reasons: {triggerReasons}',
+            type: 'chatExcessiveMentions',
+        },
+        notifyAdmins: {
+            message: '{playerName} flagged for Excessive Mentions. Reasons: {triggerReasons}. Message: {messageSnippet}',
+        },
+        log: {
+            actionType: 'detectedChatExcessiveMentions',
+            detailsPrefix: 'Excessive Mentions: ',
+            includeViolationDetails: true,
+        },
+        cancelMessage: true,
+    },
+    'chatImpersonationAttempt': {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: 'Attempt to impersonate server/staff message. Matched: {matchedPattern}',
+            type: 'chatImpersonationAttempt',
+        },
+        notifyAdmins: {
+            message: '{playerName} flagged for Impersonation Attempt. Matched: {matchedPattern}. Message: {messageSnippet}',
+        },
+        log: {
+            actionType: 'detectedChatImpersonationAttempt',
+            detailsPrefix: 'Impersonation Attempt: ',
+            includeViolationDetails: true,
+        },
+        cancelMessage: true,
+    },
+    'playerSelfHurt': {
+        enabled: true,
+        flag: {
+            increment: 2,
+            reason: 'System detected suspicious self-inflicted damage.',
+            type: 'playerSelfDamage',
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}',
+        },
+        log: {
+            actionType: 'detectedPlayerSelfHurt',
+            detailsPrefix: 'Self-Hurt Violation: ',
+        },
+    },
 };
