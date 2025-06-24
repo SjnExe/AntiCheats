@@ -1,99 +1,136 @@
-// AntiCheatsBP/scripts/core/ranksConfig.js
-
 /**
- * Configuration for all server ranks, their properties, and conditions.
+ * @file Configuration for all server ranks, their properties, and conditions.
  */
 
-// Default formatting for players who don't match any specific rank
-// or for ranks that don't override all formatting options.
+/**
+ * @typedef {object} ChatFormatting
+ * @property {string} [prefixText] - The text part of the rank prefix.
+ * @property {string} [prefixColor] - Minecraft color code for the prefix text.
+ * @property {string} [nameColor] - Minecraft color code for the player's name.
+ * @property {string} [messageColor] - Minecraft color code for the player's chat message.
+ */
+
+/**
+ * @typedef {object} RankCondition
+ * @property {('owner_name'|'admin_tag'|'manual_tag_prefix'|'tag'|'default')} type - The type of condition.
+ * @property {string} [prefix] - Required if type is 'manual_tag_prefix'. The prefix for the rank tag.
+ * @property {string} [tag] - Required if type is 'tag'. The specific tag to check for.
+ */
+
+/**
+ * @typedef {object} RankDefinition
+ * @property {string} id - Unique identifier for the rank (e.g., 'owner', 'admin', 'vip').
+ * @property {string} name - Display name for the rank (e.g., "Owner", "Administrator").
+ * @property {number} permissionLevel - Numeric permission level associated with this rank. Lower is higher privilege.
+ * @property {ChatFormatting} [chatFormatting] - Optional chat formatting overrides for this rank.
+ * @property {string} [nametagPrefix] - Optional nametag prefix override for this rank.
+ * @property {RankCondition[]} conditions - An array of conditions that a player must meet to be assigned this rank.
+ * @property {number} priority - Determines which rank applies if a player meets conditions for multiple ranks (lower number = higher priority).
+ * @property {number} [assignableBy] - Optional. The permission level required to assign/remove this rank via commands.
+ */
+
+/**
+ * Default chat formatting for players who don't match any specific rank
+ * or for ranks that don't override all formatting options.
+ * @type {ChatFormatting}
+ */
 export const defaultChatFormatting = {
-    prefixText: "§7[Member] ", // Default prefix if a rank has no specific one
-    prefixColor: "§7",       // Default color for the prefix text
-    nameColor: "§7",         // Default color for the player's name
-    messageColor: "§f"       // Default color for the player's message
+    prefixText: '§7[Member] ', // Default prefix if a rank has no specific one
+    prefixColor: '§7',       // Default color for the prefix text
+    nameColor: '§7',         // Default color for the player's name
+    messageColor: '§f',       // Default color for the player's message
 };
 
-export const defaultNametagPrefix = "§7Member§f\n"; // Default nametag prefix
+/**
+ * Default nametag prefix for players.
+ * @type {string}
+ */
+export const defaultNametagPrefix = '§7Member§f\n';
 
-// Default permission level for players not matching any rank with specific conditions.
-// This numeric value should correspond to a "default" or "member" rank defined below.
+/**
+ * Default permission level for players not matching any rank with specific conditions.
+ * This numeric value should correspond to a "default" or "member" rank defined below.
+ * @type {number}
+ */
 export const defaultPermissionLevel = 1024;
 
+/**
+ * Array of all rank definitions for the server.
+ * Order by priority in `rankManager.js` if not inherently sorted here.
+ * @type {RankDefinition[]}
+ */
 export const rankDefinitions = [
     {
-        id: "owner",
-        name: "Owner",
+        id: 'owner',
+        name: 'Owner',
         permissionLevel: 0,
         chatFormatting: {
-            prefixText: "§c[Owner] ", // Full prefix text including its own color
-            prefixColor: "§c",        // Specific color for the prefix component
-            nameColor: "§c",          // Color for the owner's name
-            messageColor: "§f"        // Color for the owner's messages
+            prefixText: '§c[Owner] ',
+            prefixColor: '§c',
+            nameColor: '§c',
+            messageColor: '§f',
         },
-        nametagPrefix: "§cOwner§f\n", // Nametag shown above the player
+        nametagPrefix: '§cOwner§f\n',
         conditions: [
-            // Condition evaluated by rankManager using config.ownerPlayerName
-            { type: "owner_name" }
+            { type: 'owner_name' }, // Evaluated by rankManager using config.ownerPlayerName
         ],
         priority: 0, // Highest priority
-        // assignableBy: 0 // Owner rank is typically not assignable by commands
+        // assignableBy: 0, // Owner rank is typically not assignable by commands
     },
     {
-        id: "admin",
-        name: "Admin",
+        id: 'admin',
+        name: 'Admin',
         permissionLevel: 1,
         chatFormatting: {
-            prefixText: "§b[Admin] ",
-            prefixColor: "§b",
-            nameColor: "§b",
-            messageColor: "§f"
+            prefixText: '§b[Admin] ',
+            prefixColor: '§b',
+            nameColor: '§b',
+            messageColor: '§f',
         },
-        nametagPrefix: "§bAdmin§f\n",
+        nametagPrefix: '§bAdmin§f\n',
         conditions: [
-            // Condition evaluated by rankManager using config.adminTag
-            { type: "admin_tag" }
+            { type: 'admin_tag' }, // Evaluated by rankManager using config.adminTag
         ],
         priority: 10,
-        assignableBy: 0 // Only owner can make someone an admin via commands
+        assignableBy: 0, // Only owner can make someone an admin via commands
     },
     {
-        id: "member", // Default/Fallback rank
-        name: "Member",
+        id: 'member', // Default/Fallback rank
+        name: 'Member',
         permissionLevel: 1024, // Matches defaultPermissionLevel
-        chatFormatting: { // Uses the defaultChatFormatting effectively
-            prefixText: "§7[Member] ",
-            prefixColor: "§7",
-            nameColor: "§7",
-            messageColor: "§f"
+        chatFormatting: { // Effectively uses defaultChatFormatting due to matching or being overridden by defaults
+            prefixText: '§7[Member] ',
+            prefixColor: '§7',
+            nameColor: '§7',
+            messageColor: '§f',
         },
-        nametagPrefix: "§7Member§f\n",
+        nametagPrefix: '§7Member§f\n',
         conditions: [
             // This rank is applied if no higher priority rank conditions are met.
-            // It acts as the default.
-            { type: "default" }
+            { type: 'default' },
         ],
         priority: 1000, // Lowest priority (higher number)
-        // assignableBy: 1 // Example: Admins could assign member rank, though it's usually default
-    }
+        // assignableBy: 1, // Example: Admins could assign member rank, though it's usually default
+    },
     // Example for a new, assignable rank (to be added/managed by server owner):
     // {
-    //     id: "vip",
-    //     name: "VIP",
+    //     id: 'vip',
+    //     name: 'VIP',
     //     permissionLevel: 500, // Example: Less perms than admin, more than member
     //     chatFormatting: {
-    //         prefixText: "§e[VIP] ",
-    //         prefixColor: "§e",
-    //         nameColor: "§e",
-    //         messageColor: "§6"
+    //         prefixText: '§e[VIP] ',
+    //         prefixColor: '§e',
+    //         nameColor: '§e',
+    //         messageColor: '§6',
     //     },
-    //     nametagPrefix: "§e[VIP]§f\n",
+    //     nametagPrefix: '§e[VIP]§f\n',
     //     conditions: [
-    //         // rankManager will look for a tag like "rank_vip" if this condition is used
-    //         { type: "manual_tag_prefix", prefix: "rank_" }
+    //         // rankManager will look for a tag like 'rank_vip' if this condition is used
+    //         { type: 'manual_tag_prefix', prefix: 'rank_' },
     //     ],
     //     priority: 100,
-    //     assignableBy: 1 // Example: Admins can assign/remove VIP
-    // }
+    //     assignableBy: 1, // Example: Admins can assign/remove VIP
+    // },
 ];
 
 // Note: The actual `permissionLevels` object (e.g., { owner: 0, admin: 1, member: 1024 })
@@ -101,14 +138,14 @@ export const rankDefinitions = [
 // This ensures it's always in sync with the configured ranks and their numeric levels.
 
 // The `config.js` will still hold `ownerPlayerName` and `adminTag`.
-// `rankManager.js` will use those config values when evaluating "owner_name" and "admin_tag" conditions.
-// For "manual_tag_prefix", `rankManager.js` will construct the expected tag like `prefix + rankId` (e.g., "rank_vip").
+// `rankManager.js` will use those config values when evaluating 'owner_name' and 'admin_tag' conditions.
+// For 'manual_tag_prefix', `rankManager.js` will construct the expected tag like `prefix + rankId` (e.g., 'rank_vip').
 // The `assignableBy` field will be used by the new rank management commands.
 // `defaultPermissionLevel` is for players who don't match any conditions.
 // `defaultChatFormatting` and `defaultNametagPrefix` apply if a rank doesn't specify them or for default players.
-// The 'member' rank here with `type: "default"` condition and lowest priority ensures everyone gets at least these base settings.
-// If a player has a "rank_vip" tag, they would get the VIP rank if its priority is higher than member's.
-// If an admin also has a "rank_vip" tag, they'd still be admin due to priority (admin priority 10 vs VIP 100).
+// The 'member' rank here with `type: 'default'` condition and lowest priority ensures everyone gets at least these base settings.
+// If a player has a 'rank_vip' tag, they would get the VIP rank if its priority is higher than member's.
+// If an admin also has a 'rank_vip' tag, they'd still be admin due to priority (admin priority 10 vs VIP 100).
 // If ownerPlayerName is set, that player is owner (priority 0).
 // If a player has adminTag, they are admin (priority 10), unless they are also owner.
 // The system will pick the highest priority rank for which a player meets any condition.
