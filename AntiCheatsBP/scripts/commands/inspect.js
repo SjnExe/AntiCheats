@@ -1,82 +1,108 @@
 /**
- * Defines the !inspect command for administrators to view a player's AntiCheat data.
+ * @file Defines the !inspect command for administrators to view a player's AntiCheat data.
  */
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: "inspect",
-    syntax: "!inspect <playername>",
-    description: "Views a player's AntiCheat data and status.",
-    permissionLevel: importedPermissionLevels.admin, // Use imported enum
+    name: 'inspect',
+    syntax: '!inspect <playername>',
+    description: 'Views a player\'s AntiCheat data and status, including flags, mutes, and bans.',
+    permissionLevel: permissionLevels.admin, // Use a defined level
     enabled: true,
 };
+
 /**
- * Executes the inspect command.
+ * Executes the !inspect command.
+ * Displays detailed AntiCheat information about a target player to the command issuer.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} args - Command arguments: <playername>.
+ * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
-    const findPlayer = playerUtils.findPlayer;
+    const { config, playerUtils, playerDataManager, logManager, getString } = dependencies; // Removed unused permissionLevels
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}inspect <playername>`);
+        player.sendMessage(getString('inspect.error.usage', { prefix: config.prefix }));
         return;
     }
+
     const targetPlayerName = args[0];
-    const targetPlayer = findPlayer(targetPlayerName);
+    const targetPlayer = playerUtils.findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(`Player "${targetPlayerName}" not found.`);
+        player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
 
     const pData = playerDataManager.getPlayerData(targetPlayer.id);
-    let messageLines = [];
-    messageLines.push(`§e--- AntiCheat Data for ${targetPlayer.nameTag} ---`);
+    const messageLines = [];
+    messageLines.push(getString('inspect.header', { playerName: targetPlayer.nameTag }));
 
     if (pData) {
-        messageLines.push(`§fPlayer ID: §7${targetPlayer.id}`);
-        messageLines.push(`§fIs Watched: §7${pData.isWatched ? "Yes" : "No"}`);
-        messageLines.push(`§fTotal Flags: §c${pData.flags ? pData.flags.totalFlags || 0 : 0}`);
-        messageLines.push(`§fLast Flag Type: §7${pData.lastFlagType || "None"}`);
+        messageLines.push(getString('inspect.entry.playerId', { playerId: targetPlayer.id }));
+        messageLines.push(getString('inspect.entry.isWatched', { status: pData.isWatched ? getString('common.boolean.yes') : getString('common.boolean.no') }));
+        messageLines.push(getString('inspect.entry.totalFlags', { count: (pData.flags?.totalFlags ?? 0).toString() }));
+        messageLines.push(getString('inspect.entry.lastFlagType', { type: pData.lastFlagType || getString('common.value.none') }));
 
         let specificFlagsFound = false;
         if (pData.flags) {
-            messageLines.push("§fFlags by type:");
+            messageLines.push(getString('inspect.label.flagsByType'));
             for (const flagKey in pData.flags) {
-                if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
+                // Ensure it's a flag object and not 'totalFlags' or other properties
+                if (flagKey !== 'totalFlags' && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                     const flagData = pData.flags[flagKey];
-                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : "N/A";
-                    messageLines.push(`  §f- ${flagKey}: §c${flagData.count} §7(Last: ${timestamp})`);
+                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : getString('common.value.notApplicable');
+                    messageLines.push(getString('inspect.flagDetail', { flagName: flagKey, count: flagData.count.toString(), lastTime: timestamp }));
                     specificFlagsFound = true;
                 }
             }
             if (!specificFlagsFound) {
-                messageLines.push("    §7No specific flag types recorded.");
+                messageLines.push(getString('inspect.noSpecificFlags'));
             }
         }
 
         const muteInfo = playerDataManager.getMuteInfo(targetPlayer, dependencies);
         if (muteInfo) {
-            const expiry = muteInfo.unmuteTime === Infinity ? "Permanent" : new Date(muteInfo.unmuteTime).toLocaleString();
-            messageLines.push(`§fMuted: §cYes (Expires: ${expiry}, Reason: ${muteInfo.reason})`);
+            const expiry = muteInfo.unmuteTime === Infinity ? getString('common.duration.permanent') : new Date(muteInfo.unmuteTime).toLocaleString();
+            messageLines.push(getString('inspect.entry.muted.yes', { expiryDate: expiry, reason: muteInfo.reason || getString('common.value.noReasonProvided') }));
         } else {
-            messageLines.push("§fMuted: §aNo");
+            messageLines.push(getString('inspect.entry.muted.no'));
         }
 
         const banInfo = playerDataManager.getBanInfo(targetPlayer, dependencies);
         if (banInfo) {
-            const expiry = banInfo.unbanTime === Infinity ? "Permanent" : new Date(banInfo.unbanTime).toLocaleString();
-            messageLines.push(`§fBanned: §cYes (Expires: ${expiry}, Reason: ${banInfo.reason})`);
+            const expiry = banInfo.unbanTime === Infinity ? getString('common.duration.permanent') : new Date(banInfo.unbanTime).toLocaleString();
+            messageLines.push(getString('inspect.entry.banned.yes', { expiryDate: expiry, reason: banInfo.reason || getString('common.value.noReasonProvided') }));
         } else {
-            messageLines.push("§fBanned: §aNo");
+            messageLines.push(getString('inspect.entry.banned.no'));
         }
 
+        // Example of adding more pData fields:
+        // if (pData.lastCombatInteractionTime) {
+        //     messageLines.push(getString('inspect.entry.lastCombat', { time: new Date(pData.lastCombatInteractionTime).toLocaleString() }));
+        // }
+
     } else {
-        messageLines.push("§7No AntiCheat data found for this player (they might not have triggered any checks or joined recently).");
+        messageLines.push(getString('inspect.error.noData'));
     }
 
-    player.sendMessage(messageLines.join("\n"));
-    logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'inspect_player', targetName: targetPlayer.nameTag, details: `Inspected ${targetPlayer.nameTag}` }, dependencies);
+    player.sendMessage(messageLines.join('\n'));
+
+    try {
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: player.nameTag,
+            actionType: 'inspectPlayer', // Standardized
+            targetName: targetPlayer.nameTag,
+            details: `Inspected ${targetPlayer.nameTag}`,
+        }, dependencies);
+    } catch (logError) {
+        console.error(`[InspectCommand] Error logging inspect action: ${logError.stack || logError}`);
+        playerUtils.debugLog(`[InspectCommand] Logging error: ${logError.message}`, player.nameTag, dependencies);
+    }
 }
