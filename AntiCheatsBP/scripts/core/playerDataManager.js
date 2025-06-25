@@ -488,6 +488,32 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         } catch (e) {
             logManager.addLog({
                 actionType: 'error',
+                message: e.message,
+                player: pData.playerNameTag,
+                context: 'slime_block_check',
+            }, dependencies);
+            if (config.enableDebugLogging) {
+                playerUtils.debugLog(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag}: ${e.message}`, pData.playerNameTag, dependencies);
+            } else {
+                console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag}: ${e.message}`);
+            }
+        }
+    } else {
+        pData.consecutiveOffGroundTicks++;
+    }
+
+    if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
+            const blockAtFeet = player.dimension.getBlock(feetPos);
+
+            if ((blockBelowFeet && blockBelowFeet.typeId === 'minecraft:slime_block') || (blockAtFeet && blockAtFeet.typeId === 'minecraft:slime_block')) {
+                pData.lastOnSlimeBlockTick = currentTick;
+                if (pData.isWatched && config.enableDebugLogging) {
+                    playerUtils.debugLog(`[PlayerDataManager] Player ${pData.playerNameTag} on slime block at tick ${currentTick}.`, pData.playerNameTag, dependencies);
+                }
+            }
+        } catch (e) {
+            logManager.addLog({
+                actionType: 'error',
                 message: e.message, // Corrected from e.message to e.message
                 player: pData.playerNameTag,
                 context: 'slime_block_check',
