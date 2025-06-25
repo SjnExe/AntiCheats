@@ -9,6 +9,8 @@ import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui'; // Import full module for UI forms
 
 import * as configModule from './config.js';
+import { automodConfig } from './core/automodConfig.js';
+import { checkActionProfiles } from './core/actionProfiles.js';
 import * as playerUtils from './utils/playerUtils.js';
 import * as playerDataManager from './core/playerDataManager.js';
 import * as commandManager from './core/commandManager.js';
@@ -32,6 +34,8 @@ let currentTick = 0;
 function getStandardDependencies() {
     return {
         config: configModule.editableConfigValues,
+        automodConfig: automodConfig,
+        checkActionProfiles: checkActionProfiles,
         playerUtils,
         playerDataManager,
         logManager,
@@ -274,6 +278,7 @@ mc.system.runInterval(async () => {
             const error = e as Error;
             console.error(`[MainTick] Error processing world border resizing: ${error.stack || error.message}`);
             playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${error.message}`, 'System', tickDependencies);
+            logManager.addLog({ actionType: 'error_worldborder_resize_tick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
         }
     }
 
@@ -371,6 +376,7 @@ mc.system.runInterval(async () => {
                 const error = e as Error;
                 console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${error.stack || error.message}`);
                 playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${error.message}`, player.nameTag, tickDependencies);
+                logManager.addLog({ actionType: 'error_worldborder_enforce_tick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
             }
         }
          // Mark data for saving if any check modified it (checks should set pData.isDirtyForSave = true)

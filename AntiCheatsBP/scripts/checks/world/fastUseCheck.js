@@ -54,7 +54,7 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
             actualTimeMs: timeSinceLastUseMs.toString(),
         };
         // Standardized action profile key
-        const actionProfileKey = config.fastUseActionProfileName || 'actionFastUse';
+         const actionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;

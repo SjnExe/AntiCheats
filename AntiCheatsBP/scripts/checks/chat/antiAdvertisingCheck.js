@@ -27,7 +27,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
     const message = eventData.message;
 
     // Standardized action profile name (ensure this key exists in actionProfiles.js)
-    const actionProfileName = config.antiAdvertisingActionProfileName || 'chatAdvertisingDetected';
+    const actionProfileName = config.antiAdvertisingActionProfileName ?? 'chatAdvertisingDetected';
 
     if (!config.enableAntiAdvertisingCheck) {
         return;

@@ -348,9 +348,9 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
  * @returns {Promise<void>}
  */
 export async function processAutoModActions(player, pData, checkType, dependencies) {
-    const { config, playerUtils } = dependencies;
-    // Assuming config.automodConfig is the loaded and structured automod configuration.
-    const currentAutomodConfig = config.automodConfig;
+    const { config, playerUtils, automodConfig } = dependencies;
+    // automodConfig is now directly available from dependencies.
+    const currentAutomodConfig = automodConfig;
 
     if (!config.enableAutoMod) {
         return;

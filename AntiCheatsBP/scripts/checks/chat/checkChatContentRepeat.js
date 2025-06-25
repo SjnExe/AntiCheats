@@ -38,7 +38,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
     const rawMessageContent = eventData.message;
 
     // Standardized action profile key
-    const actionProfileKey = config.chatContentRepeatActionProfileName || 'chatContentRepeat';
+    const actionProfileKey = config.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
 
     if (!config.enableChatContentRepeatCheck) {
         return;

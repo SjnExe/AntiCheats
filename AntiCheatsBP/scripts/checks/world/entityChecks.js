@@ -84,7 +84,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
             count: pData.recentEntitySpamTimestamps[entityType].length.toString(),
             maxSpawns: maxSpawns.toString(),
             windowMs: windowMs.toString(),
-            actionTaken: config.entitySpamAction, // Informative, actual action decided by profile
+            actionTaken: config.entitySpamAction ?? 'flag_only', // Informative, actual action decided by profile
         };
 
         await actionManager.executeCheckAction(potentialPlayer, actionProfileKey, violationDetails, dependencies);

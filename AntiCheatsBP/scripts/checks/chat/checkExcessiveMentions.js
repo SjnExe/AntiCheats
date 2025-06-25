@@ -42,7 +42,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
 
     const maxUniquePerMessage = config.mentionsMaxUniquePerMessage ?? 4;
     const maxRepeatedPerMessage = config.mentionsMaxRepeatedPerMessage ?? 3;
-    const actionProfileKey = config.mentionsActionProfileName || 'chatExcessiveMentions'; // Standardized key
+    const actionProfileKey = config.mentionsActionProfileName ?? 'chatExcessiveMentions'; // Standardized key
     const mentionRegex = /@([A-Za-z0-9_]{3,16})/g; // Common Minecraft username pattern
     const allMentions = [];
     let match;

@@ -55,11 +55,11 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
  * @returns {Promise<void>}
  */
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
-    const { config, playerDataManager, playerUtils, logManager } = dependencies;
+    const { config, playerDataManager, playerUtils, logManager, checkActionProfiles } = dependencies;
     const playerNameForLog = player ? player.nameTag : 'System'; // Consistent variable name
 
-    if (!config.checkActionProfiles) {
-        playerUtils.debugLog(`[ActionManager] checkActionProfiles not found in config. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
+    if (!checkActionProfiles) {
+        playerUtils.debugLog(`[ActionManager] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
@@ -67,7 +67,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     // This is based on the new guideline for checkType strings.
     const standardizedCheckType = checkType.replace(/GMC/g, 'Gmc').replace(/TPA/g, 'Tpa').replace(/TPS/g, 'Tps'); // Add more if needed
 
-    const profile = config.checkActionProfiles[standardizedCheckType];
+    const profile = checkActionProfiles[standardizedCheckType];
     if (!profile) {
         playerUtils.debugLog(`[ActionManager] No action profile found for checkType: '${standardizedCheckType}' (original: '${checkType}'). Context: ${playerNameForLog}`, null, dependencies);
         return;

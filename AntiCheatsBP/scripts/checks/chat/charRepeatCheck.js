@@ -24,7 +24,7 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     const message = eventData.message;
 
     // Standardized action profile name
-    const actionProfileKey = config.charRepeatActionProfileName || 'chatCharRepeatDetected';
+    const actionProfileKey = config.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
 
     if (!config.enableCharRepeatCheck) {
         return;

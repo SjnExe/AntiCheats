@@ -55,7 +55,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    const actionProfileKey = config.impersonationActionProfileName || 'chatImpersonationAttempt'; // Standardized key
+    const actionProfileKey = config.impersonationActionProfileName ?? 'chatImpersonationAttempt'; // Standardized key
     const watchedPlayerName = pData?.isWatched ? player.nameTag : null;
 
     for (const patternString of serverMessagePatterns) {
