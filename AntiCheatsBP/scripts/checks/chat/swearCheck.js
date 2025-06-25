@@ -74,19 +74,18 @@ function normalizeWordForSwearCheck(word, config) {
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
  * @param {PlayerAntiCheatData} pData - Player-specific data from playerDataManager.
  * @param {CommandDependencies} dependenciesFull - Full dependencies object.
- * @returns {Promise<boolean>} True if a violation was detected and the message potentially cancelled, false otherwise.
- *                             The return value indicates if a swear was found, not necessarily if the event was cancelled (that depends on action profile).
+ * @returns {Promise<void>}
  */
 export async function checkSwear(player, eventData, pData, dependenciesFull) {
     const { config, playerUtils, actionManager, playerDataManager } = dependenciesFull;
 
     if (!config.enableSwearCheck) {
-        return false;
+        return;
     }
     const originalMessage = eventData.message;
     if (!config.swearWordList || config.swearWordList.length === 0) {
         playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, pData?.isWatched ? player.nameTag : null, dependenciesFull);
-        return false;
+        return;
     }
 
     // Normalize the configured swear word list once (or cache it if this function is called very frequently per message)
@@ -100,7 +99,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
 
     if (normalizedSwearWordList.length === 0) {
         playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty (all configured swears were invalid or became empty).`, pData?.isWatched ? player.nameTag : null, dependenciesFull);
-        return false;
+        return;
     }
 
     const wordsInMessage = originalMessage.split(/\s+/); // Split message into words
@@ -137,9 +136,9 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
                 if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
                     eventData.cancel = true;
                 }
-                return true; // Violation detected
+                return; // Violation detected, further processing in this loop is not needed.
             }
         }
     }
-    return false; // No violation detected
+    // No violation detected if loop completes
 }

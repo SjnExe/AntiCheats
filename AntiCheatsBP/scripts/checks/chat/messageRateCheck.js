@@ -22,28 +22,26 @@ import * as mc from '@minecraft/server';
  * @param {mc.ChatSendBeforeEvent} eventData - The chat event data, used for message content and cancellation.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastChatMessageTimestamp`.
  * @param {CommandDependencies} dependencies - The full dependencies object.
- * @returns {Promise<boolean>} A promise that resolves to `true` if the message should be cancelled due to spam, `false` otherwise.
+ * @returns {Promise<void>} A promise that resolves when the check is complete.
  */
 export async function checkMessageRate(player, eventData, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableFastMessageSpamCheck) {
-        return false;
+        return;
     }
 
     if (!pData) { // Ensure pData is available
         playerUtils.debugLog(`[MessageRateCheck] pData is null for ${player.nameTag}, skipping check.`, player.nameTag, dependencies);
-        return false;
+        return;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
     // Standardized action profile key (ensure this matches actionProfiles.js)
-    const actionProfileKey = config.fastMessageSpamActionProfileName || 'chatSpamFastMessage'; // Corrected typo SPAM -> Spam
-    const profile = config.checkActionProfiles?.[actionProfileKey]; // Get the profile for cancelMessage check
-
-    let shouldCancel = false;
+    const actionProfileKey = config.fastMessageSpamActionProfileName || 'chatSpamFastMessage';
+    const profile = config.checkActionProfiles?.[actionProfileKey];
 
     if (pData.lastChatMessageTimestamp && pData.lastChatMessageTimestamp > 0) {
         const timeSinceLastMsgMs = currentTime - pData.lastChatMessageTimestamp;
@@ -59,13 +57,11 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
             if (profile?.cancelMessage) {
-                shouldCancel = true;
+                eventData.cancel = true; // Directly set eventData.cancel
             }
         }
     }
 
     pData.lastChatMessageTimestamp = currentTime;
     pData.isDirtyForSave = true; // Mark data as dirty since a timestamp was updated
-
-    return shouldCancel;
 }

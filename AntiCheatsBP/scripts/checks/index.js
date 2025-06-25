@@ -40,7 +40,7 @@ export * from './world/netherRoofCheck.js';
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';
 export { checkSelfHurt } from './player/selfHurtCheck.js';
 export { checkInvalidRenderDistance } from './player/clientInfoChecks.js';
-export { checkAntiGmc } from './player/antiGMCCheck.js'; // Standardized to checkAntiGmc if file is renamed later
+export { checkAntiGmc } from './player/antiGmcCheck.js';
 export { checkNameSpoof } from './player/nameSpoofCheck.js';
 
 // Chat Message Checks

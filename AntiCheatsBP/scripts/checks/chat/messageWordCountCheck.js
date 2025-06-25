@@ -20,18 +20,18 @@ import * as mc from '@minecraft/server'; // Not strictly needed here but kept fo
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data, containing the message.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
- * @returns {Promise<boolean>} A promise that resolves to `true` if the message should be cancelled, `false` otherwise.
+ * @returns {Promise<void>} A promise that resolves when the check is complete.
  */
 export async function checkMessageWordCount(player, pData, eventData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableMaxWordsSpamCheck) {
-        return false;
+        return;
     }
 
     if (!pData) { // Ensure pData is available
         playerUtils.debugLog(`[MessageWordCountCheck] pData is null for ${player.nameTag}, skipping check.`, player.nameTag, dependencies);
-        return false;
+        return;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
@@ -42,10 +42,8 @@ export async function checkMessageWordCount(player, pData, eventData, dependenci
 
     const threshold = config.maxWordsSpamThreshold ?? 50;
     // Standardized action profile key
-    const actionProfileKey = config.maxWordsSpamActionProfileName || 'chatSpamMaxWords'; // Corrected typo SPAM -> Spam
-    const profile = config.checkActionProfiles?.[actionProfileKey]; // Get the profile for cancelMessage check
-
-    let shouldCancel = false;
+    const actionProfileKey = config.maxWordsSpamActionProfileName || 'chatSpamMaxWords';
+    const profile = config.checkActionProfiles?.[actionProfileKey];
 
     if (wordCount > threshold) {
         if (playerUtils.debugLog) { // Check if debugLog exists, good practice
@@ -61,8 +59,7 @@ export async function checkMessageWordCount(player, pData, eventData, dependenci
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         if (profile?.cancelMessage) {
-            shouldCancel = true;
+            eventData.cancel = true; // Directly set eventData.cancel
         }
     }
-    return shouldCancel;
 }
