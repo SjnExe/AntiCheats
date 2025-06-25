@@ -30,7 +30,7 @@ let pistonActivityData = new Map();
  * @returns {Promise<void>}
  */
 export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
-    const { config, playerUtils, logManager, actionManager, getString } = dependencies;
+    const { config, playerUtils, logManager, actionManager } = dependencies;
 
     if (!config.enablePistonLagCheck) { // Check if the feature is enabled
         return;
@@ -78,15 +78,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
                 dimensionId: dimensionName,
                 rate: activationRate.toFixed(1),
                 duration: config.pistonActivationSustainedDurationSeconds.toString(),
-                // detailsString can be constructed by actionManager or pre-formatted here
-                // detailsString: getString('check.pistonLag.details.activationRate', {
-                //     x: location.x,
-                //     y: location.y,
-                //     z: location.z,
-                //     dimensionName: dimensionName,
-                //     rate: activationRate.toFixed(1),
-                //     duration: config.pistonActivationSustainedDurationSeconds,
-                // }),
+                detailsString: `Piston at ${location.x},${location.y},${location.z} in ${dimensionName} activated at ${activationRate.toFixed(1)}/s for ${config.pistonActivationSustainedDurationSeconds}s.`, // Hardcoded string
             };
             // Note: Piston lag is often not attributable to a single player, so `player` is null.
             await actionManager.executeCheckAction(null, actionProfileKey, violationDetails, dependencies);

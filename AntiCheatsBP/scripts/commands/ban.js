@@ -34,7 +34,7 @@ export async function execute(
     isAutoModAction = false,
     autoModCheckType = null
 ) {
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels: depPermLevels, rankManager, getString } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels: depPermLevels, rankManager } = dependencies;
 
     if (args.length < 1) {
         const usageMessage = `§cUsage: ${config.prefix}ban <playername> [duration] [reason]`;
@@ -53,15 +53,15 @@ export async function execute(
 
     let reason;
     if (invokedBy === 'AutoMod') {
-        reason = args.length > 2 ? args.slice(2).join(' ') : getString('ban.automodReasonDefault', { checkType: autoModCheckType || 'violations' });
+        reason = args.length > 2 ? args.slice(2).join(' ') : `Banned due to ${autoModCheckType || 'violations'}.`; // Hardcoded string
     } else {
-        reason = args.slice(2).join(' ') || getString('ban.adminReasonDefault', 'Banned by an administrator.');
+        reason = args.slice(2).join(' ') || 'Banned by an administrator.'; // Hardcoded string
     }
 
     const foundPlayer = playerUtils.findPlayer(targetPlayerName);
 
     if (!foundPlayer) {
-        const message = getString('common.error.playerNotFound', { playerName: targetPlayerName });
+        const message = `§cPlayer '${targetPlayerName}' not found.`; // Hardcoded string
         if (player) {
             player.sendMessage(message);
         } else {
@@ -71,7 +71,7 @@ export async function execute(
     }
 
     if (player && foundPlayer.id === player.id) {
-        player.sendMessage(getString('ban.error.cannotBanSelf'));
+        player.sendMessage('§cYou cannot ban yourself.'); // Hardcoded string
         return;
     }
 
@@ -82,23 +82,23 @@ export async function execute(
 
         // Prevent non-owners from banning admins/owners, and owners from banning other owners directly via command
         if (targetPermissionLevel <= depPermLevels.admin && issuerPermissionLevel > depPermLevels.owner) {
-            player.sendMessage(getString('commands.generic.permissionDeniedTarget', { targetRole: 'admin/owner' }));
+            player.sendMessage(`§cYou do not have permission to ban an admin or owner.`); // Hardcoded string
             return;
         }
         if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) { // Stricter for owner
-            player.sendMessage(getString('commands.generic.permissionDeniedTarget', { targetRole: 'owner' }));
+            player.sendMessage(`§cYou do not have permission to ban an owner.`); // Hardcoded string
             return;
         }
         // A specific rule for owner vs owner, if desired (often handled by above checks already)
         if (targetPermissionLevel === depPermLevels.owner && issuerPermissionLevel === depPermLevels.owner && player.id !== foundPlayer.id) {
-            player.sendMessage(getString('ban.error.ownerCannotBanOwner'));
+            player.sendMessage('§cOwners cannot ban other owners through this command.'); // Hardcoded string
             return;
         }
     }
 
     const durationMs = playerUtils.parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
-        const message = getString('common.error.invalidDurationFormat', { example: '7d, 2h, 30m, or perm' });
+        const message = `§cInvalid duration format. Use: 7d, 2h, 30m, or perm.`; // Hardcoded string
         if (player) {
             player.sendMessage(message);
         } else {
@@ -125,16 +125,16 @@ export async function execute(
         const actualBannedBy = banInfo ? banInfo.bannedBy : bannedBy;
         const unbanTime = banInfo ? banInfo.unbanTime : (Date.now() + durationMs); // Ensure unbanTime is defined
 
-        const durationDisplay = durationMs === Infinity ? getString('ban.duration.permanent') : getString('ban.duration.expires', { expiryDate: new Date(unbanTime).toLocaleString() });
+        const durationDisplay = durationMs === Infinity ? 'Permanent' : `Expires: ${new Date(unbanTime).toLocaleString()}`; // Hardcoded string
 
         const kickMessageParts = [
-            getString('ban.kickMessage.header'),
-            getString('ban.kickMessage.reason', { reason: actualReason }),
-            getString('ban.kickMessage.bannedBy', { adminName: actualBannedBy }),
-            durationDisplay,
+            `§cYou have been banned from the server.`, // Hardcoded string
+            `§eReason: §f${actualReason}`, // Hardcoded string
+            `§eBanned by: §f${actualBannedBy}`, // Hardcoded string
+            `§eDuration: §f${durationDisplay}`, // Hardcoded string
         ];
         if (config.discordLink && config.discordLink.trim() !== '' && config.discordLink !== 'https://discord.gg/example') {
-            kickMessageParts.push(getString('ban.kickMessage.discord', { discordLink: config.discordLink }));
+            kickMessageParts.push(`§eAppeal on Discord: §9${config.discordLink}`); // Hardcoded string
         }
         const kickMessage = kickMessageParts.join('\n');
 
@@ -144,7 +144,7 @@ export async function execute(
             playerUtils.debugLog(`[BanCommand] Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e.message}`, player ? player.nameTag : 'System', dependencies);
         }
 
-        const successMessage = getString('ban.success', { playerName: foundPlayer.nameTag, duration: durationString, reason: actualReason });
+        const successMessage = `§aSuccessfully banned ${foundPlayer.nameTag} for ${durationString}. Reason: ${actualReason}`; // Hardcoded string
         if (player) {
             player.sendMessage(successMessage);
         } else {
@@ -153,12 +153,7 @@ export async function execute(
 
         if (playerUtils.notifyAdmins) {
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id); // For watched status context
-            const adminNotifyMsg = getString('ban.adminNotification', {
-                targetName: foundPlayer.nameTag,
-                adminName: actualBannedBy,
-                duration: durationString,
-                reason: actualReason,
-            });
+            const adminNotifyMsg = `§7[Admin] §e${actualBannedBy}§7 banned §e${foundPlayer.nameTag}§7 for ${durationString}. Reason: ${actualReason}`; // Hardcoded string
             playerUtils.notifyAdmins(adminNotifyMsg, dependencies, player, targetPData);
         }
         if (logManager?.addLog) {
@@ -174,7 +169,7 @@ export async function execute(
             }, dependencies);
         }
     } else {
-        const failureMessage = getString('ban.error.failedToBan', { playerName: foundPlayer.nameTag });
+        const failureMessage = `§cFailed to ban ${foundPlayer.nameTag}. They might already be banned or an error occurred.`; // Hardcoded string
         if (player) {
             player.sendMessage(failureMessage);
         } else {

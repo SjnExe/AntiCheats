@@ -319,7 +319,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
  * @returns {Promise<void>}
  */
 export async function checkFlatRotationBuilding(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString } = dependencies; // Removed currentTick as it's not used directly
+    const { config, playerUtils, actionManager } = dependencies; // Removed currentTick as it's not used directly
 
     if (!config.enableFlatRotationCheck || !pData) {
         return;
@@ -376,18 +376,18 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     else if (allPitchesInDownwardRange) { detectionReasonKey = 'check.flatRotation.reason.flatDownward'; shouldFlag = true; }
 
     if (shouldFlag) {
-        const localizedDetectionReason = getString(detectionReasonKey) || detectionReasonKey.split('.').pop(); // Fallback
+        const detectionReasonString = detectionReasonKey.split('.').pop(); // Use the key part as the reason string
         const violationDetails = {
             pitchVariance: pitchVariance.toFixed(1),
             yawMaxDifferenceFromFirst: maxIndividualYawDifference.toFixed(1),
             isYawConsideredStatic: yawIsEffectivelyStatic.toString(),
-            detectionReason: localizedDetectionReason,
+            detectionReason: detectionReasonString,
             analyzedBlockCount: relevantPlacements.length.toString(),
             minPitchObserved: minObservedPitch.toFixed(1),
             maxPitchObserved: maxObservedPitch.toFixed(1),
         };
         await actionManager.executeCheckAction(player, 'worldFlatRotationBuilding', violationDetails, dependencies);
-        playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${localizedDetectionReason}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
+        playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${detectionReasonString}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
         // Optionally clear recentBlockPlacements to avoid re-flagging immediately
         // pData.recentBlockPlacements = [];
         // pData.isDirtyForSave = true;

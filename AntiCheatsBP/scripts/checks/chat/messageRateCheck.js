@@ -40,7 +40,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     const currentTime = Date.now();
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
     // Standardized action profile key (ensure this matches actionProfiles.js)
-    const actionProfileKey = config.fastMessageSPAMActionProfileName || 'chatSpamFastMessage';
+    const actionProfileKey = config.fastMessageSpamActionProfileName || 'chatSpamFastMessage'; // Corrected typo SPAM -> Spam
     const profile = config.checkActionProfiles?.[actionProfileKey]; // Get the profile for cancelMessage check
 
     let shouldCancel = false;

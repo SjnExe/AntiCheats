@@ -79,8 +79,8 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     // Use standardized actionProfileName
                     await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
                     // Assuming one flagged advertisement is enough, cancel and return.
-                    // If eventData.cancel is handled by actionManager, this might not be needed here.
-                    if (config.checkActionProfiles[actionProfileName]?.cancelMessage) {
+                    const profile = config.checkActionProfiles?.[actionProfileName];
+                    if (profile?.cancelMessage) {
                         eventData.cancel = true;
                     }
                     return;
@@ -106,7 +106,8 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     originalMessage: message,
                 };
                 await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-                if (config.checkActionProfiles[actionProfileName]?.cancelMessage) {
+                const profile = config.checkActionProfiles?.[actionProfileName];
+                if (profile?.cancelMessage) {
                     eventData.cancel = true;
                 }
                 return;

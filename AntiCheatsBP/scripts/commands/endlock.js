@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, getString } = dependencies; // Removed unused permissionLevels from here
+    const { config, playerUtils, logManager } = dependencies; // Removed getString
     const subCommand = args[0] ? args[0].toLowerCase() : 'status';
     const prefix = config.prefix;
 
@@ -38,35 +38,35 @@ export async function execute(player, args, dependencies) {
             case 'lock':
                 success = setEndLocked(true);
                 if (success) {
-                    player.sendMessage(getString('endlock.locked'));
+                    player.sendMessage('§aThe End dimension is now locked.'); // Hardcoded string
                     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'endLockOn', details: 'The End locked' }, dependencies);
-                    playerUtils.notifyAdmins(getString('endlock.adminNotification.locked', { playerName: player.nameTag }), dependencies, player, null);
+                    playerUtils.notifyAdmins(`§7[Admin] The End dimension was locked by §e${player.nameTag}§7.`, dependencies, player, null); // Hardcoded string
                 } else {
-                    player.sendMessage(getString('endlock.error.failedUpdate'));
+                    player.sendMessage('§cFailed to update End lock status.'); // Hardcoded string
                 }
                 break;
             case 'off':
             case 'unlock':
                 success = setEndLocked(false);
                 if (success) {
-                    player.sendMessage(getString('endlock.unlocked'));
+                    player.sendMessage('§aThe End dimension is now unlocked.'); // Hardcoded string
                     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'endLockOff', details: 'The End unlocked' }, dependencies);
-                    playerUtils.notifyAdmins(getString('endlock.adminNotification.unlocked', { playerName: player.nameTag }), dependencies, player, null);
+                    playerUtils.notifyAdmins(`§7[Admin] The End dimension was unlocked by §e${player.nameTag}§7.`, dependencies, player, null); // Hardcoded string
                 } else {
-                    player.sendMessage(getString('endlock.error.failedUpdate'));
+                    player.sendMessage('§cFailed to update End lock status.'); // Hardcoded string
                 }
                 break;
             case 'status':
                 const locked = isEndLocked(); // This function should not throw, handles its own try-catch
-                statusText = locked ? getString('endlock.status.locked') : getString('endlock.status.unlocked');
-                player.sendMessage(getString('endlock.status.current', { status: statusText }));
+                statusText = locked ? '§cLocked' : '§aUnlocked'; // Hardcoded string
+                player.sendMessage(`§eEnd dimension status: ${statusText}`); // Hardcoded string
                 break;
             default:
-                player.sendMessage(getString('endlock.error.usage', { prefix: prefix }));
+                player.sendMessage(`§cUsage: ${prefix}endlock <on|off|status>`); // Hardcoded string
                 return;
         }
     } catch (error) {
-        player.sendMessage(getString('common.error.unexpectedCommand', { commandName: definition.name, error: error.message }));
+        player.sendMessage(`§cAn unexpected error occurred with the ${definition.name} command: ${error.message}`); // Hardcoded string
         console.error(`[EndlockCommand] Error executing '${subCommand}' for ${player.nameTag}: ${error.stack || error}`);
         logManager.addLog({
             adminName: player.nameTag,

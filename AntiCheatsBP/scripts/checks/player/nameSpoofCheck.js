@@ -24,7 +24,7 @@ import * as mc from '@minecraft/server'; // Not strictly needed if only using mc
  * @returns {Promise<void>}
  */
 export async function checkNameSpoof(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString, currentTick } = dependencies;
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if (!config.enableNameSpoofCheck || !pData) {
         return;
@@ -85,9 +85,18 @@ export async function checkNameSpoof(player, pData, dependencies) {
     }
 
     if (reasonDetailKey) { // If any violation was found
-        const localizedReasonDetail = getString(reasonDetailKey, reasonDetailParams);
+        let reasonDetailString = flaggedReasonForLog; // Use the English log string as the base
+        // Construct a more user-friendly string if params are available
+        if (reasonDetailKey === 'check.nameSpoof.reason.lengthExceeded' && reasonDetailParams.currentLength && reasonDetailParams.maxLength) {
+            reasonDetailString = `Name is too long (${reasonDetailParams.currentLength}/${reasonDetailParams.maxLength}).`;
+        } else if (reasonDetailKey === 'check.nameSpoof.reason.disallowedChars' && reasonDetailParams.char) {
+            reasonDetailString = `Name contains disallowed character: '${reasonDetailParams.char}'.`;
+        } else if (reasonDetailKey === 'check.nameSpoof.reason.rapidChange' && reasonDetailParams.interval && reasonDetailParams.minInterval) {
+            reasonDetailString = `Name changed too quickly (last change ${reasonDetailParams.interval} ticks ago, min is ${reasonDetailParams.minInterval}).`;
+        }
+
         const violationDetails = {
-            reasonDetail: localizedReasonDetail, // User-facing localized reason
+            reasonDetail: reasonDetailString, // User-facing reason string
             currentNameTagDisplay: currentNameTag, // The problematic nameTag
             previousNameTagRecorded: (reasonDetailKey === 'check.nameSpoof.reason.rapidChange') ? previousNameTagForLog : 'N/A',
             actualPlayerName: player.name, // The underlying, immutable player name

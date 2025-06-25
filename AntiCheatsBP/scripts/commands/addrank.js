@@ -24,7 +24,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager, getString } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager } = dependencies;
 
     if (args.length < 2) {
         player.sendMessage(`§cUsage: ${config.prefix}addrank <playername> <rankId>`);
@@ -56,7 +56,7 @@ export async function execute(player, args, dependencies) {
     // Check if the command issuer has permission to assign this specific rank
     const issuerPermissionLevel = depRankManager.getPlayerPermissionLevel(player, dependencies);
     if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
-        player.sendMessage(getString('commands.generic.permissionDeniedRankAction', { rankName: rankDef.name, action: 'assign' }));
+        player.sendMessage(`§cYou do not have permission to assign the rank '${rankDef.name}'.`); // Hardcoded string
         playerUtils.debugLog(`[AddRankCommand] ${player.nameTag} (Level ${issuerPermissionLevel}) attempted to assign rank ${rankDef.id} (AssignableBy ${rankDef.assignableBy}) but lacked permission.`, player.nameTag, dependencies);
         return;
     }

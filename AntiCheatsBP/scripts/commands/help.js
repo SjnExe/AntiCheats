@@ -26,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { commandDefinitionMap, config, permissionLevels: depPermLevels, getString, rankManager } = dependencies;
+    const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager } = dependencies;
 
     const commandDefinitionsArray = Array.from(commandDefinitionMap.values());
     const userPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
@@ -51,7 +51,7 @@ export async function execute(player, args, dependencies) {
             }
 
             if (!isEffectivelyEnabled) {
-                player.sendMessage(getString('help.error.unknownCommand', { commandName: specificCommandName, prefix: prefix }));
+                player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`); // Hardcoded string
                 return;
             }
 
@@ -65,51 +65,48 @@ export async function execute(player, args, dependencies) {
                         break;
                     }
                 }
-                // Get localized description if key is provided, otherwise use raw description
-                const description = (foundCmdDef.description.startsWith('command.') || foundCmdDef.description.startsWith('help.descriptionOverride.')) ?
-                                    getString(foundCmdDef.description) :
-                                    foundCmdDef.description;
+                const description = foundCmdDef.description; // Use raw description
 
                 player.sendMessage(
-                    getString('help.specific.header', { prefix: prefix, commandName: foundCmdDef.name }) + '\n' +
-                    getString('help.specific.syntax', { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + '\n' +
-                    getString('help.specific.description', { description: description }) + '\n' +
-                    getString('help.specific.permission', { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() })
+                    `§6--- Help: ${prefix}${foundCmdDef.name} ---` + '\n' + // Hardcoded string
+                    `§eSyntax: ${prefix}${foundCmdDef.name} ${syntaxArgs}` + '\n' + // Hardcoded string
+                    `§7Description: ${description}` + '\n' + // Hardcoded string
+                    `§7Permission: ${permLevelName} (Level ${foundCmdDef.permissionLevel})` // Hardcoded string
                 );
             } else {
                 // Command exists but player doesn't have permission - still show as unknown to avoid revealing commands
-                player.sendMessage(getString('help.specific.notFoundOrNoPermission', { commandName: specificCommandName, prefix: prefix }));
+                player.sendMessage(`§cCommand ${prefix}${specificCommandName} not found or you do not have permission.`); // Hardcoded string
             }
         } else {
-            player.sendMessage(getString('help.error.unknownCommand', { commandName: specificCommandName, prefix: prefix }));
+            player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`); // Hardcoded string
         }
     } else { // User requested general help (list of commands)
-        let helpMessage = getString('help.list.header', { prefix: prefix }) + '\n';
+        let helpMessage = `§6--- Available Commands (Prefix: ${prefix}) ---§r\n`; // Hardcoded string
         let commandsListed = 0;
 
         // Predefined categories for organizing help output
         const categories = [
             {
-                nameKey: 'help.list.category.general',
+                nameString: "§2General Commands:§r", // Hardcoded string
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version'],
             },
             {
-                nameKey: 'help.list.category.tpa',
+                nameString: "§2Teleportation Commands:§r", // Hardcoded string
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
                 condition: () => config.enableTPASystem,
             },
             {
-                nameKey: 'help.list.category.moderation',
+                nameString: "§cModeration Commands:§r", // Hardcoded string
                 permissionRequired: depPermLevels.moderator, // Ensure 'moderator' exists in permissionLevels
                 commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel'],
             },
             {
-                nameKey: 'help.list.category.administrative',
+                nameString: "§cAdministrative Commands:§r", // Hardcoded string
                 permissionRequired: depPermLevels.admin,
-                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder', 'setlang' /*,'log', 'reports', 'systeminfo' - these might be panel only*/],
+                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder' /*,'log', 'reports', 'systeminfo' - these might be panel only*/],
             },
             {
-                nameKey: 'help.list.category.owner',
+                nameString: "§4Owner Commands:§r", // Hardcoded string
                 permissionRequired: depPermLevels.owner,
                 commands: ['testnotify', 'addrank', 'removerank', 'listranks'], // Moved rank commands here
             },
@@ -138,24 +135,19 @@ export async function execute(player, args, dependencies) {
                     }
 
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                    let description = cmdDef.description;
-                    // Handle localized descriptions
-                    if (description.startsWith('command.') || description.startsWith('help.descriptionOverride.')) {
-                        description = getString(description); // Default params if none specific needed
-                    }
+                    let description = cmdDef.description; // Use raw description
                     categoryHelp += `§e${prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
                     commandsListed++;
                 }
             });
 
             if (categoryHelp) {
-                const categoryNameString = getString(category.nameKey);
-                helpMessage += `\n${categoryNameString}\n${categoryHelp}`;
+                helpMessage += `\n${category.nameString}\n${categoryHelp}`; // Use nameString directly
             }
         });
 
         if (commandsListed === 0) {
-            helpMessage += getString('help.list.noCommandsAvailable');
+            helpMessage += "§7No commands available to you at this time."; // Hardcoded string
         } else {
             if (helpMessage.endsWith('\n')) { // Trim trailing newline if any
                 helpMessage = helpMessage.slice(0, -1);

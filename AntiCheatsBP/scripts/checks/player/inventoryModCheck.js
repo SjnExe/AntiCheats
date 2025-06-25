@@ -24,7 +24,7 @@
  * @returns {Promise<void>}
  */
 export async function checkSwitchAndUseInSameTick(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager, currentTick, getString } = dependencies;
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
     const itemStack = eventSpecificData?.itemStack;
 
     if (!config.enableInventoryModCheck || !pData || !itemStack) {
@@ -36,7 +36,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
 
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
-            reasonDetail: getString('check.inventoryMod.details.switchAndUseSameTick'),
+            reasonDetail: 'Used item in the same tick as a hotbar slot change.', // Hardcoded string
             itemType: itemStack.typeId,
             slot: player.selectedSlotIndex.toString(), // Current slot where item is used
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
@@ -68,7 +68,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
  * @returns {Promise<void>}
  */
 export async function checkInventoryMoveWhileActionLocked(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager, getString } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies;
     // Assuming eventSpecificData is the raw event data from PlayerInventoryItemChangeAfterEvent
     // or a compatible structure.
     const inventoryChangeDetails = eventSpecificData?.inventoryChangeDetails || eventSpecificData;
@@ -87,7 +87,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     // Could add more locking states here, e.g., pData.isUsingShield, pData.isSleeping
 
     if (lockingActionKey) {
-        const localizedLockingAction = getString(lockingActionKey) || lockingActionKey.split('.').pop(); // Fallback to key part
+        const localizedLockingAction = lockingActionKey.split('.').pop(); // Fallback to key part
 
         // Extract item and slot info from the event data
         const newItem = inventoryChangeDetails.newItemStack || inventoryChangeDetails.newItem; // Support both naming conventions
@@ -98,7 +98,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
 
 
         const violationDetails = {
-            reasonDetail: getString('check.inventoryMod.details.movedWhileLocked', { slotNum: slotIdentifier, action: localizedLockingAction }),
+            reasonDetail: `Moved item in slot ${slotIdentifier} while ${localizedLockingAction}.`, // Hardcoded string
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
             actionInProgress: localizedLockingAction,
