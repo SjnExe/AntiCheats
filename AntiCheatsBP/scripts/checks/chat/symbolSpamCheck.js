@@ -25,7 +25,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const message = eventData.message;
 
     // Standardized action profile key
-    const actionProfileKey = config.symbolSpamActionProfileName || 'chatSymbolSpamDetected';
+    const actionProfileKey = config.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected';
 
     if (!config.enableSymbolSpamCheck) {
         return;

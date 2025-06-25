@@ -28,7 +28,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
             playerUtils.debugLog(`Data saved for ${player.nameTag} on leave via saveDirtyPlayerData.`, player.nameTag, dependencies);
         } catch (error) {
             console.error(`[AntiCheat] Error in saveDirtyPlayerData for ${player.nameTag} on leave: ${error.stack || error}`);
-            logManager.addLog({ actionType: 'error', context: 'handlePlayerLeave.saveDirtyPlayerData', details: error.message }, dependencies);
+            logManager.addLog({ actionType: 'error_pdata_save_on_leave', context: 'handlePlayerLeave.saveDirtyPlayerData', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, dependencies);
         }
     }
 
@@ -77,7 +77,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
         await playerDataManager.prepareAndSavePlayerData(player, dependencies);
     } catch (error) {
         console.error(`[AntiCheat] Error in prepareAndSavePlayerData for ${player.nameTag} on leave: ${error.stack || error}`);
-        logManager.addLog({ actionType: 'error', context: 'handlePlayerLeave.prepareAndSavePlayerData', details: error.message }, dependencies);
+        logManager.addLog({ actionType: 'error_pdata_prepare_save_on_leave', context: 'handlePlayerLeave.prepareAndSavePlayerData', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, dependencies);
     }
     playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, player.nameTag, dependencies);
 
@@ -195,10 +195,10 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}: ${error.message}`, player?.nameTag, dependencies);
         logManager.addLog({
-            actionType: 'error',
-            message: `Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}`,
-            error: error.message,
-            stack: error.stack, // Include stack for better debugging
+            actionType: 'error_handle_player_spawn',
+            targetName: player?.nameTag || 'unknown player',
+            details: `Error: ${error.message}`,
+            error: error.stack || error.message, // Include stack for better debugging
             context: 'handlePlayerSpawn',
         }, dependencies);
     }
@@ -325,8 +325,15 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
             deadEntity.dimension.playSound(currentConfig.deathEffectSoundId, deadEntity.location);
         }
     } catch (e) {
-        console.warn(`[EventHandler] Error applying death effect for ${deadEntity.nameTag}: ${e}`);
+        console.warn(`[EventHandler] Error applying death effect for ${deadEntity.nameTag}: ${e.message}`);
         playerUtils.debugLog(`Error applying death effect for ${deadEntity.nameTag}: ${e.message}`, deadEntity.nameTag, dependencies);
+        dependencies.logManager.addLog({
+            actionType: 'error_death_effect',
+            targetName: deadEntity.nameTag,
+            details: `Error: ${e.message}`,
+            error: e.stack || e.message,
+            context: 'handleEntityDieForDeathEffects'
+        }, dependencies);
     }
 }
 
@@ -773,6 +780,13 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
         } catch (e) {
             console.error(`[AntiCheat] Failed to teleport ${player.nameTag} back from locked dimension ${toDimensionId}: ${e.stack || e}`);
             playerUtils.debugLog(`Teleport fail for ${player.nameTag} from ${toDimensionId}: ${e.message}`, player.nameTag, dependencies);
+            dependencies.logManager.addLog({
+                actionType: 'error_dimension_lock_teleport',
+                targetName: player.nameTag,
+                details: `Failed to teleport from locked dimension ${toDimensionId}. Error: ${e.message}`,
+                error: e.stack || e.message,
+                context: 'handlePlayerDimensionChangeAfterEvent'
+            }, dependencies);
         }
     }
 }

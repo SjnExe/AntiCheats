@@ -114,15 +114,17 @@ export async function handleChatCommand(eventData, dependencies) {
         playerUtils.debugLog(`Successfully executed command '${finalCommandName}' for ${player.nameTag}.`, senderPDataForLog?.isWatched ? player.nameTag : null, dependencies);
     } catch (error) {
         player.sendMessage(`§cAn error occurred while executing command '${finalCommandName}'. Please report this.`);
-        console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${error.stack || error}`);
-        playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${error.message || error}`, null, dependencies);
+        const errorMessage = error.message || String(error);
+        const errorStack = error.stack || 'N/A';
+        console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${errorStack}`);
+        playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${errorMessage}`, null, dependencies);
         logManager.addLog({
-            actionType: 'command_execution_error',
+            actionType: 'error_command_execution', // Standardized error prefix
             command: finalCommandName,
-            player: player.nameTag,
-            args: args.join(' '), // Log args as a string for easier reading
-            error: error.message,
-            stack: error.stack, // Include stack for better debugging
+            targetName: player.nameTag, // Consistent with other logs
+            details: `Args: [${args.join(', ')}]. Error: ${errorMessage}`,
+            error: errorMessage, // Store primary message
+            stack: errorStack, // Store full stack
         }, dependencies);
     }
 }

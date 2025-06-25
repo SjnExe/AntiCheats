@@ -24,7 +24,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const message = eventData.message;
 
     // Standardized action profile name
-    const actionProfileKey = config.capsCheckActionProfileName || 'chatCapsAbuseDetected';
+    const actionProfileKey = config.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
 
     if (!config.enableCapsCheck) {
         return;

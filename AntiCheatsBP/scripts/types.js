@@ -21,7 +21,9 @@
 // --- AntiCheat System Specific Types ---
 
 /**
- * @typedef {import('./config.js').editableConfigValues} Config Current configuration values.
+ * @typedef {import('./config.js').editableConfigValues} ConfigEditable Current editable configuration values.
+ * @typedef {import('./core/actionProfiles.js').checkActionProfiles} CheckActionProfiles All defined action profiles.
+ * @typedef {import('./core/automodConfig.js').automodConfig} AutoModConfig The AutoMod rules and toggles.
  * @typedef {import('./utils/playerUtils.js')} PlayerUtils Utility functions for players.
  * @typedef {import('./core/playerDataManager.js')} PlayerDataManager Manager for player-specific AC data.
  * @typedef {import('./core/logManager.js')} LogManager Manager for logging AC events.
@@ -301,7 +303,9 @@
  * Represents the set of dependencies passed to most functions, particularly event handlers and checks.
  * This provides a consistent way to access shared modules and data.
  * @typedef {object} Dependencies
- * @property {Config} config The current configuration settings.
+ * @property {ConfigEditable} config The current editable configuration settings.
+ * @property {CheckActionProfiles} checkActionProfiles All defined action profiles.
+ * @property {AutoModConfig} automodConfig The AutoMod rules and toggles.
  * @property {PlayerUtils} playerUtils Utility functions for player interactions.
  * @property {PlayerDataManager} playerDataManager Manager for player-specific AntiCheat data.
  * @property {LogManager} logManager Manager for logging events.

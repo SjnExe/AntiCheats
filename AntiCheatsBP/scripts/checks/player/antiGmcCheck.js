@@ -26,7 +26,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies; // Added rankManager and permissionLevels
 
     // Standardized action profile key
-    const actionProfileKey = config.antiGmcActionProfileName || 'playerAntigmc'; // Ensure 'playerAntigmc' matches actionProfiles.js
+    const actionProfileKey = config.antiGmcActionProfileName ?? 'playerAntigmc'; // Ensure 'playerAntigmc' matches actionProfiles.js
 
     if (!config.enableAntiGmcCheck || !pData) { // Corrected config key name
         return;

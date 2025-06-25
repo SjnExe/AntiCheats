@@ -41,7 +41,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     const vowelRatioLowerBound = config.gibberishVowelRatioLowerBound ?? 0.15;
     const vowelRatioUpperBound = config.gibberishVowelRatioUpperBound ?? 0.80;
     const maxConsecutiveConsonants = config.gibberishMaxConsecutiveConsonants ?? 5;
-    const actionProfileKey = config.gibberishActionProfileName || 'chatGibberish'; // Standardized key
+    const actionProfileKey = config.gibberishActionProfileName ?? 'chatGibberish'; // Standardized key
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?]/g, ''); // Remove common punctuation
 
     let totalAlphaChars = 0;

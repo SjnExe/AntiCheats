@@ -54,7 +54,7 @@ export async function checkNuker(player, pData, dependencies) {
     }
 
     const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4; // Max blocks allowed in interval
-    const actionProfileKey = config.nukerActionProfileName || 'worldNuker'; // Standardized key
+    const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker'; // Standardized key
 
     if (brokenBlocksInWindow > maxBreaks) {
         if (pData.isWatched || config.enableDebugLogging) { // More detailed log for watched/debug

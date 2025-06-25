@@ -66,6 +66,13 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     } catch (error) {
         playerUtils.debugLog(`PDM:save: Fail stringify ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error stringifying pData for ${player.nameTag}: ${error.stack || error}`);
+        dependencies.logManager.addLog({
+            actionType: 'error_pdata_stringify',
+            context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
+            targetName: player.nameTag,
+            details: `Error: ${error.message}`,
+            error: error.stack || error.message
+        }, dependencies);
         return false;
     }
 
@@ -82,6 +89,13 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     } catch (error) {
         playerUtils.debugLog(`PDM:save: Fail setDynamicProp for ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error setting dynamic property for ${player.nameTag}: ${error.stack || error}`);
+        dependencies.logManager.addLog({
+            actionType: 'error_pdata_set_property',
+            context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
+            targetName: player.nameTag,
+            details: `Error: ${error.message}`,
+            error: error.stack || error.message
+        }, dependencies);
         return false;
     }
 }
@@ -107,6 +121,13 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
     } catch (error) {
         playerUtils.debugLog(`PDM:load: Failed to getDynamicProperty for ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error getting dynamic property for ${player.nameTag}: ${error.stack || error}`);
+        dependencies.logManager.addLog({
+            actionType: 'error_pdata_get_property',
+            context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
+            targetName: player.nameTag,
+            details: `Error: ${error.message}`,
+            error: error.stack || error.message
+        }, dependencies);
         return null;
     }
 
@@ -118,6 +139,13 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         } catch (error) {
             playerUtils.debugLog(`PDM:load: Failed to parse JSON for ${player.nameTag}. JSON: '${jsonString}'. E: ${error.message}`, player.nameTag, dependencies);
             console.error(`[PlayerDataManager] Error parsing pData JSON for ${player.nameTag}: ${error.stack || error}`);
+            dependencies.logManager.addLog({
+                actionType: 'error_pdata_parse',
+                context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
+                targetName: player.nameTag,
+                details: `Error: ${error.message}. JSON: ${jsonString.substring(0, 100)}...`, // Log snippet
+                error: error.stack || error.message
+            }, dependencies);
             return null;
         }
     } else if (typeof jsonString === 'undefined') {

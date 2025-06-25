@@ -103,7 +103,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
     }
 
     const wordsInMessage = originalMessage.split(/\s+/); // Split message into words
-    const actionProfileKey = config.swearCheckActionProfileName || 'chatSwearViolation'; // Standardized key
+    const actionProfileKey = config.swearCheckActionProfileName ?? 'chatSwearViolation'; // Standardized key
 
     for (const wordInMessage of wordsInMessage) {
         if (wordInMessage.trim() === '') continue; // Skip empty strings from multiple spaces

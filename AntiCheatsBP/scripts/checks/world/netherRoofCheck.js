@@ -51,7 +51,7 @@ export async function checkNetherRoof(player, pData, dependencies) {
         };
 
         // Standardized action profile key
-        const actionProfileKey = config.netherRoofActionProfileName || 'movementNetherRoof';
+        const actionProfileKey = config.netherRoofActionProfileName ?? 'movementNetherRoof';
 
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);

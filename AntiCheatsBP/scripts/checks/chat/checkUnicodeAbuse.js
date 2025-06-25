@@ -38,7 +38,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
 
     const maxDiacriticRatio = config.unicodeAbuseMaxDiacriticRatio ?? 0.5;
     const absoluteMaxDiacritics = config.unicodeAbuseAbsoluteMaxDiacritics ?? 10;
-    const actionProfileKey = config.unicodeAbuseActionProfileName || 'chatUnicodeAbuse'; // Standardized key
+    const actionProfileKey = config.unicodeAbuseActionProfileName ?? 'chatUnicodeAbuse'; // Standardized key
     let diacriticCount = 0;
     let otherCharCount = 0; // Count of non-diacritic, non-whitespace characters
 

@@ -51,7 +51,7 @@ export async function checkCPS(player, pData, dependencies, eventSpecificData) {
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;
-    const actionProfileKey = 'combatCpsHigh'; // Standardized key
+    const actionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh'; // Standardized key, ensure this key exists in config
 
     if (eventsInWindow > maxThreshold) {
         const violationDetails = {
