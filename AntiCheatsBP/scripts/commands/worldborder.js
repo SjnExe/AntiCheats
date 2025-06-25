@@ -75,7 +75,7 @@ export async function execute(player, args, dependencies) {
             await handleSetParticleCommand(player, args, dependencies);
             break;
         default:
-            playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
+            playerUtils.warnPlayer(player, `§cInvalid subcommand '${subCommand}'. Use ${cmdPrefix}wb help.`);
     }
 }
 
