@@ -16,7 +16,7 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, configModule, worldBorderManager, uiManager, getString } = dependencies;
+    const { playerUtils, logManager, config, configModule, worldBorderManager, uiManager } = dependencies;
     const subCommand = args.shift()?.toLowerCase();
     const cmdPrefix = config.prefix;
 
