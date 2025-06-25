@@ -44,10 +44,10 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
 
     // Iterate through the message to count diacritics and other relevant characters
     for (const char of rawMessageContent) {
-        // \p{M} or \p{Mn} matches combining diacritical marks
-        if (char.match(/\p{M}/u) || char.match(/\p{Mn}/u)) {
+        // \p{M} matches all combining diacritical marks (Mn, Mc, Me)
+        if (/\p{M}/u.test(char)) { // Use .test() for boolean check
             diacriticCount++;
-        } else if (char.match(/\S/)) { // Any non-whitespace character that is not a diacritic
+        } else if (/\S/.test(char)) { // Any non-whitespace character that is not a diacritic. Use .test()
             otherCharCount++;
         }
     }

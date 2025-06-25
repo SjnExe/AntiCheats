@@ -17,12 +17,12 @@ import * as mc from '@minecraft/server'; // Not strictly needed here but kept fo
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player sending the message.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data, containing the message.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
  * @returns {Promise<void>} A promise that resolves when the check is complete.
  */
-export async function checkMessageWordCount(player, pData, eventData, dependencies) {
+export async function checkMessageWordCount(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableMaxWordsSpamCheck) {

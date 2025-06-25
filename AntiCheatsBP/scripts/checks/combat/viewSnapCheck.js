@@ -37,7 +37,7 @@ export async function checkViewSnap(player, pData, dependencies, eventSpecificDa
     // Invalid Pitch Check
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
-    const invalidPitchActionProfileKey = 'combatInvalidPitch'; // Standardized key
+    const invalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch'; // Standardized key
 
     if (currentPitch < invalidPitchMin || currentPitch > invalidPitchMax) {
         const violationDetails = {
@@ -64,7 +64,7 @@ export async function checkViewSnap(player, pData, dependencies, eventSpecificDa
         const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms from ticks
 
         const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
-        const pitchSnapActionProfileKey = 'combatViewsnapPitch'; // Standardized key
+        const pitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewsnapPitch'; // Standardized key
 
         if (deltaPitch > maxPitchSnap) {
             const violationDetails = {
@@ -79,7 +79,7 @@ export async function checkViewSnap(player, pData, dependencies, eventSpecificDa
         }
 
         const maxYawSnap = config.maxYawSnapPerTick ?? 100;
-        const yawSnapActionProfileKey = 'combatViewsnapYaw'; // Standardized key
+        const yawSnapActionProfileKey = config.yawSnapActionProfileName ?? 'combatViewsnapYaw'; // Standardized key
 
         if (deltaYaw > maxYawSnap) {
             const violationDetails = {

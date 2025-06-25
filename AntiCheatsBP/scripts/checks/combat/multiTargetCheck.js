@@ -85,8 +85,8 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             threshold: threshold.toString(),
             targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '), // Sample of target IDs
         };
-        // Standardized action profile key
-        const actionProfileKey = 'combatMultitargetAura';
+        // Standardized action profile key, should be sourced from config
+        const actionProfileKey = config.multiTargetActionProfileName ?? 'combatMultitargetAura';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix, dependencies);

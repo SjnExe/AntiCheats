@@ -36,7 +36,8 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
             targetEntityType: eventSpecificData?.targetEntity?.typeId,
         };
         // Standardized action profile key
-        await actionManager.executeCheckAction(player, 'combatAttackWhileSleeping', violationDetails, dependencies);
+        const actionProfileKey = config.attackWhileSleepingActionProfileName ?? 'combatAttackWhileSleeping';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Sleeping.`, watchedPrefix, dependencies);
     }
 }
@@ -73,7 +74,8 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             itemCategory: 'consumable',
         };
         // Standardized action profile key
-        await actionManager.executeCheckAction(player, 'combatAttackWhileConsuming', violationDetails, dependencies);
+        const actionProfileKeyConsuming = config.attackWhileConsumingActionProfileName ?? 'combatAttackWhileConsuming';
+        await actionManager.executeCheckAction(player, actionProfileKeyConsuming, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Consuming.`, watchedPrefix, dependencies);
     }
 
@@ -84,7 +86,8 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             itemCategory: 'bow',
         };
         // Standardized action profile key
-        await actionManager.executeCheckAction(player, 'combatAttackWhileBowCharging', violationDetails, dependencies);
+        const actionProfileKeyBow = config.attackWhileBowChargingActionProfileName ?? 'combatAttackWhileBowCharging';
+        await actionManager.executeCheckAction(player, actionProfileKeyBow, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Charging Bow.`, watchedPrefix, dependencies);
     }
 
@@ -95,7 +98,8 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             itemCategory: 'shield',
         };
         // Standardized action profile key
-        await actionManager.executeCheckAction(player, 'combatAttackWhileShielding', violationDetails, dependencies);
+        const actionProfileKeyShield = config.attackWhileShieldingActionProfileName ?? 'combatAttackWhileShielding';
+        await actionManager.executeCheckAction(player, actionProfileKeyShield, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Shielding.`, watchedPrefix, dependencies);
     }
 }
