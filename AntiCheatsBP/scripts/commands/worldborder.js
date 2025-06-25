@@ -242,7 +242,7 @@ async function handleGetCommand(player, args, dependencies) {
             }
         }
 
-        const currentGlobalParticle = currentRunTimeConfig.worldBorderParticleName;
+        const currentGlobalParticle = dependencies.config.worldBorderParticleName;
         if (settings.particleNameOverride) {
             playerUtils.notifyPlayer(player, `  Particle Override: ${settings.particleNameOverride}`);
             if (settings.particleNameOverride !== currentGlobalParticle) {

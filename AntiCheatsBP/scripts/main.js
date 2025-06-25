@@ -179,7 +179,7 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => { // Specifically for TP
     const { hurtEntity, damageSource } = eventData;
     if (hurtEntity.typeId !== mc.MinecraftEntityTypes.player.id) return; // Ensure it's a player
 
-    const player = hurtEntity as mc.Player; // Type assertion
+    const player = hurtEntity; // Type assertion removed, player is already of type Player due to the check above
 
     const requestsInWarmup = tpaManager.getRequestsInWarmup();
     const playerActiveWarmupRequest = requestsInWarmup.find(
@@ -275,7 +275,7 @@ mc.system.runInterval(async () => {
         try {
             worldBorderManager.processWorldBorderResizing(tickDependencies);
         } catch (e) {
-            const error = e as Error;
+            const error = e;
             console.error(`[MainTick] Error processing world border resizing: ${error.stack || error.message}`);
             playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${error.message}`, 'System', tickDependencies);
             logManager.addLog({ actionType: 'error_worldborder_resize_tick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
@@ -373,7 +373,7 @@ mc.system.runInterval(async () => {
             try {
                 worldBorderManager.enforceWorldBorderForPlayer(player, pData, tickDependencies);
             } catch (e) {
-                const error = e as Error;
+                    const error = e;
                 console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${error.stack || error.message}`);
                 playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${error.message}`, player.nameTag, tickDependencies);
                 logManager.addLog({ actionType: 'error_worldborder_enforce_tick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
