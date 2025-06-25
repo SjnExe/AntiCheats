@@ -13,7 +13,7 @@ import * as playerUtils from './utils/playerUtils.js';
 import * as playerDataManager from './core/playerDataManager.js';
 import * as commandManager from './core/commandManager.js';
 import * as uiManager from './core/uiManager.js';
-import *s eventHandlers from './core/eventHandlers.js';
+import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js';
 import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
