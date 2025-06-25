@@ -102,7 +102,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered simple pattern '${pattern}' with message: '${message}'`, watchedPlayerName, dependencies);
                 const violationDetails = {
                     matchedPattern: pattern,
-                    method: 'simple_pattern',
+                    method: 'simplePattern',
                     originalMessage: message,
                 };
                 await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);

@@ -31,7 +31,7 @@ export async function execute(player, _args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'command_panel_ui',
+            actionType: 'panelCommandUi', // Changed to camelCase
             targetName: player.nameTag,
             details: 'Player opened main panel via command.',
         }, dependencies);

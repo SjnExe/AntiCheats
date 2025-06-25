@@ -141,7 +141,7 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
         const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Event cancelled. Ban details: By ${banInfo?.bannedBy || 'N/A'}, Reason: ${banInfo?.reason || 'N/A'}, Expires: ${banInfo?.unbanTime === Infinity ? 'Permanent' : new Date(banInfo?.unbanTime || 0).toLocaleString()}`;
         console.warn(logMessage);
         joinDependencies.logManager.addLog({
-            actionType: 'banned_join_attempt',
+            actionType: 'bannedJoinAttempt', // Changed to camelCase
             targetName: player.nameTag,
             targetId: player.id, // Store XUID if available, otherwise game ID
             details: `Reason: ${banInfo?.reason || 'N/A'}, Expires: ${banInfo?.unbanTime === Infinity ? 'Permanent' : new Date(banInfo?.unbanTime || 0).toLocaleString()}`,
@@ -278,7 +278,7 @@ mc.system.runInterval(async () => {
             const error = e;
             console.error(`[MainTick] Error processing world border resizing: ${error.stack || error.message}`);
             playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${error.message}`, 'System', tickDependencies);
-            logManager.addLog({ actionType: 'error_worldborder_resize_tick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
+            logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
         }
     }
 
@@ -333,8 +333,8 @@ mc.system.runInterval(async () => {
         if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof && (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
             await checks.checkNameSpoof(player, pData, tickDependencies); pData.lastCheckNameSpoofTick = currentTick;
         }
-        if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc && (currentTick - (pData.lastCheckAntiGMCTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
-            await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGMCTick = currentTick;
+        if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc && (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) { // Corrected key
+            await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGmcTick = currentTick; // Corrected key
         }
         if (tickDependencies.config.enableSelfHurtCheck && checks.checkSelfHurt) { /* SelfHurt typically runs on entityHurt */ }
         if (tickDependencies.config.enableIllegalItemCheck && checks.checkIllegalItems) await checks.checkIllegalItems(player, pData, tickDependencies); // Can run on tick or inventory change
@@ -376,7 +376,7 @@ mc.system.runInterval(async () => {
                     const error = e;
                 console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${error.stack || error.message}`);
                 playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${error.message}`, player.nameTag, tickDependencies);
-                logManager.addLog({ actionType: 'error_worldborder_enforce_tick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
+                logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
             }
         }
          // Mark data for saving if any check modified it (checks should set pData.isDirtyForSave = true)

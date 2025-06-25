@@ -52,8 +52,8 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, findPlayer: depFindPlayer } = dependencies;
-    const findPlayerFunc = depFindPlayer || playerUtils.findPlayer; // Use findPlayer from dependencies if available
+    const { config, playerUtils, logManager } = dependencies; // Removed findPlayer: depFindPlayer
+    // const findPlayerFunc = depFindPlayer || playerUtils.findPlayer; // Use playerUtils.findPlayer directly
     const prefix = config.prefix;
     const usageMessage = `§cUsage: ${prefix}tp <targetPlayerOrX> [destinationPlayerOrY] [z] [dimension]`;
 
@@ -65,8 +65,8 @@ export async function execute(player, args, dependencies) {
 
     // Case 1: !tp <playerToMoveName> <destinationPlayerName>
     if (args.length === 2 && isNaN(parseFloat(args[0])) && isNaN(parseFloat(args[1]))) {
-        playerToMove = findPlayerFunc(args[0]);
-        const destinationPlayer = findPlayerFunc(args[1]);
+        playerToMove = playerUtils.findPlayer(args[0]); // Use playerUtils.findPlayer
+        const destinationPlayer = playerUtils.findPlayer(args[1]); // Use playerUtils.findPlayer
 
         if (!playerToMove) {
             player.sendMessage(`§cPlayer to move "${args[0]}" not found.`);
@@ -114,7 +114,7 @@ export async function execute(player, args, dependencies) {
     // Case 3: !tp <playerToMoveName> <x> <y> <z> [dimension] (teleport other player to coordinates)
     else if (args.length === 4 || args.length === 5) {
         if (isNaN(parseFloat(args[0]))) { // First arg is player name
-             playerToMove = findPlayerFunc(args[0]);
+             playerToMove = playerUtils.findPlayer(args[0]); // Use playerUtils.findPlayer
              if (!playerToMove) {
                 player.sendMessage(`§cPlayer to move "${args[0]}" not found.`);
                 return;

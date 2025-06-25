@@ -15,7 +15,7 @@ import * as mc from '@minecraft/server'; // Standard import
  */
 export async function processChatMessage(player, pData, originalMessage, eventData, dependencies) {
     const { config, playerUtils, checks, playerDataManager, logManager, actionManager, getString, rankManager } = dependencies;
-    const minecraftSystem = dependencies.mc.system; // Use mc from dependencies for consistency
+    // const minecraftSystem = dependencies.mc.system; // Use mc.system directly from import
 
     try {
         if (!pData) {
@@ -137,7 +137,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             const rankElements = rankManager.getPlayerRankFormattedChatElements(player, dependencies);
             const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;
 
-            minecraftSystem.world.sendMessage(finalMessage);
+            mc.system.world.sendMessage(finalMessage); // Use mc.system directly
             eventData.cancel = true; // Cancel original event as we've sent the formatted one
 
             logManager.addLog({ actionType: 'chatMessageSent', targetName: player.nameTag, details: originalMessage }, dependencies);

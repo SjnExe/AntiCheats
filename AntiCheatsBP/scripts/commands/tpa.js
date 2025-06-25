@@ -69,7 +69,7 @@ export async function execute(player, args, dependencies) {
     }
 
     if (requestResult) {
-        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
+        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
 
         system.run(() => {
             try {

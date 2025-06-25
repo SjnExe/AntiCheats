@@ -28,7 +28,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
     // Standardized action profile key
     const actionProfileKey = config.antiGmcActionProfileName ?? 'playerAntigmc'; // Ensure 'playerAntigmc' matches actionProfiles.js
 
-    if (!config.enableAntiGmcCheck || !pData) { // Corrected config key name
+    if (!config.enableAntiGmcCheck || !pData) {
         return;
     }
 
@@ -44,7 +44,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
         if (!isExempt) {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             let autoSwitchedGameMode = false;
-            let targetGamemodeString = (config.antiGmcSwitchToGameMode || 'survival').toLowerCase(); // Corrected config key name
+            let targetGamemodeString = (config.antiGmcSwitchToGameMode || 'survival').toLowerCase();
             let targetMcGameMode;
 
             switch (targetGamemodeString) {
@@ -63,7 +63,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
                     playerUtils.debugLog(`[AntiGmcCheck] Invalid antiGmcSwitchToGameMode value '${config.antiGmcSwitchToGameMode}'. Defaulting to survival.`, watchedPrefix, dependencies);
             }
 
-            if (config.antiGmcAutoSwitch) { // Corrected config key name
+            if (config.antiGmcAutoSwitch) {
                 try {
                     player.setGameMode(targetMcGameMode);
                     autoSwitchedGameMode = true;
@@ -84,9 +84,9 @@ export async function checkAntiGmc(player, pData, dependencies) {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
             if (pData.isWatched) {
-                if (!autoSwitchedGameMode && config.antiGmcAutoSwitch) { // Corrected config key name
+                if (!autoSwitchedGameMode && config.antiGmcAutoSwitch) {
                     playerUtils.debugLog(`[AntiGmcCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch was enabled but might have failed.`, watchedPrefix, dependencies);
-                } else if (!config.antiGmcAutoSwitch) { // Corrected config key name
+                } else if (!config.antiGmcAutoSwitch) {
                     playerUtils.debugLog(`[AntiGmcCheck] Flagged ${player.nameTag} for unauthorized creative. Auto-switch disabled.`, watchedPrefix, dependencies);
                 }
             }

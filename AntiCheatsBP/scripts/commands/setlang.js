@@ -36,7 +36,7 @@ export async function execute(player, args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag, // Assuming admin if they could try to run it
-            actionType: 'command_attempt_disabled',
+            actionType: 'commandAttemptDisabled', // Changed to camelCase
             targetName: 'setlang', // Command name
             details: `Attempted to use disabled command: !setlang ${args.join(' ')}`,
         }, dependencies);

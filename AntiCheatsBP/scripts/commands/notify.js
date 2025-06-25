@@ -111,8 +111,9 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(responseMessage);
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
+        const logActionType = newPreference ? 'notifyEnabled' : 'notifyDisabled'; // camelCase actionType
         playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. New preference: ${newPreference}`, player.nameTag, dependencies);
-        logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: `notify_${logMessageAction}`, details: `Notifications ${logMessageAction}` }, dependencies);
+        logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: logActionType, details: `Notifications ${logMessageAction}` }, dependencies);
 
     } catch (tagError) {
         player.sendMessage('§cAn error occurred while updating your notification settings.');

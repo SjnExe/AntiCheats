@@ -192,7 +192,7 @@
  *
  * Check-Specific Tick Timers (to control frequency of less critical checks):
  * @property {number} [lastCheckNameSpoofTick=0]
- * @property {number} [lastCheckAntiGMCTick=0]
+ * @property {number} [lastCheckAntiGmcTick=0] // Corrected to Gmc standard
  * @property {number} [lastCheckNetherRoofTick=0]
  * @property {number} [lastCheckAutoToolTick=0]
  * @property {number} [lastCheckFlatRotationBuildingTick=0]
@@ -326,7 +326,6 @@
  * @property {{getPlayerRankId: RankManagerFull['getPlayerRankId'], getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions.
  * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder']}} worldBorderManager Subset of WorldBorderManager functions.
  * @property {System} system The `system` object from `@minecraft/server`.
- * @property {{registerCommand: function, unregisterCommand: function, reloadCommands: function}} commandManager Subset of CommandManager functions for dynamic command management.
  * @property {typeof import('./config.js')} editableConfig The full config module, allowing access to `updateConfigValue`.
  */
 

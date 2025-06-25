@@ -105,8 +105,8 @@ export async function checkFly(player, pData, dependencies) {
                 hasLevitation: pData.hasLevitation?.toString() ?? 'false',
             };
             // Standardized action profile key
-            const highYVeloActionProfileKey = config.highYVelocityActionProfileName ?? 'movementHighYVelocity';
-            await actionManager.executeCheckAction(player, highYVeloActionProfileKey, violationDetails, dependencies);
+            const highYVelocityActionProfileKey = config.highYVelocityActionProfileName ?? 'movementHighYVelocity';
+            await actionManager.executeCheckAction(player, highYVelocityActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Y-Velo] Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix, dependencies);
         }
     }

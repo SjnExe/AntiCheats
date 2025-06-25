@@ -510,7 +510,7 @@ export const nameSpoofMinChangeIntervalTicks = 200;
 
 // Anti-Gamemode Creative (Anti-GMC) Check
 /** @type {boolean} If true, the Anti-GMC check (detecting unauthorized Creative mode) is active. */
-export const enableAntiGmcCheck = true; // Renamed from enableAntiGMCCheck for consistency
+export const enableAntiGmcCheck = true;
 /** @type {string} The gamemode (e.g., "survival", "adventure") to switch players to if unauthorized Creative mode is detected and `antiGmcAutoSwitch` is true. */
 export const antiGmcSwitchToGameMode = 'survival';
 /** @type {boolean} If true, automatically switch a player's gamemode if unauthorized Creative mode is detected. */
@@ -527,7 +527,7 @@ export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500; // 0.5 seconds
 /** @type {string} Action profile name for fast message spam. */
-export const fastMessageSpamActionProfileName = 'chatSpamFastMessage'; // Corrected from fastMessageSPAMActionProfileName
+export const fastMessageSpamActionProfileName = 'chatSpamFastMessage';
 
 // Max Words Spam Check
 /** @type {boolean} If true, the Max Words Spam check (messages with too many words) is active. */
@@ -535,7 +535,7 @@ export const enableMaxWordsSpamCheck = true;
 /** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
 /** @type {string} Action profile name for max words spam. */
-export const maxWordsSpamActionProfileName = 'chatSpamMaxWords'; // Corrected from maxWordsSPAMActionProfileName
+export const maxWordsSpamActionProfileName = 'chatSpamMaxWords';
 
 // Newline Character Check
 /** @type {boolean} If true, checks for newline characters (\n, \r) in chat messages. */
@@ -557,15 +557,15 @@ export const cancelOnMaxMessageLength = true;
 
 // Repeated Message (Content) Spam Check
 /** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
-export const enableChatContentRepeatCheck = true; // Was `spamRepeatCheckEnabled`
+export const enableChatContentRepeatCheck = true;
 /** @type {number} Number of identical/similar messages within `chatContentRepeatTimeWindowSeconds` to trigger a flag. */
-export const chatContentRepeatMessageCount = 3; // Was `spamRepeatMessageCount`
+export const chatContentRepeatMessageCount = 3;
 /** @type {number} Time window in seconds to monitor for repeated/similar messages. */
-export const chatContentRepeatTimeWindowSeconds = 5; // Was `spamRepeatTimeWindowSeconds`
+export const chatContentRepeatTimeWindowSeconds = 5;
 /** @type {boolean} If true, flags the player for content repeat spam. */
-export const chatContentRepeatFlagPlayer = false; // Was `spamRepeatFlagPlayer`
+export const chatContentRepeatFlagPlayer = false;
 /** @type {boolean} If true, cancels the message that triggers content repeat spam. */
-export const chatContentRepeatCancelMessage = false; // Was `spamRepeatCancelMessage`
+export const chatContentRepeatCancelMessage = false;
 /** @type {string} Action profile name for chat content repeat violations. */
 export const chatContentRepeatActionProfileName = 'chatSpamContentRepeat';
 

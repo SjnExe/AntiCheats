@@ -35,7 +35,7 @@ export async function execute(player, _args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'command_testnotify',
+            actionType: 'commandTestNotify', // Changed to camelCase
             details: 'Successfully sent a test notification.',
         }, dependencies);
 

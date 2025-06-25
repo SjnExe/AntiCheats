@@ -118,10 +118,10 @@ export async function checkSwear(player, eventData, pData, dependencies) {
                     matchedWordInMessage: wordInMessage, // The actual word from player's message
                     normalizedInput: normalizedInputWord,
                     normalizedSwear: swearItem.normalized,
-                    matchMethod: 'exact_normalized',
+                    matchMethod: 'exactNormalized',
                     originalMessage: originalMessage, // Full original message for context
                 };
-                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: '${wordInMessage}' (normalized: '${normalizedInputWord}') matched '${swearItem.original}' (normalized: '${swearItem.normalized}') by exact_normalized.`, pData?.isWatched ? player.nameTag : null, dependencies);
+                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: '${wordInMessage}' (normalized: '${normalizedInputWord}') matched '${swearItem.original}' (normalized: '${swearItem.normalized}') by exactNormalized.`, pData?.isWatched ? player.nameTag : null, dependencies);
 
                 if (actionManager && typeof actionManager.executeCheckAction === 'function') {
                     await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
