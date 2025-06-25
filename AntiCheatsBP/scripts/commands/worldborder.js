@@ -78,7 +78,6 @@ export async function execute(player, args, dependencies) {
             playerUtils.warnPlayer(player, getString('command.worldborder.error.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
     }
 }
-}
 
 function formatDurationBrief(ms) {
     if (ms <= 0) return "0s";

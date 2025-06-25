@@ -255,7 +255,6 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         adminPlayer.sendMessage(getString("ui.playerActions.error.generic"));
         await showOnlinePlayersList(adminPlayer, playerDataManager, dependencies);
     }
-}
 };
 
 // Helper for modal execution to reduce repetition in showPlayerActionsForm
