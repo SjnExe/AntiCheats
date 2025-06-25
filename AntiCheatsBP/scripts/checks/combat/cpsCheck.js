@@ -16,18 +16,20 @@
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `attackEvents`.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, etc.
- * @param {EventSpecificData} [eventSpecificData] - Optional data specific to the event that triggered this check (unused by CPS check).
+ * @param {EventSpecificData} [eventSpecificData] - Optional data specific to the event that triggered this check (unused by Cps check).
  * @returns {Promise<void>}
  */
-export async function checkCPS(player, pData, dependencies, eventSpecificData) {
+export async function checkCps(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager, currentTick
 
+    // Assuming config.enableCPSCheck is the actual key in config.js and should not be changed here.
+    // If it were config.enableCpsCheck, that would be used instead.
     if (!config.enableCPSCheck) {
         return;
     }
 
     if (!pData || !Array.isArray(pData.attackEvents)) {
-        playerUtils.debugLog(`[CPSCheck] Skipping for ${player.nameTag}: pData or pData.attackEvents is invalid.`, player.nameTag, dependencies);
+        playerUtils.debugLog(`[CpsCheck] Skipping for ${player.nameTag}: pData or pData.attackEvents is invalid.`, player.nameTag, dependencies);
         return;
     }
 
@@ -47,7 +49,7 @@ export async function checkCPS(player, pData, dependencies, eventSpecificData) {
     const eventsInWindow = pData.attackEvents.length;
 
     if (pData.isWatched && eventsInWindow > 0) {
-        playerUtils.debugLog(`[CPSCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
+        playerUtils.debugLog(`[CpsCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;

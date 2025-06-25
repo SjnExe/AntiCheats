@@ -73,18 +73,18 @@ function normalizeWordForSwearCheck(word, config) {
  * @param {import('@minecraft/server').Player} player - The player sending the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
  * @param {PlayerAntiCheatData} pData - Player-specific data from playerDataManager.
- * @param {CommandDependencies} dependenciesFull - Full dependencies object.
+ * @param {CommandDependencies} dependencies - Full dependencies object.
  * @returns {Promise<void>}
  */
-export async function checkSwear(player, eventData, pData, dependenciesFull) {
-    const { config, playerUtils, actionManager, playerDataManager } = dependenciesFull;
+export async function checkSwear(player, eventData, pData, dependencies) {
+    const { config, playerUtils, actionManager, playerDataManager } = dependencies;
 
     if (!config.enableSwearCheck) {
         return;
     }
     const originalMessage = eventData.message;
     if (!config.swearWordList || config.swearWordList.length === 0) {
-        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, pData?.isWatched ? player.nameTag : null, dependenciesFull);
+        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, pData?.isWatched ? player.nameTag : null, dependencies);
         return;
     }
 
@@ -98,7 +98,7 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
         .filter(item => item.normalized.length > 0); // Filter out any swear words that become empty after normalization
 
     if (normalizedSwearWordList.length === 0) {
-        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty (all configured swears were invalid or became empty).`, pData?.isWatched ? player.nameTag : null, dependenciesFull);
+        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty (all configured swears were invalid or became empty).`, pData?.isWatched ? player.nameTag : null, dependencies);
         return;
     }
 
@@ -121,15 +121,15 @@ export async function checkSwear(player, eventData, pData, dependenciesFull) {
                     matchMethod: 'exact_normalized',
                     originalMessage: originalMessage, // Full original message for context
                 };
-                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: '${wordInMessage}' (normalized: '${normalizedInputWord}') matched '${swearItem.original}' (normalized: '${swearItem.normalized}') by exact_normalized.`, pData?.isWatched ? player.nameTag : null, dependenciesFull);
+                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: '${wordInMessage}' (normalized: '${normalizedInputWord}') matched '${swearItem.original}' (normalized: '${swearItem.normalized}') by exact_normalized.`, pData?.isWatched ? player.nameTag : null, dependencies);
 
                 if (actionManager && typeof actionManager.executeCheckAction === 'function') {
-                    await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependenciesFull);
+                    await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
                 } else {
-                    playerUtils.debugLog('[SwearCheck] actionManager.executeCheckAction is not available in dependencies. Attempting direct flag.', null, dependenciesFull);
+                    playerUtils.debugLog('[SwearCheck] actionManager.executeCheckAction is not available in dependencies. Attempting direct flag.', null, dependencies);
                     // Fallback to direct flagging if actionManager is somehow missing (should not happen in normal operation)
                     if (playerDataManager && playerDataManager.addFlag) {
-                        playerDataManager.addFlag(player, actionProfileKey, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependenciesFull);
+                        playerDataManager.addFlag(player, actionProfileKey, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependencies);
                     }
                 }
                 // Message cancellation should be handled by the action profile if configured

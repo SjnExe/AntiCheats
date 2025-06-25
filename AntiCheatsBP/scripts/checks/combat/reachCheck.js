@@ -75,7 +75,8 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
             targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
             playerGameMode: String(gameMode), // Store the enum value as string for logging/details
         };
-        // Standardized action profile key
-        await actionManager.executeCheckAction(player, 'combatReachAttack', violationDetails, dependencies);
+        // Standardized action profile key, should be sourced from config
+        const actionProfileKey = config.reachCheckActionProfileName ?? 'combatReachAttack';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
     }
 }

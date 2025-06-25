@@ -105,8 +105,8 @@ export async function checkFly(player, pData, dependencies) {
                 hasLevitation: pData.hasLevitation?.toString() ?? 'false',
             };
             // Standardized action profile key
-            const actionProfileKey = config.highYVelocityActionProfileName ?? 'movementHighYVelocity';
-            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            const highYVeloActionProfileKey = config.highYVelocityActionProfileName ?? 'movementHighYVelocity';
+            await actionManager.executeCheckAction(player, highYVeloActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Y-Velo] Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix, dependencies);
         }
     }
@@ -138,7 +138,7 @@ export async function checkFly(player, pData, dependencies) {
     if (!player.isOnGround && verticalSpeed > sustainedThreshold && !player.isClimbing && !pData.hasLevitation) {
         if (pData.consecutiveOffGroundTicks > sustainedTicks) {
             const violationDetails = {
-                type: 'sustained_vertical',
+                type: 'sustainedVertical', // Changed to camelCase
                 verticalSpeed: verticalSpeed.toFixed(2),
                 offGroundTicks: pData.consecutiveOffGroundTicks.toString(),
                 isClimbing: player.isClimbing.toString(),
@@ -146,8 +146,8 @@ export async function checkFly(player, pData, dependencies) {
                 hasLevitation: pData.hasLevitation?.toString() ?? 'false',
             };
             // Standardized action profile key
-            const actionProfileKeySustained = config.sustainedFlyActionProfileName ?? 'movementSustainedFly';
-            await actionManager.executeCheckAction(player, actionProfileKeySustained, violationDetails, dependencies);
+            const sustainedFlyActionProfileKey = config.sustainedFlyActionProfileName ?? 'movementSustainedFly';
+            await actionManager.executeCheckAction(player, sustainedFlyActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Sustained] Flagged ${player.nameTag}. VSpeed: ${verticalSpeed.toFixed(2)}, OffGround: ${pData.consecutiveOffGroundTicks}t`, watchedPrefix, dependencies);
         }
     }
@@ -173,7 +173,7 @@ export async function checkFly(player, pData, dependencies) {
 
         if (heightAboveLastGround > hoverMinHeight) {
             const violationDetails = {
-                type: 'hover',
+                type: 'flyHover', // Changed to camelCase
                 verticalSpeed: verticalSpeed.toFixed(2),
                 offGroundTicks: pData.consecutiveOffGroundTicks.toString(),
                 fallDistance: player.fallDistance.toFixed(2),
@@ -184,8 +184,8 @@ export async function checkFly(player, pData, dependencies) {
                 hasSlowFalling: pData.hasSlowFalling?.toString() ?? 'false',
             };
             // Standardized action profile key
-            const actionProfileKeyHover = config.hoverFlyActionProfileName ?? 'movementFlyHover';
-            await actionManager.executeCheckAction(player, actionProfileKeyHover, violationDetails, dependencies);
+            const hoverFlyActionProfileKey = config.hoverFlyActionProfileName ?? 'movementFlyHover';
+            await actionManager.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Hover] Flagged ${player.nameTag}. VSpeed: ${verticalSpeed.toFixed(2)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${player.fallDistance.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPrefix, dependencies);
         }
     }

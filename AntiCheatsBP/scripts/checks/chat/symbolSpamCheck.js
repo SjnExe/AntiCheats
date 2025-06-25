@@ -46,7 +46,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         totalChars++;
 
         // A symbol is any character that is NOT a letter (a-z, A-Z) or a digit (0-9)
-        if (!char.match(/[a-zA-Z0-9]/)) {
+        if (!/[a-zA-Z0-9]/.test(char)) { // Use .test() for boolean check
             symbolChars++;
         }
     }
@@ -70,7 +70,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
             threshold: `${config.symbolSpamPercentage}%`,
             minLength: config.symbolSpamMinLength,
             originalMessage: message,
-            checkType: 'symbol_spam', // Explicitly pass checkType if actionProfileKey is generic
+            checkType: 'symbolSpam', // Consistent camelCase for checkType identifiers
         };
 
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
