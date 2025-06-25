@@ -149,23 +149,39 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
 }
 
 // --- Interpolation Helper Functions ---
+
+// formatDurationBrief is defined in worldborder.js, not here.
+// normalizeDimensionId is defined in worldborder.js, not here.
+// handleSetCommand is defined in worldborder.js, not here.
+// handleGetCommand is defined in worldborder.js, not here.
+// handleToggleCommand is defined in worldborder.js, not here.
+// handleRemoveCommand is defined in worldborder.js, not here.
+// handleResizeCommand is defined in worldborder.js, not here.
+// handleShrinkCommand is defined in worldborder.js, not here.
+// handleExpandCommand is defined in worldborder.js, not here.
+// handleResizePauseCommand is defined in worldborder.js, not here.
+// handleResizeResumeCommand is defined in worldborder.js, not here.
+// handleSetGlobalParticleCommand is defined in worldborder.js, not here.
+// handleSetParticleCommand is defined in worldborder.js, not here.
+
+
 /**
- * Quadratic easing out function.
- * @param {number} t - Progress ratio (0 to 1).
+ * Quadratic easing out function. Provides a smooth deceleration.
+ * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
  * @returns {number} Eased value.
  */
 function easeOutQuad(t) { return t * (2 - t); }
 
 /**
- * Quadratic easing in and out function.
- * @param {number} t - Progress ratio (0 to 1).
+ * Quadratic easing in and out function. Provides acceleration until halfway, then deceleration.
+ * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
  * @returns {number} Eased value.
  */
 function easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
 /**
- * Maps a value from one range to another.
- * @param {number} value - The value to map.
+ * Maps a numeric value from one range to another.
+ * @param {number} value - The input value to map.
  * @param {number} inMin - The minimum of the input range.
  * @param {number} inMax - The maximum of the input range.
  * @param {number} outMin - The minimum of the output range.
@@ -176,16 +192,16 @@ function mapRange(value, inMin, inMax, outMin, outMax) { return (value - inMin) 
 
 /**
  * Finds a safe Y-coordinate for teleportation near a target X, Z.
- * Searches downwards first, then upwards from the initial Y.
- * @param {import('@minecraft/server').Dimension} dimension - The dimension to search in.
- * @param {number} targetX - The target X-coordinate.
- * @param {number} initialY - The initial Y-coordinate to start searching from.
- * @param {number} targetZ - The target Z-coordinate.
- * @param {import('../types.js').CommandDependencies} dependencies - Dependencies (currently unused here but good for consistency).
- * @returns {number} A safe Y-coordinate.
+ * Searches downwards first, then upwards from the initial Y to find a 2-block high air gap with solid ground.
+ * @param {import('@minecraft/server').Dimension} dimension - The dimension object to search within.
+ * @param {number} targetX - The target X-coordinate for the safe location.
+ * @param {number} initialY - The initial Y-coordinate to begin searching from.
+ * @param {number} targetZ - The target Z-coordinate for the safe location.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies (currently unused in this function but included for consistency).
+ * @returns {number} A Y-coordinate considered safe for teleportation, or the initialY if no better spot is found.
  */
 function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) {
-    // const { playerUtils } = dependencies; // Not used, but good practice for util functions
+    // const { playerUtils } = dependencies; // Not used in this specific utility, but good practice for others
     const minDimensionHeight = dimension.heightRange.min;
     const maxDimensionHeight = dimension.heightRange.max - 2; // Leave space for player head
     let currentY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
