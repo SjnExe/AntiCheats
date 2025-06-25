@@ -154,7 +154,7 @@ export async function execute(player, _args, dependencies) {
         return;
     }
 
-    logManager.addLog({ timestamp: Date.now(), playerName: player.nameTag, actionType: 'command_uinfo', details: `Player used !uinfo, selected option index: ${response.selection}` }, dependencies);
+    logManager.addLog({ timestamp: Date.now(), playerName: player.nameTag, actionType: 'commandUinfo', details: `Player used !uinfo, selected option index: ${response.selection}` }, dependencies); // Changed to camelCase
 
     switch (response.selection) {
         case 0: await showMyStatsUI(player, dependencies); break;

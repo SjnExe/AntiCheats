@@ -26,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, findPlayer } = dependencies; // Removed getString
+    const { config, playerUtils, logManager } = dependencies; // Removed getString, findPlayer (will use playerUtils.findPlayer)
     const frozenTag = 'frozen'; // Tag to mark frozen players
     const effectDuration = 2000000; // A very long duration for the effect (effectively permanent until removed)
     const slownessAmplifier = 255; // Max slowness to prevent movement
@@ -39,7 +39,7 @@ export async function execute(player, args, dependencies) {
     const targetPlayerName = args[0];
     const subCommand = args[1] ? args[1].toLowerCase() : 'toggle'; // Default to 'toggle' if no subcommand
 
-    const foundPlayer = findPlayer(targetPlayerName); // findPlayer is from playerUtils passed in dependencies
+    const foundPlayer = playerUtils.findPlayer(targetPlayerName); // Use playerUtils
 
     if (!foundPlayer) {
         player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`); // Hardcoded string

@@ -96,7 +96,7 @@ export async function execute(player, args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'reset_flags',
+            actionType: 'resetFlags', // Changed to camelCase
             targetName: targetPlayer.nameTag,
             details: `Reset flags and violation data for ${targetPlayer.nameTag}`, // Clarified log
         }, dependencies);

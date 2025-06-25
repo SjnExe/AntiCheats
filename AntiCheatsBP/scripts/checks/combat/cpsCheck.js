@@ -22,9 +22,8 @@
 export async function checkCps(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager, currentTick
 
-    // Assuming config.enableCPSCheck is the actual key in config.js and should not be changed here.
-    // If it were config.enableCpsCheck, that would be used instead.
-    if (!config.enableCPSCheck) {
+    // Standardized config key for enabling CPS check.
+    if (!config.enableCpsCheck) {
         return;
     }
 

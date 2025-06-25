@@ -25,14 +25,14 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, findPlayer, config } = dependencies; // Removed getString
+    const { playerUtils, logManager, config } = dependencies; // Removed getString, findPlayer
     const targetPlayerName = args[0];
     const gamemodeName = 'Adventure'; // For messages
     const gamemodeMc = mc.GameMode.adventure; // For API
 
     try {
         if (targetPlayerName) {
-            const targetPlayer = findPlayer(targetPlayerName); // findPlayer is from playerUtils
+            const targetPlayer = playerUtils.findPlayer(targetPlayerName); // Use playerUtils
             if (targetPlayer) {
                 targetPlayer.setGameMode(gamemodeMc);
                 player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`); // Hardcoded string

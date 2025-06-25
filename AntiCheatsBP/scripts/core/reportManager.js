@@ -9,7 +9,7 @@ import { world } from '@minecraft/server';
 /**
  * @const {string} reportsPropertyKeyName - The dynamic property key used for storing player reports.
  */
-const reportsPropertyKeyName = "anticheat:reports_v1";
+const reportsPropertyKeyName = 'anticheat:reports_v1';
 /**
  * @typedef {object} ReportEntry
  * @property {string} id - Unique ID for the report.
@@ -51,14 +51,14 @@ export function initializeReportCache(dependencies) {
             const parsedReports = JSON.parse(rawReports);
             if (Array.isArray(parsedReports)) {
                 reportsInMemory = parsedReports;
-                playerUtils.debugLog(`[ReportManager] Successfully loaded ${reportsInMemory.length} reports into memory cache.`, "System", dependencies);
+                playerUtils.debugLog(`[ReportManager] Successfully loaded ${reportsInMemory.length} reports into memory cache.`, 'System', dependencies);
                 return;
             }
         }
-        playerUtils.debugLog(`[ReportManager] No valid reports found for key '${reportsPropertyKeyName}'. Initializing empty cache.`, "System", dependencies);
+        playerUtils.debugLog(`[ReportManager] No valid reports found for key '${reportsPropertyKeyName}'. Initializing empty cache.`, 'System', dependencies);
     } catch (error) {
         console.error(`[ReportManager] Error reading/parsing reports during initialization: ${error.stack || error}`);
-        playerUtils.debugLog(`[ReportManager] Error reading/parsing reports during initialization: ${error.message}`, "System", dependencies);
+        playerUtils.debugLog(`[ReportManager] Error reading/parsing reports during initialization: ${error.message}`, 'System', dependencies);
     }
     reportsInMemory = [];
 }
@@ -75,11 +75,11 @@ export function persistReportsToDisk(dependencies) {
     try {
         world.setDynamicProperty(reportsPropertyKeyName, JSON.stringify(reportsInMemory));
         reportsAreDirty = false;
-        playerUtils.debugLog(`[ReportManager] Persisted ${reportsInMemory.length} reports to dynamic property.`, "System", dependencies);
+        playerUtils.debugLog(`[ReportManager] Persisted ${reportsInMemory.length} reports to dynamic property.`, 'System', dependencies);
         return true;
     } catch (error) {
         console.error(`[ReportManager] Error saving reports to dynamic property: ${error.stack || error}`);
-        playerUtils.debugLog(`[ReportManager] Error saving reports to dynamic property: ${error.message}`, "System", dependencies);
+        playerUtils.debugLog(`[ReportManager] Error saving reports to dynamic property: ${error.message}`, 'System', dependencies);
         return false;
     }
 }
@@ -106,7 +106,7 @@ export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) 
 
     if (!reporterPlayer?.id || !reporterPlayer?.nameTag ||
         !reportedPlayer?.id || !reportedPlayer?.nameTag || !reason) {
-        playerUtils.debugLog("[ReportManager] addReport called with invalid arguments (player objects or reason missing/invalid).", "System", dependencies);
+        playerUtils.debugLog('[ReportManager] addReport called with invalid arguments (player objects or reason missing/invalid).', 'System', dependencies);
         return null;
     }
 
@@ -140,7 +140,7 @@ export function clearAllReports(dependencies) {
     const { playerUtils } = dependencies;
     reportsInMemory = [];
     reportsAreDirty = true;
-    playerUtils.debugLog("[ReportManager] All reports cleared from memory. Attempting to persist change.", "System", dependencies);
+    playerUtils.debugLog('[ReportManager] All reports cleared from memory. Attempting to persist change.', 'System', dependencies);
     return persistReportsToDisk(dependencies);
 }
 /**

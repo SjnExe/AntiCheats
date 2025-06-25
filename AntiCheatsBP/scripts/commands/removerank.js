@@ -78,7 +78,7 @@ export async function execute(player, args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(), // Added timestamp
             adminName: player.nameTag,
-            actionType: 'remove_rank',
+            actionType: 'removeRank', // Changed to camelCase
             targetName: targetPlayer.nameTag,
             details: `Removed rank: ${rankDef.name} (ID: ${rankDef.id}, Tag: ${rankTagToRemove})`,
         }, dependencies);

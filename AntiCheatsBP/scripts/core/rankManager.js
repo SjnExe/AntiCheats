@@ -191,7 +191,7 @@ export function updatePlayerNametag(player, dependencies) {
         return;
     }
 
-    const vanishedTag = config?.vanishedPlayerTag || 'vanished';
+    const vanishedTag = config?.vanishedTag || 'vanished'; // Use standardized config key name
 
     try {
         if (player.hasTag(vanishedTag)) {

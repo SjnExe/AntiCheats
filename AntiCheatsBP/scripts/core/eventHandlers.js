@@ -28,7 +28,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
             playerUtils.debugLog(`Data saved for ${player.nameTag} on leave via saveDirtyPlayerData.`, player.nameTag, dependencies);
         } catch (error) {
             console.error(`[AntiCheat] Error in saveDirtyPlayerData for ${player.nameTag} on leave: ${error.stack || error}`);
-            logManager.addLog({ actionType: 'error_pdata_save_on_leave', context: 'handlePlayerLeave.saveDirtyPlayerData', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, dependencies);
+            logManager.addLog({ actionType: 'errorPdataSaveOnLeave', context: 'handlePlayerLeave.saveDirtyPlayerData', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, dependencies);
         }
     }
 
@@ -77,7 +77,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
         await playerDataManager.prepareAndSavePlayerData(player, dependencies);
     } catch (error) {
         console.error(`[AntiCheat] Error in prepareAndSavePlayerData for ${player.nameTag} on leave: ${error.stack || error}`);
-        logManager.addLog({ actionType: 'error_pdata_prepare_save_on_leave', context: 'handlePlayerLeave.prepareAndSavePlayerData', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, dependencies);
+        logManager.addLog({ actionType: 'errorPdataPrepareSaveOnLeave', context: 'handlePlayerLeave.prepareAndSavePlayerData', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, dependencies);
     }
     playerUtils.debugLog(`Finished processing playerLeave event for ${player.nameTag}.`, player.nameTag, dependencies);
 
@@ -134,7 +134,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         if (initialSpawn && config.enableWelcomerMessage) {
             const welcomeMsgKey = config.welcomeMessage || 'welcome.joinMessage';
             const message = getString(welcomeMsgKey, { playerName: player.nameTag });
-            dependencies.mc.system.runTimeout(() => {
+            mc.system.runTimeout(() => { // Use mc.system directly
                 try { player.sendMessage(message); } catch (e) { console.warn(`Failed to send welcome message to ${player.nameTag}: ${e}`); }
             }, 20);
 
@@ -171,7 +171,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         }
 
         if (pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
-            dependencies.mc.system.runTimeout(() => {
+            mc.system.runTimeout(() => { // Use mc.system directly
                 try { player.sendMessage(pData.deathMessageToShowOnSpawn); } catch (e) { console.warn(`Failed to send death coords to ${player.nameTag}: ${e}`); }
             }, 5);
             playerUtils.debugLog(`DeathCoords: Displayed death message to ${player.nameTag}: '${pData.deathMessageToShowOnSpawn}'`, pData.isWatched ? player.nameTag : null, dependencies);
@@ -195,7 +195,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}: ${error.message}`, player?.nameTag, dependencies);
         logManager.addLog({
-            actionType: 'error_handle_player_spawn',
+            actionType: 'errorHandlePlayerSpawn', // Changed to camelCase
             targetName: player?.nameTag || 'unknown player',
             details: `Error: ${error.message}`,
             error: error.stack || error.message, // Include stack for better debugging
@@ -254,7 +254,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
         }
     } else if (config.enableEntitySpamAntiGrief && (entity.typeId === 'minecraft:snow_golem' || entity.typeId === 'minecraft:iron_golem')) {
         playerUtils.debugLog(`AntiGrief: ${entity.typeId} spawned. Checking attribution. Tick: ${dependencies.currentTick}`, null, dependencies);
-        for (const player of dependencies.mc.world.getAllPlayers()) { // Use dependencies.mc
+        for (const player of mc.world.getAllPlayers()) { // Use mc.world directly
             const pData = playerDataManager.getPlayerData(player.id);
             if (pData?.expectingConstructedEntity?.type === entity.typeId &&
                 Math.abs(pData.expectingConstructedEntity.tick - dependencies.currentTick) < 10) { // Check within a small tick window
@@ -328,7 +328,7 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
         console.warn(`[EventHandler] Error applying death effect for ${deadEntity.nameTag}: ${e.message}`);
         playerUtils.debugLog(`Error applying death effect for ${deadEntity.nameTag}: ${e.message}`, deadEntity.nameTag, dependencies);
         dependencies.logManager.addLog({
-            actionType: 'error_death_effect',
+            actionType: 'errorDeathEffect', // Changed to camelCase
             targetName: deadEntity.nameTag,
             details: `Error: ${e.message}`,
             error: e.stack || e.message,
@@ -543,7 +543,7 @@ export async function handleItemUse(eventData, dependencies) {
     if (itemFoodComponent && config.enableChatDuringItemUseCheck) {
         pData.isUsingConsumable = true;
         pData.isDirtyForSave = true;
-        dependencies.mc.system.runTimeout(() => { // Use dependencies.mc
+        mc.system.runTimeout(() => { // Use mc.system directly
             if (pData.isUsingConsumable) { // Check if still using, might have been cancelled
                 pData.isUsingConsumable = false;
                 pData.isDirtyForSave = true;

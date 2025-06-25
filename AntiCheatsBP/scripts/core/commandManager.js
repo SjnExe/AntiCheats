@@ -119,7 +119,7 @@ export async function handleChatCommand(eventData, dependencies) {
         console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${errorStack}`);
         playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${errorMessage}`, null, dependencies);
         logManager.addLog({
-            actionType: 'error_command_execution', // Standardized error prefix
+            actionType: 'errorCommandExecution', // Changed to camelCase
             command: finalCommandName,
             targetName: player.nameTag, // Consistent with other logs
             details: `Args: [${args.join(', ')}]. Error: ${errorMessage}`,

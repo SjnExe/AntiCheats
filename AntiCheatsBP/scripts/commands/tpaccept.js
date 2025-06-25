@@ -1,7 +1,7 @@
 /**
  * Script for the !tpaccept command, allowing players to accept incoming TPA requests.
  */
-import { world, system } from '@minecraft/server';
+// import { world, system } from '@minecraft/server'; // Not used in this file
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -64,7 +64,7 @@ export async function execute(player, args, dependencies) {
         const warmUpInitiated = await tpaManager.acceptRequest(requestToAccept.requestId, dependencies);
 
         if (warmUpInitiated) {
-            player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.TPATeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
+            player.sendMessage(`§aAccepted TPA request from "${requestToAccept.requesterName}". Teleport will occur in ${config.tpaTeleportWarmupSeconds} seconds if the teleporting player avoids damage and stays online.`);
         } else {
             player.sendMessage(`§cCould not accept TPA request from "${requestToAccept.requesterName}". It might have expired or been cancelled.`);
              if (config.enableDebugLogging) {

@@ -67,7 +67,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         playerUtils.debugLog(`PDM:save: Fail stringify ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error stringifying pData for ${player.nameTag}: ${error.stack || error}`);
         dependencies.logManager.addLog({
-            actionType: 'error_pdata_stringify',
+            actionType: 'errorPdataStringify', // Changed to camelCase
             context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
             targetName: player.nameTag,
             details: `Error: ${error.message}`,
@@ -90,7 +90,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         playerUtils.debugLog(`PDM:save: Fail setDynamicProp for ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error setting dynamic property for ${player.nameTag}: ${error.stack || error}`);
         dependencies.logManager.addLog({
-            actionType: 'error_pdata_set_property',
+            actionType: 'errorPdataSetProperty', // Changed to camelCase
             context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
             targetName: player.nameTag,
             details: `Error: ${error.message}`,
@@ -122,7 +122,7 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         playerUtils.debugLog(`PDM:load: Failed to getDynamicProperty for ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error getting dynamic property for ${player.nameTag}: ${error.stack || error}`);
         dependencies.logManager.addLog({
-            actionType: 'error_pdata_get_property',
+            actionType: 'errorPdataGetProperty', // Changed to camelCase
             context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
             targetName: player.nameTag,
             details: `Error: ${error.message}`,
@@ -140,7 +140,7 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             playerUtils.debugLog(`PDM:load: Failed to parse JSON for ${player.nameTag}. JSON: '${jsonString}'. E: ${error.message}`, player.nameTag, dependencies);
             console.error(`[PlayerDataManager] Error parsing pData JSON for ${player.nameTag}: ${error.stack || error}`);
             dependencies.logManager.addLog({
-                actionType: 'error_pdata_parse',
+                actionType: 'errorPdataParse', // Changed to camelCase
                 context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
                 targetName: player.nameTag,
                 details: `Error: ${error.message}. JSON: ${jsonString.substring(0, 100)}...`, // Log snippet
@@ -343,7 +343,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         automodState: {},
         // Per-check tick trackers for intervals
         lastCheckNameSpoofTick: 0,
-        lastCheckAntiGMCTick: 0, // Corrected to Gmc standard
+        lastCheckAntiGmcTick: 0, // Corrected to Gmc standard
         lastCheckNetherRoofTick: 0,
         lastCheckAutoToolTick: 0,
         lastCheckFlatRotationBuildingTick: 0,

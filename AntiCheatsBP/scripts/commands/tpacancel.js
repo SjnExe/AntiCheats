@@ -1,7 +1,7 @@
 /**
  * Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
  */
-import { world, system } from '@minecraft/server';
+// import { world, system } from '@minecraft/server'; // Not used in this file
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}

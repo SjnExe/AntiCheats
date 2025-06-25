@@ -110,7 +110,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             } catch (e) {
                 playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
                 logDetails = `Failed to kick player ${player.nameTag}. Check: ${checkType}. Reason: '${kickReason}'. Error: ${e.message}`;
-                logManager.addLog({ actionType: 'error', event: 'automod_kick_failure', player: player.nameTag, reason: kickReason, error: e.message, context: 'kick_action' }, dependencies);
+                logManager.addLog({ actionType: 'error', event: 'automodKickFailure', player: player.nameTag, reason: kickReason, error: e.message, context: 'kick_action' }, dependencies);
             }
             break;
         case 'tempBan':
@@ -137,13 +137,13 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 } catch (e) {
                     playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag} after tempBan: ${e.stack || e}`, player.nameTag, dependencies);
                     logDetails = `Temp banned player (kick failed). Duration: ${friendlyDurationTempBan}, Check: ${checkType}. Stored Reason: ${banReasonForStorageTemp}. Error: ${e.message}`;
-                    logManager.addLog({ actionType: 'error', event: 'automod_kick_failure', player: player.nameTag, reason: kickMsgTempBan, error: e.message, context: 'tempBan_action_kick' }, dependencies);
+                    logManager.addLog({ actionType: 'error', event: 'automodKickFailure', player: player.nameTag, reason: kickMsgTempBan, error: e.message, context: 'tempBan_action_kick' }, dependencies);
                     actionProcessed = true; // Still processed the ban
                 }
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply tempBan to ${player.nameTag} via playerDataManager.addBan.`, player.nameTag, dependencies);
                 logDetails = `Failed to apply tempBan. Check: ${checkType}. Reason: ${banReasonForStorageTemp}`;
-                logManager.addLog({ actionType: 'error', event: 'automod_addBan_failure', player: player.nameTag, action: 'tempBan', reason: banReasonForStorageTemp, duration: parsedDurationMsTempBan }, dependencies);
+                logManager.addLog({ actionType: 'error', event: 'automodAddBanFailure', player: player.nameTag, action: 'tempBan', reason: banReasonForStorageTemp, duration: parsedDurationMsTempBan }, dependencies);
             }
             break;
         case 'permBan':
@@ -163,13 +163,13 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 } catch (e) {
                     playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag} after permBan: ${e.stack || e}`, player.nameTag, dependencies);
                     logDetails = `Permanently banned player (kick failed). Check: ${checkType}. Stored Reason: ${permBanReasonForStorage}. Error: ${e.message}`;
-                    logManager.addLog({ actionType: 'error', event: 'automod_kick_failure', player: player.nameTag, reason: kickMsgPermBan, error: e.message, context: 'permBan_action_kick' }, dependencies);
+                    logManager.addLog({ actionType: 'error', event: 'automodKickFailure', player: player.nameTag, reason: kickMsgPermBan, error: e.message, context: 'permBan_action_kick' }, dependencies);
                     actionProcessed = true; // Still processed the ban
                 }
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply permBan to ${player.nameTag} via playerDataManager.addBan.`, player.nameTag, dependencies);
                 logDetails = `Failed to apply permBan. Check: ${checkType}. Reason: ${permBanReasonForStorage}`;
-                logManager.addLog({ actionType: 'error', event: 'automod_addBan_failure', player: player.nameTag, action: 'permBan', reason: permBanReasonForStorage, duration: Infinity }, dependencies);
+                logManager.addLog({ actionType: 'error', event: 'automodAddBanFailure', player: player.nameTag, action: 'permBan', reason: permBanReasonForStorage, duration: Infinity }, dependencies);
             }
             break;
         case 'mute':
@@ -192,7 +192,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply mute to ${player.nameTag} via playerDataManager.addMute.`, player.nameTag, dependencies);
                 logDetails = `Failed to apply mute. Duration: ${durationStringMute}, Check: ${checkType}. Reason: ${muteReasonForStorage}`;
-                logManager.addLog({ actionType: 'error', event: 'automod_addMute_failure', player: player.nameTag, reason: muteReasonForStorage, duration: parsedDurationMsMute }, dependencies);
+                logManager.addLog({ actionType: 'error', event: 'automodAddMuteFailure', player: player.nameTag, reason: muteReasonForStorage, duration: parsedDurationMsMute }, dependencies);
             }
             break;
         case 'freeze':
@@ -301,7 +301,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
     if (actionProcessed) {
         logManager.addLog({ // Use addLog from dependencies
-            event: `automod_${actionType.toLowerCase()}`, // Standardized event name
+            event: `automod${actionType.charAt(0).toUpperCase() + actionType.slice(1)}`, // CamelCase event name
             adminName: 'AutoMod', // Actions are by AutoMod
             targetName: player.nameTag,
             duration: durationForLog, // Will be null for non-timed actions
@@ -328,7 +328,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             playerUtils.debugLog(`AutoModManager: Action '${actionType}' failed to process correctly for ${player.nameTag}. Details: ${logDetails}`, player.nameTag, dependencies);
             logManager.addLog({ // Use addLog from dependencies
                 actionType: 'error', // General error type for log filtering
-                event: `automod_${actionType.toLowerCase()}_processing_failure`,
+                event: `automod${actionType.charAt(0).toUpperCase() + actionType.slice(1)}ProcessingFailure`, // CamelCase event name
                 targetName: player.nameTag,
                 details: logDetails,
                 checkType: checkType,
