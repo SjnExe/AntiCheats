@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, findPlayer, config, getString } = dependencies; // Removed unused permissionLevels
+    const { playerUtils, logManager, findPlayer, config } = dependencies; // Removed getString
     const targetPlayerName = args[0];
     const gamemodeName = 'Adventure'; // For messages
     const gamemodeMc = mc.GameMode.adventure; // For API
@@ -35,9 +35,9 @@ export async function execute(player, args, dependencies) {
             const targetPlayer = findPlayer(targetPlayerName); // findPlayer is from playerUtils
             if (targetPlayer) {
                 targetPlayer.setGameMode(gamemodeMc);
-                player.sendMessage(getString('gamemode.successOther', { playerName: targetPlayer.nameTag, gamemode: gamemodeName }));
+                player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`); // Hardcoded string
                 if (player.id !== targetPlayer.id) {
-                    targetPlayer.sendMessage(getString('gamemode.changedTo', { gamemode: gamemodeName }));
+                    targetPlayer.sendMessage(`§eYour gamemode has been set to ${gamemodeName}.`); // Hardcoded string
                 }
                 logManager.addLog({
                     timestamp: Date.now(),
@@ -47,12 +47,12 @@ export async function execute(player, args, dependencies) {
                     details: `Set to ${gamemodeName}`,
                 }, dependencies);
             } else {
-                player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
+                player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`); // Hardcoded string
             }
         } else {
             // No target player specified, apply to the command issuer
             player.setGameMode(gamemodeMc);
-            player.sendMessage(getString('gamemode.successSelf', { gamemode: gamemodeName }));
+            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`); // Hardcoded string
             logManager.addLog({
                 timestamp: Date.now(),
                 adminName: player.nameTag,
@@ -63,7 +63,7 @@ export async function execute(player, args, dependencies) {
         }
     } catch (error) {
         const targetNameForError = targetPlayerName || player.nameTag;
-        player.sendMessage(getString('gamemode.error.set', { playerName: targetNameForError, gamemode: gamemodeName, error: error.message }));
+        player.sendMessage(`§cFailed to set gamemode for ${targetNameForError} to ${gamemodeName}: ${error.message}`); // Hardcoded string
         playerUtils.debugLog(`[GMACommand] Error setting gamemode for ${targetNameForError}: ${error.message}`, player.nameTag, dependencies);
         console.error(`[GMACommand] Error setting gamemode for ${targetNameForError} by ${player.nameTag}: ${error.stack || error}`);
         logManager.addLog({

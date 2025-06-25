@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager, config, getString } = dependencies; // Added getString
+    const { playerUtils, logManager, config } = dependencies;
 
     const linesToClear = 150; // Number of empty lines to send
     for (let i = 0; i < linesToClear; i++) {
@@ -36,15 +36,15 @@ export async function execute(player, _args, dependencies) {
             console.warn(`[ClearChatCommand] Error sending empty message line ${i + 1}: ${error}`);
             // Optionally break or log more formally if sendMessage fails repeatedly
             if (i > 5) { // Example: Stop if it fails multiple times
-                player.sendMessage(getString('clearchat.error.partial'));
+                player.sendMessage('§cChat clear failed partially. Some messages might remain.'); // Hardcoded string
                 return;
             }
         }
     }
-    player.sendMessage(getString('clearchat.success'));
+    player.sendMessage('§aChat cleared successfully.'); // Hardcoded string
 
     try {
-        playerUtils.notifyAdmins(getString('clearchat.adminNotification', { playerName: player.nameTag }), dependencies, player, null);
+        playerUtils.notifyAdmins(`§7[Admin] Chat cleared by §e${player.nameTag}§7.`, dependencies, player, null); // Hardcoded string
 
         logManager.addLog({
             timestamp: Date.now(),

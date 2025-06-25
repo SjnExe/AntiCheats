@@ -103,10 +103,6 @@ These commands are typically available to players with administrative privileges
     *   **Purpose:** Displays the server rules (as configured in `config.js`).
     *   **Syntax:** `!rules`
     *   **Permission:** All Players (typically, but listed as Admin command in `config.js` - check implementation if it needs to be moved).
-*   **`!setlang <language_code>`**
-    *   **Purpose:** Sets your preferred language for addon messages.
-    *   **Syntax:** `!setlang <language_code>` (e.g., `!setlang en_US`)
-    *   **Permission:** All Players.
 *   **`!testnotify`**
     *   **Purpose:** Sends a test notification to yourself (for admins to test the notification system).
     *   **Syntax:** `!testnotify`
@@ -163,10 +159,6 @@ These commands are generally available to all players on the server.
 *   **`!rules`**
     *   **Purpose:** Displays the server rules. (Moved here as it's typically a player command)
     *   **Syntax:** `!rules`
-    *   **Permission:** All Players.
-*   **`!setlang <language_code>`**
-    *   **Purpose:** Sets your preferred language for addon messages. (Moved here as it's typically a player command)
-    *   **Syntax:** `!setlang <language_code>` (e.g., `!setlang en_US`)
     *   **Permission:** All Players.
 
 ## TPA Commands (Teleportation Request System)

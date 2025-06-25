@@ -20,7 +20,7 @@ import * as mc from '@minecraft/server'; // For mc.GameMode
  * @returns {Promise<void>}
  */
 export async function checkNetherRoof(player, pData, dependencies) {
-    const { config, playerDataManager, playerUtils, getString, actionManager } = dependencies;
+    const { config, playerDataManager, playerUtils, actionManager } = dependencies;
     const minecraftSystem = dependencies.mc; // Access mc module via dependencies
 
     if (!config.enableNetherRoofCheck) {
@@ -44,16 +44,10 @@ export async function checkNetherRoof(player, pData, dependencies) {
         const detectedYValue = player.location.y.toFixed(2);
         const thresholdValue = config.netherRoofYLevelThreshold.toString();
 
-        // The localizedDetailString is good for direct use but actionManager usually formats its own messages.
-        // const localizedDetailString = getString('check.netherRoof.details.onRoof', {
-        //     detectedY: detectedYValue,
-        //     threshold: thresholdValue,
-        // });
-
         const violationDetails = {
             detectedY: detectedYValue,
             threshold: thresholdValue,
-            // detailsString: localizedDetailString, // Can be added if actionProfile uses {detailsString}
+            detailsString: `Player on Nether roof (Y: ${detectedYValue} >= ${thresholdValue})`, // Hardcoded string
         };
 
         // Standardized action profile key

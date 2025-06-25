@@ -24,7 +24,7 @@ import * as mc from '@minecraft/server'; // Not strictly needed unless mc.Player
  * @returns {Promise<void>}
  */
 export async function checkNoSlow(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableNoSlowCheck || !pData) {
         return;
@@ -68,17 +68,13 @@ export async function checkNoSlow(player, pData, dependencies) {
 
         if (horizontalSpeedBPS > effectiveMaxAllowedSpeedBPS) {
             let resolvedSlowingActionString;
-            if (getString && typeof slowingActionKey === 'string' && slowingActionKey.startsWith('check.noSlow.action.')) {
-                resolvedSlowingActionString = getString(slowingActionKey);
-            } else {
-                // Fallback to manual English strings
-                switch (slowingActionKey) {
-                    case 'check.noSlow.action.eatingDrinking': resolvedSlowingActionString = 'Eating/Drinking'; break;
-                    case 'check.noSlow.action.chargingBow': resolvedSlowingActionString = 'Charging Bow'; break;
-                    case 'check.noSlow.action.usingShield': resolvedSlowingActionString = 'Using Shield'; break;
-                    case 'check.noSlow.action.sneaking': resolvedSlowingActionString = 'Sneaking'; break;
-                    default: resolvedSlowingActionString = 'Unknown Action'; break;
-                }
+            // Fallback to manual English strings
+            switch (slowingActionKey) {
+                case 'check.noSlow.action.eatingDrinking': resolvedSlowingActionString = 'Eating/Drinking'; break;
+                case 'check.noSlow.action.chargingBow': resolvedSlowingActionString = 'Charging Bow'; break;
+                case 'check.noSlow.action.usingShield': resolvedSlowingActionString = 'Using Shield'; break;
+                case 'check.noSlow.action.sneaking': resolvedSlowingActionString = 'Sneaking'; break;
+                default: resolvedSlowingActionString = 'Unknown Action'; break;
             }
 
             const violationDetails = {

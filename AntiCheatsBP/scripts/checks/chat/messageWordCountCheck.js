@@ -42,7 +42,7 @@ export async function checkMessageWordCount(player, pData, eventData, dependenci
 
     const threshold = config.maxWordsSpamThreshold ?? 50;
     // Standardized action profile key
-    const actionProfileKey = config.maxWordsSPAMActionProfileName || 'chatSpamMaxWords';
+    const actionProfileKey = config.maxWordsSpamActionProfileName || 'chatSpamMaxWords'; // Corrected typo SPAM -> Spam
     const profile = config.checkActionProfiles?.[actionProfileKey]; // Get the profile for cancelMessage check
 
     let shouldCancel = false;

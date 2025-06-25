@@ -24,7 +24,7 @@ import * as mc from '@minecraft/server'; // Not strictly needed if only using mc
  * @returns {Promise<void>}
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, getString } = dependencies; // Added getString
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableInvalidSprintCheck || !pData) {
         return;
@@ -76,23 +76,15 @@ export async function checkInvalidSprint(player, pData, dependencies) {
 
         if (invalidConditionKey) {
             let resolvedConditionString;
-            // Attempt to use getString for localized condition name
-            if (getString && typeof invalidConditionKey === 'string' && invalidConditionKey.startsWith('check.invalidSprint.condition.')) {
-                resolvedConditionString = getString(invalidConditionKey, {
-                    hungerLevel: currentFoodLevel, // For hunger condition
-                    limit: (config.sprintHungerLimit ?? 6).toString(), // For hunger condition
-                });
-            } else {
-                // Fallback to a more generic English description if getString is not available or key doesn't match pattern
-                switch (invalidConditionKey) { // Using the key directly as fallback
-                    case 'check.invalidSprint.condition.blindness': resolvedConditionString = 'Blindness'; break;
-                    case 'check.invalidSprint.condition.sneaking': resolvedConditionString = 'Sneaking'; break;
-                    case 'check.invalidSprint.condition.riding': resolvedConditionString = 'Riding Entity'; break;
-                    case 'check.invalidSprint.condition.hunger': resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`; break;
-                    case 'check.invalidSprint.condition.usingItem': resolvedConditionString = 'Using Item'; break;
-                    case 'check.invalidSprint.condition.chargingBow': resolvedConditionString = 'Charging Bow'; break;
-                    default: resolvedConditionString = 'Unknown Invalid Sprint Condition'; break;
-                }
+            // Fallback to a more generic English description
+            switch (invalidConditionKey) { // Using the key directly as fallback
+                case 'check.invalidSprint.condition.blindness': resolvedConditionString = 'Blindness'; break;
+                case 'check.invalidSprint.condition.sneaking': resolvedConditionString = 'Sneaking'; break;
+                case 'check.invalidSprint.condition.riding': resolvedConditionString = 'Riding Entity'; break;
+                case 'check.invalidSprint.condition.hunger': resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`; break;
+                case 'check.invalidSprint.condition.usingItem': resolvedConditionString = 'Using Item'; break;
+                case 'check.invalidSprint.condition.chargingBow': resolvedConditionString = 'Charging Bow'; break;
+                default: resolvedConditionString = 'Unknown Invalid Sprint Condition'; break;
             }
 
             const violationDetails = {
