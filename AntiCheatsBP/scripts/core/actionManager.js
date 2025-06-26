@@ -48,7 +48,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
 /**
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
  * Handles cases where `player` might be null (e.g., system-level checks).
- * Assumes `checkType` is provided in correct camelCase format (e.g., 'playerAntigmc', 'movementFlyHover').
+ * Assumes `checkType` is provided in correct camelCase format (e.g., 'playerAntiGmc', 'movementFlyHover').
  * @param {import('@minecraft/server').Player | null} player - The player involved, or null if not player-specific.
  * @param {string} checkType - The identifier for the check type. This should match keys in `config.checkActionProfiles` and be correctly camelCased.
  * @param {object | undefined} violationDetails - An object containing specific details about the violation.
