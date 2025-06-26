@@ -77,7 +77,7 @@ export async function execute(player, args, dependencies) {
         default:
             playerUtils.warnPlayer(player, `§cInvalid subcommand '${subCommand}'. Use ${cmdPrefix}wb help.`);
     }
-} // This closing brace was missing
+}
 
 function formatDurationBrief(ms) {
     if (ms <= 0) return '0s';
