@@ -71,7 +71,7 @@ export async function execute(player, args, dependencies) {
     if (requestResult) {
         player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
 
-        system.run(() => {
+        mc.system.run(() => {
             try {
                 target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
             } catch (e) {
