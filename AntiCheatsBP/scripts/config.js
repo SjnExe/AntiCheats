@@ -323,7 +323,6 @@ export const commandSettings = {
     netherlock: { enabled: false }, // Dimension lock commands might be complex
     endlock: { enabled: false },
     worldborder: { enabled: true }, // Depends on enableWorldBorderSystem
-    setlang: { enabled: false }, // Multi-language support removed
     addrank: { enabled: true }, // Depends on rank system
     removerank: { enabled: true }, // Depends on rank system
     listranks: { enabled: true }, // Depends on rank system
