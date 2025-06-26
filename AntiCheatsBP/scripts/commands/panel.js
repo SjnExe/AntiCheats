@@ -13,7 +13,7 @@ export const definition = {
     syntax: '!panel',
     description: 'Opens the main AntiCheat Admin UI panel.', // Hardcoded string
     permissionLevel: permissionLevels.normal,
-    aliases: ['ui'], // Added common alias
+    // aliases: ['ui'], // Defined in config.js commandAliases
     enabled: true,
 };
 

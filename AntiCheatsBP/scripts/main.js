@@ -102,12 +102,8 @@ mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
         currentTick,
         mc,
         permissionLevels: rankManager.permissionLevels,
-         rankManager: {
-            getPlayerRankId: rankManager.getPlayerRankId,
-            getPlayerPermissionLevel: rankManager.getPlayerPermissionLevel,
-            updatePlayerNametag: rankManager.updatePlayerNametag,
-            getPlayerRankFormattedChatElements: rankManager.getPlayerRankFormattedChatElements
-        },
+        // Use the same rankManager structure as in getStandardDependencies for consistency
+        rankManager: getStandardDependencies().rankManager,
     };
 
     await playerDataManager.ensurePlayerDataInitialized(player, currentTick, joinDependencies);
