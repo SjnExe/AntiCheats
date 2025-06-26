@@ -21,70 +21,8 @@ export function isAdmin(player, dependencies) {
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) <= dependencies.permissionLevels.admin;
 }
 
-/**
- * Checks if a player has owner-level permissions.
- * @param {import('@minecraft/server').Player} player - The player to check.
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing rankManager and permissionLevels.
- * @returns {boolean} True if the player is an owner, false otherwise.
- */
-export function isOwner(player, dependencies) {
-    if (!dependencies || !dependencies.rankManager || !dependencies.permissionLevels) {
-        console.warn('[PlayerUtils] isOwner called without full dependencies object containing rankManager and permissionLevels.');
-        return false;
-    }
-    if (!(player instanceof mc.Player) || !player.isValid()) {
-        return false;
-    }
-    return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) === dependencies.permissionLevels.owner;
-}
-
-/**
- * Executes a lag clearing operation by removing all item entities across specified dimensions.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies.
- * @param {import('@minecraft/server').Player | null} adminPerformingAction - The admin player who initiated the action, or null if system-initiated.
- * @returns {Promise<{clearedItemsCount: number, dimensionsProcessed: number, error: string | null}>} An object detailing the outcome.
- */
-export async function executeLagClear(dependencies, adminPerformingAction) {
-    let clearedItemsCount = 0;
-    let dimensionsProcessed = 0;
-    let errorMessages = [];
-    const dimensionIds = ['minecraft:overworld', 'minecraft:nether', 'minecraft:the_end'];
-
-    debugLog(`LagClear: Initiated by ${adminPerformingAction?.nameTag || 'SYSTEM'}. Processing dimensions: ${dimensionIds.join(', ')}.`, adminPerformingAction?.nameTag, dependencies);
-
-    for (const dimensionId of dimensionIds) {
-        try {
-            const dimension = mc.world.getDimension(dimensionId);
-            dimensionsProcessed++;
-            const itemEntities = dimension.getEntities({ type: 'minecraft:item' });
-
-            let countInDimension = 0;
-            for (const entity of itemEntities) {
-                try {
-                    entity.kill();
-                    clearedItemsCount++;
-                    countInDimension++;
-                } catch (killError) {
-                    const errMsg = `LagClear: Error killing item entity ${entity.id} in ${dimensionId}: ${killError}`;
-                    errorMessages.push(errMsg);
-                    debugLog(errMsg, adminPerformingAction?.nameTag, dependencies);
-                }
-            }
-            debugLog(`LagClear: Cleared ${countInDimension} items in ${dimensionId}.`, adminPerformingAction?.nameTag, dependencies);
-        } catch (dimError) {
-            const errMsg = `LagClear: Error processing dimension ${dimensionId}: ${dimError}`;
-            errorMessages.push(errMsg);
-            debugLog(errMsg, adminPerformingAction?.nameTag, dependencies);
-        }
-    }
-
-    debugLog(`LagClear: Finished. Processed ${dimensionsProcessed} dimensions. Total items cleared: ${clearedItemsCount}. Errors: ${errorMessages.length}`, adminPerformingAction?.nameTag, dependencies);
-    return {
-        clearedItemsCount,
-        dimensionsProcessed,
-        error: errorMessages.length > 0 ? errorMessages.join('\n') : null,
-    };
-}
+// Removed isOwner function as it was unused.
+// Removed executeLagClear function as it was unused.
 
 /**
  * Sends a standardized warning message to a player.

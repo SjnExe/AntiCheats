@@ -120,16 +120,4 @@ export function getLogs(count) {
     return [...logsInMemory]; // Return a copy to prevent external modification
 }
 
-/**
- * Clears all action logs from memory and attempts to clear from persistent storage.
- * This function is intended for development/testing purposes only.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if clearing and persisting was successful, false otherwise.
- */
-export function clearAllLogs_DEV_ONLY(dependencies) {
-    const { playerUtils } = dependencies;
-    logsInMemory = [];
-    logsAreDirty = true; // Mark as dirty to ensure the empty array is persisted
-    playerUtils.debugLog('LogManager: All action logs cleared from memory (DEV_ONLY). Attempting to persist.', 'System', dependencies);
-    return persistLogCacheToDisk(dependencies);
-}
+// Removed clearAllLogs_DEV_ONLY function as it was unused.

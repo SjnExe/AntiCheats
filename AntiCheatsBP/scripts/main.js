@@ -53,7 +53,6 @@ function getStandardDependencies() {
         chatProcessor,
         getString: playerUtils.getString,
         rankManager: {
-            getPlayerRankId: rankManager.getPlayerRankId,
             getPlayerPermissionLevel: rankManager.getPlayerPermissionLevel,
             updatePlayerNametag: rankManager.updatePlayerNametag,
             getPlayerRankFormattedChatElements: rankManager.getPlayerRankFormattedChatElements,
@@ -237,15 +236,12 @@ mc.system.runInterval(async () => {
         }
         if (tickDependencies.config.enableInstaBreakSpeedCheck && checks.checkInstaBreak) { /* InstaBreak typically runs on blockBreak */ }
         // Removed tower check from tick, it's in PlayerPlaceBlockAfterEvent
-        // if (tickDependencies.config.enableTowerCheck && checks.checkTower) await checks.checkTower(player, pData, tickDependencies);
         if (tickDependencies.config.enableFlatRotationCheck && checks.checkFlatRotationBuilding && (currentTick - (pData.lastCheckFlatRotationBuildingTick || 0) >= tickDependencies.config.flatRotationCheckIntervalTicks)) {
             await checks.checkFlatRotationBuilding(player, pData, tickDependencies); pData.lastCheckFlatRotationBuildingTick = currentTick;
         }
-        // Removed downward scaffold from tick, it's in PlayerPlaceBlockAfterEvent
-        // if (tickDependencies.config.enableDownwardScaffoldCheck && checks.checkDownwardScaffold) await checks.checkDownwardScaffold(player, pData, tickDependencies);
+        // Downward scaffold check removed from tick, it's in PlayerPlaceBlockAfterEvent
         if (tickDependencies.config.enableAirPlaceCheck && checks.checkAirPlace) { /* AirPlace typically runs on blockPlace */ }
         // Removed fast place from tick, it's in PlayerPlaceBlockAfterEvent
-        // if (tickDependencies.config.enableFastPlaceCheck && checks.checkFastPlace) await checks.checkFastPlace(player, pData, tickDependencies);
 
 
         // Player State / Info / Behavior Checks
@@ -257,9 +253,7 @@ mc.system.runInterval(async () => {
         }
         if (tickDependencies.config.enableSelfHurtCheck && checks.checkSelfHurt) { /* SelfHurt typically runs on entityHurt */ }
         // Removed illegal item check from tick, it's event-based
-        // if (tickDependencies.config.enableIllegalItemCheck && checks.checkIllegalItems) await checks.checkIllegalItems(player, pData, tickDependencies);
         // Removed inventory mod check from tick, it's event-based
-        // if (tickDependencies.config.enableInventoryModCheck && checks.checkInventoryModifications) await checks.checkInventoryModifications(player, pData, tickDependencies);
 
 
         // Client Behavior Checks

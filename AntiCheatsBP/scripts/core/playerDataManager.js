@@ -838,24 +838,7 @@ export function isBanned(player, dependencies) {
     return getBanInfo(player, dependencies) !== null;
 }
 
-/**
- * Directly sets the player data in the runtime cache. Used for initialization or forceful updates.
- * @param {string} playerId - The ID of the player.
- * @param {import('../types.js').PlayerAntiCheatData} data - The player data to set.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- */
-export function setPlayerData(playerId, data, dependencies) {
-    const { playerUtils } = dependencies; // Optional: for logging if needed
-    if (!playerId || !data) {
-        if (playerUtils) {
-            playerUtils.debugLog('PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data.', null, dependencies);
-        } else {
-            console.warn('PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data. (playerUtils not in deps)');
-        }
-        return;
-    }
-    playerData.set(playerId, data);
-}
+// Removed setPlayerData function as it was unused.
 
 /**
  * Saves player data if it has been marked as dirty.

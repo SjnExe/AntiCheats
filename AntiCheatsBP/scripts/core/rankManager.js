@@ -148,16 +148,7 @@ export function getPlayerPermissionLevel(player, dependencies) {
     return permissionLevel;
 }
 
-/**
- * Gets the ID of the player's highest priority rank.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {string} The player's rank ID (e.g., 'owner', 'admin', 'member').
- */
-export function getPlayerRankId(player, dependencies) {
-    const { rankId } = getPlayerRankAndPermissions(player, dependencies);
-    return rankId || 'member'; // Fallback to 'member'
-}
+// Removed getPlayerRankId function as it was unused.
 
 /**
  * Gets the formatted chat prefix, name color, and message color for a player based on their rank.

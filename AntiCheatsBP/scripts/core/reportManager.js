@@ -30,13 +30,8 @@ let reportsInMemory = [];
  * Flag indicating if the in-memory reports have changed and need to be persisted.
  */
 let reportsAreDirty = false;
-/**
- * Generates a somewhat unique report ID combining timestamp and random characters.
- * @returns {string} A unique report ID.
- */
-function generateReportId() {
-    return Date.now().toString(36) + Math.random().toString(36).substring(2, 7);
-}
+// Removed unused function generateReportId
+
 /**
  * Loads reports from the dynamic property into the in-memory cache.
  * Must be called once during script initialization from a context that can provide dependencies.
@@ -90,76 +85,6 @@ export function persistReportsToDisk(dependencies) {
 export function getReports() {
     return [...reportsInMemory];
 }
-/**
- * Adds a new player report to the in-memory cache and marks reports as dirty for saving.
- * Manages report limits by removing the oldest if `maxReportsCount` is exceeded.
- * New reports are added to the beginning of the array (newest first).
- * @param {import('@minecraft/server').Player} reporterPlayer - The player making the report.
- * @param {import('@minecraft/server').Player} reportedPlayer - The player being reported.
- * @param {string} reason - The reason for the report.
- * @param {object} dependencies - The standard dependencies object.
- * @returns {ReportEntry | null} The newly created report object, or null if arguments are invalid.
- */
-export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) {
-    const { playerUtils, config } = dependencies; // Added config to destructuring
-    const currentMaxReportsCount = config.maxReportsCount !== undefined ? config.maxReportsCount : 100;
-
-    if (!reporterPlayer?.id || !reporterPlayer?.nameTag ||
-        !reportedPlayer?.id || !reportedPlayer?.nameTag || !reason) {
-        playerUtils.debugLog('[ReportManager] addReport called with invalid arguments (player objects or reason missing/invalid).', 'System', dependencies);
-        return null;
-    }
-
-    const newReport = {
-        id: generateReportId(),
-        timestamp: Date.now(),
-        reporterId: reporterPlayer.id,
-        reporterName: reporterPlayer.nameTag,
-        reportedId: reportedPlayer.id,
-        reportedName: reportedPlayer.nameTag,
-        reason: reason.trim()
-    };
-
-    reportsInMemory.unshift(newReport);
-
-    if (reportsInMemory.length > currentMaxReportsCount) {
-        reportsInMemory.length = currentMaxReportsCount;
-    }
-
-    reportsAreDirty = true;
-    playerUtils.debugLog(`[ReportManager] Added report by ${newReport.reporterName} against ${newReport.reportedName}. Cache: ${reportsInMemory.length}`, newReport.reporterName, dependencies);
-
-    return newReport;
-}
-/**
- * Clears all stored player reports from memory and persists the empty list.
- * @param {object} dependencies - The standard dependencies object.
- * @returns {boolean} True if clearing and persisting was successful.
- */
-export function clearAllReports(dependencies) {
-    const { playerUtils } = dependencies;
-    reportsInMemory = [];
-    reportsAreDirty = true;
-    playerUtils.debugLog('[ReportManager] All reports cleared from memory. Attempting to persist change.', 'System', dependencies);
-    return persistReportsToDisk(dependencies);
-}
-/**
- * Clears a specific report from storage by its ID.
- * Operates on the in-memory cache and then persists changes.
- * @param {string} reportId - The ID of the report to clear.
- * @param {object} dependencies - The standard dependencies object.
- * @returns {boolean} True if a report was found and cleared (and persisted), false otherwise.
- */
-export function clearReportById(reportId, dependencies) {
-    const { playerUtils } = dependencies;
-    const initialCount = reportsInMemory.length;
-    reportsInMemory = reportsInMemory.filter(report => report.id !== reportId);
-
-    if (reportsInMemory.length < initialCount) {
-        reportsAreDirty = true;
-        playerUtils.debugLog(`[ReportManager] Cleared report ID: ${reportId} from memory. Attempting to persist.`, "System", dependencies);
-        return persistReportsToDisk(dependencies);
-    }
-    playerUtils.debugLog(`[ReportManager] Report ID: ${reportId} not found for clearing.`, "System", dependencies);
-    return false;
-}
+// Removed unused function addReport
+// Removed unused function clearAllReports
+// Removed unused function clearReportById

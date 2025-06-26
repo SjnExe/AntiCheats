@@ -323,7 +323,7 @@
  * @property {typeof ItemComponentTypes} ItemComponentTypes Enum for item component types.
  * @property {ChatProcessor} chatProcessor Module for processing and validating chat messages.
  * @property {function(string, Record<string, string | number>?): string} getString Localization function (currently simplified).
- * @property {{getPlayerRankId: RankManagerFull['getPlayerRankId'], getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions.
+ * @property {{getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions.
  * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder']}} worldBorderManager Subset of WorldBorderManager functions.
  * @property {System} system The `system` object from `@minecraft/server`.
  * @property {typeof import('./config.js')} editableConfig The full config module, allowing access to `updateConfigValue`.
