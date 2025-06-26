@@ -148,8 +148,6 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
     }
 }
 
-// --- Interpolation Helper Functions ---
-
 /**
  * Quadratic easing out function. Provides a smooth deceleration.
  * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
