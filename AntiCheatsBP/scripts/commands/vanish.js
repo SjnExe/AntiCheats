@@ -1,7 +1,7 @@
 /**
  * Defines the !vanish command for administrators to toggle their visibility and related effects.
  */
-// import { world } from '@minecraft/server'; // world is not used
+import * as mc from '@minecraft/server'; // Import mc for mc.world
 
 const vanishedTag = 'vanished';
 const vanishModeNotifyTag = 'vanish_mode_notify';
@@ -41,7 +41,7 @@ export async function execute(player, args, dependencies) {
 
         if (mode === 'notify') {
             player.addTag(vanishModeNotifyTag);
-            world.sendMessage(`§e${player.nameTag} left the game`);
+            mc.world.sendMessage(`§e${player.nameTag} left the game`);
             player.onScreenDisplay.setActionBar('§7You are now vanished (notify mode).');
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanishOnNotify', details: `${player.nameTag} enabled vanish (notify).` }, dependencies);
         } else {
@@ -63,7 +63,7 @@ export async function execute(player, args, dependencies) {
         player.removeEffect('fire_resistance');
 
         if (wasNotifyMode) {
-            world.sendMessage(`§e${player.nameTag} joined the game`);
+            mc.world.sendMessage(`§e${player.nameTag} joined the game`);
             player.sendMessage('§7You are no longer vanished (notify mode).');
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanishOffNotify', details: `${player.nameTag} disabled vanish (notify).` }, dependencies);
             player.removeTag(vanishModeNotifyTag);
