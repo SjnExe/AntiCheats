@@ -29,6 +29,7 @@ import * as panelCmd from './panel.js';
 import * as removerankCmd from './removerank.js';
 import * as resetflagsCmd from './resetflags.js';
 import * as rulesCmd from './rules.js';
+// import * as setlangCmd from './setlang.js'; // Localization removed
 import * as testnotifyCmd from './testnotify.js';
 import * as tpCmd from './tp.js';
 import * as tpaCmd from './tpa.js';
@@ -76,7 +77,6 @@ export const commandModules = [
     removerankCmd,
     resetflagsCmd,
     rulesCmd,
-    // setlangCmd, // Localization removed
     testnotifyCmd,
     tpCmd,
     tpaCmd,
