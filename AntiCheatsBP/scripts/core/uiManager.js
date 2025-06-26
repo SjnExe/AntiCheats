@@ -352,7 +352,7 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
     } catch (error) {
         depPlayerUtils.debugLog(`Error in showAdminPanelMain: ${error.stack || error}`, player.nameTag, dependencies);
         logManager.addLog({ adminName: player.nameTag, actionType: 'error', context: 'uiManager.showAdminPanelMain', details: `Error: ${error.message}` }, dependencies);
-        adminPlayer.sendMessage(getString('ui.adminPanel.error.generic'));
+        player.sendMessage(getString('ui.adminPanel.error.generic'));
     }
 };
 
