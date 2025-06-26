@@ -7,9 +7,9 @@
 import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 
 export const definition = {
-    name: "version",
-    syntax: "!version",
-    description: "Displays the AntiCheat addon version.",
+    name: 'version',
+    syntax: '!version',
+    description: 'Displays the AntiCheat addon version.',
     permissionLevel: permissionLevels.normal, // Changed to normal
     enabled: true,
 };
@@ -17,6 +17,6 @@ export const definition = {
  * Executes the version command.
  */
 export async function execute(player, _args, dependencies) {
-    const { config, permissionLevels } = dependencies;
-    player.sendMessage(`§7AntiCheat Addon Version: §e${config.acVersion || "N/A"}`);
+    const { config } = dependencies; // Removed unused permissionLevels
+    player.sendMessage(`§7AntiCheat Addon Version: §e${config.acVersion || 'N/A'}`);
 }

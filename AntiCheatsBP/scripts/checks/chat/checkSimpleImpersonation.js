@@ -1,6 +1,8 @@
 /**
- * Implements a check to detect simple impersonation attempts in chat.
+ * @file Implements a check to detect simple impersonation attempts in chat,
+ * such as mimicking server announcements.
  */
+
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
@@ -8,35 +10,40 @@
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
+
 /**
  * Checks a message for simple impersonation patterns (e.g., mimicking server announcements).
- * @param {import('@minecraft/server').Player} player
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
- * @param {PlayerAntiCheatData} pData
- * @param {CommandDependencies} dependencies Should include config, playerUtils, actionManager, and potentially permissionLevels or rankManager.
+ * Exempts players with a permission level at or below `config.impersonationExemptPermissionLevel`.
+ *
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
+ * @param {PlayerAntiCheatData} pData - Player's anti-cheat data (used for watched status).
+ * @param {CommandDependencies} dependencies - Should include config, playerUtils, actionManager, rankManager, and permissionLevels.
  * @returns {Promise<void>}
  */
 export async function checkSimpleImpersonation(player, eventData, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies;
+    const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
     const rawMessageContent = eventData.message;
 
-    const enableSimpleImpersonationCheck = config.enableSimpleImpersonationCheck ?? false;
-    if (!enableSimpleImpersonationCheck) {
+    const enableCheck = config.enableSimpleImpersonationCheck ?? false;
+    if (!enableCheck) {
         return;
     }
-    if (!pData) {
-        playerUtils.debugLog("[SimpleImpersonationCheck] pData is null, skipping check (though not strictly needed for this check's core logic).", player.nameTag, dependencies);
+
+    if (!pData && config.enableDebugLogging) { // Log only if debug is on and pData is missing
+        playerUtils.debugLog('[SimpleImpersonationCheck] pData is null. Watched player status might be unavailable for logging.', player.nameTag, dependencies);
     }
 
     const minMessageLength = config.impersonationMinMessageLengthForPatternMatch ?? 10;
     if (rawMessageContent.length < minMessageLength) {
-        return;
+        return; // Message too short for pattern matching
     }
 
-    const adminPermissionLevelDefault = dependencies.permissionLevels?.admin ?? 1;
+    const adminPermissionLevelDefault = permissionLevels?.admin ?? 1; // Use permissionLevels from dependencies
     const exemptPermissionLevel = config.impersonationExemptPermissionLevel ?? adminPermissionLevelDefault;
 
-    const playerPermission = dependencies.rankManager.getPlayerPermissionLevel(player, dependencies);
+    const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
     if (playerPermission <= exemptPermissionLevel) {
         playerUtils.debugLog(`[SimpleImpersonationCheck] Player ${player.nameTag} (perm: ${playerPermission}) is exempt (threshold: ${exemptPermissionLevel}).`, player.nameTag, dependencies);
         return;
@@ -44,34 +51,39 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
     const serverMessagePatterns = config.impersonationServerMessagePatterns ?? [];
     if (serverMessagePatterns.length === 0) {
+        playerUtils.debugLog('[SimpleImpersonationCheck] No serverMessagePatterns configured. Skipping.', player.nameTag, dependencies);
         return;
     }
 
-    const actionProfileName = config.impersonationActionProfileName ?? "chatImpersonationAttempt";
+    const actionProfileKey = config.impersonationActionProfileName ?? 'chatImpersonationAttempt'; // Standardized key
     const watchedPlayerName = pData?.isWatched ? player.nameTag : null;
 
     for (const patternString of serverMessagePatterns) {
         if (typeof patternString !== 'string' || patternString.trim() === '') {
-            playerUtils.debugLog("[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config.", watchedPlayerName, dependencies);
+            playerUtils.debugLog('[SimpleImpersonationCheck] Encountered empty or invalid pattern string in config.', watchedPlayerName, dependencies);
             continue;
         }
         try {
-            const regex = new RegExp(patternString, 'i');
+            const regex = new RegExp(patternString, 'i'); // Case-insensitive matching
             if (regex.test(rawMessageContent)) {
                 const violationDetails = {
-                    messageSnippet: rawMessageContent.substring(0, 75),
+                    messageSnippet: rawMessageContent.length > 75 ? rawMessageContent.substring(0, 72) + '...' : rawMessageContent,
                     matchedPattern: patternString,
                     playerPermissionLevel: playerPermission.toString(),
-                    exemptPermissionLevelRequired: exemptPermissionLevel.toString()
+                    exemptPermissionLevelRequired: exemptPermissionLevel.toString(),
                 };
 
-                await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-                playerUtils.debugLog(`[SimpleImpersonationCheck] Flagged ${player.nameTag} for impersonation attempt. Pattern: '${patternString}'. Msg: "${rawMessageContent.substring(0,50)}..."`, watchedPlayerName, dependencies);
-                return;
+                await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+                playerUtils.debugLog(`[SimpleImpersonationCheck] Flagged ${player.nameTag} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, 50)}...'`, watchedPlayerName, dependencies);
+
+                if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+                    eventData.cancel = true;
+                }
+                return; // Stop after first match
             }
         } catch (e) {
             playerUtils.debugLog(`[SimpleImpersonationCheck] Invalid regex pattern '${patternString}' in config. Error: ${e.message}`, watchedPlayerName, dependencies);
-            console.error(`[SimpleImpersonationCheck] Regex pattern error: ${e.stack || e}`);
+            console.error(`[SimpleImpersonationCheck] Regex pattern error for pattern '${patternString}': ${e.stack || e}`);
         }
     }
 }

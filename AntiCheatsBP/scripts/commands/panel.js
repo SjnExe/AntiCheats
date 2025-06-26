@@ -1,30 +1,47 @@
 /**
- * Defines the !panel command, which serves as the entry point to the main AntiCheat Admin UI Panel.
+ * @file Defines the !panel command, which serves as the entry point to the main AntiCheat Admin UI Panel.
  * Also aliased as !ui.
  */
+
 import { permissionLevels } from '../core/rankManager.js';
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: "panel",
-    syntax: "!panel",
-    description: "help.descriptionOverride.panel",
+    name: 'panel',
+    syntax: '!panel',
+    description: 'Opens the main AntiCheat Admin UI panel.', // Hardcoded string
     permissionLevel: permissionLevels.normal,
+    // aliases: ['ui'], // Defined in config.js commandAliases
     enabled: true,
 };
+
 /**
  * Executes the panel command.
+ * @param {import('@minecraft/server').Player} player The player executing the command.
+ * @param {string[]} _args Command arguments (not used in this command).
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
     const { uiManager, playerDataManager, config, logManager, playerUtils } = dependencies;
 
     try {
         await uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies);
-        logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'command_panel_ui', targetName: player.nameTag, details: 'Player opened main panel via command' }, dependencies);
+        logManager.addLog({
+            timestamp: Date.now(),
+            adminName: player.nameTag,
+            actionType: 'panelCommandUi', // Changed to camelCase
+            targetName: player.nameTag,
+            details: 'Player opened main panel via command.',
+        }, dependencies);
     } catch (error) {
         console.error(`[PanelCommand] Error executing panel command for ${player.nameTag}: ${error.stack || error}`);
-        player.sendMessage("§cAn unexpected error occurred while executing this command.");
-        logManager.addLog({actionType: 'error', details: `[PanelCommand] Panel command error for ${player.nameTag}: ${error.stack || error}`}, dependencies);
+        player.sendMessage('§cAn unexpected error occurred while opening the panel. Please contact an administrator.'); // User-friendly error
+        logManager.addLog({
+            actionType: 'error',
+            context: 'PanelCommandExecute', // Added context
+            details: `Error for ${player.nameTag}: ${error.stack || error}`,
+        }, dependencies);
     }
 }

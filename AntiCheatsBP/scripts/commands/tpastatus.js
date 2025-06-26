@@ -1,7 +1,7 @@
 /**
  * Script for the !tpastatus command, allowing players to manage their TPA request availability.
  */
-import { world, system } from '@minecraft/server';
+import { world, system } from '@minecraft/server'; // Ensure system is imported if mc.system is used below.
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}

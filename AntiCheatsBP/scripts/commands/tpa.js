@@ -1,7 +1,7 @@
 /**
  * Script for the !tpa command, allowing players to request teleportation to another player.
  */
-import { world, system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -69,9 +69,9 @@ export async function execute(player, args, dependencies) {
     }
 
     if (requestResult) {
-        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
+        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
 
-        system.run(() => {
+        dependencies.mc.system.run(() => {
             try {
                 target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
             } catch (e) {

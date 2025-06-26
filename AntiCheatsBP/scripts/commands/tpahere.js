@@ -1,7 +1,7 @@
 /**
  * Script for the !tpahere command, allowing players to request another player to teleport to them.
  */
-import { world, system } from '@minecraft/server';
+import { system } from '@minecraft/server'; // system is used
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -69,9 +69,9 @@ export async function execute(player, args, dependencies) {
         }
 
         if (requestResult) {
-            player.sendMessage(`§aTPA Here request sent to "${target.nameTag}". They have ${config.TPARequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
+            player.sendMessage(`§aTPA Here request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
 
-            system.run(() => {
+            system.run(() => { // system still imported and used here
                 try {
                     target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested you to teleport to them. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
                 } catch (e) {

@@ -1,23 +1,30 @@
 /**
- * Implements a check to detect excessive repetition of the same character in chat messages.
+ * @file Implements a check to detect excessive repetition of the same character in chat messages.
  */
+
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').Config} Config
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
+
 /**
  * Checks a chat message for excessive character repetition.
- * @param {import('@minecraft/server').Player} player The player who sent the message.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
- * @param {PlayerAntiCheatData} pData The player's anti-cheat data (currently unused in this specific check's logic, but passed for signature consistency).
- * @param {CommandDependencies} dependencies Shared command dependencies (includes config, actionManager, etc.).
+ *
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player who sent the message.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
+ * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
+ * @param {CommandDependencies} dependencies - Shared command dependencies (includes config, actionManager, etc.).
  * @returns {Promise<void>}
  */
 export async function checkCharRepeat(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
+
+    // Standardized action profile name
+    const actionProfileKey = config.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
 
     if (!config.enableCharRepeatCheck) {
         return;
@@ -42,9 +49,10 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
                 charThatRepeated = currentChar;
             }
             currentChar = char;
-            currentRepeatCount = 1;
+            currentRepeatCount = 1; // Start counting the new character
         }
     }
+    // Check the last sequence after the loop
     if (currentRepeatCount > maxRepeatCount) {
         maxRepeatCount = currentRepeatCount;
         charThatRepeated = currentChar;
@@ -53,20 +61,21 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     if (maxRepeatCount >= config.charRepeatThreshold) {
         playerUtils.debugLog(
             `[CharRepeatCheck] Player ${player.nameTag} triggered char repeat. ` +
-            `Msg: "${message}", Char: '${charThatRepeated}', Count: ${maxRepeatCount}, ` +
+            `Msg: '${message}', Char: '${charThatRepeated}', Count: ${maxRepeatCount}, ` +
             `Threshold: ${config.charRepeatThreshold}, MinLength: ${config.charRepeatMinLength}`,
             pData?.isWatched ? player.nameTag : null, dependencies
         );
-        await actionManager.executeCheckAction(
-            player,
-            config.charRepeatActionProfileName,
-            {
-                char: charThatRepeated,
-                count: maxRepeatCount,
-                threshold: config.charRepeatThreshold,
-                originalMessage: message
-            },
-            dependencies
-        );
+
+        const violationDetails = {
+            char: charThatRepeated,
+            count: maxRepeatCount,
+            threshold: config.charRepeatThreshold,
+            originalMessage: message,
+        };
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+
+        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+            eventData.cancel = true;
+        }
     }
 }

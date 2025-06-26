@@ -1,9 +1,16 @@
 /**
- * Main entry point for the AntiCheat system. Initializes modules, subscribes to events,
- * and runs the main tick loop for processing checks and player data.
+ * @file Main entry point for the AntiCheat system.
+ * Initializes all core modules, subscribes to Minecraft server events,
+ * and runs the main system tick loop for processing checks, player data updates,
+ * and other periodic tasks.
  */
+
 import * as mc from '@minecraft/server';
+import * as mcui from '@minecraft/server-ui';
+
 import * as configModule from './config.js';
+import { automodConfig } from './core/automodConfig.js';
+import { checkActionProfiles } from './core/actionProfiles.js';
 import * as playerUtils from './utils/playerUtils.js';
 import * as playerDataManager from './core/playerDataManager.js';
 import * as commandManager from './core/commandManager.js';
@@ -13,80 +20,21 @@ import * as logManager from './core/logManager.js';
 import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
 import * as actionManager from './core/actionManager.js';
-// import { permissionLevels as importedPermissionLevels } from './core/rankManager.js'; // Replaced by full module import
-import * as rankManagerModule from './core/rankManager.js'; // Import all exports from rankManager
-import { ActionFormData as ImportedActionFormData, MessageFormData as ImportedMessageFormData, ModalFormData as ImportedModalFormData } from '@minecraft/server-ui';
-import { ItemComponentTypes as ImportedItemComponentTypes } from '@minecraft/server';
+import * as rankManager from './core/rankManager.js';
 import * as checks from './checks/index.js';
-import { getBorderSettings, saveBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer } from './utils/worldBorderManager.js';
+import * as worldBorderManager from './utils/worldBorderManager.js';
 import * as chatProcessor from './core/chatProcessor.js';
 
-// Initial log to confirm script loading
-playerUtils.debugLog("Anti-Cheat Script Loaded. Initializing modules...", null, getStandardDependencies()); // getStandardDependencies might not be fully ready here, but ok for initial log
+let currentTick = 0;
 
-mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-    const baseDependencies = getStandardDependencies(); // Get fresh dependencies for each event
-    if (eventData.message.startsWith(baseDependencies.config.prefix)) {
-        // Pass the commandDefinitionMap and commandExecutionMap directly
-        const commandHandlingDependencies = {
-            ...baseDependencies,
-            commandDefinitionMap: commandManager.commandDefinitionMap, // Assuming these are populated in commandManager.js
-            commandExecutionMap: commandManager.commandExecutionMap,   // Assuming these are populated in commandManager.js
-            // rankManager is now part of baseDependencies via getStandardDependencies if rankManager is imported and added there
-        };
-        await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
-    } else {
-        // For regular chat messages, eventHandlers.handleBeforeChatSend is called, which then calls chatProcessor
-        await eventHandlers.handleBeforeChatSend(eventData, baseDependencies);
-    }
-});
-
-mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
-    const player = eventData.player;
-    // Intentionally using a minimal set of dependencies for playerJoin to avoid premature access to other systems
-    // that might rely on the player being fully initialized or having pData ready.
-    const joinDependencies = {
-        config: configModule.editableConfigValues, // Direct access for critical early config
-        playerUtils: playerUtils,
-        playerDataManager: playerDataManager,
-        getString: playerUtils.getString, // Assuming getString is part of playerUtils or needs to be passed
-        // Minimal logManager for ban logging if needed, or add later if full context is required
-        logManager: { addLog: logManager.addLog }, // Pass only addLog initially
-        // No full commandManager, uiManager, etc. needed here typically
-    };
-
-    await playerDataManager.ensurePlayerDataInitialized(player, currentTick, joinDependencies); // Pass currentTick
-
-    if (playerDataManager.isBanned(player, joinDependencies)) {
-        eventData.cancel = true; // Cancel the join event
-        const banInfo = playerDataManager.getBanInfo(player, joinDependencies);
-        let detailedKickMessage = `§cYou are banned from this server.\n`;
-        if (banInfo) {
-            detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || "Unknown"}\n`;
-            detailedKickMessage += `§fReason: §e${banInfo.reason || "No reason provided."}\n`;
-            detailedKickMessage += `§fExpires: §e${banInfo.unbanTime === Infinity ? "Permanent" : new Date(banInfo.unbanTime).toLocaleString()}\n`;
-        } else {
-            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`;
-        }
-        if (joinDependencies.config.discordLink && joinDependencies.config.discordLink.trim() !== "" && joinDependencies.config.discordLink !== "https://discord.gg/example") {
-            detailedKickMessage += `§fDiscord: §b${joinDependencies.config.discordLink}`;
-        }
-        // Player is cancelled from joining, so player.kick() won't work here.
-        // The cancellation of playerJoin event is the "kick".
-        // Logging the attempt:
-        const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Event cancelled. Ban details: By ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}, Expires: ${banInfo?.unbanTime === Infinity ? "Permanent" : new Date(banInfo?.unbanTime).toLocaleString()}`;
-        console.warn(logMessage);
-        if (playerUtils.notifyAdmins && joinDependencies.config.notifyAdminOnBannedPlayerAttempt) { // Added config check
-            playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. Banned by: ${banInfo?.bannedBy || "N/A"}, Reason: ${banInfo?.reason || "N/A"}`, joinDependencies, null, null); // Pass null for player/pData context for general admin notify
-        }
-    }
-    // If not banned, the regular playerSpawn event will handle further initialization like nametags.
-});
-
-// Centralized function to get a standard set of dependencies for event handlers and tick loops.
+/**
+ * @returns {import('./types.js').Dependencies} A standard set of dependencies for event handlers and tick loops.
+ */
 function getStandardDependencies() {
     return {
         config: configModule.editableConfigValues,
+        automodConfig: automodConfig,
+        checkActionProfiles: checkActionProfiles,
         playerUtils,
         playerDataManager,
         logManager,
@@ -95,46 +43,145 @@ function getStandardDependencies() {
         reportManager,
         tpaManager,
         checks,
-        mc, // Pass the Minecraft server module itself
-        currentTick, // Pass the currentTick value
-        permissionLevels: rankManagerModule.permissionLevels, // Use permissionLevels from the rankManagerModule
-        ActionFormData: ImportedActionFormData,
-        MessageFormData: ImportedMessageFormData,
-        ModalFormData: ImportedModalFormData,
-        ItemComponentTypes: ImportedItemComponentTypes,
-        chatProcessor: chatProcessor,
-        getString: playerUtils.getString, // Make getString consistently available
+        mc,
+        currentTick,
+        permissionLevels: rankManager.permissionLevels,
+        ActionFormData: mcui.ActionFormData,
+        MessageFormData: mcui.MessageFormData,
+        ModalFormData: mcui.ModalFormData,
+        ItemComponentTypes: mc.ItemComponentTypes,
+        chatProcessor,
+        getString: playerUtils.getString,
         rankManager: {
-            getPlayerRankId: rankManagerModule.getPlayerRankId,
-            getPlayerPermissionLevel: rankManagerModule.getPlayerPermissionLevel, // This function is now exported from rankManager.js
-            updatePlayerNametag: rankManagerModule.updatePlayerNametag,
-            getPlayerRankFormattedChatElements: rankManagerModule.getPlayerRankFormattedChatElements
+            getPlayerRankId: rankManager.getPlayerRankId,
+            getPlayerPermissionLevel: rankManager.getPlayerPermissionLevel,
+            updatePlayerNametag: rankManager.updatePlayerNametag,
+            getPlayerRankFormattedChatElements: rankManager.getPlayerRankFormattedChatElements,
+            getRankById: rankManager.getRankById,
         },
-        worldBorderManager: { getBorderSettings, saveBorderSettings, processWorldBorderResizing, enforceWorldBorderForPlayer },
-        system: mc.system // Add mc.system to dependencies
+        worldBorderManager: {
+            getBorderSettings: worldBorderManager.getBorderSettings,
+            saveBorderSettings: worldBorderManager.saveBorderSettings,
+            processWorldBorderResizing: worldBorderManager.processWorldBorderResizing,
+            enforceWorldBorderForPlayer: worldBorderManager.enforceWorldBorderForPlayer,
+            isPlayerOutsideBorder: worldBorderManager.isPlayerOutsideBorder,
+        },
+        system: mc.system,
+        commandManager: {
+            registerCommand: commandManager.registerCommandInternal,
+            unregisterCommand: commandManager.unregisterCommandInternal,
+            reloadCommands: commandManager.initializeCommands,
+        },
+        editableConfig: configModule,
     };
 }
+
+// Event Subscriptions
+mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
+    const dependencies = getStandardDependencies();
+    if (eventData.message.startsWith(dependencies.config.prefix)) {
+        const commandHandlingDependencies = {
+            ...dependencies,
+            commandDefinitionMap: commandManager.commandDefinitionMap,
+            commandExecutionMap: commandManager.commandExecutionMap,
+        };
+        await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
+    } else {
+        await eventHandlers.handleBeforeChatSend(eventData, dependencies);
+    }
+});
+
+mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
+    const { player } = eventData;
+    const joinDependencies = {
+        config: configModule.editableConfigValues,
+        playerUtils,
+        playerDataManager,
+        logManager: { addLog: logManager.addLog },
+        getString: playerUtils.getString,
+        currentTick,
+        mc,
+        permissionLevels: rankManager.permissionLevels,
+        // Use the same rankManager structure as in getStandardDependencies for consistency
+        rankManager: getStandardDependencies().rankManager,
+    };
+
+    await playerDataManager.ensurePlayerDataInitialized(player, currentTick, joinDependencies);
+
+    if (playerDataManager.isBanned(player, joinDependencies)) {
+        eventData.cancel = true;
+        const banInfo = playerDataManager.getBanInfo(player, joinDependencies);
+        let detailedKickMessage = `§cYou are banned from this server.\n`;
+        if (banInfo) {
+            detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || 'Unknown'}\n`;
+            detailedKickMessage += `§fReason: §e${banInfo.reason || 'No reason provided.'}\n`;
+            detailedKickMessage += `§fExpires: §e${banInfo.unbanTime === Infinity ? 'Permanent' : new Date(banInfo.unbanTime).toLocaleString()}\n`;
+        } else {
+            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`;
+        }
+        if (joinDependencies.config.discordLink &&
+            joinDependencies.config.discordLink.trim() !== '' &&
+            joinDependencies.config.discordLink !== 'https://discord.gg/example'
+        ) {
+            detailedKickMessage += `§fDiscord for appeal: §b${joinDependencies.config.discordLink}`;
+        }
+
+        const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Event cancelled. Ban details: By ${banInfo?.bannedBy || 'N/A'}, Reason: ${banInfo?.reason || 'N/A'}, Expires: ${banInfo?.unbanTime === Infinity ? 'Permanent' : new Date(banInfo?.unbanTime || 0).toLocaleString()}`;
+        console.warn(logMessage);
+        joinDependencies.logManager.addLog({
+            actionType: 'bannedJoinAttempt',
+            targetName: player.nameTag,
+            targetId: player.id,
+            details: `Reason: ${banInfo?.reason || 'N/A'}, Expires: ${banInfo?.unbanTime === Infinity ? 'Permanent' : new Date(banInfo?.unbanTime || 0).toLocaleString()}`,
+        }, joinDependencies);
+
+        if (joinDependencies.config.notifyAdminOnBannedPlayerAttempt && playerUtils.notifyAdmins) {
+            playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. (Reason: ${banInfo?.reason || 'N/A'})`, joinDependencies, null, null);
+        }
+    }
+});
 
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
     eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
 });
 
-mc.world.beforeEvents.playerLeave.subscribe((eventData) => { // Changed to beforeEvents if save on leave is critical
+mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
     eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    eventHandlers.handleEntityHurt(eventData, getStandardDependencies());
+    const dependencies = getStandardDependencies();
+    eventHandlers.handleEntityHurt(eventData, dependencies);
 });
 
-// Initializing combat log event subscription
-eventHandlers.subscribeToCombatLogEvents(getStandardDependencies());
+mc.world.beforeEvents.entityHurt.subscribe(eventData => {
+    const dependencies = getStandardDependencies();
+    if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
+        return;
+    }
 
+    const { hurtEntity, damageSource } = eventData;
+    if (hurtEntity.typeId !== mc.MinecraftEntityTypes.player.id) return;
+
+    const player = hurtEntity;
+
+    const requestsInWarmup = tpaManager.getRequestsInWarmup();
+    const playerActiveWarmupRequest = requestsInWarmup.find(
+        req => (req.requesterName === player.nameTag && req.requestType === 'tpa') ||
+               (req.targetName === player.nameTag && req.requestType === 'tpahere')
+    );
+
+    if (playerActiveWarmupRequest && playerActiveWarmupRequest.status === 'pending_teleport_warmup') {
+        const damageCause = damageSource?.cause || 'unknown';
+        const reasonMsgPlayer = dependencies.getString('tpa.manager.warmupCancelledDamage.player', { damageCause });
+        const reasonMsgLog = `Player ${player.nameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${playerActiveWarmupRequest.requestId}.`;
+        tpaManager.cancelTeleport(playerActiveWarmupRequest.requestId, reasonMsgPlayer, reasonMsgLog, dependencies);
+    }
+});
 
 mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
 });
-
 mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
 });
@@ -142,7 +189,6 @@ mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
 mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
     await eventHandlers.handleItemUse(eventData, getStandardDependencies());
 });
-
 mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
     await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
 });
@@ -150,16 +196,19 @@ mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
 mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
 });
-
 mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
 });
 
 mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
-    // handleInventoryItemChange expects: player, newItem, oldItem, slotName, dependencies
-    await eventHandlers.handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, getStandardDependencies());
+    await eventHandlers.handleInventoryItemChange(
+        eventData.player,
+        eventData.newItemStack,
+        eventData.oldItemStack,
+        eventData.inventorySlot,
+        getStandardDependencies()
+    );
 });
-
 
 mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
     eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
@@ -167,10 +216,12 @@ mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
 
 mc.world.afterEvents.entityDie.subscribe((eventData) => {
     const dependencies = getStandardDependencies();
-    if (eventData.deadEntity.typeId === 'minecraft:player') {
+    if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
         eventHandlers.handlePlayerDeath(eventData, dependencies);
     }
-    eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
+    if (dependencies.config.enableDeathEffects) {
+        eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
+    }
 });
 
 mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
@@ -181,72 +232,21 @@ mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
     await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
 });
 
-// Main TPA processing interval
-mc.system.runInterval(() => {
-    const tpaIntervalDependencies = getStandardDependencies();
-    if (tpaIntervalDependencies.config.enableTPASystem) {
-        tpaManager.clearExpiredRequests(tpaIntervalDependencies);
-        const requestsInWarmup = tpaManager.getRequestsInWarmup();
-        for (const request of requestsInWarmup) {
-            if (Date.now() >= request.warmupExpiryTimestamp) {
-                tpaManager.executeTeleport(request.requestId, tpaIntervalDependencies);
-            }
-        }
-    }
-}, 20); // Process TPA logic every second (20 ticks)
-
-// TPA Warmup cancellation on damage
-mc.world.beforeEvents.entityHurt.subscribe(eventData => {
-    const tpaEntityHurtDependencies = getStandardDependencies();
-    if (!tpaEntityHurtDependencies.config.enableTPASystem) return;
-
-    const { hurtEntity, damageSource } = eventData;
-    let playerNameTag;
-    try {
-        // Ensure hurtEntity is a player and has a nameTag
-        if (hurtEntity.typeId !== 'minecraft:player' || typeof hurtEntity.nameTag !== 'string') return;
-        playerNameTag = hurtEntity.nameTag;
-    } catch (e) { return; } // Not a player or error accessing nameTag
-
-    const requestsInWarmup = tpaManager.getRequestsInWarmup();
-    const playerActiveWarmupRequests = requestsInWarmup.filter(
-        req => req.requesterName === playerNameTag || req.targetName === playerNameTag
-    );
-
-    for (const request of playerActiveWarmupRequests) {
-        if (request.status === 'pending_teleport_warmup') {
-            let playerIsTeleporting = false;
-            if (request.requestType === 'tpa' && request.requesterName === playerNameTag) playerIsTeleporting = true;
-            else if (request.requestType === 'tpahere' && request.targetName === playerNameTag) playerIsTeleporting = true;
-
-            if (playerIsTeleporting) {
-                const damageCause = damageSource?.cause || 'unknown';
-                const reasonMsgPlayer = tpaEntityHurtDependencies.getString("tpa.manager.warmupCancelledDamage.player", { damageCause });
-                const reasonMsgLog = `Player ${playerNameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${request.requestId}.`;
-                tpaManager.cancelTeleport(request.requestId, reasonMsgPlayer, reasonMsgLog, tpaEntityHurtDependencies);
-                break;
-            }
-        }
-    }
-});
-
-let currentTick = 0;
+// System Intervals
 mc.system.runInterval(async () => {
     currentTick++;
-    const tickDependencies = getStandardDependencies(); // Get a fresh set of dependencies for this tick
+    const tickDependencies = getStandardDependencies();
 
-    // Failsafe initialization for reportManager if not already done
-    if (typeof reportManager.initializeReportCache === 'function' && !reportManager.isInitialized) {
-        reportManager.initializeReportCache(tickDependencies);
-        reportManager.isInitialized = true; // Mark as initialized
-        playerUtils.debugLog("ReportManager cache initialized from main tick loop (failsafe).", "System", tickDependencies);
-    }
+    // ReportManager cache should be initialized once at startup.
 
     if (tickDependencies.config.enableWorldBorderSystem) {
-        try { processWorldBorderResizing(tickDependencies); }
-        catch (e) {
-            console.error(`[MainTick] Error processing world border resizing: ${e.stack || e}`);
-            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, "System", tickDependencies);
+        try {
+            worldBorderManager.processWorldBorderResizing(tickDependencies);
+        } catch (e) {
+            const error = e;
+            console.error(`[MainTick] Error processing world border resizing: ${error.stack || error.message}`);
+            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${error.message}`, 'System', tickDependencies);
+            logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
         }
     }
 
@@ -256,13 +256,9 @@ mc.system.runInterval(async () => {
     for (const player of allPlayers) {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
         if (!pData) {
-            playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure.`, player.nameTag, tickDependencies);
+            playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure. Skipping checks for this player this tick.`, player.nameTag, tickDependencies);
             continue;
         }
-        // Ensure these properties exist if not loaded from persistence
-        pData.lastBorderVisualTick = pData.lastBorderVisualTick || 0;
-        pData.ticksOutsideBorder = pData.ticksOutsideBorder || 0;
-        pData.borderDamageApplications = pData.borderDamageApplications || 0;
 
         playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
         playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
@@ -273,81 +269,168 @@ mc.system.runInterval(async () => {
         if (tickDependencies.config.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, tickDependencies);
         if (tickDependencies.config.enableNoSlowCheck && checks.checkNoSlow) await checks.checkNoSlow(player, pData, tickDependencies);
         if (tickDependencies.config.enableInvalidSprintCheck && checks.checkInvalidSprint) await checks.checkInvalidSprint(player, pData, tickDependencies);
+        if (tickDependencies.config.enableNetherRoofCheck && checks.checkNetherRoof && (currentTick - (pData.lastCheckNetherRoofTick || 0) >= tickDependencies.config.netherRoofCheckIntervalTicks)) {
+             await checks.checkNetherRoof(player, pData, tickDependencies); pData.lastCheckNetherRoofTick = currentTick;
+        }
 
         // Combat Checks
-        if (tickDependencies.config.enableCPSCheck && checks.checkCPS) await checks.checkCPS(player, pData, tickDependencies, null);
+        if (tickDependencies.config.enableCpsCheck && checks.checkCps) await checks.checkCps(player, pData, tickDependencies, null);
         if (tickDependencies.config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, tickDependencies, null);
+        if (tickDependencies.config.enableReachCheck && checks.checkReach) { /* checkReach typically runs on entityHurt */ }
+        if (tickDependencies.config.enableMultiTargetCheck && checks.checkMultiTarget) await checks.checkMultiTarget(player, pData, tickDependencies, null);
+        if (tickDependencies.config.enableStateConflictCheck && checks.checkStateConflict) await checks.checkStateConflict(player, pData, tickDependencies, null);
 
-        // World Interaction Checks (with intervals)
+        // World Interaction / Building Checks
         if (tickDependencies.config.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, tickDependencies);
         if (tickDependencies.config.enableAutoToolCheck && checks.checkAutoTool && (currentTick - (pData.lastCheckAutoToolTick || 0) >= tickDependencies.config.autoToolCheckIntervalTicks)) {
             await checks.checkAutoTool(player, pData, tickDependencies); pData.lastCheckAutoToolTick = currentTick;
         }
-
-        // Player State/Info Checks (with intervals)
-        if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof && (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
-            await checks.checkNameSpoof(player, pData, tickDependencies); pData.lastCheckNameSpoofTick = currentTick;
-        }
-        if (tickDependencies.config.enableAntiGMCCheck && checks.checkAntiGMC && (currentTick - (pData.lastCheckAntiGMCTick || 0) >= tickDependencies.config.antiGMCCheckIntervalTicks)) {
-            await checks.checkAntiGMC(player, pData, tickDependencies); pData.lastCheckAntiGMCTick = currentTick;
-        }
+        if (tickDependencies.config.enableInstaBreakSpeedCheck && checks.checkInstaBreak) { /* InstaBreak typically runs on blockBreak */ }
+        // Removed tower check from tick, it's in PlayerPlaceBlockAfterEvent
+        // if (tickDependencies.config.enableTowerCheck && checks.checkTower) await checks.checkTower(player, pData, tickDependencies);
         if (tickDependencies.config.enableFlatRotationCheck && checks.checkFlatRotationBuilding && (currentTick - (pData.lastCheckFlatRotationBuildingTick || 0) >= tickDependencies.config.flatRotationCheckIntervalTicks)) {
             await checks.checkFlatRotationBuilding(player, pData, tickDependencies); pData.lastCheckFlatRotationBuildingTick = currentTick;
         }
-        if (tickDependencies.config.enableInvalidRenderDistanceCheck && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= 400)) { // Approx 20s
-            if (checks.checkInvalidRenderDistance) await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
+        // Removed downward scaffold from tick, it's in PlayerPlaceBlockAfterEvent
+        // if (tickDependencies.config.enableDownwardScaffoldCheck && checks.checkDownwardScaffold) await checks.checkDownwardScaffold(player, pData, tickDependencies);
+        if (tickDependencies.config.enableAirPlaceCheck && checks.checkAirPlace) { /* AirPlace typically runs on blockPlace */ }
+        // Removed fast place from tick, it's in PlayerPlaceBlockAfterEvent
+        // if (tickDependencies.config.enableFastPlaceCheck && checks.checkFastPlace) await checks.checkFastPlace(player, pData, tickDependencies);
+
+
+        // Player State / Info / Behavior Checks
+        if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof && (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
+            await checks.checkNameSpoof(player, pData, tickDependencies); pData.lastCheckNameSpoofTick = currentTick;
+        }
+        if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc && (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
+            await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGmcTick = currentTick;
+        }
+        if (tickDependencies.config.enableSelfHurtCheck && checks.checkSelfHurt) { /* SelfHurt typically runs on entityHurt */ }
+        // Removed illegal item check from tick, it's event-based
+        // if (tickDependencies.config.enableIllegalItemCheck && checks.checkIllegalItems) await checks.checkIllegalItems(player, pData, tickDependencies);
+        // Removed inventory mod check from tick, it's event-based
+        // if (tickDependencies.config.enableInventoryModCheck && checks.checkInventoryModifications) await checks.checkInventoryModifications(player, pData, tickDependencies);
+
+
+        // Client Behavior Checks
+        if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
+            await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
             pData.lastRenderDistanceCheckTick = currentTick;
         }
-        if (tickDependencies.config.enableNetherRoofCheck && checks.checkNetherRoof && (currentTick - (pData.lastCheckNetherRoofTick || 0) >= tickDependencies.config.netherRoofCheckIntervalTicks)) {
-            checks.checkNetherRoof(player, pData, tickDependencies); pData.lastCheckNetherRoofTick = currentTick;
-        }
+
+        // Item Use Checks
+        if (tickDependencies.config.enableFastUseCheck && checks.checkFastUse) { /* FastUse typically runs on itemUse event */ }
 
         // Fall distance accumulation
         if (!player.isOnGround) {
-            if (pData.velocity.y < -0.07 && pData.previousPosition) { // Check if actually falling
+            if ((pData.velocity?.y ?? 0) < -0.078 && pData.previousPosition && pData.lastPosition) {
                 const deltaY = pData.previousPosition.y - pData.lastPosition.y;
-                if (deltaY > 0) pData.fallDistance += deltaY;
+                if (deltaY > 0 && deltaY < 100) { // Ensure deltaY is positive and reasonable
+                    pData.fallDistance = (pData.fallDistance || 0) + deltaY;
+                }
             }
         } else {
-            if (!pData.isTakingFallDamage) pData.fallDistance = 0; // Reset if landed and didn't take fall damage
-            pData.isTakingFallDamage = false; // Reset this flag each tick player is on ground
+            if (!pData.isTakingFallDamage) { // Only reset if not actively taking fall damage this tick
+                pData.fallDistance = 0;
+            }
+            pData.isTakingFallDamage = false; // Reset this flag after checking
+            pData.consecutiveOffGroundTicks = 0;
         }
+        // previousPosition is updated in updateTransientPlayerData, so it's already set for next tick's deltaY calc.
 
+        // World Border Enforcement
         if (tickDependencies.config.enableWorldBorderSystem) {
-            try { enforceWorldBorderForPlayer(player, pData, tickDependencies); }
-            catch (e) {
-                console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${e.stack || e}`);
-                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
+            try {
+                worldBorderManager.enforceWorldBorderForPlayer(player, pData, tickDependencies);
+            } catch (e) {
+                    const error = e;
+                console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${error.stack || error.message}`);
+                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${error.message}`, player.nameTag, tickDependencies);
+                logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
             }
         }
     }
 
-    // Periodic data persistence
-    if (currentTick % 600 === 0) { // Every 30 seconds (600 ticks / 20 tps)
+    // Periodic Data Persistence
+    if (currentTick % 600 === 0) { // Approx. every 30 seconds
+        playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
         for (const player of allPlayers) {
             const pData = playerDataManager.getPlayerData(player.id);
-            if (pData?.isDirtyForSave) { // Check if data is dirty before saving
+            if (pData?.isDirtyForSave) {
                 try {
-                    await playerDataManager.saveDirtyPlayerData(player, tickDependencies); // Pass dependencies
-                    if (pData.isWatched) playerUtils.debugLog(`Deferred save executed for ${player.nameTag}. Tick: ${currentTick}`, player.nameTag, tickDependencies);
+                    await playerDataManager.saveDirtyPlayerData(player, tickDependencies);
+                    if (pData.isWatched) {
+                        playerUtils.debugLog(`Periodic save executed for watched player ${player.nameTag}.`, player.nameTag, tickDependencies);
+                    }
                 } catch (error) {
-                    console.error(`Error during deferred save for ${player.nameTag}: ${error}`);
-                    logManager.addLog({actionType: 'error', details: `DeferredSaveFail: ${player.nameTag}, ${error.message}`}, tickDependencies);
+                    // const err = error; // JavaScript doesn't have 'as Error' type casting
+                    console.error(`Error during periodic save for ${player.nameTag}: ${error.message}`);
+                    logManager.addLog({ actionType: 'error', context: 'PeriodicSaveFail', details: `Player: ${player.nameTag}, Error: ${error.message}` }, tickDependencies);
                 }
             }
         }
-        logManager.persistLogCacheToDisk(tickDependencies); // Persist logs
-        reportManager.persistReportsToDisk(tickDependencies); // Persist reports
+        logManager.persistLogCacheToDisk(tickDependencies);
+        reportManager.persistReportsToDisk(tickDependencies);
+        if (tickDependencies.config.enableWorldBorderSystem) {
+            // Settings are saved when modified by commands. A global periodic save isn't strictly necessary
+            // unless there's a mechanism for settings to become "dirty" without explicit saves.
+            // For now, specific save calls are in the command logic.
+            // If a global save is desired, it would iterate dimensions and saveBorderSettings if a setting object is dirty.
+            // Example:
+            // const knownDims = tickDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
+            // for (const dimId of knownDims) {
+            //    const settings = worldBorderManager.getBorderSettings(dimId, tickDependencies);
+            //    if (settings && settings.isDirtyForSave) { // Assuming an isDirtyForSave flag could be added
+            //        worldBorderManager.saveBorderSettings(dimId, settings, tickDependencies);
+            //        settings.isDirtyForSave = false;
+            //    }
+            // }
+            playerUtils.debugLog("[MainTick] World border settings are saved on modification. No global periodic save implemented currently.", "System", tickDependencies);
+        }
     }
-}, 1); // Run every tick
+}, 1);
 
-playerUtils.debugLog("Anti-Cheat Core System Initialized. Event handlers and tick loop are active.", "System", getStandardDependencies());
+// TPA Processing
+mc.system.runInterval(() => {
+    const tpaIntervalDependencies = getStandardDependencies();
+    if (tpaIntervalDependencies.config.enableTpaSystem) {
+        tpaManager.clearExpiredRequests(tpaIntervalDependencies);
+        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+        for (const request of requestsInWarmup) {
+            if (Date.now() >= (request.warmupExpiryTimestamp || 0)) {
+                tpaManager.executeTeleport(request.requestId, tpaIntervalDependencies);
+            }
+        }
+    }
+}, 20); // Approx. every second
 
-// Initialize LogManager and ReportManager caches on startup
-const startupDependencies = getStandardDependencies();
-logManager.initializeLogCache(startupDependencies); // Ensure logs are loaded
-reportManager.initializeReportCache(startupDependencies); // Ensure reports are loaded
-rankManagerModule.initializeRanks(startupDependencies); // Initialize ranks and permissionLevels map
-// isInitialized for reportManager is set inside its initializeReportCache
-// No need to set it here again if initializeReportCache handles it.
-playerUtils.debugLog("LogManager, ReportManager, and RankManager initialized on startup.", "System", startupDependencies);
+// Initial System Setup
+function initializeSystem() {
+    const startupDependencies = getStandardDependencies();
+    playerUtils.debugLog('Anti-Cheat Script Loaded. Initializing modules...', 'System', startupDependencies);
+
+    commandManager.initializeCommands(startupDependencies); // Assuming this populates the maps in commandManager
+    logManager.initializeLogCache(startupDependencies);
+    reportManager.initializeReportCache(startupDependencies); // Moved here
+    rankManager.initializeRanks(startupDependencies);
+    if (startupDependencies.config.enableWorldBorderSystem) {
+        const knownDims = startupDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
+        for (const dimId of knownDims) {
+            // getBorderSettings effectively loads it into cache if accessed,
+            // actual "loading" into a manager-level cache isn't explicitly done here,
+            // but settings are read from properties when needed.
+            // We can call it to ensure it's read once if there's any internal caching in worldBorderManager.
+             worldBorderManager.getBorderSettings(dimId, startupDependencies);
+        }
+        playerUtils.debugLog("[InitializeSystem] World border settings will be loaded on demand for configured dimensions.", "System", startupDependencies);
+    }
+
+
+    playerUtils.debugLog('Anti-Cheat Core System Initialized. Event handlers and tick loop are active.', 'System', startupDependencies);
+    mc.world.sendMessage('§a[AntiCheat] §2System Core Initialized. Version: ' + configModule.acVersion);
+}
+
+// Initialize after a short delay to ensure Minecraft modules are ready.
+mc.system.runTimeout(() => {
+    initializeSystem();
+}, 1);
