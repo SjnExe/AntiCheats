@@ -65,7 +65,6 @@ export async function handleChatCommand(eventData, dependencies) {
         playerUtils.debugLog(`Command alias '${commandNameInput}' resolved to '${finalCommandName}'.`, player.nameTag, dependencies);
     }
 
-    // commandDefinitionMap and commandExecutionMap are now passed via dependencies by main.js
     const commandDef = dependencies.commandDefinitionMap.get(finalCommandName);
     const commandExecute = dependencies.commandExecutionMap.get(finalCommandName);
 
@@ -95,15 +94,15 @@ export async function handleChatCommand(eventData, dependencies) {
         return;
     }
 
-    eventData.cancel = true; // Cancel the original chat message
+    eventData.cancel = true; // Cancel the original chat message to prevent it from appearing in chat.
 
-    // Log admin command usage to console
+    // Log admin command usage to console for audit purposes.
     if (userPermissionLevel <= permissionLevels.admin) {
         const timestamp = new Date().toISOString();
         console.warn(`[AdminCommandLog] ${timestamp} - Player: ${player.name} - Command: ${message}`);
     }
 
-    // Additional debug log for watched admins
+    // Additional debug log for watched admins, if they are being monitored.
     const pDataForAdminLog = playerDataManager.getPlayerData(player.id);
     if (pDataForAdminLog && pDataForAdminLog.isWatched && playerUtils.isAdmin(player, dependencies)) {
         playerUtils.debugLog(`Watched admin ${player.nameTag} is executing command: ${message}`, player.nameTag, dependencies);
@@ -119,12 +118,12 @@ export async function handleChatCommand(eventData, dependencies) {
         console.error(`[CommandManager] Error executing command ${finalCommandName} for player ${player.nameTag}: ${errorStack}`);
         playerUtils.debugLog(`Error executing command ${finalCommandName} for ${player.nameTag}: ${errorMessage}`, null, dependencies);
         logManager.addLog({
-            actionType: 'errorCommandExecution', // Changed to camelCase
+            actionType: 'errorCommandExecution',
             command: finalCommandName,
-            targetName: player.nameTag, // Consistent with other logs
+            targetName: player.nameTag,
             details: `Args: [${args.join(', ')}]. Error: ${errorMessage}`,
-            error: errorMessage, // Store primary message
-            stack: errorStack, // Store full stack
+            error: errorMessage,
+            stack: errorStack,
         }, dependencies);
     }
 }

@@ -150,21 +150,6 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
 
 // --- Interpolation Helper Functions ---
 
-// formatDurationBrief is defined in worldborder.js, not here.
-// normalizeDimensionId is defined in worldborder.js, not here.
-// handleSetCommand is defined in worldborder.js, not here.
-// handleGetCommand is defined in worldborder.js, not here.
-// handleToggleCommand is defined in worldborder.js, not here.
-// handleRemoveCommand is defined in worldborder.js, not here.
-// handleResizeCommand is defined in worldborder.js, not here.
-// handleShrinkCommand is defined in worldborder.js, not here.
-// handleExpandCommand is defined in worldborder.js, not here.
-// handleResizePauseCommand is defined in worldborder.js, not here.
-// handleResizeResumeCommand is defined in worldborder.js, not here.
-// handleSetGlobalParticleCommand is defined in worldborder.js, not here.
-// handleSetParticleCommand is defined in worldborder.js, not here.
-
-
 /**
  * Quadratic easing out function. Provides a smooth deceleration.
  * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
