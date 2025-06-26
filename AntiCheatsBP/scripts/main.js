@@ -91,56 +91,6 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     }
 });
 
-mc.world.beforeEvents.playerJoin.subscribe(async (eventData) => {
-    const { player } = eventData;
-    const joinDependencies = {
-        config: configModule.editableConfigValues,
-        playerUtils,
-        playerDataManager,
-        logManager: { addLog: logManager.addLog },
-        getString: playerUtils.getString,
-        currentTick,
-        mc,
-        permissionLevels: rankManager.permissionLevels,
-        // Use the same rankManager structure as in getStandardDependencies for consistency
-        rankManager: getStandardDependencies().rankManager,
-    };
-
-    await playerDataManager.ensurePlayerDataInitialized(player, currentTick, joinDependencies);
-
-    if (playerDataManager.isBanned(player, joinDependencies)) {
-        eventData.cancel = true;
-        const banInfo = playerDataManager.getBanInfo(player, joinDependencies);
-        let detailedKickMessage = `§cYou are banned from this server.\n`;
-        if (banInfo) {
-            detailedKickMessage += `§fBanned by: §e${banInfo.bannedBy || 'Unknown'}\n`;
-            detailedKickMessage += `§fReason: §e${banInfo.reason || 'No reason provided.'}\n`;
-            detailedKickMessage += `§fExpires: §e${banInfo.unbanTime === Infinity ? 'Permanent' : new Date(banInfo.unbanTime).toLocaleString()}\n`;
-        } else {
-            detailedKickMessage += `§fReason: §eSystem detected an active ban, but details could not be fully retrieved. Please contact an admin.\n`;
-        }
-        if (joinDependencies.config.discordLink &&
-            joinDependencies.config.discordLink.trim() !== '' &&
-            joinDependencies.config.discordLink !== 'https://discord.gg/example'
-        ) {
-            detailedKickMessage += `§fDiscord for appeal: §b${joinDependencies.config.discordLink}`;
-        }
-
-        const logMessage = `[AntiCheat] Banned player ${player.nameTag} (ID: ${player.id}) attempt to join. Event cancelled. Ban details: By ${banInfo?.bannedBy || 'N/A'}, Reason: ${banInfo?.reason || 'N/A'}, Expires: ${banInfo?.unbanTime === Infinity ? 'Permanent' : new Date(banInfo?.unbanTime || 0).toLocaleString()}`;
-        console.warn(logMessage);
-        joinDependencies.logManager.addLog({
-            actionType: 'bannedJoinAttempt',
-            targetName: player.nameTag,
-            targetId: player.id,
-            details: `Reason: ${banInfo?.reason || 'N/A'}, Expires: ${banInfo?.unbanTime === Infinity ? 'Permanent' : new Date(banInfo?.unbanTime || 0).toLocaleString()}`,
-        }, joinDependencies);
-
-        if (joinDependencies.config.notifyAdminOnBannedPlayerAttempt && playerUtils.notifyAdmins) {
-            playerUtils.notifyAdmins(`Banned player ${player.nameTag} tried to join. (Reason: ${banInfo?.reason || 'N/A'})`, joinDependencies, null, null);
-        }
-    }
-});
-
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
     eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
 });
