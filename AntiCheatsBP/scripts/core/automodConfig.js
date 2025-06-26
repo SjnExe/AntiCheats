@@ -70,7 +70,7 @@ export const automodConfig = {
             { flagThreshold: 25, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated fast item usage (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 40, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive fast item usage (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'playerAntigmc': [ // Standardized key
+        'playerAntiGmc': [
             { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for unauthorized Creative Mode usage (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'tempBan', parameters: { duration: '6h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for repeated unauthorized Creative Mode usage (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
@@ -339,7 +339,7 @@ export const automodConfig = {
         'movementNofall': false,
         'worldIllegalItemUse': false,
         'playerNamespoof': false,
-        'playerAntigmc': false, // Standardized key
+        'playerAntiGmc': false,
         'combatMultitargetAura': false,
         'worldIllegalItemPlace': false,
         'movementInvalidSprint': false,
