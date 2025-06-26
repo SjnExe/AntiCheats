@@ -78,17 +78,15 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
         return;
     }
 
-    let lockingActionKey = null; // Localization key for the locking action
+    let lockingActionKey = null;
     if (pData.isUsingConsumable) {
-        lockingActionKey = 'check.inventoryMod.action.usingConsumable';
+        lockingActionKey = 'usingConsumable';
     } else if (pData.isChargingBow) {
-        lockingActionKey = 'check.inventoryMod.action.chargingBow';
+        lockingActionKey = 'chargingBow';
     }
     // Could add more locking states here, e.g., pData.isUsingShield, pData.isSleeping
 
     if (lockingActionKey) {
-        const localizedLockingAction = lockingActionKey.split('.').pop(); // Fallback to key part
-
         // Extract item and slot info from the event data
         const newItem = inventoryChangeDetails.newItemStack || inventoryChangeDetails.newItem; // Support both naming conventions
         const oldItem = inventoryChangeDetails.oldItemStack || inventoryChangeDetails.oldItem;
@@ -98,10 +96,10 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
 
 
         const violationDetails = {
-            reasonDetail: `Moved item in slot ${slotIdentifier} while ${localizedLockingAction}.`, // Hardcoded string
+            reasonDetail: `Moved item in slot ${slotIdentifier} while ${lockingActionKey}.`, // Hardcoded string
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
-            actionInProgress: localizedLockingAction,
+            actionInProgress: lockingActionKey,
         };
         // Standardized action profile key
         const actionProfileKey = 'playerInventoryModMoveLocked';
@@ -109,7 +107,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog(
-            `[InventoryModCheck](MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${localizedLockingAction}.`,
+            `[InventoryModCheck](MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${lockingActionKey}.`,
             watchedPrefix, dependencies
         );
         // Event cancellation for inventory changes is usually not done as it's an 'after' event.
