@@ -2,7 +2,7 @@
  * Manages world border settings via commands.
  */
 import * as mc from '@minecraft/server';
-// import { world, system } from '@minecraft/server'; // Unused, mc.world is used.
+import { world, system } from '@minecraft/server'; // system is used for mc.system.currentTick
 import { permissionLevels } from '../core/rankManager.js';
 
 export const definition = {
@@ -521,8 +521,9 @@ async function handleSetGlobalParticleCommand(player, args, dependencies) {
         playerUtils.notifyPlayer(player, `§aGlobal world border particle set to: ${particleName}`);
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderSetGlobalParticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);
     } else {
-        const currentParticleName = configModule.editableConfigValues.worldBorderParticleName;
-        if (currentParticleName === particleName) {
+        // Compare against the live runtime config value
+        const currentGlobalParticleFromRuntime = currentRunTimeConfig.worldBorderParticleName;
+        if (currentGlobalParticleFromRuntime === particleName) {
             playerUtils.warnPlayer(player, `§eGlobal particle is already set to ${particleName}. No change made.`);
         } else {
             playerUtils.warnPlayer(player, '§cFailed to set global particle due to an internal error.');

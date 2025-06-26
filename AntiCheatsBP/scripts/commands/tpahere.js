@@ -1,7 +1,7 @@
 /**
  * Script for the !tpahere command, allowing players to request another player to teleport to them.
  */
-// import { world, system } from '@minecraft/server'; // Not used in this file
+import { world, system } from '@minecraft/server'; // system is used
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}

@@ -137,7 +137,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             const rankElements = rankManager.getPlayerRankFormattedChatElements(player, dependencies);
             const finalMessage = `${rankElements.fullPrefix}${rankElements.nameColor}${player.nameTag ?? player.name}§f: ${rankElements.messageColor}${originalMessage}`;
 
-            mc.system.world.sendMessage(finalMessage); // Use mc.system directly
+            mc.world.sendMessage(finalMessage); // Corrected: Use mc.world
             eventData.cancel = true; // Cancel original event as we've sent the formatted one
 
             logManager.addLog({ actionType: 'chatMessageSent', targetName: player.nameTag, details: originalMessage }, dependencies);
