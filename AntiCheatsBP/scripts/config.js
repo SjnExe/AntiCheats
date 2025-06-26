@@ -19,6 +19,8 @@ export const ownerPlayerName = 'PlayerNameHere'; // FIXME: User needs to change 
 export const enableDebugLogging = true;
 /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
 export const prefix = '!';
+/** @type {string} The tag applied to players who are vanished. */
+export const vanishedPlayerTag = 'vanished';
 
 // --- Welcomer & Player Info ---
 /** @type {boolean} If true, a welcome message is sent to players when they join. */
@@ -786,6 +788,7 @@ export let editableConfigValues = {
     ownerPlayerName,
     enableDebugLogging,
     prefix,
+    vanishedPlayerTag,
     // Welcomer & Player Info
     enableWelcomerMessage,
     welcomeMessage,

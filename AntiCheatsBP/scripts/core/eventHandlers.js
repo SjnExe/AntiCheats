@@ -47,10 +47,19 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
             playerUtils.debugLog(`CombatLog: Player ${player.nameTag} left ${timeSinceLastCombatSeconds}s after combat. Threshold: ${currentConfig.combatLogThresholdSeconds}s. Flagging +${incrementAmount}.`, player.nameTag, dependencies);
 
+            // Flagging is still handled here due to specific increment logic from config.
             for (let i = 0; i < incrementAmount; i++) {
                 await playerDataManager.addFlag(player, flagType, baseFlagReason, `(#${i + 1}/${incrementAmount}) Details: ${timeSinceLastCombatSeconds}s delay.`, dependencies);
             }
-            // Admin notification for combat log is now handled by the actionProfile for 'combatLog' if defined.
+
+            // Call actionManager to handle notifications and logging based on 'combatLog' profile
+            const violationDetails = {
+                timeSinceLastCombat: timeSinceLastCombatSeconds,
+                incrementAmount: incrementAmount,
+                // other details from config.combatLogMessage if needed by profile template
+            };
+            // Assuming 'combatLog' is the standardized checkType key
+            await dependencies.actionManager.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
         }
     }
 
@@ -247,7 +256,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
     if (entity.typeId === 'minecraft:wither' && config.enableWitherAntiGrief) {
         playerUtils.debugLog(`AntiGrief: Wither spawned (ID: ${entity.id}). Config action: ${config.witherSpawnAction}.`, null, dependencies);
         const violationDetails = { entityId: entity.id, entityType: entity.typeId, actionTaken: config.witherSpawnAction, playerNameOrContext: 'System/Environment' };
-        await actionManager.executeCheckAction('worldAntigriefWitherSpawn', null, violationDetails, dependencies);
+        await actionManager.executeCheckAction('worldAntiGriefWitherSpawn', null, violationDetails, dependencies); // Standardized
         if (config.witherSpawnAction === 'kill') {
             try { entity.kill(); } catch (e) { console.warn(`Failed to kill wither: ${e}`); }
             playerUtils.debugLog(`AntiGrief: Wither (ID: ${entity.id}) killed due to witherSpawnAction config.`, null, dependencies);
@@ -294,9 +303,9 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
 
         const violationDetails = { itemTypeId: itemStack.typeId, location: block.location, actionTaken: 'prevented', playerName: player.nameTag, x: block.location.x, y: block.location.y, z: block.location.z };
         // Standardized checkType for actionProfiles
-        await actionManager.executeCheckAction('worldAntigriefTntPlace', player, violationDetails, dependencies);
+        await actionManager.executeCheckAction('worldAntiGriefTntPlace', player, violationDetails, dependencies); // Standardized
 
-        const profile = config.checkActionProfiles.worldAntigriefTntPlace;
+        const profile = config.checkActionProfiles.worldAntiGriefTntPlace; // Standardized
         if (profile?.cancelEvent !== false) { // Default to cancel if not specified or true
             eventData.cancel = true;
             playerUtils.warnPlayer(player, getString(profile?.parameters?.messageKey || 'antigrief.tntPlacementDenied'));
@@ -781,7 +790,7 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
             console.error(`[AntiCheat] Failed to teleport ${player.nameTag} back from locked dimension ${toDimensionId}: ${e.stack || e}`);
             playerUtils.debugLog(`Teleport fail for ${player.nameTag} from ${toDimensionId}: ${e.message}`, player.nameTag, dependencies);
             dependencies.logManager.addLog({
-                actionType: 'error_dimension_lock_teleport',
+                actionType: 'errorDimensionLockTeleport', // Standardized to camelCase
                 targetName: player.nameTag,
                 details: `Failed to teleport from locked dimension ${toDimensionId}. Error: ${e.message}`,
                 error: e.stack || e.message,

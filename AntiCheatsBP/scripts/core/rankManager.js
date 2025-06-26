@@ -182,10 +182,10 @@ export function updatePlayerNametag(player, dependencies) {
         return;
     }
 
-    const vanishedTag = config?.vanishedTag || 'vanished'; // Use standardized config key name
+    const vanishedTagToUse = config?.vanishedPlayerTag || 'vanished'; // Use new standardized config key
 
     try {
-        if (player.hasTag(vanishedTag)) {
+        if (player.hasTag(vanishedTagToUse)) {
             player.nameTag = ''; // Clear nametag if vanished
             return;
         }
