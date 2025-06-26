@@ -1,7 +1,7 @@
 /**
  * Script for the !tpa command, allowing players to request teleportation to another player.
  */
-import { world, system } from '@minecraft/server';
+import { world } from '@minecraft/server';
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
