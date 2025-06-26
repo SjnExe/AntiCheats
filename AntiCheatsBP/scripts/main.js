@@ -241,10 +241,7 @@ mc.system.runInterval(async () => {
     currentTick++;
     const tickDependencies = getStandardDependencies();
 
-    if (typeof reportManager.initializeReportCache === 'function' && !reportManager.isInitialized()) {
-        reportManager.initializeReportCache(tickDependencies);
-        playerUtils.debugLog('ReportManager cache initialized from main tick loop (failsafe).', 'System', tickDependencies);
-    }
+    // ReportManager cache should be initialized once at startup.
 
     if (tickDependencies.config.enableWorldBorderSystem) {
         try {
@@ -293,13 +290,17 @@ mc.system.runInterval(async () => {
             await checks.checkAutoTool(player, pData, tickDependencies); pData.lastCheckAutoToolTick = currentTick;
         }
         if (tickDependencies.config.enableInstaBreakSpeedCheck && checks.checkInstaBreak) { /* InstaBreak typically runs on blockBreak */ }
-        if (tickDependencies.config.enableTowerCheck && checks.checkTower) await checks.checkTower(player, pData, tickDependencies);
+        // Removed tower check from tick, it's in PlayerPlaceBlockAfterEvent
+        // if (tickDependencies.config.enableTowerCheck && checks.checkTower) await checks.checkTower(player, pData, tickDependencies);
         if (tickDependencies.config.enableFlatRotationCheck && checks.checkFlatRotationBuilding && (currentTick - (pData.lastCheckFlatRotationBuildingTick || 0) >= tickDependencies.config.flatRotationCheckIntervalTicks)) {
             await checks.checkFlatRotationBuilding(player, pData, tickDependencies); pData.lastCheckFlatRotationBuildingTick = currentTick;
         }
-        if (tickDependencies.config.enableDownwardScaffoldCheck && checks.checkDownwardScaffold) await checks.checkDownwardScaffold(player, pData, tickDependencies);
+        // Removed downward scaffold from tick, it's in PlayerPlaceBlockAfterEvent
+        // if (tickDependencies.config.enableDownwardScaffoldCheck && checks.checkDownwardScaffold) await checks.checkDownwardScaffold(player, pData, tickDependencies);
         if (tickDependencies.config.enableAirPlaceCheck && checks.checkAirPlace) { /* AirPlace typically runs on blockPlace */ }
-        if (tickDependencies.config.enableFastPlaceCheck && checks.checkFastPlace) await checks.checkFastPlace(player, pData, tickDependencies);
+        // Removed fast place from tick, it's in PlayerPlaceBlockAfterEvent
+        // if (tickDependencies.config.enableFastPlaceCheck && checks.checkFastPlace) await checks.checkFastPlace(player, pData, tickDependencies);
+
 
         // Player State / Info / Behavior Checks
         if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof && (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
@@ -309,8 +310,11 @@ mc.system.runInterval(async () => {
             await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGmcTick = currentTick;
         }
         if (tickDependencies.config.enableSelfHurtCheck && checks.checkSelfHurt) { /* SelfHurt typically runs on entityHurt */ }
-        if (tickDependencies.config.enableIllegalItemCheck && checks.checkIllegalItems) await checks.checkIllegalItems(player, pData, tickDependencies);
-        if (tickDependencies.config.enableInventoryModCheck && checks.checkInventoryModifications) await checks.checkInventoryModifications(player, pData, tickDependencies);
+        // Removed illegal item check from tick, it's event-based
+        // if (tickDependencies.config.enableIllegalItemCheck && checks.checkIllegalItems) await checks.checkIllegalItems(player, pData, tickDependencies);
+        // Removed inventory mod check from tick, it's event-based
+        // if (tickDependencies.config.enableInventoryModCheck && checks.checkInventoryModifications) await checks.checkInventoryModifications(player, pData, tickDependencies);
+
 
         // Client Behavior Checks
         if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
@@ -325,18 +329,18 @@ mc.system.runInterval(async () => {
         if (!player.isOnGround) {
             if ((pData.velocity?.y ?? 0) < -0.078 && pData.previousPosition && pData.lastPosition) {
                 const deltaY = pData.previousPosition.y - pData.lastPosition.y;
-                if (deltaY > 0 && deltaY < 100) {
+                if (deltaY > 0 && deltaY < 100) { // Ensure deltaY is positive and reasonable
                     pData.fallDistance = (pData.fallDistance || 0) + deltaY;
                 }
             }
         } else {
-            if (!pData.isTakingFallDamage) {
+            if (!pData.isTakingFallDamage) { // Only reset if not actively taking fall damage this tick
                 pData.fallDistance = 0;
             }
-            pData.isTakingFallDamage = false;
+            pData.isTakingFallDamage = false; // Reset this flag after checking
             pData.consecutiveOffGroundTicks = 0;
         }
-        pData.previousPosition = { ...pData.lastPosition };
+        // previousPosition is updated in updateTransientPlayerData, so it's already set for next tick's deltaY calc.
 
         // World Border Enforcement
         if (tickDependencies.config.enableWorldBorderSystem) {
@@ -363,16 +367,29 @@ mc.system.runInterval(async () => {
                         playerUtils.debugLog(`Periodic save executed for watched player ${player.nameTag}.`, player.nameTag, tickDependencies);
                     }
                 } catch (error) {
-                    const err = error as Error;
-                    console.error(`Error during periodic save for ${player.nameTag}: ${err.message}`);
-                    logManager.addLog({ actionType: 'error', context: 'PeriodicSaveFail', details: `Player: ${player.nameTag}, Error: ${err.message}` }, tickDependencies);
+                    // const err = error; // JavaScript doesn't have 'as Error' type casting
+                    console.error(`Error during periodic save for ${player.nameTag}: ${error.message}`);
+                    logManager.addLog({ actionType: 'error', context: 'PeriodicSaveFail', details: `Player: ${player.nameTag}, Error: ${error.message}` }, tickDependencies);
                 }
             }
         }
         logManager.persistLogCacheToDisk(tickDependencies);
         reportManager.persistReportsToDisk(tickDependencies);
         if (tickDependencies.config.enableWorldBorderSystem) {
-            worldBorderManager.saveBorderSettings(tickDependencies);
+            // Settings are saved when modified by commands. A global periodic save isn't strictly necessary
+            // unless there's a mechanism for settings to become "dirty" without explicit saves.
+            // For now, specific save calls are in the command logic.
+            // If a global save is desired, it would iterate dimensions and saveBorderSettings if a setting object is dirty.
+            // Example:
+            // const knownDims = tickDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
+            // for (const dimId of knownDims) {
+            //    const settings = worldBorderManager.getBorderSettings(dimId, tickDependencies);
+            //    if (settings && settings.isDirtyForSave) { // Assuming an isDirtyForSave flag could be added
+            //        worldBorderManager.saveBorderSettings(dimId, settings, tickDependencies);
+            //        settings.isDirtyForSave = false;
+            //    }
+            // }
+            playerUtils.debugLog("[MainTick] World border settings are saved on modification. No global periodic save implemented currently.", "System", tickDependencies);
         }
     }
 }, 1);
@@ -396,13 +413,22 @@ function initializeSystem() {
     const startupDependencies = getStandardDependencies();
     playerUtils.debugLog('Anti-Cheat Script Loaded. Initializing modules...', 'System', startupDependencies);
 
-    commandManager.initializeCommands(startupDependencies);
+    commandManager.initializeCommands(startupDependencies); // Assuming this populates the maps in commandManager
     logManager.initializeLogCache(startupDependencies);
-    reportManager.initializeReportCache(startupDependencies);
+    reportManager.initializeReportCache(startupDependencies); // Moved here
     rankManager.initializeRanks(startupDependencies);
     if (startupDependencies.config.enableWorldBorderSystem) {
-        worldBorderManager.loadBorderSettings(startupDependencies);
+        const knownDims = startupDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
+        for (const dimId of knownDims) {
+            // getBorderSettings effectively loads it into cache if accessed,
+            // actual "loading" into a manager-level cache isn't explicitly done here,
+            // but settings are read from properties when needed.
+            // We can call it to ensure it's read once if there's any internal caching in worldBorderManager.
+             worldBorderManager.getBorderSettings(dimId, startupDependencies);
+        }
+        playerUtils.debugLog("[InitializeSystem] World border settings will be loaded on demand for configured dimensions.", "System", startupDependencies);
     }
+
 
     playerUtils.debugLog('Anti-Cheat Core System Initialized. Event handlers and tick loop are active.', 'System', startupDependencies);
     mc.world.sendMessage('§a[AntiCheat] §2System Core Initialized. Version: ' + configModule.acVersion);

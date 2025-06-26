@@ -386,7 +386,7 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
     depPlayerUtils.debugLog(`UI: System Info requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag, dependencies);
     const notApplicable = getString('common.value.notApplicable');
     const onlinePlayers = mc.world.getAllPlayers();
-    const pDataEntries = typeof playerDataManager.getAllPlayerDataValues === 'function' ? playerDataManager.getAllPlayerDataValues().length : notApplicable; // Changed to getAllPlayerDataValues
+    const pDataEntries = typeof playerDataManager.getAllPlayerDataValues === 'function' ? Array.from(playerDataManager.getAllPlayerDataValues()).length : notApplicable; // Corrected: Use Array.from().length
     const watchedPlayersCount = onlinePlayers.filter(p => playerDataManager.getPlayerData(p.id)?.isWatched).length;
     let mutedPersistentCount = 0, bannedPersistentCount = 0;
     onlinePlayers.forEach(p => {

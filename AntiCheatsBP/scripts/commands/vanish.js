@@ -1,7 +1,7 @@
 /**
  * Defines the !vanish command for administrators to toggle their visibility and related effects.
  */
-import { world } from '@minecraft/server'; // Corrected import spacing
+// import { world } from '@minecraft/server'; // world is not used
 
 const vanishedTag = 'vanished';
 const vanishModeNotifyTag = 'vanish_mode_notify';

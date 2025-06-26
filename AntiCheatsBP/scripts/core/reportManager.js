@@ -101,7 +101,7 @@ export function getReports() {
  * @returns {ReportEntry | null} The newly created report object, or null if arguments are invalid.
  */
 export function addReport(reporterPlayer, reportedPlayer, reason, dependencies) {
-    const { playerUtils, config } = dependencies;
+    const { playerUtils, config } = dependencies; // Added config to destructuring
     const currentMaxReportsCount = config.maxReportsCount !== undefined ? config.maxReportsCount : 100;
 
     if (!reporterPlayer?.id || !reporterPlayer?.nameTag ||
