@@ -448,7 +448,7 @@ export const checkActionProfiles = {
             detailsPrefix: 'NameSpoof Violation: ',
         },
     },
-    'playerAntiGMC': { // Changed from playerAntiGMC
+    'playerAntigmc': { // Changed from playerAntiGMC
         enabled: true,
         flag: {
             increment: 10,

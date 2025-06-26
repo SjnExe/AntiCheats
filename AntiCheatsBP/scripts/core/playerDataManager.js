@@ -343,7 +343,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         automodState: {},
         // Per-check tick trackers for intervals
         lastCheckNameSpoofTick: 0,
-        lastCheckAntiGMCTick: 0, // Corrected to GMC standard
+        lastCheckAntiGmcTick: 0, // Corrected to Gmc standard
         lastCheckNetherRoofTick: 0,
         lastCheckAutoToolTick: 0,
         lastCheckFlatRotationBuildingTick: 0,
