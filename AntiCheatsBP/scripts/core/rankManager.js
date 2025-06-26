@@ -202,7 +202,10 @@ export function updatePlayerNametag(player, dependencies) {
         const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-        const baseName = typeof player.name === 'string' ? player.name : (player.nameTag || 'Player');
+        let baseName = 'Player'; // Default fallback
+        if (player && typeof player.name === 'string' && player.name) {
+            baseName = player.name;
+        }
         player.nameTag = nametagToApply + baseName;
 
         if (config?.enableDebugLogging && playerUtils?.debugLog) {

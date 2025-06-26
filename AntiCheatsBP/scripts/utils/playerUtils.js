@@ -111,7 +111,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
 
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
         const flagType = pData.lastFlagType || 'N/A';
-        const specificFlagCount = pData.flags[flagType] ? pData.flags[flagType].count : 0;
+        const specificFlagCount = (flagType !== 'N/A' && pData.flags[flagType]) ? pData.flags[flagType].count : 0;
         fullMessage += ` §c(Player: ${player.nameTag}, Total Flags: ${pData.flags.totalFlags}, Last: ${flagType} [${specificFlagCount}])§r`;
     } else if (player) {
         fullMessage += ` §c(Player: ${player.nameTag})§r`;

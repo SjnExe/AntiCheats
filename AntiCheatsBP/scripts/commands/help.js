@@ -118,7 +118,7 @@ export async function execute(player, args, dependencies) {
             }
 
             // Skip category if player doesn't meet the base permission level for it
-            if (category.permissionRequired && userPermissionLevel > category.permissionRequired) {
+            if (typeof category.permissionRequired === 'number' && userPermissionLevel > category.permissionRequired) {
                 return;
             }
 

@@ -631,7 +631,8 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
  */
 export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
     const { playerUtils, getString } = dependencies;
-    if (!player || typeof durationMs !== 'number' || durationMs <= 0) { // durationMs can be Infinity
+    // Corrected validation to allow Infinity and reject non-positive finite durations
+    if (!player || typeof durationMs !== 'number' || (durationMs <= 0 && durationMs !== Infinity)) {
         playerUtils.debugLog(`[PlayerDataManager] addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag, dependencies);
         return false;
     }
