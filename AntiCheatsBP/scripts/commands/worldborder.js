@@ -499,7 +499,7 @@ async function handleResizeResumeCommand(player, args, dependencies) {
 }
 
 async function handleSetGlobalParticleCommand(player, args, dependencies) {
-    const { playerUtils, logManager, configModule, config: currentRunTimeConfig } = dependencies;
+    const { playerUtils, logManager, editableConfig: configModule, config: currentRunTimeConfig } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
 
     if (args.length < 1) {
