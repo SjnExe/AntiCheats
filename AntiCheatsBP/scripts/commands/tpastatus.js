@@ -52,7 +52,7 @@ export async function execute(player, args, dependencies) {
                         await tpaManager.declineRequest(req.requestId, dependencies);
                         const requesterPlayer = world.getAllPlayers().find(p => p.name === req.requesterName);
                         if (requesterPlayer) {
-                            system.run(() => {
+                            mc.system.run(() => {
                                 try {
                                     requesterPlayer.onScreenDisplay.setActionBar(`§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`);
                                 } catch (e) {

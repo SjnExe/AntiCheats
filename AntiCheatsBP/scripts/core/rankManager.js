@@ -203,8 +203,8 @@ export function updatePlayerNametag(player, dependencies) {
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
         let baseName = 'Player'; // Default fallback
-        if (player && typeof player.name === 'string' && player.name) {
-            baseName = player.name;
+        if (player && typeof player.nameTag === 'string' && player.nameTag) {
+            baseName = player.nameTag;
         }
         player.nameTag = nametagToApply + baseName;
 
@@ -214,15 +214,15 @@ export function updatePlayerNametag(player, dependencies) {
     } catch (error) {
         let playerNameForError = 'UnknownPlayer';
         try {
-            if (player && typeof player.name === 'string') {
-                playerNameForError = player.name;
+            if (player && typeof player.nameTag === 'string') {
+                playerNameForError = player.nameTag;
             }
         } catch (nameAccessError) {
             // This inner catch is fine, means player object or name is problematic
         }
         console.error(`[RankManager] Error setting nametag for '${playerNameForError}': ${error.stack || error}`);
         try {
-            player.nameTag = typeof player.name === 'string' ? player.name : 'Player'; // Fallback
+            player.nameTag = typeof player.nameTag === 'string' ? player.nameTag : 'Player'; // Fallback
         } catch (e) { /* Failsafe */ }
     }
 }
