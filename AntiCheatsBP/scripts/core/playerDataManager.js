@@ -231,7 +231,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             combatViewSnapPitch: { count: 0, lastDetectionTime: 0 }, // Standardized
             combatViewSnapYaw: { count: 0, lastDetectionTime: 0 }, // Standardized
             combatInvalidPitch: { count: 0, lastDetectionTime: 0 },
-            combatMultiTargetAura: { count: 0, lastDetectionTime: 0 }, // Standardized
+            combatMultitargetAura: { count: 0, lastDetectionTime: 0 }, // Standardized
             combatAttackWhileSleeping: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileConsuming: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileBowCharging: { count: 0, lastDetectionTime: 0 },
