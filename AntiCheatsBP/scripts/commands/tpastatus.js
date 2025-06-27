@@ -1,7 +1,7 @@
 /**
  * Script for the !tpastatus command, allowing players to manage their TPA request availability.
  */
-import { world, system } from '@minecraft/server'; // Ensure system is imported if mc.system is used below.
+import * as mc from '@minecraft/server'; // Import mc for world and system
 import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -50,9 +50,9 @@ export async function execute(player, args, dependencies) {
                     let declinedCount = 0;
                     for (const req of incomingRequests) {
                         await tpaManager.declineRequest(req.requestId, dependencies);
-                        const requesterPlayer = world.getAllPlayers().find(p => p.name === req.requesterName);
+                        const requesterPlayer = mc.world.getAllPlayers().find(p => p.name === req.requesterName);
                         if (requesterPlayer) {
-                            system.run(() => {
+                            mc.system.run(() => {
                                 try {
                                     requesterPlayer.onScreenDisplay.setActionBar(`§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`);
                                 } catch (e) {

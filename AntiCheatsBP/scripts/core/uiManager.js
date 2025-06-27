@@ -496,7 +496,8 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
             const valueToCompare = (keyType === 'object' && Array.isArray(newValue)) ? JSON.stringify(newValue) : newValue;
             if (valueToCompare === originalValueForComparison) adminPlayer.sendMessage(getString('ui.configEditor.valueInput.noChange', { keyName }));
             else {
-                const success = updateConfigValue(keyName, newValue); // This needs to be awaited if it's async
+                // Use updateConfigValue from dependencies.editableConfig
+                const success = dependencies.editableConfig.updateConfigValue(keyName, newValue);
                 if (success) { adminPlayer.sendMessage(getString('ui.configEditor.valueInput.success', { keyName, value: (typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)) })); logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'configUpdate', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` }, dependencies); }
                 else adminPlayer.sendMessage(getString('ui.configEditor.valueInput.error.updateFailedInternal', { keyName }));
             }
