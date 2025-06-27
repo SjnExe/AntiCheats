@@ -8,22 +8,23 @@
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
 
-import * as configModule from './config.js';
+// Local Modules
+import * as actionManager from './core/actionManager.js';
 import { automodConfig } from './core/automodConfig.js';
+import * as chatProcessor from './core/chatProcessor.js';
 import { checkActionProfiles } from './core/actionProfiles.js';
-import * as playerUtils from './utils/playerUtils.js';
-import * as playerDataManager from './core/playerDataManager.js';
+import * as checks from './checks/index.js';
 import * as commandManager from './core/commandManager.js';
-import * as uiManager from './core/uiManager.js';
+import * as configModule from './config.js';
 import * as eventHandlers from './core/eventHandlers.js';
 import * as logManager from './core/logManager.js';
+import * as playerDataManager from './core/playerDataManager.js';
+import * as playerUtils from './utils/playerUtils.js';
+import * as rankManager from './core/rankManager.js';
 import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
-import * as actionManager from './core/actionManager.js';
-import * as rankManager from './core/rankManager.js';
-import * as checks from './checks/index.js';
+import * as uiManager from './core/uiManager.js';
 import * as worldBorderManager from './utils/worldBorderManager.js';
-import * as chatProcessor from './core/chatProcessor.js';
 
 let currentTick = 0;
 
@@ -90,19 +91,41 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     }
 });
 
+/**
+ * Handles player spawn events:
+ * - Initializes player-specific data (pData).
+ * - Displays welcome messages.
+ * - Notifies admins of new players.
+ * - Updates player nametags based on rank.
+ */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
     eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles player leave events:
+ * - Performs cleanup of player data.
+ * - Manages combat log detection.
+ * - Saves player data if dirty.
+ */
 mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
     eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles entity hurt events (after):
+ * - Processes data for combat checks (Reach, CPS, ViewSnap, SelfHurt, MultiTarget, StateConflict).
+ * - Updates player combat state.
+ */
 mc.world.afterEvents.entityHurt.subscribe((eventData) => {
     const dependencies = getStandardDependencies();
     eventHandlers.handleEntityHurt(eventData, dependencies);
 });
 
+/**
+ * Handles entity hurt events (before):
+ * - Specifically checks for TPA warmup cancellation if a player takes damage.
+ */
 mc.world.beforeEvents.entityHurt.subscribe(eventData => {
     const dependencies = getStandardDependencies();
     if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
@@ -128,27 +151,69 @@ mc.world.beforeEvents.entityHurt.subscribe(eventData => {
     }
 });
 
+/**
+ * Handles player block break events (before):
+ * - Checks for InstaBreak (unbreakable blocks).
+ * - Gathers data for AutoTool check.
+ */
 mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
 });
+/**
+ * Handles player block break events (after):
+ * - Checks for Nuker.
+ * - Checks for InstaBreak (speed).
+ * - Provides data for X-Ray notifications.
+ * - Updates player data related to block breaking.
+ */
 mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles item use events (e.g., eating, drinking, using ender pearls):
+ * - Checks for FastUse violations.
+ * - Manages player state related to item usage (e.g., `isUsingConsumable`).
+ * - Checks for illegal item use.
+ * - Handles chat interaction checks (e.g., `enableChatDuringItemUseCheck`).
+ */
 mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
     await eventHandlers.handleItemUse(eventData, getStandardDependencies());
 });
+/**
+ * Handles item use on a block events (e.g., placing a boat, using flint & steel):
+ * - Checks for illegal item use on blocks.
+ * - Handles anti-grief for specific items like TNT, Lava, Water (via entity spawn for some).
+ * - Manages player state related to item usage.
+ */
 mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
     await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles player block placement events (before):
+ * - Checks for illegal block placement (e.g., banned items).
+ * - Anti-grief checks for blocks like TNT.
+ * - AirPlace check.
+ */
 mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
 });
+/**
+ * Handles player block placement events (after):
+ * - Checks for Scaffold/Tower, DownwardScaffold, FastPlace.
+ * - Anti-grief checks (block spam rate/density).
+ * - Updates player data related to block placement.
+ */
 mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
     await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles changes to a player's inventory items:
+ * - Potential hook for InventoryModification checks (e.g., illegal items, enchantments).
+ *   Currently, this is a basic stub.
+ */
 mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
     await eventHandlers.handleInventoryItemChange(
         eventData.player,
@@ -159,10 +224,20 @@ mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
     );
 });
 
+/**
+ * Handles player dimension change events:
+ * - Updates player data related to their current dimension.
+ * - Potentially re-evaluates world border status.
+ */
 mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
     eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles entity death events:
+ * - If a player dies, triggers player death specific logic (e.g., death coordinates message).
+ * - If death effects are enabled, triggers cosmetic effects.
+ */
 mc.world.afterEvents.entityDie.subscribe((eventData) => {
     const dependencies = getStandardDependencies();
     if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
@@ -173,10 +248,19 @@ mc.world.afterEvents.entityDie.subscribe((eventData) => {
     }
 });
 
+/**
+ * Handles entity spawn events (after):
+ * - Anti-grief checks for entity spam (e.g., boats, armor stands).
+ * - Anti-grief checks for Wither spawning.
+ */
 mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
     await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
 });
 
+/**
+ * Handles piston activation events (after):
+ * - Checks for PistonLag machines by monitoring rapid activations.
+ */
 mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
     await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
 });
@@ -192,10 +276,9 @@ mc.system.runInterval(async () => {
         try {
             worldBorderManager.processWorldBorderResizing(tickDependencies);
         } catch (e) {
-            const error = e;
-            console.error(`[MainTick] Error processing world border resizing: ${error.stack || error.message}`);
-            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${error.message}`, 'System', tickDependencies);
-            logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
+            console.error(`[MainTick] Error processing world border resizing: ${e.stack || e.message}`);
+            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
+            logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
         }
     }
 
@@ -287,10 +370,9 @@ mc.system.runInterval(async () => {
             try {
                 worldBorderManager.enforceWorldBorderForPlayer(player, pData, tickDependencies);
             } catch (e) {
-                    const error = e;
-                console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${error.stack || error.message}`);
-                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${error.message}`, player.nameTag, tickDependencies);
-                logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${error.message}`, error: error.stack || error.message }, tickDependencies);
+                console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${e.stack || e.message}`);
+                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
+                logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
             }
         }
     }
