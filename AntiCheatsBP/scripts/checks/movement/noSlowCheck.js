@@ -86,7 +86,7 @@ export async function checkNoSlow(player, pData, dependencies) {
                 speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : '0',
             };
             // Standardized action profile key
-            await actionManager.executeCheckAction(player, 'movementNoslow', violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, 'movementNoSlow', violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(

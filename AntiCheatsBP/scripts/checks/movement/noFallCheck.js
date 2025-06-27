@@ -134,7 +134,7 @@ export async function checkNoFall(player, pData, dependencies) {
                 activeEffects: activeEffectsString,
             };
             // Standardized action profile key
-            await actionManager.executeCheckAction(player, 'movementNofall', violationDetails, dependencies);
+            await actionManager.executeCheckAction(player, 'movementNoFall', violationDetails, dependencies);
         }
 
         // Reset fallDistance and isTakingFallDamage once player is on ground and checks are done

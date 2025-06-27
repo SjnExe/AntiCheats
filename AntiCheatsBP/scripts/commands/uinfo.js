@@ -124,7 +124,7 @@ export const definition = {
     name: "uinfo",
     syntax: "!uinfo",
     description: "Shows your anti-cheat stats, server rules, and help links in a UI.",
-    permissionLevel: 0,
+    permissionLevel: permissionLevels.normal,
     enabled: true,
 };
 /**

@@ -78,7 +78,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected suspicious fall damage negation (NoFall).',
-            type: 'movementViolation', // Could be 'movementNoFall' for more specific flag type
+            type: 'movementNoFall',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}',
@@ -93,7 +93,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 5,
             reason: 'System detected Nuker activity (rapid/wide-area block breaking).',
-            type: 'worldViolation',
+            type: 'worldNuker',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}',
@@ -108,7 +108,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected abnormally high CPS (Clicks Per Second).',
-            type: 'combatCps',
+            type: 'combatCpsHigh',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}',
@@ -153,7 +153,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected invalid view pitch (e.g., looking straight up/down).',
-            type: 'combatViewViolation',
+            type: 'combatInvalidPitch',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)',
@@ -183,7 +183,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 5,
             reason: 'System detected player attacking while sleeping.',
-            type: 'combatStateConflict',
+            type: 'combatAttackWhileSleeping',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntityType}',
@@ -243,7 +243,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected use of a banned item: {itemTypeId}.',
-            type: 'worldIllegalItem',
+            type: 'worldIllegalItemUse',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}',
@@ -258,7 +258,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected placement of a banned item: {itemTypeId}.',
-            type: 'worldIllegalItem',
+            type: 'worldIllegalItemPlace',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}',
@@ -273,7 +273,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected suspicious tower-like building.',
-            type: 'worldScaffoldTower',
+            type: 'worldTowerBuild',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)',
@@ -288,7 +288,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected unnatural (flat or static) head rotation while building.',
-            type: 'worldScaffoldRotation',
+            type: 'worldFlatRotationBuilding',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Var: {pitchVariance}, Yaw Var: {yawMaxDifferenceFromFirst}, Reason: {detectionReason}',
@@ -303,7 +303,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected suspicious downward scaffolding while airborne.',
-            type: 'worldScaffoldDownward',
+            type: 'worldDownwardScaffold',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {horizontalSpeedBPS}bps (MinSpeed: {minHorizontalSpeedBPS}bps)',
@@ -318,7 +318,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected block placed against air/liquid without solid support.',
-            type: 'worldScaffoldAirplace',
+            type: 'worldAirPlace',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting {targetFaceType}.',
@@ -885,7 +885,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 2,
             reason: 'System detected suspicious self-inflicted damage.',
-            type: 'playerSelfDamage',
+            type: 'playerSelfHurt',
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}',

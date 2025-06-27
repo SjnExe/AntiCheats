@@ -29,6 +29,7 @@ let showSystemInfo;
 let showActionLogsForm;
 let showResetFlagsForm;
 let showWatchedPlayersList;
+let showNormalUserPanelMain; // Added forward declaration
 
 async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmToggleLabelKey, onConfirmCallback, dependencies, bodyParams = {}) {
     const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
@@ -118,13 +119,13 @@ async function showMyStats(player, dependencies) {
     const genericFormErrorMsg = getString('common.error.genericForm');
     const statsForm = new MessageFormData().title(title).body([bodyText, '', locationLabel, dimensionLabel].join('\n')).button1(backButton);
     statsForm.show(player).then(() => {
-        showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
+        showNormalUserPanelMain(player, dependencies);
     }).catch(error => {
         console.error(`[UiManager] Error in showMyStats for ${player.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showMyStats for ${player.nameTag}: ${error.message}`, player.nameTag, dependencies);
         logManager.addLog({ adminName: player.nameTag, actionType: 'error', context: 'uiManager.showMyStats', details: `Error: ${error.message}` }, dependencies);
         player.sendMessage(genericFormErrorMsg);
-        showNormalUserPanelMain(player, dependencies.playerDataManager, dependencies.config, dependencies);
+        showNormalUserPanelMain(player, dependencies);
     });
 }
 
@@ -139,13 +140,13 @@ async function showServerRules(player, dependencies) {
     let rulesBody = (Array.isArray(rules) && rules.length > 0) ? rules.join('\n') : noRulesDefinedMsg;
     const rulesForm = new MessageFormData().title(title).body(rulesBody).button1(backButton);
     rulesForm.show(player).then(() => {
-        showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+        showNormalUserPanelMain(player, dependencies);
     }).catch(error => {
         console.error(`[UiManager] Error in showServerRules for ${player.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showServerRules for ${player.nameTag}: ${error.message}`, player.nameTag, dependencies);
         logManager.addLog({ adminName: player.nameTag, actionType: 'error', context: 'uiManager.showServerRules', details: `Error: ${error.message}` }, dependencies);
         player.sendMessage(genericFormErrorMsg);
-        showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+        showNormalUserPanelMain(player, dependencies);
     });
 }
 
@@ -163,12 +164,12 @@ async function showHelpLinks(player, dependencies) {
 
     if (!Array.isArray(helpLinksArray) || helpLinksArray.length === 0) {
         new MessageFormData().title(title).body(noLinksMsg).button1(backButton).show(player).then(() => {
-            showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+            showNormalUserPanelMain(player, dependencies);
         }).catch(error => {
             console.error(`[UiManager] Error showing noLinks form in showHelpLinks for ${player.nameTag}: ${error.stack || error}`);
             depPlayerUtils.debugLog(`[UiManager] Error showing noLinks form: ${error.message}`, player.nameTag, dependencies);
             logManager.addLog({ adminName: player.nameTag, actionType: 'error', context: 'uiManager.showHelpLinks.noLinksForm', details: `Error: ${error.message}` }, dependencies);
-            showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+            showNormalUserPanelMain(player, dependencies);
         });
         return;
     }
@@ -177,7 +178,7 @@ async function showHelpLinks(player, dependencies) {
 
     form.show(player).then(response => {
         if (response.canceled || response.selection === helpLinksArray.length) {
-            showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+            showNormalUserPanelMain(player, dependencies);
             return;
         }
         const selectedLink = helpLinksArray[response.selection];
@@ -187,14 +188,14 @@ async function showHelpLinks(player, dependencies) {
         } else {
             depPlayerUtils.debugLog(`[UiManager] Error: Invalid link item at index ${response.selection}.`, player.nameTag, dependencies);
             player.sendMessage(genericFormErrorMsg);
-            showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+            showNormalUserPanelMain(player, dependencies);
         }
     }).catch(error => {
         console.error(`[UiManager] Error in showHelpLinks for ${player.nameTag}: ${error.stack || error}`);
         depPlayerUtils.debugLog(`[UiManager] Error in showHelpLinks: ${error.message}`, player.nameTag, dependencies);
         logManager.addLog({ adminName: player.nameTag, actionType: 'error', context: 'uiManager.showHelpLinks', details: `Error: ${error.message}` }, dependencies);
         player.sendMessage(genericFormErrorMsg);
-        showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+        showNormalUserPanelMain(player, dependencies);
     });
 }
 
@@ -276,7 +277,7 @@ async function _showModalAndExecuteWithTransform(commandName, titleKey, fields, 
     try {
         const modalResponse = await modal.show(adminPlayer);
         if (modalResponse.canceled) {
-            adminPlayer.sendMessage(getString(`ui.playerActions.${commandName}.cancelled`, `§7${commandName} action cancelled.`));
+            adminPlayer.sendMessage(getString(`ui.playerActions.${commandName}.cancelled`) || `§7${commandName} action cancelled.`);
             return true; // Indicate cancellation or completion of this flow part
         }
         await cmdExec(adminPlayer, argsTransform(modalResponse.formValues), dependencies);
@@ -347,7 +348,7 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
                 case 5: if (userPermLevel === permissionLevels.owner) await showEditConfigForm(player, playerDataManager, globalEditableConfigValues, dependencies); break;
             }
         } else {
-            await showNormalUserPanelMain(player, playerDataManager, config, dependencies);
+            await showNormalUserPanelMain(player, dependencies);
         }
     } catch (error) {
         depPlayerUtils.debugLog(`Error in showAdminPanelMain: ${error.stack || error}`, player.nameTag, dependencies);
@@ -356,8 +357,8 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
     }
 };
 
-async function showNormalUserPanelMain(player, playerDataManager, config, dependencies) {
-    const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
+showNormalUserPanelMain = async function (player, dependencies) { // Standardized to pass full dependencies
+    const { playerUtils: depPlayerUtils, logManager, getString, playerDataManager, config } = dependencies; // Destructure here
     depPlayerUtils.debugLog(`UI: Normal User Panel Main requested by ${player.nameTag}`, player.nameTag, dependencies);
     const form = new ActionFormData().title(getString('ui.normalPanel.title')).body(getString('ui.normalPanel.body', { playerName: player.nameTag }));
     form.button(getString('ui.normalPanel.button.myStats'), 'textures/ui/icon_multiplayer');
