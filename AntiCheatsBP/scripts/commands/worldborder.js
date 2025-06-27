@@ -511,12 +511,12 @@ async function handleSetGlobalParticleCommand(player, args, dependencies) {
         playerUtils.warnPlayer(player, '§cParticle name cannot be empty.');
         return;
     }
-    if (!configModule || typeof configModule.updateConfigValue !== 'function') {
+    if (!dependencies.configModule || typeof dependencies.configModule.updateConfigValue !== 'function') {
         playerUtils.warnPlayer(player, '§cConfiguration system error. Cannot set global particle.');
         console.warn('[WB SetGlobalParticle] configModule or updateConfigValue is not available in dependencies.');
         return;
     }
-    const success = configModule.updateConfigValue('worldBorderParticleName', particleName);
+    const success = dependencies.configModule.updateConfigValue('worldBorderParticleName', particleName);
     if (success) {
         playerUtils.notifyPlayer(player, `§aGlobal world border particle set to: ${particleName}`);
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderSetGlobalParticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);

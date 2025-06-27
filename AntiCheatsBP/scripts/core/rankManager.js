@@ -2,7 +2,6 @@
  * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
  * Ranks are defined in `ranksConfig.js` and processed here.
  */
-import { Player } from '@minecraft/server';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
 
 /**
