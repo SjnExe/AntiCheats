@@ -40,7 +40,7 @@ export const automodConfig = {
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated high click speed violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive click speed violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'movementNofall': [
+        'movementNoFall': [
             { flagThreshold: 9, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, NoFall (fall damage negation) detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated NoFall violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 27, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive NoFall violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -50,7 +50,7 @@ export const automodConfig = {
             { flagThreshold: 12, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated use of illegal items ({itemTypeId}) (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive use of illegal items ({itemTypeId}) (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'playerNamespoof': [
+        'playerNameSpoof': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, name spoofing detected (Flags: {flagCount}/{flagThreshold}). Please change your name.' }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated name spoofing violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive name spoofing violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -60,7 +60,7 @@ export const automodConfig = {
             { flagThreshold: 25, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated reach violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 40, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive reach violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'movementNoslow': [
+        'movementNoSlow': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, NoSlow (movement exploit) detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated NoSlow violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} due to excessive NoSlow violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -74,7 +74,7 @@ export const automodConfig = {
             { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for unauthorized Creative Mode usage (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'tempBan', parameters: { duration: '6h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for repeated unauthorized Creative Mode usage (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'combatMultitargetAura': [
+        'combatMultiTargetAura': [
             { flagThreshold: 6, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, attacking multiple targets too quickly (Flags: {flagCount}/{flagThreshold}). Please play fairly.' }, resetFlagsAfterAction: false },
             { flagThreshold: 12, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated multi-target aura violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive multi-target aura violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -104,7 +104,7 @@ export const automodConfig = {
             { flagThreshold: 15, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeatedly attacking while sleeping (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 25, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessively attacking while sleeping (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldInstabreakSpeed': [
+        'worldInstaBreakSpeed': [
             { flagThreshold: 9, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, breaking blocks too quickly detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 18, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated instabreak violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 27, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive instabreak violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -139,12 +139,12 @@ export const automodConfig = {
             { flagThreshold: 4, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for attempting to impersonate server or staff messages (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 6, actionType: 'tempBan', parameters: { duration: '1h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for persistent attempts to impersonate server or staff messages (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'combatViewsnapPitch': [
+        'combatViewSnapPitch': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, suspicious vertical camera movements detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated suspicious vertical camera movements (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive suspicious vertical camera movements (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'combatViewsnapYaw': [
+        'combatViewSnapYaw': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, suspicious horizontal camera movements detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for repeated suspicious horizontal camera movements (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive suspicious horizontal camera movements (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -184,12 +184,12 @@ export const automodConfig = {
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent Nuker activity (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '10m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive Nuker activity (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAutotool': [
+        'worldAutoTool': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, suspicious tool switching (AutoTool) detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent AutoTool activity (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive AutoTool activity (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldInstabreakUnbreakable': [
+        'worldInstaBreakUnbreakable': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, attempted to break an unbreakable block ({itemTypeId}) (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for attempting to break unbreakable blocks ({itemTypeId}) (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '1h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for persistent attempts to break unbreakable blocks ({itemTypeId}) (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },

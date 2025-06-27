@@ -213,8 +213,8 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             // Movement
             movementFlyHover: { count: 0, lastDetectionTime: 0 },
             movementSpeedGround: { count: 0, lastDetectionTime: 0 },
-            movementNofall: { count: 0, lastDetectionTime: 0 },
-            movementNoslow: { count: 0, lastDetectionTime: 0 },
+            movementNoFall: { count: 0, lastDetectionTime: 0 }, // Standardized
+            movementNoSlow: { count: 0, lastDetectionTime: 0 }, // Standardized
             movementInvalidSprint: { count: 0, lastDetectionTime: 0 },
             movementNetherRoof: { count: 0, lastDetectionTime: 0 },
             movementHighYVelocity: { count: 0, lastDetectionTime: 0 },
@@ -222,10 +222,10 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             // Combat
             combatReachAttack: { count: 0, lastDetectionTime: 0 },
             combatCpsHigh: { count: 0, lastDetectionTime: 0 },
-            combatViewsnapPitch: { count: 0, lastDetectionTime: 0 },
-            combatViewsnapYaw: { count: 0, lastDetectionTime: 0 },
+            combatViewSnapPitch: { count: 0, lastDetectionTime: 0 }, // Standardized
+            combatViewSnapYaw: { count: 0, lastDetectionTime: 0 }, // Standardized
             combatInvalidPitch: { count: 0, lastDetectionTime: 0 },
-            combatMultitargetAura: { count: 0, lastDetectionTime: 0 },
+            combatMultiTargetAura: { count: 0, lastDetectionTime: 0 }, // Standardized
             combatAttackWhileSleeping: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileConsuming: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileBowCharging: { count: 0, lastDetectionTime: 0 },
@@ -240,17 +240,17 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             worldDownwardScaffold: { count: 0, lastDetectionTime: 0 },
             worldAirPlace: { count: 0, lastDetectionTime: 0 },
             worldFastPlace: { count: 0, lastDetectionTime: 0 },
-            worldAutotool: { count: 0, lastDetectionTime: 0 },
-            worldInstabreakUnbreakable: { count: 0, lastDetectionTime: 0 },
-            worldInstabreakSpeed: { count: 0, lastDetectionTime: 0 },
+            worldAutoTool: { count: 0, lastDetectionTime: 0 }, // Standardized
+            worldInstaBreakUnbreakable: { count: 0, lastDetectionTime: 0 }, // Standardized
+            worldInstaBreakSpeed: { count: 0, lastDetectionTime: 0 }, // Standardized
             // Player Actions/State
             actionFastUse: { count: 0, lastDetectionTime: 0 },
-            playerNamespoof: { count: 0, lastDetectionTime: 0 },
-            playerAntigmc: { count: 0, lastDetectionTime: 0 },
+            playerNameSpoof: { count: 0, lastDetectionTime: 0 }, // Standardized
+            playerAntiGmc: { count: 0, lastDetectionTime: 0 }, // Standardized (already was playerAntiGmc)
             playerInventoryMod: { count: 0, lastDetectionTime: 0 }, // General category for inventory mod flags
             playerInventoryModSwitchUse: { count: 0, lastDetectionTime: 0 },
             playerInventoryModMoveLocked: { count: 0, lastDetectionTime: 0 },
-            playerSelfDamage: { count: 0, lastDetectionTime: 0 }, // Renamed from playerSelfHurt for consistency
+            playerSelfHurt: { count: 0, lastDetectionTime: 0 }, // Standardized (was playerSelfDamage)
             playerClientAnomaly: { count: 0, lastDetectionTime: 0 }, // For render distance, etc.
             playerChatStateViolation: { count: 0, lastDetectionTime: 0 }, // For chat during combat/item use
             // Chat specific
@@ -269,15 +269,15 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             chatNewline: { count: 0, lastDetectionTime: 0 }, // From chatProcessor direct addFlag
             chatMaxlength: { count: 0, lastDetectionTime: 0 }, // From chatProcessor direct addFlag
             // AntiGrief - these might be more event-based rather than cumulative flags on a player in some cases
-            antigriefTnt: { count: 0, lastDetectionTime: 0 },
-            antigriefWither: { count: 0, lastDetectionTime: 0 },
-            antigriefFire: { count: 0, lastDetectionTime: 0 },
-            antigriefLava: { count: 0, lastDetectionTime: 0 },
-            antigriefWater: { count: 0, lastDetectionTime: 0 },
-            antigriefBlockspam: { count: 0, lastDetectionTime: 0 },
-            antigriefEntityspam: { count: 0, lastDetectionTime: 0 },
-            antigriefBlockspamDensity: { count: 0, lastDetectionTime: 0 },
-            antigriefPistonLag: { count: 0, lastDetectionTime: 0 }, // If player-attributable
+            antiGriefTnt: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefWither: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefFire: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefLava: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefWater: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefBlockspam: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefEntityspam: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefBlockspamDensity: { count: 0, lastDetectionTime: 0 }, // Standardized
+            antiGriefPistonLag: { count: 0, lastDetectionTime: 0 }, // Standardized
         },
         lastFlagType: '',
         isWatched: false,
@@ -838,24 +838,7 @@ export function isBanned(player, dependencies) {
     return getBanInfo(player, dependencies) !== null;
 }
 
-/**
- * Directly sets the player data in the runtime cache. Used for initialization or forceful updates.
- * @param {string} playerId - The ID of the player.
- * @param {import('../types.js').PlayerAntiCheatData} data - The player data to set.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- */
-export function setPlayerData(playerId, data, dependencies) {
-    const { playerUtils } = dependencies; // Optional: for logging if needed
-    if (!playerId || !data) {
-        if (playerUtils) {
-            playerUtils.debugLog('PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data.', null, dependencies);
-        } else {
-            console.warn('PDM:setPlayerData: Invalid playerId or data provided. Cannot set player data. (playerUtils not in deps)');
-        }
-        return;
-    }
-    playerData.set(playerId, data);
-}
+// Removed setPlayerData function as it was unused.
 
 /**
  * Saves player data if it has been marked as dirty.

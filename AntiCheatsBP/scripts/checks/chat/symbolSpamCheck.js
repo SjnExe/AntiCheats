@@ -70,7 +70,6 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
             threshold: `${config.symbolSpamPercentage}%`,
             minLength: config.symbolSpamMinLength,
             originalMessage: message,
-            checkType: 'symbolSpam', // Consistent camelCase for checkType identifiers
         };
 
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);

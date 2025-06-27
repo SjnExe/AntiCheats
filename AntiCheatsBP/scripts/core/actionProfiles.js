@@ -73,18 +73,18 @@ export const checkActionProfiles = {
             detailsPrefix: 'Reach (Attack Violation): ',
         },
     },
-    'movementNofall': {
+    'movementNoFall': { // Standardized key
         enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected suspicious fall damage negation (NoFall).',
-            type: 'movementViolation',
+            type: 'movementViolation', // Could be 'movementNoFall' for more specific flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}',
         },
         log: {
-            actionType: 'detectedMovementNofall',
+            actionType: 'detectedMovementNoFall', // Standardized log actionType
             detailsPrefix: 'NoFall Violation: ',
         },
     },
@@ -118,33 +118,33 @@ export const checkActionProfiles = {
             detailsPrefix: 'High CPS Violation: ',
         },
     },
-    'combatViewsnapPitch': {
+    'combatViewSnapPitch': { // Standardized key
         enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected suspicious pitch snap after attack.',
-            type: 'combatViewsnap',
+            type: 'combatViewSnap', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
         },
         log: {
-            actionType: 'detectedViewsnapPitch',
+            actionType: 'detectedViewSnapPitch', // Standardized log actionType
             detailsPrefix: 'Pitch Snap Violation: ',
         },
     },
-    'combatViewsnapYaw': {
+    'combatViewSnapYaw': { // Standardized key
         enabled: true,
         flag: {
             increment: 1,
             reason: 'System detected suspicious yaw snap after attack.',
-            type: 'combatViewsnap',
+            type: 'combatViewSnap', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
         },
         log: {
-            actionType: 'detectedViewsnapYaw',
+            actionType: 'detectedViewSnapYaw', // Standardized log actionType
             detailsPrefix: 'Yaw Snap Violation: ',
         },
     },
@@ -163,7 +163,7 @@ export const checkActionProfiles = {
             detailsPrefix: 'Invalid Pitch Violation: ',
         },
     },
-    'combatMultitargetAura': {
+    'combatMultiTargetAura': { // Standardized key
         enabled: true,
         flag: {
             increment: 3,
@@ -174,7 +174,7 @@ export const checkActionProfiles = {
             message: '§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
         },
         log: {
-            actionType: 'detectedMultitargetAura',
+            actionType: 'detectedMultiTargetAura', // Standardized log actionType
             detailsPrefix: 'Multi-Target Aura Violation: ',
         },
     },
@@ -358,18 +358,18 @@ export const checkActionProfiles = {
             detailsPrefix: 'Fast Place Violation: ',
         },
     },
-    'movementNoslow': {
+    'movementNoSlow': { // Standardized key
         enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected movement faster than allowed for current action (e.g., eating, sneaking, using bow).',
-            type: 'movementNoslow',
+            type: 'movementNoSlow', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxAllowedSpeed}bps)',
         },
         log: {
-            actionType: 'detectedMovementNoslow',
+            actionType: 'detectedMovementNoSlow', // Standardized log actionType
             detailsPrefix: 'NoSlow Violation: ',
         },
     },
@@ -388,63 +388,63 @@ export const checkActionProfiles = {
             detailsPrefix: 'Invalid Sprint Violation: ',
         },
     },
-    'worldAutotool': {
+    'worldAutoTool': { // Standardized key
         enabled: true,
         flag: {
             increment: 2,
             reason: 'System detected suspicious tool switching before/after breaking a block (AutoTool).',
-            type: 'worldAutotool',
+            type: 'worldAutoTool', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolUsed}, Pattern: {switchPattern}',
         },
         log: {
-            actionType: 'detectedWorldAutotool',
+            actionType: 'detectedWorldAutoTool', // Standardized log actionType
             detailsPrefix: 'AutoTool Violation: ',
         },
     },
-    'worldInstabreakUnbreakable': {
+    'worldInstaBreakUnbreakable': { // Standardized key
         enabled: true,
         flag: {
             increment: 10,
             reason: 'Attempted to break an unbreakable block: {blockType}.',
-            type: 'worldInstabreakUnbreakable',
+            type: 'worldInstaBreakUnbreakable', // Standardized flag type
         },
         notifyAdmins: {
             message: '§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled.',
         },
         log: {
-            actionType: 'detectedInstabreakUnbreakable',
+            actionType: 'detectedInstaBreakUnbreakable', // Standardized log actionType
             detailsPrefix: 'InstaBreak (Unbreakable) Violation: ',
         },
     },
-    'worldInstabreakSpeed': {
+    'worldInstaBreakSpeed': { // Standardized key
         enabled: true,
         flag: {
             increment: 3,
             reason: 'System detected block broken significantly faster than possible: {blockType}.',
-            type: 'worldInstabreakSpeed',
+            type: 'worldInstaBreakSpeed', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t',
         },
         log: {
-            actionType: 'detectedInstabreakSpeed',
+            actionType: 'detectedInstaBreakSpeed', // Standardized log actionType
             detailsPrefix: 'InstaBreak (Speed) Violation: ',
         },
     },
-    'playerNamespoof': {
+    'playerNameSpoof': { // Standardized key
         enabled: true,
         flag: {
             increment: 5,
             reason: 'System detected an invalid or suspicious player nameTag ({reasonDetail}).',
-            type: 'playerNamespoof',
+            type: 'playerNameSpoof', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: \'{currentNameTagDisplay}\'',
         },
         log: {
-            actionType: 'detectedPlayerNamespoof',
+            actionType: 'detectedPlayerNameSpoof', // Standardized log actionType
             detailsPrefix: 'NameSpoof Violation: ',
         },
     },
@@ -453,17 +453,17 @@ export const checkActionProfiles = {
         flag: {
             increment: 10,
             reason: 'System detected unauthorized Creative Mode.',
-            type: 'playerAntigmc',
+            type: 'playerAntiGmc', // Standardized flag type
         },
         notifyAdmins: {
             message: '§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}',
         },
         log: {
-            actionType: 'detectedPlayerAntigmc',
+            actionType: 'detectedPlayerAntiGmc', // Standardized log actionType
             detailsPrefix: 'Anti-GMC Violation: ',
         },
     },
-    'playerInventoryModSwitchUse': { // More specific key
+    'playerInventoryModSwitchUse': {
         enabled: true,
         flag: {
             increment: 3,
@@ -527,138 +527,138 @@ export const checkActionProfiles = {
         },
         cancelMessage: true,
     },
-    'worldAntigriefTntPlace': {
+    'worldAntiGriefTntPlace': { // Standardized key
         enabled: true,
         flag: {
             increment: 1,
             reason: 'Player attempted to place TNT without authorization.',
-            type: 'antigriefTnt',
+            type: 'antiGriefTnt', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}.',
         },
         log: {
-            actionType: 'antigriefTntPlacement',
+            actionType: 'antiGriefTntPlacement', // Standardized log actionType
             detailsPrefix: 'AntiGrief TNT: ',
         },
         cancelEvent: true, // Added to ensure the action profile can control event cancellation
     },
-    'worldAntigriefWitherSpawn': {
+    'worldAntiGriefWitherSpawn': { // Standardized key
         enabled: true,
         flag: {
             increment: 5,
             reason: 'Player involved in unauthorized Wither spawn or Wither killed by AntiGrief.',
-            type: 'antigriefWither',
+            type: 'antiGriefWither', // Standardized flag type
         },
         notifyAdmins: {
             message: '§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}.',
         },
         log: {
-            actionType: 'antigriefWitherSpawn',
+            actionType: 'antiGriefWitherSpawn', // Standardized log actionType
             detailsPrefix: 'AntiGrief Wither: ',
         },
     },
-    'worldAntigriefFire': {
+    'worldAntiGriefFire': { // Standardized key
         enabled: true,
         flag: {
             increment: 2,
             reason: 'Player involved in unauthorized or excessive fire incident.',
-            type: 'antigriefFire',
+            type: 'antiGriefFire', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
         },
         log: {
-            actionType: 'antigriefFireIncident',
+            actionType: 'antiGriefFireIncident', // Standardized log actionType
             detailsPrefix: 'AntiGrief Fire: ',
         },
         cancelEvent: true,
     },
-    'worldAntigriefLava': {
+    'worldAntiGriefLava': { // Standardized key
         enabled: true,
         flag: {
             increment: 2,
             reason: 'Player involved in unauthorized lava placement.',
-            type: 'antigriefLava',
+            type: 'antiGriefLava', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
         },
         log: {
-            actionType: 'antigriefLavaPlacement',
+            actionType: 'antiGriefLavaPlacement', // Standardized log actionType
             detailsPrefix: 'AntiGrief Lava: ',
         },
         cancelEvent: true,
     },
-    'worldAntigriefWater': {
+    'worldAntiGriefWater': { // Standardized key
         enabled: true,
         flag: {
             increment: 1,
             reason: 'Player involved in unauthorized water placement.',
-            type: 'antigriefWater',
+            type: 'antiGriefWater', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
         },
         log: {
-            actionType: 'antigriefWaterPlacement',
+            actionType: 'antiGriefWaterPlacement', // Standardized log actionType
             detailsPrefix: 'AntiGrief Water: ',
         },
         cancelEvent: true,
     },
-    'worldAntigriefBlockspam': {
+    'worldAntiGriefBlockspam': { // Standardized key
         enabled: true,
         flag: {
             increment: 1,
             reason: 'Player suspected of block spamming.',
-            type: 'antigriefBlockspam',
+            type: 'antiGriefBlockspam', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}.',
         },
         log: {
-            actionType: 'antigriefBlockspamDetected',
+            actionType: 'antiGriefBlockspamDetected', // Standardized log actionType
             detailsPrefix: 'AntiGrief BlockSpam: ',
         },
     },
-    'worldAntigriefEntityspam': {
+    'worldAntiGriefEntityspam': { // Standardized key
         enabled: true,
         flag: {
             increment: 1,
             reason: 'Player suspected of entity spamming.',
-            type: 'antigriefEntityspam',
+            type: 'antiGriefEntityspam', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}.',
         },
         log: {
-            actionType: 'antigriefEntityspamDetected',
+            actionType: 'antiGriefEntityspamDetected', // Standardized log actionType
             detailsPrefix: 'AntiGrief EntitySpam: ',
         },
     },
-    'worldAntigriefBlockspamDensity': {
+    'worldAntiGriefBlockspamDensity': { // Standardized key
         enabled: true,
         flag: {
             increment: 2,
             reason: 'Player suspected of block spamming (high density).',
-            type: 'antigriefBlockspamDensity',
+            type: 'antiGriefBlockspamDensity', // Standardized flag type
         },
         notifyAdmins: {
             message: '§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}.',
         },
         log: {
-            actionType: 'antigriefBlockspamDensityDetected',
+            actionType: 'antiGriefBlockspamDensityDetected', // Standardized log actionType
             detailsPrefix: 'AntiGrief BlockSpam (Density): ',
         },
     },
-    'worldAntigriefPistonLag': {
+    'worldAntiGriefPistonLag': { // Standardized key
         enabled: true,
         flag: null, // No direct player flag, system log only
         notifyAdmins: {
             message: '§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)',
         },
         log: {
-            actionType: 'antigriefPistonLagDetected',
+            actionType: 'antiGriefPistonLagDetected', // Standardized log actionType
             detailsPrefix: 'AntiGrief Piston Lag: ',
         },
     },
@@ -893,6 +893,56 @@ export const checkActionProfiles = {
         log: {
             actionType: 'detectedPlayerSelfHurt',
             detailsPrefix: 'Self-Hurt Violation: ',
+        },
+    },
+    'chatNewline': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Message contained newline characters.',
+            type: 'chatFormatting',
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} flagged for using newlines in chat. Message: §f{message}',
+        },
+        log: {
+            actionType: 'detectedChatNewline',
+            detailsPrefix: 'Newline in chat: ',
+        },
+        cancelMessage: true, // Assuming config.cancelMessageOnNewline handles actual cancellation
+    },
+    'chatMaxlength': {
+        enabled: true,
+        flag: {
+            increment: 1,
+            reason: 'Message exceeded maximum length ({messageLength}/{maxLength}).',
+            type: 'chatFormatting',
+        },
+        notifyAdmins: {
+            message: '§eAC: {playerName} flagged for overly long message ({messageLength}/{maxLength}). Snippet: §f{messageSnippet}',
+        },
+        log: {
+            actionType: 'detectedChatMaxLength', // Consistent camelCase
+            detailsPrefix: 'Message too long: ',
+        },
+        cancelMessage: true, // Assuming config.cancelOnMaxMessageLength handles actual cancellation
+    },
+    'combatLog': {
+        enabled: true,
+        flag: { // Flagging is handled by handlePlayerLeave directly, this profile is mainly for notification/log consistency
+            increment: 0, // Actual increment is in handlePlayerLeave based on config.combatLogFlagIncrement
+            reason: 'Player disconnected shortly after combat.', // Base reason, specific timing in flag details
+            type: 'combatLog', // Explicit type
+        },
+        notifyAdmins: {
+            // Message template from config.js: '§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}'
+            // The executeCheckAction will need to be called with appropriate violationDetails for this.
+            // For now, a generic message, assuming details are handled by the calling context or direct config usage.
+            message: '§c[AC-CombatLog] §e{playerName}§c disconnected {timeSinceLastCombat}s after combat. Flags: +{incrementAmount}. Details: {detailsString}',
+        },
+        log: {
+            actionType: 'detectedCombatLog',
+            detailsPrefix: 'Combat Log Violation: ',
         },
     },
 };
