@@ -30,13 +30,30 @@ This document lists significant tasks that have been completed.
         *   Created basic stub files for these missing commands.
         *   Registered these new stub commands in `commands/commandRegistry.js`.
         *   Confirmed no other major globally unused code blocks or files beyond what was already commented out in the source.
-*   **Outcome:** The codebase review is complete. Several minor standardizations and corrections were applied. Stubs for missing commands were created, making the command structure more complete with respect to its configuration. The overall codebase within `AntiCheatsBP/scripts/` is now more consistent. No significant refactoring of complex logic was undertaken as part of this review, which focused on standardization, removal of unused elements, and creation of missing stubs.tool_code
-overwrite_file_with_block
-Dev/tasks/ongoing.md
-# Ongoing Tasks & Next Steps for Development
+*   **Outcome:** The codebase review is complete. Several minor standardizations and corrections were applied. Stubs for missing commands were created, making the command structure more complete with respect to its configuration. The overall codebase within `AntiCheatsBP/scripts/` is now more consistent. No significant refactoring of complex logic was undertaken as part of this review, which focused on standardization, removal of unused elements, and creation of missing stubs.
 
-This document summarizes the current work-in-progress for the AntiCheat addon.
-
-*No tasks are currently ongoing.*
-
-(This file was cleared after the completion of the Comprehensive Codebase Review by Jules.)
+---
+## Implementation of Missing Commands and Report Manager Enhancements
+*   **Date Completed:** (Placeholder for current date - to be filled by system/user)
+*   **Objective:** Implement previously stubbed commands and enhance `reportManager.js` to support them. Address "create missing things" and "remove unused code" from the initial request.
+*   **Summary of Actions:**
+    *   **`reportManager.js` Enhancements:**
+        *   Implemented `generateReportId()` for unique report identifiers.
+        *   Implemented `addReport(reporterPlayer, reportedPlayerName, reason, dependencies)` to add new reports, persist them, and notify admins.
+        *   Implemented `clearReportById(reportId, dependencies)` to remove specific reports.
+        *   Implemented `clearReportsForPlayer(playerNameOrId, dependencies)` to remove reports associated with a player.
+        *   Implemented `clearAllReports(dependencies)` to remove all existing reports.
+        *   Ensured `getReports()` sorts reports newest first.
+    *   **Command Implementations:**
+        *   **`purgeflags.js`**: Implemented logic to clear all flags, violation details, and AutoMod states for a target online player.
+        *   **`watch.js`**: Implemented logic to set `pData.isWatched = true` for a target online player, enabling detailed logging.
+        *   **`unwatch.js`**: Implemented logic to set `pData.isWatched = false` for a target online player.
+        *   **`report.js`**: Implemented logic for players to report others, utilizing the enhanced `reportManager.addReport`.
+        *   **`viewreports.js`**: Implemented logic for admins to view reports with support for listing all (paginated), by ID, and by player name (paginated). Added `formatTimeDifference` to `playerUtils.js` to support this.
+        *   **`clearreports.js`**: Implemented logic for admins to clear reports by ID, by player association, or all reports, using the enhanced `reportManager` functions.
+    *   **Utility Enhancement:**
+        *   Added `formatTimeDifference(msDifference)` function to `playerUtils.js` for human-readable "ago" timestamps.
+    *   **General Review:**
+        *   Confirmed no other major unused code blocks during command implementation.
+        *   Addressed the primary "missing things" by implementing the command logic.
+*   **Outcome:** All listed missing commands are now functional for online players. `reportManager.js` is now equipped to handle report lifecycle. The codebase is more complete in terms of its configured features.
