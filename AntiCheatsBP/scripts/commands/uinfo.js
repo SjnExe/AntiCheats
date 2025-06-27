@@ -124,14 +124,14 @@ export const definition = {
     name: "uinfo",
     syntax: "!uinfo",
     description: "Shows your anti-cheat stats, server rules, and help links in a UI.",
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: dependencies.permissionLevels.normal,
     enabled: true,
 };
 /**
  * Executes the uinfo command, showing a UI panel with various info for the player.
  */
 export async function execute(player, _args, dependencies) {
-    const { logManager, playerUtils, config, permissionLevels } = dependencies;
+    const { logManager, playerUtils, config } = dependencies;
 
     const mainPanel = new ActionFormData()
         .title("Player Information Panel")
