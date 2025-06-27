@@ -24,6 +24,11 @@ const persistedPlayerDataKeys = [
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
     'joinTime', // Persisting joinTime for session duration calculations across sessions if needed, or for first join info.
+    'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
+    // Per-check tick trackers for intervals are also persisted implicitly if they are top-level keys in pData.
+    // Explicitly listing them if they were nested or for clarity:
+    'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
+    'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
     // Note: lastPosition, velocity, etc. are highly transient and re-evaluated on join/tick.
 ];
 
@@ -192,6 +197,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils.debugLog(`Initializing default pData for ${player.nameTag} (ID: ${player.id})`, player.nameTag, dependencies);
     return {
+        id: player.id, // Explicitly include player ID
         playerNameTag: player.nameTag,
         lastPosition: { ...player.location },
         previousPosition: { ...player.location },

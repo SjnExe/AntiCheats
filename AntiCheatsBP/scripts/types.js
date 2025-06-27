@@ -288,13 +288,13 @@
  * @typedef {object} RankDefinition
  * @property {string} id Unique identifier for the rank (e.g., "member", "moderator", "admin").
  * @property {string} name Display name of the rank (e.g., "Member", "Moderator").
- * @property {number} permissionLevel Numerical permission level associated with this rank. Higher is more permissive.
+ * @property {number} permissionLevel Numerical permission level associated with this rank. Lower is higher privilege.
  * @property {string} [chatPrefix=""] Prefix displayed before the player's name in chat.
  * @property {string} [chatSuffix=""] Suffix displayed after the player's name in chat.
  * @property {string} [nametagPrefix=""] Prefix displayed in the player's nametag (above head).
  * @property {string} [nametagSuffix=""] Suffix displayed in the player's nametag.
  * @property {string} [defaultChatColor="§f"] Default Minecraft color code for chat messages from players with this rank.
- * @property {Array<{type: 'automatic_join' | 'manual_tag_prefix' | 'playtime_hours' | 'total_flags_less_than', value?: string | number, prefix?: string}>} conditions Conditions for a player to obtain this rank.
+ * @property {Array<{type: 'owner_name'|'admin_tag'|'manual_tag_prefix'|'tag'|'default', value?: string | number, prefix?: string}>} conditions Conditions for a player to obtain this rank.
  * @property {boolean} [isDefault=false] If true, this is the default rank for new players or those not meeting other rank conditions.
  * @property {number} [assignableBy] Permission level required to manually assign/remove this rank (if applicable).
  */

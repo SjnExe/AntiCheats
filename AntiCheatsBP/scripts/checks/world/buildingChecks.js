@@ -439,7 +439,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             blockType: blockType,
             actionTaken: config.blockSpamAction, // Informative, actual action decided by profile
         };
-        await actionManager.executeCheckAction(player, 'worldAntigriefBlockspam', violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldAntiGriefBlockspam', violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamCheck] Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, pData.isWatched ? player.nameTag : null, dependencies);
 
         // Reset timestamps after flagging to prevent immediate re-flagging for the same burst
@@ -501,7 +501,7 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
             blockType: block.typeId,
             actionTaken: config.blockSpamDensityAction ?? 'warn', // Informative
         };
-        await actionManager.executeCheckAction(player, 'worldAntigriefBlockspamDensity', violationDetails, dependencies);
+        await actionManager.executeCheckAction(player, 'worldAntiGriefBlockspamDensity', violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${radius} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null, dependencies);
         // Consider if recentBlockPlacements should be partially cleared or managed to prevent re-flagging on every subsequent block in a large dense build.
     }

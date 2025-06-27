@@ -61,7 +61,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
     data.activations = data.activations.filter(timestamp => timestamp >= sustainedWindowStart);
 
     const activationRate = data.activations.length / config.pistonActivationSustainedDurationSeconds;
-    const actionProfileKey = 'worldAntigriefPistonLag'; // Standardized key
+    const actionProfileKey = 'worldAntiGriefPistonLag'; // Standardized key
 
     if (activationRate >= config.pistonActivationLogThresholdPerSecond) {
         // Check cooldown before logging/alerting again for the same piston

@@ -76,7 +76,6 @@ export async function execute(player, args, dependencies) {
         targetPlayer.sendMessage(`§eYour rank "${rankDef.name}" has been removed.`);
 
         logManager.addLog({
-            timestamp: Date.now(), // Added timestamp
             adminName: player.nameTag,
             actionType: 'removeRank', // Changed to camelCase
             targetName: targetPlayer.nameTag,
@@ -89,7 +88,6 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(`§cAn error occurred while removing the rank: ${error.message}`);
         console.error(`[RemoveRankCommand] Error removing rank ${rankDef.id} from ${targetPlayer.nameTag}: ${error.stack || error}`);
         logManager.addLog({
-            timestamp: Date.now(), // Added timestamp
             adminName: player.nameTag,
             actionType: 'error',
             context: 'RemoveRankCommandExecute', // Added context

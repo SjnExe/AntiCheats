@@ -44,6 +44,12 @@ import * as versionCmd from './version.js';
 import * as warningsCmd from './warnings.js';
 import * as worldborderCmd from './worldborder.js';
 import * as xraynotifyCmd from './xraynotify.js';
+import * as purgeflagsCmd from './purgeflags.js';
+import * as reportCmd from './report.js';
+import * as viewreportsCmd from './viewreports.js';
+import * as clearreportsCmd from './clearreports.js';
+import * as watchCmd from './watch.js';
+import * as unwatchCmd from './unwatch.js';
 
 /**
  * Array containing all registered command modules.
@@ -91,4 +97,10 @@ export const commandModules = [
     warningsCmd,
     worldborderCmd,
     xraynotifyCmd,
+    purgeflagsCmd,
+    reportCmd,
+    viewreportsCmd,
+    clearreportsCmd,
+    watchCmd,
+    unwatchCmd,
 ];

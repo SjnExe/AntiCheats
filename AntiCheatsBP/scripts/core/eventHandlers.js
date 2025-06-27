@@ -204,7 +204,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         console.error(`[AntiCheat] Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}: ${error.stack || error}`);
         playerUtils.debugLog(`Error in handlePlayerSpawn for ${player?.nameTag || 'unknown player'}: ${error.message}`, player?.nameTag, dependencies);
         logManager.addLog({
-            actionType: 'errorHandlePlayerSpawn', // Changed to camelCase
+            actionType: 'errorHandlePlayerSpawn',
             targetName: player?.nameTag || 'unknown player',
             details: `Error: ${error.message}`,
             error: error.stack || error.message, // Include stack for better debugging
@@ -337,7 +337,7 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
         console.warn(`[EventHandler] Error applying death effect for ${deadEntity.nameTag}: ${e.message}`);
         playerUtils.debugLog(`Error applying death effect for ${deadEntity.nameTag}: ${e.message}`, deadEntity.nameTag, dependencies);
         dependencies.logManager.addLog({
-            actionType: 'errorDeathEffect', // Changed to camelCase
+            actionType: 'errorDeathEffect',
             targetName: deadEntity.nameTag,
             details: `Error: ${e.message}`,
             error: e.stack || e.message,
@@ -790,7 +790,7 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
             console.error(`[AntiCheat] Failed to teleport ${player.nameTag} back from locked dimension ${toDimensionId}: ${e.stack || e}`);
             playerUtils.debugLog(`Teleport fail for ${player.nameTag} from ${toDimensionId}: ${e.message}`, player.nameTag, dependencies);
             dependencies.logManager.addLog({
-                actionType: 'errorDimensionLockTeleport', // Standardized to camelCase
+                actionType: 'errorDimensionLockTeleport',
                 targetName: player.nameTag,
                 details: `Failed to teleport from locked dimension ${toDimensionId}. Error: ${e.message}`,
                 error: e.stack || e.message,
