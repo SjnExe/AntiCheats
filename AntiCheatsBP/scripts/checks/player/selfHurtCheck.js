@@ -49,7 +49,6 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
             }
         } catch (e) {
             playerUtils.debugLog(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
-            console.error(`[SelfHurtCheck] Error getting health for ${player.nameTag}: ${e.stack || e}`);
         }
 
         const violationDetails = {

@@ -7,8 +7,6 @@
 
 // Note: `checkActionProfiles` and `automodConfig` are complex objects imported from their respective modules.
 // They are not part of `editableConfigValues` due to their complexity and are managed directly by their modules.
-// import { checkActionProfiles } from './core/actionProfiles.js'; // Currently not used directly in this file after refactor
-// import { automodConfig as importedAutoModConfig } from './core/automodConfig.js'; // Currently not used directly in this file
 
 // --- General Admin & System ---
 /** @type {string} The tag for identifying admin players. */

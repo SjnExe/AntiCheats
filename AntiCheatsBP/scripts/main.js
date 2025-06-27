@@ -57,7 +57,6 @@ function getStandardDependencies() {
             getPlayerPermissionLevel: rankManager.getPlayerPermissionLevel,
             updatePlayerNametag: rankManager.updatePlayerNametag,
             getPlayerRankFormattedChatElements: rankManager.getPlayerRankFormattedChatElements,
-            getRankById: rankManager.getRankById,
         },
         worldBorderManager: {
             getBorderSettings: worldBorderManager.getBorderSettings,

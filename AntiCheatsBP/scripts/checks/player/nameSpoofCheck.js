@@ -59,7 +59,6 @@ export async function checkNameSpoof(player, pData, dependencies) {
             }
         } catch (e) {
             playerUtils.debugLog(`[NameSpoofCheck] Error compiling regex '${config.nameSpoofDisallowedCharsRegex}': ${e.message}`, watchedPrefix, dependencies);
-            console.error(`[NameSpoofCheck] Regex compilation error for nameSpoofDisallowedCharsRegex: ${e.stack || e}`);
             // Potentially add a system log entry about the invalid regex config
         }
     }

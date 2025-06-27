@@ -50,7 +50,6 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             if (playerUtils.debugLog && (pData.isWatched || config.enableDebugLogging)) {
                 playerUtils.debugLog(`[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }
-            // console.error(`[InvalidSprintCheck] Food component error for ${player.nameTag}: ${e.stack || e}`); // Optional: more aggressive logging
         }
 
         if ((pData.blindnessTicks ?? 0) > 0) {

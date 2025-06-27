@@ -24,7 +24,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager } = dependencies; // Removed unused permissionLevels from destructuring
+    const { config, playerUtils, playerDataManager, logManager } = dependencies;
     const findPlayer = playerUtils.findPlayer; // Consistent with other commands
     const prefix = config.prefix;
 

@@ -148,8 +148,6 @@ export function getPlayerPermissionLevel(player, dependencies) {
     return permissionLevel;
 }
 
-// Removed getPlayerRankId function as it was unused.
-
 /**
  * Gets the formatted chat prefix, name color, and message color for a player based on their rank.
  * @param {import('@minecraft/server').Player} player - The player.

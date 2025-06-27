@@ -26,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies; // Removed getString, findPlayer (will use playerUtils.findPlayer)
+    const { config, playerUtils, logManager } = dependencies;
     const frozenTag = 'frozen'; // Tag to mark frozen players
     const effectDuration = 2000000; // A very long duration for the effect (effectively permanent until removed)
     const slownessAmplifier = 255; // Max slowness to prevent movement

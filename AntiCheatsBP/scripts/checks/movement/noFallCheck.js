@@ -89,7 +89,6 @@ export async function checkNoFall(player, pData, dependencies) {
             if (playerUtils.debugLog && config.enableDebugLogging) {
                 playerUtils.debugLog(`[NoFallCheck] Error checking block below player ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }
-            // console.error(`[NoFallCheck] Error checking block below ${player.nameTag}: ${e.stack || e}`); // Optionally log full error
         }
 
         if (pData.isWatched) {
@@ -112,7 +111,6 @@ export async function checkNoFall(player, pData, dependencies) {
                 }
             } catch (e) {
                 playerUtils.debugLog(`[NoFallCheck] Error getting health for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
-                // console.error(`[NoFallCheck] Error getting health for ${player.nameTag}: ${e.stack || e}`);
             }
 
             let activeEffectsString = 'none';
@@ -123,7 +121,6 @@ export async function checkNoFall(player, pData, dependencies) {
                 }
             } catch (e) {
                 playerUtils.debugLog(`[NoFallCheck] Error getting effects for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
-                // console.error(`[NoFallCheck] Error getting effects for ${player.nameTag}: ${e.stack || e}`);
             }
 
             const violationDetails = {

@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies; // Removed getString
+    const { config, playerUtils, logManager } = dependencies;
     const subCommand = args[0] ? args[0].toLowerCase() : 'status';
     const prefix = config.prefix;
 

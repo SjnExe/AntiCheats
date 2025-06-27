@@ -21,9 +21,6 @@ export function isAdmin(player, dependencies) {
     return dependencies.rankManager.getPlayerPermissionLevel(player, dependencies) <= dependencies.permissionLevels.admin;
 }
 
-// Removed isOwner function as it was unused.
-// Removed executeLagClear function as it was unused.
-
 /**
  * Sends a standardized warning message to a player.
  * @param {import('@minecraft/server').Player} player - The player to warn.
