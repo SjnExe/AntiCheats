@@ -2,7 +2,7 @@
  * Manages world border settings via commands.
  */
 import * as mc from '@minecraft/server';
-import { world, system } from '@minecraft/server'; // system is used for mc.system.currentTick
+// world and system are available via mc.
 import { permissionLevels } from '../core/rankManager.js';
 
 export const definition = {
@@ -499,7 +499,7 @@ async function handleResizeResumeCommand(player, args, dependencies) {
 }
 
 async function handleSetGlobalParticleCommand(player, args, dependencies) {
-    const { playerUtils, logManager, editableConfig: configModule, config: currentRunTimeConfig } = dependencies;
+    const { playerUtils, logManager, editableConfig, config: currentRunTimeConfig } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
 
     if (args.length < 1) {
@@ -511,12 +511,12 @@ async function handleSetGlobalParticleCommand(player, args, dependencies) {
         playerUtils.warnPlayer(player, '§cParticle name cannot be empty.');
         return;
     }
-    if (!dependencies.configModule || typeof dependencies.configModule.updateConfigValue !== 'function') {
+    if (!editableConfig || typeof editableConfig.updateConfigValue !== 'function') {
         playerUtils.warnPlayer(player, '§cConfiguration system error. Cannot set global particle.');
-        console.warn('[WB SetGlobalParticle] configModule or updateConfigValue is not available in dependencies.');
+        console.warn('[WB SetGlobalParticle] editableConfig or updateConfigValue is not available in dependencies.');
         return;
     }
-    const success = dependencies.configModule.updateConfigValue('worldBorderParticleName', particleName);
+    const success = editableConfig.updateConfigValue('worldBorderParticleName', particleName);
     if (success) {
         playerUtils.notifyPlayer(player, `§aGlobal world border particle set to: ${particleName}`);
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderSetGlobalParticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);

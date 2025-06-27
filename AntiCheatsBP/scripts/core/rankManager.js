@@ -2,6 +2,7 @@
  * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
  * Ranks are defined in `ranksConfig.js` and processed here.
  */
+import * as mc from '@minecraft/server'; // Import mc for Player type
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
 
 /**
@@ -89,7 +90,7 @@ function initializeRankSystem(dependencies) {
 function getPlayerRankAndPermissions(player, dependencies) {
     const { config, playerUtils } = dependencies;
 
-    if (!(player instanceof Player) || !player.isValid()) {
+    if (!(player instanceof mc.Player) || !player.isValid()) {
         if (playerUtils && config?.enableDebugLogging) {
             playerUtils.debugLog('[RankManager] Invalid player object passed to getPlayerRankAndPermissions.', player?.nameTag || 'UnknownSource', dependencies);
         }
@@ -176,7 +177,7 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
 export function updatePlayerNametag(player, dependencies) {
     const { config, playerUtils } = dependencies;
 
-    if (!(player instanceof Player) || !player.isValid()) {
+    if (!(player instanceof mc.Player) || !player.isValid()) {
         console.error('[RankManager] Invalid player object passed to updatePlayerNametag.');
         return;
     }
