@@ -3,6 +3,7 @@
  * AntiCheat statistics, server rules, and other helpful information.
  */
 import { ActionFormData, MessageFormData } from '@minecraft/server-ui';
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * Shows the player their anti-cheat statistics.
@@ -124,7 +125,7 @@ export const definition = {
     name: "uinfo",
     syntax: "!uinfo",
     description: "Shows your anti-cheat stats, server rules, and help links in a UI.",
-    permissionLevel: dependencies.permissionLevels.normal,
+    permissionLevel: permissionLevels.normal,
     enabled: true,
 };
 /**
