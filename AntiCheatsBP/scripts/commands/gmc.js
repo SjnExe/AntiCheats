@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config } = dependencies; // Removed getString
+    const { playerUtils, logManager, config } = dependencies;
     const targetPlayerName = args[0];
     const gamemodeName = 'Creative'; // For messages
     const gamemodeMc = mc.GameMode.creative; // For API

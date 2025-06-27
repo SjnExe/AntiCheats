@@ -45,7 +45,6 @@ export { checkNameSpoof } from './player/nameSpoofCheck.js';
 
 // Chat Message Checks
 export { checkMessageRate } from './chat/messageRateCheck.js';
-// Removed export for checkMessageWordCount as the file is deleted.
 export * from './chat/swearCheck.js';
 export * from './chat/antiAdvertisingCheck.js';
 export * from './chat/capsAbuseCheck.js';

@@ -84,7 +84,6 @@ export async function checkSpeed(player, pData, dependencies) {
                     }
                 } catch (e) {
                     playerUtils.debugLog(`[SpeedCheck] Error getting effects for ${player.nameTag}: ${e.message}`, watchedPrefix, dependencies);
-                    console.error(`[SpeedCheck] Error getting effects for ${player.nameTag}: ${e.stack || e}`);
                 }
 
                 const violationDetails = {

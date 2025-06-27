@@ -24,7 +24,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager } = dependencies; // Removed getString
+    const { config, playerUtils, playerDataManager, logManager } = dependencies;
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${config.prefix}inspect <playername>`); // Hardcoded string

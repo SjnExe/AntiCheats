@@ -70,7 +70,6 @@ export async function checkAntiGmc(player, pData, dependencies) {
                     playerUtils.debugLog(`[AntiGmcCheck] Switched ${player.nameTag} from Creative to ${targetGamemodeString}.`, watchedPrefix, dependencies);
                 } catch (e) {
                     playerUtils.debugLog(`[AntiGmcCheck] Error switching ${player.nameTag} from Creative: ${e.message}`, watchedPrefix, dependencies);
-                    console.error(`[AntiGmcCheck] Error switching ${player.nameTag} from Creative: ${e.stack || e}`);
                 }
             }
 

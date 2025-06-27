@@ -27,7 +27,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager } = dependencies; // Removed getString
+    const { config, playerUtils, logManager, playerDataManager } = dependencies;
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${config.prefix}copyinv <playername>`); // Hardcoded string
