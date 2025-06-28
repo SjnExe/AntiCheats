@@ -24,7 +24,6 @@ const persistedPlayerDataKeys = [
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
     'joinTime',
     'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
-    // Per-check interval trackers are also persisted if they are top-level keys in pData.
     'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
 ];
@@ -78,8 +77,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         return false;
     }
 
-    // Minecraft dynamic property string length limit is 32767 bytes.
-    if (jsonString.length > 32760) { // Buffer for safety
+    if (jsonString.length > 32760) { // Buffer for safety, limit is 32767
         playerUtils.debugLog(`PDM:save: pData too large for ${player.nameTag} (${jsonString.length}b). Cannot save to dynamic properties.`, player.nameTag, dependencies);
         console.warn(`[PlayerDataManager] pData for ${player.nameTag} exceeds dynamic property size limit.`);
         return false;
@@ -212,7 +210,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         recentMessages: [],
         flags: {
             totalFlags: 0,
-            // Movement
             movementFlyHover: { count: 0, lastDetectionTime: 0 },
             movementSpeedGround: { count: 0, lastDetectionTime: 0 },
             movementNoFall: { count: 0, lastDetectionTime: 0 },
@@ -221,7 +218,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             movementNetherRoof: { count: 0, lastDetectionTime: 0 },
             movementHighYVelocity: { count: 0, lastDetectionTime: 0 },
             movementSustainedFly: { count: 0, lastDetectionTime: 0 },
-            // Combat
             combatReachAttack: { count: 0, lastDetectionTime: 0 },
             combatCpsHigh: { count: 0, lastDetectionTime: 0 },
             combatViewSnapPitch: { count: 0, lastDetectionTime: 0 },
@@ -233,7 +229,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             combatAttackWhileBowCharging: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileShielding: { count: 0, lastDetectionTime: 0 },
             combatLog: { count: 0, lastDetectionTime: 0 },
-            // World Interaction
             worldNuker: { count: 0, lastDetectionTime: 0 },
             worldIllegalItemUse: { count: 0, lastDetectionTime: 0 },
             worldIllegalItemPlace: { count: 0, lastDetectionTime: 0 },
@@ -245,7 +240,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             worldAutoTool: { count: 0, lastDetectionTime: 0 },
             worldInstaBreakUnbreakable: { count: 0, lastDetectionTime: 0 },
             worldInstaBreakSpeed: { count: 0, lastDetectionTime: 0 },
-            // Player Actions/State
             actionFastUse: { count: 0, lastDetectionTime: 0 },
             playerNameSpoof: { count: 0, lastDetectionTime: 0 },
             playerAntiGmc: { count: 0, lastDetectionTime: 0 },
@@ -255,7 +249,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             playerSelfHurt: { count: 0, lastDetectionTime: 0 },
             playerClientAnomaly: { count: 0, lastDetectionTime: 0 },
             playerChatStateViolation: { count: 0, lastDetectionTime: 0 },
-            // Chat specific
             chatSpamFast: { count: 0, lastDetectionTime: 0 },
             chatSpamMaxWords: { count: 0, lastDetectionTime: 0 },
             chatLanguageViolation: { count: 0, lastDetectionTime: 0 },
@@ -270,7 +263,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             chatImpersonationAttempt: { count: 0, lastDetectionTime: 0 },
             chatNewline: { count: 0, lastDetectionTime: 0 },
             chatMaxlength: { count: 0, lastDetectionTime: 0 },
-            // AntiGrief
             antiGriefTnt: { count: 0, lastDetectionTime: 0 },
             antiGriefWither: { count: 0, lastDetectionTime: 0 },
             antiGriefFire: { count: 0, lastDetectionTime: 0 },

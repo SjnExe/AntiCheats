@@ -1,7 +1,5 @@
 /**
  * @file Centralized handlers for various Minecraft Server API events.
- * These handlers process event data, interact with managers (PlayerData, Action, Log),
- * and delegate to specific check functions for cheat detection and system responses.
  */
 import * as mc from '@minecraft/server';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js';
@@ -9,8 +7,8 @@ import { formatSessionDuration } from '../utils/playerUtils.js';
 
 /**
  * Handles player leave events.
- * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config: currentConfig, logManager, getString } = dependencies;
@@ -95,8 +93,8 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
 /**
  * Handles player spawn events (initial join and respawn).
- * @param {import('@minecraft/server').PlayerSpawnAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerSpawnAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
@@ -212,9 +210,9 @@ export async function handlePlayerSpawn(eventData, dependencies) {
 }
 
 /**
- * Handles piston activation events for AntiGrief purposes (e.g., lag machine detection).
- * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles piston activation events for AntiGrief (e.g., lag machine detection).
+ * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, checks } = dependencies;
@@ -238,9 +236,9 @@ export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
 }
 
 /**
- * Handles entity spawn events for AntiGrief purposes (e.g., Wither, Golem spam).
- * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles entity spawn events for AntiGrief (e.g., Wither, Golem spam).
+ * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, playerDataManager, checks } = dependencies;
@@ -283,8 +281,8 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
 
 /**
  * Handles player block placement before events for AntiGrief (e.g., TNT).
- * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies;
@@ -313,8 +311,8 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
 
 /**
  * Handles entity death events for cosmetic death effects.
- * @param {import('@minecraft/server').EntityDieAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').EntityDieAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleEntityDieForDeathEffects(eventData, dependencies) {
     const { config: currentConfig, playerUtils } = dependencies;
@@ -345,12 +343,12 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
 }
 
 /**
- * Handles entity hurt events, primarily for combat-related checks and state updates.
- * @param {import('@minecraft/server').EntityHurtAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles entity hurt events for combat checks and state updates.
+ * @param {import('@minecraft/server').EntityHurtAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleEntityHurt(eventData, dependencies) {
-    const { playerDataManager, checks, config, currentTick, playerUtils } = dependencies; // Removed actionManager as it's called by checks
+    const { playerDataManager, checks, config, currentTick, playerUtils } = dependencies;
     const { hurtEntity, damageSource, damagingEntity: directDamagingEntity } = eventData;
 
     if (hurtEntity?.typeId === 'minecraft:player') {
@@ -387,14 +385,12 @@ export async function handleEntityHurt(eventData, dependencies) {
             }
         }
     }
-    // General combat event processing if defined
-    // if (checks.processCombatEvent) await checks.processCombatEvent(eventData, dependencies);
 }
 
 /**
- * Handles player death events, e.g., for logging or sending death coordinates.
- * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles player death events (e.g., logging, death coordinates).
+ * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerDeath(eventData, dependencies) {
     const { player } = eventData;
@@ -431,8 +427,8 @@ export async function handlePlayerDeath(eventData, dependencies) {
 }
 
 /**
- * Subscribes to entityHurt events specifically for combat log detection.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Subscribes to entityHurt events for combat log detection.
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function subscribeToCombatLogEvents(dependencies) {
     const { config, playerDataManager } = dependencies;
@@ -456,9 +452,9 @@ export function subscribeToCombatLogEvents(dependencies) {
 }
 
 /**
- * Handles player block break before events, primarily for InstaBreak timing setup.
- * @param {import('@minecraft/server').PlayerBreakBlockBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles player block break before events (e.g., InstaBreak timing).
+ * @param {import('@minecraft/server').PlayerBreakBlockBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
     const { checks, config, playerDataManager, currentTick } = dependencies;
@@ -483,16 +479,12 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
         pData.isDirtyForSave = true;
     }
 
-    // Assuming checkNukerRaycast is part of checks and enabled
-    // if (checks.checkNukerRaycast && config.enableNukerCheck) {
-    // await checks.checkNukerRaycast(player, block, dependencies);
-    // }
 }
 
 /**
- * Handles player block break after events for checks like XRay and InstaBreak (speed part).
- * @param {import('@minecraft/server').PlayerBreakBlockAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles player block break after events (e.g., XRay, InstaBreak speed).
+ * @param {import('@minecraft/server').PlayerBreakBlockAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     const { config, playerDataManager, checks } = dependencies;
@@ -524,8 +516,8 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
 
 /**
  * Handles item use events.
- * @param {import('@minecraft/server').ItemUseBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').ItemUseBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleItemUse(eventData, dependencies) {
     const { checks, config, getString, playerUtils, playerDataManager } = dependencies;
@@ -559,8 +551,7 @@ export async function handleItemUse(eventData, dependencies) {
     if (config.preventedItemUses && config.preventedItemUses.includes(itemStack.typeId)) {
         playerUtils.warnPlayer(player, getString('antigrief.itemUseDenied', { item: itemStack.typeId }));
         eventData.cancel = true;
-        // Potentially add a flag or log this action via actionManager
-        // actionManager.executeCheckAction('worldIllegalItemUse', player, { itemTypeId: itemStack.typeId, action: 'use' }, dependencies);
+        // TODO: Consider adding actionManager.executeCheckAction('worldIllegalItemUse', player, { itemTypeId: itemStack.typeId, action: 'use' }, dependencies);
         return;
     }
 
@@ -570,8 +561,8 @@ export async function handleItemUse(eventData, dependencies) {
 
 /**
  * Handles item use on block events.
- * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleItemUseOn(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
@@ -581,25 +572,20 @@ export async function handleItemUseOn(eventData, dependencies) {
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
 
-    // Assuming checkIllegalItemUseOnBlock is for specific interactions, not general item bans
-    // if (checks.checkIllegalItemUseOnBlock && config.enableIllegalItemUseOnBlockCheck) {
-    //     await checks.checkIllegalItemUseOnBlock(player, itemStack, block, dependencies);
-    //     if (eventData.cancel) return;
-    // }
+    // IllegalItemUseOnBlock check could be added here if specific rules are needed beyond general item bans.
 
     if (checks.checkAirPlace && config.enableAirPlaceCheck) {
-        // checkAirPlace is usually for PlayerPlaceBlockBeforeEvent. If it's also for ItemUseOn, ensure logic matches.
-        // For now, assuming it's primarily for block placement.
+        // AirPlace check might be relevant here if item use on air is considered.
+        // Currently, it's more tied to block placement events.
     }
 
     if (itemStack.typeId === 'minecraft:bow' && config.enableChatDuringItemUseCheck) {
         if (pData) { pData.isChargingBow = true; pData.isDirtyForSave = true; }
     }
     if (config.preventedItemUsesOn && config.preventedItemUsesOn.includes(itemStack.typeId)) {
-        // Similar to handleItemUse, but for itemUseOn context
         dependencies.playerUtils.warnPlayer(player, dependencies.getString('antigrief.itemUseDenied', {item: itemStack.typeId}));
         eventData.cancel = true;
-        // actionManager.executeCheckAction('worldIllegalItemUse', player, { itemTypeId: itemStack.typeId, action: 'useon', targetBlock: block.typeId }, dependencies);
+        // TODO: Consider adding actionManager.executeCheckAction('worldIllegalItemUse', player, { itemTypeId: itemStack.typeId, action: 'useon', targetBlock: block.typeId }, dependencies);
         return;
     }
 
@@ -609,11 +595,11 @@ export async function handleItemUseOn(eventData, dependencies) {
 
 /**
  * Handles player inventory item change events.
- * @param {import('@minecraft/server').Player} player - The player whose inventory changed.
- * @param {import('@minecraft/server').ItemStack | undefined} newItem - The new item stack in the slot.
- * @param {import('@minecraft/server').ItemStack | undefined} oldItem - The old item stack that was in the slot.
- * @param {string} slotName - The name/identifier of the slot that changed.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('@minecraft/server').ItemStack | undefined} newItem
+ * @param {import('@minecraft/server').ItemStack | undefined} oldItem
+ * @param {string} slotName
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleInventoryItemChange(player, newItem, oldItem, slotName, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
@@ -627,17 +613,15 @@ export async function handleInventoryItemChange(player, newItem, oldItem, slotNa
         await checks.checkInventoryMoveWhileActionLocked(player, pData, dependencies, inventoryChangeData);
     }
 
-    // This check might be too broad here if not careful, could cause performance issues.
-    // Typically, illegal item checks are done on attempted use/place.
-    // if (checks.checkIllegalItems && config.enableIllegalItemCheck && newItem) {
-    //     await checks.checkIllegalItems(player, newItem, { source: player, cancel: false }, 'inventory_change', pData, dependencies);
-    // }
+    // Illegal item checks on inventory change can be intensive; typically handled at use/place.
+    // If specific items need to be checked upon entering inventory, that logic could be added here,
+    // but it's generally less common than event-driven checks.
 }
 
 /**
  * Handles player block placement before events (for checks and AntiGrief).
- * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
@@ -647,10 +631,7 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
 
-    // if (checks.checkBuildingRestrictions && config.enableBuildingRestrictionCheck) {
-    //     await checks.checkBuildingRestrictions(player, block, itemStack, dependencies);
-    //     if (eventData.cancel) return;
-    // }
+    // Building restriction checks could be added here if needed.
     if (checks.checkAirPlace && config.enableAirPlaceCheck) {
         await checks.checkAirPlace(player, pData, dependencies, eventData);
         if (eventData.cancel) return;
@@ -660,10 +641,10 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
 
 /**
  * Internal helper to process effects and checks after a block is placed.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').PlayerAntiCheatData} pData - Player's AC data.
- * @param {import('@minecraft/server').Block} block - The block that was placed.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {import('@minecraft/server').Block} block
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 async function _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies) {
     const { config, playerUtils, checks, currentTick } = dependencies;
@@ -693,8 +674,8 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
 
 /**
  * Handles player block placement after events.
- * @param {import('@minecraft/server').PlayerPlaceBlockAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
     const { playerDataManager } = dependencies;
@@ -710,9 +691,8 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 
 /**
  * Handles chat messages before they are sent, dispatching to chatProcessor.
- * This is the primary entry point for chat-related checks if not a command.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handleBeforeChatSend(eventData, dependencies) {
     const { playerDataManager, config, playerUtils, getString } = dependencies;
@@ -727,11 +707,11 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         return;
     }
 
-    // Command handling is now done in main.js before this general chat handler is called.
-    // This function will only proceed if it's not a command.
+    // This function processes non-command chat messages.
+    // Command handling is managed upstream in main.js.
 
     if (!dependencies.chatProcessor || typeof dependencies.chatProcessor.processChatMessage !== 'function') {
-        console.warn('[AntiCheat] handleBeforeChatSend: chatProcessor.processChatMessage is not available in dependencies. Chat will not be processed.');
+        console.warn('[AntiCheat] handleBeforeChatSend: chatProcessor.processChatMessage is not available. Chat will not be processed.');
         playerUtils.warnPlayer(player, getString('error.chatProcessingUnavailable'));
         eventData.cancel = true;
         return;
@@ -741,9 +721,9 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 }
 
 /**
- * Handles player dimension change after events, primarily for dimension lock enforcement.
- * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The event data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Handles player dimension change after events (e.g., dimension lock enforcement).
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
