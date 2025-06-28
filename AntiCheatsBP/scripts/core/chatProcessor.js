@@ -119,8 +119,8 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             if (originalMessage.length > config.maxMessageLength) {
                 playerUtils.warnPlayer(player, getString('chat.error.maxLength', { maxLength: config.maxMessageLength }));
                 if (config.flagOnMaxMessageLength) {
-                     // Assuming 'chatMaxlength' is a defined checkType in actionProfiles
-                    actionManager.executeCheckAction('chatMaxlength', player, { messageLength: originalMessage.length, maxLength: config.maxMessageLength, messageSnippet: originalMessage.substring(0, 50) + (originalMessage.length > 50 ? '...' : '') }, dependencies);
+                     // Assuming 'chatMaxLength' is a defined checkType in actionProfiles
+                    actionManager.executeCheckAction('chatMaxLength', player, { messageLength: originalMessage.length, maxLength: config.maxMessageLength, messageSnippet: originalMessage.substring(0, 50) + (originalMessage.length > 50 ? '...' : '') }, dependencies);
                 }
                 if (config.cancelOnMaxMessageLength) {
                     eventData.cancel = true;

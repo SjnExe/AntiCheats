@@ -911,7 +911,7 @@ export const checkActionProfiles = {
         },
         cancelMessage: true, // Assuming config.cancelMessageOnNewline handles actual cancellation
     },
-    'chatMaxlength': {
+    'chatMaxLength': {
         enabled: true,
         flag: {
             increment: 1,

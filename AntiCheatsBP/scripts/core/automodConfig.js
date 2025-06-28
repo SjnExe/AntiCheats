@@ -299,7 +299,7 @@ export const automodConfig = {
             { flagThreshold: 2, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, newlines in chat are not allowed (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 4, actionType: 'mute', parameters: { duration: '5m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} muted for {duration} for using newlines in chat (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'chatMaxlength': [
+        'chatMaxLength': [
             { flagThreshold: 2, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, message is too long (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 4, actionType: 'mute', parameters: { duration: '5m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} muted for {duration} for sending overly long messages (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
