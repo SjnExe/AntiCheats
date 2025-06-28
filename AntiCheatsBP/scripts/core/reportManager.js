@@ -3,7 +3,6 @@
  * Manages player-submitted reports. Reports are stored in a world dynamic property
  * with an in-memory cache for performance. This includes adding reports, retrieving them,
  * and clearing reports.
- * @version 1.1.0
  */
 import { world } from '@minecraft/server';
 
@@ -13,8 +12,8 @@ import { world } from '@minecraft/server';
 const reportsPropertyKeyName = 'anticheat:reports_v1';
 
 /**
- * @typedef {import('../types.js').ReportEntry} ReportEntry Typing for ReportEntry
- * @typedef {import('../types.js').Dependencies} Dependencies Typing for Dependencies
+ * @typedef {import('../types.js').ReportEntry} ReportEntry
+ * @typedef {import('../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -41,8 +40,7 @@ function generateReportId() {
 /**
  * Loads reports from the dynamic property into the in-memory cache.
  * Must be called once during script initialization from a context that can provide dependencies.
- * @param {Dependencies} dependencies - The standard dependencies object.
- * @returns {void}
+ * @param {Dependencies} dependencies The standard dependencies object.
  */
 export function initializeReportCache(dependencies) {
     const { playerUtils } = dependencies;
@@ -66,7 +64,7 @@ export function initializeReportCache(dependencies) {
 
 /**
  * Persists the current in-memory report cache to dynamic properties if changes have been made.
- * @param {Dependencies} dependencies - The standard dependencies object.
+ * @param {Dependencies} dependencies The standard dependencies object.
  * @returns {boolean} True if saving was successful or not needed, false on error.
  */
 export function persistReportsToDisk(dependencies) {
@@ -87,7 +85,7 @@ export function persistReportsToDisk(dependencies) {
 }
 
 /**
- * Retrieves reports from the in-memory cache. Reports are stored newest first if added via `addReport`.
+ * Retrieves reports from the in-memory cache.
  * @returns {ReportEntry[]} An array of report objects (a copy of the cache, sorted newest first).
  */
 export function getReports() {
@@ -97,10 +95,10 @@ export function getReports() {
 
 /**
  * Adds a new report to the system.
- * @param {import('@minecraft/server').Player} reporterPlayer - The player making the report.
- * @param {string} reportedPlayerName - The name of the player being reported.
- * @param {string} reason - The reason for the report.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} reporterPlayer The player making the report.
+ * @param {string} reportedPlayerName The name of the player being reported.
+ * @param {string} reason The reason for the report.
+ * @param {Dependencies} dependencies Standard dependencies object.
  * @returns {ReportEntry | null} The created report entry, or null if failed.
  */
 export function addReport(reporterPlayer, reportedPlayerName, reason, dependencies) {
@@ -116,7 +114,7 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
         reportedId: targetPlayer ? targetPlayer.id : 'offline_or_unknown',
         reportedName: reportedPlayerName, // Store the name as reported, even if player is offline
         reason: reason,
-        status: 'open', // Default status
+        status: 'open',
         assignedAdmin: '',
         resolutionDetails: '',
         lastUpdatedTimestamp: Date.now(),
@@ -145,7 +143,7 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
 
 /**
  * Clears all reports from the system.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {Dependencies} dependencies Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
 export function clearAllReports(dependencies) {
@@ -153,7 +151,7 @@ export function clearAllReports(dependencies) {
     const count = reportsInMemory.length;
     reportsInMemory = [];
     reportsAreDirty = true;
-    persistReportsToDisk(dependencies); // Persist immediately
+    persistReportsToDisk(dependencies);
 
     playerUtils.debugLog(`[ReportManager] Cleared all ${count} reports.`, 'System', dependencies);
     logManager.addLog({
@@ -166,8 +164,8 @@ export function clearAllReports(dependencies) {
 
 /**
  * Clears a specific report by its ID.
- * @param {string} reportId - The ID of the report to clear.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {string} reportId The ID of the report to clear.
+ * @param {Dependencies} dependencies Standard dependencies object.
  * @returns {boolean} True if the report was found and cleared, false otherwise.
  */
 export function clearReportById(reportId, dependencies) {
@@ -177,7 +175,7 @@ export function clearReportById(reportId, dependencies) {
 
     if (reportsInMemory.length < initialLength) {
         reportsAreDirty = true;
-        persistReportsToDisk(dependencies); // Persist immediately
+        persistReportsToDisk(dependencies);
         playerUtils.debugLog(`[ReportManager] Cleared report with ID: ${reportId}.`, 'System', dependencies);
         logManager.addLog({
             actionType: 'reportClearedById',
@@ -191,9 +189,9 @@ export function clearReportById(reportId, dependencies) {
 
 /**
  * Clears all reports associated with a specific player (either as reporter or reported).
- * This is a simplified version; more specific versions (by reported only, or by reporter only) could be added.
- * @param {string} playerNameOrId - The nameTag or ID of the player whose reports to clear.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * This is a simplified version; more specific versions could be added.
+ * @param {string} playerNameOrId The nameTag or ID of the player whose reports to clear.
+ * @param {Dependencies} dependencies Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
 export function clearReportsForPlayer(playerNameOrId, dependencies) {
@@ -218,7 +216,7 @@ export function clearReportsForPlayer(playerNameOrId, dependencies) {
     const clearedCount = initialLength - reportsInMemory.length;
     if (clearedCount > 0) {
         reportsAreDirty = true;
-        persistReportsToDisk(dependencies); // Persist immediately
+        persistReportsToDisk(dependencies);
         playerUtils.debugLog(`[ReportManager] Cleared ${clearedCount} reports associated with player: ${playerNameOrId}.`, 'System', dependencies);
         logManager.addLog({
             actionType: 'reportsClearedForPlayer',

@@ -17,10 +17,7 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     // Use permissionLevels from dependencies for runtime checks if necessary
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels: execPermissionLevels } = dependencies;
-
-    // definition.permissionLevel is now set at module load time.
-    // The check `if (definition.permissionLevel === null)` is no longer needed.
+    const { config, playerUtils, playerDataManager, logManager } = dependencies;
 
     const prefix = config.prefix;
 

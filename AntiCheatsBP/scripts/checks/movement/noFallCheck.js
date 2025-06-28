@@ -25,7 +25,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkNoFall(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick } = dependencies; // Added currentTick from dependencies
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if (!config.enableNofallCheck || !pData) {
         return;
@@ -33,7 +33,6 @@ export async function checkNoFall(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Exemptions from NoFall check
     if (player.isFlying ||
         player.isGliding ||
         player.isInWater || // Vanilla water negates fall damage
@@ -60,9 +59,7 @@ export async function checkNoFall(player, pData, dependencies) {
         return;
     }
 
-    // Logic for when player is on ground
     if (player.isOnGround) {
-        // Grace period for recent slime block bounce
         if ((currentTick - (pData.lastOnSlimeBlockTick || 0)) < (config.slimeBlockNoFallGraceTicks ?? 20)) {
             if (playerUtils.debugLog && pData.isWatched) {
                 playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} recently on slime block (LastTick: ${pData.lastOnSlimeBlockTick}, Current: ${currentTick}). Fall damage check modified/bypassed. FallDistance reset.`, player.nameTag, dependencies);
@@ -72,7 +69,6 @@ export async function checkNoFall(player, pData, dependencies) {
             return;
         }
 
-        // Check for landing on other fall damage mitigating blocks
         try {
             const blockBelowLocation = { x: Math.floor(player.location.x), y: Math.floor(player.location.y) - 1, z: Math.floor(player.location.z) };
             const blockBelow = player.dimension.getBlock(blockBelowLocation);
@@ -80,12 +76,11 @@ export async function checkNoFall(player, pData, dependencies) {
                 if (playerUtils.debugLog && pData.isWatched) {
                     playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} landed on a fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, player.nameTag, dependencies);
                 }
-                pData.fallDistance = 0; // Reset fall distance
+                pData.fallDistance = 0;
                 pData.isDirtyForSave = true;
                 return;
             }
         } catch (e) {
-            // Log error if debug mode is on
             if (playerUtils.debugLog && config.enableDebugLogging) {
                 playerUtils.debugLog(`[NoFallCheck] Error checking block below player ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }

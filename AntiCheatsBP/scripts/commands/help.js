@@ -2,7 +2,7 @@
  * @file Defines the !help command, which provides players with a list of available commands
  * or detailed information about a specific command based on their permission level.
  */
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,7 +11,7 @@ export const definition = {
     name: 'help',
     syntax: '!help [command_name]',
     description: 'Shows available commands or help for a specific command.',
-    permissionLevel: permissionLevels.normal, // Accessible to all players
+    permissionLevel: permissionLevels.normal,
     enabled: true,
 };
 
@@ -28,15 +28,13 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager } = dependencies;
 
-    const commandDefinitionsArray = Array.from(commandDefinitionMap.values());
     const userPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
     const prefix = config.prefix;
 
-    if (args[0]) { // User requested help for a specific command
+    if (args[0]) {
         const specificCommandName = args[0].toLowerCase().replace(prefix, '');
         let foundCmdDef = commandDefinitionMap.get(specificCommandName);
 
-        // Check aliases if direct name not found
         if (!foundCmdDef && config.commandAliases) {
             const aliasTargetName = config.commandAliases[specificCommandName];
             if (aliasTargetName) {
@@ -51,62 +49,61 @@ export async function execute(player, args, dependencies) {
             }
 
             if (!isEffectivelyEnabled) {
-                player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`); // Hardcoded string
+                player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`);
                 return;
             }
 
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
-                const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1); // Get args part of syntax
+                const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
                 let permLevelName = 'Unknown';
-                // Find the string name for the permission level number
                 for (const key in depPermLevels) {
                     if (depPermLevels[key] === foundCmdDef.permissionLevel) {
                         permLevelName = key.charAt(0).toUpperCase() + key.slice(1);
                         break;
                     }
                 }
-                const description = foundCmdDef.description; // Use raw description
+                const description = foundCmdDef.description;
 
                 player.sendMessage(
-                    `§6--- Help: ${prefix}${foundCmdDef.name} ---` + '\n' + // Hardcoded string
-                    `§eSyntax: ${prefix}${foundCmdDef.name} ${syntaxArgs}` + '\n' + // Hardcoded string
-                    `§7Description: ${description}` + '\n' + // Hardcoded string
-                    `§7Permission: ${permLevelName} (Level ${foundCmdDef.permissionLevel})` // Hardcoded string
+                    `§6--- Help: ${prefix}${foundCmdDef.name} ---` + '\n' +
+                    `§eSyntax: ${prefix}${foundCmdDef.name} ${syntaxArgs}` + '\n' +
+                    `§7Description: ${description}` + '\n' +
+                    `§7Permission: ${permLevelName} (Level ${foundCmdDef.permissionLevel})`
                 );
             } else {
                 // Command exists but player doesn't have permission - still show as unknown to avoid revealing commands
-                player.sendMessage(`§cCommand ${prefix}${specificCommandName} not found or you do not have permission.`); // Hardcoded string
+                player.sendMessage(`§cCommand ${prefix}${specificCommandName} not found or you do not have permission.`);
             }
         } else {
-            player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`); // Hardcoded string
+            player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`);
         }
-    } else { // User requested general help (list of commands)
-        let helpMessage = `§6--- Available Commands (Prefix: ${prefix}) ---§r\n`; // Hardcoded string
+    } else {
+        let helpMessage = `§6--- Available Commands (Prefix: ${prefix}) ---§r\n`;
         let commandsListed = 0;
 
         // Predefined categories for organizing help output
         const categories = [
             {
-                nameString: "§2General Commands:§r", // Hardcoded string
+                nameString: "§2General Commands:§r",
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version'],
             },
             {
-                nameString: "§2Teleportation Commands:§r", // Hardcoded string
+                nameString: "§2Teleportation Commands:§r",
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
                 condition: () => config.enableTPASystem,
             },
             {
-                nameString: "§cModeration Commands:§r", // Hardcoded string
+                nameString: "§cModeration Commands:§r",
                 permissionRequired: depPermLevels.moderator, // Ensure 'moderator' exists in permissionLevels
                 commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel'],
             },
             {
-                nameString: "§cAdministrative Commands:§r", // Hardcoded string
+                nameString: "§cAdministrative Commands:§r",
                 permissionRequired: depPermLevels.admin,
                 commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder' /*,'log', 'reports', 'systeminfo' - these might be panel only*/],
             },
             {
-                nameString: "§4Owner Commands:§r", // Hardcoded string
+                nameString: "§4Owner Commands:§r",
                 permissionRequired: depPermLevels.owner,
                 commands: ['testnotify', 'addrank', 'removerank', 'listranks'], // Moved rank commands here
             },
@@ -114,10 +111,9 @@ export async function execute(player, args, dependencies) {
 
         categories.forEach(category => {
             if (category.condition && !category.condition()) {
-                return; // Skip category if its condition is not met (e.g., TPA system disabled)
+                return;
             }
 
-            // Skip category if player doesn't meet the base permission level for it
             if (typeof category.permissionRequired === 'number' && userPermissionLevel > category.permissionRequired) {
                 return;
             }
@@ -125,31 +121,31 @@ export async function execute(player, args, dependencies) {
             let categoryHelp = '';
             category.commands.forEach(commandName => {
                 const cmdDef = commandDefinitionMap.get(commandName);
-                if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) { // Check individual command permission
+                if (cmdDef && userPermissionLevel <= cmdDef.permissionLevel) {
                     let isEffectivelyEnabled = cmdDef.enabled;
                     if (config.commandSettings && typeof config.commandSettings[cmdDef.name]?.enabled === 'boolean') {
                         isEffectivelyEnabled = config.commandSettings[cmdDef.name].enabled;
                     }
                     if (!isEffectivelyEnabled) {
-                        return; // Skip disabled commands
+                        return;
                     }
 
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                    let description = cmdDef.description; // Use raw description
+                    let description = cmdDef.description;
                     categoryHelp += `§e${prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
                     commandsListed++;
                 }
             });
 
             if (categoryHelp) {
-                helpMessage += `\n${category.nameString}\n${categoryHelp}`; // Use nameString directly
+                helpMessage += `\n${category.nameString}\n${categoryHelp}`;
             }
         });
 
         if (commandsListed === 0) {
-            helpMessage += "§7No commands available to you at this time."; // Hardcoded string
+            helpMessage += "§7No commands available to you at this time.";
         } else {
-            if (helpMessage.endsWith('\n')) { // Trim trailing newline if any
+            if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);
             }
         }

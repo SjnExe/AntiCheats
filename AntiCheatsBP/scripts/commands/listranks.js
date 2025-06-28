@@ -11,7 +11,7 @@ export const definition = {
     name: 'listranks',
     syntax: '!listranks',
     description: 'Lists all defined ranks and their basic properties.',
-    permissionLevel: permissionLevels.normal, // Accessible to all players
+    permissionLevel: permissionLevels.normal,
     enabled: true,
 };
 

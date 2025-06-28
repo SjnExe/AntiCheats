@@ -35,10 +35,10 @@
  * @type {ChatFormatting}
  */
 export const defaultChatFormatting = {
-    prefixText: '§7[Member] ', // Default prefix if a rank has no specific one
-    prefixColor: '§7',       // Default color for the prefix text
-    nameColor: '§7',         // Default color for the player's name
-    messageColor: '§f',       // Default color for the player's message
+    prefixText: '§7[Member] ',
+    prefixColor: '§7',
+    nameColor: '§7',
+    messageColor: '§f',
 };
 
 /**
@@ -72,7 +72,7 @@ export const rankDefinitions = [
         },
         nametagPrefix: '§cOwner§f\n',
         conditions: [
-            { type: 'owner_name' }, // Evaluated by rankManager using config.ownerPlayerName
+            { type: 'owner_name' },
         ],
         priority: 0, // Highest priority
         // assignableBy: 0, // Owner rank is typically not assignable by commands
@@ -89,7 +89,7 @@ export const rankDefinitions = [
         },
         nametagPrefix: '§bAdmin§f\n',
         conditions: [
-            { type: 'admin_tag' }, // Evaluated by rankManager using config.adminTag
+            { type: 'admin_tag' },
         ],
         priority: 10,
         assignableBy: 0, // Only owner can make someone an admin via commands
@@ -97,8 +97,8 @@ export const rankDefinitions = [
     {
         id: 'member', // Default/Fallback rank
         name: 'Member',
-        permissionLevel: 1024, // Matches defaultPermissionLevel
-        chatFormatting: { // Effectively uses defaultChatFormatting due to matching or being overridden by defaults
+        permissionLevel: 1024,
+        chatFormatting: {
             prefixText: '§7[Member] ',
             prefixColor: '§7',
             nameColor: '§7',
@@ -106,11 +106,10 @@ export const rankDefinitions = [
         },
         nametagPrefix: '§7Member§f\n',
         conditions: [
-            // This rank is applied if no higher priority rank conditions are met.
             { type: 'default' },
         ],
         priority: 1000, // Lowest priority (higher number)
-        // assignableBy: 1, // Example: Admins could assign member rank, though it's usually default
+        // assignableBy: 1,
     },
     // Example for a new, assignable rank (to be added/managed by server owner):
     // {

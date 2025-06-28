@@ -1,7 +1,7 @@
 /**
  * @file Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
  */
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -10,7 +10,7 @@ export const definition = {
     name: 'notify',
     syntax: '!notify [on|off|toggle|status]',
     description: 'Manages your AntiCheat system notification preferences.',
-    permissionLevel: permissionLevels.admin, // Use a defined level
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -26,24 +26,23 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager } = dependencies; // Removed unused permissionLevels
-    const notifEnabledPDataKey = 'ac_notifications_enabled'; // Key for pData storage
-    const notificationsOffTag = 'ac_notifications_off'; // Tag for explicitly off
-    const notificationsOnTag = 'ac_notifications_on';   // Tag for explicitly on
+    const { playerUtils, logManager, config, playerDataManager } = dependencies;
+    const notifEnabledPDataKey = 'ac_notifications_enabled';
+    const notificationsOffTag = 'ac_notifications_off';
+    const notificationsOnTag = 'ac_notifications_on';
 
-    const subCommand = args[0] ? args[0].toLowerCase() : 'toggle'; // Default to 'toggle'
+    const subCommand = args[0] ? args[0].toLowerCase() : 'toggle';
 
     let pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
         // This should ideally not happen if ensurePlayerDataInitialized is called on player join/load.
         // However, create a temporary minimal pData if it's missing to allow command to function.
         playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. Creating temporary minimal pData for this command.`, player.nameTag, dependencies);
-        pData = { id: player.id, isWatched: false, [notifEnabledPDataKey]: config.acGlobalNotificationsDefaultOn }; // Initialize with default
+        pData = { id: player.id, isWatched: false, [notifEnabledPDataKey]: config.acGlobalNotificationsDefaultOn };
         // Note: This temporary pData won't be saved unless explicitly marked dirty and saved by another process.
         // For a settings command like this, directly modifying tags is primary, pData is secondary/cache.
     }
 
-    // Determine current preference: pData -> Tags -> Config Default
     let currentPreference;
     if (typeof pData[notifEnabledPDataKey] === 'boolean') {
         currentPreference = pData[notifEnabledPDataKey];
@@ -52,7 +51,7 @@ export async function execute(player, args, dependencies) {
     } else if (player.hasTag(notificationsOffTag)) {
         currentPreference = false;
     } else {
-        currentPreference = config.acGlobalNotificationsDefaultOn; // Fallback to server default
+        currentPreference = config.acGlobalNotificationsDefaultOn;
     }
 
     let newPreference;
@@ -89,7 +88,6 @@ export async function execute(player, args, dependencies) {
             return;
     }
 
-    // Apply changes: Tags first, then pData
     try {
         if (newPreference) {
             player.removeTag(notificationsOffTag); // Safe even if tag isn't present
@@ -99,7 +97,6 @@ export async function execute(player, args, dependencies) {
             player.addTag(notificationsOffTag);
         }
 
-        // Update the pData object directly and mark for saving
         if (pData) { // Check again in case it was temporarily created
             pData[notifEnabledPDataKey] = newPreference;
             pData.isDirtyForSave = true;

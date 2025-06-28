@@ -37,7 +37,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
 
     const minMessageLength = config.impersonationMinMessageLengthForPatternMatch ?? 10;
     if (rawMessageContent.length < minMessageLength) {
-        return; // Message too short for pattern matching
+        return;
     }
 
     const adminPermissionLevelDefault = permissionLevels?.admin ?? 1; // Use permissionLevels from dependencies
@@ -64,7 +64,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
             continue;
         }
         try {
-            const regex = new RegExp(patternString, 'i'); // Case-insensitive matching
+            const regex = new RegExp(patternString, 'i');
             if (regex.test(rawMessageContent)) {
                 const violationDetails = {
                     messageSnippet: rawMessageContent.length > 75 ? rawMessageContent.substring(0, 72) + '...' : rawMessageContent,

@@ -4,7 +4,7 @@
 /**
  * @type {import('../types.js').CommandDefinition}
  */
-import { permissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels } from '../core/rankManager.js';
 
 export const definition = {
     name: 'version',
@@ -17,6 +17,6 @@ export const definition = {
  * Executes the version command.
  */
 export async function execute(player, _args, dependencies) {
-    const { config } = dependencies; // Removed unused permissionLevels
+    const { config } = dependencies;
     player.sendMessage(`§7AntiCheat Addon Version: §e${config.acVersion || 'N/A'}`);
 }

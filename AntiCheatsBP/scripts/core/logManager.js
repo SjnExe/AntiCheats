@@ -101,9 +101,9 @@ export function addLog(logEntry, dependencies) {
         playerUtils.debugLog(`LogManager: logEntry missing adminName, defaulted to 'System'. Entry: ${JSON.stringify(logEntry)}`, 'System', dependencies);
     }
 
-    logsInMemory.unshift(logEntry); // Add to the beginning for newest first
+    logsInMemory.unshift(logEntry);
     if (logsInMemory.length > maxLogEntriesCount) {
-        logsInMemory.length = maxLogEntriesCount; // Trim oldest entries
+        logsInMemory.length = maxLogEntriesCount;
     }
     logsAreDirty = true;
 }
@@ -119,5 +119,3 @@ export function getLogs(count) {
     }
     return [...logsInMemory]; // Return a copy to prevent external modification
 }
-
-// Removed clearAllLogs_DEV_ONLY function as it was unused.

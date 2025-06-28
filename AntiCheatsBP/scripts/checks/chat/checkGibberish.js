@@ -34,7 +34,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
 
     const minMessageLength = config.gibberishMinMessageLength ?? 10;
     if (rawMessageContent.length < minMessageLength) {
-        return; // Message too short
+        return;
     }
 
     const minAlphaRatio = config.gibberishMinAlphaRatio ?? 0.6;
@@ -56,7 +56,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         if (char !== ' ') {
             totalNonSpaceChars++;
         }
-        if (char >= 'a' && char <= 'z') { // Check if char is a letter
+        if (char >= 'a' && char <= 'z') {
             totalAlphaChars++;
             if (vowels.includes(char)) {
                 totalVowels++;
@@ -69,7 +69,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
                 }
             }
         } else { // Not a letter (e.g., space, number, symbol after initial clean)
-            currentConsecutiveConsonants = 0; // Reset consonant counter
+            currentConsecutiveConsonants = 0;
         }
     }
 

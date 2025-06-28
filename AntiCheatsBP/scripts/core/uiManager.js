@@ -6,8 +6,6 @@ import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
 import { updateConfigValue } from '../config.js';
 import { formatSessionDuration } from '../utils/playerUtils.js';
-// editableConfigValues is imported from config.js.
-// permissionLevels are accessed via the 'dependencies' object passed to functions, originating from rankManager.
 import { editableConfigValues as globalEditableConfigValues } from '../config.js';
 
 function formatDimensionName(dimensionId) {
@@ -65,7 +63,7 @@ async function showInspectPlayerForm(adminPlayer, playerDataManager, dependencie
     const { playerUtils: depPlayerUtils, logManager, getString } = dependencies;
     depPlayerUtils.debugLog(`[UiManager] Inspect Player form requested by ${adminPlayer.nameTag}`, adminPlayer.nameTag, dependencies);
 
-    const safeGetString = (key, params) => getString(key, params); // getString is expected
+    const safeGetString = (key, params) => getString(key, params);
     const title = safeGetString('ui.inspectPlayerForm.title');
     const textFieldLabel = safeGetString('ui.inspectPlayerForm.textField.label');
     const textFieldPlaceholder = safeGetString('ui.inspectPlayerForm.textField.placeholder');
@@ -184,7 +182,7 @@ async function showHelpLinks(player, dependencies) {
         const selectedLink = helpLinksArray[response.selection];
         if (selectedLink && typeof selectedLink.url === 'string' && typeof selectedLink.title === 'string') {
             player.sendMessage(linkMessageFormat(selectedLink.title, selectedLink.url));
-            showHelpLinks(player, dependencies); // Re-show after sending link
+            showHelpLinks(player, dependencies);
         } else {
             depPlayerUtils.debugLog(`[UiManager] Error: Invalid link item at index ${response.selection}.`, player.nameTag, dependencies);
             player.sendMessage(genericFormErrorMsg);
@@ -258,7 +256,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
     }
 };
 
-// Helper for modal execution to reduce repetition in showPlayerActionsForm
+// Helper for modal execution to reduce repetition
 async function _showModalAndExecuteWithTransform(commandName, titleKey, fields, argsTransform, dependencies, adminPlayer, titleParams = {}) {
     const { getString, playerUtils: depPlayerUtils, logManager } = dependencies;
     const modalTitle = getString(titleKey, titleParams);
@@ -278,7 +276,7 @@ async function _showModalAndExecuteWithTransform(commandName, titleKey, fields, 
         const modalResponse = await modal.show(adminPlayer);
         if (modalResponse.canceled) {
             adminPlayer.sendMessage(getString(`ui.playerActions.${commandName}.cancelled`) || `§7${commandName} action cancelled.`);
-            return true; // Indicate cancellation or completion of this flow part
+            return true;
         }
         await cmdExec(adminPlayer, argsTransform(modalResponse.formValues), dependencies);
         return true;
@@ -287,7 +285,7 @@ async function _showModalAndExecuteWithTransform(commandName, titleKey, fields, 
         depPlayerUtils.debugLog(`[UiManager] Error in modal for ${commandName}: ${modalError.message}`, adminPlayer.nameTag, dependencies);
         logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'error', context: `uiManager.modal.${commandName}`, details: `Error: ${modalError.message}` }, dependencies);
         adminPlayer.sendMessage(getString('common.error.genericForm'));
-        return false; // Indicate failure
+        return false;
     }
 }
 
@@ -358,7 +356,7 @@ showAdminPanelMain = async function (player, playerDataManager, config, dependen
 };
 
 showNormalUserPanelMain = async function (player, dependencies) { // Standardized to pass full dependencies
-    const { playerUtils: depPlayerUtils, logManager, getString, playerDataManager, config } = dependencies; // Destructure here
+    const { playerUtils: depPlayerUtils, logManager, getString, playerDataManager, config } = dependencies;
     depPlayerUtils.debugLog(`UI: Normal User Panel Main requested by ${player.nameTag}`, player.nameTag, dependencies);
     const form = new ActionFormData().title(getString('ui.normalPanel.title')).body(getString('ui.normalPanel.body', { playerName: player.nameTag }));
     form.button(getString('ui.normalPanel.button.myStats'), 'textures/ui/icon_multiplayer');
@@ -395,7 +393,7 @@ showSystemInfo = async function (adminPlayer, config, playerDataManager, depende
         if (pData?.muteInfo && (pData.muteInfo.unmuteTime === Infinity || pData.muteInfo.unmuteTime > Date.now())) mutedPersistentCount++;
         if (pData?.banInfo && (pData.banInfo.unbanTime === Infinity || pData.banInfo.unbanTime > Date.now())) bannedPersistentCount++;
     });
-    const activeBordersCount = ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'].filter(dim => worldBorderManager.getBorderSettings(dim, dependencies)).length; // Pass dependencies
+    const activeBordersCount = ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'].filter(dim => worldBorderManager.getBorderSettings(dim, dependencies)).length;
     const logCount = logManager.getLogs().length;
     const reportCount = reportManager.getReports().length;
     const form = new MessageFormData().title(getString('ui.systemInfo.title'))
@@ -496,7 +494,6 @@ async function showEditSingleConfigValueForm(adminPlayer, keyName, keyType, curr
             const valueToCompare = (keyType === 'object' && Array.isArray(newValue)) ? JSON.stringify(newValue) : newValue;
             if (valueToCompare === originalValueForComparison) adminPlayer.sendMessage(getString('ui.configEditor.valueInput.noChange', { keyName }));
             else {
-                // Use updateConfigValue from dependencies.editableConfig
                 const success = dependencies.editableConfig.updateConfigValue(keyName, newValue);
                 if (success) { adminPlayer.sendMessage(getString('ui.configEditor.valueInput.success', { keyName, value: (typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)) })); logManager.addLog({ adminName: adminPlayer.nameTag, actionType: 'configUpdate', targetName: keyName, details: `Value changed from '${originalValueForComparison}' to '${typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue)}'` }, dependencies); }
                 else adminPlayer.sendMessage(getString('ui.configEditor.valueInput.error.updateFailedInternal', { keyName }));

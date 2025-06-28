@@ -2,19 +2,19 @@
  * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
  * Ranks are defined in `ranksConfig.js` and processed here.
  */
-import * as mc from '@minecraft/server'; // Import mc for Player type
+import * as mc from '@minecraft/server';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
 
 /**
  * @description Dynamically generated mapping of rank IDs to their numeric permission levels.
- * Populated by `initializeRanks`. Intended for external use (e.g., command definitions).
+ * Populated by `initializeRanks`.
  * @export
  * @type {Object.<string, number>}
  */
 export let permissionLevels = {};
 
 /**
- * @description Array of rank definitions, sorted by priority (lower number = higher priority).
+ * @description Array of rank definitions, sorted by priority.
  * Populated by `initializeRankSystem`.
  * @type {Array<import('./ranksConfig.js').RankDefinition>}
  */
@@ -23,7 +23,7 @@ let sortedRankDefinitions = [];
 /**
  * Initializes the rank system by sorting rank definitions and generating the `permissionLevels` mapping.
  * This function should be called once at script startup via `initializeRanks`.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object, used for config and logging.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 function initializeRankSystem(dependencies) {
     if (rankDefinitions && Array.isArray(rankDefinitions)) {
@@ -36,16 +36,14 @@ function initializeRankSystem(dependencies) {
             }
         }
 
-        // Ensure 'normal' and 'member' levels are present, using defaultPermissionLevel as a base.
+        // Ensure 'normal' and 'member' levels are present
         if (!newPermissionLevels.normal && !newPermissionLevels.member) {
             const defaultRankDefinition = sortedRankDefinitions.find(r => r.permissionLevel === defaultPermissionLevel && r.id === 'member');
             if (defaultRankDefinition) {
                 newPermissionLevels.normal = defaultRankDefinition.permissionLevel;
             } else {
-                // If no explicit 'member' rank with defaultPermissionLevel, create a 'normal' entry with it.
                 newPermissionLevels.normal = defaultPermissionLevel;
             }
-            // Ensure 'member' also reflects this default or specific 'member' rank level.
             newPermissionLevels.member = newPermissionLevels.normal;
         } else if (newPermissionLevels.member && !newPermissionLevels.normal) {
             newPermissionLevels.normal = newPermissionLevels.member;
@@ -53,12 +51,12 @@ function initializeRankSystem(dependencies) {
             newPermissionLevels.member = newPermissionLevels.normal;
         }
 
-        // Ensure owner and admin are present, defaulting to 0 and 1 if not explicitly defined by a rank
-        if (newPermissionLevels.owner === undefined) { // Check if 'owner' key is missing
+        // Ensure owner and admin are present
+        if (newPermissionLevels.owner === undefined) {
             const ownerRank = sortedRankDefinitions.find(r => r.id === 'owner');
             newPermissionLevels.owner = ownerRank ? ownerRank.permissionLevel : 0;
         }
-        if (newPermissionLevels.admin === undefined) { // Check if 'admin' key is missing
+        if (newPermissionLevels.admin === undefined) {
             const adminRank = sortedRankDefinitions.find(r => r.id === 'admin');
             newPermissionLevels.admin = adminRank ? adminRank.permissionLevel : 1;
         }
@@ -81,10 +79,10 @@ function initializeRankSystem(dependencies) {
 
 /**
  * Internal helper to get the player's highest priority rank definition and effective permission level.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player The player instance.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  * @returns {{ rankDefinition: object | null, permissionLevel: number, rankId: string | null }}
- *          An object containing the matched rank definition, permission level, and rank ID.
+ *          Object containing matched rank definition, permission level, and rank ID.
  *          Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
@@ -139,8 +137,8 @@ function getPlayerRankAndPermissions(player, dependencies) {
 
 /**
  * Gets the effective permission level for a player.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player The player.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  * @returns {number} The player's permission level.
  */
 export function getPlayerPermissionLevel(player, dependencies) {
@@ -150,8 +148,8 @@ export function getPlayerPermissionLevel(player, dependencies) {
 
 /**
  * Gets the formatted chat prefix, name color, and message color for a player based on their rank.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player The player.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  * @returns {{fullPrefix: string, nameColor: string, messageColor: string}} The chat formatting elements.
  */
 export function getPlayerRankFormattedChatElements(player, dependencies) {
@@ -169,8 +167,8 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
 
 /**
  * Updates a player's nametag based on their current rank and vanish status.
- * @param {import('@minecraft/server').Player} player - The player whose nametag to update.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player The player whose nametag to update.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function updatePlayerNametag(player, dependencies) {
     const { config, playerUtils } = dependencies;
@@ -191,35 +189,43 @@ export function updatePlayerNametag(player, dependencies) {
         const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-        let baseName = 'Player'; // Default fallback
-        if (player && typeof player.nameTag === 'string' && player.nameTag) {
-            baseName = player.nameTag;
-        }
+        const baseName = player.name;
         player.nameTag = nametagToApply + baseName;
 
         if (config?.enableDebugLogging && playerUtils?.debugLog) {
-            playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.nameTag, dependencies);
+            playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.name, dependencies);
         }
     } catch (error) {
         let playerNameForError = 'UnknownPlayer';
         try {
-            if (player && typeof player.nameTag === 'string') {
-                playerNameForError = player.nameTag;
+            if (player && typeof player.name === 'string') { // Use player.name for error context
+                playerNameForError = player.name;
             }
         } catch (nameAccessError) {
             // This inner catch is fine, means player object or name is problematic
         }
         console.error(`[RankManager] Error setting nametag for '${playerNameForError}': ${error.stack || error}`);
         try {
-            player.nameTag = typeof player.nameTag === 'string' ? player.nameTag : 'Player'; // Fallback
+            // Fallback in case of error during nametag setting
+            player.nameTag = typeof player.name === 'string' ? player.name : 'Player';
         } catch (e) { /* Failsafe */ }
     }
 }
 
 /**
  * Initializes the rank system. This must be called from `main.js` after all dependencies are available.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function initializeRanks(dependencies) {
     initializeRankSystem(dependencies);
+}
+
+/**
+ * Retrieves a rank definition object by its unique ID.
+ * @param {string} rankId - The ID of the rank to retrieve.
+ * @returns {import('./ranksConfig.js').RankDefinition | undefined} The rank definition object if found, otherwise undefined.
+ */
+export function getRankById(rankId) {
+    if (!rankId || typeof rankId !== 'string') return undefined;
+    return sortedRankDefinitions.find(rankDef => rankDef.id === rankId);
 }

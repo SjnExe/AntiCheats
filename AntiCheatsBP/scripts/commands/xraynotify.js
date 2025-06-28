@@ -1,7 +1,7 @@
 /**
  * Defines the !xraynotify command for administrators to manage their X-Ray mining notifications.
  */
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js';
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,14 +9,14 @@ export const definition = {
     name: 'xraynotify',
     syntax: '!xraynotify <on|off|status>',
     description: 'Manages your X-Ray mining notification preferences.',
-    permissionLevel: importedPermissionLevels.admin, // Use imported enum
+    permissionLevel: importedPermissionLevels.admin,
     enabled: true,
 };
 /**
  * Executes the xraynotify command.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, permissionLevels } = dependencies;
+    const { config, playerUtils, logManager } = dependencies;
     const subCommand = args[0] ? args[0].toLowerCase() : 'status';
     const notifyOnTag = 'xray_notify_on';
     const notifyOffTag = 'xray_notify_off';

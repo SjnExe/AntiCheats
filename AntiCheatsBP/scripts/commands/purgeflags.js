@@ -42,11 +42,9 @@ export async function execute(player, args, dependencies) {
 
     const oldTotalFlags = pData.flags.totalFlags || 0;
 
-    // Re-initialize the flags part of pData to its default state
     const defaultFlags = initializeDefaultPlayerData(targetPlayer, currentTick, dependencies).flags;
     pData.flags = JSON.parse(JSON.stringify(defaultFlags)); // Deep copy to avoid reference issues
 
-    // Clear related violation history and AutoMod state
     pData.lastFlagType = '';
     pData.lastViolationDetailsMap = {};
     pData.automodState = {};

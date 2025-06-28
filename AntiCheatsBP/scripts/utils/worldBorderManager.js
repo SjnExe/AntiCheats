@@ -7,6 +7,97 @@ import * as mc from '@minecraft/server';
 const worldBorderDynamicPropertyPrefix = 'anticheat:worldborder_';
 
 /**
+ * Calculates the current effective size (halfSize or radius) of the border, accounting for resizing.
+ * @param {object} borderSettings - The border settings for the dimension.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {{currentSize: number | null, shape: string | null}} Object with currentSize and shape, or nulls if invalid.
+ */
+function getCurrentEffectiveBorderSize(borderSettings, dependencies) {
+    if (!borderSettings || typeof borderSettings.enabled !== 'boolean' || !borderSettings.enabled) {
+        return { currentSize: null, shape: null };
+    }
+
+    let currentSize = null;
+    const shape = borderSettings.shape;
+
+    if (borderSettings.isResizing &&
+        typeof borderSettings.originalSize === 'number' &&
+        typeof borderSettings.targetSize === 'number' &&
+        typeof borderSettings.resizeStartTimeMs === 'number' &&
+        typeof borderSettings.resizeDurationMs === 'number') {
+        const currentTimeMs = Date.now();
+        const accumulatedPausedMs = borderSettings.resizePausedTimeMs || 0;
+        let elapsedMs = (currentTimeMs - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+
+        if (borderSettings.isPaused) {
+            const lastPauseStart = borderSettings.resizeLastPauseStartTimeMs || currentTimeMs;
+            elapsedMs = (lastPauseStart - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+        }
+        elapsedMs = Math.max(0, elapsedMs);
+
+        const durationMs = borderSettings.resizeDurationMs;
+        let rawProgress = (durationMs > 0) ? Math.min(1, elapsedMs / durationMs) : 1;
+        let easedProgress = rawProgress;
+
+        if (borderSettings.resizeInterpolationType === 'easeOutQuad') easedProgress = easeOutQuad(rawProgress);
+        else if (borderSettings.resizeInterpolationType === 'easeInOutQuad') easedProgress = easeInOutQuad(rawProgress);
+
+        currentSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * easedProgress;
+    } else if (shape === 'square' && typeof borderSettings.halfSize === 'number') {
+        currentSize = borderSettings.halfSize;
+    } else if (shape === 'circle' && typeof borderSettings.radius === 'number') {
+        currentSize = borderSettings.radius;
+    } else if (borderSettings.isResizing && typeof borderSettings.targetSize === 'number') {
+        // Fallback if resizing params are incomplete but targetSize is known
+        currentSize = borderSettings.targetSize;
+        if (dependencies?.playerUtils && dependencies?.config?.enableDebugLogging) {
+             dependencies.playerUtils.debugLog(`[WorldBorderManager] In-progress resize for dim ${borderSettings.dimensionId} has incomplete parameters. Using targetSize.`, 'System', dependencies);
+        }
+    }
+    return { currentSize, shape };
+}
+
+/**
+ * Checks if a player is currently outside the configured world border for their dimension.
+ * Takes into account active resizing operations for accurate border size.
+ * @param {import('@minecraft/server').Player} player - The player to check.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {boolean} True if the player is outside the border, false otherwise or if no border is active/valid.
+ */
+export function isPlayerOutsideBorder(player, dependencies) {
+    const borderSettings = getBorderSettings(player.dimension.id, dependencies);
+    if (!borderSettings || !borderSettings.enabled) {
+        return false; // No active border or settings invalid
+    }
+
+    const { currentSize, shape } = getCurrentEffectiveBorderSize(borderSettings, dependencies);
+
+    if (currentSize === null || currentSize <= 0) {
+        return false; // Invalid or zero size border
+    }
+
+    const loc = player.location;
+
+    if (shape === 'square') {
+        const { centerX, centerZ } = borderSettings;
+        const minX = centerX - currentSize;
+        const maxX = centerX + currentSize;
+        const minZ = centerZ - currentSize;
+        const maxZ = centerZ + currentSize;
+        return loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ;
+    } else if (shape === 'circle') {
+        const { centerX, centerZ } = borderSettings;
+        const dx = loc.x - centerX;
+        const dz = loc.z - centerZ;
+        const distSq = dx * dx + dz * dz;
+        const radiusSq = currentSize * currentSize;
+        return distSq > radiusSq;
+    }
+    return false; // Unknown shape or other issue
+}
+
+
+/**
  * Retrieves the world border settings for a specific dimension.
  * @param {string} dimensionId - The ID of the dimension (e.g., 'minecraft:overworld').
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -310,7 +401,7 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
 
     if (!config.enableWorldBorderSystem) return;
 
-    let borderSettings = getBorderSettings(player.dimension.id, dependencies);
+    const borderSettings = getBorderSettings(player.dimension.id, dependencies);
     if (!borderSettings?.enabled) {
         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
             pData.ticksOutsideBorder = 0;
@@ -331,80 +422,40 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
     }
 
     const loc = player.location;
-    let isPlayerOutside = false;
     let targetX = loc.x, targetZ = loc.z; // Teleport target coordinates
-    let currentEffectiveHalfSize = borderSettings.halfSize;
-    let currentEffectiveRadius = borderSettings.radius;
 
-    // Calculate current size if resizing
-    if (borderSettings.isResizing &&
-        typeof borderSettings.originalSize === 'number' &&
-        typeof borderSettings.targetSize === 'number' &&
-        typeof borderSettings.resizeStartTimeMs === 'number' &&
-        typeof borderSettings.resizeDurationMs === 'number') {
-        const currentTimeMs = Date.now();
-        const accumulatedPausedMs = borderSettings.resizePausedTimeMs || 0;
-        let elapsedMs = (currentTimeMs - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
+    const playerIsCurrentlyOutside = isPlayerOutsideBorder(player, dependencies);
 
-        if (borderSettings.isPaused) {
-            const lastPauseStart = borderSettings.resizeLastPauseStartTimeMs || currentTimeMs;
-            elapsedMs = (lastPauseStart - borderSettings.resizeStartTimeMs) - accumulatedPausedMs;
-        }
-        elapsedMs = Math.max(0, elapsedMs);
-
-        const durationMs = borderSettings.resizeDurationMs;
-        let rawProgress = (durationMs > 0) ? Math.min(1, elapsedMs / durationMs) : 1; // If duration is 0, assume complete
-        let easedProgress = rawProgress;
-
-        if (borderSettings.resizeInterpolationType === 'easeOutQuad') easedProgress = easeOutQuad(rawProgress);
-        else if (borderSettings.resizeInterpolationType === 'easeInOutQuad') easedProgress = easeInOutQuad(rawProgress);
-
-        const interpolatedSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * easedProgress;
-        if (borderSettings.shape === 'square') currentEffectiveHalfSize = interpolatedSize;
-        else if (borderSettings.shape === 'circle') currentEffectiveRadius = interpolatedSize;
-
-    } else if (borderSettings.isResizing) { // Resizing but params might be off, use target or stored
-        if (typeof borderSettings.targetSize === 'number') {
-            if (borderSettings.shape === 'square') currentEffectiveHalfSize = borderSettings.targetSize;
-            else if (borderSettings.shape === 'circle') currentEffectiveRadius = borderSettings.targetSize;
-        }
-        if (pData.isWatched) playerUtils.debugLog(`[WorldBorderManager] In-progress resize for dim ${player.dimension.id} has incomplete parameters. Using targetSize or stored.`, player.nameTag, dependencies);
-    }
-
-
-    // Check if player is outside
-    if (borderSettings.shape === 'square' && typeof currentEffectiveHalfSize === 'number' && currentEffectiveHalfSize > 0) {
-        const { centerX, centerZ } = borderSettings;
-        const minX = centerX - currentEffectiveHalfSize, maxX = centerX + currentEffectiveHalfSize;
-        const minZ = centerZ - currentEffectiveHalfSize, maxZ = centerZ + currentEffectiveHalfSize;
-        if (loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ) {
-            isPlayerOutside = true;
-            targetX = loc.x; targetZ = loc.z;
-            if (targetX < minX) targetX = minX + 0.5; else if (targetX > maxX) targetX = maxX - 0.5;
-            if (targetZ < minZ) targetZ = minZ + 0.5; else if (targetZ > maxZ) targetZ = maxZ - 0.5;
-        }
-    } else if (borderSettings.shape === 'circle' && typeof currentEffectiveRadius === 'number' && currentEffectiveRadius > 0) {
-        const { centerX, centerZ } = borderSettings;
-        const dx = loc.x - centerX, dz = loc.z - centerZ;
-        const distSq = dx * dx + dz * dz, radiusSq = currentEffectiveRadius * currentEffectiveRadius;
-        if (distSq > radiusSq) {
-            isPlayerOutside = true;
-            const currentDist = Math.sqrt(distSq);
-            const teleportOffset = 0.5; // Small offset to ensure player is inside
-            if (currentDist === 0 || currentEffectiveRadius <= teleportOffset) { // Avoid division by zero or negative radius
-                targetX = centerX + (currentEffectiveRadius > teleportOffset ? currentEffectiveRadius - teleportOffset : 0);
-                targetZ = centerZ;
-            } else {
-                const scale = (currentEffectiveRadius - teleportOffset) / currentDist;
-                targetX = centerX + dx * scale;
-                targetZ = centerZ + dz * scale;
+    if (playerIsCurrentlyOutside) {
+        // Calculate the safe teleport spot based on current border size
+        const { currentSize, shape } = getCurrentEffectiveBorderSize(borderSettings, dependencies);
+        if (currentSize !== null && currentSize > 0) {
+            if (shape === 'square') {
+                const { centerX, centerZ } = borderSettings;
+                const minX = centerX - currentSize;
+                const maxX = centerX + currentSize;
+                const minZ = centerZ - currentSize;
+                const maxZ = centerZ + currentSize;
+                if (loc.x < minX) targetX = minX + 0.5; else if (loc.x > maxX) targetX = maxX - 0.5;
+                if (loc.z < minZ) targetZ = minZ + 0.5; else if (loc.z > maxZ) targetZ = maxZ - 0.5;
+            } else if (shape === 'circle') {
+                const { centerX, centerZ } = borderSettings;
+                const dx = loc.x - centerX;
+                const dz = loc.z - centerZ;
+                const distSq = dx * dx + dz * dz;
+                const currentDist = Math.sqrt(distSq);
+                const teleportOffset = 0.5;
+                if (currentDist === 0 || currentSize <= teleportOffset) {
+                    targetX = centerX + (currentSize > teleportOffset ? currentSize - teleportOffset : 0);
+                    targetZ = centerZ;
+                } else {
+                    const scale = (currentSize - teleportOffset) / currentDist;
+                    targetX = centerX + dx * scale;
+                    targetZ = centerZ + dz * scale;
+                }
             }
-        }
-    } else if (borderSettings.shape) { // Invalid shape or size
-        if (pData.isWatched) playerUtils.debugLog(`[WBM] Invalid shape ('${borderSettings.shape}') or size (Sq: ${currentEffectiveHalfSize}, Circ: ${currentEffectiveRadius}) in ${player.dimension.id}. Skipping.`, player.nameTag, dependencies);
-    }
+        } // If currentSize is null, targetX/Z remain player's current loc, teleport might not improve things
 
-    if (isPlayerOutside) {
         pData.ticksOutsideBorder = (pData.ticksOutsideBorder || 0) + 1;
         const enableDamage = borderSettings.enableDamage ?? config.worldBorderDefaultEnableDamage;
         const damageAmount = borderSettings.damageAmount ?? config.worldBorderDefaultDamageAmount;

@@ -31,7 +31,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
         return;
     }
 
-    if (!pData) { // Ensure pData is available
+    if (!pData) {
         playerUtils.debugLog(`[MessageRateCheck] pData is null for ${player.nameTag}, skipping check.`, player.nameTag, dependencies);
         return;
     }
@@ -52,7 +52,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
-                messageContent: eventData.message.length > 100 ? eventData.message.substring(0, 97) + '...' : eventData.message, // Truncate long messages
+                messageContent: eventData.message.length > 100 ? eventData.message.substring(0, 97) + '...' : eventData.message,
             };
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 

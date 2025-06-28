@@ -33,7 +33,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
 
     const minMessageLength = config.unicodeAbuseMinMessageLength ?? 5;
     if (rawMessageContent.length < minMessageLength) {
-        return; // Message too short
+        return;
     }
 
     const maxDiacriticRatio = config.unicodeAbuseMaxDiacriticRatio ?? 0.5;
@@ -45,9 +45,9 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     // Iterate through the message to count diacritics and other relevant characters
     for (const char of rawMessageContent) {
         // \p{M} matches all combining diacritical marks (Mn, Mc, Me)
-        if (/\p{M}/u.test(char)) { // Use .test() for boolean check
+        if (/\p{M}/u.test(char)) {
             diacriticCount++;
-        } else if (/\S/.test(char)) { // Any non-whitespace character that is not a diacritic. Use .test()
+        } else if (/\S/.test(char)) { // Any non-whitespace character that is not a diacritic.
             otherCharCount++;
         }
     }

@@ -39,9 +39,9 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
-        if (char.match(/[a-zA-Z]/)) { // Consider only alphabetic characters
+        if (char.match(/[a-zA-Z]/)) {
             totalLetters++;
-            if (char.match(/[A-Z]/)) { // Check if it's uppercase
+            if (char.match(/[A-Z]/)) {
                 upperCaseLetters++;
             }
         }

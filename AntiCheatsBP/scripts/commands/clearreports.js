@@ -4,8 +4,6 @@
  */
 import { permissionLevels } from '../core/rankManager.js';
 import * as reportManager from '../core/reportManager.js';
-// Import ModalFormData if confirmation for "all" is desired
-// import { ModalFormData } from '@minecraft/server-ui';
 
 export const definition = {
     name: 'clearreports',

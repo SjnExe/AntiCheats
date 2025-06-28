@@ -1,7 +1,7 @@
 /**
  * Manages TPA (teleport request) operations, including creating, tracking, and processing requests.
  */
-import { world } from '@minecraft/server'; // system removed as it's not used
+import { world } from '@minecraft/server';
 
 const activeRequests = new Map();
 const lastPlayerRequestTimestamp = new Map();
@@ -21,8 +21,8 @@ export function addRequest(requester, target, type, dependencies) {
 
     if (lastPlayerRequestTimestamp.has(requester.name)) {
         const elapsedTime = now - lastPlayerRequestTimestamp.get(requester.name);
-        if (elapsedTime < config.tpaRequestCooldownSeconds * 1000) { // Use camelCase config key
-            const remainingSeconds = Math.ceil((config.tpaRequestCooldownSeconds * 1000 - elapsedTime) / 1000); // Use camelCase config key
+        if (elapsedTime < config.tpaRequestCooldownSeconds * 1000) {
+            const remainingSeconds = Math.ceil((config.tpaRequestCooldownSeconds * 1000 - elapsedTime) / 1000);
             playerUtils.debugLog(`[TpaManager] Cooldown active for ${requester.name}. Remaining: ${remainingSeconds}s`, requester.name, dependencies);
             return { error: 'cooldown', remaining: remainingSeconds };
         }
@@ -40,13 +40,13 @@ export function addRequest(requester, target, type, dependencies) {
         requestType: type,
         status: 'pending_acceptance',
         creationTimestamp: now,
-        expiryTimestamp: now + (config.tpaRequestTimeoutSeconds * 1000), // Use camelCase config key
+        expiryTimestamp: now + (config.tpaRequestTimeoutSeconds * 1000),
         warmupExpiryTimestamp: 0,
     };
     activeRequests.set(requestId, request);
     lastPlayerRequestTimestamp.set(requester.name, now);
     playerUtils.debugLog(`[TpaManager] Added request ${requestId}: ${requester.name} -> ${target.name}, type: ${type}`, requester.name, dependencies);
-    logManager.addLog({actionType: 'tpaRequestSent', targetName: target.nameTag, adminName: requester.nameTag, details: `Type: ${type}, ID: ${requestId}`}, dependencies); // Use camelCase actionType
+    logManager.addLog({actionType: 'tpaRequestSent', targetName: target.nameTag, adminName: requester.nameTag, details: `Type: ${type}, ID: ${requestId}`}, dependencies);
     return request;
 }
 
@@ -109,18 +109,18 @@ export function acceptRequest(requestId, dependencies) {
         return false;
     }
     request.status = 'pending_teleport_warmup';
-    request.warmupExpiryTimestamp = Date.now() + (config.tpaTeleportWarmupSeconds * 1000); // Use camelCase config key
+    request.warmupExpiryTimestamp = Date.now() + (config.tpaTeleportWarmupSeconds * 1000);
     activeRequests.set(requestId, request);
-    const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: config.tpaTeleportWarmupSeconds }); // Use camelCase config key
+    const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: config.tpaTeleportWarmupSeconds });
 
     if (request.requestType === 'tpa') {
         requesterPlayer.sendMessage(getString('tpa.manager.requester.accepted', { targetPlayerName: targetPlayer.nameTag, warmupMessage: warmupMsgString }));
-        targetPlayer.sendMessage(getString('tpa.manager.target.acceptedFromRequester', { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds })); // Use camelCase config key
+        targetPlayer.sendMessage(getString('tpa.manager.target.acceptedFromRequester', { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds }));
     } else {
         targetPlayer.sendMessage(getString('tpa.manager.target.acceptedByRequester', { requesterPlayerName: requesterPlayer.nameTag, warmupMessage: warmupMsgString }));
-        requesterPlayer.sendMessage(getString('tpa.manager.requester.acceptedHere', { targetPlayerName: targetPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds })); // Use camelCase config key
+        requesterPlayer.sendMessage(getString('tpa.manager.requester.acceptedHere', { targetPlayerName: targetPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds }));
     }
-    logManager.addLog({actionType: 'tpaRequestAccepted', targetName: targetPlayer.nameTag, adminName: requesterPlayer.nameTag, details: `Type: ${request.requestType}, ID: ${requestId}`}, dependencies); // Use camelCase actionType
+    logManager.addLog({actionType: 'tpaRequestAccepted', targetName: targetPlayer.nameTag, adminName: requesterPlayer.nameTag, details: `Type: ${request.requestType}, ID: ${requestId}`}, dependencies);
     playerUtils.debugLog(`[TpaManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`, request.targetName, dependencies);
     return true;
 }
@@ -180,7 +180,7 @@ export function executeTeleport(requestId, dependencies) {
         }
     } finally {
         removeRequest(requestId, dependencies);
-        logManager.addLog({actionType: 'tpaTeleportFinalized', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}`}, dependencies); // Use camelCase actionType
+        logManager.addLog({actionType: 'tpaTeleportFinalized', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Status: ${request.status}, Type: ${request.requestType}, ID: ${requestId}`}, dependencies);
     }
 }
 
@@ -194,7 +194,7 @@ export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog,
     if (requesterPlayer?.isValid()) requesterPlayer.sendMessage(reasonMessagePlayer);
     if (targetPlayer?.isValid()) targetPlayer.sendMessage(reasonMessagePlayer);
     playerUtils.debugLog(`[TpaManager] Teleport for request ${requestId} cancelled: ${reasonMessageLog}`, request.requesterName, dependencies);
-    logManager.addLog({actionType: 'tpaTeleportCancelled', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Reason: ${reasonMessageLog}, ID: ${requestId}`}, dependencies); // Use camelCase actionType
+    logManager.addLog({actionType: 'tpaTeleportCancelled', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `Reason: ${reasonMessageLog}, ID: ${requestId}`}, dependencies);
     removeRequest(requestId, dependencies);
 }
 
@@ -217,7 +217,7 @@ export function declineRequest(requestId, dependencies) {
         playerUtils.debugLog(`[TpaManager] Request ${requestId} between ${request.requesterName} and ${request.targetName} cancelled (was in state: ${request.status}).`, request.requesterName, dependencies);
     }
     request.status = 'cancelled';
-    logManager.addLog({actionType: 'tpaRequestDeclined', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}, Status: ${request.status}`}, dependencies); // Use camelCase actionType
+    logManager.addLog({actionType: 'tpaRequestDeclined', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}, Status: ${request.status}`}, dependencies);
     removeRequest(requestId, dependencies);
 }
 
@@ -241,13 +241,13 @@ export function clearExpiredRequests(dependencies) {
         const requesterDisplayName = requesterPlayer ? requesterPlayer.nameTag : request.requesterName;
         if (requesterPlayer?.isValid()) requesterPlayer.sendMessage(getString('tpa.manager.expired.requesterNotified', { targetName: targetDisplayName }));
         if (targetPlayer?.isValid()) targetPlayer.sendMessage(getString('tpa.manager.expired.targetNotified', { requesterName: requesterDisplayName }));
-        logManager.addLog({actionType: 'tpaRequestExpired', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}`}, dependencies); // Use camelCase actionType
+        logManager.addLog({actionType: 'tpaRequestExpired', targetName: targetPlayer?.nameTag || request.targetName, adminName: requesterPlayer?.nameTag || request.requesterName, details: `ID: ${requestId}`}, dependencies);
         removeRequest(request.requestId, dependencies);
     }
 }
 
 export function getPlayerTpaStatus(playerName, dependencies) {
-    const { playerUtils } = dependencies; // playerUtils is not used here, but kept for signature consistency if it were
+    // playerUtils is not used here, but kept for signature consistency if it were
     if (!playerTpaStatuses.has(playerName)) {
         return { playerName, acceptsTpaRequests: true, lastTpaToggleTimestamp: 0 };
     }
@@ -259,7 +259,7 @@ export function setPlayerTpaStatus(playerName, accepts, dependencies) {
     const status = { playerName, acceptsTpaRequests: accepts, lastTpaToggleTimestamp: Date.now() };
     playerTpaStatuses.set(playerName, status);
     playerUtils.debugLog(`[TpaManager] Player ${playerName} TPA status set to: ${accepts}`, playerName, dependencies);
-    logManager.addLog({actionType: 'tpaStatusSet', targetName: playerName, details: `Accepts TPA: ${accepts}`}, dependencies); // Use camelCase actionType
+    logManager.addLog({actionType: 'tpaStatusSet', targetName: playerName, details: `Accepts TPA: ${accepts}`}, dependencies);
 }
 
 export function getRequestsInWarmup() {

@@ -26,7 +26,7 @@ import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../
  * @returns {Promise<void>}
  */
 export async function checkAutoTool(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
     const dimension = player.dimension;
 
     if (!config.enableAutoToolCheck || !pData) {
@@ -42,11 +42,11 @@ export async function checkAutoTool(player, pData, dependencies) {
     if (pData.isAttemptingBlockBreak &&
         pData.breakingBlockLocation &&
         !pData.switchedToOptimalToolForBreak && // Only check if we haven't already flagged this part of the sequence
-        pData.lastSelectedSlotChangeTick === currentTick && // Switched tool this very tick
-        (currentTick - (pData.breakAttemptStartTick ?? 0) < switchToOptimalWindowTicks)) { // Switched shortly after break attempt started
+        pData.lastSelectedSlotChangeTick === currentTick &&
+        (currentTick - (pData.breakAttemptStartTick ?? 0) < switchToOptimalWindowTicks)) {
 
         const currentSlotIndex = player.selectedSlotIndex;
-        const previousSlotIndex = pData.previousSelectedSlotIndex; // Slot before the current switch
+        const previousSlotIndex = pData.previousSelectedSlotIndex;
 
         // Ensure the switch was from the slot they started breaking with
         if (previousSlotIndex === pData.slotAtBreakAttemptStart) {
@@ -58,10 +58,10 @@ export async function checkAutoTool(player, pData, dependencies) {
                     if (optimalToolInfo && currentSlotIndex === optimalToolInfo.slotIndex) {
                         const inventory = player.getComponent(mc.EntityComponentTypes.Inventory);
                         const initialToolStack = inventory?.container?.getItem(pData.slotAtBreakAttemptStart);
-                        const newToolStack = optimalToolInfo.itemStack; // This is the optimal tool
+                        const newToolStack = optimalToolInfo.itemStack;
 
                         const initialPower = calculateRelativeBlockBreakingPower(player, blockPermutation, initialToolStack);
-                        const newPower = optimalToolInfo.speed; // Power of the new (optimal) tool
+                        const newPower = optimalToolInfo.speed;
 
                         // Define what "significantly better" means
                         const isSignificantlyBetter = (newPower > initialPower * 1.5) || // e.g., 50% faster
@@ -69,9 +69,9 @@ export async function checkAutoTool(player, pData, dependencies) {
                                                     (newPower > 5 && initialPower < 1); // e.g., basic tool vs hand for stone
 
                         if (isSignificantlyBetter) {
-                            pData.switchedToOptimalToolForBreak = true; // Mark that an optimal switch occurred for this break event
-                            pData.optimalToolSlotForLastBreak = currentSlotIndex; // Store the slot of the optimal tool
-                            pData.optimalToolTypeIdForLastBreak = newToolStack?.typeId; // Store type ID
+                            pData.switchedToOptimalToolForBreak = true;
+                            pData.optimalToolSlotForLastBreak = currentSlotIndex;
+                            pData.optimalToolTypeIdForLastBreak = newToolStack?.typeId;
                             pData.isDirtyForSave = true;
                             playerUtils.debugLog(`[AutoToolCheck] Detected switch to optimal tool (${newToolStack?.typeId ?? 'hand'} in slot ${currentSlotIndex}, newPower: ${newPower.toFixed(2)}, oldPower: ${initialPower.toFixed(2)}) for ${pData.breakingBlockTypeId}. Initial slot: ${pData.slotAtBreakAttemptStart}`, watchedPrefix, dependencies);
                         }
@@ -123,19 +123,17 @@ export async function checkAutoTool(player, pData, dependencies) {
         }
     }
 
-    // Timeout logic for stale break attempts or switch states
     const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? 200; // e.g., 10 seconds
     if (pData.isAttemptingBlockBreak && (currentTick - (pData.breakAttemptStartTick ?? 0) > timeoutForBreakAttempt)) {
         playerUtils.debugLog(`[AutoToolCheck] Stale break attempt timed out for ${player.nameTag}. Block: ${pData.breakingBlockTypeId ?? 'N/A'}`, watchedPrefix, dependencies);
         pData.isAttemptingBlockBreak = false;
-        pData.switchedToOptimalToolForBreak = false; // Reset this with the attempt
+        pData.switchedToOptimalToolForBreak = false;
         pData.breakingBlockTypeId = null;
         pData.breakingBlockLocation = null;
         // Don't reset optimalToolSlotForLastBreak here, as that's tied to a completed break
         pData.isDirtyForSave = true;
     }
 
-    // Timeout for the state where we are waiting for a switch-back
     const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? 5) + 20; // A bit longer than the window
     if (pData.optimalToolSlotForLastBreak !== null &&
         (pData.lastBreakCompleteTick ?? 0) > 0 &&

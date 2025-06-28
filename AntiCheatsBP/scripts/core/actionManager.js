@@ -31,7 +31,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     }
     let message = template;
     message = message.replace(/{playerName}/g, playerName);
-    message = message.replace(/{checkType}/g, checkType); // Ensure checkType (potentially with adjusted casing) is used.
+    message = message.replace(/{checkType}/g, checkType);
     message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
 
     if (violationDetails && typeof violationDetails === 'object') {

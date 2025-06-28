@@ -23,7 +23,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager } = dependencies; // Added logManager
+    const { playerUtils, logManager } = dependencies;
 
     const notificationMessage = `§6This is a test notification from ${player.nameTag} via the AntiCheat system.`; // Hardcoded base message
 
@@ -31,7 +31,6 @@ export async function execute(player, _args, dependencies) {
         playerUtils.notifyAdmins(notificationMessage, dependencies, player, null);
         player.sendMessage('§aTest notification sent to online admins/owners.');
 
-        // Log the successful execution of the test notification
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,

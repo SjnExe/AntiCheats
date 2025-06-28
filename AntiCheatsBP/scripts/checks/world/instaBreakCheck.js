@@ -23,14 +23,14 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkBreakUnbreakable(player, pData, eventData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableInstaBreakUnbreakableCheck || !pData) {
         return;
     }
 
     const blockTypeId = eventData.block.typeId;
-    const unbreakableBlocks = config.instaBreakUnbreakableBlocks ?? []; // Default to empty array if not defined
+    const unbreakableBlocks = config.instaBreakUnbreakableBlocks ?? [];
 
     if (unbreakableBlocks.includes(blockTypeId)) {
         if (player.gameMode !== mc.GameMode.creative) {
@@ -72,14 +72,14 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
  * @returns {Promise<void>}
  */
 export async function checkBreakSpeed(player, pData, eventData, dependencies) {
-    const { config, playerUtils, actionManager, currentTick } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if (!config.enableInstaBreakSpeedCheck || !pData) {
         return;
     }
 
     const blockTypeId = eventData.brokenBlockPermutation.type.id;
-    const blockLocation = eventData.block.location; // Location of the block that was broken
+    const blockLocation = eventData.block.location;
 
     // Check if the currently broken block matches the one whose break attempt was recorded
     if (pData.breakingBlockTypeId === blockTypeId &&
@@ -87,11 +87,11 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
         pData.breakingBlockLocation.x === blockLocation.x &&
         pData.breakingBlockLocation.y === blockLocation.y &&
         pData.breakingBlockLocation.z === blockLocation.z &&
-        (pData.breakStartTickGameTime ?? 0) > 0) { // Ensure a break attempt was actually started
+        (pData.breakStartTickGameTime ?? 0) > 0) {
 
         const actualDurationTicks = currentTick - pData.breakStartTickGameTime;
-        const expectedTicks = pData.expectedBreakDurationTicks ?? Infinity; // Default to Infinity if not set
-        const tolerance = config.instaBreakTimeToleranceTicks ?? 2; // Allow a small margin of error
+        const expectedTicks = pData.expectedBreakDurationTicks ?? Infinity;
+        const tolerance = config.instaBreakTimeToleranceTicks ?? 2;
 
         if (pData.isWatched || config.enableDebugLogging) {
             playerUtils.debugLog(
@@ -106,7 +106,6 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
         if (expectedTicks === Infinity && actualDurationTicks < 1000) { // Breaking an "unbreakable" block very fast (e.g. bedrock)
             flagged = true;
         } else if (expectedTicks > 0 && expectedTicks !== Infinity && actualDurationTicks < (expectedTicks - tolerance)) {
-            // Broke faster than expected, considering tolerance
             flagged = true;
         }
         // Note: If expectedTicks is 0 or 1 (instant break), this check might not be very useful unless actualDuration is also 0/1.

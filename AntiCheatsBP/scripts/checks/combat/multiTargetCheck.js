@@ -37,7 +37,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
         return;
     }
 
-    pData.recentHits = pData.recentHits || []; // Initialize if undefined
+    pData.recentHits = pData.recentHits || [];
 
     const newHit = {
         entityId: String(targetEntity.id), // Ensure entityId is stored as a string
@@ -47,24 +47,21 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     pData.isDirtyForSave = true;
 
     const windowMs = config.multiTargetWindowMs ?? 1000;
-    const maxHistory = config.multiTargetMaxHistory ?? 20; // Max number of hits to keep in history
+    const maxHistory = config.multiTargetMaxHistory ?? 20;
 
-    // Filter out old hits
     const originalCountBeforeTimeFilter = pData.recentHits.length;
     pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= windowMs);
     if (pData.recentHits.length !== originalCountBeforeTimeFilter) {
         pData.isDirtyForSave = true;
     }
 
-    // Trim history if it exceeds maxHistory
     if (pData.recentHits.length > maxHistory) {
         pData.recentHits = pData.recentHits.slice(pData.recentHits.length - maxHistory);
-        pData.isDirtyForSave = true; // Array was modified
+        pData.isDirtyForSave = true;
     }
 
-    const threshold = config.multiTargetThreshold ?? 3; // Min distinct targets to flag
+    const threshold = config.multiTargetThreshold ?? 3;
 
-    // Not enough hits in the window to meet the threshold for distinct targets
     if (pData.recentHits.length < threshold) {
         return;
     }
@@ -74,7 +71,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
         distinctTargets.add(hit.entityId);
     }
 
-    if (pData.isWatched) { // Log detailed info for watched players
+    if (pData.isWatched) {
         playerUtils.debugLog(`[MultiTargetCheck] Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, watchedPrefix, dependencies);
     }
 
@@ -83,9 +80,8 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             targetsHit: distinctTargets.size.toString(),
             windowSeconds: (windowMs / 1000).toFixed(1),
             threshold: threshold.toString(),
-            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '), // Sample of target IDs
+            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '),
         };
-        // Standardized action profile key, should be sourced from config
         const actionProfileKey = config.multiTargetActionProfileName ?? 'combatMultitargetAura';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 

@@ -31,8 +31,8 @@ export async function checkInvalidSprint(player, pData, dependencies) {
     }
 
     if (player.isSprinting) {
-        let invalidConditionKey = null; // Will hold the localization key for the condition
-        let conditionDetailsLog = ''; // For more detailed internal logging
+        let invalidConditionKey = null;
+        let conditionDetailsLog = '';
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
         const actionProfileKey = 'movementInvalidSprint'; // Standardized key

@@ -434,7 +434,7 @@ function initializeSystem() {
     const startupDependencies = getStandardDependencies();
     playerUtils.debugLog('Anti-Cheat Script Loaded. Initializing modules...', 'System', startupDependencies);
 
-    commandManager.initializeCommands(startupDependencies); // Assuming this populates the maps in commandManager
+    commandManager.initializeCommands(startupDependencies);
     logManager.initializeLogCache(startupDependencies);
     reportManager.initializeReportCache(startupDependencies); // Moved here
     rankManager.initializeRanks(startupDependencies);

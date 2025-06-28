@@ -1,12 +1,12 @@
 /**
  * Defines the !vanish command for administrators to toggle their visibility and related effects.
  */
-import * as mc from '@minecraft/server'; // Import mc for mc.world
+import * as mc from '@minecraft/server';
 
 const vanishedTag = 'vanished';
 const vanishModeNotifyTag = 'vanish_mode_notify';
 const effectDuration = 2000000;
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js';
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -14,14 +14,14 @@ export const definition = {
     name: 'vanish',
     syntax: '!vanish [silent|notify]',
     description: 'Toggles your visibility and related effects.',
-    permissionLevel: importedPermissionLevels.admin, // Use imported enum
+    permissionLevel: importedPermissionLevels.admin,
     enabled: true,
 };
 /**
  * Executes the vanish command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager, permissionLevels } = dependencies;
+    const { playerUtils, logManager, config, playerDataManager } = dependencies;
 
     let mode = args[0] ? args[0].toLowerCase() : 'silent';
     if (mode !== 'silent' && mode !== 'notify') {

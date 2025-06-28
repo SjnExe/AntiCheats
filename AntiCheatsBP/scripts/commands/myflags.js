@@ -10,7 +10,7 @@ export const definition = {
     name: 'myflags',
     syntax: '!myflags',
     description: 'Allows players to view their own AntiCheat flag status.',
-    permissionLevel: permissionLevels.normal, // Accessible to all players
+    permissionLevel: permissionLevels.normal,
     enabled: true,
 };
 
@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerDataManager } = dependencies; // Removed unused permissionLevels
+    const { playerDataManager } = dependencies;
     const pDataSelf = playerDataManager.getPlayerData(player.id);
 
     if (pDataSelf && pDataSelf.flags) {

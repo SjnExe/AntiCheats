@@ -52,21 +52,20 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies; // Removed findPlayer: depFindPlayer
-    // const findPlayerFunc = depFindPlayer || playerUtils.findPlayer; // Use playerUtils.findPlayer directly
+    const { config, playerUtils, logManager } = dependencies;
     const prefix = config.prefix;
     const usageMessage = `§cUsage: ${prefix}tp <targetPlayerOrX> [destinationPlayerOrY] [z] [dimension]`;
 
     let playerToMove;
     let destinationLocation;
     let targetDimension;
-    let destinationDescription = ''; // Initialize to empty string
-    let dimensionInfoForMessage = ''; // Initialize to empty string
+    let destinationDescription = '';
+    let dimensionInfoForMessage = '';
 
     // Case 1: !tp <playerToMoveName> <destinationPlayerName>
     if (args.length === 2 && isNaN(parseFloat(args[0])) && isNaN(parseFloat(args[1]))) {
-        playerToMove = playerUtils.findPlayer(args[0]); // Use playerUtils.findPlayer
-        const destinationPlayer = playerUtils.findPlayer(args[1]); // Use playerUtils.findPlayer
+        playerToMove = playerUtils.findPlayer(args[0]);
+        const destinationPlayer = playerUtils.findPlayer(args[1]);
 
         if (!playerToMove) {
             player.sendMessage(`§cPlayer to move "${args[0]}" not found.`);
@@ -95,7 +94,7 @@ export async function execute(player, args, dependencies) {
         playerToMove = player;
         destinationLocation = { x: parseFloat(args[0]), y: parseFloat(args[1]), z: parseFloat(args[2]) };
         destinationDescription = `coordinates ${args[0]}, ${args[1]}, ${args[2]}`;
-        targetDimension = playerToMove.dimension; // Default to current dimension
+        targetDimension = playerToMove.dimension;
 
         if (args.length === 4) {
             const parsedDim = parseDimensionLocal(args[3], playerUtils, dependencies);
@@ -113,8 +112,8 @@ export async function execute(player, args, dependencies) {
     }
     // Case 3: !tp <playerToMoveName> <x> <y> <z> [dimension] (teleport other player to coordinates)
     else if (args.length === 4 || args.length === 5) {
-        if (isNaN(parseFloat(args[0]))) { // First arg is player name
-             playerToMove = playerUtils.findPlayer(args[0]); // Use playerUtils.findPlayer
+        if (isNaN(parseFloat(args[0]))) {
+             playerToMove = playerUtils.findPlayer(args[0]);
              if (!playerToMove) {
                 player.sendMessage(`§cPlayer to move "${args[0]}" not found.`);
                 return;
@@ -125,7 +124,7 @@ export async function execute(player, args, dependencies) {
             }
             destinationLocation = { x: parseFloat(args[1]), y: parseFloat(args[2]), z: parseFloat(args[3]) };
             destinationDescription = `coordinates ${args[1]}, ${args[2]}, ${args[3]}`;
-            targetDimension = playerToMove.dimension; // Default to target player's current dimension
+            targetDimension = playerToMove.dimension;
 
             if (args.length === 5) {
                 const parsedDim = parseDimensionLocal(args[4], playerUtils, dependencies);
@@ -145,7 +144,6 @@ export async function execute(player, args, dependencies) {
              return;
         }
     }
-    // Invalid arguments
     else {
         player.sendMessage(usageMessage);
         if (config.enableDebugLogging) {
@@ -154,7 +152,6 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Final check if all necessary variables are set
     if (!playerToMove || !destinationLocation || !targetDimension) {
         player.sendMessage(usageMessage); // Should be caught by earlier checks, but as a safeguard
         playerUtils.debugLog(`[TPCommand] Failed to resolve teleport parameters for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag, dependencies);
@@ -170,9 +167,8 @@ export async function execute(player, args, dependencies) {
 
         let successMsg;
         if (destinationDescription.startsWith('player')) {
-            successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationDescription}.`; // Already includes "player"
+            successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationDescription}.`;
         } else {
-            // Ensure coordinates are formatted consistently
             const x = destinationLocation.x.toFixed(1);
             const y = destinationLocation.y.toFixed(1);
             const z = destinationLocation.z.toFixed(1);
@@ -192,7 +188,7 @@ export async function execute(player, args, dependencies) {
             details: `To: ${destinationDescription}. From: ${oldLoc.x.toFixed(1)},${oldLoc.y.toFixed(1)},${oldLoc.z.toFixed(1)} in ${oldDimName}`,
         }, dependencies);
 
-    } catch (error) { // Changed 'e' to 'error'
+    } catch (error) {
         player.sendMessage(`§cTeleport failed: ${error.message || error}`);
         console.error(`[TPCommand] Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${error.stack || error}`);
         logManager.addLog({

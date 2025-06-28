@@ -1,8 +1,8 @@
 /**
  * @file Defines the !addrank command for server administrators to assign a manual rank to a player.
  */
-import { permissionLevels } from '../core/rankManager.js'; // For defining command's own permission
-import { rankDefinitions } from '../core/ranksConfig.js'; // To validate rankId and get tag prefix
+import { permissionLevels } from '../core/rankManager.js';
+import { rankDefinitions } from '../core/ranksConfig.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,7 +11,7 @@ export const definition = {
     name: 'addrank',
     syntax: '!addrank <playername> <rankId>',
     description: 'Assigns a manual rank to a player by adding the associated tag.',
-    permissionLevel: permissionLevels.admin, // Base permission: Admin
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -24,7 +24,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager } = dependencies;
+    const { config, playerUtils, logManager, rankManager: depRankManager } = dependencies;
 
     if (args.length < 2) {
         player.sendMessage(`§cUsage: ${config.prefix}addrank <playername> <rankId>`);
@@ -46,17 +46,15 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Check if the rank is manually assignable via tags
     const manualTagCondition = rankDef.conditions.find(c => c.type === 'manual_tag_prefix' && typeof c.prefix === 'string');
     if (!manualTagCondition) {
         player.sendMessage(`§cRank '${rankDef.name}' cannot be assigned using this command (not configured for manual tag assignment).`);
         return;
     }
 
-    // Check if the command issuer has permission to assign this specific rank
     const issuerPermissionLevel = depRankManager.getPlayerPermissionLevel(player, dependencies);
     if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
-        player.sendMessage(`§cYou do not have permission to assign the rank '${rankDef.name}'.`); // Hardcoded string
+        player.sendMessage(`§cYou do not have permission to assign the rank '${rankDef.name}'.`);
         playerUtils.debugLog(`[AddRankCommand] ${player.nameTag} (Level ${issuerPermissionLevel}) attempted to assign rank ${rankDef.id} (AssignableBy ${rankDef.assignableBy}) but lacked permission.`, player.nameTag, dependencies);
         return;
     }
@@ -70,15 +68,14 @@ export async function execute(player, args, dependencies) {
 
     try {
         targetPlayer.addTag(rankTagToAdd);
-        // Force a refresh of rank and nametag
-        depRankManager.updatePlayerNametag(targetPlayer, dependencies);
+        depRankManager.updatePlayerNametag(targetPlayer, dependencies); // Force a refresh of rank and nametag
 
         player.sendMessage(`§aSuccessfully assigned rank '${rankDef.name}' to ${targetPlayer.nameTag}.`);
         targetPlayer.sendMessage(`§aYou have been assigned the rank: ${rankDef.name}.`);
 
         logManager.addLog({
             adminName: player.nameTag,
-            actionType: 'addRank', // Standardized to camelCase
+            actionType: 'addRank',
             targetName: targetPlayer.nameTag,
             details: `Assigned rank: ${rankDef.name} (ID: ${rankDef.id}, Tag: ${rankTagToAdd})`,
         }, dependencies);

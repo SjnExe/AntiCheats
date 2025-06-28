@@ -15,7 +15,6 @@ import * as mc from '@minecraft/server'; // Standard import
  */
 export async function processChatMessage(player, pData, originalMessage, eventData, dependencies) {
     const { config, playerUtils, checks, playerDataManager, logManager, actionManager, getString, rankManager } = dependencies;
-    // const minecraftSystem = dependencies.mc.system; // Use mc.system directly from import
 
     try {
         if (!pData) {
@@ -74,17 +73,17 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
         // --- Standard Chat Checks ---
         const chatCheckFunctions = [
-            { fn: checks.checkSwear, enabled: config.enableSwearCheck, name: 'SwearCheck' },
-            { fn: checks.checkMessageRate, enabled: config.enableFastMessageSpamCheck, name: 'MessageRateCheck' },
-            { fn: checks.checkChatContentRepeat, enabled: config.enableChatContentRepeatCheck, name: 'ChatContentRepeatCheck' },
-            { fn: checks.checkUnicodeAbuse, enabled: config.enableUnicodeAbuseCheck, name: 'UnicodeAbuseCheck' },
-            { fn: checks.checkGibberish, enabled: config.enableGibberishCheck, name: 'GibberishCheck' },
-            { fn: checks.checkExcessiveMentions, enabled: config.enableExcessiveMentionsCheck, name: 'ExcessiveMentionsCheck' },
-            { fn: checks.checkSimpleImpersonation, enabled: config.enableSimpleImpersonationCheck, name: 'SimpleImpersonationCheck' },
-            { fn: checks.checkAntiAdvertising, enabled: config.enableAntiAdvertisingCheck, name: 'AntiAdvertisingCheck' },
-            { fn: checks.checkCapsAbuse, enabled: config.enableCapsCheck, name: 'CapsAbuseCheck' },
-            { fn: checks.checkCharRepeat, enabled: config.enableCharRepeatCheck, name: 'CharRepeatCheck' },
-            { fn: checks.checkSymbolSpam, enabled: config.enableSymbolSpamCheck, name: 'SymbolSpamCheck' },
+            { fn: checks.checkSwear, enabled: config.enableSwearCheck, name: 'swearCheck' },
+            { fn: checks.checkMessageRate, enabled: config.enableFastMessageSpamCheck, name: 'messageRateCheck' },
+            { fn: checks.checkChatContentRepeat, enabled: config.enableChatContentRepeatCheck, name: 'chatContentRepeatCheck' },
+            { fn: checks.checkUnicodeAbuse, enabled: config.enableUnicodeAbuseCheck, name: 'unicodeAbuseCheck' },
+            { fn: checks.checkGibberish, enabled: config.enableGibberishCheck, name: 'gibberishCheck' },
+            { fn: checks.checkExcessiveMentions, enabled: config.enableExcessiveMentionsCheck, name: 'excessiveMentionsCheck' },
+            { fn: checks.checkSimpleImpersonation, enabled: config.enableSimpleImpersonationCheck, name: 'simpleImpersonationCheck' },
+            { fn: checks.checkAntiAdvertising, enabled: config.enableAntiAdvertisingCheck, name: 'antiAdvertisingCheck' },
+            { fn: checks.checkCapsAbuse, enabled: config.enableCapsCheck, name: 'capsAbuseCheck' },
+            { fn: checks.checkCharRepeat, enabled: config.enableCharRepeatCheck, name: 'charRepeatCheck' },
+            { fn: checks.checkSymbolSpam, enabled: config.enableSymbolSpamCheck, name: 'symbolSpamCheck' },
         ];
 
         for (const check of chatCheckFunctions) {

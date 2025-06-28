@@ -32,7 +32,7 @@ let pistonActivityData = new Map();
 export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
     const { config, playerUtils, logManager, actionManager } = dependencies;
 
-    if (!config.enablePistonLagCheck) { // Check if the feature is enabled
+    if (!config.enablePistonLagCheck) {
         return;
     }
 

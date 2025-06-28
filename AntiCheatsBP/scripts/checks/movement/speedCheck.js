@@ -3,7 +3,6 @@
  * Relies on `pData.velocity` (updated in main tick loop) and `pData.speedAmplifier`
  * (assumed to be updated by `updateTransientPlayerData` based on player effects).
  */
-import * as mc from '@minecraft/server'; // Not strictly needed unless mc.Player type is used directly
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -31,7 +30,6 @@ export async function checkSpeed(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Exempt certain states from speed checks
     if (player.isFlying || player.isGliding || player.isClimbing || player.isInWater || player.isRiding) {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
             // Reset speeding ticks if player enters an exempt state

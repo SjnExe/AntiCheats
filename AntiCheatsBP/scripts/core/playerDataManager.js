@@ -15,27 +15,24 @@ const playerData = new Map();
 /**
  * Keys from PlayerAntiCheatData that are persisted to dynamic properties.
  * Other keys are considered transient session data.
- * @type {string[]}
  */
 const persistedPlayerDataKeys = [
     'flags', 'isWatched', 'lastFlagType', 'playerNameTag',
-    'attackEvents', 'lastAttackTime', 'blockBreakEvents', // lastAttackTime might be less useful to persist vs lastCombatInteractionTime
+    'attackEvents', 'lastAttackTime', 'blockBreakEvents',
     'consecutiveOffGroundTicks', 'fallDistance',
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
-    'joinTime', // Persisting joinTime for session duration calculations across sessions if needed, or for first join info.
+    'joinTime',
     'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
-    // Per-check tick trackers for intervals are also persisted implicitly if they are top-level keys in pData.
-    // Explicitly listing them if they were nested or for clarity:
+    // Per-check interval trackers are also persisted if they are top-level keys in pData.
     'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
-    // Note: lastPosition, velocity, etc. are highly transient and re-evaluated on join/tick.
 ];
 
 /**
  * Retrieves the runtime AntiCheat data for a given player ID.
- * @param {string} playerId - The ID of the player.
- * @returns {import('../types.js').PlayerAntiCheatData | undefined} The player's data, or undefined if not found.
+ * @param {string} playerId The ID of the player.
+ * @returns {import('../types.js').PlayerAntiCheatData | undefined}
  */
 export function getPlayerData(playerId) {
     return playerData.get(playerId);
@@ -43,7 +40,7 @@ export function getPlayerData(playerId) {
 
 /**
  * Retrieves all currently cached player data entries.
- * @returns {IterableIterator<import('../types.js').PlayerAntiCheatData>} An iterator for all player data values.
+ * @returns {IterableIterator<import('../types.js').PlayerAntiCheatData>}
  */
 export function getAllPlayerDataValues() {
     return playerData.values();
@@ -51,10 +48,10 @@ export function getAllPlayerDataValues() {
 
 /**
  * Saves a subset of player data (persisted keys) to the player's dynamic properties.
- * @param {import('@minecraft/server').Player} player - The player whose data is being saved.
- * @param {object} pDataToSave - The player data object containing only the keys to be persisted.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if saving was successful, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {object} pDataToSave Data containing only keys to be persisted.
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {Promise<boolean>} True if saving was successful.
  */
 export async function savePlayerDataToDynamicProperties(player, pDataToSave, dependencies) {
     const { playerUtils } = dependencies;
@@ -72,7 +69,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         playerUtils.debugLog(`PDM:save: Fail stringify ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error stringifying pData for ${player.nameTag}: ${error.stack || error}`);
         dependencies.logManager.addLog({
-            actionType: 'errorPdataStringify', // Changed to camelCase
+            actionType: 'errorPdataStringify',
             context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
             targetName: player.nameTag,
             details: `Error: ${error.message}`,
@@ -82,7 +79,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     }
 
     // Minecraft dynamic property string length limit is 32767 bytes.
-    if (jsonString.length > 32760) { // Leave a small buffer
+    if (jsonString.length > 32760) { // Buffer for safety
         playerUtils.debugLog(`PDM:save: pData too large for ${player.nameTag} (${jsonString.length}b). Cannot save to dynamic properties.`, player.nameTag, dependencies);
         console.warn(`[PlayerDataManager] pData for ${player.nameTag} exceeds dynamic property size limit.`);
         return false;
@@ -95,7 +92,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         playerUtils.debugLog(`PDM:save: Fail setDynamicProp for ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error setting dynamic property for ${player.nameTag}: ${error.stack || error}`);
         dependencies.logManager.addLog({
-            actionType: 'errorPdataSetProperty', // Changed to camelCase
+            actionType: 'errorPdataSetProperty',
             context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
             targetName: player.nameTag,
             details: `Error: ${error.message}`,
@@ -107,9 +104,9 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
 
 /**
  * Loads player data from dynamic properties.
- * @param {import('@minecraft/server').Player} player - The player whose data is being loaded.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<object | null>} The loaded player data object, or null if not found or error.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {Promise<object | null>} The loaded player data object, or null.
  */
 export async function loadPlayerDataFromDynamicProperties(player, dependencies) {
     const { playerUtils } = dependencies;
@@ -127,7 +124,7 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         playerUtils.debugLog(`PDM:load: Failed to getDynamicProperty for ${player.nameTag}. E: ${error.message}`, player.nameTag, dependencies);
         console.error(`[PlayerDataManager] Error getting dynamic property for ${player.nameTag}: ${error.stack || error}`);
         dependencies.logManager.addLog({
-            actionType: 'errorPdataGetProperty', // Changed to camelCase
+            actionType: 'errorPdataGetProperty',
             context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
             targetName: player.nameTag,
             details: `Error: ${error.message}`,
@@ -145,10 +142,10 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             playerUtils.debugLog(`PDM:load: Failed to parse JSON for ${player.nameTag}. JSON: '${jsonString}'. E: ${error.message}`, player.nameTag, dependencies);
             console.error(`[PlayerDataManager] Error parsing pData JSON for ${player.nameTag}: ${error.stack || error}`);
             dependencies.logManager.addLog({
-                actionType: 'errorPdataParse', // Changed to camelCase
+                actionType: 'errorPdataParse',
                 context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
                 targetName: player.nameTag,
-                details: `Error: ${error.message}. JSON: ${jsonString.substring(0, 100)}...`, // Log snippet
+                details: `Error: ${error.message}. JSON: ${jsonString.substring(0, 100)}...`,
                 error: error.stack || error.message
             }, dependencies);
             return null;
@@ -164,9 +161,8 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
 
 /**
  * Prepares and saves the persistable parts of a player's AntiCheat data.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<void>}
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function prepareAndSavePlayerData(player, dependencies) {
     const { playerUtils } = dependencies;
@@ -188,16 +184,16 @@ export async function prepareAndSavePlayerData(player, dependencies) {
 
 /**
  * Initializes a new default PlayerAntiCheatData object for a player.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {number} currentTick - The current game tick.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {import('../types.js').PlayerAntiCheatData} The default player data object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {number} currentTick
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {import('../types.js').PlayerAntiCheatData}
  */
 export function initializeDefaultPlayerData(player, currentTick, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils.debugLog(`Initializing default pData for ${player.nameTag} (ID: ${player.id})`, player.nameTag, dependencies);
     return {
-        id: player.id, // Explicitly include player ID
+        id: player.id,
         playerNameTag: player.nameTag,
         lastPosition: { ...player.location },
         previousPosition: { ...player.location },
@@ -214,13 +210,13 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastCombatInteractionTime: 0,
         blockBreakEvents: [],
         recentMessages: [],
-        flags: { // Ensure all known flag types from actionProfiles/automodConfig are initialized here if they are to be individually tracked.
+        flags: {
             totalFlags: 0,
             // Movement
             movementFlyHover: { count: 0, lastDetectionTime: 0 },
             movementSpeedGround: { count: 0, lastDetectionTime: 0 },
-            movementNoFall: { count: 0, lastDetectionTime: 0 }, // Standardized
-            movementNoSlow: { count: 0, lastDetectionTime: 0 }, // Standardized
+            movementNoFall: { count: 0, lastDetectionTime: 0 },
+            movementNoSlow: { count: 0, lastDetectionTime: 0 },
             movementInvalidSprint: { count: 0, lastDetectionTime: 0 },
             movementNetherRoof: { count: 0, lastDetectionTime: 0 },
             movementHighYVelocity: { count: 0, lastDetectionTime: 0 },
@@ -228,15 +224,15 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             // Combat
             combatReachAttack: { count: 0, lastDetectionTime: 0 },
             combatCpsHigh: { count: 0, lastDetectionTime: 0 },
-            combatViewSnapPitch: { count: 0, lastDetectionTime: 0 }, // Standardized
-            combatViewSnapYaw: { count: 0, lastDetectionTime: 0 }, // Standardized
+            combatViewSnapPitch: { count: 0, lastDetectionTime: 0 },
+            combatViewSnapYaw: { count: 0, lastDetectionTime: 0 },
             combatInvalidPitch: { count: 0, lastDetectionTime: 0 },
-            combatMultitargetAura: { count: 0, lastDetectionTime: 0 }, // Standardized
+            combatMultitargetAura: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileSleeping: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileConsuming: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileBowCharging: { count: 0, lastDetectionTime: 0 },
             combatAttackWhileShielding: { count: 0, lastDetectionTime: 0 },
-            combatLog: { count: 0, lastDetectionTime: 0 }, // For combat logging
+            combatLog: { count: 0, lastDetectionTime: 0 },
             // World Interaction
             worldNuker: { count: 0, lastDetectionTime: 0 },
             worldIllegalItemUse: { count: 0, lastDetectionTime: 0 },
@@ -246,23 +242,23 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             worldDownwardScaffold: { count: 0, lastDetectionTime: 0 },
             worldAirPlace: { count: 0, lastDetectionTime: 0 },
             worldFastPlace: { count: 0, lastDetectionTime: 0 },
-            worldAutoTool: { count: 0, lastDetectionTime: 0 }, // Standardized
-            worldInstaBreakUnbreakable: { count: 0, lastDetectionTime: 0 }, // Standardized
-            worldInstaBreakSpeed: { count: 0, lastDetectionTime: 0 }, // Standardized
+            worldAutoTool: { count: 0, lastDetectionTime: 0 },
+            worldInstaBreakUnbreakable: { count: 0, lastDetectionTime: 0 },
+            worldInstaBreakSpeed: { count: 0, lastDetectionTime: 0 },
             // Player Actions/State
             actionFastUse: { count: 0, lastDetectionTime: 0 },
-            playerNameSpoof: { count: 0, lastDetectionTime: 0 }, // Standardized
-            playerAntiGmc: { count: 0, lastDetectionTime: 0 }, // Standardized (already was playerAntiGmc)
-            playerInventoryMod: { count: 0, lastDetectionTime: 0 }, // General category for inventory mod flags
+            playerNameSpoof: { count: 0, lastDetectionTime: 0 },
+            playerAntiGmc: { count: 0, lastDetectionTime: 0 },
+            playerInventoryMod: { count: 0, lastDetectionTime: 0 },
             playerInventoryModSwitchUse: { count: 0, lastDetectionTime: 0 },
             playerInventoryModMoveLocked: { count: 0, lastDetectionTime: 0 },
-            playerSelfHurt: { count: 0, lastDetectionTime: 0 }, // Standardized (was playerSelfDamage)
-            playerClientAnomaly: { count: 0, lastDetectionTime: 0 }, // For render distance, etc.
-            playerChatStateViolation: { count: 0, lastDetectionTime: 0 }, // For chat during combat/item use
+            playerSelfHurt: { count: 0, lastDetectionTime: 0 },
+            playerClientAnomaly: { count: 0, lastDetectionTime: 0 },
+            playerChatStateViolation: { count: 0, lastDetectionTime: 0 },
             // Chat specific
-            chatSpamFast: { count: 0, lastDetectionTime: 0 }, // From old flags
-            chatSpamMaxWords: { count: 0, lastDetectionTime: 0 }, // From old flags
-            chatLanguageViolation: { count: 0, lastDetectionTime: 0 }, // For swearCheck
+            chatSpamFast: { count: 0, lastDetectionTime: 0 },
+            chatSpamMaxWords: { count: 0, lastDetectionTime: 0 },
+            chatLanguageViolation: { count: 0, lastDetectionTime: 0 },
             chatAdvertising: { count: 0, lastDetectionTime: 0 },
             chatCapsAbuse: { count: 0, lastDetectionTime: 0 },
             chatCharRepeat: { count: 0, lastDetectionTime: 0 },
@@ -272,18 +268,18 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
             chatGibberish: { count: 0, lastDetectionTime: 0 },
             chatExcessiveMentions: { count: 0, lastDetectionTime: 0 },
             chatImpersonationAttempt: { count: 0, lastDetectionTime: 0 },
-            chatNewline: { count: 0, lastDetectionTime: 0 }, // From chatProcessor direct addFlag
-            chatMaxlength: { count: 0, lastDetectionTime: 0 }, // From chatProcessor direct addFlag
-            // AntiGrief - these might be more event-based rather than cumulative flags on a player in some cases
-            antiGriefTnt: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefWither: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefFire: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefLava: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefWater: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefBlockspam: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefEntityspam: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefBlockspamDensity: { count: 0, lastDetectionTime: 0 }, // Standardized
-            antiGriefPistonLag: { count: 0, lastDetectionTime: 0 }, // Standardized
+            chatNewline: { count: 0, lastDetectionTime: 0 },
+            chatMaxlength: { count: 0, lastDetectionTime: 0 },
+            // AntiGrief
+            antiGriefTnt: { count: 0, lastDetectionTime: 0 },
+            antiGriefWither: { count: 0, lastDetectionTime: 0 },
+            antiGriefFire: { count: 0, lastDetectionTime: 0 },
+            antiGriefLava: { count: 0, lastDetectionTime: 0 },
+            antiGriefWater: { count: 0, lastDetectionTime: 0 },
+            antiGriefBlockspam: { count: 0, lastDetectionTime: 0 },
+            antiGriefEntityspam: { count: 0, lastDetectionTime: 0 },
+            antiGriefBlockspamDensity: { count: 0, lastDetectionTime: 0 },
+            antiGriefPistonLag: { count: 0, lastDetectionTime: 0 },
         },
         lastFlagType: '',
         isWatched: false,
@@ -312,7 +308,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         hasSlowFalling: false,
         hasLevitation: false,
         speedAmplifier: -1, // -1 indicates no speed effect or level 0
-        blindnessTicks: 0, // Remaining duration in ticks
+        blindnessTicks: 0,  // Remaining duration in ticks
         // Other transient states
         lastTookDamageTick: 0,
         lastUsedElytraTick: 0,
@@ -322,7 +318,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastSelectedSlotChangeTick: 0,
         isAttemptingBlockBreak: false,
         breakingBlockTypeId: null,
-        slotAtBreakAttemptStart: player.selectedSlotIndex, // Initialize with current slot
+        slotAtBreakAttemptStart: player.selectedSlotIndex,
         breakAttemptTick: 0,
         switchedToOptimalToolForBreak: false,
         optimalToolSlotForLastBreak: null,
@@ -340,11 +336,11 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         muteInfo: null,
         banInfo: null,
         // Session info
-        joinTime: Date.now(), // Set join time on initialization
+        joinTime: Date.now(),
         lastGameMode: player.gameMode,
         lastDimensionId: player.dimension.id,
         // Internal state
-        isDirtyForSave: true, // Mark as dirty to ensure it's saved on first opportunity
+        isDirtyForSave: true,
         lastViolationDetailsMap: {},
         automodState: {},
         // Per-check tick trackers for intervals
@@ -353,23 +349,23 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastCheckNetherRoofTick: 0,
         lastCheckAutoToolTick: 0,
         lastCheckFlatRotationBuildingTick: 0,
-        lastRenderDistanceCheckTick: 0, // Added for render distance check interval
+        lastRenderDistanceCheckTick: 0,
     };
 }
 
 /**
  * Ensures that a player's data is initialized, loading from persistence if available,
- * or creating default data otherwise. Also merges loaded data with defaults for transient fields.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {number} currentTick - The current game tick, used if initializing default data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<import('../types.js').PlayerAntiCheatData>} The player's anti-cheat data.
+ * or creating default data otherwise. Merges loaded data with defaults for transient fields.
+ * @param {import('@minecraft/server').Player} player
+ * @param {number} currentTick Current game tick, used if initializing default data.
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {Promise<import('../types.js').PlayerAntiCheatData>}
  */
 export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
     const { playerUtils } = dependencies;
     if (playerData.has(player.id)) {
         const existingPData = playerData.get(player.id);
-        // Minimal re-init for transient fields on re-ensure (e.g., if player re-joined quickly)
+        // Minimal re-init for transient fields on re-ensure
         existingPData.lastPosition = { ...player.location };
         existingPData.previousPosition = { ...player.location };
         existingPData.velocity = { ...player.getVelocity() };
@@ -384,12 +380,11 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
     if (loadedData) {
         playerUtils.debugLog(`Merging persisted pData for ${player.nameTag}. Session-only fields reset/re-initialized.`, player.nameTag, dependencies);
 
-        // Carefully merge: Prioritize loaded persisted data, but ensure all default fields exist.
-        // Transient fields from defaultPData will overwrite anything loaded for those specific fields if they were accidentally persisted.
+        // Prioritize loaded persisted data, but ensure all default fields exist.
         const defaultPDataForMerge = initializeDefaultPlayerData(player, currentTick, dependencies);
         newPData = { ...defaultPDataForMerge, ...loadedData }; // Loaded data overwrites defaults for persisted keys
 
-        // Specifically re-merge flags to ensure all flag types are present
+        // Re-merge flags to ensure all flag types are present
         newPData.flags = { ...defaultPDataForMerge.flags, ...loadedData.flags };
         if (typeof newPData.flags.totalFlags !== 'number' || isNaN(newPData.flags.totalFlags)) {
             newPData.flags.totalFlags = 0;
@@ -399,21 +394,19 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
                 }
             }
         }
-        // Ensure map-like structures are initialized if not in loadedData
         newPData.lastViolationDetailsMap = loadedData.lastViolationDetailsMap || {};
         newPData.automodState = loadedData.automodState || {};
 
-        // Ensure critical session fields are correctly initialized from current player state, not stale persisted data
-        newPData.playerNameTag = player.nameTag; // Always update to current nameTag
-        newPData.lastKnownNameTag = loadedData.lastKnownNameTag || player.nameTag; // Prefer loaded if exists, else current
+        // Ensure critical session fields are current
+        newPData.playerNameTag = player.nameTag;
+        newPData.lastKnownNameTag = loadedData.lastKnownNameTag || player.nameTag;
         newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick || currentTick;
-        newPData.joinTime = loadedData.joinTime || Date.now(); // Prefer loaded join time
+        newPData.joinTime = loadedData.joinTime || Date.now();
         newPData.isDirtyForSave = false; // Loaded data is not initially dirty
 
     } else {
         playerUtils.debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Using fresh default data.`, player.nameTag, dependencies);
-        // newPData is already the default from initializeDefaultPlayerData
-        newPData.isDirtyForSave = true; // Mark fresh data as dirty to ensure first save
+        newPData.isDirtyForSave = true; // Mark fresh data as dirty
     }
 
     // Check for expired mutes/bans
@@ -434,8 +427,8 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
 
 /**
  * Removes runtime data for players who are no longer online.
- * @param {Array<import('@minecraft/server').Player>} activePlayers - An array of currently online players.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {Array<import('@minecraft/server').Player>} activePlayers
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function cleanupActivePlayerData(activePlayers, dependencies) {
     const { playerUtils } = dependencies;
@@ -455,9 +448,9 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
 
 /**
  * Updates transient (per-tick) player data fields.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data object.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function updateTransientPlayerData(player, pData, dependencies) {
     const { currentTick, playerUtils, config, logManager } = dependencies;
@@ -465,14 +458,14 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     const rotation = player.getRotation();
     pData.lastPitch = rotation.x;
     pData.lastYaw = rotation.y;
-    pData.previousVelocity = { ...pData.velocity }; // Shallow copy
-    pData.velocity = { ...player.getVelocity() }; // Shallow copy
-    pData.previousPosition = { ...pData.lastPosition }; // Shallow copy
-    pData.lastPosition = { ...player.location }; // Shallow copy
+    pData.previousVelocity = { ...pData.velocity };
+    pData.velocity = { ...player.getVelocity() };
+    pData.previousPosition = { ...pData.lastPosition };
+    pData.lastPosition = { ...player.location };
 
-    if (!pData.playerNameTag || pData.playerNameTag !== player.nameTag) { // Update if name changed or missing
+    if (!pData.playerNameTag || pData.playerNameTag !== player.nameTag) {
         pData.playerNameTag = player.nameTag;
-        pData.isDirtyForSave = true; // Persisted field
+        pData.isDirtyForSave = true;
     }
 
     if (player.isOnGround) {
@@ -498,11 +491,8 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                 player: pData.playerNameTag,
                 context: 'slime_block_check',
             }, dependencies);
-            if (config.enableDebugLogging) {
-                playerUtils.debugLog(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag}: ${e.message}`, pData.playerNameTag, dependencies);
-            } else {
-                console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag}: ${e.message}`);
-            }
+            // Simplified logging for production
+            console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag}: ${e.message}`);
         }
     } else {
         pData.consecutiveOffGroundTicks++;
@@ -524,10 +514,10 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
     // Update effect-related transient data
     const effects = player.getEffects();
-    pData.jumpBoostAmplifier = effects.find(eff => eff.typeId === 'jump_boost')?.amplifier ?? 0; // Default to 0 if no effect
+    pData.jumpBoostAmplifier = effects.find(eff => eff.typeId === 'jump_boost')?.amplifier ?? 0;
     pData.hasSlowFalling = !!effects.find(eff => eff.typeId === 'slow_falling');
     pData.hasLevitation = !!effects.find(eff => eff.typeId === 'levitation');
-    pData.speedAmplifier = effects.find(eff => eff.typeId === 'speed')?.amplifier ?? -1; // Default to -1 if no effect
+    pData.speedAmplifier = effects.find(eff => eff.typeId === 'speed')?.amplifier ?? -1;
     pData.blindnessTicks = effects.find(eff => eff.typeId === 'blindness')?.duration ?? 0;
 
 
@@ -541,7 +531,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             isSprinting: player.isSprinting,
             isSneaking: player.isSneaking,
             isOnGround: player.isOnGround,
-            fallDistance: player.fallDistance.toFixed(3), // Direct from player for most up-to-date
+            fallDistance: player.fallDistance.toFixed(3),
             jumpBoost: pData.jumpBoostAmplifier,
             slowFalling: pData.hasSlowFalling,
             levitation: pData.hasLevitation,
@@ -554,11 +544,11 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
 /**
  * Adds a flag to a player's data and triggers AutoMod processing.
- * @param {import('@minecraft/server').Player} player - The player to flag.
- * @param {string} flagType - The type of flag (e.g., 'movementFlyHover', 'playerAntigmc'). Standardized camelCase.
- * @param {string} reasonMessage - The base reason message for the flag.
- * @param {string | object} [detailsForNotify=''] - Additional details for notifications or structured data for logging.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string} flagType Standardized camelCase flag type.
+ * @param {string} reasonMessage Base reason message for the flag.
+ * @param {string | object} [detailsForNotify=''] Additional details or structured data.
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function addFlag(player, flagType, reasonMessage, detailsForNotify = '', dependencies) {
     const { playerUtils, getString, config, logManager } = dependencies;
@@ -569,7 +559,6 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         return;
     }
 
-    // Ensure the specific flag type structure exists in pData.flags
     if (!pData.flags[flagType]) {
         playerUtils.debugLog(`PDM:addFlag: New flagType '${flagType}' for ${player.nameTag}. Initializing structure in pData.flags.`, player.nameTag, dependencies);
         pData.flags[flagType] = { count: 0, lastDetectionTime: 0 };
@@ -578,34 +567,30 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
     pData.flags[flagType].count++;
     pData.flags[flagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
-    pData.lastFlagType = flagType; // This is a persisted field, useful for context
+    pData.lastFlagType = flagType;
 
-    // Store specific violation details if provided as an object with itemTypeId
     if (typeof detailsForNotify === 'object' && detailsForNotify !== null && detailsForNotify.itemTypeId) {
         if (!pData.lastViolationDetailsMap) {
             pData.lastViolationDetailsMap = {};
         }
         pData.lastViolationDetailsMap[flagType] = {
             itemTypeId: detailsForNotify.itemTypeId,
-            quantityFound: detailsForNotify.quantityFound || 0, // Optional quantity
+            quantityFound: detailsForNotify.quantityFound || 0,
             timestamp: Date.now(),
         };
         playerUtils.debugLog(`PDM:addFlag: Stored violation details for ${flagType} on ${player.nameTag}: ${JSON.stringify(pData.lastViolationDetailsMap[flagType])}`, player.nameTag, dependencies);
     }
     pData.isDirtyForSave = true;
 
-    // Prepare messages
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null) ?
         (detailsForNotify.originalDetailsForNotify || (`Item: ${String(detailsForNotify.itemTypeId)}`)) :
         detailsForNotify;
     const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
 
-    // Notify player and admins (admin notification is often also handled by actionProfile, this is direct)
-    playerUtils.warnPlayer(player, reasonMessage); // Warn player with base reason
+    playerUtils.warnPlayer(player, reasonMessage);
     playerUtils.notifyAdmins(`Flagged ${player.nameTag} for ${flagType}. ${notifyString}`, dependencies, player, pData);
     playerUtils.debugLog(`FLAG: ${player.nameTag} for ${flagType}. Reason: '${fullReasonForLog}'. Total Flags: ${pData.flags.totalFlags}. Count[${flagType}]: ${pData.flags[flagType].count}`, player.nameTag, dependencies);
 
-    // Trigger AutoMod processing
     if (config?.enableAutoMod && config?.automodConfig) {
         try {
             if (pData.isWatched) {
@@ -626,18 +611,17 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
 
 /**
  * Adds a mute record to a player's data.
- * @param {import('@minecraft/server').Player} player - The player to mute.
- * @param {number | Infinity} durationMs - Duration of the mute in milliseconds, or Infinity for permanent.
- * @param {string} reason - The reason for the mute.
- * @param {string} [mutedBy='Unknown'] - Name of the admin or 'AutoMod' who issued the mute.
- * @param {boolean} [isAutoMod=false] - Whether this mute was an AutoMod action.
- * @param {string|null} [triggeringCheckType=null] - If AutoMod, the checkType that triggered it.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if mute was successfully added, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {number | Infinity} durationMs Duration in ms, or Infinity for permanent.
+ * @param {string} reason
+ * @param {string} [mutedBy='Unknown']
+ * @param {boolean} [isAutoMod=false]
+ * @param {string|null} [triggeringCheckType=null]
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean} True if mute was successfully added.
  */
 export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
     const { playerUtils, getString } = dependencies;
-    // Corrected validation to allow Infinity and reject non-positive finite durations
     if (!player || typeof durationMs !== 'number' || (durationMs <= 0 && durationMs !== Infinity)) {
         playerUtils.debugLog(`[PlayerDataManager] addMute: Invalid arguments provided. Player: ${player?.nameTag}, Duration: ${durationMs}`, player?.nameTag, dependencies);
         return false;
@@ -672,9 +656,9 @@ export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoM
 
 /**
  * Removes a mute record from a player's data.
- * @param {import('@minecraft/server').Player} player - The player to unmute.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if player was unmuted, false if not muted or error.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean} True if player was unmuted.
  */
 export function removeMute(player, dependencies) {
     const { playerUtils } = dependencies;
@@ -701,9 +685,9 @@ export function removeMute(player, dependencies) {
 
 /**
  * Retrieves a player's current mute information, clearing it if expired.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {import('../types.js').PlayerMuteInfo | null} Mute info object, or null if not muted or expired.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {import('../types.js').PlayerMuteInfo | null}
  */
 export function getMuteInfo(player, dependencies) {
     const { playerUtils } = dependencies;
@@ -724,9 +708,9 @@ export function getMuteInfo(player, dependencies) {
 
 /**
  * Checks if a player is currently muted.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the player is muted, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function isMuted(player, dependencies) {
     return getMuteInfo(player, dependencies) !== null;
@@ -734,18 +718,17 @@ export function isMuted(player, dependencies) {
 
 /**
  * Adds a ban record to a player's data.
- * @param {import('@minecraft/server').Player} player - The player to ban.
- * @param {number | Infinity} durationMs - Duration of the ban in milliseconds, or Infinity for permanent.
- * @param {string} reason - The reason for the ban.
- * @param {string} [bannedBy='Unknown'] - Name of the admin or 'AutoMod' who issued the ban.
- * @param {boolean} [isAutoMod=false] - Whether this ban was an AutoMod action.
- * @param {string|null} [triggeringCheckType=null] - If AutoMod, the checkType that triggered it.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if ban was successfully added, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {number | Infinity} durationMs Duration in ms, or Infinity for permanent.
+ * @param {string} reason
+ * @param {string} [bannedBy='Unknown']
+ * @param {boolean} [isAutoMod=false]
+ * @param {string|null} [triggeringCheckType=null]
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean} True if ban was successfully added.
  */
 export function addBan(player, durationMs, reason, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
     const { playerUtils, getString } = dependencies;
-    // durationMs can be Infinity for permabans, so the <= 0 check needs to account for that.
     if (!player || typeof durationMs !== 'number' || (durationMs <= 0 && durationMs !== Infinity) || typeof bannedBy !== 'string') {
         playerUtils.debugLog(`PDM:addBan: Invalid arguments. Player: ${player?.nameTag}, Duration: ${durationMs}, BannedBy: ${bannedBy}`, player?.nameTag, dependencies);
         return false;
@@ -761,8 +744,8 @@ export function addBan(player, durationMs, reason, bannedBy = 'Unknown', isAutoM
     const banReason = reason || getString('playerData.ban.defaultReason');
 
     pData.banInfo = {
-        xuid: player.id, // Persist XUID for offline ban checks if needed elsewhere
-        playerName: player.nameTag, // Persist nameTag at time of ban
+        xuid: player.id,
+        playerName: player.nameTag,
         banTime: currentTime,
         unbanTime,
         reason: banReason,
@@ -784,9 +767,9 @@ export function addBan(player, durationMs, reason, bannedBy = 'Unknown', isAutoM
 
 /**
  * Removes a ban record from a player's data.
- * @param {import('@minecraft/server').Player} player - The player to unban.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if player was unbanned, false if not banned or error.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean} True if player was unbanned.
  */
 export function removeBan(player, dependencies) {
     const { playerUtils } = dependencies;
@@ -813,9 +796,9 @@ export function removeBan(player, dependencies) {
 
 /**
  * Retrieves a player's current ban information, clearing it if expired.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {import('../types.js').PlayerBanInfo | null} Ban info object, or null if not banned or expired.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {import('../types.js').PlayerBanInfo | null}
  */
 export function getBanInfo(player, dependencies) {
     const { playerUtils } = dependencies;
@@ -836,20 +819,18 @@ export function getBanInfo(player, dependencies) {
 
 /**
  * Checks if a player is currently banned.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {boolean} True if the player is banned, false otherwise.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
+ * @returns {boolean}
  */
 export function isBanned(player, dependencies) {
     return getBanInfo(player, dependencies) !== null;
 }
 
-// Removed setPlayerData function as it was unused.
-
 /**
  * Saves player data if it has been marked as dirty.
- * @param {import('@minecraft/server').Player} player - The player instance.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {import('../types.js').CommandDependencies} dependencies
  * @returns {Promise<boolean>} True if data was saved or not dirty, false on save error.
  */
 export async function saveDirtyPlayerData(player, dependencies) {
@@ -861,18 +842,18 @@ export async function saveDirtyPlayerData(player, dependencies) {
         playerUtils.debugLog(`PDM:saveDirty: Saving dirty data for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
         const success = await prepareAndSavePlayerData(player, dependencies);
         if (success) {
-            pData.isDirtyForSave = false; // Reset dirty flag only on successful save
+            pData.isDirtyForSave = false;
         }
         return success;
     }
-    return true; // Not dirty, so effectively "saved"
+    return true; // Not dirty, effectively "saved"
 }
 
 /**
  * Clears all flags and resets AutoMod state for a specific check type for a player.
- * @param {import('@minecraft/server').Player} player - The player.
- * @param {string} checkType - The check type (e.g., 'movementFlyHover') whose flags to clear.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player} player
+ * @param {string} checkType The check type whose flags to clear.
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function clearFlagsForCheckType(player, checkType, dependencies) {
     const { playerUtils } = dependencies;
@@ -888,7 +869,7 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
             pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - clearedCount);
         }
         pData.flags[checkType].count = 0;
-        // pData.flags[checkType].lastDetectionTime = 0; // Optionally reset last detection time
+        // Optionally reset lastDetectionTime: pData.flags[checkType].lastDetectionTime = 0;
     }
 
     if (pData.automodState && pData.automodState[checkType]) {
@@ -901,10 +882,9 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
 }
 
 /**
- * Clears transient item use state flags (isUsingConsumable, isChargingBow, isUsingShield)
- * if they have persisted beyond a configured timeout without being naturally reset.
- * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * Clears transient item use state flags if they persist beyond a configured timeout.
+ * @param {import('../types.js').PlayerAntiCheatData} pData
+ * @param {import('../types.js').CommandDependencies} dependencies
  */
 export function clearExpiredItemUseStates(pData, dependencies) {
     const { currentTick, config, playerUtils } = dependencies;

@@ -54,7 +54,6 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
         return false;
     }
 
-    // Initialize tracking structure if it doesn't exist
     pData.recentEntitySpamTimestamps = pData.recentEntitySpamTimestamps || {};
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType] || [];
 
@@ -65,7 +64,6 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     const windowMs = config.entitySpamTimeWindowMs || 2000; // Default 2 seconds
     const originalCount = pData.recentEntitySpamTimestamps[entityType].length;
 
-    // Filter out old timestamps
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType].filter(
         ts => (currentTime - ts) <= windowMs
     );
@@ -94,8 +92,8 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
         // Reset timestamps for this entity type after flagging to prevent immediate re-flagging
         pData.recentEntitySpamTimestamps[entityType] = [];
         pData.isDirtyForSave = true;
-        return true; // Spam detected
+        return true;
     }
 
-    return false; // No spam detected
+    return false;
 }

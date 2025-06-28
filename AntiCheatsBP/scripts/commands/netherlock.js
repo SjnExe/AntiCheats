@@ -2,7 +2,7 @@
  * @file Defines the !netherlock command for administrators to manage Nether dimension access.
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,7 +11,7 @@ export const definition = {
     name: 'netherlock',
     syntax: '!netherlock <on|off|status>',
     description: 'Manages Nether dimension access.',
-    permissionLevel: permissionLevels.admin, // Use a defined level
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -25,12 +25,12 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies; // Removed unused permissionLevels
-    const subCommand = args[0] ? args[0].toLowerCase() : 'status'; // Default to 'status'
+    const { config, playerUtils, logManager } = dependencies;
+    const subCommand = args[0] ? args[0].toLowerCase() : 'status';
     const prefix = config.prefix;
 
-    let statusText; // For status message
-    let success = false; // To track if setNetherLocked was successful
+    let statusText;
+    let success = false;
 
     try {
         switch (subCommand) {

@@ -3,7 +3,6 @@
  * files and exports them as an array to be used by the commandManager.
  */
 
-// Import all command modules. Ensure paths are correct.
 // These are listed alphabetically for easier maintenance.
 import * as addrankCmd from './addrank.js';
 import * as banCmd from './ban.js';

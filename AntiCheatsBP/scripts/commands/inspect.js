@@ -1,7 +1,7 @@
 /**
  * @file Defines the !inspect command for administrators to view a player's AntiCheat data.
  */
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -10,7 +10,7 @@ export const definition = {
     name: 'inspect',
     syntax: '!inspect <playername>',
     description: 'Views a player\'s AntiCheat data and status, including flags, mutes, and bans.',
-    permissionLevel: permissionLevels.admin, // Use a defined level
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -27,7 +27,7 @@ export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager } = dependencies;
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}inspect <playername>`); // Hardcoded string
+        player.sendMessage(`§cUsage: ${config.prefix}inspect <playername>`);
         return;
     }
 
@@ -35,60 +35,60 @@ export async function execute(player, args, dependencies) {
     const targetPlayer = playerUtils.findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`); // Hardcoded string
+        player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`);
         return;
     }
 
     const pData = playerDataManager.getPlayerData(targetPlayer.id);
     const messageLines = [];
-    messageLines.push(`§6--- AntiCheat Status for ${targetPlayer.nameTag} ---`); // Hardcoded string
+    messageLines.push(`§6--- AntiCheat Status for ${targetPlayer.nameTag} ---`);
 
     if (pData) {
-        messageLines.push(`§ePlayer ID: §f${targetPlayer.id}`); // Hardcoded string
-        messageLines.push(`§eWatched: §f${pData.isWatched ? 'Yes' : 'No'}`); // Hardcoded string
-        messageLines.push(`§eTotal Flags: §f${pData.flags?.totalFlags ?? 0}`); // Hardcoded string
-        messageLines.push(`§eLast Flag Type: §f${pData.lastFlagType || 'None'}`); // Hardcoded string
+        messageLines.push(`§ePlayer ID: §f${targetPlayer.id}`);
+        messageLines.push(`§eWatched: §f${pData.isWatched ? 'Yes' : 'No'}`);
+        messageLines.push(`§eTotal Flags: §f${pData.flags?.totalFlags ?? 0}`);
+        messageLines.push(`§eLast Flag Type: §f${pData.lastFlagType || 'None'}`);
 
         let specificFlagsFound = false;
         if (pData.flags) {
-            messageLines.push("§eFlags by Type:"); // Hardcoded string
+            messageLines.push("§eFlags by Type:");
             for (const flagKey in pData.flags) {
                 // Ensure it's a flag object and not 'totalFlags' or other properties
                 if (flagKey !== 'totalFlags' && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                     const flagData = pData.flags[flagKey];
-                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A'; // Hardcoded string
-                    messageLines.push(`  §7- ${flagKey}: §f${flagData.count} (Last: ${timestamp})`); // Hardcoded string
+                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A';
+                    messageLines.push(`  §7- ${flagKey}: §f${flagData.count} (Last: ${timestamp})`);
                     specificFlagsFound = true;
                 }
             }
             if (!specificFlagsFound) {
-                messageLines.push("  §7(No specific flags with counts > 0)"); // Hardcoded string
+                messageLines.push("  §7(No specific flags with counts > 0)");
             }
         }
 
         const muteInfo = playerDataManager.getMuteInfo(targetPlayer, dependencies);
         if (muteInfo) {
-            const expiry = muteInfo.unmuteTime === Infinity ? 'Permanent' : new Date(muteInfo.unmuteTime).toLocaleString(); // Hardcoded string
-            messageLines.push(`§eMuted: §cYes (Expires: ${expiry}, Reason: ${muteInfo.reason || 'No reason provided'})`); // Hardcoded string
+            const expiry = muteInfo.unmuteTime === Infinity ? 'Permanent' : new Date(muteInfo.unmuteTime).toLocaleString();
+            messageLines.push(`§eMuted: §cYes (Expires: ${expiry}, Reason: ${muteInfo.reason || 'No reason provided'})`);
         } else {
-            messageLines.push('§eMuted: §aNo'); // Hardcoded string
+            messageLines.push('§eMuted: §aNo');
         }
 
         const banInfo = playerDataManager.getBanInfo(targetPlayer, dependencies);
         if (banInfo) {
-            const expiry = banInfo.unbanTime === Infinity ? 'Permanent' : new Date(banInfo.unbanTime).toLocaleString(); // Hardcoded string
-            messageLines.push(`§eBanned: §cYes (Expires: ${expiry}, Reason: ${banInfo.reason || 'No reason provided'})`); // Hardcoded string
+            const expiry = banInfo.unbanTime === Infinity ? 'Permanent' : new Date(banInfo.unbanTime).toLocaleString();
+            messageLines.push(`§eBanned: §cYes (Expires: ${expiry}, Reason: ${banInfo.reason || 'No reason provided'})`);
         } else {
-            messageLines.push('§eBanned: §aNo'); // Hardcoded string
+            messageLines.push('§eBanned: §aNo');
         }
 
         // Example of adding more pData fields:
         // if (pData.lastCombatInteractionTime) {
-        //     messageLines.push(`§eLast Combat: §f${new Date(pData.lastCombatInteractionTime).toLocaleString()}`); // Hardcoded string
+        //     messageLines.push(`§eLast Combat: §f${new Date(pData.lastCombatInteractionTime).toLocaleString()}`);
         // }
 
     } else {
-        messageLines.push('§cNo AntiCheat data found for this player.'); // Hardcoded string
+        messageLines.push('§cNo AntiCheat data found for this player.');
     }
 
     player.sendMessage(messageLines.join('\n'));
