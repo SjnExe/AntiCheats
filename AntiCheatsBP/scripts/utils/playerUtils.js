@@ -3,6 +3,30 @@
  * debug logging, admin notifications, player searching, and duration parsing.
  */
 import * as mc from '@minecraft/server';
+import { stringDB } from '../core/textDatabase.js'; // Import the string database
+
+/**
+ * Retrieves a string from the text database and formats it with parameters.
+ * @param {string} key - The key of the string to retrieve (e.g., "ui.adminPanel.title").
+ * @param {Record<string, string | number>} [params] - Optional object containing placeholder values.
+ * @returns {string} The formatted string, or the key itself if not found (with a warning).
+ */
+export function getString(key, params) {
+    let str = stringDB[key];
+    if (str === undefined) {
+        console.warn(`[PlayerUtils.getString] Missing string key: ${key}`);
+        return key; // Return the key itself as a fallback
+    }
+    if (params) {
+        for (const placeholder in params) {
+            // Ensure placeholder exists in string and param is string or number
+            if (Object.prototype.hasOwnProperty.call(params, placeholder) && (typeof params[placeholder] === 'string' || typeof params[placeholder] === 'number')) {
+                str = str.replace(new RegExp(`{${placeholder}}`, 'g'), String(params[placeholder]));
+            }
+        }
+    }
+    return str;
+}
 
 /**
  * Checks if a player has admin-level permissions.

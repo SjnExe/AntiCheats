@@ -28,9 +28,8 @@ function normalizeWordForSwearCheck(word, config) {
     }
     let normalized = word.toLowerCase();
 
-    // Remove common separators
     normalized = normalized.replace(/[\s._-]+/g, '');
-    if (!normalized) return ''; // If empty after removing separators
+    if (!normalized) return '';
 
     // Collapse repeated characters (e.g., heelloo -> helo)
     normalized = normalized.replace(/(.)\1+/g, '$1');
@@ -57,7 +56,6 @@ function normalizeWordForSwearCheck(word, config) {
         }
         normalized = leetChars.join('');
 
-        // Collapse repeated characters again after leet speak conversion
         normalized = normalized.replace(/(.)\1+/g, '$1');
         if (!normalized) return '';
     }
@@ -95,21 +93,21 @@ export async function checkSwear(player, eventData, pData, dependencies) {
             original: sw,
             normalized: normalizeWordForSwearCheck(sw, config),
         }))
-        .filter(item => item.normalized.length > 0); // Filter out any swear words that become empty after normalization
+        .filter(item => item.normalized.length > 0);
 
     if (normalizedSwearWordList.length === 0) {
         playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty (all configured swears were invalid or became empty).`, pData?.isWatched ? player.nameTag : null, dependencies);
         return;
     }
 
-    const wordsInMessage = originalMessage.split(/\s+/); // Split message into words
+    const wordsInMessage = originalMessage.split(/\s+/);
     const actionProfileKey = config.swearCheckActionProfileName ?? 'chatSwearViolation'; // Standardized key
 
     for (const wordInMessage of wordsInMessage) {
-        if (wordInMessage.trim() === '') continue; // Skip empty strings from multiple spaces
+        if (wordInMessage.trim() === '') continue;
 
         const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config);
-        if (normalizedInputWord.length === 0) continue; // Skip if word becomes empty after normalization
+        if (normalizedInputWord.length === 0) continue;
 
         for (const swearItem of normalizedSwearWordList) {
             if (normalizedInputWord === swearItem.normalized) {
@@ -140,5 +138,4 @@ export async function checkSwear(player, eventData, pData, dependencies) {
             }
         }
     }
-    // No violation detected if loop completes
 }

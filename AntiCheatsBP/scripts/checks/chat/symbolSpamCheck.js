@@ -32,7 +32,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     }
 
     if (message.length < config.symbolSpamMinLength) {
-        return; // Message too short to check
+        return;
     }
 
     let totalChars = 0; // Count of non-space characters
@@ -46,7 +46,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         totalChars++;
 
         // A symbol is any character that is NOT a letter (a-z, A-Z) or a digit (0-9)
-        if (!/[a-zA-Z0-9]/.test(char)) { // Use .test() for boolean check
+        if (!/[a-zA-Z0-9]/.test(char)) {
             symbolChars++;
         }
     }

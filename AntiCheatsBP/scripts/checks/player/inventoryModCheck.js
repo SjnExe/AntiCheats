@@ -36,7 +36,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
 
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
-            reasonDetail: 'Used item in the same tick as a hotbar slot change.', // Hardcoded string
+            reasonDetail: 'Used item in the same tick as a hotbar slot change.',
             itemType: itemStack.typeId,
             slot: player.selectedSlotIndex.toString(), // Current slot where item is used
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
@@ -96,7 +96,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
 
 
         const violationDetails = {
-            reasonDetail: `Moved item in slot ${slotIdentifier} while ${lockingActionKey}.`, // Hardcoded string
+            reasonDetail: `Moved item in slot ${slotIdentifier} while ${lockingActionKey}.`,
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
             actionInProgress: lockingActionKey,

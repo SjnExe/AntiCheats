@@ -23,7 +23,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager: depRankManager } = dependencies;
+    const { config, playerUtils, logManager, rankManager: depRankManager } = dependencies;
 
     if (args.length < 2) {
         player.sendMessage(`§cUsage: ${config.prefix}removerank <playerName> <rankId>`);
@@ -51,7 +51,6 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Check if the command issuer has permission to manage this specific rank
     const issuerPermissionLevel = depRankManager.getPlayerPermissionLevel(player, dependencies);
     if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
         // Hardcoded string, replacing getString("commands.generic.permissionDeniedRankAction", ...)
@@ -60,7 +59,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const rankTagToRemove = `${manualTagCondition.prefix}${rankDef.id}`; // Template literal
+    const rankTagToRemove = `${manualTagCondition.prefix}${rankDef.id}`;
 
     if (!targetPlayer.hasTag(rankTagToRemove)) {
         player.sendMessage(`§ePlayer ${targetPlayer.nameTag} does not currently have the rank "${rankDef.name}" (missing tag: ${rankTagToRemove}).`);
@@ -84,7 +83,7 @@ export async function execute(player, args, dependencies) {
 
         playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 removed rank §a${rankDef.name}§7 from §e${targetPlayer.nameTag}.`, dependencies, player, null);
 
-    } catch (error) { // Changed 'e' to 'error'
+    } catch (error) {
         player.sendMessage(`§cAn error occurred while removing the rank: ${error.message}`);
         console.error(`[RemoveRankCommand] Error removing rank ${rankDef.id} from ${targetPlayer.nameTag}: ${error.stack || error}`);
         logManager.addLog({

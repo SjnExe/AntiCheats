@@ -16,7 +16,7 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, configModule, worldBorderManager, uiManager } = dependencies;
+    const { playerUtils, logManager, config, worldBorderManager } = dependencies;
     const subCommand = args.shift()?.toLowerCase();
     const cmdPrefix = config.prefix;
 
@@ -104,7 +104,7 @@ function normalizeDimensionId(player, inputDimId) {
 }
 
 async function handleSetCommand(player, args, dependencies) {
-    const { playerUtils, logManager, config: currentRunTimeConfig, configModule, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
 
     if (args.length < 4) {
@@ -179,7 +179,7 @@ async function handleSetCommand(player, args, dependencies) {
 }
 
 async function handleGetCommand(player, args, dependencies) {
-    const { playerUtils, logManager, config: currentRunTimeConfig, configModule, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
@@ -532,7 +532,7 @@ async function handleSetGlobalParticleCommand(player, args, dependencies) {
 }
 
 async function handleSetParticleCommand(player, args, dependencies) {
-    const { playerUtils, logManager, config: currentRunTimeConfig, configModule, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
     const globalDefaultParticle = currentRunTimeConfig.worldBorderParticleName;
 

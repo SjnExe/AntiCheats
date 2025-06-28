@@ -1,7 +1,7 @@
 /**
  * Defines the !warnings command for administrators to view a player's AntiCheat flags.
  */
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js';
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -9,14 +9,14 @@ export const definition = {
     name: 'warnings',
     syntax: '!warnings <playername>',
     description: 'Views a player\'s AntiCheat flags (similar to inspect).',
-    permissionLevel: importedPermissionLevels.admin, // Use imported enum
+    permissionLevel: importedPermissionLevels.admin,
     enabled: true,
 };
 /**
  * Executes the warnings command.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager } = dependencies;
     const findPlayer = playerUtils.findPlayer;
 
     if (args.length < 1) {

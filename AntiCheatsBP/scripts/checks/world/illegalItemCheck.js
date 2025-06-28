@@ -36,7 +36,6 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
     if (!itemStack) {
-        // This can happen if the event doesn't involve an item, or hand is empty.
         // For 'inventory_change', newItemStack might be undefined if an item was removed.
         if (actionType !== 'inventory_change' || (actionType === 'inventory_change' && eventData.newItemStack)) { // Log if not an item removal scenario
              playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}. Skipping check.`, watchedPrefix, dependencies);
@@ -50,11 +49,10 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
     }
 
     let isBanned = false;
-    let checkProfileKey = ''; // To be determined based on actionType
+    let checkProfileKey = '';
     let violationDetails = {
         itemTypeId: itemId,
         action: actionType,
-        // Contextual details will be added below
     };
 
     const bannedItemsForPlace = config.bannedItemsPlace ?? [];

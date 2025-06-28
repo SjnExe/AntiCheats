@@ -25,8 +25,8 @@ import * as mc from '@minecraft/server';
  */
 export async function checkSelfHurt(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
-    const cause = eventSpecificData?.cause; // mc.EntityDamageCause
-    const damagingEntity = eventSpecificData?.damagingEntity; // mc.Entity that dealt the damage
+    const cause = eventSpecificData?.cause;
+    const damagingEntity = eventSpecificData?.damagingEntity;
 
     if (!config.enableSelfHurtCheck || !pData || !cause) {
         return;

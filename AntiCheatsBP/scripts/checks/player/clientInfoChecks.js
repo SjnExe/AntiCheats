@@ -1,7 +1,6 @@
 /**
  * @file Implements checks related to player client system information, such as render distance.
  */
-import * as mc from '@minecraft/server'; // Not strictly needed if only using mc.Player type via JSDoc
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -47,8 +46,6 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             playerName: player.nameTag, // Kept for direct use in some notification templates
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
-            // detailsString is often constructed by actionManager, but can be pre-formed if useful
-            // detailsString: `Reported: ${clientRenderDistance}, Max: ${config.maxAllowedClientRenderDistance}`,
         };
 
         // Standardized action profile key

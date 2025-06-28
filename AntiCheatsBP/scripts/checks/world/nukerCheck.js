@@ -21,13 +21,12 @@
  * @returns {Promise<void>}
  */
 export async function checkNuker(player, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableNukerCheck || !pData) {
         return;
     }
 
-    // Ensure blockBreakEvents array exists and is an array
     pData.blockBreakEvents = pData.blockBreakEvents || [];
     if (!Array.isArray(pData.blockBreakEvents)) {
         playerUtils.debugLog(`[NukerCheck] pData.blockBreakEvents for ${player.nameTag} is not an array. Resetting.`, player.nameTag, dependencies);
@@ -40,7 +39,6 @@ export async function checkNuker(player, pData, dependencies) {
     const checkIntervalMs = config.nukerCheckIntervalMs ?? 200; // Time window to check break rate
 
     const originalEventCount = pData.blockBreakEvents.length;
-    // Filter out events older than the check interval
     pData.blockBreakEvents = pData.blockBreakEvents.filter(timestamp => (now - timestamp) < checkIntervalMs);
 
     if (pData.blockBreakEvents.length !== originalEventCount) {

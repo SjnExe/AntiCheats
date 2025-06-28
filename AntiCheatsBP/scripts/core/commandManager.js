@@ -2,7 +2,6 @@
  * @file Manages the registration, parsing, and execution of chat-based commands for the AntiCheat system.
  * It dynamically loads command modules and handles permission checking and alias resolution.
  */
-import * as mc from '@minecraft/server';
 import { commandModules } from '../commands/commandRegistry.js';
 
 /**
@@ -10,30 +9,118 @@ import { commandModules } from '../commands/commandRegistry.js';
  * Populated dynamically from `commandModules`.
  * @type {Map<string, import('../types.js').CommandDefinition>}
  */
-const commandDefinitionMap = new Map();
+export const commandDefinitionMap = new Map(); // Export for potential external use/inspection
 
 /**
  * @description Stores all command execution functions, mapping command name to its execute function.
  * Populated dynamically from `commandModules`.
  * @type {Map<string, Function>}
  */
-const commandExecutionMap = new Map();
+export const commandExecutionMap = new Map(); // Export for potential external use/inspection
 
-if (commandModules && Array.isArray(commandModules)) {
-    for (const cmdModule of commandModules) {
-        if (cmdModule && cmdModule.definition && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
-            const cmdName = cmdModule.definition.name.toLowerCase();
-            if (commandDefinitionMap.has(cmdName)) {
-                console.warn(`[CommandManager] Duplicate command name detected and overwritten: ${cmdName}`);
+/**
+ * Loads or reloads command definitions and execution functions from the commandRegistry.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies, used for logging.
+ */
+export function initializeCommands(dependencies) {
+    const { playerUtils } = dependencies;
+    commandDefinitionMap.clear();
+    commandExecutionMap.clear();
+
+    if (commandModules && Array.isArray(commandModules)) {
+        for (const cmdModule of commandModules) {
+            if (cmdModule && cmdModule.definition && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
+                const cmdName = cmdModule.definition.name.toLowerCase();
+                if (commandDefinitionMap.has(cmdName)) {
+                    playerUtils.debugLog(`[CommandManager] Duplicate command name detected and overwritten during init: ${cmdName}`, 'System', dependencies);
+                }
+                commandDefinitionMap.set(cmdName, cmdModule.definition);
+                commandExecutionMap.set(cmdName, cmdModule.execute);
+
+                // Register aliases
+                if (cmdModule.definition.aliases && Array.isArray(cmdModule.definition.aliases)) {
+                    cmdModule.definition.aliases.forEach(alias => {
+                        const aliasLower = alias.toLowerCase();
+                        if (commandDefinitionMap.has(aliasLower) || commandExecutionMap.has(aliasLower)) {
+                             playerUtils.debugLog(`[CommandManager] Duplicate alias detected (conflicts with existing command/alias): ${aliasLower}. Alias for '${cmdName}' skipped.`, 'System', dependencies);
+                        } else {
+                            // For aliases, we might point them to the main command's definition and execution
+                            // Or handle them purely at the config.commandAliases level.
+                            // For now, primary loading is direct names. Aliases are resolved in handleChatCommand.
+                            // If we wanted aliases to also be in the map, we'd add them here.
+                            // Example: commandDefinitionMap.set(aliasLower, cmdModule.definition);
+                            //          commandExecutionMap.set(aliasLower, cmdModule.execute);
+                            // However, current alias resolution in handleChatCommand uses config.commandAliases.
+                        }
+                    });
+                }
             }
-            commandDefinitionMap.set(cmdName, cmdModule.definition);
-            commandExecutionMap.set(cmdName, cmdModule.execute);
         }
+        playerUtils.debugLog(`[CommandManager] Initialized/Reloaded ${commandDefinitionMap.size} command definitions.`, 'System', dependencies);
+    } else {
+        console.error('[CommandManager] commandModules is not an array or is undefined. No commands loaded during init.');
+        playerUtils.debugLog('[CommandManager] commandModules is not an array or is undefined. No commands loaded during init.', 'System', dependencies);
     }
-    console.log(`[CommandManager] Dynamically loaded ${commandDefinitionMap.size} command definitions.`);
-} else {
-    console.error('[CommandManager] commandModules is not an array or is undefined. No commands loaded.');
 }
+
+
+/**
+ * Registers a new command dynamically. (Currently a stub for future expansion)
+ * @param {import('../types.js').CommandModule} commandModule - The command module to register.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies.
+ */
+export function registerCommandInternal(commandModule, dependencies) {
+    const { playerUtils } = dependencies;
+    playerUtils.debugLog('[CommandManager] registerCommandInternal is a stub and not fully implemented for dynamic runtime changes.', 'System', dependencies);
+    // Basic implementation idea:
+    // if (commandModule && commandModule.definition && typeof commandModule.definition.name === 'string' && typeof commandModule.execute === 'function') {
+    //     const cmdName = commandModule.definition.name.toLowerCase();
+    //     if (commandDefinitionMap.has(cmdName)) {
+    //         playerUtils.debugLog(`[CommandManager] Overwriting existing command: ${cmdName}`, 'System', dependencies);
+    //     }
+    //     commandDefinitionMap.set(cmdName, commandModule.definition);
+    //     commandExecutionMap.set(cmdName, commandModule.execute);
+    //     playerUtils.debugLog(`[CommandManager] Dynamically registered command: ${cmdName}`, 'System', dependencies);
+    // } else {
+    //     playerUtils.debugLog('[CommandManager] Attempted to register invalid command module.', 'System', dependencies);
+    // }
+}
+
+/**
+ * Unregisters a command dynamically. (Currently a stub for future expansion)
+ * @param {string} commandName - The name of the command to unregister.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies.
+ */
+export function unregisterCommandInternal(commandName, dependencies) {
+    const { playerUtils } = dependencies;
+    playerUtils.debugLog('[CommandManager] unregisterCommandInternal is a stub and not fully implemented for dynamic runtime changes.', 'System', dependencies);
+    // Basic implementation idea:
+    // const cmdNameLower = commandName.toLowerCase();
+    // if (commandDefinitionMap.has(cmdNameLower)) {
+    //     commandDefinitionMap.delete(cmdNameLower);
+    //     commandExecutionMap.delete(cmdNameLower);
+    //     playerUtils.debugLog(`[CommandManager] Dynamically unregistered command: ${cmdNameLower}`, 'System', dependencies);
+    //     // Need to also handle aliases that might point to this command if they are stored in the maps.
+    // } else {
+    //     playerUtils.debugLog(`[CommandManager] Command ${cmdNameLower} not found for unregistration.`, 'System', dependencies);
+    // }
+}
+
+
+// Initial load when the module is first imported.
+// This is a bit unusual as initializeCommands would typically be called from main.js explicitly.
+// However, to ensure maps are populated for direct export and use by handleChatCommand if it's called
+// before an explicit initializeCommands from main (which it is, via dependencies), we do an initial population.
+// The explicit call from main.js will then serve as a "reload".
+(() => {
+    // A minimal dependencies object for this initial, self-contained load.
+    const initialLoadDeps = {
+        playerUtils: { debugLog: (msg) => console.log(msg) }, // Basic logger
+        config: {} // Empty config, as alias resolution isn't part of this initial map population
+    };
+    initializeCommands(initialLoadDeps);
+})();
+
 
 /**
  * Handles incoming chat messages to process potential commands.

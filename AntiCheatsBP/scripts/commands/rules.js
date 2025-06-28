@@ -24,18 +24,18 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, config, logManager } = dependencies; // Added logManager
+    const { playerUtils, config, logManager } = dependencies;
 
     const form = new MessageFormData();
-    form.title('Server Rules'); // Hardcoded title
+    form.title('Server Rules');
 
     if (config.serverRules && config.serverRules.trim() !== '') {
         form.body(config.serverRules);
     } else {
-        form.body('No server rules are currently configured. Please check back later!'); // Hardcoded message
+        form.body('No server rules are currently configured. Please check back later!');
     }
 
-    form.button1('Close'); // Standard button text
+    form.button1('Close');
 
     try {
         await form.show(player);

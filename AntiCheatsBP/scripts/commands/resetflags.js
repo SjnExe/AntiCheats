@@ -42,7 +42,6 @@ export async function execute(player, args, dependencies) {
 
     const pData = playerDataManager.getPlayerData(targetPlayer.id);
     if (pData) {
-        // Reset core flag counts
         if (pData.flags) {
             pData.flags.totalFlags = 0;
             for (const flagKey in pData.flags) {
@@ -58,7 +57,6 @@ export async function execute(player, args, dependencies) {
         }
         pData.lastFlagType = ''; // Use empty string for consistency
 
-        // Reset specific check-related data stored in playerData
         pData.consecutiveOffGroundTicks = 0;
         pData.fallDistance = 0;
         pData.consecutiveOnGroundSpeedingTicks = 0;
@@ -67,18 +65,15 @@ export async function execute(player, args, dependencies) {
         pData.recentHits = [];
         pData.recentPlaceTimestamps = [];
 
-        // Reset data for autoToolCheck
         pData.isAttemptingBlockBreak = false;
         pData.switchedToOptimalToolForBreak = false;
         pData.optimalToolSlotForLastBreak = null;
         pData.lastBreakCompleteTick = 0;
 
-        // Reset data for instaBreakCheck
         pData.breakStartTimeMs = 0;
         pData.breakStartTickGameTime = 0;
         pData.expectedBreakDurationTicks = 0;
 
-        // Reset data for buildingChecks (pillar/scaffold)
         pData.consecutivePillarBlocks = 0;
         pData.lastPillarTick = 0;
         pData.currentPillarX = null;

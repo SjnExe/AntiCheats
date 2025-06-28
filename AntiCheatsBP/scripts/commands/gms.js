@@ -2,7 +2,7 @@
  * @file Defines the !gms command for administrators to set a player's gamemode to Survival.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,7 +11,7 @@ export const definition = {
     name: 'gms',
     syntax: '!gms [playername]',
     description: 'Sets a player\'s gamemode to Survival.',
-    permissionLevel: permissionLevels.admin, // Use a defined level
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -27,43 +27,42 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
     const targetPlayerName = args[0];
-    const gamemodeName = 'Survival'; // For messages
-    const gamemodeMc = mc.GameMode.survival; // For API
+    const gamemodeName = 'Survival';
+    const gamemodeMc = mc.GameMode.survival;
 
     try {
         if (targetPlayerName) {
-            const targetPlayer = playerUtils.findPlayer(targetPlayerName); // Use playerUtils
+            const targetPlayer = playerUtils.findPlayer(targetPlayerName);
             if (targetPlayer) {
                 targetPlayer.setGameMode(gamemodeMc);
-                player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`); // Hardcoded string
+                player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`);
                 if (player.id !== targetPlayer.id) {
-                    targetPlayer.sendMessage(`§eYour gamemode has been set to ${gamemodeName}.`); // Hardcoded string
+                    targetPlayer.sendMessage(`§eYour gamemode has been set to ${gamemodeName}.`);
                 }
                 logManager.addLog({
                     timestamp: Date.now(),
                     adminName: player.nameTag,
-                    actionType: 'gamemodeChange', // Standardized
+                    actionType: 'gamemodeChange',
                     targetName: targetPlayer.nameTag,
                     details: `Set to ${gamemodeName}`,
                 }, dependencies);
             } else {
-                player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`); // Hardcoded string
+                player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`);
             }
         } else {
-            // No target player specified, apply to the command issuer
             player.setGameMode(gamemodeMc);
-            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`); // Hardcoded string
+            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
             logManager.addLog({
                 timestamp: Date.now(),
                 adminName: player.nameTag,
-                actionType: 'gamemodeChangeSelf', // Standardized
+                actionType: 'gamemodeChangeSelf',
                 targetName: player.nameTag,
                 details: `Set to ${gamemodeName}`,
             }, dependencies);
         }
     } catch (error) {
         const targetNameForError = targetPlayerName || player.nameTag;
-        player.sendMessage(`§cFailed to set gamemode for ${targetNameForError} to ${gamemodeName}: ${error.message}`); // Hardcoded string
+        player.sendMessage(`§cFailed to set gamemode for ${targetNameForError} to ${gamemodeName}: ${error.message}`);
         playerUtils.debugLog(`[GMSCommand] Error setting gamemode for ${targetNameForError}: ${error.message}`, player.nameTag, dependencies);
         console.error(`[GMSCommand] Error setting gamemode for ${targetNameForError} by ${player.nameTag}: ${error.stack || error}`);
         logManager.addLog({

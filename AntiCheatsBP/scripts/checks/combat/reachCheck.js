@@ -22,7 +22,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkReach(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager } = dependencies;
     const targetEntity = eventSpecificData?.targetEntity;
     const gameMode = eventSpecificData?.gameMode; // Assumed to be mc.GameMode enum value
 

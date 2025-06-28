@@ -1,8 +1,7 @@
 /**
  * @file Defines the !clearchat command for administrators to clear the global chat.
  */
-import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,7 +10,7 @@ export const definition = {
     name: 'clearchat',
     syntax: '!clearchat',
     description: 'Clears the global chat for all players.',
-    permissionLevel: permissionLevels.admin, // Use a defined level from rankManager
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -36,15 +35,15 @@ export async function execute(player, _args, dependencies) {
             console.warn(`[ClearChatCommand] Error sending empty message line ${i + 1}: ${error}`);
             // Optionally break or log more formally if sendMessage fails repeatedly
             if (i > 5) { // Example: Stop if it fails multiple times
-                player.sendMessage('§cChat clear failed partially. Some messages might remain.'); // Hardcoded string
+                player.sendMessage('§cChat clear failed partially. Some messages might remain.');
                 return;
             }
         }
     }
-    player.sendMessage('§aChat cleared successfully.'); // Hardcoded string
+    player.sendMessage('§aChat cleared successfully.');
 
     try {
-        playerUtils.notifyAdmins(`§7[Admin] Chat cleared by §e${player.nameTag}§7.`, dependencies, player, null); // Hardcoded string
+        playerUtils.notifyAdmins(`§7[Admin] Chat cleared by §e${player.nameTag}§7.`, dependencies, player, null);
 
         logManager.addLog({
             timestamp: Date.now(),

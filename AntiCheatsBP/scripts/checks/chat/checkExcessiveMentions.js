@@ -37,7 +37,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
 
     const minMessageLength = config.mentionsMinMessageLength ?? 10;
     if (rawMessageContent.length < minMessageLength) {
-        return; // Message too short to be considered for mention spam
+        return;
     }
 
     const maxUniquePerMessage = config.mentionsMaxUniquePerMessage ?? 4;

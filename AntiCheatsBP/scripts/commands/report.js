@@ -39,19 +39,6 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Optional: Add a cooldown for reporting to prevent spam
-    // This would require storing last report time in pData for the reporter.
-    // For example:
-    // const pData = playerDataManager.getPlayerData(reporterPlayer.id);
-    // if (pData && Date.now() - (pData.lastReportTime || 0) < (config.reportCooldownSeconds || 60) * 1000) {
-    //    playerUtils.sendMessage(reporterPlayer, `§cYou must wait before submitting another report.`);
-    //    return;
-    // }
-    // if (pData) {
-    //    pData.lastReportTime = Date.now();
-    //    pData.isDirtyForSave = true;
-    // }
-
 
     const newReport = reportManager.addReport(reporterPlayer, reportedPlayerName, reason, dependencies);
 

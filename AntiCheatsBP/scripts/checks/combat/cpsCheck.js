@@ -16,13 +16,11 @@
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `attackEvents`.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, etc.
- * @param {EventSpecificData} [eventSpecificData] - Optional data specific to the event that triggered this check (unused by Cps check).
  * @returns {Promise<void>}
  */
-export async function checkCps(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager, currentTick
+export async function checkCps(player, pData, dependencies) {
+    const { config, playerUtils, actionManager } = dependencies;
 
-    // Standardized config key for enabling CPS check.
     if (!config.enableCpsCheck) {
         return;
     }
@@ -38,7 +36,6 @@ export async function checkCps(player, pData, dependencies, eventSpecificData) {
     const windowStartTime = now - calculationWindowMs;
 
     const originalEventCount = pData.attackEvents.length;
-    // Filter events to keep only those within the calculation window
     pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= windowStartTime);
 
     if (pData.attackEvents.length !== originalEventCount) {

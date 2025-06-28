@@ -20,7 +20,7 @@ export async function execute(player, args, dependencies) {
 
     const reportsPerPage = 5; // Configurable? For now, fixed.
     let pageNumber = 1;
-    let filterType = 'all'; // 'all', 'id', 'player'
+    let filterType = 'all';
     let filterValue = '';
 
     if (args.length > 0) {
@@ -35,7 +35,7 @@ export async function execute(player, args, dependencies) {
             filterValue = args[0];
         } else {
             filterType = 'player';
-            filterValue = args[0]; // Assume it's a player name
+            filterValue = args[0];
             if (args.length > 1 && !isNaN(parseInt(args[1]))) {
                 pageNumber = parseInt(args[1]);
             }
@@ -68,7 +68,7 @@ export async function execute(player, args, dependencies) {
         }
     }
 
-    if (filteredReports.length === 0 && filterType !== 'id') { // ID case handled above
+    if (filteredReports.length === 0 && filterType !== 'id') {
         playerUtils.sendMessage(player, `§eNo reports found matching your criteria.`);
         return;
     }

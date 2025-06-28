@@ -23,7 +23,7 @@
  * @returns {Promise<void>}
  */
 export async function checkFastUse(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager } = dependencies;
     const itemStack = eventSpecificData?.itemStack;
 
     if (!config.enableFastUseCheck || !pData || !itemStack) {
@@ -33,7 +33,6 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
     const itemTypeId = itemStack.typeId;
     const cooldown = config.fastUseItemCooldowns?.[itemTypeId];
 
-    // If item is not in cooldown config, or cooldown is not a valid number, skip
     if (typeof cooldown !== 'number' || cooldown <= 0) {
         if (config.enableDebugLogging && pData.isWatched) { // Log only if relevant
             playerUtils.debugLog(`[FastUseCheck] Item ${itemTypeId} not tracked or invalid cooldown in config for player ${player.nameTag}. Cooldown: ${cooldown}`, pData.isWatched ? player.nameTag : null, dependencies);
@@ -42,8 +41,8 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
     }
 
     const currentTime = Date.now();
-    pData.itemUseTimestamps = pData.itemUseTimestamps || {}; // Initialize if not present
-    const lastUseTime = pData.itemUseTimestamps[itemTypeId] || 0; // Default to 0 if no previous use
+    pData.itemUseTimestamps = pData.itemUseTimestamps || {};
+    const lastUseTime = pData.itemUseTimestamps[itemTypeId] || 0;
 
     const timeSinceLastUseMs = currentTime - lastUseTime;
 
@@ -66,7 +65,6 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
         // This function itself doesn't directly cancel, it relies on the actionManager's interpretation of the profile.
     }
 
-    // Update the last use timestamp for this item type
     pData.itemUseTimestamps[itemTypeId] = currentTime;
     pData.isDirtyForSave = true;
 }

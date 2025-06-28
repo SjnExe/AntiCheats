@@ -4,7 +4,6 @@
  * Relies on player state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`, `isUsingShield`) and
  * assumes `pData.speedAmplifier` is updated by `updateTransientPlayerData`.
  */
-import * as mc from '@minecraft/server'; // Not strictly needed unless mc.Player type is used directly
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -31,7 +30,6 @@ export async function checkNoSlow(player, pData, dependencies) {
     }
 
     const velocity = player.getVelocity();
-    // Calculate horizontal speed in blocks per second (BPS)
     const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
 
     let slowingActionKey = null; // Localization key for the action

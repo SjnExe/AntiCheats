@@ -1,8 +1,7 @@
 /**
  * Script for the !tpa command, allowing players to request teleportation to another player.
  */
-import { world } from '@minecraft/server';
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js';
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +9,7 @@ export const definition = {
     name: 'tpa',
     description: "command.tpa.description",
     aliases: [],
-    permissionLevel: importedPermissionLevels.normal, // Set directly
+    permissionLevel: importedPermissionLevels.normal,
     syntax: '!tpa <playerName>',
     enabled: true,
 };
@@ -19,10 +18,7 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     // Use permissionLevels from dependencies for runtime checks if necessary
-    const { playerUtils, config, tpaManager, permissionLevels: execPermissionLevels, logManager } = dependencies;
-
-    // definition.permissionLevel is now set at module load time.
-    // The check `if (definition.permissionLevel === null)` is no longer needed.
+    const { playerUtils, config, tpaManager, logManager } = dependencies;
 
     const prefix = config.prefix;
 

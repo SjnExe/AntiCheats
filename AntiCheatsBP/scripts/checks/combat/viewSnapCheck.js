@@ -19,11 +19,10 @@
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastAttackTick`, `lastPitch`, `lastYaw`.
  * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, currentTick, etc.
- * @param {EventSpecificData} [eventSpecificData] - Optional data specific to the event that triggered this check (unused by ViewSnap).
  * @returns {Promise<void>}
  */
-export async function checkViewSnap(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager, currentTick } = dependencies; // Removed unused playerDataManager, logManager
+export async function checkViewSnap(player, pData, dependencies) {
+    const { config, playerUtils, actionManager, currentTick } = dependencies;
 
     if (!config.enableViewSnapCheck || !pData) {
         return;
@@ -34,7 +33,6 @@ export async function checkViewSnap(player, pData, dependencies, eventSpecificDa
     const currentYaw = currentRotation.y;
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Invalid Pitch Check
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
     const invalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch'; // Standardized key
@@ -49,8 +47,7 @@ export async function checkViewSnap(player, pData, dependencies, eventSpecificDa
         playerUtils.debugLog(`[ViewSnapCheck] Flagged ${player.nameTag} for Invalid Pitch: ${currentPitch.toFixed(2)}°. Limits: ${invalidPitchMin}/${invalidPitchMax}`, watchedPrefix, dependencies);
     }
 
-    // View Snap Check (Post-Attack)
-    const viewSnapWindowTicks = config.viewSnapWindowTicks ?? 10; // Ticks after attack to monitor
+    const viewSnapWindowTicks = config.viewSnapWindowTicks ?? 10;
     if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < viewSnapWindowTicks)) {
         const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
         let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
@@ -61,7 +58,7 @@ export async function checkViewSnap(player, pData, dependencies, eventSpecificDa
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
-        const postAttackTimeMs = ticksSinceLastAttack * 50; // Approximate ms from ticks
+        const postAttackTimeMs = ticksSinceLastAttack * 50;
 
         const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
         const pitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewsnapPitch'; // Standardized key

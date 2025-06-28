@@ -21,7 +21,7 @@ import * as mc from '@minecraft/server'; // For mc.GameMode
  */
 export async function checkNetherRoof(player, pData, dependencies) {
     const { config, playerDataManager, playerUtils, actionManager } = dependencies;
-    const minecraftSystem = dependencies.mc; // Access mc module via dependencies
+    const minecraftSystem = dependencies.mc;
 
     if (!config.enableNetherRoofCheck) {
         return;

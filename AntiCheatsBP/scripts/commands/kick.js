@@ -46,7 +46,6 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Permission checks
     const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies);
     const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
 
