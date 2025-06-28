@@ -1155,14 +1155,14 @@ export function updateConfigValue(key, newValue) {
 
     // Check for actual change to avoid unnecessary updates/logs
     if (JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
-        if (editableConfigValues.enableDebugLogging) { // Access debug logging through editableConfigValues
+        if (enableDebugLogging) { // Use the module-level constant for this log
             console.log(`[ConfigManager] No change for ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
         }
         return false; // Indicate no actual update occurred
     }
 
     editableConfigValues[key] = coercedNewValue;
-    if (editableConfigValues.enableDebugLogging) {
+    if (enableDebugLogging) { // Use the module-level constant for this log
         const oldValStr = Array.isArray(oldValue) || typeof oldValue === 'object' ? JSON.stringify(oldValue) : oldValue;
         const newValStr = Array.isArray(coercedNewValue) || typeof coercedNewValue === 'object' ? JSON.stringify(coercedNewValue) : coercedNewValue;
         console.log(`[ConfigManager] Updated ${key} from "${oldValStr}" to "${newValStr}"`);
