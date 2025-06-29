@@ -271,10 +271,9 @@ function mapRange(value, inMin, inMax, outMin, outMax) { return (value - inMin) 
  * @param {number} targetX - The target X-coordinate for the safe location.
  * @param {number} initialY - The initial Y-coordinate to begin searching from.
  * @param {number} targetZ - The target Z-coordinate for the safe location.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies (currently unused in this function but included for consistency).
  * @returns {number} A Y-coordinate considered safe for teleportation, or the initialY if no better spot is found.
  */
-function findSafeTeleportY(dimension, targetX, initialY, targetZ, dependencies) {
+function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
     // const { playerUtils } = dependencies; // Not used in this specific utility, but good practice for others
     const minDimensionHeight = dimension.heightRange.min;
     const maxDimensionHeight = dimension.heightRange.max - 2; // Leave space for player head
