@@ -38,11 +38,10 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
 
     const maxDiacriticRatio = config.unicodeAbuseMaxDiacriticRatio ?? 0.5;
     const absoluteMaxDiacritics = config.unicodeAbuseAbsoluteMaxDiacritics ?? 10;
-    const actionProfileKey = config.unicodeAbuseActionProfileName ?? 'chatUnicodeAbuse'; // Standardized key
+    const actionProfileKey = config.unicodeAbuseActionProfileName ?? 'chatUnicodeAbuse';
     let diacriticCount = 0;
-    let otherCharCount = 0; // Count of non-diacritic, non-whitespace characters
+    let otherCharCount = 0;
 
-    // Iterate through the message to count diacritics and other relevant characters
     for (const char of rawMessageContent) {
         // \p{M} matches all combining diacritical marks (Mn, Mc, Me)
         if (/\p{M}/u.test(char)) {
@@ -53,12 +52,12 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     }
 
     const totalRelevantChars = diacriticCount + otherCharCount;
-    if (totalRelevantChars === 0) { // Avoid division by zero if message is all whitespace
+    if (totalRelevantChars === 0) {
         return;
     }
 
     const actualRatio = diacriticCount / totalRelevantChars;
-    const flaggedByRatio = actualRatio >= maxDiacriticRatio && otherCharCount > 0; // Ensure there are base characters for ratio to be meaningful
+    const flaggedByRatio = actualRatio >= maxDiacriticRatio && otherCharCount > 0;
     const flaggedByAbsolute = diacriticCount >= absoluteMaxDiacritics;
     let reason = '';
 

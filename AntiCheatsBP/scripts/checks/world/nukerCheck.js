@@ -31,18 +31,18 @@ export async function checkNuker(player, pData, dependencies) {
     if (!Array.isArray(pData.blockBreakEvents)) {
         playerUtils.debugLog(`[NukerCheck] pData.blockBreakEvents for ${player.nameTag} is not an array. Resetting.`, player.nameTag, dependencies);
         pData.blockBreakEvents = [];
-        pData.isDirtyForSave = true; // Mark for saving if structure was corrected
+        pData.isDirtyForSave = true;
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const now = Date.now();
-    const checkIntervalMs = config.nukerCheckIntervalMs ?? 200; // Time window to check break rate
+    const checkIntervalMs = config.nukerCheckIntervalMs ?? 200;
 
     const originalEventCount = pData.blockBreakEvents.length;
     pData.blockBreakEvents = pData.blockBreakEvents.filter(timestamp => (now - timestamp) < checkIntervalMs);
 
     if (pData.blockBreakEvents.length !== originalEventCount) {
-        pData.isDirtyForSave = true; // Mark for saving if array was modified
+        pData.isDirtyForSave = true;
     }
 
     const brokenBlocksInWindow = pData.blockBreakEvents.length;
@@ -51,12 +51,12 @@ export async function checkNuker(player, pData, dependencies) {
         playerUtils.debugLog(`[NukerCheck] Processing for ${player.nameTag}. Broke ${brokenBlocksInWindow} blocks in last ${checkIntervalMs}ms.`, watchedPrefix, dependencies);
     }
 
-    const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4; // Max blocks allowed in interval
-    const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker'; // Standardized key
+    const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4;
+    const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
 
     if (brokenBlocksInWindow > maxBreaks) {
-        if (pData.isWatched || config.enableDebugLogging) { // More detailed log for watched/debug
-            const eventSummary = pData.blockBreakEvents.slice(-5).map(ts => now - ts).join(', '); // Ages of last 5 events
+        if (pData.isWatched || config.enableDebugLogging) {
+            const eventSummary = pData.blockBreakEvents.slice(-5).map(ts => now - ts).join(', ');
             playerUtils.debugLog(`[NukerCheck] ${player.nameTag}: Flagging. EventsInWindow: ${brokenBlocksInWindow}, Threshold: ${maxBreaks}, TimeWindow: ${checkIntervalMs}ms. Recent Event Ages (ms from now): [${eventSummary}]`, watchedPrefix, dependencies);
         }
         const violationDetails = {
@@ -67,7 +67,6 @@ export async function checkNuker(player, pData, dependencies) {
 
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        // Reset break events after flagging to prevent immediate re-flagging for the same burst
         pData.blockBreakEvents = [];
         pData.isDirtyForSave = true;
     }

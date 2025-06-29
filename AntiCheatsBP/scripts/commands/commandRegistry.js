@@ -3,10 +3,10 @@
  * files and exports them as an array to be used by the commandManager.
  */
 
-// These are listed alphabetically for easier maintenance.
 import * as addrankCmd from './addrank.js';
 import * as banCmd from './ban.js';
 import * as clearchatCmd from './clearchat.js';
+import * as clearreportsCmd from './clearreports.js';
 import * as copyinvCmd from './copyinv.js';
 import * as endlockCmd from './endlock.js';
 import * as freezeCmd from './freeze.js';
@@ -25,7 +25,9 @@ import * as myflagsCmd from './myflags.js';
 import * as netherlockCmd from './netherlock.js';
 import * as notifyCmd from './notify.js';
 import * as panelCmd from './panel.js';
+import * as purgeflagsCmd from './purgeflags.js';
 import * as removerankCmd from './removerank.js';
+import * as reportCmd from './report.js';
 import * as resetflagsCmd from './resetflags.js';
 import * as rulesCmd from './rules.js';
 import * as testnotifyCmd from './testnotify.js';
@@ -38,17 +40,14 @@ import * as tpastatusCmd from './tpastatus.js';
 import * as uinfoCmd from './uinfo.js';
 import * as unbanCmd from './unban.js';
 import * as unmuteCmd from './unmute.js';
+import * as unwatchCmd from './unwatch.js';
 import * as vanishCmd from './vanish.js';
 import * as versionCmd from './version.js';
+import * as viewreportsCmd from './viewreports.js';
 import * as warningsCmd from './warnings.js';
+import * as watchCmd from './watch.js';
 import * as worldborderCmd from './worldborder.js';
 import * as xraynotifyCmd from './xraynotify.js';
-import * as purgeflagsCmd from './purgeflags.js';
-import * as reportCmd from './report.js';
-import * as viewreportsCmd from './viewreports.js';
-import * as clearreportsCmd from './clearreports.js';
-import * as watchCmd from './watch.js';
-import * as unwatchCmd from './unwatch.js';
 
 /**
  * Array containing all registered command modules.
@@ -60,6 +59,7 @@ export const commandModules = [
     addrankCmd,
     banCmd,
     clearchatCmd,
+    clearreportsCmd,
     copyinvCmd,
     endlockCmd,
     freezeCmd,
@@ -78,7 +78,9 @@ export const commandModules = [
     netherlockCmd,
     notifyCmd,
     panelCmd,
+    purgeflagsCmd,
     removerankCmd,
+    reportCmd,
     resetflagsCmd,
     rulesCmd,
     testnotifyCmd,
@@ -91,15 +93,12 @@ export const commandModules = [
     uinfoCmd,
     unbanCmd,
     unmuteCmd,
+    unwatchCmd,
     vanishCmd,
     versionCmd,
+    viewreportsCmd,
     warningsCmd,
+    watchCmd,
     worldborderCmd,
     xraynotifyCmd,
-    purgeflagsCmd,
-    reportCmd,
-    viewreportsCmd,
-    clearreportsCmd,
-    watchCmd,
-    unwatchCmd,
 ];

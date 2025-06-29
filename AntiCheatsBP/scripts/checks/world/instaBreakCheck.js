@@ -6,7 +6,7 @@ import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies; // For actionManager, config, etc.
+ * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
  * @typedef {import('../../types.js').Config} Config;
  */
 
@@ -39,19 +39,16 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
                 x: eventData.block.location.x.toString(),
                 y: eventData.block.location.y.toString(),
                 z: eventData.block.location.z.toString(),
-                playerName: player.nameTag, // For convenience in message templates
+                playerName: player.nameTag,
             };
-            // Standardized action profile key
             const actionProfileKey = 'worldInstaBreakUnbreakable';
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-            // Critical to cancel this event to prevent unbreakable block destruction
             eventData.cancel = true;
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): ${player.nameTag} attempt to break '${blockTypeId}' cancelled.`, watchedPrefix, dependencies);
         } else {
-            // Creative mode players are allowed to break these blocks
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): Creative player ${player.nameTag} broke normally unbreakable block '${blockTypeId}'. Allowed.`, watchedPrefix, dependencies);
         }
@@ -81,14 +78,14 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
     const blockTypeId = eventData.brokenBlockPermutation.type.id;
     const blockLocation = eventData.block.location;
 
-    // Check if the currently broken block matches the one whose break attempt was recorded
-    if (pData.breakingBlockTypeId === blockTypeId &&
+    if (
+        pData.breakingBlockTypeId === blockTypeId &&
         pData.breakingBlockLocation &&
         pData.breakingBlockLocation.x === blockLocation.x &&
         pData.breakingBlockLocation.y === blockLocation.y &&
         pData.breakingBlockLocation.z === blockLocation.z &&
-        (pData.breakStartTickGameTime ?? 0) > 0) {
-
+        (pData.breakStartTickGameTime ?? 0) > 0
+    ) {
         const actualDurationTicks = currentTick - pData.breakStartTickGameTime;
         const expectedTicks = pData.expectedBreakDurationTicks ?? Infinity;
         const tolerance = config.instaBreakTimeToleranceTicks ?? 2;
@@ -103,13 +100,11 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
         }
 
         let flagged = false;
-        if (expectedTicks === Infinity && actualDurationTicks < 1000) { // Breaking an "unbreakable" block very fast (e.g. bedrock)
+        if (expectedTicks === Infinity && actualDurationTicks < 1000) {
             flagged = true;
         } else if (expectedTicks > 0 && expectedTicks !== Infinity && actualDurationTicks < (expectedTicks - tolerance)) {
             flagged = true;
         }
-        // Note: If expectedTicks is 0 or 1 (instant break), this check might not be very useful unless actualDuration is also 0/1.
-        // The getExpectedBreakTicks should return at least 1.
 
         if (flagged) {
             const violationDetails = {
@@ -122,15 +117,12 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
                 z: blockLocation.z.toString(),
                 toolUsed: pData.toolUsedForBreakAttempt ?? 'unknown',
             };
-            // Standardized action profile key
             const actionProfileKey = 'worldInstaBreakSpeed';
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[InstaBreakCheck](Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks === Infinity ? 'Inf' : expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, pData.isWatched ? player.nameTag : null, dependencies);
         }
     }
 
-    // Reset break attempt tracking fields after every block break, regardless of flagging.
-    // This ensures they are clean for the next break attempt.
     if (pData.breakStartTickGameTime || pData.toolUsedForBreakAttempt || pData.breakingBlockTypeId) {
         pData.isDirtyForSave = true;
     }

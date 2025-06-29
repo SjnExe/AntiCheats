@@ -26,7 +26,6 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
 
-    // Standardized action profile name (ensure this key exists in actionProfiles.js)
     const actionProfileName = config.antiAdvertisingActionProfileName ?? 'chatAdvertisingDetected';
 
     if (!config.enableAntiAdvertisingCheck) {
@@ -38,7 +37,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
     if (config.enableAdvancedLinkDetection && config.advancedLinkRegexList && config.advancedLinkRegexList.length > 0) {
         for (const regexString of config.advancedLinkRegexList) {
             try {
-                const regex = new RegExp(regexString, 'i'); // Case-insensitive matching
+                const regex = new RegExp(regexString, 'i');
                 const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
@@ -47,14 +46,12 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     if (config.advertisingWhitelistPatterns && config.advertisingWhitelistPatterns.length > 0) {
                         for (const wlPattern of config.advertisingWhitelistPatterns) {
                             try {
-                                // Attempt to test pattern as regex
                                 if (new RegExp(wlPattern, 'i').test(detectedLink)) {
                                     isWhitelisted = true;
                                     playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by regex pattern '${wlPattern}'.`, watchedPlayerName, dependencies);
                                     break;
                                 }
                             } catch (e) {
-                                // Fallback to simple string inclusion if regex compilation failed for wlPattern
                                 if (detectedLink.toLowerCase().includes(wlPattern.toLowerCase())) {
                                     isWhitelisted = true;
                                     playerUtils.debugLog(`[AntiAdvCheck] Link '${detectedLink}' on ${player.nameTag} whitelisted by simple string '${wlPattern}'.`, watchedPlayerName, dependencies);
@@ -66,7 +63,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
 
                     if (isWhitelisted) {
                         playerUtils.debugLog(`[AntiAdvCheck] Whitelisted link '${detectedLink}' found. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
-                        continue; // Don't flag, but continue checking other regex patterns in case of multiple links
+                        continue;
                     }
 
                     playerUtils.debugLog(`[AntiAdvCheck] Player ${player.nameTag} triggered regex pattern '${regexString}' with link: '${detectedLink}' in message: '${message}'`, watchedPlayerName, dependencies);
@@ -76,9 +73,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                         patternUsed: regexString,
                         originalMessage: message,
                     };
-                    // Use standardized actionProfileName
                     await actionManager.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-                    // Assuming one flagged advertisement is enough, cancel and return.
                     const profile = config.checkActionProfiles?.[actionProfileName];
                     if (profile?.cancelMessage) {
                         eventData.cancel = true;
@@ -91,7 +86,6 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
             }
         }
     } else {
-        // Fallback to simple pattern matching if advanced detection is off or not configured
         if (!config.antiAdvertisingPatterns || config.antiAdvertisingPatterns.length === 0) {
             playerUtils.debugLog('[AntiAdvCheck] No simple patterns configured, skipping simple check.', watchedPlayerName, dependencies);
             return;

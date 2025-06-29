@@ -2,7 +2,6 @@
  * @file Defines the !ban command for administrators to ban players.
  */
 import { permissionLevels } from '../core/rankManager.js';
-// No direct mc import needed if types are from JSDoc and dependencies
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,7 +10,7 @@ export const definition = {
     name: 'ban',
     syntax: '!ban <playername> [duration] [reason]',
     description: 'Bans a player for a specified duration (e.g., 7d, 2h, perm).',
-    permissionLevel: permissionLevels.admin, // Assuming permissionLevels.admin is defined and exported by rankManager
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -41,7 +40,6 @@ export async function execute(
         if (player) {
             player.sendMessage(usageMessage);
         } else {
-            // System call without enough args
             console.warn('[BanCommand] Ban command called by system without sufficient arguments.');
             playerUtils.debugLog('[BanCommand] System call missing target player name.', null, dependencies);
         }
@@ -75,21 +73,18 @@ export async function execute(
         return;
     }
 
-    // Permission check if invoked by a player
     if (invokedBy === 'PlayerCommand' && player) {
         const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies);
         const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
 
-        // Prevent non-owners from banning admins/owners, and owners from banning other owners directly via command
         if (targetPermissionLevel <= depPermLevels.admin && issuerPermissionLevel > depPermLevels.owner) {
-            player.sendMessage(`§cYou do not have permission to ban an admin or owner.`);
+            player.sendMessage('§cYou do not have permission to ban an admin or owner.');
             return;
         }
-        if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) { // Stricter for owner
-            player.sendMessage(`§cYou do not have permission to ban an owner.`);
+        if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) {
+            player.sendMessage('§cYou do not have permission to ban an owner.');
             return;
         }
-        // A specific rule for owner vs owner, if desired (often handled by above checks already)
         if (targetPermissionLevel === depPermLevels.owner && issuerPermissionLevel === depPermLevels.owner && player.id !== foundPlayer.id) {
             player.sendMessage('§cOwners cannot ban other owners through this command.');
             return;
@@ -98,7 +93,7 @@ export async function execute(
 
     const durationMs = playerUtils.parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
-        const message = `§cInvalid duration format. Use: 7d, 2h, 30m, or perm.`;
+        const message = '§cInvalid duration format. Use: 7d, 2h, 30m, or perm.';
         if (player) {
             player.sendMessage(message);
         } else {
@@ -120,7 +115,7 @@ export async function execute(
     );
 
     if (banAdded) {
-        const banInfo = playerDataManager.getBanInfo(foundPlayer, dependencies); // Re-fetch to get potentially processed info
+        const banInfo = playerDataManager.getBanInfo(foundPlayer, dependencies);
         const actualReason = banInfo ? banInfo.reason : reason;
         const actualBannedBy = banInfo ? banInfo.bannedBy : bannedBy;
         const unbanTime = banInfo ? banInfo.unbanTime : (Date.now() + durationMs);
@@ -128,7 +123,7 @@ export async function execute(
         const durationDisplay = durationMs === Infinity ? 'Permanent' : `Expires: ${new Date(unbanTime).toLocaleString()}`;
 
         const kickMessageParts = [
-            `§cYou have been banned from the server.`,
+            '§cYou have been banned from the server.',
             `§eReason: §f${actualReason}`,
             `§eBanned by: §f${actualBannedBy}`,
             `§eDuration: §f${durationDisplay}`,

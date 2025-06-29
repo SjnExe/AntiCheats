@@ -68,7 +68,7 @@ export async function execute(player, args, dependencies) {
 
     try {
         targetPlayer.addTag(rankTagToAdd);
-        depRankManager.updatePlayerNametag(targetPlayer, dependencies); // Force a refresh of rank and nametag
+        depRankManager.updatePlayerNametag(targetPlayer, dependencies);
 
         player.sendMessage(`§aSuccessfully assigned rank '${rankDef.name}' to ${targetPlayer.nameTag}.`);
         targetPlayer.sendMessage(`§aYou have been assigned the rank: ${rankDef.name}.`);

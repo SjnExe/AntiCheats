@@ -39,7 +39,7 @@ export async function checkCps(player, pData, dependencies) {
     pData.attackEvents = pData.attackEvents.filter(timestamp => timestamp >= windowStartTime);
 
     if (pData.attackEvents.length !== originalEventCount) {
-        pData.isDirtyForSave = true; // Mark for saving if the array was modified
+        pData.isDirtyForSave = true;
     }
 
     const eventsInWindow = pData.attackEvents.length;
@@ -49,7 +49,7 @@ export async function checkCps(player, pData, dependencies) {
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;
-    const actionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh'; // Standardized key, ensure this key exists in config
+    const actionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh';
 
     if (eventsInWindow > maxThreshold) {
         const violationDetails = {
@@ -58,6 +58,5 @@ export async function checkCps(player, pData, dependencies) {
             threshold: maxThreshold.toString(),
         };
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        // Message cancellation is not applicable here as this check runs on tick, not directly on a cancellable event.
     }
 }

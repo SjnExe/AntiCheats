@@ -31,14 +31,13 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
         return;
     }
 
-    // Standardized action profile key
     const actionProfileKey = 'playerInventoryModSwitchUse';
 
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
             reasonDetail: 'Used item in the same tick as a hotbar slot change.',
             itemType: itemStack.typeId,
-            slot: player.selectedSlotIndex.toString(), // Current slot where item is used
+            slot: player.selectedSlotIndex.toString(),
             lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
             currentTick: currentTick.toString(),
         };
@@ -49,7 +48,6 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
             `[InventoryModCheck](SwitchUse): Flagged ${player.nameTag} for using ${itemStack.typeId} in same tick as slot change (Tick: ${currentTick}).`,
             watchedPrefix, dependencies
         );
-        // Message cancellation, if any, should be handled by the action profile.
     }
 }
 
@@ -69,10 +67,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
  */
 export async function checkInventoryMoveWhileActionLocked(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
-    // Assuming eventSpecificData is the raw event data from PlayerInventoryItemChangeAfterEvent
-    // or a compatible structure.
     const inventoryChangeDetails = eventSpecificData?.inventoryChangeDetails || eventSpecificData;
-
 
     if (!config.enableInventoryModCheck || !pData || !inventoryChangeDetails) {
         return;
@@ -84,16 +79,12 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     } else if (pData.isChargingBow) {
         lockingActionKey = 'chargingBow';
     }
-    // Could add more locking states here, e.g., pData.isUsingShield, pData.isSleeping
 
     if (lockingActionKey) {
-        // Extract item and slot info from the event data
-        const newItem = inventoryChangeDetails.newItemStack || inventoryChangeDetails.newItem; // Support both naming conventions
+        const newItem = inventoryChangeDetails.newItemStack || inventoryChangeDetails.newItem;
         const oldItem = inventoryChangeDetails.oldItemStack || inventoryChangeDetails.oldItem;
         const changedItemType = newItem?.typeId ?? oldItem?.typeId ?? 'unknown';
-        // Slot identifier can vary based on event; prefer slotName if available, fallback to slot index
         const slotIdentifier = inventoryChangeDetails.slotName ?? inventoryChangeDetails.inventorySlot?.toString() ?? inventoryChangeDetails.slot?.toString() ?? 'unknown_slot';
-
 
         const violationDetails = {
             reasonDetail: `Moved item in slot ${slotIdentifier} while ${lockingActionKey}.`,
@@ -101,7 +92,6 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             slotChanged: slotIdentifier,
             actionInProgress: lockingActionKey,
         };
-        // Standardized action profile key
         const actionProfileKey = 'playerInventoryModMoveLocked';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
@@ -110,7 +100,5 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             `[InventoryModCheck](MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${lockingActionKey}.`,
             watchedPrefix, dependencies
         );
-        // Event cancellation for inventory changes is usually not done as it's an 'after' event.
-        // Any direct action (like reverting item move) would be complex and potentially handled by specific automod rules if needed.
     }
 }

@@ -25,9 +25,8 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         return;
     }
 
-    const watchedPrefix = pData?.isWatched ? player.nameTag : null; // Used for contextual debug logging
+    const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
-    // Ensure clientSystemInfo is available. It might not be immediately on player join.
     if (!player.clientSystemInfo) {
         playerUtils.debugLog(`[InvalidRenderDistanceCheck] clientSystemInfo not yet available for ${player.nameTag}. Will check later.`, watchedPrefix, dependencies);
         return;
@@ -35,7 +34,6 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
 
     const clientRenderDistance = player.clientSystemInfo.maxRenderDistance;
 
-    // Validate the reported render distance
     if (typeof clientRenderDistance !== 'number' || clientRenderDistance < 0) {
         playerUtils.debugLog(`[InvalidRenderDistanceCheck] Invalid or missing maxRenderDistance value (${clientRenderDistance}) for ${player.nameTag}.`, watchedPrefix, dependencies);
         return;
@@ -43,17 +41,15 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
 
     if (clientRenderDistance > config.maxAllowedClientRenderDistance) {
         const violationDetails = {
-            playerName: player.nameTag, // Kept for direct use in some notification templates
+            playerName: player.nameTag,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
         };
 
-        // Standardized action profile key
         const actionProfileKey = 'playerInvalidRenderDistance';
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         } else {
-            // Fallback logging if actionManager is not available (should not happen)
             playerUtils.debugLog('[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available. Critical logging fallback.', null, dependencies);
             if (logManager && typeof logManager.addLog === 'function') {
                 logManager.addLog({

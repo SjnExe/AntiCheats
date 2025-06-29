@@ -5,7 +5,7 @@
  * assumes `pData` fields like `blindnessTicks`, `isUsingConsumable`, `isChargingBow`
  * are updated by `updateTransientPlayerData` or relevant event handlers.
  */
-import * as mc from '@minecraft/server'; // Not strictly needed if only using mc.Player type via JSDoc
+import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -35,7 +35,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let conditionDetailsLog = '';
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
-        const actionProfileKey = 'movementInvalidSprint'; // Standardized key
+        const actionProfileKey = 'movementInvalidSprint';
 
         try {
             const foodComp = player.getComponent('minecraft:food');
@@ -46,7 +46,6 @@ export async function checkInvalidSprint(player, pData, dependencies) {
                 }
             }
         } catch (e) {
-            // Log error if debug mode is on and player is watched, or generally if food component access fails
             if (playerUtils.debugLog && (pData.isWatched || config.enableDebugLogging)) {
                 playerUtils.debugLog(`[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             }
@@ -71,12 +70,10 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             invalidConditionKey = 'check.invalidSprint.condition.chargingBow';
             conditionDetailsLog = 'Player is charging a bow';
         }
-        // Add more conditions here if needed, like being in water without depth strider, etc.
 
         if (invalidConditionKey) {
             let resolvedConditionString;
-            // Fallback to a more generic English description
-            switch (invalidConditionKey) { // Using the key directly as fallback
+            switch (invalidConditionKey) {
                 case 'check.invalidSprint.condition.blindness': resolvedConditionString = 'Blindness'; break;
                 case 'check.invalidSprint.condition.sneaking': resolvedConditionString = 'Sneaking'; break;
                 case 'check.invalidSprint.condition.riding': resolvedConditionString = 'Riding Entity'; break;
@@ -87,8 +84,8 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             }
 
             const violationDetails = {
-                condition: resolvedConditionString, // User-friendly condition name
-                details: conditionDetailsLog,      // More detailed log string
+                condition: resolvedConditionString,
+                details: conditionDetailsLog,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
                 isRiding: player.isRiding.toString(),

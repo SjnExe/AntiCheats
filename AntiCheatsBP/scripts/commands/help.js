@@ -71,7 +71,6 @@ export async function execute(player, args, dependencies) {
                     `§7Permission: ${permLevelName} (Level ${foundCmdDef.permissionLevel})`
                 );
             } else {
-                // Command exists but player doesn't have permission - still show as unknown to avoid revealing commands
                 player.sendMessage(`§cCommand ${prefix}${specificCommandName} not found or you do not have permission.`);
             }
         } else {
@@ -81,31 +80,30 @@ export async function execute(player, args, dependencies) {
         let helpMessage = `§6--- Available Commands (Prefix: ${prefix}) ---§r\n`;
         let commandsListed = 0;
 
-        // Predefined categories for organizing help output
         const categories = [
             {
-                nameString: "§2General Commands:§r",
+                nameString: '§2General Commands:§r',
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version'],
             },
             {
-                nameString: "§2Teleportation Commands:§r",
+                nameString: '§2Teleportation Commands:§r',
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
                 condition: () => config.enableTPASystem,
             },
             {
-                nameString: "§cModeration Commands:§r",
-                permissionRequired: depPermLevels.moderator, // Ensure 'moderator' exists in permissionLevels
+                nameString: '§cModeration Commands:§r',
+                permissionRequired: depPermLevels.moderator,
                 commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel'],
             },
             {
-                nameString: "§cAdministrative Commands:§r",
+                nameString: '§cAdministrative Commands:§r',
                 permissionRequired: depPermLevels.admin,
-                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder' /*,'log', 'reports', 'systeminfo' - these might be panel only*/],
+                commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder'],
             },
             {
-                nameString: "§4Owner Commands:§r",
+                nameString: '§4Owner Commands:§r',
                 permissionRequired: depPermLevels.owner,
-                commands: ['testnotify', 'addrank', 'removerank', 'listranks'], // Moved rank commands here
+                commands: ['testnotify', 'addrank', 'removerank', 'listranks'],
             },
         ];
 
@@ -143,7 +141,7 @@ export async function execute(player, args, dependencies) {
         });
 
         if (commandsListed === 0) {
-            helpMessage += "§7No commands available to you at this time.";
+            helpMessage += '§7No commands available to you at this time.';
         } else {
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);

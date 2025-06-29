@@ -22,7 +22,7 @@
  * @returns {Promise<void>}
  */
 export async function checkMultiTarget(player, pData, dependencies, eventSpecificData) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager, currentTick
+    const { config, playerUtils, actionManager } = dependencies;
     const targetEntity = eventSpecificData?.targetEntity;
 
     if (!config.enableMultiTargetCheck || !pData) {
@@ -40,7 +40,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     pData.recentHits = pData.recentHits || [];
 
     const newHit = {
-        entityId: String(targetEntity.id), // Ensure entityId is stored as a string
+        entityId: String(targetEntity.id),
         timestamp: now,
     };
     pData.recentHits.push(newHit);
@@ -87,8 +87,6 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
 
         playerUtils.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix, dependencies);
 
-        // Optionally reset recentHits after a flag to prevent immediate re-flagging on next hit
-        // This depends on desired detection behavior (e.g., flag once per burst vs. continuous flagging)
         pData.recentHits = [];
         pData.isDirtyForSave = true;
     }

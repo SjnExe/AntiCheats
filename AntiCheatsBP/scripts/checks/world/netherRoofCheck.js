@@ -1,7 +1,7 @@
 /**
  * @file Checks if a player is on the Nether roof, which is often restricted.
  */
-import * as mc from '@minecraft/server'; // For mc.GameMode
+import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
@@ -27,16 +27,14 @@ export async function checkNetherRoof(player, pData, dependencies) {
         return;
     }
 
-    // Spectators are typically allowed anywhere
     if (player.gameMode === minecraftSystem.GameMode.spectator) {
-        if (playerUtils.debugLog && pData?.isWatched) { // Check pData exists before accessing isWatched
+        if (playerUtils.debugLog && pData?.isWatched) {
             playerUtils.debugLog(`[NetherRoofCheck] Player ${player.nameTag} is in spectator mode. Check bypassed.`, player.nameTag, dependencies);
         }
         return;
     }
 
-    // Only check if the player is in the Nether dimension
-    if (player.dimension.id !== mc.DimensionTypes.nether.id) { // Use mc.DimensionTypes for clarity
+    if (player.dimension.id !== mc.DimensionTypes.nether.id) {
         return;
     }
 
@@ -47,10 +45,9 @@ export async function checkNetherRoof(player, pData, dependencies) {
         const violationDetails = {
             detectedY: detectedYValue,
             threshold: thresholdValue,
-            detailsString: `Player on Nether roof (Y: ${detectedYValue} >= ${thresholdValue})`, // Hardcoded string
+            detailsString: `Player on Nether roof (Y: ${detectedYValue} >= ${thresholdValue})`,
         };
 
-        // Standardized action profile key
         const actionProfileKey = config.netherRoofActionProfileName ?? 'movementNetherRoof';
 
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {
@@ -59,15 +56,13 @@ export async function checkNetherRoof(player, pData, dependencies) {
                 playerUtils.debugLog(`[NetherRoofCheck] Player ${player.nameTag} on Nether roof. Y: ${detectedYValue}, Threshold: ${thresholdValue}. Action profile '${actionProfileKey}' triggered.`, player.nameTag, dependencies);
             }
         } else {
-            // Fallback or error logging if actionManager is not available (should not happen)
             if (playerUtils?.debugLog) {
                 playerUtils.debugLog(`[NetherRoofCheck] actionManager.executeCheckAction not available for player ${player.nameTag}. Attempting direct flag.`, player.nameTag, dependencies);
             }
-            // Fallback to direct flagging if actionManager is missing (less ideal)
             if (playerDataManager && playerDataManager.addFlag) {
                 playerDataManager.addFlag(
                     player,
-                    actionProfileKey, // Use the determined action profile key
+                    actionProfileKey,
                     `Player detected on Nether roof (Y: ${detectedYValue} >= ${thresholdValue})`,
                     violationDetails,
                     dependencies

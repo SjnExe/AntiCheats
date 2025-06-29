@@ -23,7 +23,6 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
 
-    // Standardized action profile name
     const actionProfileKey = config.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
 
     if (!config.enableCapsCheck) {
@@ -47,7 +46,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         }
     }
 
-    if (totalLetters === 0) { // No letters in the message, so no CAPS abuse possible
+    if (totalLetters === 0) {
         return;
     }
 
@@ -68,7 +67,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
             originalMessage: message,
         };
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        // Message cancellation should be handled by the action profile if configured
+
         if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
             eventData.cancel = true;
         }

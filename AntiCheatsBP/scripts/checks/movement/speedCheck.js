@@ -32,7 +32,6 @@ export async function checkSpeed(player, pData, dependencies) {
 
     if (player.isFlying || player.isGliding || player.isClimbing || player.isInWater || player.isRiding) {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
-            // Reset speeding ticks if player enters an exempt state
             pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
         }
@@ -42,20 +41,16 @@ export async function checkSpeed(player, pData, dependencies) {
         return;
     }
 
-    // pData.velocity should be updated each tick by updateTransientPlayerData
     const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2));
-    const hSpeedBPS = hSpeed * 20; // Convert blocks per tick to blocks per second
+    const hSpeedBPS = hSpeed * 20;
 
-    let maxAllowedSpeedBPS = config.maxHorizontalSpeed ?? 7.0; // Default base speed
+    let maxAllowedSpeedBPS = config.maxHorizontalSpeed ?? 7.0;
 
-    // Adjust for Speed effect if pData.speedAmplifier is updated correctly
-    const speedAmplifier = pData.speedAmplifier ?? -1; // -1 means no effect or level 0
+    const speedAmplifier = pData.speedAmplifier ?? -1;
     if (speedAmplifier >= 0) {
-        // Each level of Speed adds 20% to speed. Speed I (amplifier 0) = +20%, Speed II (amplifier 1) = +40%
         maxAllowedSpeedBPS *= (1 + (speedAmplifier + 1) * 0.20);
     }
 
-    // Add a general tolerance buffer
     maxAllowedSpeedBPS += (config.speedToleranceBuffer ?? 0.5);
 
     if (pData.isWatched && config.enableDebugLogging) {
@@ -65,7 +60,7 @@ export async function checkSpeed(player, pData, dependencies) {
         );
     }
 
-    const groundActionProfileKey = 'movementSpeedGround'; // Standardized key
+    const groundActionProfileKey = 'movementSpeedGround';
 
     if (player.isOnGround) {
         if (hSpeedBPS > maxAllowedSpeedBPS) {
@@ -73,7 +68,7 @@ export async function checkSpeed(player, pData, dependencies) {
             pData.isDirtyForSave = true;
 
             const groundTicksThreshold = config.speedGroundConsecutiveTicksThreshold ?? 5;
-            if (pData.consecutiveOnGroundSpeedingTicks >= groundTicksThreshold) { // Changed > to >= for consistency
+            if (pData.consecutiveOnGroundSpeedingTicks >= groundTicksThreshold) {
                 let activeEffectsString = 'none';
                 try {
                     const effects = player.getEffects();
@@ -88,27 +83,23 @@ export async function checkSpeed(player, pData, dependencies) {
                     detectedSpeedBps: hSpeedBPS.toFixed(2),
                     maxAllowedBps: maxAllowedSpeedBPS.toFixed(2),
                     consecutiveTicks: (pData.consecutiveOnGroundSpeedingTicks ?? 0).toString(),
-                    onGround: player.isOnGround.toString(), // Should be true here
+                    onGround: player.isOnGround.toString(),
                     activeEffects: activeEffectsString,
                 };
                 await actionManager.executeCheckAction(player, groundActionProfileKey, violationDetails, dependencies);
-                // Reset ticks after flagging to prevent immediate re-flagging on the next tick
                 pData.consecutiveOnGroundSpeedingTicks = 0;
-                pData.isDirtyForSave = true; // Ensure reset is saved
+                pData.isDirtyForSave = true;
             }
         } else {
-            // If speed is normal, reset consecutive speeding ticks
             if (pData.consecutiveOnGroundSpeedingTicks > 0) {
                 pData.consecutiveOnGroundSpeedingTicks = 0;
                 pData.isDirtyForSave = true;
             }
         }
-    } else { // Player is airborne
-        // Reset ground speeding ticks if player becomes airborne
+    } else {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
             pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;
         }
-        // Airborne speed checks could be added here if desired, using a different profile/thresholds
     }
 }

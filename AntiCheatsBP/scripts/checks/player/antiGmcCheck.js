@@ -23,10 +23,9 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkAntiGmc(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies; // Added rankManager and permissionLevels
+    const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
 
-    // Standardized action profile key
-    const actionProfileKey = config.antiGmcActionProfileName ?? 'playerAntigmc'; // Ensure 'playerAntigmc' matches actionProfiles.js
+    const actionProfileKey = config.antiGmcActionProfileName ?? 'playerAntigmc';
 
     if (!config.enableAntiGmcCheck || !pData) {
         return;
@@ -36,7 +35,6 @@ export async function checkAntiGmc(player, pData, dependencies) {
         const playerPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
         let isExempt = false;
 
-        // Check if player's permission level is admin or lower (owner is 0, admin is typically 1)
         if (playerPermLevel <= permissionLevels.admin) {
             isExempt = true;
         }
@@ -58,7 +56,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
                     targetMcGameMode = mc.GameMode.spectator;
                     break;
                 default:
-                    targetMcGameMode = mc.GameMode.survival; // Fallback to survival
+                    targetMcGameMode = mc.GameMode.survival;
                     targetGamemodeString = 'survival';
                     playerUtils.debugLog(`[AntiGmcCheck] Invalid antiGmcSwitchToGameMode value '${config.antiGmcSwitchToGameMode}'. Defaulting to survival.`, watchedPrefix, dependencies);
             }

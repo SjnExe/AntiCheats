@@ -3,11 +3,11 @@
  * debug logging, admin notifications, player searching, and duration parsing.
  */
 import * as mc from '@minecraft/server';
-import { stringDB } from '../core/textDatabase.js'; // Import the string database
+import { stringDB } from '../core/textDatabase.js';
 
 /**
  * Retrieves a string from the text database and formats it with parameters.
- * @param {string} key - The key of the string to retrieve (e.g., "ui.adminPanel.title").
+ * @param {string} key - The key of the string to retrieve (e.g., 'ui.adminPanel.title').
  * @param {Record<string, string | number>} [params] - Optional object containing placeholder values.
  * @returns {string} The formatted string, or the key itself if not found (with a warning).
  */
@@ -117,7 +117,9 @@ export function debugLog(message, contextPlayerNameIfWatched = null, dependencie
  * @returns {import('@minecraft/server').Player | null} The player object if found, otherwise null.
  */
 export function findPlayer(playerName) {
-    if (!playerName || typeof playerName !== 'string') return null;
+    if (!playerName || typeof playerName !== 'string') {
+        return null;
+    }
     const nameToFind = playerName.toLowerCase();
     return mc.world.getAllPlayers().find(p => p.nameTag.toLowerCase() === nameToFind) || null;
 }
@@ -129,9 +131,13 @@ export function findPlayer(playerName) {
  * @returns {number | null} The duration in milliseconds, Infinity for "perm", or null if invalid.
  */
 export function parseDuration(durationString) {
-    if (!durationString || typeof durationString !== 'string') return null;
+    if (!durationString || typeof durationString !== 'string') {
+        return null;
+    }
     const lowerDurationString = durationString.toLowerCase();
-    if (lowerDurationString === 'perm' || lowerDurationString === 'permanent') return Infinity;
+    if (lowerDurationString === 'perm' || lowerDurationString === 'permanent') {
+        return Infinity;
+    }
 
     const regex = /^(\d+)([smhd])$/;
     const match = lowerDurationString.match(regex);
@@ -148,7 +154,9 @@ export function parseDuration(durationString) {
     } else if (/^\d+$/.test(lowerDurationString)) { // If it's just a number
         const value = parseInt(lowerDurationString, 10);
         // Default to seconds if no unit is specified
-        if (!isNaN(value)) return value * 1000;
+        if (!isNaN(value)) {
+            return value * 1000;
+        }
     }
     return null;
 }
@@ -169,9 +177,15 @@ export function formatSessionDuration(ms) {
     minutes %= 60;
 
     const parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`); // Show 0s if duration is < 1s
+    if (hours > 0) {
+        parts.push(`${hours}h`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes}m`);
+    }
+    if (seconds > 0 || parts.length === 0) { // Show 0s if duration is < 1s
+        parts.push(`${seconds}s`);
+    }
     return parts.join(' ');
 }
 
@@ -194,13 +208,25 @@ export function formatTimeDifference(msDifference) {
     const days = Math.floor(hours / 24);
     const weeks = Math.floor(days / 7);
     const months = Math.floor(days / 30.4375); // Average days in a month
-    const years = Math.floor(days / 365.25);   // Average days in a year
+    const years = Math.floor(days / 365.25); // Average days in a year
 
-    if (years > 0) return `${years}y ago`;
-    if (months > 0) return `${months}mo ago`;
-    if (weeks > 0) return `${weeks}w ago`;
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
+    if (years > 0) {
+        return `${years}y ago`;
+    }
+    if (months > 0) {
+        return `${months}mo ago`;
+    }
+    if (weeks > 0) {
+        return `${weeks}w ago`;
+    }
+    if (days > 0) {
+        return `${days}d ago`;
+    }
+    if (hours > 0) {
+        return `${hours}h ago`;
+    }
+    if (minutes > 0) {
+        return `${minutes}m ago`;
+    }
     return `${seconds}s ago`;
 }

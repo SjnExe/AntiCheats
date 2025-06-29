@@ -2,7 +2,6 @@
  * @file Defines the !freeze command for administrators to immobilize or release players.
  */
 import { permissionLevels } from '../core/rankManager.js';
-// No direct mc import needed if types are from JSDoc and dependencies
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -11,8 +10,7 @@ export const definition = {
     name: 'freeze',
     syntax: '!freeze <playername> [on|off|toggle|status]',
     description: 'Freezes or unfreezes a player, preventing movement by applying strong slowness.',
-    permissionLevel: permissionLevels.admin, // Use a defined level; ensure 'admin' maps to 1 if that's intended.
-                                         // Original was 1. If permissionLevels.admin is not 1, adjust or use direct number.
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -27,9 +25,9 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager } = dependencies;
-    const frozenTag = 'frozen'; // Tag to mark frozen players
-    const effectDuration = 2000000; // A very long duration for the effect (effectively permanent until removed)
-    const slownessAmplifier = 255; // Max slowness to prevent movement
+    const frozenTag = 'frozen';
+    const effectDuration = 2000000;
+    const slownessAmplifier = 255;
 
     if (args.length < 1) {
         player.sendMessage(`§cUsage: ${config.prefix}freeze <playername> [on|off|toggle|status]`);
@@ -37,7 +35,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    const subCommand = args[1] ? args[1].toLowerCase() : 'toggle'; // Default to 'toggle' if no subcommand
+    const subCommand = args[1] ? args[1].toLowerCase() : 'toggle';
 
     const foundPlayer = playerUtils.findPlayer(targetPlayerName);
 
@@ -50,11 +48,6 @@ export async function execute(player, args, dependencies) {
         player.sendMessage('§cYou cannot freeze yourself.');
         return;
     }
-
-    // Permission check: Ensure command issuer can freeze the target
-    // This might involve comparing rankManager.getPlayerPermissionLevel(player) vs rankManager.getPlayerPermissionLevel(foundPlayer)
-    // For simplicity, assuming this check is implicitly handled by the command's base permissionLevel for now,
-    // or could be added if more granular control is needed (e.g., admin cannot freeze owner).
 
     let currentFreezeState = foundPlayer.hasTag(frozenTag);
     let targetFreezeState;
@@ -76,11 +69,11 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(statusMessage);
             return;
         default:
-            player.sendMessage(`§cInvalid argument. Use: on, off, toggle, or status.`);
+            player.sendMessage('§cInvalid argument. Use: on, off, toggle, or status.');
             return;
     }
 
-    if (targetFreezeState === true && !currentFreezeState) { // Freeze the player
+    if (targetFreezeState === true && !currentFreezeState) {
         try {
             foundPlayer.addTag(frozenTag);
             foundPlayer.addEffect('slowness', effectDuration, { amplifier: slownessAmplifier, showParticles: false });
@@ -93,7 +86,7 @@ export async function execute(player, args, dependencies) {
             playerUtils.debugLog(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             console.error(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
         }
-    } else if (targetFreezeState === false && currentFreezeState) { // Unfreeze the player
+    } else if (targetFreezeState === false && currentFreezeState) {
         try {
             foundPlayer.removeTag(frozenTag);
             foundPlayer.removeEffect('slowness');
@@ -106,7 +99,7 @@ export async function execute(player, args, dependencies) {
             playerUtils.debugLog(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
             console.error(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
         }
-    } else { // No change in state
+    } else {
         player.sendMessage(targetFreezeState ?
             `§ePlayer ${foundPlayer.nameTag} is already frozen.` :
             `§ePlayer ${foundPlayer.nameTag} is already unfrozen.`
