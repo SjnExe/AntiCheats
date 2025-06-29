@@ -4,6 +4,29 @@ This document lists significant tasks that have been completed.
 
 ---
 
+## Expand `Docs/AutoModDetails.md` with Complex Examples (Jules - Completed YYYY-MM-DD)
+
+**Objective:** Enhance `Docs/AutoModDetails.md` by adding a section with complex rule examples to showcase advanced configuration possibilities of the AutoMod system.
+
+**Summary of Changes:**
+*   **Reviewed System Capabilities**: Analyzed `automodConfig.js` and existing `AutoModDetails.md` to understand the features and limitations of the AutoMod rule engine.
+*   **Developed Example Scenarios**: Identified key areas where advanced examples would be beneficial, including:
+    *   Multi-stage progressive punishments with strategic flag resets.
+    *   Cautious rule-setting for sensitive or potentially noisy checks.
+    *   Use of specific action types like `removeIllegalItem` and `freeze`.
+*   **Drafted and Integrated Examples**:
+    *   Added a new section titled "Advanced Rule Examples" to `Docs/AutoModDetails.md`.
+    *   Provided three detailed examples with JSON-like rule structures and explanations:
+        1.  **Multi-Stage Progressive Punishment for `movementFlyHover`**: Showcasing multiple warnings, escalating temp-bans, and strategic use of `resetFlagsAfterAction`.
+        2.  **Handling a Sensitive Check (`combatInvalidPitch`)**: Demonstrating the use of `flagOnly` for monitoring and a gentle escalation path.
+        3.  **Item-Specific Violation (`worldIllegalItemUse`)**: Illustrating the use of `removeIllegalItem` and `freeze` actions.
+*   **Ensured Clarity and Consistency**: Formatted the new examples to match the existing document style and provided clear explanations for each rule's logic.
+
+**Outcome:** The `AutoModDetails.md` document is now more comprehensive, offering users advanced insights and practical examples for configuring sophisticated AutoMod rules tailored to various situations. This should empower admins to better manage automated moderation on their servers.
+
+*(Note: Replace YYYY-MM-DD with the actual completion date)*
+---
+
 ## Create `Docs/Troubleshooting.md` and Link in README (Jules - Completed YYYY-MM-DD)
 
 **Objective:** Develop a comprehensive troubleshooting guide and integrate it into the existing documentation structure.
@@ -52,4 +75,4 @@ This document lists significant tasks that have been completed.
 
 **Outcome:** The `README.md` is now more informative, user-friendly, and better structured to guide both users and potential contributors. It also provides clear indicators for future visual enhancements.
 
-*(Note: Replace YYYY-MM-DD with the actual completion date for both entries)*
+*(Note: Replace YYYY-MM-DD with the actual completion date for all entries)*

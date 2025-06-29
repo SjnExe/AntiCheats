@@ -128,3 +128,179 @@ Admins will be notified using the `adminMessageTemplate` if provided in the rule
 - The `pData.automodState[checkType].lastActionThreshold` is used to prevent the same action from being repeatedly applied if the flag count hasn't increased beyond that threshold (unless flags are reset).
 - All actions taken by AutoMod are logged in the Admin Action Logs (viewable via `!panel`) with "AutoMod" as the issuer.
 - Administrators are also notified in chat when AutoMod takes a significant action.
+
+---
+
+## Advanced Rule Examples
+
+Below are some examples demonstrating more complex or nuanced AutoMod rule configurations. These are intended to inspire and guide you in tailoring the AutoMod system to your server's specific needs. Remember to test your configurations thoroughly.
+
+### Example 1: Multi-Stage Progressive Punishment for a Common Cheat (e.g., `movementFlyHover`)
+
+This example shows a more granular approach to a common cheat, with multiple warnings, shorter temp-bans, and eventually a longer ban, using `resetFlagsAfterAction` strategically.
+
+```javascript
+// In automodConfig.js, within the automodRules object:
+"movementFlyHover": [
+  {
+    "flagThreshold": 5, // First very gentle warning
+    "actionType": "warn",
+    "parameters": {
+      "messageTemplate": "AutoMod: {playerName}, possible {checkType} detected. Please ensure you are following server rules. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": false // Keep flags accumulating
+  },
+  {
+    "flagThreshold": 10, // Second, more direct warning
+    "actionType": "warn",
+    "parameters": {
+      "messageTemplate": "AutoMod Warning: {playerName}, {checkType} violation ({flagCount}/{flagThreshold}). Continued violations will result in further action."
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 15, // A short temp-ban, flags reset to give a chance
+    "actionType": "tempBan",
+    "parameters": {
+      "duration": "5m", // 5 minutes
+      "messageTemplate": "AutoMod: {playerName} has been temporarily banned for {duration} due to {checkType}. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": true // Reset flags for this check after this action
+  },
+  // If player re-offends after the first temp-ban and flag reset:
+  {
+    "flagThreshold": 10, // Lower threshold for re-offense after a reset
+    "actionType": "warn",
+    "parameters": {
+      "messageTemplate": "AutoMod Notice: {playerName}, {checkType} detected again ({flagCount}/{flagThreshold}). Further infractions will lead to longer bans."
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 20, // Longer temp-ban if they continue after the first reset
+    "actionType": "tempBan",
+    "parameters": {
+      "duration": "1h", // 1 hour
+      "messageTemplate": "AutoMod: {playerName} has been temporarily banned for {duration} due to persistent {checkType}. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": false // Don't reset yet, accumulate towards permBan
+  },
+  {
+    "flagThreshold": 30, // Final threshold for this checkType
+    "actionType": "permBan", // Or a very long tempBan like "30d"
+    "parameters": {
+      "messageTemplate": "AutoMod: {playerName} has been permanently banned due to repeated {checkType} violations. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": true // Reset flags if action is taken
+  }
+]
+```
+**Explanation:**
+*   Starts with gentle warnings.
+*   A short temp-ban with a flag reset gives the player a chance to correct behavior.
+*   If they re-offend, the thresholds for subsequent actions are effectively lower (as flags start from 0 again for that check), but the punishments escalate more quickly to a longer temp-ban and then a permanent ban.
+*   `resetFlagsAfterAction: false` is used for the longer temp-ban to ensure that if an admin unbans them, their flag count is still high, leading to a permaban quickly if they continue.
+
+### Example 2: Handling a Sensitive or Potentially Noisy Check (e.g., `combatInvalidPitch`)
+
+For checks that might have legitimate edge cases or be prone to false positives due to lag or unusual playstyles, a more cautious approach is needed.
+
+```javascript
+// In automodConfig.js, within the automodRules object:
+"combatInvalidPitch": [ // Example for a sensitive check
+  {
+    "flagThreshold": 5,
+    "actionType": "flagOnly", // Just log it internally, no player action
+    "parameters": {
+        // Optional: Use adminMessageTemplate to notify admins silently
+        "adminMessageTemplate": "AutoMod Log: {playerName} reached {flagCount}/{flagThreshold} for {checkType}. Monitoring."
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 10,
+    "actionType": "flagOnly",
+     "parameters": {
+        "adminMessageTemplate": "AutoMod Log: {playerName} now at {flagCount}/{flagThreshold} for {checkType}. High suspicion."
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 15,
+    "actionType": "warn", // First player-visible action is a very gentle warning
+    "parameters": {
+      "messageTemplate": "AutoMod: {playerName}, unusual view angles detected. Please ensure your gameplay is standard. (Flags: {flagCount}/{flagThreshold} for {checkType})"
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 25,
+    "actionType": "kick", // Kick as a stronger deterrent if warnings ignored
+    "parameters": {
+      "messageTemplate": "AutoMod: {playerName} kicked due to persistent unusual view angles ({checkType}). (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": true // Reset after kick to see if behavior changes
+  }
+  // Further actions like tempBan could be added if necessary, but start conservatively.
+]
+```
+**Explanation:**
+*   Uses `flagOnly` for initial detections. This allows admins to monitor logs or receive silent notifications (via `adminMessageTemplate`) without impacting the player.
+*   The first actual player-facing action is a mild warning at a higher threshold.
+*   A kick is used as a more significant deterrent, with flags reset to see if the behavior corrects.
+*   This approach minimizes player frustration from potentially false flags while still gathering data and eventually acting on persistent offenders.
+
+### Example 3: Using `removeIllegalItem` and `freeze` for an Item-Specific Violation (e.g., `worldIllegalItemUse`)
+
+This example demonstrates using specific actions like `removeIllegalItem` and `freeze` for violations related to possessing or using banned items.
+
+```javascript
+// In automodConfig.js, within the automodRules object:
+"worldIllegalItemUse": [ // Assuming this checkType is for using a specific known illegal item
+  {
+    "flagThreshold": 1, // Act immediately on first detection
+    "actionType": "warn",
+    "parameters": {
+      "itemToRemoveTypeId": "minecraft:bedrock", // Example: if bedrock is illegal
+      "messageTemplate": "AutoMod: {playerName}, use of illegal item ({itemTypeId}) detected. The item will be removed. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 2, // If they somehow use it again quickly
+    "actionType": "removeIllegalItem",
+    "parameters": {
+      "itemToRemoveTypeId": "minecraft:bedrock", // Must match the item this check flags
+      "messageTemplate": "AutoMod: Removed illegal item ({itemTypeId}) from {playerName}. Quantity removed: {itemQuantity}. (Flags: {flagCount}/{flagThreshold})"
+      // "adminMessageTemplate": "Admin: Removed {itemQuantity} of {itemTypeId} from {playerName} due to {checkType}." // Optional
+    },
+    "resetFlagsAfterAction": false // Don't reset yet, see if they try to get more
+  },
+  {
+    "flagThreshold": 5, // If they persist in acquiring and using the illegal item
+    "actionType": "freeze", // Freeze them, perhaps for an admin to investigate
+    "parameters": {
+      "messageTemplate": "AutoMod: {playerName} has been frozen due to repeated attempts to use illegal item ({itemTypeId}). An admin will investigate. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": false
+  },
+  {
+    "flagThreshold": 10, // If they are unfrozen and continue
+    "actionType": "tempBan",
+    "parameters": {
+      "duration": "1h",
+      "itemToRemoveTypeId": "minecraft:bedrock", // Optional: ensure item is gone if re-acquired
+      "messageTemplate": "AutoMod: {playerName} temporarily banned for {duration} for persistent illegal item ({itemTypeId}) violations. (Flags: {flagCount}/{flagThreshold})"
+    },
+    "resetFlagsAfterAction": true
+  }
+]
+```
+**Explanation:**
+*   The first rule warns and informs the player the item will be removed (even if the actual removal is in the next step, this prepares them).
+*   The `removeIllegalItem` action specifically targets the problematic item. The `checkType` `worldIllegalItemUse` should ideally be designed to only flag for specific, pre-configured illegal items.
+*   `freeze` is used to temporarily immobilize the player, giving admins a chance to intervene and investigate how they are acquiring/using the items.
+*   A `tempBan` follows if the behavior continues, potentially also attempting to remove the item again if the `removeIllegalItem` action supports being part of other action parameters (this addon's specific implementation detail would matter here; typically, `itemToRemoveTypeId` is for the `removeIllegalItem` action itself). If not, the `removeIllegalItem` action should be robust.
+
+---
+Remember to adjust `flagThreshold` values based on how quickly your checks accumulate flags and how tolerant you want the system to be. Always test your AutoMod rules thoroughly on a non-production server or with test accounts.

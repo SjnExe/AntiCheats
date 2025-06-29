@@ -19,7 +19,7 @@ This list contains planned features, improvements, and areas for future investig
 - *(Example) Investigate reports of false positives in NoFall detection under specific conditions.*
 
 ## Documentation
-- *(Example) Expand on `Docs/AutoModDetails.md` with more complex rule examples.*
+*(Most example documentation tasks are now complete or significantly addressed. Future documentation would depend on new features or identified gaps.)*
 
 ## Refactoring & Maintenance
 - *(Example) Review and optimize player data saving mechanisms.*
