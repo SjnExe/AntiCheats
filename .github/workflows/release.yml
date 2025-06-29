@@ -16,13 +16,25 @@ jobs:
       run: |
         RAW_TAG_NAME="${{ github.ref_name }}"
         echo "FULL_TAG_NAME=$RAW_TAG_NAME" >> $GITHUB_ENV
-        # Remove 'v' prefix for version string
-        VERSION_STR="${RAW_TAG_NAME#v}"
+        # Remove 'v' or 'V' prefix for version string
+        if [[ "$RAW_TAG_NAME" == v* ]]; then
+          VERSION_STR="${RAW_TAG_NAME#v}"
+        elif [[ "$RAW_TAG_NAME" == V* ]]; then
+          VERSION_STR="${RAW_TAG_NAME#V}"
+        else
+          VERSION_STR="$RAW_TAG_NAME"
+        fi
         echo "VERSION_STRING=$VERSION_STR" >> $GITHUB_ENV
+        echo "Extracted VERSION_STRING: $VERSION_STR"
         # Convert version string "1.2.3" to array string "[1,2,3]"
-        VERSION_ARR_STR="[$(echo $VERSION_STR | tr '.' ',')]"
+        if [ -z "$VERSION_STR" ]; then
+          echo "Warning: VERSION_STRING is empty. VERSION_ARRAY_STRING will be '[]'."
+          VERSION_ARR_STR="[]"
+        else
+          VERSION_ARR_STR="[$(echo "$VERSION_STR" | tr '.' ',')]"
+        fi
         echo "VERSION_ARRAY_STRING=$VERSION_ARR_STR" >> $GITHUB_ENV
-        echo "Full tag: $RAW_TAG_NAME, Version string: $VERSION_STR, Version array string: $VERSION_ARR_STR"
+        echo "Full tag: $RAW_TAG_NAME, Extracted version string: $VERSION_STR, Resulting version array string: $VERSION_ARR_STR"
 
     - name: Create staging directory
       run: mkdir staging
@@ -38,33 +50,56 @@ jobs:
         VERSION_STRING: ${{ env.VERSION_STRING }}
         VERSION_ARRAY_STRING: ${{ env.VERSION_ARRAY_STRING }}
       run: |
-        echo "Replacing placeholders in staged files..."
-        echo "Replacing placeholders in staged files..."
-        echo "VERSION_STRING: ${VERSION_STRING}"
-        echo "VERSION_ARRAY_STRING: ${VERSION_ARRAY_STRING}"
+        echo "--- Starting Placeholder Replacement ---"
+        echo "Using VERSION_STRING: '${VERSION_STRING}' (prefixed with 'v' for replacement: 'v${VERSION_STRING}')"
+        echo "Using VERSION_ARRAY_STRING: '${VERSION_ARRAY_STRING}'"
 
-        # Replace v__VERSION_STRING__ placeholder in JSONs with v<version_numbers> (e.g., v1.2.3)
-        find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
-
-        # Replace "__VERSION_ARRAY__" placeholder in JSONs
-        # This replaces the JSON string ""__VERSION_ARRAY__"" with the array string like [1,2,3]
-        find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
-
-        echo "Contents of staged BP manifest after replacement:"
-        cat "staging/AntiCheatsBP/manifest.json"
-        echo "Contents of staged RP manifest after replacement:"
-        cat "staging/AntiCheatsRP/manifest.json"
-
-        # Replace v__VERSION_STRING__ placeholder in config.js with v<version_numbers> (e.g., v1.2.3)
-        CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
-        if [ -f "$CONFIG_JS_PATH" ]; then
-          echo "Replacing v__VERSION_STRING__ in $CONFIG_JS_PATH"
-          sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
-          echo "Contents of $CONFIG_JS_PATH after replacement:"
-          cat "$CONFIG_JS_PATH"
+        JSON_FILES=$(find staging -type f -name "*.json")
+        if [ -z "$JSON_FILES" ]; then
+          echo "No JSON files found in staging directory. Skipping JSON placeholder replacements."
         else
-          echo "Warning: $CONFIG_JS_PATH not found."
+          echo "Found JSON files for processing: $JSON_FILES"
+          echo "Processing JSON files for 'v__VERSION_STRING__' replacement..."
+          find staging -type f -name "*.json" -exec sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" {} +
+          echo "Completed 'v__VERSION_STRING__' replacement in JSON files."
+
+          echo "Processing JSON files for '__VERSION_ARRAY__' replacement..."
+          # This replaces the JSON string ""__VERSION_ARRAY__"" with the array string like [1,2,3]
+          find staging -type f -name "*.json" -exec sed -i "s/\"__VERSION_ARRAY__\"/${VERSION_ARRAY_STRING}/g" {} +
+          echo "Completed '__VERSION_ARRAY__' replacement in JSON files."
         fi
+
+        echo "--- Verification of Manifest Files ---"
+        BP_MANIFEST="staging/AntiCheatsBP/manifest.json"
+        RP_MANIFEST="staging/AntiCheatsRP/manifest.json"
+
+        if [ -f "$BP_MANIFEST" ]; then
+          echo "Contents of staged BP manifest ($BP_MANIFEST) after replacement:"
+          cat "$BP_MANIFEST"
+        else
+          echo "Warning: BP Manifest ($BP_MANIFEST) not found."
+        fi
+
+        if [ -f "$RP_MANIFEST" ]; then
+          echo "Contents of staged RP manifest ($RP_MANIFEST) after replacement:"
+          cat "$RP_MANIFEST"
+        else
+          echo "Warning: RP Manifest ($RP_MANIFEST) not found."
+        fi
+        echo "--- End Manifest Verification ---"
+
+        CONFIG_JS_PATH="staging/AntiCheatsBP/scripts/config.js"
+        echo "Processing config.js for 'v__VERSION_STRING__' replacement..."
+        if [ -f "$CONFIG_JS_PATH" ]; then
+          echo "Found config.js at $CONFIG_JS_PATH. Replacing 'v__VERSION_STRING__' with 'v${VERSION_STRING}'."
+          sed -i "s/v__VERSION_STRING__/v${VERSION_STRING}/g" "$CONFIG_JS_PATH"
+          echo "Contents of $CONFIG_JS_PATH after replacement (first 15 lines):"
+          head -n 15 "$CONFIG_JS_PATH" # Show only first few lines to avoid overly long logs
+          echo "--- End config.js Verification ---"
+        else
+          echo "Warning: $CONFIG_JS_PATH not found. Cannot replace version string."
+        fi
+        echo "--- Placeholder Replacement Finished ---"
 
     - name: Zip addon
       shell: bash

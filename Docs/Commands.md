@@ -23,16 +23,12 @@ These commands are typically available to players with administrative privileges
     *   **Purpose:** Kicks a player from the server.
     *   **Syntax:** `!kick <playername> [reason]`
     *   **Permission:** Admin-only.
-*   **`!ban <playername> [reason]`**
-    *   **Purpose:** Permanently bans a player from the server.
-    *   **Syntax:** `!ban <playername> [reason]`
-    *   **Permission:** Admin-only.
-*   **`!tempban <playername> <duration> [reason]`**
-    *   **Purpose:** Temporarily bans a player for a specified duration.
-    *   **Syntax:** `!tempban <playername> <duration> [reason]` (e.g., `!tempban PlayerX 7d cheating`). Durations: `m` (minutes), `h` (hours), `d` (days).
+*   **`!ban <playername> [duration] [reason]`**
+    *   **Purpose:** Bans a player. Duration can be specified (e.g., `30m`, `2h`, `7d`) or `perm` for permanent.
+    *   **Syntax:** `!ban <playername> [duration] [reason]`
     *   **Permission:** Admin-only.
 *   **`!mute <playername> <duration> [reason]`**
-    *   **Purpose:** Temporarily mutes a player for a specified duration.
+    *   **Purpose:** Mutes a player for a specified duration (e.g., `30m`, `1h`, `perm`).
     *   **Syntax:** `!mute <playername> <duration> [reason]`
     *   **Permission:** Admin-only.
 *   **`!unban <playername>`**
@@ -102,22 +98,25 @@ These commands are typically available to players with administrative privileges
 *   **`!rules`**
     *   **Purpose:** Displays the server rules (as configured in `config.js`).
     *   **Syntax:** `!rules`
-    *   **Permission:** All Players (typically, but listed as Admin command in `config.js` - check implementation if it needs to be moved).
+    *   **Permission:** All Players.
 *   **`!testnotify`**
     *   **Purpose:** Sends a test notification to yourself (for admins to test the notification system).
     *   **Syntax:** `!testnotify`
     *   **Permission:** Admin-only.
-*   **`!tp <target_playername> [destination_playername]` OR `!tp <x> <y> <z> [target_playername]`**
-    *   **Purpose:** Teleports a player to another player or to specific coordinates.
-    *   **Syntax:** `!tp <target_playername> [destination_playername]` or `!tp <x> <y> <z> [target_playername]`
+*   **`!tp <targetPlayer | x> <destinationPlayer | y> [z] [dimensionTargetOrPlayerToMove] [dimensionForCoords]`**
+    *   **Purpose:** Teleports players or self.
+    *   **Syntax Examples:**
+        *   `!tp <playerToMove> <destinationPlayer>`
+        *   `!tp <x> <y> <z> [dimension]` (teleports self)
+        *   `!tp <playerToMove> <x> <y> <z> [dimension]`
     *   **Permission:** Admin-only.
 *   **`!vanish`**
     *   **Purpose:** Toggles visibility for an admin (vanish mode).
     *   **Syntax:** `!vanish`
     *   **Permission:** Admin-only.
-*   **`!warnings [subcommand] [playername]`** (alias: `!cw` for `!warnings clear`)
-    *   **Purpose:** Manages player warnings. Subcommands may include `show <playername>`, `clear <playername>`.
-    *   **Syntax:** `!warnings <subcommand> [options...]`
+*   **`!warnings <playername>`**
+    *   **Purpose:** Views a player's AntiCheat flags. Use `!resetflags` (or alias `!clearwarnings`) to clear them.
+    *   **Syntax:** `!warnings <playername>`
     *   **Permission:** Admin-only.
 *   **`!xraynotify`** (alias: `!xn`)
     *   **Purpose:** Toggles personal admin notifications for X-Ray ore mining alerts.
