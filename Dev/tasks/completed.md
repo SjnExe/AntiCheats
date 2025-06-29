@@ -1,4 +1,4 @@
-1# Completed Development Tasks
+# Completed Development Tasks
 
 This document lists significant tasks that have been completed.
 
