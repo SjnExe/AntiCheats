@@ -119,40 +119,41 @@ function getPlayerRankAndPermissions(player, dependencies) {
     let ownerName = ''; // Default value
     let adminTag = '';  // Default value
 
-    // --- BEGIN DIAGNOSTIC LOGGING for rankManager config issue ---
-    if (playerUtils && typeof playerUtils.debugLog === 'function') {
-        playerUtils.debugLog(`[RankManager][Diag] In getPlayerRankAndPermissions for player: ${player?.nameTag}`, player?.nameTag, dependencies);
-        playerUtils.debugLog(`[RankManager][Diag] typeof config: ${typeof config}`, player?.nameTag, dependencies);
-        try {
-            playerUtils.debugLog(`[RankManager][Diag] config JSON: ${JSON.stringify(config, null, 2)}`, player?.nameTag, dependencies);
-        } catch (e) {
-            playerUtils.debugLog(`[RankManager][Diag] config JSON.stringify error: ${e.message}`, player?.nameTag, dependencies);
-        }
+    // --- BEGIN DIAGNOSTIC LOGGING for rankManager config issue (using console.warn) ---
+    const diagPlayerName = player?.nameTag || 'UnknownPlayer';
+    console.warn(`[RankMan][CONSOLE] In getPlayerRankAndPermissions for player: ${diagPlayerName}`);
+    console.warn(`[RankMan][CONSOLE] typeof dependencies: ${typeof dependencies}`);
+
+    const { config, playerUtils } = dependencies || {}; // Destructure safely in case dependencies is undefined
+
+    console.warn(`[RankMan][CONSOLE] typeof config (after destructure): ${typeof config}`);
+    try {
+        // Attempt to stringify only a few key expected properties of config to avoid large objects / circular refs
+        let configSample = "Not an object or null";
         if (config && typeof config === 'object' && config !== null) {
-            playerUtils.debugLog(`[RankManager][Diag] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`, player?.nameTag, dependencies);
-            playerUtils.debugLog(`[RankManager][Diag] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`, player?.nameTag, dependencies);
-            playerUtils.debugLog(`[RankManager][Diag] typeof config.adminTag: ${typeof config.adminTag}`, player?.nameTag, dependencies);
-            playerUtils.debugLog(`[RankManager][Diag] config.adminTag value: "${String(config.adminTag)}"`, player?.nameTag, dependencies);
-        } else {
-            playerUtils.debugLog('[RankManager][Diag] config is not a valid object or is null.', player?.nameTag, dependencies);
+            configSample = JSON.stringify({
+                ownerPlayerName: config.ownerPlayerName,
+                adminTag: config.adminTag,
+                prefix: config.prefix,
+                enableDebugLogging: config.enableDebugLogging
+            }, null, 2);
         }
+        console.warn(`[RankMan][CONSOLE] config sample JSON: ${configSample}`);
+    } catch (e) {
+        console.warn(`[RankMan][CONSOLE] config sample JSON.stringify error: ${e.message}`);
+    }
+
+    if (config && typeof config === 'object' && config !== null) {
+        console.warn(`[RankMan][CONSOLE] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
+        console.warn(`[RankMan][CONSOLE] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
+        console.warn(`[RankMan][CONSOLE] typeof config.adminTag: ${typeof config.adminTag}`);
+        console.warn(`[RankMan][CONSOLE] config.adminTag value: "${String(config.adminTag)}"`);
     } else {
-        // Fallback console.log if playerUtils.debugLog is not available (e.g. if playerUtils itself is part of the problem with dependencies)
-        console.log(`[RankManager][DiagFallback] In getPlayerRankAndPermissions for player: ${player?.nameTag}`);
-        console.log(`[RankManager][DiagFallback] typeof config: ${typeof config}`);
-        try {
-            console.log(`[RankManager][DiagFallback] config JSON: ${JSON.stringify(config, null, 2)}`);
-        } catch (e) {
-            console.log(`[RankManager][DiagFallback] config JSON.stringify error: ${e.message}`);
-        }
-        if (config && typeof config === 'object' && config !== null) {
-            console.log(`[RankManager][DiagFallback] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
-            console.log(`[RankManager][DiagFallback] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
-            console.log(`[RankManager][DiagFallback] typeof config.adminTag: ${typeof config.adminTag}`);
-            console.log(`[RankManager][DiagFallback] config.adminTag value: "${String(config.adminTag)}"`);
-        } else {
-            console.log('[RankManager][DiagFallback] config is not a valid object or is null.');
-        }
+        console.warn('[RankMan][CONSOLE] config is not a valid object or is null (after destructure).');
+    }
+    console.warn(`[RankMan][CONSOLE] typeof playerUtils (after destructure): ${typeof playerUtils}`);
+    if(playerUtils) {
+        console.warn(`[RankMan][CONSOLE] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
     }
     // --- END DIAGNOSTIC LOGGING ---
 
