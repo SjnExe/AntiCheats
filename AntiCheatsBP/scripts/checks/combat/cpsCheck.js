@@ -10,7 +10,6 @@
 
 /**
  * Checks if a player is clicking or attacking at an abnormally high rate (CPS).
- * This function analyzes attack event timestamps stored in `pData.attackEvents`.
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.

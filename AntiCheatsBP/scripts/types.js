@@ -15,7 +15,6 @@
  * @typedef {import('@minecraft/server-ui').MessageFormData} MessageFormData UI form.
  * @typedef {import('@minecraft/server-ui').ModalFormData} ModalFormData UI form.
  * @typedef {import('@minecraft/server').ItemComponentTypes} ItemComponentTypes Enum for item components.
- * @typedef {import('@minecraft/server').System} System System object from Minecraft server.
  */
 
 // --- AntiCheat System Specific Types ---
