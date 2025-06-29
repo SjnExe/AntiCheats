@@ -596,18 +596,10 @@ function attemptInitializeSystem(retryCount = 0) {
         if (retryCount < MAX_INIT_RETRIES) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // MAX_INIT_RETRIES reached
-            console.error('[AntiCheat] CRITICAL: Some event APIs did not become ready after multiple retries. Proceeding with partial initialization.');
-            try {
-                if (tempStartupDepsForLog && tempStartupDepsForLog.playerUtils && typeof tempStartupDepsForLog.playerUtils.notifyAdmins === 'function') {
-                    tempStartupDepsForLog.playerUtils.notifyAdmins("§c[AntiCheat] WARNING: Failed to initialize some event APIs after multiple retries. Some AntiCheat features may be disabled. Please check server logs.", tempStartupDepsForLog, null, null);
-                } else {
-                    console.warn('[AntiCheat] Could not notify admins: playerUtils or notifyAdmins function not available in temp dependencies during final retry.');
-                }
-            } catch (e) {
-                console.error(`[AntiCheat] Error during admin notification attempt: ${e}`);
-            }
-            console.log('[AntiCheat] Attempting to call performInitializations() after exhausted retries...');
+            // MAX_INIT_RETRIES reached - Simplified for diagnostics
+            console.error('[AntiCheat] MAX RETRIES REACHED - EXHAUSTION BLOCK ENTERED. Attempting to proceed.');
+            // Directly call performInitializations to see if this path is reached and if performInitializations logs anything.
+            // Temporarily removed admin notification and other logic here to ensure this block itself isn't failing silently.
             performInitializations();
         }
     }
