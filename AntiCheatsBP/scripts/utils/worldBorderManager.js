@@ -254,17 +254,6 @@ function easeOutQuad(t) { return t * (2 - t); }
 function easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
 
 /**
- * Maps a numeric value from one range to another.
- * @param {number} value - The input value to map.
- * @param {number} inMin - The minimum of the input range.
- * @param {number} inMax - The maximum of the input range.
- * @param {number} outMin - The minimum of the output range.
- * @param {number} outMax - The maximum of the output range.
- * @returns {number} The mapped value.
- */
-function mapRange(value, inMin, inMax, outMin, outMax) { return (value - inMin) * (outMax - outMin) / (inMax - inMin) + outMin; }
-
-/**
  * Finds a safe Y-coordinate for teleportation near a target X, Z.
  * Searches downwards first, then upwards from the initial Y to find a 2-block high air gap with solid ground.
  * @param {import('@minecraft/server').Dimension} dimension - The dimension object to search within.
@@ -274,7 +263,6 @@ function mapRange(value, inMin, inMax, outMin, outMax) { return (value - inMin) 
  * @returns {number} A Y-coordinate considered safe for teleportation, or the initialY if no better spot is found.
  */
 function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
-    // const { playerUtils } = dependencies; // Not used in this specific utility, but good practice for others
     const minDimensionHeight = dimension.heightRange.min;
     const maxDimensionHeight = dimension.heightRange.max - 2; // Leave space for player head
     let currentY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));

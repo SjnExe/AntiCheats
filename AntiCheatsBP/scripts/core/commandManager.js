@@ -82,21 +82,13 @@ export function unregisterCommandInternal(commandName, dependencies) {
 }
 
 
-// Initial load when the module is first imported.
-// This is a bit unusual as initializeCommands would typically be called from main.js explicitly.
-// However, to ensure maps are populated for direct export and use by handleChatCommand if it's called
-// before an explicit initializeCommands from main (which it is, via dependencies), we do an initial population.
-// The explicit call from main.js will then serve as a "reload".
 (() => {
-    // A minimal dependencies object for this initial, self-contained load.
     const initialLoadDeps = {
-        playerUtils: { debugLog: (msg) => console.log(msg) }, // Basic logger
-        config: {} // Empty config, as alias resolution isn't part of this initial map population
+        playerUtils: { debugLog: (msg) => console.log(msg) },
+        config: {}
     };
     initializeCommands(initialLoadDeps);
 })();
-
-
 /**
  * Handles incoming chat messages to process potential commands.
  * This function is typically called from a `beforeChatSend` event listener in `main.js`.

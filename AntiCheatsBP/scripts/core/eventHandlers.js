@@ -3,7 +3,6 @@
  */
 import * as mc from '@minecraft/server';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js';
-import { formatSessionDuration } from '../utils/playerUtils.js';
 
 /**
  * Handles player leave events.
