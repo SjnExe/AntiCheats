@@ -82,6 +82,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[KickCommand] Error kicking player ${targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
         if (logManager?.addLog) {
             logManager.addLog({
+                adminName: player.nameTag,
                 actionType: 'error',
                 context: 'kickCommand.execution',
                 details: `Failed to kick ${targetPlayerName}: ${e.stack || e}`,

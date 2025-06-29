@@ -40,7 +40,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     pData.recentHits = pData.recentHits || [];
 
     const newHit = {
-        entityId: String(targetEntity.id),
+        entityId: targetEntity.id,
         timestamp: now,
     };
     pData.recentHits.push(newHit);

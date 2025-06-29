@@ -32,24 +32,22 @@ export async function checkNameSpoof(player, pData, dependencies) {
     const currentNameTag = player.nameTag;
     const watchedPrefix = pData.isWatched ? player.name : null;
 
-    let reasonDetailKey = null;
-    let reasonDetailParams = {};
-    let flaggedReasonForLog = '';
+    let reasonDetailString = null;
+    let flaggedReasonForLog = null;
+    let previousNameTagForViolationDetails = 'N/A';
 
     const maxLength = config.nameSpoofMaxLength ?? 48;
     if (currentNameTag.length > maxLength) {
-        reasonDetailKey = 'check.nameSpoof.reason.lengthExceeded';
-        reasonDetailParams = { currentLength: currentNameTag.length.toString(), maxLength: maxLength.toString() };
+        reasonDetailString = `Name is too long (${currentNameTag.length}/${maxLength}).`;
         flaggedReasonForLog = `NameTag length limit exceeded (${currentNameTag.length}/${maxLength})`;
     }
 
-    if (!reasonDetailKey && config.nameSpoofDisallowedCharsRegex) {
+    if (!reasonDetailString && config.nameSpoofDisallowedCharsRegex) {
         try {
             const regex = new RegExp(config.nameSpoofDisallowedCharsRegex, 'u');
             const match = currentNameTag.match(regex);
             if (match) {
-                reasonDetailKey = 'check.nameSpoof.reason.disallowedChars';
-                reasonDetailParams = { char: match[0] };
+                reasonDetailString = `Name contains disallowed character: '${match[0]}'.`;
                 flaggedReasonForLog = `NameTag contains disallowed character(s) (e.g., '${match[0]}') matching regex.`;
             }
         } catch (e) {
@@ -57,37 +55,27 @@ export async function checkNameSpoof(player, pData, dependencies) {
         }
     }
 
-    const previousNameTagForLog = pData.lastKnownNameTag;
     if (currentNameTag !== pData.lastKnownNameTag) {
         const minIntervalTicks = config.nameSpoofMinChangeIntervalTicks ?? 200;
         const ticksSinceLastChange = currentTick - (pData.lastNameTagChangeTick ?? 0);
 
-        if (!reasonDetailKey &&
+        if (!reasonDetailString &&
             (pData.lastNameTagChangeTick ?? 0) !== 0 &&
             ticksSinceLastChange < minIntervalTicks) {
-            reasonDetailKey = 'check.nameSpoof.reason.rapidChange';
-            reasonDetailParams = { interval: ticksSinceLastChange.toString(), minInterval: minIntervalTicks.toString() };
-            flaggedReasonForLog = `NameTag changed too rapidly (within ${ticksSinceLastChange} ticks, min is ${minIntervalTicks}t). From '${previousNameTagForLog}' to '${currentNameTag}'.`;
+            reasonDetailString = `Name changed too quickly (last change ${ticksSinceLastChange} ticks ago, min is ${minIntervalTicks}).`;
+            flaggedReasonForLog = `NameTag changed too rapidly (within ${ticksSinceLastChange} ticks, min is ${minIntervalTicks}t). From '${pData.lastKnownNameTag}' to '${currentNameTag}'.`;
+            previousNameTagForViolationDetails = pData.lastKnownNameTag;
         }
         pData.lastKnownNameTag = currentNameTag;
         pData.lastNameTagChangeTick = currentTick;
         pData.isDirtyForSave = true;
     }
 
-    if (reasonDetailKey) {
-        let reasonDetailString = flaggedReasonForLog;
-        if (reasonDetailKey === 'check.nameSpoof.reason.lengthExceeded' && reasonDetailParams.currentLength && reasonDetailParams.maxLength) {
-            reasonDetailString = `Name is too long (${reasonDetailParams.currentLength}/${reasonDetailParams.maxLength}).`;
-        } else if (reasonDetailKey === 'check.nameSpoof.reason.disallowedChars' && reasonDetailParams.char) {
-            reasonDetailString = `Name contains disallowed character: '${reasonDetailParams.char}'.`;
-        } else if (reasonDetailKey === 'check.nameSpoof.reason.rapidChange' && reasonDetailParams.interval && reasonDetailParams.minInterval) {
-            reasonDetailString = `Name changed too quickly (last change ${reasonDetailParams.interval} ticks ago, min is ${reasonDetailParams.minInterval}).`;
-        }
-
+    if (reasonDetailString) {
         const violationDetails = {
             reasonDetail: reasonDetailString,
             currentNameTagDisplay: currentNameTag,
-            previousNameTagRecorded: (reasonDetailKey === 'check.nameSpoof.reason.rapidChange') ? previousNameTagForLog : 'N/A',
+            previousNameTagRecorded: previousNameTagForViolationDetails,
             actualPlayerName: player.name,
             maxLengthConfig: maxLength.toString(),
             disallowedCharRegexConfig: config.nameSpoofDisallowedCharsRegex ?? 'N/A',

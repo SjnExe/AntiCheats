@@ -33,13 +33,8 @@ export async function checkAntiGmc(player, pData, dependencies) {
 
     if (player.gameMode === mc.GameMode.creative) {
         const playerPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
-        let isExempt = false;
 
-        if (playerPermLevel <= permissionLevels.admin) {
-            isExempt = true;
-        }
-
-        if (!isExempt) {
+        if (playerPermLevel > permissionLevels.admin) {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             let autoSwitchedGameMode = false;
             let targetGamemodeString = (config.antiGmcSwitchToGameMode || 'survival').toLowerCase();
