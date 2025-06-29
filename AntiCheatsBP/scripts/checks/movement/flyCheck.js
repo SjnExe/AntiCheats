@@ -18,14 +18,6 @@ import * as mc from '@minecraft/server';
  * Checks for fly-related hacks by analyzing player's vertical movement, airborne state,
  * and active effects (expected to be pre-processed into `pData`).
  *
- * This function performs several checks:
- * 1.  **High Y-Velocity Check**: Detects if player's upward velocity exceeds limits,
- *     considering jump boost but not normal ascent from jumping.
- * 2.  **Sustained Upward Movement**: Detects prolonged upward flight not attributable
- *     to game mechanics like levitation or climbing.
- * 3.  **Hover Detection**: Detects players remaining airborne at a relatively stable height
- *     without valid reasons (e.g., not gliding, not climbing, no levitation).
- *
  * It bypasses checks if the player is legitimately flying (Creative/Spectator mode) or gliding with elytra.
  * Assumes `pData` contains fields like `jumpBoostAmplifier`, `hasSlowFalling`, `hasLevitation`,
  * `lastUsedElytraTick`, `lastTookDamageTick`, which should be updated by `updateTransientPlayerData`
