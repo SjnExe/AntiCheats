@@ -47,6 +47,10 @@
     {
       "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
       "version": "__VERSION_ARRAY__"
+    },
+    {
+      "module_name": "@minecraft/server-gametest",
+      "version": "1.0.0-beta"
     }
   ],
   "capabilities": [
