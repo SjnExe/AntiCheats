@@ -5,6 +5,7 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/SjnExe/AntiCheats/releases/latest"><img src="https://img.shields.io/github/v/release/SjnExe/AntiCheats?label=latest%20version&display_name=tag&sort=semver&style=for-the-badge" alt="Latest Release"/></a>
   <img src="https://img.shields.io/badge/Minecraft_BE-1.21.90%2B-brightgreen?style=for-the-badge&logo=minecraft" alt="Minecraft BE Version"/>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT"/></a>
   <a href="https://github.com/SjnExe/AntiCheats/issues"><img src="https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github" alt="GitHub Issues"/></a>
