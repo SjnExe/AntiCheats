@@ -233,7 +233,8 @@ function checkEventAPIsReady(dependencies) {
         logger('[API_CHECK] mc.world: DEFINED');
     }
 
-    const requiredBeforeEvents = ['chatSend', 'playerLeave', 'entityHurt', 'playerBreakBlock', 'itemUse', 'itemUseOn', 'playerPlaceBlock'];
+    // Removed 'entityHurt' and 'itemUseOn' as they are not standard mc.world.beforeEvents
+    const requiredBeforeEvents = ['chatSend', 'playerLeave', 'playerBreakBlock', 'itemUse', 'playerPlaceBlock'];
     if (!mc.world.beforeEvents) {
         errorLogger('[API_CHECK] mc.world.beforeEvents: UNDEFINED - CRITICAL');
         overallAllReady = false;
