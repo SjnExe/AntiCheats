@@ -8,9 +8,24 @@
   <a href="https://github.com/SjnExe/AntiCheats/releases"><img src="https://img.shields.io/github/downloads/SjnExe/AntiCheats/total?style=for-the-badge" alt="GitHub All Releases"/></a>
   <img src="https://img.shields.io/badge/Minecraft_BE-1.21.90%2B-brightgreen?style=for-the-badge&logo=minecraft" alt="Minecraft BE Version"/>
   <a href="https://github.com/SjnExe/AntiCheats/issues"><img src="https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github" alt="GitHub Issues"/></a>
-  <img src="https://img.shields.io/badge/Status-Active-green?style=for-the-badge" alt="Status: Active"/>
+  <img src="https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge" alt="Status: Under Development"/>
   <a href="https://discord.gg/SMUHUnGyyz"><img src="https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA" alt="Discord Server"/></a>
 </p>
+
+---
+
+> **⚠️ CURRENT PROJECT STATUS: EXPERIMENTAL - USE WITH CAUTION ⚠️**
+>
+> This AntiCheats Addon is currently **under active development** and should be considered **experimental**.
+>
+> **Please be aware:**
+> *   The addon may contain **significant bugs or errors**.
+> *   Functionality is subject to change and may be unstable.
+> *   **Not recommended for production servers** or public worlds at this stage.
+>
+> We appreciate your understanding and encourage testers to [report any issues on GitHub](https://github.com/SjnExe/AntiCheats/issues). Your feedback is vital for improvement!
+
+---
 
 <p align="center">
   <strong>The ultimate scripting-based Anti-Cheat solution for your Minecraft Bedrock Edition world!</strong>

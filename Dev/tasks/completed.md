@@ -3,49 +3,60 @@
 This document lists significant tasks that have been completed.
 
 ---
-## Refine README Badges and Clean Up Todo List (Jules - Completed YYYY-MM-DD)
+## Update Project Status in README (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Improve README layout by relocating a badge and streamline `Dev/tasks/todo.md` by removing tasks that cannot be completed by the AI due to external dependencies.
+**Objective:** Adjust the `README.md` to accurately reflect the project's current experimental status and active development state, warning users about potential instability.
 
 **Summary of Changes:**
-*   **README.md Badge Relocation**:
-    *   Reviewed the badge cluster at the top of `README.md`.
-    *   Moved the MIT License badge from the top group to the footer paragraph to slightly reduce visual clutter at the top.
-*   **`Dev/tasks/todo.md` Cleanup**:
-    *   Reviewed remaining "README Enhancements (Further Considerations)".
-    *   Removed the following tasks as they require external assets or CI/bot integrations beyond AI capabilities:
-        *   `Consider adding a project logo/banner (requires asset).`
-        *   `Code size/LoC badge (requires CI integration for dynamic updates or manual static updates).`
-    *   Items already marked "(Addressed)" for Discord badge and contributor section were confirmed.
+*   **Status Badge Updated**:
+    *   The existing `Status: Active` (green) badge was changed to `Status: Under Development` (orange) for a quick visual cue.
+    *   Markdown changed from `<img src="https://img.shields.io/badge/Status-Active-green?style=for-the-badge" alt="Status: Active"/>` to `<img src="https://img.shields.io/badge/Status-Under%20Development-orange?style=for-the-badge" alt="Status: Under Development"/>`.
+*   **Added Prominent Status Note**:
+    *   A new section titled "⚠️ CURRENT PROJECT STATUS: EXPERIMENTAL - USE WITH CAUTION ⚠️" was inserted as a blockquote immediately after the top badges and before the main project description.
+    *   This note explicitly states:
+        *   The addon is under active development and experimental.
+        *   It may contain significant bugs or errors.
+        *   Functionality is subject to change and may be unstable.
+        *   It is not recommended for production servers at this stage.
+        *   Encourages users to report issues on GitHub.
 *   **Updated Task Files**: This task was added to `ongoing.md` and subsequently documented here in `completed.md`.
 
-**Outcome:** The `README.md` has a slightly less cluttered header. The `Dev/tasks/todo.md` file is now more focused on actionable items or clear examples for future human development, with non-actionable (for AI) cosmetic tasks removed.
+**Outcome:** The `README.md` now more accurately represents the project's development phase, providing clear warnings to potential users about its experimental nature and potential for bugs, while still encouraging testing and feedback.
+
+*(Note: Replace YYYY-MM-DD with the actual completion date)*
+---
+
+## Refine README Badges and Clean Up Todo List (Jules - Completed YYYY-MM-DD)
+
+**Objective:** Improve README layout by relocating a badge and streamline `Dev/tasks/todo.md`.
+
+**Summary of Changes:**
+*   **README.md Badge Relocation**: Moved the MIT License badge to the footer.
+*   **`Dev/tasks/todo.md` Cleanup**: Removed tasks requiring external assets or complex CI integrations.
+
+**Outcome:** `README.md` has a slightly less cluttered header. `Dev/tasks/todo.md` is more focused.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
 
 ## Add Contributors Section to README (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Add a dedicated section to `README.md` to acknowledge and appreciate project contributors.
+**Objective:** Add a dedicated section to `README.md` to acknowledge contributors.
 
 **Summary of Changes:**
-*   **Drafted Content**: Created text for "❤️ Our Valued Contributors", including a link to GitHub contributors graph.
-*   **Integrated into `README.md`**: Placed the new section appropriately.
-*   **Updated Task Files**.
+*   Drafted and integrated "❤️ Our Valued Contributors" section with a link to GitHub contributors graph.
 
-**Outcome:** `README.md` now formally recognizes community contributions.
+**Outcome:** `README.md` formally recognizes community contributions.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
 
 ## Add Dynamic Discord Member Count Badge to README (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Replace the static Discord badge in `README.md` with a dynamic one.
+**Objective:** Replace the static Discord badge with a dynamic one.
 
 **Summary of Changes:**
-*   Researched and confirmed `shields.io` support.
-*   Obtained Server ID from user.
-*   Updated `README.md` with the dynamic badge.
+*   Researched, obtained Server ID, and updated `README.md` with the dynamic badge.
 
 **Outcome:** `README.md` features a dynamic Discord badge.
 
@@ -54,11 +65,10 @@ This document lists significant tasks that have been completed.
 
 ## Expand `Docs/AutoModDetails.md` with Complex Examples (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Enhance `Docs/AutoModDetails.md` by adding a section with complex rule examples.
+**Objective:** Enhance `Docs/AutoModDetails.md` with advanced rule examples.
 
 **Summary of Changes:**
-*   Reviewed system capabilities.
-*   Added "Advanced Rule Examples" section with three detailed examples.
+*   Reviewed system capabilities and added three detailed examples.
 
 **Outcome:** `AutoModDetails.md` is more comprehensive.
 
@@ -67,11 +77,10 @@ This document lists significant tasks that have been completed.
 
 ## Create `Docs/Troubleshooting.md` and Link in README (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Develop a comprehensive troubleshooting guide and integrate it.
+**Objective:** Develop and integrate a comprehensive troubleshooting guide.
 
 **Summary of Changes:**
-*   Created `Docs/Troubleshooting.md`.
-*   Updated `README.md` to link to the new guide.
+*   Created `Docs/Troubleshooting.md` and linked it in `README.md`.
 
 **Outcome:** Improved user support.
 
@@ -80,10 +89,10 @@ This document lists significant tasks that have been completed.
 
 ## README.md Enhancement (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Improve the main `README.md` for clarity, appeal, and completeness.
+**Objective:** Improve `README.md` for clarity, appeal, and completeness.
 
 **Summary of Changes:**
-*   Added badges, new sections, visual placeholders, and improved content structure.
+*   Added badges, new sections, visual placeholders, and improved structure.
 
 **Outcome:** `README.md` is more informative and user-friendly.
 
