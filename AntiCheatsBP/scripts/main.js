@@ -596,12 +596,19 @@ function attemptInitializeSystem(retryCount = 0) {
         if (retryCount < MAX_INIT_RETRIES) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // MAX_INIT_RETRIES reached, but some APIs might still be missing
+            // MAX_INIT_RETRIES reached
             console.error('[AntiCheat] CRITICAL: Some event APIs did not become ready after multiple retries. Proceeding with partial initialization.');
-            if (tempStartupDepsForLog && tempStartupDepsForLog.playerUtils) {
-                 tempStartupDepsForLog.playerUtils.notifyAdmins("§c[AntiCheat] WARNING: Failed to initialize some event APIs after multiple retries. Some AntiCheat features may be disabled. Please check server logs.", tempStartupDepsForLog, null, null);
+            try {
+                if (tempStartupDepsForLog && tempStartupDepsForLog.playerUtils && typeof tempStartupDepsForLog.playerUtils.notifyAdmins === 'function') {
+                    tempStartupDepsForLog.playerUtils.notifyAdmins("§c[AntiCheat] WARNING: Failed to initialize some event APIs after multiple retries. Some AntiCheat features may be disabled. Please check server logs.", tempStartupDepsForLog, null, null);
+                } else {
+                    console.warn('[AntiCheat] Could not notify admins: playerUtils or notifyAdmins function not available in temp dependencies during final retry.');
+                }
+            } catch (e) {
+                console.error(`[AntiCheat] Error during admin notification attempt: ${e}`);
             }
-            performInitializations(); // Proceed with initializations, letting individual subscriptions fail gracefully
+            console.log('[AntiCheat] Attempting to call performInitializations() after exhausted retries...');
+            performInitializations();
         }
     }
 }
