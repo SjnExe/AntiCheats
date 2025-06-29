@@ -28,7 +28,6 @@ import * as worldBorderManager from './utils/worldBorderManager.js';
 let currentTick = 0;
 
 /**
- * @returns {import('./types.js').Dependencies} A standard set of dependencies for event handlers and tick loops.
  */
 function getStandardDependencies() {
     return {

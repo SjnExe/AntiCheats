@@ -79,9 +79,7 @@ export async function execute(player, args, dependencies) {
     }
 }
 
-function formatDurationBrief(ms) {
-    if (ms <= 0) return '0s';
-    let seconds = Math.floor(ms / 1000);
+function normalizeDimensionId(player, inputDimId) {
     let minutes = Math.floor(seconds / 60);
     let hours = Math.floor(minutes / 60);
     seconds %= 60;

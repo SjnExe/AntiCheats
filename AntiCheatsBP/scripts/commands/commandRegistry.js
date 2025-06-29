@@ -48,7 +48,6 @@ import * as warningsCmd from './warnings.js';
 import * as watchCmd from './watch.js';
 import * as worldborderCmd from './worldborder.js';
 import * as xraynotifyCmd from './xraynotify.js';
-
 /**
  * Array containing all registered command modules.
  * Each module is expected to export a `definition` object (conforming to `CommandDefinition` type)
