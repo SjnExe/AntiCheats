@@ -75,113 +75,7 @@ function getStandardDependencies() {
     };
 }
 
-mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-    const dependencies = getStandardDependencies();
-    if (eventData.message.startsWith(dependencies.config.prefix)) {
-        const commandHandlingDependencies = {
-            ...dependencies,
-            commandDefinitionMap: commandManager.commandDefinitionMap,
-            commandExecutionMap: commandManager.commandExecutionMap,
-        };
-        await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
-    } else {
-        await eventHandlers.handleBeforeChatSend(eventData, dependencies);
-    }
-});
-
-mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-    eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
-});
-
-mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
-    eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
-});
-
-mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-    const dependencies = getStandardDependencies();
-    eventHandlers.handleEntityHurt(eventData, dependencies);
-});
-
-mc.world.beforeEvents.entityHurt.subscribe(eventData => {
-    const dependencies = getStandardDependencies();
-    if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
-        return;
-    }
-
-    const { hurtEntity, damageSource } = eventData;
-    if (hurtEntity.typeId !== mc.MinecraftEntityTypes.player.id) return;
-
-    const player = hurtEntity;
-
-    const requestsInWarmup = tpaManager.getRequestsInWarmup();
-    const playerActiveWarmupRequest = requestsInWarmup.find(
-        req => (req.requesterName === player.nameTag && req.requestType === 'tpa') ||
-               (req.targetName === player.nameTag && req.requestType === 'tpahere')
-    );
-
-    if (playerActiveWarmupRequest && playerActiveWarmupRequest.status === 'pending_teleport_warmup') {
-        const damageCause = damageSource?.cause || 'unknown';
-        const reasonMsgPlayer = dependencies.getString('tpa.manager.warmupCancelledDamage.player', { damageCause });
-        const reasonMsgLog = `Player ${player.nameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${playerActiveWarmupRequest.requestId}.`;
-        tpaManager.cancelTeleport(playerActiveWarmupRequest.requestId, reasonMsgPlayer, reasonMsgLog, dependencies);
-    }
-});
-
-mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
-    await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
-});
-
-mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
-    await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
-});
-
-mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
-    await eventHandlers.handleItemUse(eventData, getStandardDependencies());
-});
-
-mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
-    await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
-});
-
-mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
-    await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
-});
-
-mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
-    await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
-});
-
-mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
-    await eventHandlers.handleInventoryItemChange(
-        eventData.player,
-        eventData.newItemStack,
-        eventData.oldItemStack,
-        eventData.inventorySlot,
-        getStandardDependencies()
-    );
-});
-
-mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
-    eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
-});
-
-mc.world.afterEvents.entityDie.subscribe((eventData) => {
-    const dependencies = getStandardDependencies();
-    if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
-        eventHandlers.handlePlayerDeath(eventData, dependencies);
-    }
-    if (dependencies.config.enableDeathEffects) {
-        eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
-    }
-});
-
-mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
-    await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
-});
-
-mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
-    await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
-});
+// Event subscriptions will be moved into initializeSystem
 
 mc.system.runInterval(async () => {
     currentTick++;
@@ -311,6 +205,117 @@ function initializeSystem() {
     const startupDependencies = getStandardDependencies();
     playerUtils.debugLog('Anti-Cheat Script Loaded. Initializing modules...', 'System', startupDependencies);
 
+    // Subscribe to events first
+    mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
+        const dependencies = getStandardDependencies();
+        if (eventData.message.startsWith(dependencies.config.prefix)) {
+            const commandHandlingDependencies = {
+                ...dependencies,
+                commandDefinitionMap: commandManager.commandDefinitionMap,
+                commandExecutionMap: commandManager.commandExecutionMap,
+            };
+            await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
+        } else {
+            await eventHandlers.handleBeforeChatSend(eventData, dependencies);
+        }
+    });
+
+    mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
+        eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
+    });
+
+    mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
+        eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
+    });
+
+    mc.world.afterEvents.entityHurt.subscribe((eventData) => {
+        const dependencies = getStandardDependencies();
+        eventHandlers.handleEntityHurt(eventData, dependencies);
+    });
+
+    // Specific entityHurt for TPA, ensure it's also initialized
+    mc.world.beforeEvents.entityHurt.subscribe(eventData => {
+        const dependencies = getStandardDependencies();
+        if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
+            return;
+        }
+
+        const { hurtEntity, damageSource } = eventData;
+        if (hurtEntity.typeId !== mc.MinecraftEntityTypes.player.id) return;
+
+        const player = hurtEntity;
+
+        const requestsInWarmup = tpaManager.getRequestsInWarmup();
+        const playerActiveWarmupRequest = requestsInWarmup.find(
+            req => (req.requesterName === player.nameTag && req.requestType === 'tpa') ||
+                   (req.targetName === player.nameTag && req.requestType === 'tpahere')
+        );
+
+        if (playerActiveWarmupRequest && playerActiveWarmupRequest.status === 'pending_teleport_warmup') {
+            const damageCause = damageSource?.cause || 'unknown';
+            const reasonMsgPlayer = dependencies.getString('tpa.manager.warmupCancelledDamage.player', { damageCause });
+            const reasonMsgLog = `Player ${player.nameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${playerActiveWarmupRequest.requestId}.`;
+            tpaManager.cancelTeleport(playerActiveWarmupRequest.requestId, reasonMsgPlayer, reasonMsgLog, dependencies);
+        }
+    });
+
+    mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
+        await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
+    });
+
+    mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
+        await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
+    });
+
+    mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
+        await eventHandlers.handleItemUse(eventData, getStandardDependencies());
+    });
+
+    mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
+        await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
+    });
+
+    mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
+        await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
+    });
+
+    mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
+        await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
+    });
+
+    mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
+        await eventHandlers.handleInventoryItemChange(
+            eventData.player,
+            eventData.newItemStack,
+            eventData.oldItemStack,
+            eventData.inventorySlot,
+            getStandardDependencies()
+        );
+    });
+
+    mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
+        eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
+    });
+
+    mc.world.afterEvents.entityDie.subscribe((eventData) => {
+        const dependencies = getStandardDependencies();
+        if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
+            eventHandlers.handlePlayerDeath(eventData, dependencies);
+        }
+        if (dependencies.config.enableDeathEffects) {
+            eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
+        }
+    });
+
+    mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
+        await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
+    });
+
+    mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
+        await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
+    });
+
+    // Then initialize other modules
     commandManager.initializeCommands(startupDependencies);
     logManager.initializeLogCache(startupDependencies);
     reportManager.initializeReportCache(startupDependencies);
