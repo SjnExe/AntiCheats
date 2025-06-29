@@ -51,7 +51,7 @@ export function initializeLogCache(dependencies) {
         playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error.message}`, 'System', dependencies);
         console.error(`LogManager: Error initializing log cache: ${error.stack || error}`);
     }
-    logsInMemory = []; // Ensure it's an empty array on error or no data
+    logsInMemory = [];
 }
 
 /**
@@ -63,7 +63,7 @@ export function initializeLogCache(dependencies) {
 export function persistLogCacheToDisk(dependencies) {
     const { playerUtils } = dependencies;
     if (!logsAreDirty && mc.world.getDynamicProperty(logPropertyKeyName) !== undefined) {
-        return true; // No changes to persist and data already exists
+        return true;
     }
     try {
         mc.world.setDynamicProperty(logPropertyKeyName, JSON.stringify(logsInMemory));
@@ -97,7 +97,7 @@ export function addLog(logEntry, dependencies) {
     }
 
     if (!logEntry.adminName) {
-        logEntry.adminName = 'System'; // Default if not provided
+        logEntry.adminName = 'System';
         playerUtils.debugLog(`LogManager: logEntry missing adminName, defaulted to 'System'. Entry: ${JSON.stringify(logEntry)}`, 'System', dependencies);
     }
 
@@ -117,5 +117,5 @@ export function getLogs(count) {
     if (typeof count === 'number' && count > 0 && count < logsInMemory.length) {
         return logsInMemory.slice(0, count);
     }
-    return [...logsInMemory]; // Return a copy to prevent external modification
+    return [...logsInMemory];
 }

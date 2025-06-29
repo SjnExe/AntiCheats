@@ -18,7 +18,6 @@ function generateRequestId() {
 export function addRequest(requester, target, type, dependencies) {
     const { config, playerUtils, getString, logManager } = dependencies;
     const now = Date.now();
-
     if (lastPlayerRequestTimestamp.has(requester.name)) {
         const elapsedTime = now - lastPlayerRequestTimestamp.get(requester.name);
         if (elapsedTime < config.tpaRequestCooldownSeconds * 1000) {
@@ -27,7 +26,6 @@ export function addRequest(requester, target, type, dependencies) {
             return { error: 'cooldown', remaining: remainingSeconds };
         }
     }
-
     const requestId = generateRequestId();
     const request = {
         requestId,
@@ -56,7 +54,6 @@ export function findRequest(playerAname, playerBname) {
         const isTargetA = request.targetName === playerAname;
         const isRequesterB = playerBname ? request.requesterName === playerBname : false;
         const isTargetB = playerBname ? request.targetName === playerBname : false;
-
         if (playerBname) {
             if ((isRequesterA && isTargetB) || (isRequesterB && isTargetA)) return request;
         } else {
@@ -98,7 +95,6 @@ export function acceptRequest(requestId, dependencies) {
     }
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
-
     if (!requesterPlayer || !targetPlayer) {
         const offlinePlayerName = !requesterPlayer ? request.requesterName : (!targetPlayer ? request.targetName : 'Unknown');
         const onlinePlayer = requesterPlayer || targetPlayer;
@@ -112,7 +108,6 @@ export function acceptRequest(requestId, dependencies) {
     request.warmupExpiryTimestamp = Date.now() + (config.tpaTeleportWarmupSeconds * 1000);
     activeRequests.set(requestId, request);
     const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: config.tpaTeleportWarmupSeconds });
-
     if (request.requestType === 'tpa') {
         requesterPlayer.sendMessage(getString('tpa.manager.requester.accepted', { targetPlayerName: targetPlayer.nameTag, warmupMessage: warmupMsgString }));
         targetPlayer.sendMessage(getString('tpa.manager.target.acceptedFromRequester', { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds }));
@@ -136,7 +131,6 @@ export function executeTeleport(requestId, dependencies) {
     }
     const requesterPlayer = world.getAllPlayers().find(p => p.name === request.requesterName);
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
-
     if (!requesterPlayer || !targetPlayer) {
         const offlinePlayerName = !requesterPlayer ? request.requesterName : (!targetPlayer ? request.targetName : 'Unknown');
         const onlinePlayer = requesterPlayer || targetPlayer;
@@ -206,7 +200,6 @@ export function declineRequest(requestId, dependencies) {
     const targetPlayer = world.getAllPlayers().find(p => p.name === request.targetName);
     const targetDisplayName = targetPlayer ? targetPlayer.nameTag : request.targetName;
     const requesterDisplayName = requesterPlayer ? requesterPlayer.nameTag : request.requesterName;
-
     if (request.status === 'pending_acceptance') {
         if (requesterPlayer?.isValid()) requesterPlayer.sendMessage(getString('tpa.manager.decline.requesterNotified', { targetPlayerName: targetDisplayName }));
         if (targetPlayer?.isValid()) targetPlayer.sendMessage(getString('tpa.manager.decline.targetNotified', { requesterPlayerName: requesterDisplayName }));

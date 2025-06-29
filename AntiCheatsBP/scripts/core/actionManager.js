@@ -33,7 +33,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     message = message.replace(/{playerName}/g, playerName);
     message = message.replace(/{checkType}/g, checkType);
     message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
-
     if (violationDetails && typeof violationDetails === 'object') {
         for (const key in violationDetails) {
             if (Object.prototype.hasOwnProperty.call(violationDetails, key)) {
@@ -58,23 +57,19 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { config, playerDataManager, playerUtils, logManager, checkActionProfiles } = dependencies;
     const playerNameForLog = player ? player.nameTag : 'System';
-
     if (!checkActionProfiles) {
         playerUtils.debugLog(`[ActionManager] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
-
     const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils.debugLog(`[ActionManager] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
-
     if (!profile.enabled) {
         playerUtils.debugLog(`[ActionManager] Actions for checkType '${checkType}' are disabled in its profile. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
-
     const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
     const flagReasonMessage = formatActionMessage(
         baseReasonTemplate,
@@ -82,12 +77,10 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         checkType,
         violationDetails
     );
-
     if (player && profile.flag) {
         const flagType = profile.flag.type || checkType;
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
         const flagDetailsForAdminNotify = formatViolationDetails(violationDetails);
-
         for (let i = 0; i < increment; i++) {
             await playerDataManager.addFlag(player, flagType, flagReasonMessage, flagDetailsForAdminNotify, dependencies);
         }
@@ -95,7 +88,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     } else if (!player && profile.flag) {
         playerUtils.debugLog(`[ActionManager] Skipping flagging for checkType '${checkType}' because player is null. Profile had flagging enabled.`, null, dependencies);
     }
-
     if (profile.log) {
         const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
         let logDetailsString = profile.log.detailsPrefix || '';
@@ -110,7 +102,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             reason: flagReasonMessage,
         }, dependencies);
     }
-
     if (profile.notifyAdmins?.message) {
         const notifyMsg = formatActionMessage(
             profile.notifyAdmins.message,
@@ -121,7 +112,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         const pData = player ? playerDataManager.getPlayerData(player.id) : null;
         playerUtils.notifyAdmins(notifyMsg, dependencies, player, pData);
     }
-
     if (player && violationDetails?.itemTypeId) {
         const pData = playerDataManager.getPlayerData(player.id);
         if (pData) {

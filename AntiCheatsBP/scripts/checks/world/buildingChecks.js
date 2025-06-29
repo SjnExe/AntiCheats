@@ -218,7 +218,7 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                     hasSolidSupport = true;
                     break;
                 }
-            } catch (e) { /* Block might be unloaded, treat as non-support */ }
+            } catch (e) { }
         }
 
         if (!hasSolidSupport) {

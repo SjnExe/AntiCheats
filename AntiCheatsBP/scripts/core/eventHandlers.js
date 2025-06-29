@@ -52,7 +52,6 @@ export async function handlePlayerLeave(eventData, dependencies) {
             const violationDetails = {
                 timeSinceLastCombat: timeSinceLastCombatSeconds,
                 incrementAmount: incrementAmount,
-                // other details from config.combatLogMessage if needed by profile template
             };
             await dependencies.actionManager.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
         }
@@ -98,16 +97,14 @@ export async function handlePlayerLeave(eventData, dependencies) {
 export async function handlePlayerSpawn(eventData, dependencies) {
     const { player, initialSpawn } = eventData;
     const { playerDataManager, playerUtils, config, logManager, checks, getString, rankManager } = dependencies;
-
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
         return;
     }
     playerUtils.debugLog(`Processing playerSpawn event for ${player.nameTag} (Initial Spawn: ${initialSpawn}). Tick: ${dependencies.mc.system.currentTick}`, player.nameTag, dependencies);
-
     try {
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies.currentTick, dependencies);
-        if (!pData) { // Should not happen if ensurePlayerDataInitialized is robust
+        if (!pData) {
             console.error(`[AntiCheat] CRITICAL: pData is null for ${player.nameTag} after ensurePlayerDataInitialized. Aborting spawn logic.`);
             return;
         }
@@ -117,34 +114,27 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         pData.isChargingBow = false;
         pData.isUsingShield = false;
         pData.isDirtyForSave = true;
-
-
         const banInfo = playerDataManager.getBanInfo(player, dependencies);
         if (banInfo) {
             playerUtils.debugLog(`Player ${player.nameTag} is banned. Kicking. Ban reason: ${banInfo.reason}, Expires: ${new Date(banInfo.unbanTime).toISOString()}`, player.nameTag, dependencies);
             const durationStringKick = getString(banInfo.unbanTime === Infinity ? 'ban.duration.permanent' : 'ban.duration.expires', { expiryDate: new Date(banInfo.unbanTime).toLocaleString() });
             let kickReason = getString('ban.kickMessage', { reason: banInfo.reason || getString('common.value.noReasonProvided'), durationMessage: durationStringKick });
-
             if (config.discordLink && config.discordLink.trim() !== '' && config.discordLink !== 'https://discord.gg/example') {
                 kickReason += `\n${getString('ban.kickMessage.discord', { discordLink: config.discordLink })}`;
             }
             player.kick(kickReason);
             return;
         }
-
         rankManager.updatePlayerNametag(player, dependencies);
         playerUtils.debugLog(`Nametag updated for ${player.nameTag} on spawn.`, player.nameTag, dependencies);
-
         if (initialSpawn && config.enableWelcomerMessage) {
             const welcomeMsgKey = config.welcomeMessage || 'welcome.joinMessage';
             const message = getString(welcomeMsgKey, { playerName: player.nameTag });
             mc.system.runTimeout(() => {
                 try { player.sendMessage(message); } catch (e) { console.warn(`Failed to send welcome message to ${player.nameTag}: ${e}`); }
             }, 20);
-
             pData.joinTime = Date.now();
             pData.isDirtyForSave = true;
-
             const spawnLocation = player.location;
             const spawnDimensionId = player.dimension.id.split(':')[1];
             const spawnGameMode = mc.GameMode[player.gameMode];
@@ -156,7 +146,6 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                 location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
                 gameMode: spawnGameMode,
             }, dependencies);
-
             if (config.notifyAdminOnNewPlayerJoin) {
                 playerUtils.notifyAdmins(getString('admin.notify.newPlayerJoined', { playerName: player.nameTag }), dependencies, player, pData);
             }
@@ -173,7 +162,6 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                 gameMode: spawnGameMode,
             }, dependencies);
         }
-
         if (pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
             mc.system.runTimeout(() => {
                 try { player.sendMessage(pData.deathMessageToShowOnSpawn); } catch (e) { console.warn(`Failed to send death coords to ${player.nameTag}: ${e}`); }
@@ -182,11 +170,9 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             pData.deathMessageToShowOnSpawn = null;
             pData.isDirtyForSave = true;
         }
-
         if (checks.checkInvalidRenderDistance && config.enableInvalidRenderDistanceCheck) {
             await checks.checkInvalidRenderDistance(player, pData, dependencies);
         }
-
         if (config.enableDetailedJoinLeaveLogging) {
             const deviceType = player.clientSystemInfo?.platformType?.toString() || getString('common.value.unknown');
             const gameModeName = mc.GameMode[player.gameMode] || getString('common.value.unknown');
@@ -202,7 +188,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             actionType: 'errorHandlePlayerSpawn',
             targetName: player?.nameTag || 'unknown player',
             details: `Error: ${error.message}`,
-            error: error.stack || error.message, // Include stack for better debugging
+            error: error.stack || error.message,
             context: 'handlePlayerSpawn',
         }, dependencies);
     }
@@ -242,26 +228,24 @@ export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
 export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, playerDataManager, checks } = dependencies;
     const { entity } = eventData;
-
     if (!entity) {
         playerUtils.debugLog('AntiGrief: eventData.entity is undefined in handleEntitySpawnEvent_AntiGrief.', null, dependencies);
         return;
     }
-
     if (entity.typeId === 'minecraft:wither' && config.enableWitherAntiGrief) {
         playerUtils.debugLog(`AntiGrief: Wither spawned (ID: ${entity.id}). Config action: ${config.witherSpawnAction}.`, null, dependencies);
         const violationDetails = { entityId: entity.id, entityType: entity.typeId, actionTaken: config.witherSpawnAction, playerNameOrContext: 'System/Environment' };
-        await actionManager.executeCheckAction('worldAntiGriefWitherSpawn', null, violationDetails, dependencies); // Standardized
+        await actionManager.executeCheckAction('worldAntiGriefWitherSpawn', null, violationDetails, dependencies);
         if (config.witherSpawnAction === 'kill') {
             try { entity.kill(); } catch (e) { console.warn(`Failed to kill wither: ${e}`); }
             playerUtils.debugLog(`AntiGrief: Wither (ID: ${entity.id}) killed due to witherSpawnAction config.`, null, dependencies);
         }
     } else if (config.enableEntitySpamAntiGrief && (entity.typeId === 'minecraft:snow_golem' || entity.typeId === 'minecraft:iron_golem')) {
         playerUtils.debugLog(`AntiGrief: ${entity.typeId} spawned. Checking attribution. Tick: ${dependencies.currentTick}`, null, dependencies);
-        for (const player of mc.world.getAllPlayers()) { // Use mc.world directly
+        for (const player of mc.world.getAllPlayers()) {
             const pData = playerDataManager.getPlayerData(player.id);
             if (pData?.expectingConstructedEntity?.type === entity.typeId &&
-                Math.abs(pData.expectingConstructedEntity.tick - dependencies.currentTick) < 10) { // Check within a small tick window
+                Math.abs(pData.expectingConstructedEntity.tick - dependencies.currentTick) < 10) {
                 playerUtils.debugLog(`AntiGrief: Attributed ${entity.typeId} to ${player.nameTag}. Expectation: ${JSON.stringify(pData.expectingConstructedEntity)}`, player.nameTag, dependencies);
                 if (checks.checkEntitySpam) {
                     const isSpam = await checks.checkEntitySpam(player, entity.typeId, pData, dependencies);
@@ -286,22 +270,17 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
 export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies;
     const { player, itemStack, block } = eventData;
-
     if (!player || !itemStack || !block) return;
-
     if (itemStack.typeId === 'minecraft:tnt' && config.enableTntAntiGrief) {
         const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
         if (config.allowAdminTntPlacement && playerPermission <= permissionLevels.admin) {
             playerUtils.debugLog(`AntiGrief: Admin ${player.nameTag} placed TNT. Allowed by config.`, player.nameTag, dependencies);
             return;
         }
-
         const violationDetails = { itemTypeId: itemStack.typeId, location: block.location, actionTaken: 'prevented', playerName: player.nameTag, x: block.location.x, y: block.location.y, z: block.location.z };
-        // Standardized checkType for actionProfiles
-        await actionManager.executeCheckAction('worldAntiGriefTntPlace', player, violationDetails, dependencies); // Standardized
-
-        const profile = config.checkActionProfiles.worldAntiGriefTntPlace; // Standardized
-        if (profile?.cancelEvent !== false) { // Default to cancel if not specified or true
+        await actionManager.executeCheckAction('worldAntiGriefTntPlace', player, violationDetails, dependencies);
+        const profile = config.checkActionProfiles.worldAntiGriefTntPlace;
+        if (profile?.cancelEvent !== false) {
             eventData.cancel = true;
             playerUtils.warnPlayer(player, getString(profile?.parameters?.messageKey || 'antigrief.tntPlacementDenied'));
         }
@@ -317,9 +296,7 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
     const { config: currentConfig, playerUtils } = dependencies;
     if (!currentConfig.enableDeathEffects) return;
     const { deadEntity } = eventData;
-
     if (!(deadEntity instanceof mc.Player)) return;
-
     playerUtils.debugLog(`Player ${deadEntity.nameTag} died. Processing death effects.`, deadEntity.nameTag, dependencies);
     try {
         if (currentConfig.deathEffectParticleName) {
@@ -349,7 +326,6 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
 export async function handleEntityHurt(eventData, dependencies) {
     const { playerDataManager, checks, config, currentTick, playerUtils } = dependencies;
     const { hurtEntity, damageSource, damagingEntity: directDamagingEntity } = eventData;
-
     if (hurtEntity?.typeId === 'minecraft:player') {
         const victimPlayer = hurtEntity;
         const victimPData = playerDataManager.getPlayerData(victimPlayer.id);
@@ -358,11 +334,9 @@ export async function handleEntityHurt(eventData, dependencies) {
             victimPData.lastDamageCause = damageSource.cause;
             victimPData.lastDamagingEntityType = directDamagingEntity?.typeId;
             victimPData.isDirtyForSave = true;
-
             if (directDamagingEntity?.typeId === 'minecraft:player' && directDamagingEntity.id !== victimPlayer.id) {
                 const attackerPlayer = directDamagingEntity;
                 victimPData.lastCombatInteractionTime = Date.now();
-
                 const attackerPData = playerDataManager.getPlayerData(attackerPlayer.id);
                 if (attackerPData) {
                     attackerPData.lastCombatInteractionTime = Date.now();
@@ -370,9 +344,7 @@ export async function handleEntityHurt(eventData, dependencies) {
                     attackerPData.attackEvents = attackerPData.attackEvents || [];
                     attackerPData.attackEvents.push(Date.now());
                     attackerPData.lastAttackTick = currentTick;
-
                     const eventSpecificData = { targetEntity: victimPlayer, damagingEntity: attackerPlayer, cause: damageSource, gameMode: attackerPlayer.gameMode };
-
                     if (checks.checkReach && config.enableReachCheck) await checks.checkReach(attackerPlayer, attackerPData, dependencies, eventSpecificData);
                     if (checks.checkMultiTarget && config.enableMultiTargetCheck) await checks.checkMultiTarget(attackerPlayer, attackerPData, dependencies, eventSpecificData);
                     if (checks.checkAttackWhileSleeping && config.enableStateConflictCheck) await checks.checkAttackWhileSleeping(attackerPlayer, attackerPData, dependencies, eventSpecificData);
@@ -403,7 +375,6 @@ export async function handlePlayerDeath(eventData, dependencies) {
         console.warn(`[AntiCheat] handlePlayerDeath: pData not found for ${player.nameTag}.`);
         return;
     }
-
     if (config.enableDeathCoordsMessage) {
         const location = player.location;
         const dimensionId = player.dimension.id.split(':')[1];
@@ -414,13 +385,12 @@ export async function handlePlayerDeath(eventData, dependencies) {
         pData.deathMessageToShowOnSpawn = getString(deathCoordsMsgKey, { x: x.toString(), y: y.toString(), z: z.toString(), dimensionId: dimensionId });
         pData.isDirtyForSave = true;
     }
-
     logManager.addLog({
         actionType: 'playerDeath',
         targetName: player.nameTag,
         targetId: player.id,
         details: `Player died. Cause: ${eventData.damageSource?.cause || 'unknown'}. Killer: ${eventData.killer?.nameTag || 'N/A'}.`,
-        location: player.location, // Location of death
+        location: player.location,
         dimensionId: player.dimension.id,
     }, dependencies);
 }
@@ -458,16 +428,13 @@ export function subscribeToCombatLogEvents(dependencies) {
 export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
     const { checks, config, playerDataManager, currentTick } = dependencies;
     const { player, block, itemStack } = eventData;
-    if (!player || !block) return; // itemStack can be undefined if breaking by hand
-
+    if (!player || !block) return;
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
     if (checks.checkBreakUnbreakable && config.enableInstaBreakUnbreakableCheck) {
         await checks.checkBreakUnbreakable(player, pData, eventData, dependencies);
-        if (eventData.cancel) return; // If cancelled by unbreakable check, stop further processing
+        if (eventData.cancel) return;
     }
-
     if (config.enableInstaBreakSpeedCheck) {
         const expectedTicks = getExpectedBreakTicks(player, block.permutation, itemStack, config);
         pData.breakStartTickGameTime = currentTick;
@@ -477,7 +444,6 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
         pData.toolUsedForBreakAttempt = itemStack?.typeId;
         pData.isDirtyForSave = true;
     }
-
 }
 
 /**
@@ -489,26 +455,19 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
     const { config, playerDataManager, checks } = dependencies;
     const { player, block, brokenBlockPermutation } = eventData;
     if (!player || !brokenBlockPermutation) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
     if (checks.checkXray && config.enableXrayDetection) {
         await checks.checkXray(player, brokenBlockPermutation.type, pData, dependencies);
     }
     if (checks.checkBreakSpeed && config.enableInstaBreakSpeedCheck) {
         await checks.checkBreakSpeed(player, pData, eventData, dependencies);
     }
-
-    // Reset break attempt state after processing all relevant BreakBlockAfter checks
     pData.breakingBlockTypeId = null;
     pData.breakingBlockLocation = null;
     pData.toolUsedForBreakAttempt = null;
     pData.isDirtyForSave = true;
-
-    // AutoTool check might be more relevant after a break is completed
     if (checks.checkAutoTool && config.enableAutoToolCheck) {
-        // This might need eventData.block if it refers to the original block state/location
         await checks.checkAutoTool(player, pData, dependencies);
     }
 }
@@ -522,10 +481,8 @@ export async function handleItemUse(eventData, dependencies) {
     const { checks, config, getString, playerUtils, playerDataManager } = dependencies;
     const { source: player, itemStack } = eventData;
     if (!player || !itemStack) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
     if (checks.checkSwitchAndUseInSameTick && config.enableInventoryModCheck) {
         await checks.checkSwitchAndUseInSameTick(player, pData, dependencies, { itemStack });
         if (eventData.cancel) return;
@@ -534,26 +491,22 @@ export async function handleItemUse(eventData, dependencies) {
         await checks.checkFastUse(player, pData, dependencies, { itemStack });
         if (eventData.cancel) return;
     }
-
     const itemFoodComponent = itemStack.type.getComponent('food');
     if (itemFoodComponent && config.enableChatDuringItemUseCheck) {
         pData.isUsingConsumable = true;
         pData.isDirtyForSave = true;
         mc.system.runTimeout(() => {
-            if (pData.isUsingConsumable) { // Check if still using, might have been cancelled
+            if (pData.isUsingConsumable) {
                 pData.isUsingConsumable = false;
                 pData.isDirtyForSave = true;
             }
         }, (itemFoodComponent.eatSeconds || 1.6) * 20);
     }
-
     if (config.preventedItemUses && config.preventedItemUses.includes(itemStack.typeId)) {
         playerUtils.warnPlayer(player, getString('antigrief.itemUseDenied', { item: itemStack.typeId }));
         eventData.cancel = true;
-        // TODO: Consider adding actionManager.executeCheckAction('worldIllegalItemUse', player, { itemTypeId: itemStack.typeId, action: 'use' }, dependencies);
         return;
     }
-
     pData.lastItemUseTick = dependencies.currentTick;
     pData.isDirtyForSave = true;
 }
@@ -567,27 +520,16 @@ export async function handleItemUseOn(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
     const { source: player, itemStack, block } = eventData;
     if (!player || !itemStack || !block) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
-    // IllegalItemUseOnBlock check could be added here if specific rules are needed beyond general item bans.
-
-    if (checks.checkAirPlace && config.enableAirPlaceCheck) {
-        // AirPlace check might be relevant here if item use on air is considered.
-        // Currently, it's more tied to block placement events.
-    }
-
     if (itemStack.typeId === 'minecraft:bow' && config.enableChatDuringItemUseCheck) {
         if (pData) { pData.isChargingBow = true; pData.isDirtyForSave = true; }
     }
     if (config.preventedItemUsesOn && config.preventedItemUsesOn.includes(itemStack.typeId)) {
         dependencies.playerUtils.warnPlayer(player, dependencies.getString('antigrief.itemUseDenied', {item: itemStack.typeId}));
         eventData.cancel = true;
-        // TODO: Consider adding actionManager.executeCheckAction('worldIllegalItemUse', player, { itemTypeId: itemStack.typeId, action: 'useon', targetBlock: block.typeId }, dependencies);
         return;
     }
-
     pData.lastItemUseTick = dependencies.currentTick;
     pData.isDirtyForSave = true;
 }
@@ -603,18 +545,12 @@ export async function handleItemUseOn(eventData, dependencies) {
 export async function handleInventoryItemChange(player, newItem, oldItem, slotName, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
     if (!player) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
     if (checks.checkInventoryMoveWhileActionLocked && config.enableInventoryModCheck) {
-        const inventoryChangeData = { newItemStack: newItem, oldItemStack: oldItem, inventorySlot: slotName }; // slotName might need mapping to slot index if check requires
+        const inventoryChangeData = { newItemStack: newItem, oldItemStack: oldItem, inventorySlot: slotName };
         await checks.checkInventoryMoveWhileActionLocked(player, pData, dependencies, inventoryChangeData);
     }
-
-    // Illegal item checks on inventory change can be intensive; typically handled at use/place.
-    // If specific items need to be checked upon entering inventory, that logic could be added here,
-    // but it's generally less common than event-driven checks.
 }
 
 /**
@@ -626,11 +562,8 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
     const { player, block, itemStack } = eventData;
     if (!player || !block || !itemStack) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
-    // Building restriction checks could be added here if needed.
     if (checks.checkAirPlace && config.enableAirPlaceCheck) {
         await checks.checkAirPlace(player, pData, dependencies, eventData);
         if (eventData.cancel) return;
@@ -680,13 +613,10 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
     const { playerDataManager } = dependencies;
     const { player, block } = eventData;
     if (!player || !block) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) return;
-
     await _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies);
 }
-
 
 /**
  * Handles chat messages before they are sent, dispatching to chatProcessor.
@@ -696,26 +626,19 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 export async function handleBeforeChatSend(eventData, dependencies) {
     const { playerDataManager, config, playerUtils, getString } = dependencies;
     const { sender: player, message: originalMessage } = eventData;
-
     if (!player) return;
-
     const pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
         playerUtils.warnPlayer(player, getString('error.playerDataNotFound'));
         eventData.cancel = true;
         return;
     }
-
-    // This function processes non-command chat messages.
-    // Command handling is managed upstream in main.js.
-
     if (!dependencies.chatProcessor || typeof dependencies.chatProcessor.processChatMessage !== 'function') {
         console.warn('[AntiCheat] handleBeforeChatSend: chatProcessor.processChatMessage is not available. Chat will not be processed.');
         playerUtils.warnPlayer(player, getString('error.chatProcessingUnavailable'));
         eventData.cancel = true;
         return;
     }
-
     await dependencies.chatProcessor.processChatMessage(player, pData, originalMessage, eventData, dependencies);
 }
 
@@ -727,22 +650,18 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
     const { playerUtils, config, getString, rankManager, permissionLevels } = dependencies;
-
     if (!player || !toDimension || !fromDimension || !fromLocation) {
         playerUtils.debugLog('[EventHandler] handlePlayerDimensionChangeAfterEvent: Incomplete event data.', player?.nameTag, dependencies);
         return;
     }
-
     const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
-    if (playerPermission <= permissionLevels.admin) { // Admins and above bypass dimension locks
+    if (playerPermission <= permissionLevels.admin) {
         playerUtils.debugLog(`Player ${player.nameTag} has admin/owner permission, bypassing dimension locks.`, player.nameTag, dependencies);
         return;
     }
-
     let dimensionIsLocked = false;
     let lockedDimensionName = '';
     const toDimensionId = toDimension.id.split(':')[1];
-
     if (toDimensionId === 'nether' && isNetherLocked()) {
         dimensionIsLocked = true;
         lockedDimensionName = getString('dimensionLock.name.nether');
@@ -750,12 +669,11 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
         dimensionIsLocked = true;
         lockedDimensionName = getString('dimensionLock.name.end');
     }
-
     if (dimensionIsLocked) {
         try {
             player.teleport(fromLocation, { dimension: fromDimension });
             playerUtils.warnPlayer(player, getString('dimensionLock.teleportMessage', { lockedDimensionName: lockedDimensionName }));
-            playerUtils.notifyAdmins(getString('admin.notify.dimensionLockAttempt', { playerName: player.nameTag, dimensionName: lockedDimensionName }), dependencies, player, null); // Pass null for pData as it's a general admin notify
+            playerUtils.notifyAdmins(getString('admin.notify.dimensionLockAttempt', { playerName: player.nameTag, dimensionName: lockedDimensionName }), dependencies, player, null);
         } catch (e) {
             console.error(`[AntiCheat] Failed to teleport ${player.nameTag} back from locked dimension ${toDimensionId}: ${e.stack || e}`);
             playerUtils.debugLog(`Teleport fail for ${player.nameTag} from ${toDimensionId}: ${e.message}`, player.nameTag, dependencies);

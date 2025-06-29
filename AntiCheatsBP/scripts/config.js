@@ -12,7 +12,7 @@
 /** @type {string} The tag for identifying admin players. */
 export const adminTag = 'admin';
 /** @type {string} The exact name of the server owner. Required for owner-level commands/features. Case-sensitive. */
-export const ownerPlayerName = 'PlayerNameHere'; // FIXME: User needs to change this
+export const ownerPlayerName = 'PlayerNameHere';
 /** @type {boolean} If true, enables detailed debug logging to the console for development and troubleshooting. */
 export const enableDebugLogging = true;
 /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
@@ -54,14 +54,14 @@ export const tpaTeleportWarmupSeconds = 10;
 
 // --- Server Info & Links ---
 /** @type {string} Link to the server's Discord. Displayed in help or server info commands. */
-export const discordLink = 'https://discord.gg/example'; // FIXME: User needs to change this
+export const discordLink = 'https://discord.gg/example';
 /** @type {string} Link to the server's website. */
-export const websiteLink = 'https://example.com'; // FIXME: User needs to change this
+export const websiteLink = 'https://example.com';
 /** @type {Array<{title: string, url: string}>} Array of objects defining helpful links (e.g., for rules, reporting). */
 export const helpLinks = [
-    { title: 'Our Discord Server', url: 'https://discord.gg/YourInviteCode' }, // FIXME: User needs to change this
-    { title: 'Website/Forums', url: 'https://yourwebsite.com/forums' }, // FIXME: User needs to change this
-    { title: 'Report a Player', url: 'https://yourwebsite.com/report' }, // FIXME: User needs to change this
+    { title: 'Our Discord Server', url: 'https://discord.gg/YourInviteCode' },
+    { title: 'Website/Forums', url: 'https://yourwebsite.com/forums' },
+    { title: 'Report a Player', url: 'https://yourwebsite.com/report' },
 ];
 /** @type {string[]} Array of general help messages/tips. */
 export const generalHelpMessages = [
@@ -79,7 +79,7 @@ export const enableDetailedJoinLeaveLogging = true;
 /** @type {boolean} If true, enables the Swear Word detection check. */
 export const enableSwearCheck = false;
 /** @type {string[]} List of swear words to detect (case-insensitive, whole word). */
-export const swearWordList = []; // Example: ['badword1', 'badword2']
+export const swearWordList = [];
 /** @type {string} Duration for the mute applied on swear word detection (e.g., "30s", "5m", "1h"). Parsed by `playerUtils.parseDuration`. */
 export const swearCheckMuteDuration = '30s';
 /** @type {string} The action profile name from `actionProfiles.js` for swear word violations. */
@@ -103,10 +103,10 @@ export const advancedLinkRegexList = [
     'https?://(?:[a-zA-Z0-9\\-_]+\\.)+[a-zA-Z]{2,}(?::\\d+)?(?:/[^\\s]*)?',
     'www\\.(?:[a-zA-Z0-9\\-_]+\\.)+[a-zA-Z]{2,}(?::\\d+)?(?:/[^\\s]*)?',
     '\\b(?:[a-zA-Z0-9\\-_]+\\.)+(com|net|org|gg|io|me|tv|us|uk|biz|info|club|store|online|site|xyz|shop|network|info|website|co|dev|app|online|xyz|tech|space|store|fun|press|host|art|blog|cafe|pics|live|life|news|ninja|cool|guru|gallery|city|country|link|click|buzz|stream|tube|chat|community|forum|group|page|fans|media|show|studio|style|video|software|pictures|graphics|game|games|server|play|mc|srv|network|gaming|fun|pro|services|shop|store|center|solutions|support|tech|tools|systems|cloud|digital|data|security|hosting|design|dev|app|api)(\\b|/[^\\s]*)',
-    '\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?::\\d+)?(?:/[^\\s]*)?\\b', // IP Address regex
+    '\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}(?::\\d+)?(?:/[^\\s]*)?\\b',
 ];
 /** @type {string[]} List of patterns (strings or regex strings) to whitelist from advertising flags. If using regex, ensure they are valid. */
-export const advertisingWhitelistPatterns = []; // Example: ['myserver\\.com', 'discord\\.gg/myinvite']
+export const advertisingWhitelistPatterns = [];
 
 /** @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat. */
 export const enableCapsCheck = true;
@@ -136,10 +136,6 @@ export const symbolSpamPercentage = 50;
 export const symbolSpamActionProfileName = 'chatSymbolSpamDetected';
 
 // --- AntiGrief ---
-// Note: For "Action" settings (e.g., tntPlacementAction), valid options usually include:
-// "remove" (remove the offending item/block), "prevent" (cancel the action), "kill" (kill spawned entity),
-// "warn" (warn the player), "flag_only" (only add a flag, no direct intervention).
-// Check specific check implementation for exact supported actions.
 
 // AntiGrief - TNT
 /** @type {boolean} If true, enables anti-grief measures for TNT placement. */
@@ -190,7 +186,7 @@ export const blockSpamBypassInCreative = true;
 export const blockSpamTimeWindowMs = 1000; // 1 second
 /** @type {number} Maximum number of blocks allowed to be placed within `blockSpamTimeWindowMs`. */
 export const blockSpamMaxBlocksInWindow = 8;
-/** @type {string[]} Specific block types to monitor for rate-based spam. Empty array means all blocks. Example: ["minecraft:dirt", "minecraft:cobblestone"] */
+/** @type {string[]} Specific block types to monitor for rate-based spam. Empty array means all blocks. */
 export const blockSpamMonitoredBlockTypes = ['minecraft:dirt', 'minecraft:cobblestone', 'minecraft:netherrack', 'minecraft:sand', 'minecraft:gravel'];
 /** @type {string} Action for block spam (rate) violation ("warn", "flag_only", "kick"). */
 export const blockSpamAction = 'warn';
@@ -204,7 +200,7 @@ export const entitySpamBypassInCreative = true;
 export const entitySpamTimeWindowMs = 2000; // 2 seconds
 /** @type {number} Maximum number of specified entities allowed to be spawned within `entitySpamTimeWindowMs`. */
 export const entitySpamMaxSpawnsInWindow = 5;
-/** @type {string[]} Specific entity types to monitor for spam. Example: ["minecraft:boat", "minecraft:armor_stand"] */
+/** @type {string[]} Specific entity types to monitor for spam. */
 export const entitySpamMonitoredEntityTypes = ['minecraft:boat', 'minecraft:armor_stand', 'minecraft:item_frame', 'minecraft:minecart', 'minecraft:snow_golem', 'minecraft:iron_golem'];
 /** @type {string} Action for entity spam violation ("kill", "warn", "flag_only"). "kill" attempts to remove the spawned entities. */
 export const entitySpamAction = 'kill';
@@ -283,10 +279,8 @@ export const xrayDetectionMonitoredOres = ['minecraft:diamond_ore', 'minecraft:d
 export const xrayDetectionAdminNotifyByDefault = true;
 
 // --- Chat Formatting ---
-// Chat formatting (prefixes, suffixes, colors) is now primarily handled by `ranksConfig.js` and `rankManager.js`.
 
 // --- Command Specific Toggles ---
-// Enables or disables specific commands. Does not override permission checks.
 export const commandSettings = {
     version: { enabled: true },
     myflags: { enabled: true },
@@ -294,10 +288,10 @@ export const commandSettings = {
     kick: { enabled: true },
     clearchat: { enabled: true },
     inspect: { enabled: true },
-    warnings: { enabled: true }, // Alias for inspect or similar functionality
+    warnings: { enabled: true },
     resetflags: { enabled: true },
     rules: { enabled: true },
-    vanish: { enabled: false }, // Vanish command often needs server-side gamemode/packet manipulation not fully available
+    vanish: { enabled: false },
     freeze: { enabled: true },
     mute: { enabled: true },
     unmute: { enabled: true },
@@ -310,30 +304,29 @@ export const commandSettings = {
     help: { enabled: true },
     invsee: { enabled: true },
     panel: { enabled: true },
-    notify: { enabled: true }, // For toggling general AC notifications
-    xraynotify: { enabled: true }, // For toggling X-Ray notifications
-    tpa: { enabled: true }, // Depends on enableTPASystem
-    tpaccept: { enabled: true }, // Depends on enableTPASystem
-    tpacancel: { enabled: true }, // Depends on enableTPASystem
-    tpahere: { enabled: true }, // Depends on enableTPASystem
-    tpastatus: { enabled: true }, // Depends on enableTPASystem
+    notify: { enabled: true },
+    xraynotify: { enabled: true },
+    tpa: { enabled: true },
+    tpaccept: { enabled: true },
+    tpacancel: { enabled: true },
+    tpahere: { enabled: true },
+    tpastatus: { enabled: true },
     tp: { enabled: true },
     copyinv: { enabled: true },
-    uinfo: { enabled: true }, // User info command
-    netherlock: { enabled: false }, // Dimension lock commands might be complex
+    uinfo: { enabled: true },
+    netherlock: { enabled: false },
     endlock: { enabled: false },
-    worldborder: { enabled: true }, // Depends on enableWorldBorderSystem
-    addrank: { enabled: true }, // Depends on rank system
-    removerank: { enabled: true }, // Depends on rank system
-    listranks: { enabled: true }, // Depends on rank system
+    worldborder: { enabled: true },
+    addrank: { enabled: true },
+    removerank: { enabled: true },
+    listranks: { enabled: true },
     listwatched: { enabled: true },
-    purgeflags: { enabled: true }, // For admins to clear all flags of a player
+    purgeflags: { enabled: true },
     report: { enabled: true },
     viewreports: { enabled: true },
     clearreports: { enabled: true },
     watch: { enabled: true },
     unwatch: { enabled: true },
-    // Add new commands here with their default enabled state
 };
 
 // --- Automated Moderation System ---
@@ -347,28 +340,25 @@ Rule 2: No cheating, exploiting, or using unauthorized modifications.
 Rule 3: Do not spam chat or use excessive caps/symbols.
 Rule 4: Follow instructions from server administrators and moderators.
 Rule 5: Keep chat appropriate and avoid offensive language.
-Rule 6: Have fun and contribute to a positive community!`; // FIXME: User should customize rules
+Rule 6: Have fun and contribute to a positive community!`;
 
 // --- General Check Toggles (Master Switches for Check Categories) ---
-// These enable/disable entire categories or specific complex checks.
-// Individual sub-checks might have their own toggles or conditions within their modules.
 export const enableReachCheck = true;
 export const enableCpsCheck = true;
-export const enableViewSnapCheck = true; // Covers aimbot-like fast view changes (pitch/yaw)
-export const enableMultiTargetCheck = true; // Killaura hitting multiple targets quickly
-export const enableStateConflictCheck = true; // Killaura attacking while eating, shielding, etc.
-export const enableFlyCheck = false; // Movement: Fly
-export const enableSpeedCheck = false; // Movement: Speed
-export const enableNofallCheck = true; // Movement: NoFall
-export const enableNukerCheck = false; // World: Nuker (breaking blocks too fast/wide area)
-export const enableIllegalItemCheck = true; // World: Interacting with banned items
-export const enableSelfHurtCheck = true; // Player: Self-inflicted damage (e.g., to bypass combat timers)
-export const enableNetherRoofCheck = false; // Movement: Exploiting Nether roof
+export const enableViewSnapCheck = true;
+export const enableMultiTargetCheck = true;
+export const enableStateConflictCheck = true;
+export const enableFlyCheck = false;
+export const enableSpeedCheck = false;
+export const enableNofallCheck = true;
+export const enableNukerCheck = false;
+export const enableIllegalItemCheck = true;
+export const enableSelfHurtCheck = true;
+export const enableNetherRoofCheck = false;
 
 // --- Movement Checks Specifics ---
 /** @type {number} The Y-level at or above which a player in the Nether is considered to be on the roof. */
 export const netherRoofYLevelThreshold = 128;
-// Unused: maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus
 /** @type {number} Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check. Vanilla is >3 blocks. */
 export const minFallDistanceForDamage = 3.5;
 /** @type {number} Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection. (0.5 BPT = 10 BPS) */
@@ -406,19 +396,19 @@ export const noSlowMaxSpeedSneaking = 1.5;
 /** @type {boolean} If true, the Invalid Sprint check (detecting sprinting under disallowed conditions like hunger, blindness, using item) is active. */
 export const enableInvalidSprintCheck = true;
 /** @type {number} Minimum food level (inclusive) required to sprint. Vanilla default is > 6 (i.e., 7 or more). */
-export const sprintHungerLimit = 6; // Food level must be > this (e.g., 7+)
+export const sprintHungerLimit = 6;
 
 // --- Combat Checks Specifics ---
 /** @type {number} Maximum clicks per second (CPS) threshold before flagging. Humanly achievable sustainable CPS is typically below 15-20. */
 export const maxCpsThreshold = 20;
 /** @type {number} Maximum reach distance in blocks for Survival/Adventure mode players. Vanilla is ~3 for melee, ~4.5 for block interaction. */
-export const reachDistanceSurvival = 4.5; // Max interaction reach
+export const reachDistanceSurvival = 4.5;
 /** @type {number} Maximum reach distance in blocks for Creative mode players. Vanilla is ~5 for melee, ~6 for block interaction. */
-export const reachDistanceCreative = 6.0; // Max interaction reach
+export const reachDistanceCreative = 6.0;
 /** @type {number} A small buffer in blocks added to maximum reach distance calculations to reduce false positives from latency/minor inaccuracies. */
 export const reachBuffer = 0.5;
 /** @type {number} Time window in milliseconds over which CPS is calculated. */
-export const cpsCalculationWindowMs = 1000; // 1 second
+export const cpsCalculationWindowMs = 1000;
 
 // --- View Snap / Invalid Pitch (Aimbot/Killaura components) ---
 /** @type {number} Maximum degrees the player's pitch (up/down view angle) can change in a single game tick immediately after an attack. Very high values can indicate aim assistance. */
@@ -441,9 +431,8 @@ export const multiTargetThreshold = 3;
 export const multiTargetMaxHistory = 10;
 
 // --- State Conflict Checks (Killaura components - attacking while doing other actions) ---
-// Unused: attackBlockingConsumables, attackBlockingBows, attackBlockingShields
 /** @type {number} Number of ticks an 'item use' state (e.g., `isUsingConsumable`) persists before auto-clearing if no explicit stop event. (20 ticks = 1 second). */
-export const itemUseStateClearTicks = 60; // 3 seconds
+export const itemUseStateClearTicks = 60;
 
 // --- World Interaction Checks Specifics ---
 // AutoTool Check
@@ -466,28 +455,28 @@ export const instaBreakUnbreakableBlocks = [
 /** @type {boolean} If true, the check for breaking blocks significantly faster than vanilla capabilities (considering tool, enchantments, effects) is active. */
 export const enableInstaBreakSpeedCheck = true;
 /** @type {number} Tolerance in game ticks for block breaking speed. Actual break time must be less than (ExpectedTime - Tolerance) to flag. Higher values are more lenient. */
-export const instaBreakTimeToleranceTicks = 2; // Be cautious with low values, server tick variation can affect this.
+export const instaBreakTimeToleranceTicks = 2;
 
 // Nuker Check (related to enableNukerCheck)
 /** @type {number} Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker. */
 export const nukerMaxBreaksShortInterval = 4;
 /** @type {number} Time window in milliseconds for the Nuker check to count broken blocks. */
-export const nukerCheckIntervalMs = 200; // 0.2 seconds, very fast
+export const nukerCheckIntervalMs = 200;
 
 // Illegal Item Check (related to enableIllegalItemCheck)
 /** @type {string[]} Array of item type IDs banned from being placed by players. */
 export const bannedItemsPlace = ['minecraft:command_block', 'minecraft:moving_block', 'minecraft:structure_void', 'minecraft:barrier'];
 /** @type {string[]} Array of item type IDs banned from being used by players (e.g., right-click action). */
-export const bannedItemsUse = []; // Example: Potentially harmful spawn eggs if not controlled by other means
+export const bannedItemsUse = [];
 
 // --- Player Behavior Checks Specifics ---
 // NameSpoof Check
 /** @type {boolean} If true, the NameSpoof check (detecting invalid characters, excessive length, or rapid name changes) is active. */
 export const enableNameSpoofCheck = true;
 /** @type {number} Maximum allowed length for a player's nameTag. Used by NameSpoof check. Vanilla limits are usually shorter. */
-export const nameSpoofMaxLength = 48; // Check current Minecraft limits if being very strict.
+export const nameSpoofMaxLength = 48;
 /** @type {string} Regular expression pattern for disallowed characters in player nameTags (e.g., newlines, control characters). */
-export const nameSpoofDisallowedCharsRegex = '[\\n\\r\\t\\x00-\\x1F\\x7F-\\x9F]'; // Common control characters
+export const nameSpoofDisallowedCharsRegex = '[\\n\\r\\t\\x00-\\x1F\\x7F-\\x9F]';
 /** @type {number} Minimum interval in game ticks between allowed player nameTag changes. Used by NameSpoof check. (200 ticks = 10 seconds) */
 export const nameSpoofMinChangeIntervalTicks = 200;
 
@@ -501,14 +490,14 @@ export const antiGmcAutoSwitch = true;
 
 // Inventory Modification Check
 /** @type {boolean} If true, Inventory Modification checks (e.g., for illegal items, unobtainable enchantments) are active. This is a complex area. */
-export const enableInventoryModCheck = false; // Requires careful implementation to avoid false positives with custom items/plugins.
+export const enableInventoryModCheck = false;
 
 // --- Advanced Chat Checks Specifics ---
 // Fast Message Spam Check
 /** @type {boolean} If true, the Fast Message Spam check (sending messages too quickly) is active. */
 export const enableFastMessageSpamCheck = true;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
-export const fastMessageSpamThresholdMs = 500; // 0.5 seconds
+export const fastMessageSpamThresholdMs = 500;
 /** @type {string} Action profile name for fast message spam. */
 export const fastMessageSpamActionProfileName = 'chatSpamFastMessage';
 
@@ -541,7 +530,6 @@ export const cancelOnMaxMessageLength = true;
 // Repeated Message (Content) Spam Check
 /** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
 export const enableChatContentRepeatCheck = true;
-// Unused: chatContentRepeatMessageCount, chatContentRepeatTimeWindowSeconds
 /** @type {boolean} If true, flags the player for content repeat spam. */
 export const chatContentRepeatFlagPlayer = false;
 /** @type {boolean} If true, cancels the message that triggers content repeat spam. */
@@ -551,7 +539,7 @@ export const chatContentRepeatActionProfileName = 'chatSpamContentRepeat';
 
 // Unicode Abuse (Zalgo/Excessive Diacritics) Check
 /** @type {boolean} If true, the Unicode Abuse (Zalgo text, excessive diacritics) check is active. */
-export const enableUnicodeAbuseCheck = false; // Can be complex to implement reliably.
+export const enableUnicodeAbuseCheck = false;
 /** @type {string} Action profile name for Unicode abuse violations. */
 export const unicodeAbuseActionProfileName = 'chatUnicodeAbuse';
 
@@ -590,10 +578,10 @@ export const enableSimpleImpersonationCheck = false;
 export const impersonationServerMessagePatterns = [
     '^\\[(Server|Admin|System|Mod|Staff|Broadcast|Announcement|Alert)\\]', // Starts with [Server] etc.
     '^§[4c][\\s\\S]*?(Warning|Critical|Error)', // Starts with red/dark_red and contains keywords
-    '^§[b9ea][\\s\\S]*?(Notice|Info|Server|System)', // Starts with aqua/blue/yellow/green and contains keywords
+    '^§[b9ea][\\s\\S]*?(Notice|Info|Server|System)',
 ];
 /** @type {number} Permission level (from rankManager) at or below which players are exempt from impersonation checks. E.g., 0 for normal players, higher for staff. */
-export const impersonationExemptPermissionLevel = 1; // Staff (level 1+) might be exempt
+export const impersonationExemptPermissionLevel = 1;
 /** @type {number} Minimum message length for impersonation pattern matching to apply. */
 export const impersonationMinMessageLengthForPatternMatch = 10;
 /** @type {string} Action profile name for impersonation attempts. */
@@ -609,7 +597,7 @@ export const towerMaxTickGap = 10; // 0.5 seconds
 /** @type {number} Minimum number of consecutive upward blocks placed to trigger a tower flag. */
 export const towerMinHeight = 5;
 /** @type {number} Maximum pitch deviation (degrees, usually negative for looking down) allowed while pillaring up. Very specific pitch can indicate automation. */
-export const towerMaxPitchWhilePillaring = -30; // Example: Must be looking down significantly
+export const towerMaxPitchWhilePillaring = -30;
 /** @type {number} How many recent block placements to store for pattern analysis related to building checks. */
 export const towerPlacementHistoryLength = 20;
 
@@ -627,9 +615,9 @@ export const flatRotationPitchHorizontalMin = -5.0;
 /** @type {number} Maximum pitch for 'flat horizontal' building detection. */
 export const flatRotationPitchHorizontalMax = 5.0;
 /** @type {number} Minimum pitch for 'flat downward' building detection (e.g., scaffolding straight down with minimal view change). */
-export const flatRotationPitchDownwardMin = -90.0; // Looking straight down
+export const flatRotationPitchDownwardMin = -90.0;
 /** @type {number} Maximum pitch for 'flat downward' building detection. */
-export const flatRotationPitchDownwardMax = -85.0; // Slightly up from straight down
+export const flatRotationPitchDownwardMax = -85.0;
 
 // Downward Scaffold Check
 /** @type {boolean} If true, the Downward Scaffold check (building downwards while airborne and moving quickly) is active. */
@@ -696,10 +684,9 @@ export const deathEffectSoundId = 'mob.ghast.scream';
 /** @type {object} Defines the default cosmetic effect shown when a player dies (legacy, can be expanded). */
 export const defaultDeathEffect = {
     soundId: 'ambient.weather.lightning.impact',
-    particleCommand: 'particle minecraft:large_explosion ~ ~1 ~', // Example particle command
+    particleCommand: 'particle minecraft:large_explosion ~ ~1 ~',
     soundOptions: { volume: 1.0, pitch: 0.8 },
 };
-
 
 // --- Client Behavior Checks ---
 /** @type {boolean} If true, the Invalid Render Distance check (detecting clients reporting unusually high render distances) is active. */
@@ -734,7 +721,7 @@ export const invalidRenderDistanceCheckIntervalTicks = 400; // 20 seconds
 
 // --- System & Versioning ---
 /** @type {string} The current version of the AntiCheat system. Updated by build process. */
-export const acVersion = 'v__VERSION_STRING__'; // Placeholder, replaced by build/deploy script
+export const acVersion = 'v__VERSION_STRING__';
 
 // --- Command Aliases ---
 /** @type {Object.<string, string>} Defines aliases for commands. Key is alias, value is the actual command name. */
@@ -743,17 +730,16 @@ export const commandAliases = {
     w: 'watch',
     i: 'inspect',
     rf: 'resetflags',
-    pf: 'purgeflags', // Added alias for purgeflags
+    pf: 'purgeflags',
     xn: 'xraynotify',
     mf: 'myflags',
     notifications: 'notify',
     ui: 'panel',
-    cw: 'clearwarnings', // Typically an alias for resetflags or a specific part of inspect
-    clrchat: 'clearchat', // Common typo alias
+    cw: 'clearwarnings',
+    clrchat: 'clearchat',
     playerinfo: 'uinfo',
     userinfo: 'uinfo',
     worldb: 'worldborder',
-    // Add more aliases as needed
 };
 
 // --- Editable Configuration Values ---
@@ -787,7 +773,7 @@ export let editableConfigValues = {
     // Server Info & Links
     discordLink,
     websiteLink,
-    helpLinks, // Note: Editing arrays/objects via simple command might be tricky.
+    helpLinks,
     generalHelpMessages,
     // Logging
     enableDetailedJoinLeaveLogging,
@@ -877,11 +863,11 @@ export let editableConfigValues = {
     xrayDetectionMonitoredOres,
     xrayDetectionAdminNotifyByDefault,
     // Command Settings (individual command toggles)
-    commandSettings, // Editing this complex object via command needs careful parsing.
+    commandSettings,
     // AutoMod
     enableAutoMod,
     // Server Rules
-    serverRules, // Editing multi-line string via command needs specific handling.
+    serverRules,
     // General Check Toggles
     enableReachCheck,
     enableCpsCheck,
@@ -1010,7 +996,7 @@ export let editableConfigValues = {
     airPlaceSolidBlocks,
     // Fast Use/Place Check Specifics
     enableFastUseCheck,
-    fastUseItemCooldowns, // Complex object, careful with runtime edits
+    fastUseItemCooldowns,
     enableFastPlaceCheck,
     fastPlaceTimeWindowMs,
     fastPlaceMaxBlocksInWindow,
@@ -1021,7 +1007,7 @@ export let editableConfigValues = {
     enableDeathEffects,
     deathEffectParticleName,
     deathEffectSoundId,
-    defaultDeathEffect, // Complex object
+    defaultDeathEffect,
     // Client Behavior Checks
     enableInvalidRenderDistanceCheck,
     maxAllowedClientRenderDistance,
@@ -1055,7 +1041,6 @@ export function updateConfigValue(key, newValue) {
     const originalType = Array.isArray(oldValue) ? 'array' : typeof oldValue;
     let coercedNewValue = newValue;
 
-    // Type coercion logic
     if (originalType === 'number' && typeof newValue === 'string') {
         const parsedNum = Number(newValue);
         if (isNaN(parsedNum)) {
@@ -1074,9 +1059,9 @@ export function updateConfigValue(key, newValue) {
             return false;
         }
     } else if (originalType === 'array') {
-        if (typeof newValue === 'string') { // Attempt to parse comma-separated string into array
+        if (typeof newValue === 'string') {
             const stringItems = newValue.trim() === '' ? [] : newValue.split(',').map(item => item.trim());
-            if (oldValue.length > 0) { // Infer element type from existing array
+            if (oldValue.length > 0) {
                 const targetElementType = typeof oldValue[0];
                 try {
                     coercedNewValue = stringItems.map(item => {
@@ -1090,22 +1075,20 @@ export function updateConfigValue(key, newValue) {
                             if (item.toLowerCase() === 'false') return false;
                             throw new Error(`Invalid boolean: ${item}`);
                         }
-                        return item; // Assume string if not number/boolean
+                        return item;
                     });
                 } catch (e) {
                     console.warn(`[ConfigManager] Error parsing string to array for key ${key}: ${e.message}. Update rejected.`);
                     return false;
                 }
-            } else { // If original array is empty, assume new elements are strings
+            } else {
                 coercedNewValue = stringItems;
             }
         } else if (!Array.isArray(newValue)) {
             console.warn(`[ConfigManager] Type mismatch for key ${key}. Expected array, received ${typeof newValue}. Update rejected.`);
             return false;
         }
-        // Further array element type validation if needed (e.g., if original array had specific object structure)
     } else if (originalType === 'string' && typeof newValue !== 'string') {
-         // Allow conversion of numbers/booleans to string for string fields
         if (typeof newValue === 'number' || typeof newValue === 'boolean') {
             coercedNewValue = String(newValue);
         } else {
@@ -1117,25 +1100,22 @@ export function updateConfigValue(key, newValue) {
 
     const newCoercedType = Array.isArray(coercedNewValue) ? 'array' : typeof coercedNewValue;
 
-    // Final type check after coercion
     if (originalType !== newCoercedType) {
-        // Allow string field to accept coerced number/boolean as string.
         if (!(originalType === 'string' && (typeof newValue === 'number' || typeof newValue === 'boolean'))) {
             console.warn(`[ConfigManager] Type mismatch for key ${key} after coercion. Expected ${originalType}, got ${newCoercedType}. Update rejected.`);
             return false;
         }
     }
 
-    // Check for actual change to avoid unnecessary updates/logs
     if (JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
-        if (enableDebugLogging) { // Use the module-level constant for this log
+        if (enableDebugLogging) {
             console.log(`[ConfigManager] No change for ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
         }
-        return false; // Indicate no actual update occurred
+        return false;
     }
 
     editableConfigValues[key] = coercedNewValue;
-    if (enableDebugLogging) { // Use the module-level constant for this log
+    if (enableDebugLogging) {
         const oldValStr = Array.isArray(oldValue) || typeof oldValue === 'object' ? JSON.stringify(oldValue) : oldValue;
         const newValStr = Array.isArray(coercedNewValue) || typeof coercedNewValue === 'object' ? JSON.stringify(coercedNewValue) : coercedNewValue;
         console.log(`[ConfigManager] Updated ${key} from "${oldValStr}" to "${newValStr}"`);
