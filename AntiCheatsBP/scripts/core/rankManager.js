@@ -124,9 +124,11 @@ function getPlayerRankAndPermissions(player, dependencies) {
     console.warn(`[RankMan][CONSOLE] In getPlayerRankAndPermissions for player: ${diagPlayerName}`);
     console.warn(`[RankMan][CONSOLE] typeof dependencies: ${typeof dependencies}`);
 
-    const { config, playerUtils } = dependencies || {}; // Destructure safely in case dependencies is undefined
+    // config and playerUtils are already destructured from 'dependencies' at the start of the function.
+    // We use those existing variables for logging here.
+    // The check for 'dependencies' being valid is at the top of the function.
 
-    console.warn(`[RankMan][CONSOLE] typeof config (after destructure): ${typeof config}`);
+    console.warn(`[RankMan][CONSOLE] typeof config (from function scope): ${typeof config}`);
     try {
         // Attempt to stringify only a few key expected properties of config to avoid large objects / circular refs
         let configSample = "Not an object or null";
