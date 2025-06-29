@@ -7,7 +7,6 @@
   <a href="https://github.com/SjnExe/AntiCheats/releases/latest"><img src="https://img.shields.io/github/v/release/SjnExe/AntiCheats?label=latest%20version&display_name=tag&sort=semver&style=for-the-badge" alt="Latest Release"/></a>
   <a href="https://github.com/SjnExe/AntiCheats/releases"><img src="https://img.shields.io/github/downloads/SjnExe/AntiCheats/total?style=for-the-badge" alt="GitHub All Releases"/></a>
   <img src="https://img.shields.io/badge/Minecraft_BE-1.21.90%2B-brightgreen?style=for-the-badge&logo=minecraft" alt="Minecraft BE Version"/>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT"/></a>
   <a href="https://github.com/SjnExe/AntiCheats/issues"><img src="https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github" alt="GitHub Issues"/></a>
   <img src="https://img.shields.io/badge/Status-Active-green?style=for-the-badge" alt="Status: Active"/>
   <a href="https://discord.gg/SMUHUnGyyz"><img src="https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA" alt="Discord Server"/></a>
@@ -133,5 +132,10 @@ If you're interested in helping, please see our [**Contributing section above**]
 
 ---
 
-<p align="center">Thank you for using the AntiCheats Addon!</p>
-<p align="center">We hope it helps create a fairer and more enjoyable Minecraft experience for your community.</p>
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT"/></a>
+  <br />
+  Thank you for using the AntiCheats Addon!
+  <br />
+  We hope it helps create a fairer and more enjoyable Minecraft experience for your community.
+</p>

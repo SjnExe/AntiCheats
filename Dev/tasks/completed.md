@@ -3,34 +3,51 @@
 This document lists significant tasks that have been completed.
 
 ---
+## Refine README Badges and Clean Up Todo List (Jules - Completed YYYY-MM-DD)
+
+**Objective:** Improve README layout by relocating a badge and streamline `Dev/tasks/todo.md` by removing tasks that cannot be completed by the AI due to external dependencies.
+
+**Summary of Changes:**
+*   **README.md Badge Relocation**:
+    *   Reviewed the badge cluster at the top of `README.md`.
+    *   Moved the MIT License badge from the top group to the footer paragraph to slightly reduce visual clutter at the top.
+*   **`Dev/tasks/todo.md` Cleanup**:
+    *   Reviewed remaining "README Enhancements (Further Considerations)".
+    *   Removed the following tasks as they require external assets or CI/bot integrations beyond AI capabilities:
+        *   `Consider adding a project logo/banner (requires asset).`
+        *   `Code size/LoC badge (requires CI integration for dynamic updates or manual static updates).`
+    *   Items already marked "(Addressed)" for Discord badge and contributor section were confirmed.
+*   **Updated Task Files**: This task was added to `ongoing.md` and subsequently documented here in `completed.md`.
+
+**Outcome:** The `README.md` has a slightly less cluttered header. The `Dev/tasks/todo.md` file is now more focused on actionable items or clear examples for future human development, with non-actionable (for AI) cosmetic tasks removed.
+
+*(Note: Replace YYYY-MM-DD with the actual completion date)*
+---
+
 ## Add Contributors Section to README (Jules - Completed YYYY-MM-DD)
 
 **Objective:** Add a dedicated section to `README.md` to acknowledge and appreciate project contributors.
 
 **Summary of Changes:**
-*   **Drafted Content**: Created text for a new section titled "❤️ Our Valued Contributors". This includes:
-    *   A message of gratitude to all contributors.
-    *   A direct link to the project's GitHub contributors graph (`https://github.com/SjnExe/AntiCheats/graphs/contributors`) for a list of code contributors.
-    *   References to the existing "Contributing" section in the README and `Dev/README.md` for those interested in contributing.
-*   **Integrated into `README.md`**:
-    *   The new section was added after the "🤝 Contributing" section and before the final "Thank you" message, ensuring a logical flow.
-*   **Updated Task Files**: Marked this task as complete and updated `todo.md` accordingly.
+*   **Drafted Content**: Created text for "❤️ Our Valued Contributors", including a link to GitHub contributors graph.
+*   **Integrated into `README.md`**: Placed the new section appropriately.
+*   **Updated Task Files**.
 
-**Outcome:** The `README.md` now includes a section that formally recognizes the value of community contributions and provides easy access to the list of GitHub contributors, fostering a more inclusive project atmosphere.
+**Outcome:** `README.md` now formally recognizes community contributions.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
 
 ## Add Dynamic Discord Member Count Badge to README (Jules - Completed YYYY-MM-DD)
 
-**Objective:** Replace the static Discord badge in `README.md` with a dynamic one showing the current server member count.
+**Objective:** Replace the static Discord badge in `README.md` with a dynamic one.
 
 **Summary of Changes:**
-*   **Researched Options**: Confirmed `shields.io` supports dynamic Discord badges.
-*   **Obtained Server ID**: User provided the Server ID.
-*   **Updated `README.md`**: Replaced static Discord badge with the dynamic version.
+*   Researched and confirmed `shields.io` support.
+*   Obtained Server ID from user.
+*   Updated `README.md` with the dynamic badge.
 
-**Outcome:** `README.md` features a dynamic Discord badge displaying live member count.
+**Outcome:** `README.md` features a dynamic Discord badge.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
@@ -40,10 +57,10 @@ This document lists significant tasks that have been completed.
 **Objective:** Enhance `Docs/AutoModDetails.md` by adding a section with complex rule examples.
 
 **Summary of Changes:**
-*   Reviewed system capabilities and identified areas for advanced examples.
+*   Reviewed system capabilities.
 *   Added "Advanced Rule Examples" section with three detailed examples.
 
-**Outcome:** `AutoModDetails.md` is more comprehensive, offering advanced insights for AutoMod configuration.
+**Outcome:** `AutoModDetails.md` is more comprehensive.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
@@ -53,10 +70,10 @@ This document lists significant tasks that have been completed.
 **Objective:** Develop a comprehensive troubleshooting guide and integrate it.
 
 **Summary of Changes:**
-*   Created `Docs/Troubleshooting.md` covering common issues.
+*   Created `Docs/Troubleshooting.md`.
 *   Updated `README.md` to link to the new guide.
 
-**Outcome:** Improved user support with a detailed troubleshooting guide.
+**Outcome:** Improved user support.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
@@ -68,6 +85,6 @@ This document lists significant tasks that have been completed.
 **Summary of Changes:**
 *   Added badges, new sections, visual placeholders, and improved content structure.
 
-**Outcome:** `README.md` is more informative, user-friendly, and better structured.
+**Outcome:** `README.md` is more informative and user-friendly.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date for all entries)*
