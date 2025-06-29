@@ -10,7 +10,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT"/></a>
   <a href="https://github.com/SjnExe/AntiCheats/issues"><img src="https://img.shields.io/github/issues/SjnExe/AntiCheats?style=for-the-badge&logo=github" alt="GitHub Issues"/></a>
   <img src="https://img.shields.io/badge/Status-Active-green?style=for-the-badge" alt="Status: Active"/>
-  <a href="https://discord.gg/SMUHUnGyyz"><img src="https://img.shields.io/badge/Discord-Join_Us-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/></a>
+  <a href="https://discord.gg/SMUHUnGyyz"><img src="https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA" alt="Discord Server"/></a>
 </p>
 
 <p align="center">

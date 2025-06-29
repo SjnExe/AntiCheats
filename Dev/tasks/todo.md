@@ -7,7 +7,7 @@ This list contains planned features, improvements, and areas for future investig
     - Consider adding a project logo/banner (requires asset). (Placeholder exists in README)
     - *(Addressed by linking to full guide) Placeholder for a more detailed `Docs/Troubleshooting.md` if common issues arise.*
 - **Low Priority:**
-    - Dynamic Discord member count (if an easy endpoint is found).
+    - *(Addressed) Dynamic Discord member count (if an easy endpoint is found).*
     - Code size/LoC badge (requires CI integration for dynamic updates or manual static updates).
     - Contributor recognition section/AllContributors bot integration.
 

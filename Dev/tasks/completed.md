@@ -4,25 +4,36 @@ This document lists significant tasks that have been completed.
 
 ---
 
+## Add Dynamic Discord Member Count Badge to README (Jules - Completed YYYY-MM-DD)
+
+**Objective:** Replace the static Discord badge in `README.md` with a dynamic one showing the current server member count.
+
+**Summary of Changes:**
+*   **Researched Options**: Investigated methods for dynamic Discord member count badges, confirming `shields.io` provides a direct solution (`https://img.shields.io/discord/SERVER_ID.svg`) contingent on the Server ID and an enabled server widget.
+*   **Obtained Server ID**: User provided the necessary Discord Server ID (`633296555650318346`).
+*   **Updated `README.md`**:
+    *   Replaced the existing static Discord badge:
+        `<a href="https://discord.gg/SMUHUnGyyz"><img src="https://img.shields.io/badge/Discord-Join_Us-7289DA?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"/></a>`
+    *   With the new dynamic badge:
+        `<a href="https://discord.gg/SMUHUnGyyz"><img src="https://img.shields.io/discord/633296555650318346?style=for-the-badge&logo=discord&logoColor=white&label=Discord&color=7289DA" alt="Discord Server"/></a>`
+*   **Maintained Link and Style**: Ensured the badge links to the correct Discord invite and retains consistent styling with other badges.
+
+**Outcome:** The `README.md` now features a dynamic Discord badge that displays the live member count, providing a more engaging and informative link to the community.
+
+*(Note: Replace YYYY-MM-DD with the actual completion date)*
+---
+
 ## Expand `Docs/AutoModDetails.md` with Complex Examples (Jules - Completed YYYY-MM-DD)
 
 **Objective:** Enhance `Docs/AutoModDetails.md` by adding a section with complex rule examples to showcase advanced configuration possibilities of the AutoMod system.
 
 **Summary of Changes:**
 *   **Reviewed System Capabilities**: Analyzed `automodConfig.js` and existing `AutoModDetails.md` to understand the features and limitations of the AutoMod rule engine.
-*   **Developed Example Scenarios**: Identified key areas where advanced examples would be beneficial, including:
-    *   Multi-stage progressive punishments with strategic flag resets.
-    *   Cautious rule-setting for sensitive or potentially noisy checks.
-    *   Use of specific action types like `removeIllegalItem` and `freeze`.
-*   **Drafted and Integrated Examples**:
-    *   Added a new section titled "Advanced Rule Examples" to `Docs/AutoModDetails.md`.
-    *   Provided three detailed examples with JSON-like rule structures and explanations:
-        1.  **Multi-Stage Progressive Punishment for `movementFlyHover`**: Showcasing multiple warnings, escalating temp-bans, and strategic use of `resetFlagsAfterAction`.
-        2.  **Handling a Sensitive Check (`combatInvalidPitch`)**: Demonstrating the use of `flagOnly` for monitoring and a gentle escalation path.
-        3.  **Item-Specific Violation (`worldIllegalItemUse`)**: Illustrating the use of `removeIllegalItem` and `freeze` actions.
-*   **Ensured Clarity and Consistency**: Formatted the new examples to match the existing document style and provided clear explanations for each rule's logic.
+*   **Developed Example Scenarios**: Identified key areas where advanced examples would be beneficial.
+*   **Drafted and Integrated Examples**: Added "Advanced Rule Examples" section with three detailed examples (Multi-stage progressive punishment, sensitive check handling, item-specific violation).
+*   **Ensured Clarity and Consistency**: Formatted new examples to match document style.
 
-**Outcome:** The `AutoModDetails.md` document is now more comprehensive, offering users advanced insights and practical examples for configuring sophisticated AutoMod rules tailored to various situations. This should empower admins to better manage automated moderation on their servers.
+**Outcome:** `AutoModDetails.md` is more comprehensive, offering users advanced insights for configuring sophisticated AutoMod rules.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
@@ -32,22 +43,10 @@ This document lists significant tasks that have been completed.
 **Objective:** Develop a comprehensive troubleshooting guide and integrate it into the existing documentation structure.
 
 **Summary of Changes:**
-*   **Created `Docs/Troubleshooting.md`**:
-    *   Authored a new document covering common troubleshooting areas:
-        *   Installation Issues
-        *   Configuration Problems
-        *   Commands Not Working
-        *   Detections Not Working or False Positives
-        *   Admin UI (`!panel`) Issues
-        *   General Tips
-        *   Reporting Bugs Effectively
-    *   Each section provides common problems and potential solutions.
-*   **Updated `README.md`**:
-    *   Modified the "Quick Troubleshooting Tip" collapsible section.
-    *   Added a direct link to the newly created `Docs/Troubleshooting.md` for users seeking more detailed help.
-    *   Refined the summary text of the troubleshooting tip section.
+*   **Created `Docs/Troubleshooting.md`**: Authored a new guide covering common issues.
+*   **Updated `README.md`**: Linked the new guide from the "Quick Troubleshooting Tip" section.
 
-**Outcome:** Users now have access to a detailed troubleshooting guide, improving support and potentially reducing repetitive issue reports. The README effectively directs users to this new resource.
+**Outcome:** Users have access to a detailed troubleshooting guide, improving support.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date)*
 ---
@@ -57,22 +56,8 @@ This document lists significant tasks that have been completed.
 **Objective:** Improve the main `README.md` for clarity, appeal, and completeness.
 
 **Summary of Changes:**
-*   **Added Badge:** Integrated a `shields.io` badge for "GitHub All Releases" (total downloads).
-*   **New Section: "Why Choose This AntiCheat?"**: Added an introductory section highlighting key advantages of the addon.
-*   **Visual Placeholders:** Inserted HTML comment placeholders for:
-    *   Project logo/banner.
-    *   GIF/Screenshot for `!panel` UI.
-    *   GIF/Screenshot for World Border visuals.
-    *   GIF/Screenshot for a cheat detection example.
-    *   Link to a potential video installation tutorial.
-*   **Content Additions & Refinements:**
-    *   **Quick Start:** Clarified `.mcaddon` file handling for `config.js` access.
-    *   **Troubleshooting:** Added a collapsible "Quick Troubleshooting Tip" section with common checks (now links to full guide).
-    *   **Performance:** Included a new "Performance Considerations" section.
-    *   **Contributing:** Enhanced the section with more welcoming language and a direct link to the GitHub issues tab, encouraging looking for `good first issue` tags.
-*   **Styling & Wording:** Made minor stylistic adjustments for consistency and clarity (e.g., punctuation in lists, concise phrasing).
-*   **Footer:** Added a positive concluding remark.
+*   Added badges, new sections ("Why Choose This AntiCheat?", "Performance Considerations"), visual placeholders, and improved content structure (troubleshooting tips, contributing section).
 
-**Outcome:** The `README.md` is now more informative, user-friendly, and better structured to guide both users and potential contributors. It also provides clear indicators for future visual enhancements.
+**Outcome:** The `README.md` is more informative, user-friendly, and better structured.
 
 *(Note: Replace YYYY-MM-DD with the actual completion date for all entries)*
