@@ -5,7 +5,7 @@ This list contains planned features, improvements, and areas for future investig
 ## README Enhancements (Further Considerations)
 - **Medium Priority:**
     - Consider adding a project logo/banner (requires asset). (Placeholder exists in README)
-    - Placeholder for a more detailed `Docs/Troubleshooting.md` if common issues arise. (Placeholder for quick tips exists in README)
+    - *(Addressed by linking to full guide) Placeholder for a more detailed `Docs/Troubleshooting.md` if common issues arise.*
 - **Low Priority:**
     - Dynamic Discord member count (if an easy endpoint is found).
     - Code size/LoC badge (requires CI integration for dynamic updates or manual static updates).
@@ -19,7 +19,6 @@ This list contains planned features, improvements, and areas for future investig
 - *(Example) Investigate reports of false positives in NoFall detection under specific conditions.*
 
 ## Documentation
-- *(Example) Create `Docs/Troubleshooting.md`.*
 - *(Example) Expand on `Docs/AutoModDetails.md` with more complex rule examples.*
 
 ## Refactoring & Maintenance

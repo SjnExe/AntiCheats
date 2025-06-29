@@ -70,14 +70,17 @@ Get up and running in minutes!
     *   For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
 
 <details>
-<summary><strong>💡 Quick Troubleshooting Tip</strong></summary>
+<summary><strong>💡 Quick Troubleshooting Tips & Full Guide</strong></summary>
 
-If you encounter issues, double-check that:
-- `AntiCheatsBP` is at the very top of your behavior packs.
-- Your `ownerPlayerName` in `config.js` is spelled correctly (case-sensitive) and matches your in-game name.
-- Your Minecraft version is compatible (see badge above).
-- Ensure no other addons are significantly altering player behavior in ways that might conflict (e.g., custom movement systems).
-If problems persist, please [report an issue](https://github.com/SjnExe/AntiCheats/issues)!
+Common quick checks:
+- Ensure `AntiCheatsBP` is at the very top of your behavior packs.
+- Verify your `ownerPlayerName` in `config.js` is exact (case-sensitive).
+- Check Minecraft version compatibility (see badge above).
+- Test for conflicts with other addons, especially those modifying player behavior.
+
+➡️ For a comprehensive guide, see our [**Troubleshooting Guide**](Docs/Troubleshooting.md).
+
+If problems persist after checking the guide, please [report an issue](https://github.com/SjnExe/AntiCheats/issues)!
 </details>
 
 ---
