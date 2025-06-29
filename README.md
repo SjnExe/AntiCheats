@@ -123,5 +123,15 @@ Looking for a place to start? Check out our [**issues tab**](https://github.com/
 
 ---
 
+## ❤️ Our Valued Contributors
+
+This project is made possible by the community and all the developers who dedicate their time to contribute. We are incredibly grateful for every contribution, from reporting issues and suggesting new ideas to writing code and improving documentation.
+
+➡️ You can see a list of code contributors on [**GitHub**](https://github.com/SjnExe/AntiCheats/graphs/contributors).
+
+If you're interested in helping, please see our [**Contributing section above**](#-contributing) and the [**Addon Development Resources**](Dev/README.md)!
+
+---
+
 <p align="center">Thank you for using the AntiCheats Addon!</p>
 <p align="center">We hope it helps create a fairer and more enjoyable Minecraft experience for your community.</p>

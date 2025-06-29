@@ -9,7 +9,7 @@ This list contains planned features, improvements, and areas for future investig
 - **Low Priority:**
     - *(Addressed) Dynamic Discord member count (if an easy endpoint is found).*
     - Code size/LoC badge (requires CI integration for dynamic updates or manual static updates).
-    - Contributor recognition section/AllContributors bot integration.
+    - *(Addressed by adding a generic contributors section) Contributor recognition section/AllContributors bot integration.*
 
 ## Feature Development
 - *(Example) Implement advanced heuristics for Elytra Fly detection.*
