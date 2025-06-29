@@ -89,9 +89,37 @@ function initializeRankSystem(dependencies) {
  *          Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
+    // --- BEGIN TOP-LEVEL DEPENDENCIES DIAGNOSTIC ---
+    console.warn(`[RankMan][ENTRY] getPlayerRankAndPermissions called for player: ${player?.nameTag || 'UnknownPlayer'}`);
+    console.warn(`[RankMan][ENTRY] typeof dependencies: ${typeof dependencies}`);
+    try {
+        if (dependencies === undefined) {
+            console.warn('[RankMan][ENTRY] dependencies is undefined.');
+        } else if (dependencies === null) {
+            console.warn('[RankMan][ENTRY] dependencies is null.');
+        } else {
+            // Attempt to log specific parts of dependencies if it's an object
+            if (typeof dependencies === 'object') {
+                let depsSample = {
+                    configExists: Object.prototype.hasOwnProperty.call(dependencies, 'config'),
+                    playerUtilsExists: Object.prototype.hasOwnProperty.call(dependencies, 'playerUtils'),
+                    configType: typeof dependencies.config,
+                    playerUtilsType: typeof dependencies.playerUtils,
+                };
+                console.warn('[RankMan][ENTRY] dependencies content sample:', JSON.stringify(depsSample));
+            } else {
+                // If not an object, just try to stringify it directly if possible
+                console.warn('[RankMan][ENTRY] dependencies JSON (or string):', JSON.stringify(dependencies));
+            }
+        }
+    } catch (e) {
+        console.warn('[RankMan][ENTRY] Error trying to log/stringify dependencies:', e.message);
+    }
+    // --- END TOP-LEVEL DEPENDENCIES DIAGNOSTIC ---
+
     // Ensure dependencies and config are what we expect at a basic level
     if (!dependencies || typeof dependencies !== 'object' || dependencies === null) {
-        console.error('[RankManager] Critical: Invalid dependencies object passed to getPlayerRankAndPermissions. Falling back to default permissions.');
+        console.error('[RankManager] Critical: Invalid dependencies object passed to getPlayerRankAndPermissions (checked after ENTRY logs). Falling back to default permissions.');
         // Fallback to default permissions if dependencies are totally broken
         const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member' && r.permissionLevel === defaultPermissionLevel);
         return {
