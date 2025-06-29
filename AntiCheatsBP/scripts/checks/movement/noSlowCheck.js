@@ -32,24 +32,24 @@ export async function checkNoSlow(player, pData, dependencies) {
     const velocity = player.getVelocity();
     const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
 
-    let slowingActionKey = null;
+    let resolvedSlowingActionString = null;
     let maxAllowedBaseSpeedBPS = Infinity;
 
     if (pData.isUsingConsumable) {
-        slowingActionKey = 'check.noSlow.action.eatingDrinking';
+        resolvedSlowingActionString = 'Eating/Drinking';
         maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedEating ?? 1.0;
     } else if (pData.isChargingBow) {
-        slowingActionKey = 'check.noSlow.action.chargingBow';
+        resolvedSlowingActionString = 'Charging Bow';
         maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedChargingBow ?? 1.0;
     } else if (pData.isUsingShield) {
-        slowingActionKey = 'check.noSlow.action.usingShield';
+        resolvedSlowingActionString = 'Using Shield';
         maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedUsingShield ?? 4.4;
     } else if (player.isSneaking) {
-        slowingActionKey = 'check.noSlow.action.sneaking';
+        resolvedSlowingActionString = 'Sneaking';
         maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedSneaking ?? 1.5;
     }
 
-    if (slowingActionKey && horizontalSpeedBPS > maxAllowedBaseSpeedBPS) {
+    if (resolvedSlowingActionString && horizontalSpeedBPS > maxAllowedBaseSpeedBPS) {
         let effectiveMaxAllowedSpeedBPS = maxAllowedBaseSpeedBPS;
         const speedAmplifier = pData.speedAmplifier ?? -1;
 
@@ -62,15 +62,6 @@ export async function checkNoSlow(player, pData, dependencies) {
         }
 
         if (horizontalSpeedBPS > effectiveMaxAllowedSpeedBPS) {
-            let resolvedSlowingActionString;
-            switch (slowingActionKey) {
-                case 'check.noSlow.action.eatingDrinking': resolvedSlowingActionString = 'Eating/Drinking'; break;
-                case 'check.noSlow.action.chargingBow': resolvedSlowingActionString = 'Charging Bow'; break;
-                case 'check.noSlow.action.usingShield': resolvedSlowingActionString = 'Using Shield'; break;
-                case 'check.noSlow.action.sneaking': resolvedSlowingActionString = 'Sneaking'; break;
-                default: resolvedSlowingActionString = 'Unknown Action'; break;
-            }
-
             const violationDetails = {
                 action: resolvedSlowingActionString,
                 speed: horizontalSpeedBPS.toFixed(2),

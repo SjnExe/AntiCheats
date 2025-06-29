@@ -31,7 +31,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
     }
 
     if (player.isSprinting) {
-        let invalidConditionKey = null;
+        let resolvedConditionString = null;
         let conditionDetailsLog = '';
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
@@ -52,37 +52,26 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
-            invalidConditionKey = 'check.invalidSprint.condition.blindness';
+            resolvedConditionString = 'Blindness';
             conditionDetailsLog = `Blindness Ticks: ${pData.blindnessTicks}`;
         } else if (player.isSneaking) {
-            invalidConditionKey = 'check.invalidSprint.condition.sneaking';
+            resolvedConditionString = 'Sneaking';
             conditionDetailsLog = 'Player is sneaking';
         } else if (player.isRiding) {
-            invalidConditionKey = 'check.invalidSprint.condition.riding';
+            resolvedConditionString = 'Riding Entity';
             conditionDetailsLog = 'Player is riding an entity';
         } else if (isHungerTooLow) {
-            invalidConditionKey = 'check.invalidSprint.condition.hunger';
+            resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`;
             conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config.sprintHungerLimit ?? 6})`;
         } else if (pData.isUsingConsumable) {
-            invalidConditionKey = 'check.invalidSprint.condition.usingItem';
+            resolvedConditionString = 'Using Item';
             conditionDetailsLog = 'Player is using a consumable';
         } else if (pData.isChargingBow) {
-            invalidConditionKey = 'check.invalidSprint.condition.chargingBow';
+            resolvedConditionString = 'Charging Bow';
             conditionDetailsLog = 'Player is charging a bow';
         }
 
-        if (invalidConditionKey) {
-            let resolvedConditionString;
-            switch (invalidConditionKey) {
-                case 'check.invalidSprint.condition.blindness': resolvedConditionString = 'Blindness'; break;
-                case 'check.invalidSprint.condition.sneaking': resolvedConditionString = 'Sneaking'; break;
-                case 'check.invalidSprint.condition.riding': resolvedConditionString = 'Riding Entity'; break;
-                case 'check.invalidSprint.condition.hunger': resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`; break;
-                case 'check.invalidSprint.condition.usingItem': resolvedConditionString = 'Using Item'; break;
-                case 'check.invalidSprint.condition.chargingBow': resolvedConditionString = 'Charging Bow'; break;
-                default: resolvedConditionString = 'Unknown Invalid Sprint Condition'; break;
-            }
-
+        if (resolvedConditionString) {
             const violationDetails = {
                 condition: resolvedConditionString,
                 details: conditionDetailsLog,
