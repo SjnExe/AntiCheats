@@ -488,17 +488,12 @@ function performInitializations() {
         const tickDependencies = getStandardDependencies();
 
         // --- BEGIN TICK LOOP DIAGNOSTICS ---
-        if (playerUtils && typeof playerUtils.debugLog === 'function') {
-            playerUtils.debugLog(`[TickLoopDiag] Tick: ${currentTick}`, 'System', tickDependencies);
-            playerUtils.debugLog(`[TickLoopDiag] typeof mc.world: ${typeof mc.world}`, 'System', tickDependencies);
+        if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) {
+            const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, 'System', tickDependencies) : console.log;
+            logger(`[TickLoopDiag] Tick: ${currentTick}`);
+            logger(`[TickLoopDiag] typeof mc.world: ${typeof mc.world}`);
             if (mc.world) {
-                playerUtils.debugLog(`[TickLoopDiag] typeof mc.world.getAllPlayers: ${typeof mc.world.getAllPlayers}`, 'System', tickDependencies);
-            }
-        } else {
-            console.log(`[TickLoopDiagFallback] Tick: ${currentTick}`);
-            console.log(`[TickLoopDiagFallback] typeof mc.world: ${typeof mc.world}`);
-            if (mc.world) {
-                console.log(`[TickLoopDiagFallback] typeof mc.world.getAllPlayers: ${typeof mc.world.getAllPlayers}`);
+                logger(`[TickLoopDiag] typeof mc.world.getAllPlayers: ${typeof mc.world.getAllPlayers}`);
             }
         }
         // --- END TICK LOOP DIAGNOSTICS ---
@@ -517,19 +512,18 @@ function performInitializations() {
         try {
             if (mc.world && typeof mc.world.getAllPlayers === 'function') {
                 allPlayers = mc.world.getAllPlayers();
-                if (playerUtils && typeof playerUtils.debugLog === 'function') {
-                    playerUtils.debugLog(`[TickLoopDiag] mc.world.getAllPlayers() returned array of length: ${allPlayers.length}`, 'System', tickDependencies);
-                } else {
-                    console.log(`[TickLoopDiagFallback] mc.world.getAllPlayers() returned array of length: ${allPlayers.length}`);
+                if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) {
+                    const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, 'System', tickDependencies) : console.log;
+                    logger(`[TickLoopDiag] mc.world.getAllPlayers() returned array of length: ${allPlayers.length}`);
                 }
             } else {
-                 if (playerUtils && typeof playerUtils.debugLog === 'function') {
-                    playerUtils.debugLog('[TickLoopDiag] mc.world or mc.world.getAllPlayers is not available!', 'System', tickDependencies);
-                } else {
-                    console.error('[TickLoopDiagFallback] mc.world or mc.world.getAllPlayers is not available!');
+                if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) {
+                    const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, 'System', tickDependencies) : console.error;
+                    logger('[TickLoopDiag] mc.world or mc.world.getAllPlayers is not available!');
                 }
             }
         } catch (e) {
+            // This error is critical enough to always log if it happens.
             console.error(`[TickLoopDiag] Error calling mc.world.getAllPlayers(): ${e}`);
         }
 
@@ -537,20 +531,18 @@ function performInitializations() {
 
         for (const player of allPlayers) {
             // --- BEGIN PLAYER LOOP DIAGNOSTICS ---
-            if (playerUtils && typeof playerUtils.debugLog === 'function') {
-                playerUtils.debugLog(`[TickLoopDiag] Processing player: ${player?.nameTag} (type: ${typeof player})`, player?.nameTag, tickDependencies);
-            } else {
-                console.log(`[TickLoopDiagFallback] Processing player: ${player?.nameTag} (type: ${typeof player})`);
+            if (tickDependencies.config.enableDebugLogging) { // Player-specific logs only if debug logging is on
+                const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, player?.nameTag, tickDependencies) : (msg) => console.log(`[Player: ${player?.nameTag}] ${msg}`);
+                logger(`[TickLoopDiag] Processing player (type: ${typeof player})`);
             }
             // --- END PLAYER LOOP DIAGNOSTICS ---
 
             let pData;
             try {
                 pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
-                if (playerUtils && typeof playerUtils.debugLog === 'function') {
-                    playerUtils.debugLog(`[TickLoopDiag] pData for ${player?.nameTag}: typeof=${typeof pData}, totalFlags=${pData?.flags?.totalFlags ?? 'N/A'}`, player?.nameTag, tickDependencies);
-                } else {
-                    console.log(`[TickLoopDiagFallback] pData for ${player?.nameTag}: typeof=${typeof pData}, totalFlags=${pData?.flags?.totalFlags ?? 'N/A'}`);
+                if (tickDependencies.config.enableDebugLogging) { // Player-specific logs only if debug logging is on
+                    const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, player?.nameTag, tickDependencies) : (msg) => console.log(`[Player: ${player?.nameTag}] ${msg}`);
+                    logger(`[TickLoopDiag] pData: typeof=${typeof pData}, totalFlags=${pData?.flags?.totalFlags ?? 'N/A'}`);
                 }
             } catch (e) {
                 console.error(`[TickLoopDiag] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e}`);
@@ -566,10 +558,10 @@ function performInitializations() {
             }
 
             // Temporarily comment out these to isolate the error further
-            /*
+
             playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
             playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
-            */
+
 
             // Temporarily comment out all checks
             /*
