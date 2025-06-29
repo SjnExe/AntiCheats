@@ -261,35 +261,56 @@ function performInitializations() {
     const startupDependencies = getStandardDependencies(); // Get fresh dependencies now that we're sure mc object is somewhat stable
     playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
 
-    // Subscribe to events
-    mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-        const dependencies = getStandardDependencies();
-        if (eventData.message.startsWith(dependencies.config.prefix)) {
-            const commandHandlingDependencies = {
-                ...dependencies,
-                commandDefinitionMap: commandManager.commandDefinitionMap,
-                commandExecutionMap: commandManager.commandExecutionMap,
-            };
-            await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
-        } else {
-            await eventHandlers.handleBeforeChatSend(eventData, dependencies);
-        }
-    });
+    // Subscribe to events with checks for undefined event objects
+    playerUtils.debugLog('[PerformInitializations] Attempting to subscribe to events...', 'System', startupDependencies);
 
-    mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
-        eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.chatSend) {
+        mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
+            const dependencies = getStandardDependencies();
+            if (eventData.message.startsWith(dependencies.config.prefix)) {
+                const commandHandlingDependencies = {
+                    ...dependencies,
+                    commandDefinitionMap: commandManager.commandDefinitionMap,
+                    commandExecutionMap: commandManager.commandExecutionMap,
+                };
+                await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
+            } else {
+                await eventHandlers.handleBeforeChatSend(eventData, dependencies);
+            }
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for chatSend: mc.world.beforeEvents.chatSend is undefined.');
+    }
 
-    mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
-        eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.playerSpawn) {
+        mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
+            eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerSpawn: mc.world.afterEvents.playerSpawn is undefined.');
+    }
 
-    mc.world.afterEvents.entityHurt.subscribe((eventData) => {
-        const dependencies = getStandardDependencies();
-        eventHandlers.handleEntityHurt(eventData, dependencies);
-    });
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerLeave) {
+        mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
+            eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerLeave: mc.world.beforeEvents.playerLeave is undefined.');
+    }
 
-    mc.world.beforeEvents.entityHurt.subscribe(eventData => {
+    // General entityHurt subscription
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.entityHurt) {
+        mc.world.afterEvents.entityHurt.subscribe((eventData) => {
+            const dependencies = getStandardDependencies();
+            eventHandlers.handleEntityHurt(eventData, dependencies);
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for afterEvents.entityHurt: object undefined.');
+    }
+
+    // Specific entityHurt for TPA (this is a beforeEvent)
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.entityHurt) {
+        mc.world.beforeEvents.entityHurt.subscribe(eventData => {
         const dependencies = getStandardDependencies();
         if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
             return;
@@ -309,32 +330,60 @@ function performInitializations() {
             tpaManager.cancelTeleport(playerActiveWarmupRequest.requestId, reasonMsgPlayer, reasonMsgLog, dependencies);
         }
     });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for beforeEvents.entityHurt (TPA): object undefined.');
+    }
 
-    mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
-        await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerBreakBlock) {
+        mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
+            await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerBreakBlock (before): object undefined.');
+    }
 
-    mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
-        await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.playerBreakBlock) {
+        mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
+            await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerBreakBlock (after): object undefined.');
+    }
 
-    mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
-        await eventHandlers.handleItemUse(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.itemUse) {
+        mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
+            await eventHandlers.handleItemUse(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for itemUse (before): object undefined.');
+    }
 
-    mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
-        await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.itemUseOn) {
+        mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
+            await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for itemUseOn (before): object undefined.');
+    }
 
-    mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
-        await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerPlaceBlock) {
+        mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
+            await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerPlaceBlock (before): object undefined.');
+    }
 
-    mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
-        await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.playerPlaceBlock) {
+        mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
+            await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerPlaceBlock (after): object undefined.');
+    }
 
-    mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.playerInventoryItemChange) {
+        mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => {
         await eventHandlers.handleInventoryItemChange(
             eventData.player,
             eventData.newItemStack,
@@ -343,30 +392,50 @@ function performInitializations() {
             getStandardDependencies()
         );
     });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerInventoryItemChange (after): object undefined.');
+    }
 
-    mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
-        eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.playerDimensionChange) {
+        mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
+            eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for playerDimensionChange (after): object undefined.');
+    }
 
-    mc.world.afterEvents.entityDie.subscribe((eventData) => {
-        const dependencies = getStandardDependencies();
-        if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
-            eventHandlers.handlePlayerDeath(eventData, dependencies);
-        }
-        if (dependencies.config.enableDeathEffects) {
-            eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
-        }
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.entityDie) {
+        mc.world.afterEvents.entityDie.subscribe((eventData) => {
+            const dependencies = getStandardDependencies();
+            if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
+                eventHandlers.handlePlayerDeath(eventData, dependencies);
+            }
+            if (dependencies.config.enableDeathEffects) {
+                eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
+            }
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for entityDie (after): object undefined.');
+    }
 
-    mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
-        await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.entitySpawn) {
+        mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
+            await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for entitySpawn (after): object undefined.');
+    }
 
-    mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
-        await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
-    });
+    if (mc.world && mc.world.afterEvents && mc.world.afterEvents.pistonActivate) {
+        mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
+            await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
+        });
+    } else {
+        console.warn('[AntiCheat] Skipping subscription for pistonActivate (after): object undefined.');
+    }
 
     // Initialize other modules
+    playerUtils.debugLog('[PerformInitializations] Initializing other modules (commands, logs, ranks, etc.)...', 'System', startupDependencies);
     commandManager.initializeCommands(startupDependencies);
     logManager.initializeLogCache(startupDependencies);
     reportManager.initializeReportCache(startupDependencies);
@@ -527,12 +596,12 @@ function attemptInitializeSystem(retryCount = 0) {
         if (retryCount < MAX_INIT_RETRIES) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            console.error('[AntiCheat] CRITICAL: API did not become ready after multiple retries. System may be unstable or non-functional.');
+            // MAX_INIT_RETRIES reached, but some APIs might still be missing
+            console.error('[AntiCheat] CRITICAL: Some event APIs did not become ready after multiple retries. Proceeding with partial initialization.');
             if (tempStartupDepsForLog && tempStartupDepsForLog.playerUtils) {
-                 tempStartupDepsForLog.playerUtils.notifyAdmins("§c[AntiCheat] CRITICAL: Failed to initialize event system after multiple retries. Some AntiCheat features will be disabled. Please check server logs.", tempStartupDepsForLog, null, null);
+                 tempStartupDepsForLog.playerUtils.notifyAdmins("§c[AntiCheat] WARNING: Failed to initialize some event APIs after multiple retries. Some AntiCheat features may be disabled. Please check server logs.", tempStartupDepsForLog, null, null);
             }
-            // Optionally, could try to run a very minimal version of performInitializations
-            // that only sets up things not dependent on events, but for now, we just log failure.
+            performInitializations(); // Proceed with initializations, letting individual subscriptions fail gracefully
         }
     }
 }
