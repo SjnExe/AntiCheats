@@ -206,7 +206,7 @@ mc.system.runInterval(() => {
     }
 }, 20);
 */
-const MAX_INIT_RETRIES = 7; // Max retries (0-6 attempts after initial). Total time ~2 minutes.
+const MAX_INIT_RETRIES = 1; // Reduced for faster testing during diagnostics
 const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the first retry
 
 /**
