@@ -201,54 +201,62 @@ mc.system.runInterval(() => {
     }
 }, 20);
 
-function initializeSystem() {
-    const startupDependencies = getStandardDependencies();
-    playerUtils.debugLog('Anti-Cheat Script Loaded. Initializing modules...', 'System', startupDependencies);
+const MAX_INIT_RETRIES = 7; // Max retries (0-6 attempts after initial). Total time ~2 minutes.
+const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the first retry
 
-    // --- Pre-Subscription API Readiness Checks ---
-    let allEventsReady = true;
+/**
+ * Checks if all required Minecraft event APIs are available.
+ * @param {object} dependencies - The standard dependencies object, primarily for playerUtils.debugLog.
+ * @returns {boolean} True if all essential event objects are defined, false otherwise.
+ */
+function checkEventAPIsReady(dependencies) {
+    let allReady = true;
     if (!mc.world) {
-        console.error('[AntiCheat] CRITICAL: mc.world is undefined at initialization!');
-        allEventsReady = false;
+        console.error('[AntiCheat] CRITICAL: mc.world is undefined during API readiness check!');
+        allReady = false;
     } else {
         if (!mc.world.beforeEvents) {
-            console.error('[AntiCheat] CRITICAL: mc.world.beforeEvents is undefined at initialization!');
-            allEventsReady = false;
+            console.error('[AntiCheat] CRITICAL: mc.world.beforeEvents is undefined during API readiness check!');
+            allReady = false;
         } else {
             const requiredBeforeEvents = ['chatSend', 'playerLeave', 'entityHurt', 'playerBreakBlock', 'itemUse', 'itemUseOn', 'playerPlaceBlock'];
             for (const eventName of requiredBeforeEvents) {
                 if (!mc.world.beforeEvents[eventName]) {
-                    console.error(`[AntiCheat] CRITICAL: mc.world.beforeEvents.${eventName} is undefined at initialization!`);
-                    allEventsReady = false;
+                    console.error(`[AntiCheat] CRITICAL: mc.world.beforeEvents.${eventName} is undefined during API readiness check!`);
+                    allReady = false;
                 }
             }
         }
 
         if (!mc.world.afterEvents) {
-            console.error('[AntiCheat] CRITICAL: mc.world.afterEvents is undefined at initialization!');
-            allEventsReady = false;
+            console.error('[AntiCheat] CRITICAL: mc.world.afterEvents is undefined during API readiness check!');
+            allReady = false;
         } else {
             const requiredAfterEvents = ['playerSpawn', 'entityHurt', 'playerBreakBlock', 'playerPlaceBlock', 'playerInventoryItemChange', 'playerDimensionChange', 'entityDie', 'entitySpawn', 'pistonActivate'];
-            // Note: entityHurt is in both before and after, which is fine.
             for (const eventName of requiredAfterEvents) {
                 if (!mc.world.afterEvents[eventName]) {
-                    console.error(`[AntiCheat] CRITICAL: mc.world.afterEvents.${eventName} is undefined at initialization!`);
-                    allEventsReady = false;
+                    console.error(`[AntiCheat] CRITICAL: mc.world.afterEvents.${eventName} is undefined during API readiness check!`);
+                    allReady = false;
                 }
             }
         }
     }
 
-    if (!allEventsReady) {
-        console.error('[AntiCheat] CRITICAL: Not all required Minecraft event objects are available. Some features may not work. Check previous errors for details.');
-        // Depending on severity, might want to stop further initialization or notify admins.
-        // For now, we'll let it try to subscribe, and the errors will re-appear if undefined.
-    } else {
-        playerUtils.debugLog('[AntiCheat] All checked Minecraft event objects appear to be available.', 'System', startupDependencies);
+    if (allReady && dependencies && dependencies.playerUtils) {
+        dependencies.playerUtils.debugLog('[AntiCheat] All checked Minecraft event objects appear to be available.', 'System', dependencies);
     }
-    // --- End Pre-Subscription API Readiness Checks ---
+    return allReady;
+}
 
-    // Subscribe to events first
+/**
+ * Performs the actual initialization of event subscriptions and other modules.
+ * This function is called by attemptInitializeSystem once APIs are deemed ready.
+ */
+function performInitializations() {
+    const startupDependencies = getStandardDependencies(); // Get fresh dependencies now that we're sure mc object is somewhat stable
+    playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
+
+    // Subscribe to events
     mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         const dependencies = getStandardDependencies();
         if (eventData.message.startsWith(dependencies.config.prefix)) {
@@ -276,24 +284,19 @@ function initializeSystem() {
         eventHandlers.handleEntityHurt(eventData, dependencies);
     });
 
-    // Specific entityHurt for TPA, ensure it's also initialized
     mc.world.beforeEvents.entityHurt.subscribe(eventData => {
         const dependencies = getStandardDependencies();
         if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
             return;
         }
-
         const { hurtEntity, damageSource } = eventData;
         if (hurtEntity.typeId !== mc.MinecraftEntityTypes.player.id) return;
-
         const player = hurtEntity;
-
         const requestsInWarmup = tpaManager.getRequestsInWarmup();
         const playerActiveWarmupRequest = requestsInWarmup.find(
             req => (req.requesterName === player.nameTag && req.requestType === 'tpa') ||
                    (req.targetName === player.nameTag && req.requestType === 'tpahere')
         );
-
         if (playerActiveWarmupRequest && playerActiveWarmupRequest.status === 'pending_teleport_warmup') {
             const damageCause = damageSource?.cause || 'unknown';
             const reasonMsgPlayer = dependencies.getString('tpa.manager.warmupCancelledDamage.player', { damageCause });
@@ -358,7 +361,7 @@ function initializeSystem() {
         await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
     });
 
-    // Then initialize other modules
+    // Initialize other modules
     commandManager.initializeCommands(startupDependencies);
     logManager.initializeLogCache(startupDependencies);
     reportManager.initializeReportCache(startupDependencies);
@@ -368,13 +371,41 @@ function initializeSystem() {
         for (const dimId of knownDims) {
              worldBorderManager.getBorderSettings(dimId, startupDependencies);
         }
-        playerUtils.debugLog("[InitializeSystem] World border settings will be loaded on demand for configured dimensions.", "System", startupDependencies);
+        playerUtils.debugLog("[PerformInitializations] World border settings will be loaded on demand.", "System", startupDependencies);
     }
 
     playerUtils.debugLog('Anti-Cheat Core System Initialized. Event handlers and tick loop are active.', 'System', startupDependencies);
     mc.world.sendMessage('§a[AntiCheat] §2System Core Initialized. Version: ' + configModule.acVersion);
 }
 
+
+/**
+ * Attempts to initialize the system. If critical APIs are not ready, it schedules a retry.
+ * @param {number} retryCount - Current number of retry attempts.
+ */
+function attemptInitializeSystem(retryCount = 0) {
+    const tempStartupDepsForLog = getStandardDependencies(); // For logging, might be partial if mc is not fully up
+
+    if (checkEventAPIsReady(tempStartupDepsForLog)) {
+        performInitializations();
+    } else {
+        const delay = INITIAL_RETRY_DELAY_TICKS * Math.pow(2, retryCount); // Exponential backoff
+        console.warn(`[AntiCheat] API not fully ready. Retrying initialization in ${delay} ticks (Attempt ${retryCount + 1}/${MAX_INIT_RETRIES})`);
+
+        if (retryCount < MAX_INIT_RETRIES) {
+            mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
+        } else {
+            console.error('[AntiCheat] CRITICAL: API did not become ready after multiple retries. System may be unstable or non-functional.');
+            if (tempStartupDepsForLog && tempStartupDepsForLog.playerUtils) {
+                 tempStartupDepsForLog.playerUtils.notifyAdmins("§c[AntiCheat] CRITICAL: Failed to initialize event system after multiple retries. Some AntiCheat features will be disabled. Please check server logs.", tempStartupDepsForLog, null, null);
+            }
+            // Optionally, could try to run a very minimal version of performInitializations
+            // that only sets up things not dependent on events, but for now, we just log failure.
+        }
+    }
+}
+
+// Initial call to start the initialization process
 mc.system.runTimeout(() => {
-    initializeSystem();
-}, 20); // Increased delay from 1 tick to 20 ticks (1 second)
+    attemptInitializeSystem();
+}, INITIAL_RETRY_DELAY_TICKS); // Start first attempt after an initial delay
