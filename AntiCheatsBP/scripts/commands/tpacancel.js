@@ -20,8 +20,6 @@ export async function execute(player, args, dependencies) {
     // Use permissionLevels from dependencies for runtime checks if necessary
     const { playerUtils, config, tpaManager, logManager } = dependencies;
 
-    const prefix = config.prefix;
-
     if (!config.enableTPASystem) {
         player.sendMessage("§cThe TPA system is currently disabled.");
         return;

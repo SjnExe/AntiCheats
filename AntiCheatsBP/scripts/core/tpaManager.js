@@ -247,7 +247,6 @@ export function clearExpiredRequests(dependencies) {
 }
 
 export function getPlayerTpaStatus(playerName, dependencies) {
-    // playerUtils is not used here, but kept for signature consistency if it were
     if (!playerTpaStatuses.has(playerName)) {
         return { playerName, acceptsTpaRequests: true, lastTpaToggleTimestamp: 0 };
     }

@@ -11,7 +11,7 @@ import { rankDefinitions } from '../core/ranksConfig.js';
 export const definition = {
     name: 'removerank',
     syntax: '!removerank <playerName> <rankId>',
-    description: 'Removes a manually assigned rank from a player.', // Hardcoded string
+    description: 'Removes a manually assigned rank from a player.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
 };

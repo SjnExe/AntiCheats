@@ -543,7 +543,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function addFlag(player, flagType, reasonMessage, detailsForNotify = '', dependencies) {
-    const { playerUtils, getString, config, logManager } = dependencies;
+    const { playerUtils, config, logManager } = dependencies;
     const pData = getPlayerData(player.id);
 
     if (!pData) {

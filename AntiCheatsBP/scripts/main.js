@@ -28,6 +28,8 @@ import * as worldBorderManager from './utils/worldBorderManager.js';
 let currentTick = 0;
 
 /**
+ * Assembles and returns the standard dependencies object used throughout the system.
+ * This object provides access to configuration, utilities, managers, and Minecraft APIs.
  */
 function getStandardDependencies() {
     return {

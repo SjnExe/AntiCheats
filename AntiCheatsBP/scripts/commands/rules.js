@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'rules',
-    description: 'Displays the server rules.', // Hardcoded string
+    description: 'Displays the server rules.',
     syntax: '!rules',
     aliases: ['rule'],
     permissionLevel: permissionLevels.normal,
@@ -39,13 +39,6 @@ export async function execute(player, _args, dependencies) {
 
     try {
         await form.show(player);
-        // Optional: Log rule display if needed, though generally not necessary
-        // logManager.addLog({
-        //     timestamp: Date.now(),
-        //     playerName: player.nameTag, // Assuming playerName for general logs
-        //     actionType: 'command_rules_shown',
-        //     details: `Player ${player.nameTag} viewed the rules.`,
-        // }, dependencies);
     } catch (error) {
         // Log errors specifically if form display fails
         console.error(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.stack || error}`);

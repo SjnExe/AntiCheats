@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: 'listwatched',
     syntax: '!listwatched',
-    description: 'Lists all online players currently being watched.', // Hardcoded string
+    description: 'Lists all online players currently being watched.',
     aliases: ['lw', 'watchedlist'],
     permissionLevel: permissionLevels.admin,
     enabled: true,

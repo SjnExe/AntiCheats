@@ -40,7 +40,7 @@ function parseDimensionLocal(dimStr, playerUtils, dependencies) {
 export const definition = {
     name: 'tp',
     syntax: '!tp <targetPlayerOrX> [destinationPlayerOrY] [z] [dimension]', // More descriptive syntax
-    description: 'Teleports a player to another player or to coordinates.', // Hardcoded string
+    description: 'Teleports a player to another player or to coordinates.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
 };

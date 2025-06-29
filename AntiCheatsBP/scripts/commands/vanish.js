@@ -21,7 +21,7 @@ export const definition = {
  * Executes the vanish command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager } = dependencies;
+    const { playerUtils, logManager, playerDataManager } = dependencies;
 
     let mode = args[0] ? args[0].toLowerCase() : 'silent';
     if (mode !== 'silent' && mode !== 'notify') {
