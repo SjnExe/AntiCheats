@@ -15,11 +15,10 @@ export function getString(key, params) {
     let str = stringDB[key];
     if (str === undefined) {
         console.warn(`[PlayerUtils.getString] Missing string key: ${key}`);
-        return key; // Return the key itself as a fallback
+        return key;
     }
     if (params) {
         for (const placeholder in params) {
-            // Ensure placeholder exists in string and param is string or number
             if (Object.prototype.hasOwnProperty.call(params, placeholder) && (typeof params[placeholder] === 'string' || typeof params[placeholder] === 'number')) {
                 str = str.replace(new RegExp(`{${placeholder}}`, 'g'), String(params[placeholder]));
             }
@@ -151,9 +150,8 @@ export function parseDuration(durationString) {
             case 'h': return value * 60 * 60 * 1000;
             case 'd': return value * 24 * 60 * 60 * 1000;
         }
-    } else if (/^\d+$/.test(lowerDurationString)) { // If it's just a number
+    } else if (/^\d+$/.test(lowerDurationString)) {
         const value = parseInt(lowerDurationString, 10);
-        // Default to seconds if no unit is specified
         if (!isNaN(value)) {
             return value * 1000;
         }
@@ -183,7 +181,7 @@ export function formatSessionDuration(ms) {
     if (minutes > 0) {
         parts.push(`${minutes}m`);
     }
-    if (seconds > 0 || parts.length === 0) { // Show 0s if duration is < 1s
+    if (seconds > 0 || parts.length === 0) {
         parts.push(`${seconds}s`);
     }
     return parts.join(' ');
@@ -196,7 +194,7 @@ export function formatSessionDuration(ms) {
  */
 export function formatTimeDifference(msDifference) {
     if (msDifference < 0 || typeof msDifference !== 'number' || isNaN(msDifference)) {
-        return 'in the future'; // Or handle as an error
+        return 'in the future';
     }
     if (msDifference < 1000) {
         return 'just now';
@@ -207,8 +205,8 @@ export function formatTimeDifference(msDifference) {
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
     const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30.4375); // Average days in a month
-    const years = Math.floor(days / 365.25); // Average days in a year
+    const months = Math.floor(days / 30.4375);
+    const years = Math.floor(days / 365.25);
 
     if (years > 0) {
         return `${years}y ago`;

@@ -89,13 +89,6 @@ mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
     }
 });
 
-/**
- * Handles player spawn events:
- * - Initializes player-specific data (pData).
- * - Displays welcome messages.
- * - Notifies admins of new players.
- * - Updates player nametags based on rank.
- */
 mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
     eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
 });
@@ -228,7 +221,6 @@ mc.system.runInterval(async () => {
 
         if (tickDependencies.config.enableCpsCheck && checks.checkCps) await checks.checkCps(player, pData, tickDependencies, null);
         if (tickDependencies.config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, tickDependencies, null);
-        // Reach check typically runs on entityHurt
         if (tickDependencies.config.enableMultiTargetCheck && checks.checkMultiTarget) await checks.checkMultiTarget(player, pData, tickDependencies, null);
         if (tickDependencies.config.enableStateConflictCheck && checks.checkStateConflict) await checks.checkStateConflict(player, pData, tickDependencies, null);
 
@@ -236,11 +228,9 @@ mc.system.runInterval(async () => {
         if (tickDependencies.config.enableAutoToolCheck && checks.checkAutoTool && (currentTick - (pData.lastCheckAutoToolTick || 0) >= tickDependencies.config.autoToolCheckIntervalTicks)) {
             await checks.checkAutoTool(player, pData, tickDependencies); pData.lastCheckAutoToolTick = currentTick;
         }
-        // InstaBreak speed check typically runs on blockBreak
         if (tickDependencies.config.enableFlatRotationCheck && checks.checkFlatRotationBuilding && (currentTick - (pData.lastCheckFlatRotationBuildingTick || 0) >= tickDependencies.config.flatRotationCheckIntervalTicks)) {
             await checks.checkFlatRotationBuilding(player, pData, tickDependencies); pData.lastCheckFlatRotationBuildingTick = currentTick;
         }
-        // DownwardScaffold, AirPlace, FastPlace checks run on blockPlace events
 
         if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof && (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
             await checks.checkNameSpoof(player, pData, tickDependencies); pData.lastCheckNameSpoofTick = currentTick;
@@ -248,28 +238,24 @@ mc.system.runInterval(async () => {
         if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc && (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
             await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGmcTick = currentTick;
         }
-        // SelfHurt check typically runs on entityHurt
-        // Illegal item and inventory mod checks are event-based
 
         if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
             await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
             pData.lastRenderDistanceCheckTick = currentTick;
         }
 
-        // FastUse check typically runs on itemUse event
-
         if (!player.isOnGround) {
             if ((pData.velocity?.y ?? 0) < -0.078 && pData.previousPosition && pData.lastPosition) {
                 const deltaY = pData.previousPosition.y - pData.lastPosition.y;
-                if (deltaY > 0 && deltaY < 100) { // Ensure deltaY is positive and reasonable
+                if (deltaY > 0 && deltaY < 100) {
                     pData.fallDistance = (pData.fallDistance || 0) + deltaY;
                 }
             }
         } else {
-            if (!pData.isTakingFallDamage) { // Only reset if not actively taking fall damage this tick
+            if (!pData.isTakingFallDamage) {
                 pData.fallDistance = 0;
             }
-            pData.isTakingFallDamage = false; // Reset this flag after checking
+            pData.isTakingFallDamage = false;
             pData.consecutiveOffGroundTicks = 0;
         }
 
@@ -284,8 +270,7 @@ mc.system.runInterval(async () => {
         }
     }
 
-    // Periodic Data Persistence
-    if (currentTick % 600 === 0) { // Approx. every 30 seconds
+    if (currentTick % 600 === 0) {
         playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
         for (const player of allPlayers) {
             const pData = playerDataManager.getPlayerData(player.id);
@@ -304,7 +289,6 @@ mc.system.runInterval(async () => {
         logManager.persistLogCacheToDisk(tickDependencies);
         reportManager.persistReportsToDisk(tickDependencies);
         if (tickDependencies.config.enableWorldBorderSystem) {
-            // Settings are saved when modified by commands.
             playerUtils.debugLog("[MainTick] World border settings are saved on modification. No global periodic save implemented currently.", "System", tickDependencies);
         }
     }
@@ -321,7 +305,7 @@ mc.system.runInterval(() => {
             }
         }
     }
-}, 20); // Approx. every second
+}, 20);
 
 function initializeSystem() {
     const startupDependencies = getStandardDependencies();
@@ -334,7 +318,6 @@ function initializeSystem() {
     if (startupDependencies.config.enableWorldBorderSystem) {
         const knownDims = startupDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
         for (const dimId of knownDims) {
-            // Ensure settings are loaded/initialized if worldBorderManager uses internal caching.
              worldBorderManager.getBorderSettings(dimId, startupDependencies);
         }
         playerUtils.debugLog("[InitializeSystem] World border settings will be loaded on demand for configured dimensions.", "System", startupDependencies);

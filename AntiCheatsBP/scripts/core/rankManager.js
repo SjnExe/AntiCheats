@@ -62,7 +62,7 @@ function initializeRankSystem(dependencies) {
         }
 
 
-        permissionLevels = Object.freeze(newPermissionLevels); // Make it immutable after generation
+        permissionLevels = Object.freeze(newPermissionLevels);
 
         const { playerUtils, config } = dependencies;
         if (playerUtils && config?.enableDebugLogging) {
@@ -178,7 +178,7 @@ export function updatePlayerNametag(player, dependencies) {
         return;
     }
 
-    const vanishedTagToUse = config?.vanishedPlayerTag || 'vanished'; // Use new standardized config key
+    const vanishedTagToUse = config?.vanishedPlayerTag || 'vanished';
 
     try {
         if (player.hasTag(vanishedTagToUse)) {
@@ -198,17 +198,15 @@ export function updatePlayerNametag(player, dependencies) {
     } catch (error) {
         let playerNameForError = 'UnknownPlayer';
         try {
-            if (player && typeof player.name === 'string') { // Use player.name for error context
+            if (player && typeof player.name === 'string') {
                 playerNameForError = player.name;
             }
         } catch (nameAccessError) {
-            // This inner catch is fine, means player object or name is problematic
         }
         console.error(`[RankManager] Error setting nametag for '${playerNameForError}': ${error.stack || error}`);
         try {
-            // Fallback in case of error during nametag setting
             player.nameTag = typeof player.name === 'string' ? player.name : 'Player';
-        } catch (e) { /* Failsafe */ }
+        } catch (e) { }
     }
 }
 

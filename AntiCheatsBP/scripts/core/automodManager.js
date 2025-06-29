@@ -14,16 +14,13 @@ function formatDuration(ms) {
     if (typeof ms !== 'number' || ms <= 0) {
         return '0s';
     }
-
     let seconds = Math.floor(ms / 1000);
     let minutes = Math.floor(seconds / 60);
     let hours = Math.floor(minutes / 60);
     let days = Math.floor(hours / 24);
-
     seconds %= 60;
     minutes %= 60;
     hours %= 24;
-
     const parts = [];
     if (days > 0) {
         parts.push(`${days}d`);
@@ -54,7 +51,6 @@ function formatAutomodMessage(template, context) {
     for (const key in context) {
         if (Object.prototype.hasOwnProperty.call(context, key)) {
             const placeholder = `{${key}}`;
-            // Escape special characters in placeholder for RegExp
             const escapedPlaceholder = placeholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedPlaceholder, 'g');
             message = message.replace(regex, String(context[key]));
@@ -76,16 +72,13 @@ function formatAutomodMessage(template, context) {
 async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
     const { playerUtils, logManager, config, playerDataManager } = dependencies;
     playerUtils.debugLog(`[AutoModManager] Dispatching action '${actionType}' for ${player.nameTag} due to ${checkType}. Rule Params: ${JSON.stringify(parameters)}`, player.nameTag, dependencies);
-
     let actionProcessed = false;
     let logDetails = '';
     let durationForLog = null;
     let finalTeleportDesc = 'N/A';
     let removedItemCount = 0;
-
     const flagCount = pData.flags[checkType]?.count || 0;
     const flagThreshold = parameters.flagThreshold || 0;
-
     const baseMessageContext = {
         playerName: player.nameTag,
         actionType: actionType,
@@ -97,10 +90,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
         itemQuantity: 0,
         teleportCoordinates: 'N/A',
     };
-
     const messageTemplate = parameters.messageTemplate || `AutoMod Default: {actionType} for {checkType} on {playerName} (Flags: {flagCount}/{flagThreshold}).`;
     const adminMessageTemplate = parameters.adminMessageTemplate || `§7[§cAutoMod§7] Action: {actionType} on {playerName} for {checkType} (Flags: {flagCount}/{flagThreshold}). Rule Threshold: {flagThreshold}. Duration: {duration}. Item: {itemTypeId}x{itemQuantity}. Coords: {teleportCoordinates}.`;
-
     switch (actionType) {
         case 'warn': {
             const messageWarn = formatAutomodMessage(messageTemplate, baseMessageContext);
@@ -152,7 +143,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                     playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag} after tempBan: ${e.stack || e}`, player.nameTag, dependencies);
                     logDetails = `Temp banned player (kick failed). Duration: ${friendlyDurationTempBan}, Check: ${checkType}. Stored Reason: ${banReasonForStorageTemp}. Error: ${e.message}`;
                     logManager.addLog({ actionType: 'error', event: 'automodKickFailure', player: player.nameTag, reason: kickMsgTempBan, error: e.message, context: 'tempBan_action_kick' }, dependencies);
-                    actionProcessed = true; // Still processed the ban
+                    actionProcessed = true;
                 }
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply tempBan to ${player.nameTag} via playerDataManager.addBan.`, player.nameTag, dependencies);
@@ -179,7 +170,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                     playerUtils.debugLog(`[AutoModManager] Error kicking player ${player.nameTag} after permBan: ${e.stack || e}`, player.nameTag, dependencies);
                     logDetails = `Permanently banned player (kick failed). Check: ${checkType}. Stored Reason: ${permBanReasonForStorage}. Error: ${e.message}`;
                     logManager.addLog({ actionType: 'error', event: 'automodKickFailure', player: player.nameTag, reason: kickMsgPermBan, error: e.message, context: 'permBan_action_kick' }, dependencies);
-                    actionProcessed = true; // Still processed the ban
+                    actionProcessed = true;
                 }
             } else {
                 playerUtils.debugLog(`[AutoModManager] Failed to apply permBan to ${player.nameTag} via playerDataManager.addBan.`, player.nameTag, dependencies);
@@ -308,7 +299,6 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 actionProcessed = true;
             } catch (e) {
                 playerUtils.debugLog(`[AutoModManager] Error teleporting player ${player.nameTag} for teleportSafe: ${e.stack || e}`, player.nameTag, dependencies);
-                // Notify player about the failure to teleport if possible
                 if (playerUtils.warnPlayer) {
                     playerUtils.warnPlayer(player, `Failed to teleport: ${e.message}`);
                 }
@@ -380,50 +370,37 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 export async function processAutoModActions(player, pData, checkType, dependencies) {
     const { config, playerUtils, automodConfig } = dependencies;
     const currentAutomodConfig = automodConfig;
-
     if (!config.enableAutoMod) {
         return;
     }
-
-    // Check if AutoMod is toggled off for this specific checkType
-    // Note: checkType here is expected to be the standardized version (e.g., 'playerAntigmc')
     if (currentAutomodConfig.automodPerCheckTypeToggles &&
         typeof currentAutomodConfig.automodPerCheckTypeToggles[checkType] === 'boolean' &&
         !currentAutomodConfig.automodPerCheckTypeToggles[checkType]) {
         playerUtils.debugLog(`AutomodManager: AutoMod for checkType '${checkType}' on ${player.nameTag} is disabled via per-check toggle.`, player.nameTag, dependencies);
         return;
     }
-
     if (!currentAutomodConfig?.automodRules) {
         playerUtils.debugLog(`AutomodManager: automodRules not found in currentAutomodConfig for ${player.nameTag}, checkType: ${checkType}`, player.nameTag, dependencies);
         return;
     }
-
     const rulesForCheck = currentAutomodConfig.automodRules[checkType];
     if (!rulesForCheck || rulesForCheck.length === 0) {
         return;
     }
-
     const currentFlags = pData.flags[checkType]?.count || 0;
     if (currentFlags === 0) {
         return;
     }
-
     if (!pData.automodState) {
         pData.automodState = {};
     }
     if (!pData.automodState[checkType]) {
         pData.automodState[checkType] = { lastActionThreshold: 0, lastActionTimestamp: 0 };
     }
-
     const checkState = pData.automodState[checkType];
     let bestRuleToApply = null;
-
-    // Rules are assumed to be sorted by flagThreshold ascending in automodConfig.
     for (const rule of rulesForCheck) {
         if (currentFlags >= rule.flagThreshold) {
-            // Only consider rules with a threshold higher than the last actioned one,
-            // OR if the current flag count has surpassed the last actioned threshold (meaning new violations occurred).
             if (rule.flagThreshold > checkState.lastActionThreshold || currentFlags > checkState.lastActionThreshold) {
                 if (!bestRuleToApply || rule.flagThreshold > bestRuleToApply.flagThreshold) {
                     bestRuleToApply = rule;
@@ -431,39 +408,29 @@ export async function processAutoModActions(player, pData, checkType, dependenci
             }
         }
     }
-
     if (bestRuleToApply) {
         if (bestRuleToApply.flagThreshold === checkState.lastActionThreshold && currentFlags === checkState.lastActionThreshold) {
             playerUtils.debugLog(`AutomodManager: Rule for threshold ${bestRuleToApply.flagThreshold} for ${checkType} on ${player.nameTag} was already the last actioned. Current flags (${currentFlags}) haven't surpassed it. Skipping.`, player.nameTag, dependencies);
             return;
         }
-
         playerUtils.debugLog(`AutomodManager: ${player.nameTag} (flags: ${currentFlags} for ${checkType}) meets threshold ${bestRuleToApply.flagThreshold}. Intended action: ${bestRuleToApply.actionType}`, player.nameTag, dependencies);
-
         if (bestRuleToApply.parameters) {
             playerUtils.debugLog(`AutomodManager: Action parameters: ${JSON.stringify(bestRuleToApply.parameters)}`, player.nameTag, dependencies);
         }
-
         let finalParameters = { ...(bestRuleToApply.parameters || {}), flagThreshold: bestRuleToApply.flagThreshold };
-
         const actionSuccess = await _executeAutomodAction(player, pData, bestRuleToApply.actionType, finalParameters, checkType, dependencies);
-
         if (actionSuccess) {
             checkState.lastActionThreshold = bestRuleToApply.flagThreshold;
             checkState.lastActionTimestamp = Date.now();
             pData.isDirtyForSave = true;
-
             if (bestRuleToApply.resetFlagsAfterAction) {
                 playerUtils.debugLog(`AutomodManager: Resetting flags for ${checkType} on ${player.nameTag} as per rule (Threshold: ${bestRuleToApply.flagThreshold}, Action: ${bestRuleToApply.actionType}).`, player.nameTag, dependencies);
                 if (pData.flags?.[checkType]) {
-                    // Adjust totalFlags before resetting specific count
                     if (typeof pData.flags.totalFlags === 'number' && typeof pData.flags[checkType].count === 'number') {
                         pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - pData.flags[checkType].count);
                     }
                     pData.flags[checkType].count = 0;
-                    // Do NOT reset lastDetectionTime here, as it's useful for admins to see when the last raw detection was.
                 }
-                // Also reset the lastActionThreshold for this checkType so future flags trigger rules again from the start.
                 if (pData.automodState?.[checkType]) {
                     pData.automodState[checkType].lastActionThreshold = 0;
                 }

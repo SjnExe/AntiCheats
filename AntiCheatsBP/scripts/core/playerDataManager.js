@@ -38,14 +38,6 @@ export function getPlayerData(playerId) {
 }
 
 /**
- * Retrieves all currently cached player data entries.
- * @returns {IterableIterator<import('../types.js').PlayerAntiCheatData>}
- */
-export function getAllPlayerDataValues() {
-    return playerData.values();
-}
-
-/**
  * Saves a subset of player data (persisted keys) to the player's dynamic properties.
  * @param {import('@minecraft/server').Player} player
  * @param {object} pDataToSave Data containing only keys to be persisted.
@@ -58,10 +50,8 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         playerUtils.debugLog('PDM:save: Invalid player or pDataToSave', player?.nameTag, dependencies);
         return false;
     }
-
     const dynamicPropertyKey = 'anticheat:pdata_v1';
     let jsonString;
-
     try {
         jsonString = JSON.stringify(pDataToSave);
     } catch (error) {
@@ -76,13 +66,11 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         }, dependencies);
         return false;
     }
-
     if (jsonString.length > 32760) { // Buffer for safety, limit is 32767
         playerUtils.debugLog(`PDM:save: pData too large for ${player.nameTag} (${jsonString.length}b). Cannot save to dynamic properties.`, player.nameTag, dependencies);
         console.warn(`[PlayerDataManager] pData for ${player.nameTag} exceeds dynamic property size limit.`);
         return false;
     }
-
     try {
         player.setDynamicProperty(dynamicPropertyKey, jsonString);
         return true;
@@ -112,10 +100,8 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         playerUtils.debugLog('PDM:load: Invalid player object provided.', null, dependencies);
         return null;
     }
-
     const dynamicPropertyKey = 'anticheat:pdata_v1';
     let jsonString;
-
     try {
         jsonString = player.getDynamicProperty(dynamicPropertyKey);
     } catch (error) {
@@ -130,7 +116,6 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         }, dependencies);
         return null;
     }
-
     if (typeof jsonString === 'string') {
         try {
             const parsedData = JSON.parse(jsonString);
@@ -165,7 +150,6 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
 export async function prepareAndSavePlayerData(player, dependencies) {
     const { playerUtils } = dependencies;
     if (!player) return;
-
     const pData = playerData.get(player.id);
     if (pData) {
         const persistedPData = {};
@@ -357,7 +341,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
     const { playerUtils } = dependencies;
     if (playerData.has(player.id)) {
         const existingPData = playerData.get(player.id);
-        // Minimal re-init for transient fields on re-ensure
         existingPData.lastPosition = { ...player.location };
         existingPData.previousPosition = { ...player.location };
         existingPData.velocity = { ...player.getVelocity() };
@@ -365,18 +348,12 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         existingPData.lastDimensionId = player.dimension.id;
         return existingPData;
     }
-
     let newPData = initializeDefaultPlayerData(player, currentTick, dependencies);
     const loadedData = await loadPlayerDataFromDynamicProperties(player, dependencies);
-
     if (loadedData) {
         playerUtils.debugLog(`Merging persisted pData for ${player.nameTag}. Session-only fields reset/re-initialized.`, player.nameTag, dependencies);
-
-        // Prioritize loaded persisted data, but ensure all default fields exist.
         const defaultPDataForMerge = initializeDefaultPlayerData(player, currentTick, dependencies);
-        newPData = { ...defaultPDataForMerge, ...loadedData }; // Loaded data overwrites defaults for persisted keys
-
-        // Re-merge flags to ensure all flag types are present
+        newPData = { ...defaultPDataForMerge, ...loadedData };
         newPData.flags = { ...defaultPDataForMerge.flags, ...loadedData.flags };
         if (typeof newPData.flags.totalFlags !== 'number' || isNaN(newPData.flags.totalFlags)) {
             newPData.flags.totalFlags = 0;
@@ -388,20 +365,15 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         }
         newPData.lastViolationDetailsMap = loadedData.lastViolationDetailsMap || {};
         newPData.automodState = loadedData.automodState || {};
-
-        // Ensure critical session fields are current
         newPData.playerNameTag = player.nameTag;
         newPData.lastKnownNameTag = loadedData.lastKnownNameTag || player.nameTag;
         newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick || currentTick;
         newPData.joinTime = loadedData.joinTime || Date.now();
-        newPData.isDirtyForSave = false; // Loaded data is not initially dirty
-
+        newPData.isDirtyForSave = false;
     } else {
         playerUtils.debugLog(`PDM:ensureInit: No persisted data for ${player.nameTag}. Using fresh default data.`, player.nameTag, dependencies);
-        newPData.isDirtyForSave = true; // Mark fresh data as dirty
+        newPData.isDirtyForSave = true;
     }
-
-    // Check for expired mutes/bans
     if (newPData.muteInfo && newPData.muteInfo.unmuteTime !== Infinity && Date.now() >= newPData.muteInfo.unmuteTime) {
         playerUtils.debugLog(`PDM:ensureInit: Mute for ${newPData.playerNameTag} expired on load. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
         newPData.muteInfo = null;
@@ -412,7 +384,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }
-
     playerData.set(player.id, newPData);
     return newPData;
 }
@@ -454,22 +425,18 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     pData.velocity = { ...player.getVelocity() };
     pData.previousPosition = { ...pData.lastPosition };
     pData.lastPosition = { ...player.location };
-
     if (!pData.playerNameTag || pData.playerNameTag !== player.nameTag) {
         pData.playerNameTag = player.nameTag;
         pData.isDirtyForSave = true;
     }
-
     if (player.isOnGround) {
         pData.consecutiveOffGroundTicks = 0;
         pData.lastOnGroundTick = currentTick;
         pData.lastOnGroundPosition = { ...player.location };
-
         try {
             const feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
             const blockBelowFeet = player.dimension.getBlock({ x: feetPos.x, y: feetPos.y - 1, z: feetPos.z });
             const blockAtFeet = player.dimension.getBlock(feetPos);
-
             if ((blockBelowFeet && blockBelowFeet.typeId === 'minecraft:slime_block') || (blockAtFeet && blockAtFeet.typeId === 'minecraft:slime_block')) {
                 pData.lastOnSlimeBlockTick = currentTick;
                 if (pData.isWatched && config.enableDebugLogging) {
@@ -483,18 +450,15 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                 player: pData.playerNameTag,
                 context: 'slime_block_check',
             }, dependencies);
-            // Simplified logging for production
             console.warn(`[PlayerDataManager] Error checking for slime block under ${pData.playerNameTag}: ${e.message}`);
         }
     } else {
         pData.consecutiveOffGroundTicks++;
     }
-
     if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
         pData.lastSelectedSlotChangeTick = currentTick;
         pData.previousSelectedSlotIndex = player.selectedSlotIndex;
     }
-
     if (pData.lastGameMode !== player.gameMode) {
         pData.lastGameMode = player.gameMode;
         pData.isDirtyForSave = true;
@@ -503,16 +467,12 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.lastDimensionId = player.dimension.id;
         pData.isDirtyForSave = true;
     }
-
-    // Update effect-related transient data
     const effects = player.getEffects();
     pData.jumpBoostAmplifier = effects.find(eff => eff.typeId === 'jump_boost')?.amplifier ?? 0;
     pData.hasSlowFalling = !!effects.find(eff => eff.typeId === 'slow_falling');
     pData.hasLevitation = !!effects.find(eff => eff.typeId === 'levitation');
     pData.speedAmplifier = effects.find(eff => eff.typeId === 'speed')?.amplifier ?? -1;
     pData.blindnessTicks = effects.find(eff => eff.typeId === 'blindness')?.duration ?? 0;
-
-
     if (pData.isWatched && config.enableDebugLogging) {
         const transientSnapshot = {
             vx: pData.velocity.x.toFixed(3),

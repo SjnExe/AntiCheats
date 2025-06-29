@@ -89,7 +89,6 @@ export function persistReportsToDisk(dependencies) {
  * @returns {ReportEntry[]} An array of report objects (a copy of the cache, sorted newest first).
  */
 export function getReports() {
-    // Return a copy, sorted newest first by timestamp
     return [...reportsInMemory].sort((a, b) => b.timestamp - a.timestamp);
 }
 
@@ -112,7 +111,7 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
         reporterId: reporterPlayer.id,
         reporterName: reporterPlayer.nameTag,
         reportedId: targetPlayer ? targetPlayer.id : 'offline_or_unknown',
-        reportedName: reportedPlayerName, // Store the name as reported, even if player is offline
+        reportedName: reportedPlayerName,
         reason: reason,
         status: 'open',
         assignedAdmin: '',
@@ -120,9 +119,9 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
         lastUpdatedTimestamp: Date.now(),
     };
 
-    reportsInMemory.unshift(newReport); // Add to the beginning for newest first
+    reportsInMemory.unshift(newReport);
     reportsAreDirty = true;
-    persistReportsToDisk(dependencies); // Persist immediately
+    persistReportsToDisk(dependencies);
 
     playerUtils.debugLog(`[ReportManager] Added new report ${newReport.id} by ${reporterPlayer.nameTag} against ${reportedPlayerName}.`, reporterPlayer.nameTag, dependencies);
     logManager.addLog({
@@ -133,10 +132,8 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
         context: 'ReportManager',
     }, dependencies);
 
-    // Notify online admins
     const adminNotification = `§e[Report] §b${reporterPlayer.nameTag} §7reported §b${reportedPlayerName}§7. Reason: §f${reason} §7(ID: ${newReport.id})`;
     playerUtils.notifyAdmins(adminNotification, dependencies, null, null, config.prefix + 'viewreports ' + newReport.id);
-
 
     return newReport;
 }
@@ -198,13 +195,11 @@ export function clearReportsForPlayer(playerNameOrId, dependencies) {
     const { playerUtils, logManager } = dependencies;
     const initialLength = reportsInMemory.length;
 
-    // Try to find the player if a name is given, to get their ID
     let playerIdToClear = playerNameOrId;
     const targetOnlinePlayer = playerUtils.findPlayerByNameTag(playerNameOrId, world.getAllPlayers());
     if (targetOnlinePlayer) {
         playerIdToClear = targetOnlinePlayer.id;
     }
-    // If not online, we assume playerNameOrId might be an ID or we clear by name matches.
 
     reportsInMemory = reportsInMemory.filter(report =>
         report.reporterName !== playerNameOrId &&
@@ -220,7 +215,7 @@ export function clearReportsForPlayer(playerNameOrId, dependencies) {
         playerUtils.debugLog(`[ReportManager] Cleared ${clearedCount} reports associated with player: ${playerNameOrId}.`, 'System', dependencies);
         logManager.addLog({
             actionType: 'reportsClearedForPlayer',
-            targetName: playerNameOrId, // Could be name or ID
+            targetName: playerNameOrId,
             details: `Cleared ${clearedCount} reports.`,
             context: 'ReportManager',
         }, dependencies);
