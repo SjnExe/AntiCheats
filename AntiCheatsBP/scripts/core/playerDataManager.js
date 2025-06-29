@@ -532,8 +532,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         playerUtils.debugLog(`Transient update for ${pData.playerNameTag} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, pData.playerNameTag, dependencies);
     }
 }
-
-
 /**
  * Adds a flag to a player's data and triggers AutoMod processing.
  * @param {import('@minecraft/server').Player} player

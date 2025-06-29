@@ -368,12 +368,7 @@ export const enableNetherRoofCheck = false; // Movement: Exploiting Nether roof
 // --- Movement Checks Specifics ---
 /** @type {number} The Y-level at or above which a player in the Nether is considered to be on the roof. */
 export const netherRoofYLevelThreshold = 128;
-/** @type {number} Maximum vertical speed (positive for upward, negative for downward) in blocks per second. Used by Fly check. Vanilla jump is ~4.2 BPS, Elytra can be much higher. */
-export const maxVerticalSpeed = 10; // Adjust based on server mechanics (e.g., jump boost items)
-/** @type {number} Maximum horizontal speed in blocks per second. Default vanilla sprint speed is ~5.6 BPS. */
-export const maxHorizontalSpeed = 7.8; // Approx Speed II (5.6 * 1.4), adjust for server items/effects
-/** @type {number} Flat bonus to maximum horizontal speed (blocks/sec) added per level of the Speed effect. Vanilla Speed I = +20%, Speed II = +40%. A flat bonus can simplify this. */
-export const speedEffectBonus = 1.12; // (5.6 * 0.20) per level, approx
+// Unused: maxVerticalSpeed, maxHorizontalSpeed, speedEffectBonus
 /** @type {number} Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check. Vanilla is >3 blocks. */
 export const minFallDistanceForDamage = 3.5;
 /** @type {number} Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection. (0.5 BPT = 10 BPS) */
@@ -393,7 +388,7 @@ export const speedToleranceBuffer = 0.5;
 /** @type {number} Number of consecutive ticks a player must exceed maximum horizontal speed on ground to be flagged by Speed check. */
 export const speedGroundConsecutiveTicksThreshold = 5; // 0.25 seconds
 /** @type {string[]} List of block type IDs that mitigate fall damage (e.g., "minecraft:hay_block", "minecraft:water"). Water is handled by checking `isInWater` or `isTouchingWater`. */
-export const noFallMitigationBlocks = ['minecraft:hay_block', 'minecraft:powder_snow', 'minecraft:sweet_berry_bush', 'minecraft:cobweb']; // Added cobweb
+export const noFallMitigationBlocks = ['minecraft:hay_block', 'minecraft:powder_snow', 'minecraft:sweet_berry_bush', 'minecraft:cobweb'];
 
 /** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass while using items/sneaking) is active. */
 export const enableNoSlowCheck = false;
@@ -446,18 +441,7 @@ export const multiTargetThreshold = 3;
 export const multiTargetMaxHistory = 10;
 
 // --- State Conflict Checks (Killaura components - attacking while doing other actions) ---
-/** @type {string[]} Item type IDs for consumables (food, potions) that should prevent attacking (melee/ranged) while being actively used. */
-export const attackBlockingConsumables = [
-    'minecraft:apple', 'minecraft:golden_apple', 'minecraft:enchanted_golden_apple', 'minecraft:mushroom_stew', 'minecraft:rabbit_stew',
-    'minecraft:beetroot_soup', 'minecraft:suspicious_stew', 'minecraft:cooked_beef', 'minecraft:cooked_porkchop', 'minecraft:cooked_mutton',
-    'minecraft:cooked_chicken', 'minecraft:cooked_rabbit', 'minecraft:cooked_salmon', 'minecraft:cooked_cod', 'minecraft:baked_potato',
-    'minecraft:bread', 'minecraft:melon_slice', 'minecraft:carrot', 'minecraft:potato', 'minecraft:beetroot', 'minecraft:dried_kelp',
-    'minecraft:potion', 'minecraft:honey_bottle', 'minecraft:chorus_fruit',
-];
-/** @type {string[]} Item type IDs for bows that should prevent melee attacking while being charged. (Firing the bow itself is allowed). */
-export const attackBlockingBows = ['minecraft:bow', 'minecraft:crossbow'];
-/** @type {string[]} Item type IDs for shields that should prevent attacking while being actively used (raised). */
-export const attackBlockingShields = ['minecraft:shield'];
+// Unused: attackBlockingConsumables, attackBlockingBows, attackBlockingShields
 /** @type {number} Number of ticks an 'item use' state (e.g., `isUsingConsumable`) persists before auto-clearing if no explicit stop event. (20 ticks = 1 second). */
 export const itemUseStateClearTicks = 60; // 3 seconds
 
@@ -557,10 +541,7 @@ export const cancelOnMaxMessageLength = true;
 // Repeated Message (Content) Spam Check
 /** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
 export const enableChatContentRepeatCheck = true;
-/** @type {number} Number of identical/similar messages within `chatContentRepeatTimeWindowSeconds` to trigger a flag. */
-export const chatContentRepeatMessageCount = 3;
-/** @type {number} Time window in seconds to monitor for repeated/similar messages. */
-export const chatContentRepeatTimeWindowSeconds = 5;
+// Unused: chatContentRepeatMessageCount, chatContentRepeatTimeWindowSeconds
 /** @type {boolean} If true, flags the player for content repeat spam. */
 export const chatContentRepeatFlagPlayer = false;
 /** @type {boolean} If true, cancels the message that triggers content repeat spam. */
@@ -713,7 +694,7 @@ export const deathEffectParticleName = 'minecraft:totem_particle';
 /** @type {string} The sound ID to play when a player dies (e.g., "mob.ghast.scream"). */
 export const deathEffectSoundId = 'mob.ghast.scream';
 /** @type {object} Defines the default cosmetic effect shown when a player dies (legacy, can be expanded). */
-export const defaultDeathEffect = { // This is somewhat legacy if using particleName and soundId above primarily
+export const defaultDeathEffect = {
     soundId: 'ambient.weather.lightning.impact',
     particleCommand: 'particle minecraft:large_explosion ~ ~1 ~', // Example particle command
     soundOptions: { volume: 1.0, pitch: 0.8 },
@@ -916,9 +897,6 @@ export let editableConfigValues = {
     enableNetherRoofCheck,
     // Movement Check Specifics
     netherRoofYLevelThreshold,
-    maxVerticalSpeed,
-    maxHorizontalSpeed,
-    speedEffectBonus,
     minFallDistanceForDamage,
     flySustainedVerticalSpeedThreshold,
     flySustainedOffGroundTicksThreshold,
@@ -951,9 +929,6 @@ export let editableConfigValues = {
     multiTargetWindowMs,
     multiTargetThreshold,
     multiTargetMaxHistory,
-    attackBlockingConsumables,
-    attackBlockingBows,
-    attackBlockingShields,
     itemUseStateClearTicks,
     // World Interaction Check Specifics
     enableAutoToolCheck,
@@ -991,8 +966,6 @@ export let editableConfigValues = {
     flagOnMaxMessageLength,
     cancelOnMaxMessageLength,
     enableChatContentRepeatCheck,
-    chatContentRepeatMessageCount,
-    chatContentRepeatTimeWindowSeconds,
     chatContentRepeatFlagPlayer,
     chatContentRepeatCancelMessage,
     chatContentRepeatActionProfileName,

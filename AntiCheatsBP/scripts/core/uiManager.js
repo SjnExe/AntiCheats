@@ -4,7 +4,6 @@
  */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui';
-import { updateConfigValue } from '../config.js';
 import { formatSessionDuration } from '../utils/playerUtils.js';
 import { editableConfigValues as globalEditableConfigValues } from '../config.js';
 
