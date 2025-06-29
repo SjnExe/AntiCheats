@@ -77,7 +77,7 @@ export const enableDetailedJoinLeaveLogging = true;
 
 // --- Chat Checks ---
 /** @type {boolean} If true, enables the Swear Word detection check. */
-export const enableSwearCheck = false;
+export const enableSwearCheck = false; // Already false, no change
 /** @type {string[]} List of swear words to detect (case-insensitive, whole word). */
 export const swearWordList = [];
 /** @type {string} Duration for the mute applied on swear word detection (e.g., "30s", "5m", "1h"). Parsed by `playerUtils.parseDuration`. */
@@ -86,7 +86,7 @@ export const swearCheckMuteDuration = '30s';
 export const swearCheckActionProfileName = 'chatSwearViolation';
 
 /** @type {boolean} If true, enables the basic anti-advertising check in chat. */
-export const enableAntiAdvertisingCheck = true;
+export const enableAntiAdvertisingCheck = false;
 /** @type {string[]} List of string patterns to detect potential advertisements. These are simple substring matches. */
 export const antiAdvertisingPatterns = [
     'http://', 'https://', 'www.', '.com', '.net', '.org', '.gg', '.tk', '.co', '.uk', '.biz', '.info', '.io',
@@ -109,7 +109,7 @@ export const advancedLinkRegexList = [
 export const advertisingWhitelistPatterns = [];
 
 /** @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat. */
-export const enableCapsCheck = true;
+export const enableCapsCheck = false;
 /** @type {number} The minimum message length for the CAPS abuse check to apply. */
 export const capsCheckMinLength = 10;
 /** @type {number} The percentage (0-100) of uppercase letters to trigger a CAPS abuse flag. */
@@ -118,7 +118,7 @@ export const capsCheckUpperCasePercentage = 70;
 export const capsCheckActionProfileName = 'chatCapsAbuseDetected';
 
 /** @type {boolean} If true, enables the check for excessive character repetition in chat (e.g., "helloooooo"). */
-export const enableCharRepeatCheck = true;
+export const enableCharRepeatCheck = false;
 /** @type {number} The minimum message length for the character repeat check to apply. */
 export const charRepeatMinLength = 10;
 /** @type {number} The minimum number of identical consecutive characters to trigger a flag. */
@@ -127,7 +127,7 @@ export const charRepeatThreshold = 6;
 export const charRepeatActionProfileName = 'chatCharRepeatDetected';
 
 /** @type {boolean} If true, enables the check for excessive symbol usage in chat. */
-export const enableSymbolSpamCheck = true;
+export const enableSymbolSpamCheck = false;
 /** @type {number} The minimum message length for the symbol spam check to apply. */
 export const symbolSpamMinLength = 10;
 /** @type {number} The percentage (0-100) of non-alphanumeric characters to trigger a symbol spam flag. */
@@ -139,7 +139,7 @@ export const symbolSpamActionProfileName = 'chatSymbolSpamDetected';
 
 // AntiGrief - TNT
 /** @type {boolean} If true, enables anti-grief measures for TNT placement. */
-export const enableTntAntiGrief = false;
+export const enableTntAntiGrief = false; // Already false
 /** @type {boolean} If true, admins (identified by `adminTag`) can place TNT without restriction. */
 export const allowAdminTntPlacement = true;
 /** @type {string} Action to take when unauthorized TNT placement is detected ("remove", "warn", "flag_only"). */
@@ -147,7 +147,7 @@ export const tntPlacementAction = 'remove';
 
 // AntiGrief - Wither
 /** @type {boolean} If true, enables anti-grief measures for Wither spawning. */
-export const enableWitherAntiGrief = false;
+export const enableWitherAntiGrief = false; // Already false
 /** @type {boolean} If true, admins can spawn Withers without restriction. */
 export const allowAdminWitherSpawn = true;
 /** @type {string} Action for unauthorized Wither spawn ("prevent", "kill", "warn", "flag_only"). */
@@ -155,7 +155,7 @@ export const witherSpawnAction = 'prevent';
 
 // AntiGrief - Fire
 /** @type {boolean} If true, enables anti-grief measures for fire spread/placement. */
-export const enableFireAntiGrief = false;
+export const enableFireAntiGrief = false; // Already false
 /** @type {boolean} If true, admins can create fire without restriction. */
 export const allowAdminFire = true;
 /** @type {string} Action for unauthorized fire ("extinguish", "warn", "flag_only"). */
@@ -163,7 +163,7 @@ export const fireControlAction = 'extinguish';
 
 // AntiGrief - Lava
 /** @type {boolean} If true, enables anti-grief measures for lava placement. */
-export const enableLavaAntiGrief = false;
+export const enableLavaAntiGrief = false; // Already false
 /** @type {boolean} If true, admins can place lava without restriction. */
 export const allowAdminLava = true;
 /** @type {string} Action for unauthorized lava placement ("remove", "warn", "flag_only"). */
@@ -171,7 +171,7 @@ export const lavaPlacementAction = 'remove';
 
 // AntiGrief - Water
 /** @type {boolean} If true, enables anti-grief measures for water placement. */
-export const enableWaterAntiGrief = false;
+export const enableWaterAntiGrief = false; // Already false
 /** @type {boolean} If true, admins can place water without restriction. */
 export const allowAdminWater = true;
 /** @type {string} Action for unauthorized water placement ("remove", "warn", "flag_only"). */
@@ -179,7 +179,7 @@ export const waterPlacementAction = 'remove';
 
 // AntiGrief - Block Spam (Rate-based)
 /** @type {boolean} If true, enables detection of rapid block placement (block spam by rate). */
-export const enableBlockSpamAntiGrief = false;
+export const enableBlockSpamAntiGrief = false; // Already false
 /** @type {boolean} If true, players in Creative mode bypass the block spam (rate) check. */
 export const blockSpamBypassInCreative = true;
 /** @type {number} Time window in milliseconds to count blocks for rate-based spam detection. */
@@ -193,7 +193,7 @@ export const blockSpamAction = 'warn';
 
 // AntiGrief - Entity Spam
 /** @type {boolean} If true, enables detection of rapid entity spawning (e.g., boats, armor stands). */
-export const enableEntitySpamAntiGrief = false;
+export const enableEntitySpamAntiGrief = false; // Already false
 /** @type {boolean} If true, players in Creative mode bypass the entity spam check. */
 export const entitySpamBypassInCreative = true;
 /** @type {number} Time window in milliseconds to count entities for spam detection. */
@@ -207,7 +207,7 @@ export const entitySpamAction = 'kill';
 
 // AntiGrief - Block Spam (Density-based)
 /** @type {boolean} If true, enables detection of high-density block placement within a small area. */
-export const enableBlockSpamDensityCheck = false;
+export const enableBlockSpamDensityCheck = false; // Already false
 /** @type {string[]} Specific block types to monitor for density-based spam. Empty array means all blocks. */
 export const blockSpamDensityMonitoredBlockTypes = ['minecraft:dirt', 'minecraft:cobblestone', 'minecraft:netherrack', 'minecraft:sand', 'minecraft:gravel'];
 /** @type {string} Action for block spam (density) violation ("warn", "flag_only"). */
@@ -222,7 +222,7 @@ export const blockSpamDensityThresholdPercentage = 70;
 
 // --- Piston Lag Check ---
 /** @type {boolean} If true, enables monitoring of rapid piston activations to detect potential lag machines. */
-export const enablePistonLagCheck = false;
+export const enablePistonLagCheck = false; // Already false
 /** @type {number} Activations per second of a single piston to trigger logging/alert. */
 export const pistonActivationLogThresholdPerSecond = 15;
 /** @type {number} Duration in seconds piston activity must be sustained above threshold to trigger. */
@@ -343,18 +343,18 @@ Rule 5: Keep chat appropriate and avoid offensive language.
 Rule 6: Have fun and contribute to a positive community!`;
 
 // --- General Check Toggles (Master Switches for Check Categories) ---
-export const enableReachCheck = true;
-export const enableCpsCheck = true;
-export const enableViewSnapCheck = true;
-export const enableMultiTargetCheck = true;
-export const enableStateConflictCheck = true;
-export const enableFlyCheck = false;
-export const enableSpeedCheck = false;
-export const enableNofallCheck = true;
-export const enableNukerCheck = false;
-export const enableIllegalItemCheck = true;
-export const enableSelfHurtCheck = true;
-export const enableNetherRoofCheck = false;
+export const enableReachCheck = false;
+export const enableCpsCheck = false;
+export const enableViewSnapCheck = false;
+export const enableMultiTargetCheck = false;
+export const enableStateConflictCheck = false;
+export const enableFlyCheck = false; // Already false
+export const enableSpeedCheck = false; // Already false
+export const enableNofallCheck = false;
+export const enableNukerCheck = false; // Already false
+export const enableIllegalItemCheck = false;
+export const enableSelfHurtCheck = false;
+export const enableNetherRoofCheck = false; // Already false
 
 // --- Movement Checks Specifics ---
 /** @type {number} The Y-level at or above which a player in the Nether is considered to be on the roof. */
@@ -381,7 +381,7 @@ export const speedGroundConsecutiveTicksThreshold = 5; // 0.25 seconds
 export const noFallMitigationBlocks = ['minecraft:hay_block', 'minecraft:powder_snow', 'minecraft:sweet_berry_bush', 'minecraft:cobweb'];
 
 /** @type {boolean} If true, the NoSlow check (detecting movement speed reduction bypass while using items/sneaking) is active. */
-export const enableNoSlowCheck = false;
+export const enableNoSlowCheck = false; // Already false
 /** @type {number} Percentage (0.0 to 1.0) of additional speed allowed if player has Speed effect, relative to the action's max speed. E.g., 0.10 for 10% buffer. */
 export const noSlowSpeedEffectTolerancePercent = 0.10;
 /** @type {number} Maximum horizontal speed (blocks/sec) allowed while eating or drinking. Vanilla movement is significantly slowed. */
@@ -394,7 +394,7 @@ export const noSlowMaxSpeedUsingShield = 4.4; // Slightly above normal walk spee
 export const noSlowMaxSpeedSneaking = 1.5;
 
 /** @type {boolean} If true, the Invalid Sprint check (detecting sprinting under disallowed conditions like hunger, blindness, using item) is active. */
-export const enableInvalidSprintCheck = true;
+export const enableInvalidSprintCheck = false;
 /** @type {number} Minimum food level (inclusive) required to sprint. Vanilla default is > 6 (i.e., 7 or more). */
 export const sprintHungerLimit = 6;
 
@@ -437,7 +437,7 @@ export const itemUseStateClearTicks = 60;
 // --- World Interaction Checks Specifics ---
 // AutoTool Check
 /** @type {boolean} If true, the AutoTool check (detecting instant switching to the optimal tool before breaking a block) is active. */
-export const enableAutoToolCheck = false;
+export const enableAutoToolCheck = false; // Already false
 /** @type {number} Maximum ticks between starting to break a block and switching to an optimal tool to be considered suspicious by AutoTool check. Low values (e.g., 1-2) are stricter. */
 export const autoToolSwitchToOptimalWindowTicks = 2;
 /** @type {number} Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check. */
@@ -445,7 +445,7 @@ export const autoToolSwitchBackWindowTicks = 5;
 
 // InstaBreak Check
 /** @type {boolean} If true, the check for breaking normally unbreakable blocks (like bedrock by non-ops) is active. */
-export const enableInstaBreakUnbreakableCheck = false;
+export const enableInstaBreakUnbreakableCheck = false; // Already false
 /** @type {string[]} List of block type IDs considered normally unbreakable by non-Operator players in Survival/Adventure. */
 export const instaBreakUnbreakableBlocks = [
     'minecraft:bedrock', 'minecraft:barrier', 'minecraft:command_block', 'minecraft:repeating_command_block',
@@ -453,7 +453,7 @@ export const instaBreakUnbreakableBlocks = [
     'minecraft:light_block', 'minecraft:end_portal_frame', 'minecraft:end_gateway',
 ];
 /** @type {boolean} If true, the check for breaking blocks significantly faster than vanilla capabilities (considering tool, enchantments, effects) is active. */
-export const enableInstaBreakSpeedCheck = true;
+export const enableInstaBreakSpeedCheck = false;
 /** @type {number} Tolerance in game ticks for block breaking speed. Actual break time must be less than (ExpectedTime - Tolerance) to flag. Higher values are more lenient. */
 export const instaBreakTimeToleranceTicks = 2;
 
@@ -472,7 +472,7 @@ export const bannedItemsUse = [];
 // --- Player Behavior Checks Specifics ---
 // NameSpoof Check
 /** @type {boolean} If true, the NameSpoof check (detecting invalid characters, excessive length, or rapid name changes) is active. */
-export const enableNameSpoofCheck = true;
+export const enableNameSpoofCheck = false;
 /** @type {number} Maximum allowed length for a player's nameTag. Used by NameSpoof check. Vanilla limits are usually shorter. */
 export const nameSpoofMaxLength = 48;
 /** @type {string} Regular expression pattern for disallowed characters in player nameTags (e.g., newlines, control characters). */
@@ -482,7 +482,7 @@ export const nameSpoofMinChangeIntervalTicks = 200;
 
 // Anti-Gamemode Creative (Anti-GMC) Check
 /** @type {boolean} If true, the Anti-GMC check (detecting unauthorized Creative mode) is active. */
-export const enableAntiGmcCheck = true;
+export const enableAntiGmcCheck = false;
 /** @type {string} The gamemode (e.g., "survival", "adventure") to switch players to if unauthorized Creative mode is detected and `antiGmcAutoSwitch` is true. */
 export const antiGmcSwitchToGameMode = 'survival';
 /** @type {boolean} If true, automatically switch a player's gamemode if unauthorized Creative mode is detected. */
@@ -490,12 +490,12 @@ export const antiGmcAutoSwitch = true;
 
 // Inventory Modification Check
 /** @type {boolean} If true, Inventory Modification checks (e.g., for illegal items, unobtainable enchantments) are active. This is a complex area. */
-export const enableInventoryModCheck = false;
+export const enableInventoryModCheck = false; // Already false
 
 // --- Advanced Chat Checks Specifics ---
 // Fast Message Spam Check
 /** @type {boolean} If true, the Fast Message Spam check (sending messages too quickly) is active. */
-export const enableFastMessageSpamCheck = true;
+export const enableFastMessageSpamCheck = false;
 /** @type {number} Minimum time in milliseconds that must pass between messages to avoid being considered spam. */
 export const fastMessageSpamThresholdMs = 500;
 /** @type {string} Action profile name for fast message spam. */
@@ -503,7 +503,7 @@ export const fastMessageSpamActionProfileName = 'chatSpamFastMessage';
 
 // Max Words Spam Check
 /** @type {boolean} If true, the Max Words Spam check (messages with too many words) is active. */
-export const enableMaxWordsSpamCheck = true;
+export const enableMaxWordsSpamCheck = false;
 /** @type {number} Maximum allowed number of words in a single chat message. */
 export const maxWordsSpamThreshold = 50;
 /** @type {string} Action profile name for max words spam. */
@@ -511,25 +511,25 @@ export const maxWordsSpamActionProfileName = 'chatSpamMaxWords';
 
 // Newline Character Check
 /** @type {boolean} If true, checks for newline characters (\n, \r) in chat messages. */
-export const enableNewlineCheck = true;
+export const enableNewlineCheck = false;
 /** @type {boolean} If true, flags player for using newlines if `enableNewlineCheck` is true. */
-export const flagOnNewline = true;
+export const flagOnNewline = true; // Keep supporting flags true, only disable the check itself
 /** @type {boolean} If true, cancels messages with newlines if `enableNewlineCheck` is true. */
 export const cancelMessageOnNewline = true;
 
 // Max Message Length Check
 /** @type {boolean} If true, checks if chat messages exceed `maxMessageLength`. */
-export const enableMaxMessageLengthCheck = true;
+export const enableMaxMessageLengthCheck = false;
 /** @type {number} Maximum allowed character length for a single chat message. Vanilla limit is 256. */
 export const maxMessageLength = 256;
 /** @type {boolean} If true, flags player for overly long messages if `enableMaxMessageLengthCheck` is true. */
-export const flagOnMaxMessageLength = true;
+export const flagOnMaxMessageLength = true; // Keep supporting flags true
 /** @type {boolean} If true, cancels overly long messages if `enableMaxMessageLengthCheck` is true. */
 export const cancelOnMaxMessageLength = true;
 
 // Repeated Message (Content) Spam Check
 /** @type {boolean} If true, checks for players sending the same or very similar messages repeatedly. */
-export const enableChatContentRepeatCheck = true;
+export const enableChatContentRepeatCheck = false;
 /** @type {boolean} If true, flags the player for content repeat spam. */
 export const chatContentRepeatFlagPlayer = false;
 /** @type {boolean} If true, cancels the message that triggers content repeat spam. */
@@ -539,13 +539,13 @@ export const chatContentRepeatActionProfileName = 'chatSpamContentRepeat';
 
 // Unicode Abuse (Zalgo/Excessive Diacritics) Check
 /** @type {boolean} If true, the Unicode Abuse (Zalgo text, excessive diacritics) check is active. */
-export const enableUnicodeAbuseCheck = false;
+export const enableUnicodeAbuseCheck = false; // Already false
 /** @type {string} Action profile name for Unicode abuse violations. */
 export const unicodeAbuseActionProfileName = 'chatUnicodeAbuse';
 
 // Gibberish Chat Check
 /** @type {boolean} If true, the Gibberish Chat check (messages that appear to be random characters) is active. */
-export const enableGibberishCheck = false;
+export const enableGibberishCheck = false; // Already false
 /** @type {number} Minimum message length to apply gibberish check. */
 export const gibberishMinMessageLength = 10;
 /** @type {number} Minimum ratio of alphabetic characters (0.0-1.0) for gibberish check to apply (filters out symbol-only spam if covered by another check). */
@@ -561,7 +561,7 @@ export const gibberishActionProfileName = 'chatGibberish';
 
 // Excessive Mentions Check
 /** @type {boolean} If true, the Excessive Mentions chat check (spamming @player tags) is active. */
-export const enableExcessiveMentionsCheck = false;
+export const enableExcessiveMentionsCheck = false; // Already false
 /** @type {number} Minimum message length to apply excessive mentions check. */
 export const mentionsMinMessageLength = 10;
 /** @type {number} Maximum number of unique users that can be mentioned in a single message. */
@@ -573,7 +573,7 @@ export const mentionsActionProfileName = 'chatExcessiveMentions';
 
 // Simple Impersonation Check
 /** @type {boolean} If true, the Simple Impersonation check (trying to look like server/staff messages) is active. */
-export const enableSimpleImpersonationCheck = false;
+export const enableSimpleImpersonationCheck = false; // Already false
 /** @type {string[]} Regex patterns to identify server/staff message impersonation attempts. Use with caution to avoid false positives. */
 export const impersonationServerMessagePatterns = [
     '^\\[(Server|Admin|System|Mod|Staff|Broadcast|Announcement|Alert)\\]', // Starts with [Server] etc.
@@ -591,7 +591,7 @@ export const impersonationActionProfileName = 'chatImpersonationAttempt';
 // --- Scaffold/Tower/Building Checks Specifics ---
 // Tower Check (Pillaring up quickly)
 /** @type {boolean} If true, the Scaffold/Tower check (detecting players rapidly building straight up) is active. */
-export const enableTowerCheck = false;
+export const enableTowerCheck = false; // Already false
 /** @type {number} Maximum time in game ticks between consecutive upward pillar blocks. Low values are stricter. */
 export const towerMaxTickGap = 10; // 0.5 seconds
 /** @type {number} Minimum number of consecutive upward blocks placed to trigger a tower flag. */
@@ -603,7 +603,7 @@ export const towerPlacementHistoryLength = 20;
 
 // Flat/Invalid Rotation While Building Check
 /** @type {boolean} If true, the Flat/Invalid Rotation While Building check (detecting building with unnatural, static view angles) is active. */
-export const enableFlatRotationCheck = false;
+export const enableFlatRotationCheck = false; // Already false
 /** @type {number} Number of consecutive block placements to analyze for static or flat rotation patterns. */
 export const flatRotationConsecutiveBlocks = 4;
 /** @type {number} Maximum degrees of variance allowed for pitch over `flatRotationConsecutiveBlocks` to be considered 'static'. */
@@ -621,7 +621,7 @@ export const flatRotationPitchDownwardMax = -85.0;
 
 // Downward Scaffold Check
 /** @type {boolean} If true, the Downward Scaffold check (building downwards while airborne and moving quickly) is active. */
-export const enableDownwardScaffoldCheck = false;
+export const enableDownwardScaffoldCheck = false; // Already false
 /** @type {number} Minimum number of consecutive downward blocks placed while airborne to trigger a flag. */
 export const downwardScaffoldMinBlocks = 3;
 /** @type {number} Maximum time in game ticks between consecutive downward scaffold blocks. */
@@ -631,7 +631,7 @@ export const downwardScaffoldMinHorizontalSpeed = 3.0;
 
 // AirPlace Check
 /** @type {boolean} If true, the check for Placing Blocks onto Air/Liquid without proper support (where vanilla would not allow) is active. Can be complex. */
-export const enableAirPlaceCheck = false;
+export const enableAirPlaceCheck = false; // Already false
 /** @type {string[]} List of block type IDs that are considered 'solid' and typically require support to be placed against. */
 export const airPlaceSolidBlocks = [
     'minecraft:cobblestone', 'minecraft:stone', 'minecraft:dirt', 'minecraft:grass_block', 'minecraft:oak_planks', 'minecraft:spruce_planks',
@@ -642,7 +642,7 @@ export const airPlaceSolidBlocks = [
 // --- Fast Use/Place Checks Specifics ---
 // Fast Item Use Check
 /** @type {boolean} If true, the Fast Item Use check (using items like ender pearls, snowballs faster than vanilla cooldowns) is active. */
-export const enableFastUseCheck = true;
+export const enableFastUseCheck = false;
 /** @type {Object.<string, number>} Defines minimum cooldown in milliseconds between uses for specific items. Key is item ID, value is cooldown in MS. */
 export const fastUseItemCooldowns = {
     'minecraft:ender_pearl': 1000, // 1 second
@@ -661,7 +661,7 @@ export const fastUseItemCooldowns = {
 
 // Fast Block Place Check
 /** @type {boolean} If true, the Fast Block Place check (placing blocks faster than humanly possible) is active. Similar to Block Spam (Rate) but can be more general. */
-export const enableFastPlaceCheck = false;
+export const enableFastPlaceCheck = false; // Already false
 /** @type {number} Time window in milliseconds for fast block placement detection. */
 export const fastPlaceTimeWindowMs = 1000; // 1 second
 /** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
@@ -690,17 +690,17 @@ export const defaultDeathEffect = {
 
 // --- Client Behavior Checks ---
 /** @type {boolean} If true, the Invalid Render Distance check (detecting clients reporting unusually high render distances) is active. */
-export const enableInvalidRenderDistanceCheck = true;
+export const enableInvalidRenderDistanceCheck = false;
 /** @type {number} Maximum allowed client-reported render distance in chunks. Server-side settings might also limit this. */
 export const maxAllowedClientRenderDistance = 64; // Default max for many servers/clients
 
 // --- Chat Behavior Checks (Interaction-based) ---
 /** @type {boolean} If true, the Chat During Combat check (preventing chat for a short duration after combat) is active. */
-export const enableChatDuringCombatCheck = true;
+export const enableChatDuringCombatCheck = false;
 /** @type {number} Seconds after the last combat interaction (dealing or taking damage) during which a player cannot chat. */
 export const chatDuringCombatCooldownSeconds = 4;
 /** @type {boolean} If true, the Chat During Item Use check (preventing chat while actively using certain items like food, potions) is active. */
-export const enableChatDuringItemUseCheck = true;
+export const enableChatDuringItemUseCheck = false;
 
 // --- Tick Interval Configurations for Periodic Checks ---
 // These define how often certain less frequent checks are performed for each player.

@@ -10,7 +10,7 @@ export const definition = {
     name: 'version',
     syntax: '!version',
     description: 'Displays the AntiCheat addon version.',
-    permissionLevel: permissionLevels.normal, // Changed to normal
+    permissionLevel: permissionLevels.member, // Changed to normal
     enabled: true,
 };
 /**

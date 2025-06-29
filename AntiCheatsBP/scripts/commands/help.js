@@ -11,7 +11,7 @@ export const definition = {
     name: 'help',
     syntax: '!help [command_name]',
     description: 'Shows available commands or help for a specific command.',
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 

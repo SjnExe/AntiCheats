@@ -36,20 +36,23 @@ function initializeRankSystem(dependencies) {
             }
         }
 
-        // Ensure 'normal' and 'member' levels are present
-        if (!newPermissionLevels.normal && !newPermissionLevels.member) {
-            const defaultRankDefinition = sortedRankDefinitions.find(r => r.permissionLevel === defaultPermissionLevel && r.id === 'member');
-            if (defaultRankDefinition) {
-                newPermissionLevels.normal = defaultRankDefinition.permissionLevel;
+        // Ensure 'member' level is present if not defined by a specific rank
+        if (newPermissionLevels.member === undefined) {
+            // Attempt to find a 'member' rank definition to source its permission level
+            const memberRankDefinition = sortedRankDefinitions.find(r => r.id === 'member');
+            if (memberRankDefinition && typeof memberRankDefinition.permissionLevel === 'number') {
+                newPermissionLevels.member = memberRankDefinition.permissionLevel;
             } else {
-                newPermissionLevels.normal = defaultPermissionLevel;
+                // Fallback to defaultPermissionLevel from ranksConfig.js if 'member' rank or its level is missing
+                newPermissionLevels.member = defaultPermissionLevel;
+                 if (dependencies?.playerUtils && dependencies?.config?.enableDebugLogging) {
+                    dependencies.playerUtils.debugLog(`[RankManager] 'member' rank permission level not found in definitions, using defaultPermissionLevel: ${defaultPermissionLevel}`, 'System', dependencies);
+                } else {
+                    console.warn(`[RankManager] 'member' rank permission level not found in definitions, using defaultPermissionLevel: ${defaultPermissionLevel}`);
+                }
             }
-            newPermissionLevels.member = newPermissionLevels.normal;
-        } else if (newPermissionLevels.member && !newPermissionLevels.normal) {
-            newPermissionLevels.normal = newPermissionLevels.member;
-        } else if (newPermissionLevels.normal && !newPermissionLevels.member) {
-            newPermissionLevels.member = newPermissionLevels.normal;
         }
+        // 'normal' is no longer explicitly managed or aliased here.
 
         // Ensure owner and admin are present
         if (newPermissionLevels.owner === undefined) {

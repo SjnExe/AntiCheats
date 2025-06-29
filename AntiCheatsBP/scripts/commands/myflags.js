@@ -10,7 +10,7 @@ export const definition = {
     name: 'myflags',
     syntax: '!myflags',
     description: 'Allows players to view their own AntiCheat flag status.',
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
