@@ -86,10 +86,23 @@ function initializeRankSystem(dependencies) {
  *          Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
+    // Ensure dependencies and config are what we expect at a basic level
+    if (!dependencies || typeof dependencies !== 'object' || dependencies === null) {
+        console.error('[RankManager] Critical: Invalid dependencies object passed to getPlayerRankAndPermissions. Falling back to default permissions.');
+        // Fallback to default permissions if dependencies are totally broken
+        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member' && r.permissionLevel === defaultPermissionLevel);
+        return {
+            rankDefinition: defaultMemberRank || null,
+            permissionLevel: defaultPermissionLevel,
+            rankId: defaultMemberRank ? 'member' : null,
+        };
+    }
+
     const { config, playerUtils } = dependencies;
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
-        if (playerUtils && config?.enableDebugLogging) {
+        // Use playerUtils safely after dependencies check
+        if (playerUtils && typeof playerUtils.debugLog === 'function' && config && typeof config.enableDebugLogging === 'boolean' && config.enableDebugLogging) {
             playerUtils.debugLog('[RankManager] Invalid player object passed to getPlayerRankAndPermissions.', player?.nameTag || 'UnknownSource', dependencies);
         }
         const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member' && r.permissionLevel === defaultPermissionLevel);
@@ -100,8 +113,20 @@ function getPlayerRankAndPermissions(player, dependencies) {
         };
     }
 
-    const ownerName = config?.ownerPlayerName ?? '';
-    const adminTag = config?.adminTag ?? '';
+    let ownerName = ''; // Default value
+    let adminTag = '';  // Default value
+
+    if (config && typeof config === 'object' && config !== null) {
+        ownerName = typeof config.ownerPlayerName === 'string' ? config.ownerPlayerName : '';
+        adminTag = typeof config.adminTag === 'string' ? config.adminTag : '';
+    } else {
+        const configType = typeof config;
+        const configValPreview = String(config).substring(0, 100); // Increased preview length
+        console.warn(`[RankManager] Warning: 'config' in dependencies is not a valid object (type: ${configType}, value: ${configValPreview}). Using default ownerName/adminTag.`);
+        if (playerUtils && typeof playerUtils.debugLog === 'function') {
+            playerUtils.debugLog(`[RankManager] 'config' in dependencies was not a valid object. Type: ${configType}. Value: ${configValPreview}. Player: ${player?.nameTag || 'N/A'}. Check call stack.`, player?.nameTag || 'UnknownSource', dependencies);
+        }
+    }
 
     for (const rankDef of sortedRankDefinitions) {
         if (rankDef.conditions && Array.isArray(rankDef.conditions)) {
