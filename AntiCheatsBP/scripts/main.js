@@ -531,7 +531,7 @@ function performInitializations() {
 
         for (const player of allPlayers) {
             // --- BEGIN PLAYER LOOP DIAGNOSTICS ---
-            if (tickDependencies.config.enableDebugLogging) { // Player-specific logs only if debug logging is on
+            if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) { // Log less frequently
                 const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, player?.nameTag, tickDependencies) : (msg) => console.log(`[Player: ${player?.nameTag}] ${msg}`);
                 logger(`[TickLoopDiag] Processing player (type: ${typeof player})`);
             }
@@ -540,7 +540,7 @@ function performInitializations() {
             let pData;
             try {
                 pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
-                if (tickDependencies.config.enableDebugLogging) { // Player-specific logs only if debug logging is on
+                if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) { // Log less frequently
                     const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, player?.nameTag, tickDependencies) : (msg) => console.log(`[Player: ${player?.nameTag}] ${msg}`);
                     logger(`[TickLoopDiag] pData: typeof=${typeof pData}, totalFlags=${pData?.flags?.totalFlags ?? 'N/A'}`);
                 }
