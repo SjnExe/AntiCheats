@@ -8,7 +8,7 @@ import * as mc from '@minecraft/server';
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData;
- * @typedef {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} PlaceEventData; // Type for events that involve placing a block
+ * @typedef {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} PlaceEventData;
  * @typedef {import('../../types.js').Config} Config;
  */
 
@@ -37,9 +37,13 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
 
     pData.recentBlockPlacements = pData.recentBlockPlacements || [];
     const newPlacement = {
-        x: blockLocation.x, y: blockLocation.y, z: blockLocation.z,
+        x: blockLocation.x,
+        y: blockLocation.y,
+        z: blockLocation.z,
         typeId: block.typeId,
-        pitch: pitch, yaw: rotation.y, tick: currentTick,
+        pitch: pitch,
+        yaw: rotation.y,
+        tick: currentTick,
     };
     pData.recentBlockPlacements.push(newPlacement);
     if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? 20)) {
@@ -49,10 +53,12 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
 
     const towerMaxGapTicks = config.towerMaxTickGap ?? 10;
 
-    if (pData.currentPillarX === blockLocation.x &&
+    if (
+        pData.currentPillarX === blockLocation.x &&
         pData.currentPillarZ === blockLocation.z &&
-        blockLocation.y === (pData.lastPillarBaseY ?? -Infinity) + (pData.consecutivePillarBlocks ?? 0) && // Y should be one above last
-        (currentTick - (pData.lastPillarTick ?? 0) <= towerMaxGapTicks)) {
+        blockLocation.y === (pData.lastPillarBaseY ?? -Infinity) + (pData.consecutivePillarBlocks ?? 0) &&
+        (currentTick - (pData.lastPillarTick ?? 0) <= towerMaxGapTicks)
+    ) {
         pData.consecutivePillarBlocks = (pData.consecutivePillarBlocks ?? 0) + 1;
         pData.lastPillarTick = currentTick;
     } else {
@@ -60,9 +66,10 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
         const playerFeetX = Math.floor(player.location.x);
         const playerFeetZ = Math.floor(player.location.z);
 
-        // Block placed directly under player's feet or one block below that (jump-place)
-        if (blockLocation.x === playerFeetX && blockLocation.z === playerFeetZ &&
-            (blockLocation.y === playerFeetY - 1 || blockLocation.y === playerFeetY - 2)) {
+        if (
+            blockLocation.x === playerFeetX && blockLocation.z === playerFeetZ &&
+            (blockLocation.y === playerFeetY - 1 || blockLocation.y === playerFeetY - 2)
+        ) {
             pData.consecutivePillarBlocks = 1;
             pData.lastPillarBaseY = blockLocation.y;
             pData.lastPillarTick = currentTick;
@@ -82,7 +89,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
     pData.isDirtyForSave = true;
 
     const minHeight = config.towerMinHeight ?? 5;
-    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? -30; // Pitch must be looking down more than this
+    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? -30;
 
     if ((pData.consecutivePillarBlocks ?? 0) >= minHeight && pitch > maxPitchValue) {
         const violationDetails = {
@@ -132,7 +139,9 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
     const windowMs = config.fastPlaceTimeWindowMs ?? 1000;
     const originalCount = pData.recentPlaceTimestamps.length;
     pData.recentPlaceTimestamps = pData.recentPlaceTimestamps.filter(ts => (currentTime - ts) <= windowMs);
-    if (pData.recentPlaceTimestamps.length !== originalCount) pData.isDirtyForSave = true;
+    if (pData.recentPlaceTimestamps.length !== originalCount) {
+        pData.isDirtyForSave = true;
+    }
 
     const maxBlocks = config.fastPlaceMaxBlocksInWindow ?? 10;
     if (pData.recentPlaceTimestamps.length > maxBlocks) {
@@ -144,8 +153,6 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
         };
         await actionManager.executeCheckAction(player, 'worldFastPlace', violationDetails, dependencies);
         playerUtils.debugLog(`[FastPlaceCheck] Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, pData.isWatched ? player.nameTag : null, dependencies);
-        // Optionally, clear timestamps after flagging to avoid repeated flags for the same burst
-        // pData.recentPlaceTimestamps = [];
     }
 }
 
@@ -170,7 +177,6 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
     const faceLocation = eventData?.faceLocation;
     let blockLocation = eventData?.blockLocation;
 
-    // For ItemUseOnBeforeEvent, blockLocation might not be directly available, use eventData.block.location
     if (!blockLocation && eventData?.block) {
         blockLocation = eventData.block.location;
     }
@@ -183,7 +189,6 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
     const placedBlockTypeId = itemStack.typeId;
     const solidBlocksList = config.airPlaceSolidBlocks ?? [];
 
-    // Only check for "solid" blocks as defined in config; scaffolds often use these
     if (!solidBlocksList.includes(placedBlockTypeId)) {
         return;
     }
@@ -196,18 +201,14 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
         return;
     }
 
-    // If the block being targeted is air or liquid, it's suspicious for "solid" blocks
     if (targetBlock.isAir || targetBlock.isLiquid) {
-        // Check if there's any solid neighbor to the *new block's location* (excluding the target face block itself)
         const neighborOffsets = [
             { x: 0, y: -1, z: 0 }, { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 },
             { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 },
-            // Optional: { x: 0, y: 1, z: 0 } // If placing against a block above is also considered support
         ];
         let hasSolidSupport = false;
         for (const offset of neighborOffsets) {
             const neighborLoc = { x: blockLocation.x + offset.x, y: blockLocation.y + offset.y, z: blockLocation.z + offset.z };
-            // Ensure we are not checking the faceLocation itself as support if it's air/liquid
             if (neighborLoc.x === faceLocation.x && neighborLoc.y === faceLocation.y && neighborLoc.z === faceLocation.z) {
                 continue;
             }
@@ -253,7 +254,9 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
 
     if (!config.enableDownwardScaffoldCheck || !pData || !block || player.isOnGround) {
         if (pData && player.isOnGround) {
-            if (pData.consecutiveDownwardBlocks && pData.consecutiveDownwardBlocks > 0) pData.isDirtyForSave = true;
+            if (pData.consecutiveDownwardBlocks && pData.consecutiveDownwardBlocks > 0) {
+                pData.isDirtyForSave = true;
+            }
             pData.consecutiveDownwardBlocks = 0;
             pData.lastDownwardScaffoldBlockLocation = null;
         }
@@ -268,11 +271,13 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
     let isContinuingSequence = false;
     const maxTickGap = config.downwardScaffoldMaxTickGap ?? 10;
 
-    if (pData.lastDownwardScaffoldBlockLocation &&
+    if (
+        pData.lastDownwardScaffoldBlockLocation &&
         (currentTick - (pData.lastDownwardScaffoldTick ?? 0) <= maxTickGap) &&
         blockLocation.y < pData.lastDownwardScaffoldBlockLocation.y &&
         Math.abs(blockLocation.x - Math.floor(player.location.x)) < 2 &&
-        Math.abs(blockLocation.z - Math.floor(player.location.z)) < 2) {
+        Math.abs(blockLocation.z - Math.floor(player.location.z)) < 2
+    ) {
         isContinuingSequence = true;
     }
 
@@ -326,7 +331,8 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const relevantPlacements = pData.recentBlockPlacements.slice(-consecutiveBlocksToAnalyze);
 
-    let minObservedPitch = 91, maxObservedPitch = -91;
+    let minObservedPitch = 91;
+    let maxObservedPitch = -91;
     let allPitchesInHorizontalRange = true;
     let allPitchesInDownwardRange = true;
     const horizontalMin = config.flatRotationPitchHorizontalMin ?? -5.0;
@@ -335,10 +341,18 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     const downwardMax = config.flatRotationPitchDownwardMax ?? -85.0;
 
     for (const placement of relevantPlacements) {
-        if (placement.pitch < minObservedPitch) minObservedPitch = placement.pitch;
-        if (placement.pitch > maxObservedPitch) maxObservedPitch = placement.pitch;
-        if (!(placement.pitch >= horizontalMin && placement.pitch <= horizontalMax)) allPitchesInHorizontalRange = false;
-        if (!(placement.pitch >= downwardMin && placement.pitch <= downwardMax)) allPitchesInDownwardRange = false;
+        if (placement.pitch < minObservedPitch) {
+            minObservedPitch = placement.pitch;
+        }
+        if (placement.pitch > maxObservedPitch) {
+            maxObservedPitch = placement.pitch;
+        }
+        if (!(placement.pitch >= horizontalMin && placement.pitch <= horizontalMax)) {
+            allPitchesInHorizontalRange = false;
+        }
+        if (!(placement.pitch >= downwardMin && placement.pitch <= downwardMax)) {
+            allPitchesInDownwardRange = false;
+        }
     }
 
     const pitchVariance = maxObservedPitch - minObservedPitch;
@@ -349,9 +363,15 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     if (relevantPlacements.length > 1) {
         for (let i = 1; i < relevantPlacements.length; i++) {
             let diff = Math.abs(relevantPlacements[i].yaw - firstYaw);
-            if (diff > 180) diff = 360 - diff;
-            if (diff > maxIndividualYawDifference) maxIndividualYawDifference = diff;
-            if (diff > (config.flatRotationMaxYawVariance ?? 2.0)) yawIsEffectivelyStatic = false;
+            if (diff > 180) {
+                diff = 360 - diff;
+            }
+            if (diff > maxIndividualYawDifference) {
+                maxIndividualYawDifference = diff;
+            }
+            if (diff > (config.flatRotationMaxYawVariance ?? 2.0)) {
+                yawIsEffectivelyStatic = false;
+            }
         }
     } else {
         yawIsEffectivelyStatic = (consecutiveBlocksToAnalyze === 1);
@@ -361,11 +381,22 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     let detectionReasonKey = '';
     let shouldFlag = false;
 
-    if (pitchIsStatic && yawIsEffectivelyStatic) { detectionReasonKey = 'check.flatRotation.reason.staticPitchYaw'; shouldFlag = true; }
-    else if (pitchIsStatic) { detectionReasonKey = 'check.flatRotation.reason.staticPitch'; shouldFlag = true; }
-    else if (yawIsEffectivelyStatic) { detectionReasonKey = 'check.flatRotation.reason.staticYaw'; shouldFlag = true; }
-    else if (allPitchesInHorizontalRange) { detectionReasonKey = 'check.flatRotation.reason.flatHorizontal'; shouldFlag = true; }
-    else if (allPitchesInDownwardRange) { detectionReasonKey = 'check.flatRotation.reason.flatDownward'; shouldFlag = true; }
+    if (pitchIsStatic && yawIsEffectivelyStatic) {
+        detectionReasonKey = 'check.flatRotation.reason.staticPitchYaw';
+        shouldFlag = true;
+    } else if (pitchIsStatic) {
+        detectionReasonKey = 'check.flatRotation.reason.staticPitch';
+        shouldFlag = true;
+    } else if (yawIsEffectivelyStatic) {
+        detectionReasonKey = 'check.flatRotation.reason.staticYaw';
+        shouldFlag = true;
+    } else if (allPitchesInHorizontalRange) {
+        detectionReasonKey = 'check.flatRotation.reason.flatHorizontal';
+        shouldFlag = true;
+    } else if (allPitchesInDownwardRange) {
+        detectionReasonKey = 'check.flatRotation.reason.flatDownward';
+        shouldFlag = true;
+    }
 
     if (shouldFlag) {
         const detectionReasonString = detectionReasonKey.split('.').pop();
@@ -380,9 +411,6 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
         };
         await actionManager.executeCheckAction(player, 'worldFlatRotationBuilding', violationDetails, dependencies);
         playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${detectionReasonString}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
-        // Optionally clear recentBlockPlacements to avoid re-flagging immediately
-        // pData.recentBlockPlacements = [];
-        // pData.isDirtyForSave = true;
     }
 }
 
@@ -400,14 +428,20 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
     const { config, playerUtils, actionManager } = dependencies;
     const block = eventSpecificData?.block;
 
-    if (!config.enableBlockSpamAntiGrief || !pData || !block) return;
-    if (config.blockSpamBypassInCreative && player.gameMode === mc.GameMode.creative) return;
+    if (!config.enableBlockSpamAntiGrief || !pData || !block) {
+        return;
+    }
+    if (config.blockSpamBypassInCreative && player.gameMode === mc.GameMode.creative) {
+        return;
+    }
 
     pData.recentBlockSpamTimestamps = pData.recentBlockSpamTimestamps || [];
     const blockType = block.typeId;
 
-    if (config.blockSpamMonitoredBlockTypes && config.blockSpamMonitoredBlockTypes.length > 0 &&
-        !config.blockSpamMonitoredBlockTypes.includes(blockType)) {
+    if (
+        config.blockSpamMonitoredBlockTypes && config.blockSpamMonitoredBlockTypes.length > 0 &&
+        !config.blockSpamMonitoredBlockTypes.includes(blockType)
+    ) {
         return;
     }
 
@@ -418,7 +452,9 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
     const windowMs = config.blockSpamTimeWindowMs || 1000;
     const originalCount = pData.recentBlockSpamTimestamps.length;
     pData.recentBlockSpamTimestamps = pData.recentBlockSpamTimestamps.filter(ts => (currentTime - ts) <= windowMs);
-    if (pData.recentBlockSpamTimestamps.length !== originalCount) pData.isDirtyForSave = true;
+    if (pData.recentBlockSpamTimestamps.length !== originalCount) {
+        pData.isDirtyForSave = true;
+    }
 
     const maxBlocks = config.blockSpamMaxBlocksInWindow || 8;
     if (pData.recentBlockSpamTimestamps.length > maxBlocks) {
@@ -428,7 +464,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             maxBlocks: maxBlocks.toString(),
             windowMs: windowMs.toString(),
             blockType: blockType,
-            actionTaken: config.blockSpamAction, // Informative, actual action decided by profile
+            actionTaken: config.blockSpamAction,
         };
         await actionManager.executeCheckAction(player, 'worldAntiGriefBlockspam', violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamCheck] Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, pData.isWatched ? player.nameTag : null, dependencies);
@@ -452,13 +488,21 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
     const { config, playerUtils, actionManager, currentTick } = dependencies;
     const block = eventSpecificData?.block;
 
-    if (!config.enableBlockSpamDensityCheck || !pData || !block) return;
-    if ((config.blockSpamBypassInCreative ?? true) && player.gameMode === mc.GameMode.creative) return;
-    if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length === 0) return;
+    if (!config.enableBlockSpamDensityCheck || !pData || !block) {
+        return;
+    }
+    if ((config.blockSpamBypassInCreative ?? true) && player.gameMode === mc.GameMode.creative) {
+        return;
+    }
+    if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length === 0) {
+        return;
+    }
 
     const radius = config.blockSpamDensityCheckRadius ?? 1;
     const totalVolumeBlocks = Math.pow((2 * radius + 1), 3);
-    if (totalVolumeBlocks === 0) return;
+    if (totalVolumeBlocks === 0) {
+        return;
+    }
 
     const newBlockLocation = block.location;
     let playerPlacedBlocksInVolumeCount = 0;
@@ -466,13 +510,21 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
     const monitoredTypes = config.blockSpamDensityMonitoredBlockTypes ?? [];
 
     for (const record of pData.recentBlockPlacements) {
-        if (!record.typeId) continue;
-        if ((currentTick - record.tick) > densityTimeWindowTicks) continue;
-        if (monitoredTypes.length > 0 && !monitoredTypes.includes(record.typeId)) continue;
+        if (!record.typeId) {
+            continue;
+        }
+        if ((currentTick - record.tick) > densityTimeWindowTicks) {
+            continue;
+        }
+        if (monitoredTypes.length > 0 && !monitoredTypes.includes(record.typeId)) {
+            continue;
+        }
 
-        if (Math.abs(record.x - newBlockLocation.x) <= radius &&
+        if (
+            Math.abs(record.x - newBlockLocation.x) <= radius &&
             Math.abs(record.y - newBlockLocation.y) <= radius &&
-            Math.abs(record.z - newBlockLocation.z) <= radius) {
+            Math.abs(record.z - newBlockLocation.z) <= radius
+        ) {
             playerPlacedBlocksInVolumeCount++;
         }
     }
@@ -488,10 +540,9 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
             countInVolume: playerPlacedBlocksInVolumeCount.toString(),
             totalVolumeBlocks: totalVolumeBlocks.toString(),
             blockType: block.typeId,
-            actionTaken: config.blockSpamDensityAction ?? 'warn', // Informative
+            actionTaken: config.blockSpamDensityAction ?? 'warn',
         };
         await actionManager.executeCheckAction(player, 'worldAntiGriefBlockspamDensity', violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${radius} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null, dependencies);
-        // Consider if recentBlockPlacements should be partially cleared or managed to prevent re-flagging on every subsequent block in a large dense build.
     }
 }

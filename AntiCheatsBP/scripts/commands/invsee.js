@@ -42,8 +42,8 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const inventoryComponent = foundPlayer.getComponent(EntityComponentTypes.Inventory); // Standardized component access
-    if (!inventoryComponent?.container) { // Added optional chaining
+    const inventoryComponent = foundPlayer.getComponent(EntityComponentTypes.Inventory);
+    if (!inventoryComponent?.container) {
         player.sendMessage(`§cCould not access ${foundPlayer.nameTag}'s inventory.`);
         return;
     }
@@ -106,12 +106,10 @@ export async function execute(player, args, dependencies) {
         invForm.button1('Close');
 
         await invForm.show(player);
-        // No .then() needed if we're not doing anything after close, catch handles error
     } catch (e) {
         playerUtils.debugLog(`[InvSeeCommand] Error showing invsee form: ${e.message}`, player.nameTag, dependencies);
         console.error(`[InvSeeCommand] Error showing invsee form for ${player.nameTag}: ${e.stack || e}`);
         player.sendMessage('§cAn error occurred while trying to display the inventory.');
-        // Log the error for invsee form display
         logManager.addLog({
             adminName: player.nameTag,
             actionType: 'error',

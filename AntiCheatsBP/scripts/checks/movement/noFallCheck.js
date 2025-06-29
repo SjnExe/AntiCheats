@@ -33,25 +33,36 @@ export async function checkNoFall(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    if (player.isFlying ||
+    if (
+        player.isFlying ||
         player.isGliding ||
-        player.isInWater || // Vanilla water negates fall damage
-        player.isClimbing || // Climbing ladders/vines
-        pData.hasSlowFalling || // Slow Falling effect active
-        player.hasComponent('minecraft:rider') // Player is riding an entity
+        player.isInWater ||
+        player.isClimbing ||
+        pData.hasSlowFalling ||
+        player.hasComponent('minecraft:rider')
     ) {
         if (config.enableDebugLogging && pData.isWatched) {
             let exemptReasons = [];
-            if (player.isFlying) exemptReasons.push('Flying');
-            if (player.isGliding) exemptReasons.push('Gliding');
-            if (player.isInWater) exemptReasons.push('InWater');
-            if (player.isClimbing) exemptReasons.push('Climbing');
-            if (pData.hasSlowFalling) exemptReasons.push('SlowFallingEffect');
-            if (player.hasComponent('minecraft:rider')) exemptReasons.push('RidingEntity');
+            if (player.isFlying) {
+                exemptReasons.push('Flying');
+            }
+            if (player.isGliding) {
+                exemptReasons.push('Gliding');
+            }
+            if (player.isInWater) {
+                exemptReasons.push('InWater');
+            }
+            if (player.isClimbing) {
+                exemptReasons.push('Climbing');
+            }
+            if (pData.hasSlowFalling) {
+                exemptReasons.push('SlowFallingEffect');
+            }
+            if (player.hasComponent('minecraft:rider')) {
+                exemptReasons.push('RidingEntity');
+            }
             playerUtils.debugLog(`[NoFallCheck] ${player.nameTag} in exempt state: ${exemptReasons.join(', ')}. FallDistance reset.`, watchedPrefix, dependencies);
         }
-        // If exempt, ensure fallDistance is reset if they were accumulating it.
-        // This is important because pData.fallDistance might not reset if they land in water, for example.
         if (pData.fallDistance > 0) {
             pData.fallDistance = 0;
             pData.isDirtyForSave = true;
@@ -64,7 +75,7 @@ export async function checkNoFall(player, pData, dependencies) {
             if (playerUtils.debugLog && pData.isWatched) {
                 playerUtils.debugLog(`[NoFallCheck] Player ${player.nameTag} recently on slime block (LastTick: ${pData.lastOnSlimeBlockTick}, Current: ${currentTick}). Fall damage check modified/bypassed. FallDistance reset.`, player.nameTag, dependencies);
             }
-            pData.fallDistance = 0; // Reset fall distance as slime block handles it
+            pData.fallDistance = 0;
             pData.isDirtyForSave = true;
             return;
         }
@@ -89,14 +100,13 @@ export async function checkNoFall(player, pData, dependencies) {
         if (pData.isWatched) {
             playerUtils.debugLog(
                 `[NoFallCheck] ${player.nameTag} landed. FallDistance=${pData.fallDistance.toFixed(2)}, ` +
-                `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.velocity?.y?.toFixed(2) ?? 'N/A'}`, // Use pData.velocity
+                `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.velocity?.y?.toFixed(2) ?? 'N/A'}`,
                 watchedPrefix, dependencies
             );
         }
 
         const minDamageDistance = config.minFallDistanceForDamage ?? 3.5;
 
-        // If player fell far enough to take damage but didn't register damage this tick
         if (pData.fallDistance > minDamageDistance && !pData.isTakingFallDamage) {
             let currentHealth = 'N/A';
             try {
@@ -122,18 +132,14 @@ export async function checkNoFall(player, pData, dependencies) {
                 fallDistance: pData.fallDistance.toFixed(2),
                 minDamageDistance: minDamageDistance.toFixed(2),
                 playerHealth: currentHealth,
-                lastVerticalVelocity: pData.previousVelocity?.y?.toFixed(2) ?? 'N/A', // Use pData.previousVelocity
+                lastVerticalVelocity: pData.previousVelocity?.y?.toFixed(2) ?? 'N/A',
                 activeEffects: activeEffectsString,
             };
-            // Standardized action profile key
             await actionManager.executeCheckAction(player, 'movementNoFall', violationDetails, dependencies);
         }
 
-        // Reset fallDistance and isTakingFallDamage once player is on ground and checks are done
         pData.fallDistance = 0;
-        pData.isTakingFallDamage = false; // Explicitly reset here as well
+        pData.isTakingFallDamage = false;
         pData.isDirtyForSave = true;
     }
-    // If player is not on ground, fallDistance accumulation is handled in updateTransientPlayerData or main tick loop.
-    // isTakingFallDamage is set true by entityHurt event and reset here or in updateTransientPlayerData when on ground.
 }

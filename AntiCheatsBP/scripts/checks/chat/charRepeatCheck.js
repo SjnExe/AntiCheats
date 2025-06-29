@@ -23,7 +23,6 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
 
-    // Standardized action profile name
     const actionProfileKey = config.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
 
     if (!config.enableCharRepeatCheck) {
@@ -49,10 +48,9 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
                 charThatRepeated = currentChar;
             }
             currentChar = char;
-            currentRepeatCount = 1; // Start counting the new character
+            currentRepeatCount = 1;
         }
     }
-    // Check the last sequence after the loop
     if (currentRepeatCount > maxRepeatCount) {
         maxRepeatCount = currentRepeatCount;
         charThatRepeated = currentChar;

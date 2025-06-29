@@ -37,7 +37,6 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
 
-    // Standardized action profile key
     const actionProfileKey = config.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
 
     if (!config.enableChatContentRepeatCheck) {
@@ -53,14 +52,13 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
     const normalizedMessage = normalizeMessage(rawMessageContent);
 
     if (normalizedMessage.length === 0) {
-        return; // Ignore empty or whitespace-only messages after normalization
+        return;
     }
 
     pData.chatMessageHistory = pData.chatMessageHistory || [];
     pData.chatMessageHistory.push(normalizedMessage);
-    pData.isDirtyForSave = true; // Mark data as dirty for saving
+    pData.isDirtyForSave = true;
 
-    // Trim history to the configured length
     while (pData.chatMessageHistory.length > historyLength) {
         pData.chatMessageHistory.shift();
     }
@@ -74,7 +72,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
 
     if (matchCount >= triggerThreshold) {
         const violationDetails = {
-            repeatedMessageSnippet: normalizedMessage.substring(0, 50), // Provide a snippet
+            repeatedMessageSnippet: normalizedMessage.substring(0, 50),
             matchCountInHistory: matchCount.toString(),
             historyLookback: historyLength.toString(),
         };

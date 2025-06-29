@@ -26,15 +26,13 @@ export const definition = {
 export async function execute(player, _args, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
 
-    const linesToClear = 150; // Number of empty lines to send
+    const linesToClear = 150;
     for (let i = 0; i < linesToClear; i++) {
         try {
-            // Use dependencies.mc for API calls
             dependencies.mc.world.sendMessage('');
         } catch (error) {
             console.warn(`[ClearChatCommand] Error sending empty message line ${i + 1}: ${error}`);
-            // Optionally break or log more formally if sendMessage fails repeatedly
-            if (i > 5) { // Example: Stop if it fails multiple times
+            if (i > 5) {
                 player.sendMessage('§cChat clear failed partially. Some messages might remain.');
                 return;
             }
@@ -48,8 +46,8 @@ export async function execute(player, _args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'clearChat', // Standardized actionType
-            targetName: 'Global', // Target is the global chat
+            actionType: 'clearChat',
+            targetName: 'Global',
             details: `Chat cleared by ${player.nameTag}`,
         }, dependencies);
     } catch (logError) {

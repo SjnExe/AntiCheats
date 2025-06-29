@@ -36,24 +36,23 @@ export async function checkAutoTool(player, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const switchToOptimalWindowTicks = config.autoToolSwitchToOptimalWindowTicks ?? 2;
     const switchBackWindowTicks = config.autoToolSwitchBackWindowTicks ?? 5;
-    const actionProfileKey = config.autoToolActionProfileName ?? 'worldAutotool'; // Standardized key
+    const actionProfileKey = config.autoToolActionProfileName ?? 'worldAutotool';
 
-    // Part 1: Detect switch to optimal tool at the start of a break attempt
-    if (pData.isAttemptingBlockBreak &&
+    if (
+        pData.isAttemptingBlockBreak &&
         pData.breakingBlockLocation &&
-        !pData.switchedToOptimalToolForBreak && // Only check if we haven't already flagged this part of the sequence
+        !pData.switchedToOptimalToolForBreak &&
         pData.lastSelectedSlotChangeTick === currentTick &&
-        (currentTick - (pData.breakAttemptStartTick ?? 0) < switchToOptimalWindowTicks)) {
-
+        (currentTick - (pData.breakAttemptStartTick ?? 0) < switchToOptimalWindowTicks)
+    ) {
         const currentSlotIndex = player.selectedSlotIndex;
         const previousSlotIndex = pData.previousSelectedSlotIndex;
 
-        // Ensure the switch was from the slot they started breaking with
         if (previousSlotIndex === pData.slotAtBreakAttemptStart) {
             try {
                 const blockPermutation = dimension.getBlock(pData.breakingBlockLocation)?.permutation;
-                if (blockPermutation && pData.breakingBlockTypeId === blockPermutation.type.id) { // Verify block hasn't changed
-                    const optimalToolInfo = getOptimalToolForBlock(player, blockPermutation); // Pass player and blockPermutation
+                if (blockPermutation && pData.breakingBlockTypeId === blockPermutation.type.id) {
+                    const optimalToolInfo = getOptimalToolForBlock(player, blockPermutation);
 
                     if (optimalToolInfo && currentSlotIndex === optimalToolInfo.slotIndex) {
                         const inventory = player.getComponent(mc.EntityComponentTypes.Inventory);
@@ -63,10 +62,9 @@ export async function checkAutoTool(player, pData, dependencies) {
                         const initialPower = calculateRelativeBlockBreakingPower(player, blockPermutation, initialToolStack);
                         const newPower = optimalToolInfo.speed;
 
-                        // Define what "significantly better" means
-                        const isSignificantlyBetter = (newPower > initialPower * 1.5) || // e.g., 50% faster
-                                                    (newPower === Infinity && initialPower < 1000) || // e.g., shears vs hand for wool
-                                                    (newPower > 5 && initialPower < 1); // e.g., basic tool vs hand for stone
+                        const isSignificantlyBetter = (newPower > initialPower * 1.5) ||
+                                                    (newPower === Infinity && initialPower < 1000) ||
+                                                    (newPower > 5 && initialPower < 1);
 
                         if (isSignificantlyBetter) {
                             pData.switchedToOptimalToolForBreak = true;
@@ -83,17 +81,16 @@ export async function checkAutoTool(player, pData, dependencies) {
         }
     }
 
-    // Part 2: Detect switch away from optimal tool shortly after block break completion
-    if (pData.switchedToOptimalToolForBreak && // Must have switched to optimal for this break
+    if (
+        pData.switchedToOptimalToolForBreak &&
         pData.optimalToolSlotForLastBreak !== null &&
-        pData.lastSelectedSlotChangeTick === currentTick && // Switched tool this very tick
+        pData.lastSelectedSlotChangeTick === currentTick &&
         (pData.lastBreakCompleteTick ?? 0) > 0 &&
-        (currentTick - (pData.lastBreakCompleteTick ?? 0) < switchBackWindowTicks)) {
-
+        (currentTick - (pData.lastBreakCompleteTick ?? 0) < switchBackWindowTicks)
+    ) {
         const currentSlotIndex = player.selectedSlotIndex;
         const previousOptimalSlot = pData.optimalToolSlotForLastBreak;
 
-        // If they switched away from the slot that held the optimal tool used for the break
         if (currentSlotIndex !== previousOptimalSlot) {
             const switchedBackToOriginal = (currentSlotIndex === pData.slotAtBreakAttemptStart &&
                                             pData.slotAtBreakAttemptStart !== previousOptimalSlot);
@@ -105,7 +102,7 @@ export async function checkAutoTool(player, pData, dependencies) {
                 fromOptimalSlot: previousOptimalSlot.toString(),
                 toNewSlot: currentSlotIndex.toString(),
                 originalSlotAtBreakStart: (pData.slotAtBreakAttemptStart ?? 'N/A').toString(),
-                breakAttemptTick: (pData.breakAttemptStartTick ?? 'N/A').toString(), // Use breakAttemptStartTick
+                breakAttemptTick: (pData.breakAttemptStartTick ?? 'N/A').toString(),
                 breakCompleteTick: (pData.lastBreakCompleteTick ?? 'N/A').toString(),
                 switchBackTick: currentTick.toString(),
             };
@@ -113,37 +110,35 @@ export async function checkAutoTool(player, pData, dependencies) {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[AutoToolCheck] Flagged ${player.nameTag} for switching back after optimal tool use. From: ${previousOptimalSlot}, To: ${currentSlotIndex}`, watchedPrefix, dependencies);
 
-            // Reset state after flagging to prevent re-flagging for the same sequence
             pData.switchedToOptimalToolForBreak = false;
             pData.optimalToolSlotForLastBreak = null;
             pData.blockBrokenWithOptimalTypeId = null;
             pData.optimalToolTypeIdForLastBreak = null;
-            // pData.lastBreakCompleteTick = 0; // Keep lastBreakCompleteTick for other potential checks, or reset if specific to AutoTool
             pData.isDirtyForSave = true;
         }
     }
 
-    const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? 200; // e.g., 10 seconds
+    const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? 200;
     if (pData.isAttemptingBlockBreak && (currentTick - (pData.breakAttemptStartTick ?? 0) > timeoutForBreakAttempt)) {
         playerUtils.debugLog(`[AutoToolCheck] Stale break attempt timed out for ${player.nameTag}. Block: ${pData.breakingBlockTypeId ?? 'N/A'}`, watchedPrefix, dependencies);
         pData.isAttemptingBlockBreak = false;
         pData.switchedToOptimalToolForBreak = false;
         pData.breakingBlockTypeId = null;
         pData.breakingBlockLocation = null;
-        // Don't reset optimalToolSlotForLastBreak here, as that's tied to a completed break
         pData.isDirtyForSave = true;
     }
 
-    const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? 5) + 20; // A bit longer than the window
-    if (pData.optimalToolSlotForLastBreak !== null &&
+    const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? 5) + 20;
+    if (
+        pData.optimalToolSlotForLastBreak !== null &&
         (pData.lastBreakCompleteTick ?? 0) > 0 &&
-        (currentTick - (pData.lastBreakCompleteTick ?? 0) > timeoutForSwitchBackState)) {
+        (currentTick - (pData.lastBreakCompleteTick ?? 0) > timeoutForSwitchBackState)
+    ) {
         playerUtils.debugLog(`[AutoToolCheck] Stale optimalToolSlotForLastBreak state timed out for ${player.nameTag}. Slot: ${pData.optimalToolSlotForLastBreak}`, watchedPrefix, dependencies);
         pData.optimalToolSlotForLastBreak = null;
         pData.blockBrokenWithOptimalTypeId = null;
         pData.optimalToolTypeIdForLastBreak = null;
-        pData.switchedToOptimalToolForBreak = false; // Should have been reset or flagged by now
-        // pData.lastBreakCompleteTick = 0; // Reset if this state is purely for AutoTool's switch-back part
+        pData.switchedToOptimalToolForBreak = false;
         pData.isDirtyForSave = true;
     }
 }

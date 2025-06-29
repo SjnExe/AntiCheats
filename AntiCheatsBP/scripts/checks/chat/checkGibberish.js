@@ -41,7 +41,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     const vowelRatioLowerBound = config.gibberishVowelRatioLowerBound ?? 0.15;
     const vowelRatioUpperBound = config.gibberishVowelRatioUpperBound ?? 0.80;
     const maxConsecutiveConsonants = config.gibberishMaxConsecutiveConsonants ?? 5;
-    const actionProfileKey = config.gibberishActionProfileName ?? 'chatGibberish'; // Standardized key
+    const actionProfileKey = config.gibberishActionProfileName ?? 'chatGibberish';
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?]/g, ''); // Remove common punctuation
 
     let totalAlphaChars = 0;
@@ -60,7 +60,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
             totalAlphaChars++;
             if (vowels.includes(char)) {
                 totalVowels++;
-                currentConsecutiveConsonants = 0; // Reset consonant counter
+                currentConsecutiveConsonants = 0;
             } else {
                 totalConsonants++;
                 currentConsecutiveConsonants++;
@@ -68,31 +68,30 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
                     overallMaxConsecutiveConsonants = currentConsecutiveConsonants;
                 }
             }
-        } else { // Not a letter (e.g., space, number, symbol after initial clean)
+        } else {
             currentConsecutiveConsonants = 0;
         }
     }
 
     if (totalNonSpaceChars === 0 || totalAlphaChars === 0) {
-        return; // Avoid division by zero if message is all spaces or no letters
+        return;
     }
 
     const actualAlphaRatio = totalAlphaChars / totalNonSpaceChars;
     if (actualAlphaRatio < minAlphaRatio) {
-        // Message doesn't have enough alphabetic characters to be considered for gibberish based on vowel/consonant ratios
         return;
     }
 
     if ((totalVowels + totalConsonants) === 0) {
-        return; // Avoid division by zero if no vowels or consonants (e.g., message of only 'hmmm')
+        return;
     }
     const actualVowelRatio = totalVowels / (totalVowels + totalConsonants);
 
-    const flagReasons = []; // Use plural for clarity
-    if (actualVowelRatio < vowelRatioLowerBound && totalConsonants > 0) { // Ensure there are consonants before flagging low vowel ratio
+    const flagReasons = [];
+    if (actualVowelRatio < vowelRatioLowerBound && totalConsonants > 0) {
         flagReasons.push('low vowel ratio');
     }
-    if (actualVowelRatio > vowelRatioUpperBound && totalVowels > 0 && totalConsonants < totalVowels) { // Ensure there are vowels and fewer consonants for high vowel ratio
+    if (actualVowelRatio > vowelRatioUpperBound && totalVowels > 0 && totalConsonants < totalVowels) {
         flagReasons.push('high vowel ratio');
     }
     if (overallMaxConsecutiveConsonants >= maxConsecutiveConsonants) {

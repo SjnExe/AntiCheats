@@ -2,7 +2,6 @@
  * @file Piston related checks, primarily for detecting potential lag machines
  * by monitoring rapid and sustained piston activations.
  */
-// No direct mc import needed if types are from JSDoc and dependencies
 
 /**
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
@@ -45,7 +44,6 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
         return;
     }
 
-
     const pistonKey = `${pistonBlock.location.x},${pistonBlock.location.y},${pistonBlock.location.z},${dimensionId}`;
     let data = pistonActivityData.get(pistonKey);
 
@@ -56,31 +54,28 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
     const currentTime = Date.now();
     data.activations.push(currentTime);
 
-    // Filter activations to keep only those within the sustained duration window
     const sustainedWindowStart = currentTime - (config.pistonActivationSustainedDurationSeconds * 1000);
     data.activations = data.activations.filter(timestamp => timestamp >= sustainedWindowStart);
 
     const activationRate = data.activations.length / config.pistonActivationSustainedDurationSeconds;
-    const actionProfileKey = 'worldAntiGriefPistonLag'; // Standardized key
+    const actionProfileKey = 'worldAntiGriefPistonLag';
 
     if (activationRate >= config.pistonActivationLogThresholdPerSecond) {
-        // Check cooldown before logging/alerting again for the same piston
         if (currentTime - data.lastLogTime > (config.pistonLagLogCooldownSeconds * 1000)) {
             data.lastLogTime = currentTime;
 
             const location = pistonBlock.location;
-            const dimensionName = dimensionId.split(':')[1] || dimensionId; // Get short name
+            const dimensionName = dimensionId.split(':')[1] || dimensionId;
 
             const violationDetails = {
-                x: location.x.toString(), // Ensure string for template
+                x: location.x.toString(),
                 y: location.y.toString(),
                 z: location.z.toString(),
                 dimensionId: dimensionName,
                 rate: activationRate.toFixed(1),
                 duration: config.pistonActivationSustainedDurationSeconds.toString(),
-                detailsString: `Piston at ${location.x},${location.y},${location.z} in ${dimensionName} activated at ${activationRate.toFixed(1)}/s for ${config.pistonActivationSustainedDurationSeconds}s.`, // Hardcoded string
+                detailsString: `Piston at ${location.x},${location.y},${location.z} in ${dimensionName} activated at ${activationRate.toFixed(1)}/s for ${config.pistonActivationSustainedDurationSeconds}s.`,
             };
-            // Note: Piston lag is often not attributable to a single player, so `player` is null.
             await actionManager.executeCheckAction(null, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[PistonLagCheck] Logged rapid piston at ${pistonKey}. Rate: ${activationRate.toFixed(1)}/s`, null, dependencies);
         }
@@ -88,17 +83,17 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
 
     pistonActivityData.set(pistonKey, data);
 
-    // Cleanup old entries from pistonActivityData to prevent memory leaks
     const maxMapSize = config.pistonActivityMapMaxSize ?? 2000;
-    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? 300) * 1000; // Default 5 minutes
+    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? 300) * 1000;
 
     if (pistonActivityData.size > maxMapSize) {
         const cleanupCutoffTime = currentTime - entryTimeoutMs;
         let prunedCount = 0;
         for (const [key, value] of pistonActivityData.entries()) {
-            // Remove if no activations or last activation/log is older than timeout
-            if ((value.activations.length === 0 || value.activations[value.activations.length - 1] < cleanupCutoffTime) &&
-                (value.lastLogTime === 0 || value.lastLogTime < cleanupCutoffTime)) {
+            if (
+                (value.activations.length === 0 || value.activations[value.activations.length - 1] < cleanupCutoffTime) &&
+                (value.lastLogTime === 0 || value.lastLogTime < cleanupCutoffTime)
+            ) {
                 pistonActivityData.delete(key);
                 prunedCount++;
             }

@@ -6,7 +6,7 @@
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').EventSpecificData} EventSpecificData; // Expects itemStack
+ * @typedef {import('../../types.js').EventSpecificData} EventSpecificData;
  * @typedef {import('../../types.js').Config} Config;
  */
 
@@ -34,7 +34,7 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
     const cooldown = config.fastUseItemCooldowns?.[itemTypeId];
 
     if (typeof cooldown !== 'number' || cooldown <= 0) {
-        if (config.enableDebugLogging && pData.isWatched) { // Log only if relevant
+        if (config.enableDebugLogging && pData.isWatched) {
             playerUtils.debugLog(`[FastUseCheck] Item ${itemTypeId} not tracked or invalid cooldown in config for player ${player.nameTag}. Cooldown: ${cooldown}`, pData.isWatched ? player.nameTag : null, dependencies);
         }
         return;
@@ -52,8 +52,7 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
             cooldownMs: cooldown.toString(),
             actualTimeMs: timeSinceLastUseMs.toString(),
         };
-        // Standardized action profile key
-         const actionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse';
+        const actionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
@@ -61,8 +60,6 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
             `[FastUseCheck] Flagged ${player.nameTag} for using ${itemTypeId} too fast. Actual: ${timeSinceLastUseMs}ms, Cooldown: ${cooldown}ms`,
             watchedPrefix, dependencies
         );
-        // Note: Event cancellation for ItemUseBeforeEvent would typically be handled by the actionProfile if configured.
-        // This function itself doesn't directly cancel, it relies on the actionManager's interpretation of the profile.
     }
 
     pData.itemUseTimestamps[itemTypeId] = currentTime;

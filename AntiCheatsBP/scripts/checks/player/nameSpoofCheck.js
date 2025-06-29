@@ -30,7 +30,6 @@ export async function checkNameSpoof(player, pData, dependencies) {
     }
 
     const currentNameTag = player.nameTag;
-    // Use player.name for watched prefix if nameTag is the potentially spoofed value
     const watchedPrefix = pData.isWatched ? player.name : null;
 
     let reasonDetailKey = null;
@@ -46,33 +45,30 @@ export async function checkNameSpoof(player, pData, dependencies) {
 
     if (!reasonDetailKey && config.nameSpoofDisallowedCharsRegex) {
         try {
-            const regex = new RegExp(config.nameSpoofDisallowedCharsRegex, 'u'); // 'u' for Unicode
+            const regex = new RegExp(config.nameSpoofDisallowedCharsRegex, 'u');
             const match = currentNameTag.match(regex);
             if (match) {
                 reasonDetailKey = 'check.nameSpoof.reason.disallowedChars';
-                reasonDetailParams = { char: match[0] }; // The first matched disallowed character/sequence
+                reasonDetailParams = { char: match[0] };
                 flaggedReasonForLog = `NameTag contains disallowed character(s) (e.g., '${match[0]}') matching regex.`;
             }
         } catch (e) {
             playerUtils.debugLog(`[NameSpoofCheck] Error compiling regex '${config.nameSpoofDisallowedCharsRegex}': ${e.message}`, watchedPrefix, dependencies);
-            // Potentially add a system log entry about the invalid regex config
         }
     }
 
-    // This part also updates lastKnownNameTag and lastNameTagChangeTick
     const previousNameTagForLog = pData.lastKnownNameTag;
     if (currentNameTag !== pData.lastKnownNameTag) {
-        const minIntervalTicks = config.nameSpoofMinChangeIntervalTicks ?? 200; // Default to 10 seconds
+        const minIntervalTicks = config.nameSpoofMinChangeIntervalTicks ?? 200;
         const ticksSinceLastChange = currentTick - (pData.lastNameTagChangeTick ?? 0);
 
-        if (!reasonDetailKey && // Only flag for rapid change if no other issue found yet
-            (pData.lastNameTagChangeTick ?? 0) !== 0 && // Ensure there was a previous change logged
+        if (!reasonDetailKey &&
+            (pData.lastNameTagChangeTick ?? 0) !== 0 &&
             ticksSinceLastChange < minIntervalTicks) {
             reasonDetailKey = 'check.nameSpoof.reason.rapidChange';
             reasonDetailParams = { interval: ticksSinceLastChange.toString(), minInterval: minIntervalTicks.toString() };
             flaggedReasonForLog = `NameTag changed too rapidly (within ${ticksSinceLastChange} ticks, min is ${minIntervalTicks}t). From '${previousNameTagForLog}' to '${currentNameTag}'.`;
         }
-        // Update tracking info regardless of whether rapid change was the primary flag reason
         pData.lastKnownNameTag = currentNameTag;
         pData.lastNameTagChangeTick = currentTick;
         pData.isDirtyForSave = true;
@@ -92,7 +88,7 @@ export async function checkNameSpoof(player, pData, dependencies) {
             reasonDetail: reasonDetailString,
             currentNameTagDisplay: currentNameTag,
             previousNameTagRecorded: (reasonDetailKey === 'check.nameSpoof.reason.rapidChange') ? previousNameTagForLog : 'N/A',
-            actualPlayerName: player.name, // The underlying, immutable player name
+            actualPlayerName: player.name,
             maxLengthConfig: maxLength.toString(),
             disallowedCharRegexConfig: config.nameSpoofDisallowedCharsRegex ?? 'N/A',
             minChangeIntervalConfig: (config.nameSpoofMinChangeIntervalTicks ?? 0).toString(),

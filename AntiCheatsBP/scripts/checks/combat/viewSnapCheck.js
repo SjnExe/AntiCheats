@@ -35,7 +35,7 @@ export async function checkViewSnap(player, pData, dependencies) {
 
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
-    const invalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch'; // Standardized key
+    const invalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch';
 
     if (currentPitch < invalidPitchMin || currentPitch > invalidPitchMax) {
         const violationDetails = {
@@ -52,7 +52,6 @@ export async function checkViewSnap(player, pData, dependencies) {
         const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
         let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
 
-        // Normalize yaw difference (e.g., 350 to 10 is 20 degrees, not 340)
         if (deltaYaw > 180) {
             deltaYaw = 360 - deltaYaw;
         }
@@ -61,7 +60,7 @@ export async function checkViewSnap(player, pData, dependencies) {
         const postAttackTimeMs = ticksSinceLastAttack * 50;
 
         const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
-        const pitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewsnapPitch'; // Standardized key
+        const pitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewsnapPitch';
 
         if (deltaPitch > maxPitchSnap) {
             const violationDetails = {
@@ -76,7 +75,7 @@ export async function checkViewSnap(player, pData, dependencies) {
         }
 
         const maxYawSnap = config.maxYawSnapPerTick ?? 100;
-        const yawSnapActionProfileKey = config.yawSnapActionProfileName ?? 'combatViewsnapYaw'; // Standardized key
+        const yawSnapActionProfileKey = config.yawSnapActionProfileName ?? 'combatViewsnapYaw';
 
         if (deltaYaw > maxYawSnap) {
             const violationDetails = {
@@ -90,5 +89,4 @@ export async function checkViewSnap(player, pData, dependencies) {
             playerUtils.debugLog(`[ViewSnapCheck] (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)}° within ${ticksSinceLastAttack} ticks.`, watchedPrefix, dependencies);
         }
     }
-    // Note: pData.lastPitch and pData.lastYaw are updated in updateTransientPlayerData in playerDataManager.js
 }

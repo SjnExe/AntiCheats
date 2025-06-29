@@ -39,7 +39,6 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
-    // Standardized action profile key (ensure this matches actionProfiles.js)
     const actionProfileKey = config.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
     const profile = config.checkActionProfiles?.[actionProfileKey];
 
@@ -57,11 +56,11 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
             if (profile?.cancelMessage) {
-                eventData.cancel = true; // Directly set eventData.cancel
+                eventData.cancel = true;
             }
         }
     }
 
     pData.lastChatMessageTimestamp = currentTime;
-    pData.isDirtyForSave = true; // Mark data as dirty since a timestamp was updated
+    pData.isDirtyForSave = true;
 }

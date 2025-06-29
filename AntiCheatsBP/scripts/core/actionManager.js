@@ -57,14 +57,13 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
  */
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { config, playerDataManager, playerUtils, logManager, checkActionProfiles } = dependencies;
-    const playerNameForLog = player ? player.nameTag : 'System'; // Consistent variable name
+    const playerNameForLog = player ? player.nameTag : 'System';
 
     if (!checkActionProfiles) {
         playerUtils.debugLog(`[ActionManager] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
-    // Assumes checkType is already correctly camelCased as per guidelines (e.g., 'playerAntiGmc')
     const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils.debugLog(`[ActionManager] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
@@ -80,12 +79,12 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     const flagReasonMessage = formatActionMessage(
         baseReasonTemplate,
         playerNameForLog,
-        checkType, // Use direct checkType
+        checkType,
         violationDetails
     );
 
     if (player && profile.flag) {
-        const flagType = profile.flag.type || checkType; // Use direct checkType
+        const flagType = profile.flag.type || checkType;
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
         const flagDetailsForAdminNotify = formatViolationDetails(violationDetails);
 
@@ -98,17 +97,17 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     }
 
     if (profile.log) {
-        const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`; // CamelCase fallback
+        const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
         let logDetailsString = profile.log.detailsPrefix || '';
         if (profile.log.includeViolationDetails !== false) {
             logDetailsString += formatViolationDetails(violationDetails);
         }
         logManager.addLog({
-            adminName: 'System', // Actions are system-triggered based on profiles
+            adminName: 'System',
             actionType: logActionType,
             targetName: playerNameForLog,
             details: logDetailsString.trim(),
-            reason: flagReasonMessage, // Use the formatted reason
+            reason: flagReasonMessage,
         }, dependencies);
     }
 
@@ -116,21 +115,20 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         const notifyMsg = formatActionMessage(
             profile.notifyAdmins.message,
             playerNameForLog,
-            checkType, // Use direct checkType
+            checkType,
             violationDetails
         );
         const pData = player ? playerDataManager.getPlayerData(player.id) : null;
         playerUtils.notifyAdmins(notifyMsg, dependencies, player, pData);
     }
 
-    // Store last violation item details if applicable
     if (player && violationDetails?.itemTypeId) {
         const pData = playerDataManager.getPlayerData(player.id);
         if (pData) {
             if (!pData.lastViolationDetailsMap) {
                 pData.lastViolationDetailsMap = {};
             }
-            pData.lastViolationDetailsMap[checkType] = { // Use direct checkType
+            pData.lastViolationDetailsMap[checkType] = {
                 itemTypeId: violationDetails.itemTypeId,
                 timestamp: Date.now(),
             };

@@ -51,9 +51,8 @@ export async function execute(player, args, dependencies) {
 
         let specificFlagsFound = false;
         if (pData.flags) {
-            messageLines.push("§eFlags by Type:");
+            messageLines.push('§eFlags by Type:');
             for (const flagKey in pData.flags) {
-                // Ensure it's a flag object and not 'totalFlags' or other properties
                 if (flagKey !== 'totalFlags' && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
                     const flagData = pData.flags[flagKey];
                     const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : 'N/A';
@@ -62,7 +61,7 @@ export async function execute(player, args, dependencies) {
                 }
             }
             if (!specificFlagsFound) {
-                messageLines.push("  §7(No specific flags with counts > 0)");
+                messageLines.push('  §7(No specific flags with counts > 0)');
             }
         }
 
@@ -82,11 +81,6 @@ export async function execute(player, args, dependencies) {
             messageLines.push('§eBanned: §aNo');
         }
 
-        // Example of adding more pData fields:
-        // if (pData.lastCombatInteractionTime) {
-        //     messageLines.push(`§eLast Combat: §f${new Date(pData.lastCombatInteractionTime).toLocaleString()}`);
-        // }
-
     } else {
         messageLines.push('§cNo AntiCheat data found for this player.');
     }
@@ -97,7 +91,7 @@ export async function execute(player, args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'inspectPlayer', // Standardized
+            actionType: 'inspectPlayer',
             targetName: targetPlayer.nameTag,
             details: `Inspected ${targetPlayer.nameTag}`,
         }, dependencies);

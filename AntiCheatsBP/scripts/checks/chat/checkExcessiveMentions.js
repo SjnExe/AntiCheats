@@ -29,9 +29,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         return;
     }
 
-    // pData is not strictly needed for the core logic but is used for watched player logging.
-    // A null check isn't critical for functionality here if pData might be missing in some edge cases.
-    if (!pData && config.enableDebugLogging) { // Log only if debug is on and pData is missing
+    if (!pData && config.enableDebugLogging) {
         playerUtils.debugLog('[ExcessiveMentionsCheck] pData is null. Watched player status might be unavailable for logging.', player.nameTag, dependencies);
     }
 
@@ -42,17 +40,17 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
 
     const maxUniquePerMessage = config.mentionsMaxUniquePerMessage ?? 4;
     const maxRepeatedPerMessage = config.mentionsMaxRepeatedPerMessage ?? 3;
-    const actionProfileKey = config.mentionsActionProfileName ?? 'chatExcessiveMentions'; // Standardized key
+    const actionProfileKey = config.mentionsActionProfileName ?? 'chatExcessiveMentions';
     const mentionRegex = /@([A-Za-z0-9_]{3,16})/g; // Common Minecraft username pattern
     const allMentions = [];
     let match;
 
     while ((match = mentionRegex.exec(rawMessageContent)) !== null) {
-        allMentions.push(match[1]); // Store only the username part
+        allMentions.push(match[1]);
     }
 
     if (allMentions.length === 0) {
-        return; // No mentions found
+        return;
     }
 
     const distinctMentionedUsers = new Set(allMentions);

@@ -46,23 +46,21 @@ export async function checkFly(player, pData, dependencies) {
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
 
-    // Bypass checks for legitimate flight states like gliding or creative/spectator flight.
     if (player.isGliding) {
         pData.lastUsedElytraTick = currentTick;
         pData.isDirtyForSave = true;
         playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is gliding. Standard fly checks bypassed.`, watchedPrefix, dependencies);
         return;
     }
-    if (player.isFlying) { // Covers Creative and Spectator game modes.
+    if (player.isFlying) {
         playerUtils.debugLog(`[FlyCheck] ${player.nameTag} is legitimately flying. Standard fly checks bypassed.`, watchedPrefix, dependencies);
         return;
     }
 
-    // High Y-Velocity Check
     if (config.enableHighYVelocityCheck && !pData.hasLevitation) {
         const currentYVelocity = pData.velocity.y;
         const jumpBoostAmplifierValue = pData.jumpBoostAmplifier ?? 0;
-        const jumpBoostBonus = jumpBoostAmplifierValue * (config.jumpBoostYVelocityBonus ?? 0.0); // Assumes bonus is per level.
+        const jumpBoostBonus = jumpBoostAmplifierValue * (config.jumpBoostYVelocityBonus ?? 0.0);
         const baseYVelocityPositive = config.maxYVelocityPositive ?? 2.0;
         const effectiveMaxYVelocity = baseYVelocityPositive + jumpBoostBonus;
 
@@ -78,15 +76,23 @@ export async function checkFly(player, pData, dependencies) {
             ticksSinceLastDamage <= graceTicks ||
             ticksSinceLastElytra <= graceTicks ||
             player.isClimbing ||
-            (pData.hasSlowFalling && currentYVelocity < 0) // Grace period if slow falling downwards.
+            (pData.hasSlowFalling && currentYVelocity < 0)
         );
 
         if (underGraceCondition && pData.isWatched) {
             let graceReasons = [];
-            if (ticksSinceLastDamage <= graceTicks) graceReasons.push(`recent damage (${ticksSinceLastDamage}t)`);
-            if (ticksSinceLastElytra <= graceTicks) graceReasons.push(`recent elytra (${ticksSinceLastElytra}t)`);
-            if (player.isClimbing) graceReasons.push('climbing');
-            if (pData.hasSlowFalling && currentYVelocity < 0) graceReasons.push('slow falling downwards');
+            if (ticksSinceLastDamage <= graceTicks) {
+                graceReasons.push(`recent damage (${ticksSinceLastDamage}t)`);
+            }
+            if (ticksSinceLastElytra <= graceTicks) {
+                graceReasons.push(`recent elytra (${ticksSinceLastElytra}t)`);
+            }
+            if (player.isClimbing) {
+                graceReasons.push('climbing');
+            }
+            if (pData.hasSlowFalling && currentYVelocity < 0) {
+                graceReasons.push('slow falling downwards');
+            }
             playerUtils.debugLog(`[FlyCheck][Y-Velo] ${player.nameTag}: Y-velocity check grace due to: ${graceReasons.join(', ')}.`, player.nameTag, dependencies);
         }
 
@@ -109,17 +115,14 @@ export async function checkFly(player, pData, dependencies) {
         }
     }
 
-    // Sustained Upward Movement & Hover Detection (only if general fly check is enabled)
     if (!config.enableFlyCheck) {
         return;
     }
 
-    // Allow upward movement if player has levitation effect.
     if (pData.hasLevitation && pData.velocity.y > 0) {
         playerUtils.debugLog(`[FlyCheck] ${player.nameTag} allowing upward movement due to levitation. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix, dependencies);
         return;
     }
-    // Note slow falling for context, but it doesn't exempt from all hover checks if Y velocity is near zero.
     if (pData.hasSlowFalling && pData.velocity.y < 0) {
         playerUtils.debugLog(`[FlyCheck] ${player.nameTag} noting slow descent due to Slow Falling. VSpeed: ${pData.velocity.y.toFixed(2)}`, watchedPrefix, dependencies);
     }
@@ -129,7 +132,6 @@ export async function checkFly(player, pData, dependencies) {
         playerUtils.debugLog(`[FlyCheck] Processing for ${player.nameTag}. VSpeed=${verticalSpeed.toFixed(2)}, OffGroundTicks=${pData.consecutiveOffGroundTicks}`, watchedPrefix, dependencies);
     }
 
-    // Sustained Upward Movement Check
     const sustainedThreshold = config.flySustainedVerticalSpeedThreshold ?? 0.5;
     const sustainedTicks = config.flySustainedOffGroundTicksThreshold ?? 10;
 
@@ -149,23 +151,22 @@ export async function checkFly(player, pData, dependencies) {
         }
     }
 
-    // Hover Detection Check
-    const hoverVSpeedThreshold = config.flyHoverVerticalSpeedThreshold ?? 0.08; // Near-zero vertical speed is indicative of hover.
-    const hoverOffGroundTicks = config.flyHoverOffGroundTicksThreshold ?? 20;   // Hovering for at least 1 second.
-    const hoverMaxFallDist = config.flyHoverMaxFallDistanceThreshold ?? 1.0;     // Not accumulating significant fall distance.
-    const hoverMinHeight = config.flyHoverNearGroundThreshold ?? 3.0;           // Minimum height above last ground to be considered "hovering".
+    const hoverVSpeedThreshold = config.flyHoverVerticalSpeedThreshold ?? 0.08;
+    const hoverOffGroundTicks = config.flyHoverOffGroundTicksThreshold ?? 20;
+    const hoverMaxFallDist = config.flyHoverMaxFallDistanceThreshold ?? 1.0;
+    const hoverMinHeight = config.flyHoverNearGroundThreshold ?? 3.0;
 
     if (!player.isOnGround &&
         Math.abs(verticalSpeed) < hoverVSpeedThreshold &&
         pData.consecutiveOffGroundTicks > hoverOffGroundTicks &&
-        player.fallDistance < hoverMaxFallDist && // Check current fall distance.
+        player.fallDistance < hoverMaxFallDist &&
         !player.isClimbing &&
-        !player.isInWater && // Not hovering in water.
-        !pData.hasLevitation && // No levitation effect.
-        !pData.hasSlowFalling // Not just slow falling with minimal Y movement.
+        !player.isInWater &&
+        !pData.hasLevitation &&
+        !pData.hasSlowFalling
     ) {
         const playerLoc = player.location;
-        const heightAboveLastGround = pData.lastOnGroundPosition ? (playerLoc.y - pData.lastOnGroundPosition.y) : (hoverMinHeight + 1.0); // Default high if no last ground position.
+        const heightAboveLastGround = pData.lastOnGroundPosition ? (playerLoc.y - pData.lastOnGroundPosition.y) : (hoverMinHeight + 1.0);
 
         if (heightAboveLastGround > hoverMinHeight) {
             const violationDetails = {

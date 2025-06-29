@@ -57,7 +57,7 @@ export async function execute(player, args, dependencies) {
                 }
                 break;
             case 'status':
-                const locked = isEndLocked(); // This function should not throw, handles its own try-catch
+                const locked = isEndLocked();
                 statusText = locked ? '§cLocked' : '§aUnlocked';
                 player.sendMessage(`§eEnd dimension status: ${statusText}`);
                 break;

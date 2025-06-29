@@ -31,7 +31,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    if (!pData && config.enableDebugLogging) { // Log only if debug is on and pData is missing
+    if (!pData && config.enableDebugLogging) {
         playerUtils.debugLog('[SimpleImpersonationCheck] pData is null. Watched player status might be unavailable for logging.', player.nameTag, dependencies);
     }
 
@@ -40,7 +40,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    const adminPermissionLevelDefault = permissionLevels?.admin ?? 1; // Use permissionLevels from dependencies
+    const adminPermissionLevelDefault = permissionLevels?.admin ?? 1;
     const exemptPermissionLevel = config.impersonationExemptPermissionLevel ?? adminPermissionLevelDefault;
 
     const playerPermission = rankManager.getPlayerPermissionLevel(player, dependencies);
@@ -55,7 +55,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    const actionProfileKey = config.impersonationActionProfileName ?? 'chatImpersonationAttempt'; // Standardized key
+    const actionProfileKey = config.impersonationActionProfileName ?? 'chatImpersonationAttempt';
     const watchedPlayerName = pData?.isWatched ? player.nameTag : null;
 
     for (const patternString of serverMessagePatterns) {

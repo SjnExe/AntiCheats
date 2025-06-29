@@ -2,7 +2,7 @@
  * @file Defines the !copyinv command for administrators to copy another player's inventory.
  */
 import { ModalFormData } from '@minecraft/server-ui';
-import { permissionLevels } from '../core/rankManager.js'; // Standardized import
+import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
 
 /**
@@ -12,7 +12,7 @@ export const definition = {
     name: 'copyinv',
     syntax: '!copyinv <playername>',
     description: 'Copies another player\'s inventory to your own.',
-    permissionLevel: permissionLevels.admin, // Use a defined level
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -57,14 +57,14 @@ export async function execute(player, args, dependencies) {
 
     const form = new ModalFormData()
         .title('Confirm Inventory Copy')
-        .textField(`Type 'confirm' to copy ${targetPlayer.nameTag}'s inventory. THIS WILL OVERWRITE YOUR CURRENT INVENTORY.`, 'Type "confirm" here', '')
+        .textField(`Type 'confirm' to copy ${targetPlayer.nameTag}'s inventory. THIS WILL OVERWRITE YOUR CURRENT INVENTORY.`, 'Type \'confirm\' here', '')
         .toggle('Yes, I understand my inventory will be overwritten.', false);
 
     try {
         const response = await form.show(player);
 
         if (response.canceled || !response.formValues || !response.formValues[1] || response.formValues[0]?.toLowerCase() !== 'confirm') {
-            if (!response.canceled || response.cancelationReason !== 'UserBusy') { // Avoid double message if busy
+            if (!response.canceled || response.cancelationReason !== 'UserBusy') {
                  player.sendMessage('§eInventory copy cancelled.');
             }
             playerUtils.debugLog(`[CopyInvCommand] Confirmation form cancelled or not confirmed by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag, dependencies);
@@ -78,16 +78,14 @@ export async function execute(player, args, dependencies) {
     }
 
     try {
-        // Clear admin's current inventory
         for (let i = 0; i < adminInvComp.container.size; i++) {
-            adminInvComp.container.setItem(i); // Undefined clears the slot
+            adminInvComp.container.setItem(i);
         }
 
         let itemsCopied = 0;
-        // Copy target's inventory to admin
         for (let i = 0; i < targetInvComp.container.size; i++) {
             const item = targetInvComp.container.getItem(i);
-            adminInvComp.container.setItem(i, item); // item can be undefined, which is fine
+            adminInvComp.container.setItem(i, item);
             if (item) {
                 itemsCopied++;
             }
@@ -97,7 +95,7 @@ export async function execute(player, args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'copyInventory', // Standardized actionType
+            actionType: 'copyInventory',
             targetName: targetPlayer.nameTag,
             details: `Copied ${itemsCopied} items/stacks.`,
         }, dependencies);

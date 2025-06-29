@@ -32,41 +32,37 @@ export async function checkNoSlow(player, pData, dependencies) {
     const velocity = player.getVelocity();
     const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
 
-    let slowingActionKey = null; // Localization key for the action
-    let maxAllowedBaseSpeedBPS = Infinity; // Base max speed for the action in BPS
+    let slowingActionKey = null;
+    let maxAllowedBaseSpeedBPS = Infinity;
 
     if (pData.isUsingConsumable) {
         slowingActionKey = 'check.noSlow.action.eatingDrinking';
-        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedEating ?? 1.0; // Default from previous logic
+        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedEating ?? 1.0;
     } else if (pData.isChargingBow) {
         slowingActionKey = 'check.noSlow.action.chargingBow';
-        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedChargingBow ?? 1.0; // Default from previous logic
+        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedChargingBow ?? 1.0;
     } else if (pData.isUsingShield) {
         slowingActionKey = 'check.noSlow.action.usingShield';
-        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedUsingShield ?? 4.4; // Vanilla walking speed is ~4.313 BPS
+        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedUsingShield ?? 4.4;
     } else if (player.isSneaking) {
         slowingActionKey = 'check.noSlow.action.sneaking';
-        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedSneaking ?? 1.5; // Vanilla sneak speed is ~1.31 BPS
+        maxAllowedBaseSpeedBPS = config.noSlowMaxSpeedSneaking ?? 1.5;
     }
 
-    // If a slowing action is active and player is moving faster than the base allowed speed for that action
     if (slowingActionKey && horizontalSpeedBPS > maxAllowedBaseSpeedBPS) {
         let effectiveMaxAllowedSpeedBPS = maxAllowedBaseSpeedBPS;
-        const speedAmplifier = pData.speedAmplifier ?? -1; // -1 if no speed effect
+        const speedAmplifier = pData.speedAmplifier ?? -1;
 
-        if (speedAmplifier >= 0) { // If Speed effect is active
-            const speedEffectMultiplier = 1 + (speedAmplifier + 1) * 0.20; // Vanilla speed increase
-            const tolerance = 1 + (config.noSlowSpeedEffectTolerancePercent ?? 0.10); // 10% tolerance
+        if (speedAmplifier >= 0) {
+            const speedEffectMultiplier = 1 + (speedAmplifier + 1) * 0.20;
+            const tolerance = 1 + (config.noSlowSpeedEffectTolerancePercent ?? 0.10);
             effectiveMaxAllowedSpeedBPS = maxAllowedBaseSpeedBPS * speedEffectMultiplier * tolerance;
         } else {
-            // Apply a smaller general tolerance if no speed effect, to account for minor variations
             effectiveMaxAllowedSpeedBPS = maxAllowedBaseSpeedBPS * (1 + (config.noSlowGeneralTolerancePercent ?? 0.05));
         }
 
-
         if (horizontalSpeedBPS > effectiveMaxAllowedSpeedBPS) {
             let resolvedSlowingActionString;
-            // Fallback to manual English strings
             switch (slowingActionKey) {
                 case 'check.noSlow.action.eatingDrinking': resolvedSlowingActionString = 'Eating/Drinking'; break;
                 case 'check.noSlow.action.chargingBow': resolvedSlowingActionString = 'Charging Bow'; break;
@@ -83,7 +79,6 @@ export async function checkNoSlow(player, pData, dependencies) {
                 hasSpeedEffect: (speedAmplifier >= 0).toString(),
                 speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : '0',
             };
-            // Standardized action profile key
             await actionManager.executeCheckAction(player, 'movementNoSlow', violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;

@@ -8,8 +8,12 @@
  * @returns {string} A formatted duration string (e.g., '5m', '1h', 'Permanent').
  */
 function formatDuration(ms) {
-    if (ms === Infinity) return 'Permanent';
-    if (typeof ms !== 'number' || ms <= 0) return '0s';
+    if (ms === Infinity) {
+        return 'Permanent';
+    }
+    if (typeof ms !== 'number' || ms <= 0) {
+        return '0s';
+    }
 
     let seconds = Math.floor(ms / 1000);
     let minutes = Math.floor(seconds / 60);
@@ -21,10 +25,18 @@ function formatDuration(ms) {
     hours %= 24;
 
     const parts = [];
-    if (days > 0) parts.push(`${days}d`);
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+    if (days > 0) {
+        parts.push(`${days}d`);
+    }
+    if (hours > 0) {
+        parts.push(`${hours}h`);
+    }
+    if (minutes > 0) {
+        parts.push(`${minutes}m`);
+    }
+    if (seconds > 0 || parts.length === 0) {
+        parts.push(`${seconds}s`);
+    }
     return parts.join(' ');
 }
 
@@ -90,7 +102,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     const adminMessageTemplate = parameters.adminMessageTemplate || `§7[§cAutoMod§7] Action: {actionType} on {playerName} for {checkType} (Flags: {flagCount}/{flagThreshold}). Rule Threshold: {flagThreshold}. Duration: {duration}. Item: {itemTypeId}x{itemQuantity}. Coords: {teleportCoordinates}.`;
 
     switch (actionType) {
-        case 'warn':
+        case 'warn': {
             const messageWarn = formatAutomodMessage(messageTemplate, baseMessageContext);
             if (playerUtils.warnPlayer) {
                 playerUtils.warnPlayer(player, messageWarn);
@@ -101,7 +113,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 logDetails = `Warn action for ${player.nameTag} failed: warnPlayer utility not found.`;
             }
             break;
-        case 'kick':
+        }
+        case 'kick': {
             const kickReason = formatAutomodMessage(messageTemplate, baseMessageContext);
             try {
                 player.kick(kickReason);
@@ -113,7 +126,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 logManager.addLog({ actionType: 'error', event: 'automodKickFailure', player: player.nameTag, reason: kickReason, error: e.message, context: 'kick_action' }, dependencies);
             }
             break;
-        case 'tempBan':
+        }
+        case 'tempBan': {
             const durationStringTempBan = parameters.duration || '5m';
             let parsedDurationMsTempBan = playerUtils.parseDuration(durationStringTempBan);
             if (parsedDurationMsTempBan === null || (parsedDurationMsTempBan <= 0 && parsedDurationMsTempBan !== Infinity)) {
@@ -146,7 +160,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 logManager.addLog({ actionType: 'error', event: 'automodAddBanFailure', player: player.nameTag, action: 'tempBan', reason: banReasonForStorageTemp, duration: parsedDurationMsTempBan }, dependencies);
             }
             break;
-        case 'permBan':
+        }
+        case 'permBan': {
             const permBanContext = { ...baseMessageContext, duration: 'Permanent' };
             const kickMsgPermBan = formatAutomodMessage(messageTemplate, permBanContext);
             const permBanReasonForStorage = `AutoMod ${checkType} - ${actionType} (Permanent)`;
@@ -172,7 +187,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 logManager.addLog({ actionType: 'error', event: 'automodAddBanFailure', player: player.nameTag, action: 'permBan', reason: permBanReasonForStorage, duration: Infinity }, dependencies);
             }
             break;
-        case 'mute':
+        }
+        case 'mute': {
             const durationStringMute = parameters.duration || '10m';
             let parsedDurationMsMute = playerUtils.parseDuration(durationStringMute) || 600000; // Default to 10m if parsing fails
             const friendlyDurationMute = formatDuration(parsedDurationMsMute);
@@ -185,8 +201,11 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 durationForLog = parsedDurationMsMute;
                 baseMessageContext.duration = friendlyDurationMute;
                 const muteNotificationToPlayer = formatAutomodMessage(messageTemplate, muteContext);
-                if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, muteNotificationToPlayer);
-                else player.sendMessage(muteNotificationToPlayer);
+                if (playerUtils.warnPlayer) {
+                    playerUtils.warnPlayer(player, muteNotificationToPlayer);
+                } else {
+                    player.sendMessage(muteNotificationToPlayer);
+                }
                 logDetails = `Muted player for ${friendlyDurationMute}. Check: ${checkType}. Reason: ${muteReasonForStorage}. Notification: '${muteNotificationToPlayer}'`;
                 actionProcessed = true;
             } else {
@@ -195,14 +214,16 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 logManager.addLog({ actionType: 'error', event: 'automodAddMuteFailure', player: player.nameTag, reason: muteReasonForStorage, duration: parsedDurationMsMute }, dependencies);
             }
             break;
-        case 'freeze':
+        }
+        case 'freeze': {
             const freezeMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
             playerUtils.warnPlayer(player, freezeMessage);
             logDetails = `Player ${player.nameTag} 'frozen' by AutoMod for ${checkType}. Message: '${freezeMessage}'. (Note: Actual freeze mechanics depend on separate implementation).`;
             actionProcessed = true;
             playerUtils.debugLog(`[AutoModManager] 'freeze' action for ${player.nameTag} (check: ${checkType}). Player notified.`, player.nameTag, dependencies);
             break;
-        case 'removeIllegalItem':
+        }
+        case 'removeIllegalItem': {
             const itemTypeIdToRemove = parameters.itemToRemoveTypeId;
             if (!itemTypeIdToRemove) {
                 playerUtils.debugLog(`[AutoModManager] itemToRemoveTypeId not provided for removeIllegalItem on ${player.nameTag}.`, player.nameTag, dependencies);
@@ -232,12 +253,17 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
                 const removalMessage = formatAutomodMessage(messageTemplate, removeItemContext);
                 if (removedItemCount > 0) {
-                    if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, removalMessage);
-                    else player.sendMessage(removalMessage);
+                    if (playerUtils.warnPlayer) {
+                        playerUtils.warnPlayer(player, removalMessage);
+                    } else {
+                        player.sendMessage(removalMessage);
+                    }
                     logDetails = `Removed ${removedItemCount}x ${itemTypeIdToRemove} from ${player.nameTag} (Check: ${checkType}). Message: '${removalMessage}'`;
                 } else {
                     // If no items were found, still notify the player based on template.
-                    if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, removalMessage);
+                    if (playerUtils.warnPlayer) {
+                        playerUtils.warnPlayer(player, removalMessage);
+                    }
                     logDetails = `No items of type ${itemTypeIdToRemove} found to remove from ${player.nameTag} (Check: ${checkType}). Player notified with: '${removalMessage}'`;
                 }
                 actionProcessed = true;
@@ -246,7 +272,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 logDetails = `Error removing item ${itemTypeIdToRemove} from ${player.nameTag}: ${e.message}`;
             }
             break;
-        case 'teleportSafe':
+        }
+        case 'teleportSafe': {
             const targetCoordinatesParam = parameters.coordinates;
             if (!targetCoordinatesParam || typeof targetCoordinatesParam.y !== 'number') {
                 playerUtils.debugLog(`[AutoModManager] Invalid or missing coordinates for teleportSafe on ${player.nameTag}. Y-coordinate is mandatory.`, player.nameTag, dependencies);
@@ -272,22 +299,29 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
                 const teleportMessage = formatAutomodMessage(messageTemplate, teleportContext);
                 player.teleport(locationToTeleport, { dimension: player.dimension });
-                if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, teleportMessage);
-                else player.sendMessage(teleportMessage);
+                if (playerUtils.warnPlayer) {
+                    playerUtils.warnPlayer(player, teleportMessage);
+                } else {
+                    player.sendMessage(teleportMessage);
+                }
                 logDetails = `Teleported player ${player.nameTag} to ${finalTeleportDesc}. Check: ${checkType}. Message: '${teleportMessage}'`;
                 actionProcessed = true;
             } catch (e) {
                 playerUtils.debugLog(`[AutoModManager] Error teleporting player ${player.nameTag} for teleportSafe: ${e.stack || e}`, player.nameTag, dependencies);
                 // Notify player about the failure to teleport if possible
-                if (playerUtils.warnPlayer) playerUtils.warnPlayer(player, `Failed to teleport: ${e.message}`);
+                if (playerUtils.warnPlayer) {
+                    playerUtils.warnPlayer(player, `Failed to teleport: ${e.message}`);
+                }
                 logDetails = `Failed to teleport player ${player.nameTag} to ${teleportTargetDesc}. Check: ${checkType}. Error: ${e.message}`;
             }
             break;
-        case 'flagOnly':
+        }
+        case 'flagOnly': {
             const flagOnlyMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
             logDetails = `flagOnly rule processed for ${player.nameTag}, check: ${checkType}. Log Message: '${flagOnlyMessage}'`;
             actionProcessed = true;
             break;
+        }
         default:
             playerUtils.debugLog(`[AutoModManager] Unknown actionType '${actionType}' for ${player.nameTag} in _executeAutomodAction.`, player.nameTag, dependencies);
             logDetails = `Unknown actionType '${actionType}' for ${player.nameTag}.`;
@@ -304,8 +338,8 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             duration: durationForLog,
             reason: finalReasonForLog,
             details: logDetails,
-            checkType: checkType, // Log the standardized checkType
-            actionParams: parameters, // Log the rule parameters for audit
+            checkType: checkType,
+            actionParams: parameters,
         }, dependencies);
 
         // Update context for admin notification after action details are finalized

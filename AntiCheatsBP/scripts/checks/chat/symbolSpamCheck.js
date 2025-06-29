@@ -24,7 +24,6 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
 
-    // Standardized action profile key
     const actionProfileKey = config.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected';
 
     if (!config.enableSymbolSpamCheck) {
@@ -35,23 +34,22 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         return;
     }
 
-    let totalChars = 0; // Count of non-space characters
+    let totalChars = 0;
     let symbolChars = 0;
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
         if (char === ' ') {
-            continue; // Ignore spaces for total character count relevant to symbol ratio
+            continue;
         }
         totalChars++;
 
-        // A symbol is any character that is NOT a letter (a-z, A-Z) or a digit (0-9)
         if (!/[a-zA-Z0-9]/.test(char)) {
             symbolChars++;
         }
     }
 
-    if (totalChars === 0) { // Message was all spaces
+    if (totalChars === 0) {
         return;
     }
 

@@ -21,7 +21,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<boolean>} True if spam was detected and an action (like entity removal) might be needed, false otherwise.
  */
 export async function checkEntitySpam(potentialPlayer, entityType, pData, dependencies) {
-    const { config, playerUtils, actionManager } = dependencies; // Removed unused playerDataManager, logManager
+    const { config, playerUtils, actionManager } = dependencies;
 
     if (!config.enableEntitySpamAntiGrief) {
         return false;
@@ -61,7 +61,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     pData.recentEntitySpamTimestamps[entityType].push(currentTime);
     pData.isDirtyForSave = true;
 
-    const windowMs = config.entitySpamTimeWindowMs || 2000; // Default 2 seconds
+    const windowMs = config.entitySpamTimeWindowMs || 2000;
     const originalCount = pData.recentEntitySpamTimestamps[entityType].length;
 
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType].filter(
@@ -69,27 +69,26 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     );
 
     if (pData.recentEntitySpamTimestamps[entityType].length !== originalCount) {
-        pData.isDirtyForSave = true; // Mark as dirty if array was modified
+        pData.isDirtyForSave = true;
     }
 
-    const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5; // Default max 5 spawns
-    const actionProfileKey = 'worldAntigriefEntityspam'; // Standardized key
+    const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5;
+    const actionProfileKey = 'worldAntigriefEntityspam';
 
     if (pData.recentEntitySpamTimestamps[entityType].length > maxSpawns) {
         const violationDetails = {
-            playerName: potentialPlayer.nameTag, // For message template convenience
+            playerName: potentialPlayer.nameTag,
             entityType: entityType,
             count: pData.recentEntitySpamTimestamps[entityType].length.toString(),
             maxSpawns: maxSpawns.toString(),
             windowMs: windowMs.toString(),
-            actionTaken: config.entitySpamAction ?? 'flag_only', // Informative, actual action decided by profile
+            actionTaken: config.entitySpamAction ?? 'flag_only',
         };
 
         await actionManager.executeCheckAction(potentialPlayer, actionProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(`[EntitySpamCheck] Flagged ${potentialPlayer.nameTag} for spawning ${entityType}. Count: ${pData.recentEntitySpamTimestamps[entityType].length}/${maxSpawns}`, watchedPrefix, dependencies);
 
-        // Reset timestamps for this entity type after flagging to prevent immediate re-flagging
         pData.recentEntitySpamTimestamps[entityType] = [];
         pData.isDirtyForSave = true;
         return true;
