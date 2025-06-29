@@ -1,7 +1,7 @@
 /**
  * @file Handles all chat message processing, including checks and formatting.
  */
-import * as mc from '@minecraft/server'; // Standard import
+import * as mc from '@minecraft/server';
 
 /**
  * Processes an incoming chat message, performing various checks and formatting.

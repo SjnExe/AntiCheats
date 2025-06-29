@@ -44,13 +44,8 @@ export function initializeCommands(dependencies) {
                         if (commandDefinitionMap.has(aliasLower) || commandExecutionMap.has(aliasLower)) {
                              playerUtils.debugLog(`[CommandManager] Duplicate alias detected (conflicts with existing command/alias): ${aliasLower}. Alias for '${cmdName}' skipped.`, 'System', dependencies);
                         } else {
-                            // For aliases, we might point them to the main command's definition and execution
-                            // Or handle them purely at the config.commandAliases level.
-                            // For now, primary loading is direct names. Aliases are resolved in handleChatCommand.
-                            // If we wanted aliases to also be in the map, we'd add them here.
-                            // Example: commandDefinitionMap.set(aliasLower, cmdModule.definition);
-                            //          commandExecutionMap.set(aliasLower, cmdModule.execute);
-                            // However, current alias resolution in handleChatCommand uses config.commandAliases.
+                            // Aliases are primarily resolved in handleChatCommand via config.commandAliases.
+                            // If direct map entries for aliases were desired, they would be added here.
                         }
                     });
                 }
@@ -72,18 +67,7 @@ export function initializeCommands(dependencies) {
 export function registerCommandInternal(commandModule, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils.debugLog('[CommandManager] registerCommandInternal is a stub and not fully implemented for dynamic runtime changes.', 'System', dependencies);
-    // Basic implementation idea:
-    // if (commandModule && commandModule.definition && typeof commandModule.definition.name === 'string' && typeof commandModule.execute === 'function') {
-    //     const cmdName = commandModule.definition.name.toLowerCase();
-    //     if (commandDefinitionMap.has(cmdName)) {
-    //         playerUtils.debugLog(`[CommandManager] Overwriting existing command: ${cmdName}`, 'System', dependencies);
-    //     }
-    //     commandDefinitionMap.set(cmdName, commandModule.definition);
-    //     commandExecutionMap.set(cmdName, commandModule.execute);
-    //     playerUtils.debugLog(`[CommandManager] Dynamically registered command: ${cmdName}`, 'System', dependencies);
-    // } else {
-    //     playerUtils.debugLog('[CommandManager] Attempted to register invalid command module.', 'System', dependencies);
-    // }
+    // Future implementation would involve adding to commandDefinitionMap and commandExecutionMap.
 }
 
 /**
@@ -94,16 +78,7 @@ export function registerCommandInternal(commandModule, dependencies) {
 export function unregisterCommandInternal(commandName, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils.debugLog('[CommandManager] unregisterCommandInternal is a stub and not fully implemented for dynamic runtime changes.', 'System', dependencies);
-    // Basic implementation idea:
-    // const cmdNameLower = commandName.toLowerCase();
-    // if (commandDefinitionMap.has(cmdNameLower)) {
-    //     commandDefinitionMap.delete(cmdNameLower);
-    //     commandExecutionMap.delete(cmdNameLower);
-    //     playerUtils.debugLog(`[CommandManager] Dynamically unregistered command: ${cmdNameLower}`, 'System', dependencies);
-    //     // Need to also handle aliases that might point to this command if they are stored in the maps.
-    // } else {
-    //     playerUtils.debugLog(`[CommandManager] Command ${cmdNameLower} not found for unregistration.`, 'System', dependencies);
-    // }
+    // Future implementation would involve removing from commandDefinitionMap and commandExecutionMap, and handling aliases.
 }
 
 
