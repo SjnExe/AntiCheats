@@ -205,6 +205,49 @@ function initializeSystem() {
     const startupDependencies = getStandardDependencies();
     playerUtils.debugLog('Anti-Cheat Script Loaded. Initializing modules...', 'System', startupDependencies);
 
+    // --- Pre-Subscription API Readiness Checks ---
+    let allEventsReady = true;
+    if (!mc.world) {
+        console.error('[AntiCheat] CRITICAL: mc.world is undefined at initialization!');
+        allEventsReady = false;
+    } else {
+        if (!mc.world.beforeEvents) {
+            console.error('[AntiCheat] CRITICAL: mc.world.beforeEvents is undefined at initialization!');
+            allEventsReady = false;
+        } else {
+            const requiredBeforeEvents = ['chatSend', 'playerLeave', 'entityHurt', 'playerBreakBlock', 'itemUse', 'itemUseOn', 'playerPlaceBlock'];
+            for (const eventName of requiredBeforeEvents) {
+                if (!mc.world.beforeEvents[eventName]) {
+                    console.error(`[AntiCheat] CRITICAL: mc.world.beforeEvents.${eventName} is undefined at initialization!`);
+                    allEventsReady = false;
+                }
+            }
+        }
+
+        if (!mc.world.afterEvents) {
+            console.error('[AntiCheat] CRITICAL: mc.world.afterEvents is undefined at initialization!');
+            allEventsReady = false;
+        } else {
+            const requiredAfterEvents = ['playerSpawn', 'entityHurt', 'playerBreakBlock', 'playerPlaceBlock', 'playerInventoryItemChange', 'playerDimensionChange', 'entityDie', 'entitySpawn', 'pistonActivate'];
+            // Note: entityHurt is in both before and after, which is fine.
+            for (const eventName of requiredAfterEvents) {
+                if (!mc.world.afterEvents[eventName]) {
+                    console.error(`[AntiCheat] CRITICAL: mc.world.afterEvents.${eventName} is undefined at initialization!`);
+                    allEventsReady = false;
+                }
+            }
+        }
+    }
+
+    if (!allEventsReady) {
+        console.error('[AntiCheat] CRITICAL: Not all required Minecraft event objects are available. Some features may not work. Check previous errors for details.');
+        // Depending on severity, might want to stop further initialization or notify admins.
+        // For now, we'll let it try to subscribe, and the errors will re-appear if undefined.
+    } else {
+        playerUtils.debugLog('[AntiCheat] All checked Minecraft event objects appear to be available.', 'System', startupDependencies);
+    }
+    // --- End Pre-Subscription API Readiness Checks ---
+
     // Subscribe to events first
     mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         const dependencies = getStandardDependencies();
@@ -334,4 +377,4 @@ function initializeSystem() {
 
 mc.system.runTimeout(() => {
     initializeSystem();
-}, 1);
+}, 20); // Increased delay from 1 tick to 20 ticks (1 second)
