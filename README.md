@@ -14,6 +14,7 @@
 
 ---
 
+> [!IMPORTANT]
 > **⚠️ CURRENT PROJECT STATUS: EXPERIMENTAL - USE WITH CAUTION ⚠️**
 >
 > This AntiCheats Addon is currently **under active development** and should be considered **experimental**.
