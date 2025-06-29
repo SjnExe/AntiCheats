@@ -215,42 +215,70 @@ const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the fir
  * @returns {boolean} True if all essential event objects are defined, false otherwise.
  */
 function checkEventAPIsReady(dependencies) {
-    let allReady = true;
+    let overallAllReady = true; // Tracks if all APIs are ready in this specific call
+    const logger = (dependencies?.playerUtils?.debugLog && typeof dependencies.playerUtils.debugLog === 'function')
+                   ? (msg) => dependencies.playerUtils.debugLog(msg, 'System', dependencies)
+                   : console.log; // Fallback to console.log
+    const errorLogger = console.error; // Always use console.error for critical issues
+
+    logger('[API_CHECK] Starting API readiness check...');
+
     if (!mc.world) {
-        console.error('[AntiCheat] CRITICAL: mc.world is undefined during API readiness check!');
-        allReady = false;
+        errorLogger('[API_CHECK] mc.world: UNDEFINED - CRITICAL');
+        overallAllReady = false;
+        // If mc.world is undefined, further checks on mc.world.beforeEvents/afterEvents will fail.
+        // Return early to avoid cascading errors in the check itself.
+        return overallAllReady;
     } else {
-        if (!mc.world.beforeEvents) {
-            console.error('[AntiCheat] CRITICAL: mc.world.beforeEvents is undefined during API readiness check!');
-            allReady = false;
-        } else {
-            const requiredBeforeEvents = ['chatSend', 'playerLeave', 'entityHurt', 'playerBreakBlock', 'itemUse', 'itemUseOn', 'playerPlaceBlock'];
-            for (const eventName of requiredBeforeEvents) {
-                if (!mc.world.beforeEvents[eventName]) {
-                    console.error(`[AntiCheat] CRITICAL: mc.world.beforeEvents.${eventName} is undefined during API readiness check!`);
-                    allReady = false;
-                }
-            }
-        }
+        logger('[API_CHECK] mc.world: DEFINED');
+    }
 
-        if (!mc.world.afterEvents) {
-            console.error('[AntiCheat] CRITICAL: mc.world.afterEvents is undefined during API readiness check!');
-            allReady = false;
-        } else {
-            const requiredAfterEvents = ['playerSpawn', 'entityHurt', 'playerBreakBlock', 'playerPlaceBlock', 'playerInventoryItemChange', 'playerDimensionChange', 'entityDie', 'entitySpawn', 'pistonActivate'];
-            for (const eventName of requiredAfterEvents) {
-                if (!mc.world.afterEvents[eventName]) {
-                    console.error(`[AntiCheat] CRITICAL: mc.world.afterEvents.${eventName} is undefined during API readiness check!`);
-                    allReady = false;
-                }
+    const requiredBeforeEvents = ['chatSend', 'playerLeave', 'entityHurt', 'playerBreakBlock', 'itemUse', 'itemUseOn', 'playerPlaceBlock'];
+    if (!mc.world.beforeEvents) {
+        errorLogger('[API_CHECK] mc.world.beforeEvents: UNDEFINED - CRITICAL');
+        overallAllReady = false;
+        // Log each expected beforeEvent as undefined if beforeEvents itself is undefined
+        for (const eventName of requiredBeforeEvents) {
+            errorLogger(`[API_CHECK] mc.world.beforeEvents.${eventName}: UNDEFINED (parent 'beforeEvents' is undefined)`);
+        }
+    } else {
+        logger('[API_CHECK] mc.world.beforeEvents: DEFINED');
+        for (const eventName of requiredBeforeEvents) {
+            if (mc.world.beforeEvents[eventName]) {
+                logger(`[API_CHECK] mc.world.beforeEvents.${eventName}: DEFINED (type: ${typeof mc.world.beforeEvents[eventName]})`);
+            } else {
+                errorLogger(`[API_CHECK] mc.world.beforeEvents.${eventName}: UNDEFINED - CRITICAL`);
+                overallAllReady = false;
             }
         }
     }
 
-    if (allReady && dependencies && dependencies.playerUtils) {
-        dependencies.playerUtils.debugLog('[AntiCheat] All checked Minecraft event objects appear to be available.', 'System', dependencies);
+    const requiredAfterEvents = ['playerSpawn', 'entityHurt', 'playerBreakBlock', 'playerPlaceBlock', 'playerInventoryItemChange', 'playerDimensionChange', 'entityDie', 'entitySpawn', 'pistonActivate'];
+    if (!mc.world.afterEvents) {
+        errorLogger('[API_CHECK] mc.world.afterEvents: UNDEFINED - CRITICAL');
+        overallAllReady = false;
+        // Log each expected afterEvent as undefined if afterEvents itself is undefined
+        for (const eventName of requiredAfterEvents) {
+            errorLogger(`[API_CHECK] mc.world.afterEvents.${eventName}: UNDEFINED (parent 'afterEvents' is undefined)`);
+        }
+    } else {
+        logger('[API_CHECK] mc.world.afterEvents: DEFINED');
+        for (const eventName of requiredAfterEvents) {
+            if (mc.world.afterEvents[eventName]) {
+                logger(`[API_CHECK] mc.world.afterEvents.${eventName}: DEFINED (type: ${typeof mc.world.afterEvents[eventName]})`);
+            } else {
+                errorLogger(`[API_CHECK] mc.world.afterEvents.${eventName}: UNDEFINED - CRITICAL`);
+                overallAllReady = false;
+            }
+        }
     }
-    return allReady;
+
+    if (overallAllReady) {
+        logger('[API_CHECK] All checked Minecraft event APIs appear to be available.');
+    } else {
+        errorLogger('[API_CHECK] Not all required Minecraft event APIs are available. See details above.');
+    }
+    return overallAllReady;
 }
 
 /**
