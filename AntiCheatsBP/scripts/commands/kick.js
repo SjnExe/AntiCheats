@@ -57,11 +57,6 @@ export async function execute(player, args, dependencies) {
         player.sendMessage('§cOnly the server owner can kick another owner.');
         return;
     }
-    // Example of more specific owner vs owner check (currently commented as general admin check might cover it)
-    // if (targetPermissionLevel === depPermLevels.owner && issuerPermissionLevel === depPermLevels.owner && player.id !== foundPlayer.id) {
-    //     player.sendMessage('§cServer owners cannot kick each other directly.');
-    //     return;
-    // }
 
     try {
         const kickMessageToTarget = `§cYou have been kicked by ${player.nameTag}. Reason: ${reason}`;

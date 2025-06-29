@@ -11,7 +11,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: 'testnotify',
     syntax: '!testnotify',
-    description: 'Sends a test admin notification to verify system functionality.', // Hardcoded string
+    description: 'Sends a test admin notification to verify system functionality.',
     permissionLevel: permissionLevels.owner,
     enabled: true,
 };

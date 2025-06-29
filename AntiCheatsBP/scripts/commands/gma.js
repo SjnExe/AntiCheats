@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config } = dependencies;
+    const { playerUtils, logManager } = dependencies;
     const targetPlayerName = args[0];
     const gamemodeName = 'Adventure';
     const gamemodeMc = mc.GameMode.adventure;

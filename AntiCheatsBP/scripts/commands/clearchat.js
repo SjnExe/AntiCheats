@@ -24,7 +24,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager, config } = dependencies;
+    const { playerUtils, logManager } = dependencies;
 
     const linesToClear = 150;
     for (let i = 0; i < linesToClear; i++) {

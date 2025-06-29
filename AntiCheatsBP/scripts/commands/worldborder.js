@@ -80,18 +80,6 @@ export async function execute(player, args, dependencies) {
 }
 
 function normalizeDimensionId(player, inputDimId) {
-    let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(minutes / 60);
-    seconds %= 60;
-    minutes %= 60;
-    const parts = [];
-    if (hours > 0) parts.push(`${hours}h`);
-    if (minutes > 0) parts.push(`${minutes}m`);
-    if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-    return parts.join(' ');
-}
-
-function normalizeDimensionId(player, inputDimId) {
     const currentPlayerDimensionId = player.dimension.id;
     let normalized = inputDimId ? inputDimId.toLowerCase() : currentPlayerDimensionId;
     if (normalized === 'overworld') return 'minecraft:overworld';

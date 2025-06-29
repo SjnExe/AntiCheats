@@ -9,7 +9,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: 'mute',
     syntax: '!mute <playername> [duration] [reason]',
-    description: 'Mutes a player, preventing them from sending chat messages.', // Hardcoded string
+    description: 'Mutes a player, preventing them from sending chat messages.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
 };

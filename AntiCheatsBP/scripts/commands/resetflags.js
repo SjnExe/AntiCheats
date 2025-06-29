@@ -11,7 +11,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: 'resetflags',
     syntax: '!resetflags <playerName>',
-    description: "Clears a player's AntiCheat flags and violation data.", // Hardcoded string
+    description: "Clears a player's AntiCheat flags and violation data.",
     permissionLevel: permissionLevels.admin,
     aliases: ['clearwarnings'], // Added alias
     enabled: true,

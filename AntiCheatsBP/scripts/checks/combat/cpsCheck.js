@@ -5,7 +5,6 @@
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
- * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
 /**

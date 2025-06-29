@@ -11,7 +11,7 @@ import { permissionLevels } from '../core/rankManager.js';
 export const definition = {
     name: 'panel',
     syntax: '!panel',
-    description: 'Opens the main AntiCheat Admin UI panel.', // Hardcoded string
+    description: 'Opens the main AntiCheat Admin UI panel.',
     permissionLevel: permissionLevels.normal,
     // aliases: ['ui'], // Defined in config.js commandAliases
     enabled: true,
@@ -24,7 +24,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
-    const { uiManager, playerDataManager, config, logManager, playerUtils } = dependencies;
+    const { uiManager, playerDataManager, config, logManager } = dependencies;
 
     try {
         await uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies);
