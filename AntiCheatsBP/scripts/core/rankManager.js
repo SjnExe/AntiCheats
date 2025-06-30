@@ -131,8 +131,25 @@ function getPlayerRankAndPermissions(player, dependencies) {
 
     const { config, playerUtils } = dependencies;
 
+    // --- BEGIN [RankMan][Detail] LOGS ---
+    console.warn(`[RankMan][Detail] After destructuring in getPlayerRankAndPermissions. typeof config: ${typeof config}`);
+    console.warn(`[RankMan][Detail] After destructuring. typeof playerUtils: ${typeof playerUtils}`);
+    if (config) {
+        console.warn('[RankMan][Detail] config is truthy after destructuring.');
+    } else {
+        console.warn('[RankMan][Detail] config is falsy (undefined, null, etc.) after destructuring.');
+    }
+    if (playerUtils) {
+        console.warn('[RankMan][Detail] playerUtils is truthy after destructuring.');
+    } else {
+        console.warn('[RankMan][Detail] playerUtils is falsy (undefined, null, etc.) after destructuring.');
+    }
+    // --- END [RankMan][Detail] LOGS ---
+
     if (!(player instanceof mc.Player) || !player.isValid()) {
         // Use playerUtils safely after dependencies check
+        // Note: config and playerUtils here are from the destructuring above.
+        // Their validity is checked by the [Detail] logs and the subsequent [CONSOLE_BLOCK].
         if (playerUtils && typeof playerUtils.debugLog === 'function' && config && typeof config.enableDebugLogging === 'boolean' && config.enableDebugLogging) {
             playerUtils.debugLog('[RankManager] Invalid player object passed to getPlayerRankAndPermissions.', player?.nameTag || 'UnknownSource', dependencies);
         }
@@ -278,7 +295,53 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function updatePlayerNametag(player, dependencies) {
-    const { config, playerUtils } = dependencies;
+    console.warn(`[updatePlayerNametag][BEGIN] Function entered for player: ${player?.nameTag || 'UnknownPlayer'}`);
+
+    // --- BEGIN DEPENDENCIES DIAGNOSTIC for updatePlayerNametag ---
+    console.warn(`[updatePlayerNametag][Diag] typeof dependencies: ${typeof dependencies}`);
+    try {
+        if (dependencies === undefined) {
+            console.warn('[updatePlayerNametag][Diag] dependencies is undefined.');
+        } else if (dependencies === null) {
+            console.warn('[updatePlayerNametag][Diag] dependencies is null.');
+        } else if (typeof dependencies === 'object') {
+            let depsSample = {
+                configExists: Object.prototype.hasOwnProperty.call(dependencies, 'config'),
+                playerUtilsExists: Object.prototype.hasOwnProperty.call(dependencies, 'playerUtils'),
+                configType: typeof dependencies.config,
+                playerUtilsType: typeof dependencies.playerUtils,
+            };
+            console.warn('[updatePlayerNametag][Diag] dependencies content sample:', JSON.stringify(depsSample));
+        } else {
+            console.warn('[updatePlayerNametag][Diag] dependencies is not an object, undefined, or null. Actual type:', typeof dependencies);
+        }
+    } catch (e) {
+        console.warn('[updatePlayerNametag][Diag] Error trying to log/stringify dependencies:', e.message);
+    }
+    // --- END DEPENDENCIES DIAGNOSTIC for updatePlayerNametag ---
+
+    if (!dependencies || typeof dependencies !== 'object') {
+        console.error(`[RankManager][updatePlayerNametag] Critical: Main dependencies object is invalid (type: ${typeof dependencies}) for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
+        try { if (player && player.isValid()) player.nameTag = player.name; } catch(e) { console.error(`[RankManager][updatePlayerNametag] Error setting fallback nametag (early exit): ${e.message}`); }
+        return;
+    }
+
+    let config, playerUtils;
+    try {
+        console.warn('[updatePlayerNametag][PreDestructure] Attempting to destructure config and playerUtils from dependencies.');
+        ({ config, playerUtils } = dependencies);
+        console.warn(`[updatePlayerNametag][PostDestructure] typeof config: ${typeof config}, typeof playerUtils: ${typeof playerUtils}`);
+    } catch (e) {
+        console.error(`[updatePlayerNametag][DestructureError] Error destructuring 'config' or 'playerUtils' from dependencies: ${e.message}${e.stack ? '\\nStack:'+e.stack : ''}`);
+        try { if (player && player.isValid()) player.nameTag = player.name; } catch(eSafe) { console.error(`[RankManager][updatePlayerNametag] Error setting fallback nametag (destructure fail): ${eSafe.message}`);}
+        return;
+    }
+
+    if (!config || typeof config !== 'object' || !playerUtils || typeof playerUtils !== 'object') {
+        console.error(`[RankManager][updatePlayerNametag] Critical: Destructured 'config' (type: ${typeof config}) or 'playerUtils' (type: ${typeof playerUtils}) is invalid for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
+        try { if (player && player.isValid()) player.nameTag = player.name; } catch(eSafe) { console.error(`[RankManager][updatePlayerNametag] Error setting fallback nametag (post-destructure var check fail): ${eSafe.message}`);}
+        return;
+    }
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
         console.error('[RankManager] Invalid player object passed to updatePlayerNametag.');
