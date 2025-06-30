@@ -173,14 +173,11 @@ function getPlayerRankAndPermissions(player, dependencies) {
 
         // config and playerUtils are from: const { config, playerUtils } = dependencies; (after initial guards for dependencies)
 
-        let typeOfConfigString = 'unknown';
-        try {
-            typeOfConfigString = typeof config;
-        } catch (e) {
-            typeOfConfigString = `Error getting typeof config: ${e.message}`;
-        }
-        console.warn(`[RankMan][CONSOLE_BLOCK] typeof config (from function scope): ${typeOfConfigString}`);
+        console.warn('[RankMan][CONSOLE_BLOCK_PRE_CONFIG_TEST] Checking config reference next.');
+        console.warn('[RankMan][CONSOLE_BLOCK_CONFIG_TYPEOF_TEST] typeof config is:', typeof config);
 
+        // Temporarily comment out the rest of the CONSOLE_BLOCK to isolate the typeof config logging
+        /*
         if (config && typeof config === 'object' && config !== null) {
             // Attempt to stringify only a few key expected properties of config
             let configSample = "Error sampling config or not an object."; // Default if stringify fails or config is bad
@@ -223,6 +220,7 @@ function getPlayerRankAndPermissions(player, dependencies) {
         } else {
             console.warn('[RankMan][CONSOLE_BLOCK] playerUtils is not a valid object or is null (from function scope).');
         }
+        */
     } catch (e) {
         console.error(`[RankMan][CONSOLE_ERROR] Error within CONSOLE_BLOCK diagnostic logging: ${e.message}${e.stack ? ('\\nStack: ' + e.stack) : ''}`);
     }
@@ -370,35 +368,21 @@ export function updatePlayerNametag(player, dependencies) {
             return;
         }
 
-        const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies); // This might error if dependencies is bad, but previous logs showed it was fine up to here.
+        const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-        let baseName;
-        try {
-            console.warn(`[updatePlayerNametag][PlayerNameDiag] typeof player: ${typeof player}`);
-            if (player && typeof player === 'object') {
-                console.warn(`[updatePlayerNametag][PlayerNameDiag] typeof player.name: ${typeof player.name}`);
-                try {
-                    const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(player), 'name');
-                    console.warn(`[updatePlayerNametag][PlayerNameDiag] player.name descriptor: ${JSON.stringify(descriptor)}`);
-                    if (descriptor && typeof descriptor.get === 'function') {
-                        console.warn('[updatePlayerNametag][PlayerNameDiag] player.name IS a getter.');
-                    } else if (descriptor && typeof descriptor.value !== 'undefined') {
-                         console.warn('[updatePlayerNametag][PlayerNameDiag] player.name is a data property.');
-                    } else {
-                         console.warn('[updatePlayerNametag][PlayerNameDiag] player.name descriptor is unusual or not found on prototype.');
-                    }
-                } catch (descError) {
-                    console.warn(`[updatePlayerNametag][PlayerNameDiag] Error getting player.name descriptor: ${descError.message}`);
-                }
-            }
-            baseName = player.name; // Suspected error line
-            console.warn(`[updatePlayerNametag][PlayerNameCheck] player.name accessed successfully. Value: "${baseName}"`);
-        } catch (e) {
-            console.error(`[updatePlayerNametag][PlayerNameError] Error accessing player.name: ${e.message}${e.stack ? '\\nStack:' + e.stack : ''}`);
-            baseName = player.nameTag; // Fallback to nameTag
-            console.warn(`[updatePlayerNametag][PlayerNameFallback] Using player.nameTag as baseName: "${baseName}"`);
+        // Use player.nameTag directly as player.name was causing issues on spawn.
+        // Ensure it's a string and provide a fallback if nameTag is also problematic.
+        let baseName = '';
+        if (player && typeof player.nameTag === 'string') {
+            baseName = player.nameTag;
+        } else if (player && typeof player.name === 'string') { // Fallback to player.name if nameTag isn't a string (less likely)
+            baseName = player.name;
+            console.warn(`[updatePlayerNametag] player.nameTag was not a string (type: ${typeof player.nameTag}), falling back to player.name for baseName.`);
+        } else {
+            console.warn(`[updatePlayerNametag] Both player.nameTag and player.name are not strings or player object is invalid. Using empty baseName.`);
         }
+        console.warn(`[updatePlayerNametag] Using baseName: "${baseName}" (from nameTag or fallback)`);
 
         try {
             console.warn(`[updatePlayerNametag][NameTagSet] Attempting to set nameTag with nametagToApply: "${nametagToApply}", baseName: "${baseName}"`);
