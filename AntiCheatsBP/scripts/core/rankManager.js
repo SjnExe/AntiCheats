@@ -173,7 +173,14 @@ function getPlayerRankAndPermissions(player, dependencies) {
 
         // config and playerUtils are from: const { config, playerUtils } = dependencies; (after initial guards for dependencies)
 
-        console.warn(`[RankMan][CONSOLE_BLOCK] typeof config (from function scope): ${typeof config}`);
+        let typeOfConfigString = 'unknown';
+        try {
+            typeOfConfigString = typeof config;
+        } catch (e) {
+            typeOfConfigString = `Error getting typeof config: ${e.message}`;
+        }
+        console.warn(`[RankMan][CONSOLE_BLOCK] typeof config (from function scope): ${typeOfConfigString}`);
+
         if (config && typeof config === 'object' && config !== null) {
             // Attempt to stringify only a few key expected properties of config
             let configSample = "Error sampling config or not an object."; // Default if stringify fails or config is bad
@@ -183,22 +190,29 @@ function getPlayerRankAndPermissions(player, dependencies) {
                     ownerPlayerNameType: typeof config.ownerPlayerName,
                     adminTagExists: Object.prototype.hasOwnProperty.call(config, 'adminTag'),
                     adminTagType: typeof config.adminTag,
-                    prefixExists: Object.prototype.hasOwnProperty.call(config, 'prefix'), // Assuming 'prefix' might exist
+                    prefixExists: Object.prototype.hasOwnProperty.call(config, 'prefix'),
                     prefixType: typeof config.prefix,
                     enableDebugLoggingExists: Object.prototype.hasOwnProperty.call(config, 'enableDebugLogging'),
                     enableDebugLoggingType: typeof config.enableDebugLogging,
                 }, null, 2);
             } catch(stringifyError){
-                // If stringify itself errors (e.g. circular reference within these few properties, though unlikely)
                 configSample = `JSON.stringify error for config sample: ${stringifyError.message}`;
             }
             console.warn(`[RankMan][CONSOLE_BLOCK] config properties sample: ${configSample}`);
 
-            // Log individual properties carefully
-            console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
-            console.warn(`[RankMan][CONSOLE_BLOCK] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
-            console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.adminTag: ${typeof config.adminTag}`);
-            console.warn(`[RankMan][CONSOLE_BLOCK] config.adminTag value: "${String(config.adminTag)}"`);
+            // Log individual properties carefully, each in its own try-catch
+            try {
+                console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
+                console.warn(`[RankMan][CONSOLE_BLOCK] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
+            } catch (e) {
+                console.warn(`[RankMan][CONSOLE_BLOCK] Error accessing/logging ownerPlayerName: ${e.message}`);
+            }
+            try {
+                console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.adminTag: ${typeof config.adminTag}`);
+                console.warn(`[RankMan][CONSOLE_BLOCK] config.adminTag value: "${String(config.adminTag)}"`);
+            } catch (e) {
+                console.warn(`[RankMan][CONSOLE_BLOCK] Error accessing/logging adminTag: ${e.message}`);
+            }
         } else {
             console.warn('[RankMan][CONSOLE_BLOCK] config is not a valid object or is null (from function scope).');
         }
@@ -356,11 +370,50 @@ export function updatePlayerNametag(player, dependencies) {
             return;
         }
 
-        const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
+        const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies); // This might error if dependencies is bad, but previous logs showed it was fine up to here.
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-        const baseName = player.name;
-        player.nameTag = nametagToApply + baseName;
+        let baseName;
+        try {
+            console.warn(`[updatePlayerNametag][PlayerNameDiag] typeof player: ${typeof player}`);
+            if (player && typeof player === 'object') {
+                console.warn(`[updatePlayerNametag][PlayerNameDiag] typeof player.name: ${typeof player.name}`);
+                try {
+                    const descriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(player), 'name');
+                    console.warn(`[updatePlayerNametag][PlayerNameDiag] player.name descriptor: ${JSON.stringify(descriptor)}`);
+                    if (descriptor && typeof descriptor.get === 'function') {
+                        console.warn('[updatePlayerNametag][PlayerNameDiag] player.name IS a getter.');
+                    } else if (descriptor && typeof descriptor.value !== 'undefined') {
+                         console.warn('[updatePlayerNametag][PlayerNameDiag] player.name is a data property.');
+                    } else {
+                         console.warn('[updatePlayerNametag][PlayerNameDiag] player.name descriptor is unusual or not found on prototype.');
+                    }
+                } catch (descError) {
+                    console.warn(`[updatePlayerNametag][PlayerNameDiag] Error getting player.name descriptor: ${descError.message}`);
+                }
+            }
+            baseName = player.name; // Suspected error line
+            console.warn(`[updatePlayerNametag][PlayerNameCheck] player.name accessed successfully. Value: "${baseName}"`);
+        } catch (e) {
+            console.error(`[updatePlayerNametag][PlayerNameError] Error accessing player.name: ${e.message}${e.stack ? '\\nStack:' + e.stack : ''}`);
+            baseName = player.nameTag; // Fallback to nameTag
+            console.warn(`[updatePlayerNametag][PlayerNameFallback] Using player.nameTag as baseName: "${baseName}"`);
+        }
+
+        try {
+            console.warn(`[updatePlayerNametag][NameTagSet] Attempting to set nameTag with nametagToApply: "${nametagToApply}", baseName: "${baseName}"`);
+            player.nameTag = nametagToApply + baseName;
+            console.warn(`[updatePlayerNametag][NameTagSet] player.nameTag set successfully to: "${player.nameTag}"`);
+        } catch (e) {
+            console.error(`[updatePlayerNametag][NameTagSetError] Error setting player.nameTag: ${e.message}${e.stack ? '\\nStack:' + e.stack : ''}`);
+            // Attempt a simpler nametag set if the combined one fails (e.g. if baseName was problematic)
+            try {
+                player.nameTag = player.nameTag || ""; // try to set it to itself or empty to see if assignment works at all
+            } catch (eNested) {
+                 console.error(`[updatePlayerNametag][NameTagSetErrorNested] Error setting player.nameTag even to itself: ${eNested.message}`);
+            }
+        }
+
 
         if (config?.enableDebugLogging && playerUtils?.debugLog) {
             playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.name, dependencies);
