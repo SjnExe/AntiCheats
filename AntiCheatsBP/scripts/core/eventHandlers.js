@@ -95,8 +95,41 @@ export async function handlePlayerLeave(eventData, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies
  */
 export async function handlePlayerSpawn(eventData, dependencies) {
+    // --- BEGIN DEPENDENCIES DIAGNOSTIC for handlePlayerSpawn ---
+    console.warn(`[handlePlayerSpawn][Diag] Called for player: ${eventData?.player?.nameTag || 'UnknownPlayer'}. typeof dependencies: ${typeof dependencies}`);
+    try {
+        if (dependencies === undefined) {
+            console.warn('[handlePlayerSpawn][Diag] dependencies is undefined.');
+        } else if (dependencies === null) {
+            console.warn('[handlePlayerSpawn][Diag] dependencies is null.');
+        } else if (typeof dependencies === 'object') {
+            let depsSample = {
+                configExists: Object.prototype.hasOwnProperty.call(dependencies, 'config'),
+                playerUtilsExists: Object.prototype.hasOwnProperty.call(dependencies, 'playerUtils'),
+                rankManagerExists: Object.prototype.hasOwnProperty.call(dependencies, 'rankManager'),
+                configType: typeof dependencies.config,
+                playerUtilsType: typeof dependencies.playerUtils,
+                rankManagerType: typeof dependencies.rankManager,
+            };
+            console.warn('[handlePlayerSpawn][Diag] dependencies content sample:', JSON.stringify(depsSample));
+        } else {
+            console.warn('[handlePlayerSpawn][Diag] dependencies is not an object, undefined, or null. Actual type:', typeof dependencies);
+        }
+    } catch (e) {
+        console.warn('[handlePlayerSpawn][Diag] Error trying to log/stringify dependencies:', e.message);
+    }
+    // --- END DEPENDENCIES DIAGNOSTIC for handlePlayerSpawn ---
+
     const { player, initialSpawn } = eventData;
+
+    // It's possible 'dependencies' itself is problematic (e.g. undefined), handle gracefully.
+    if (!dependencies || typeof dependencies !== 'object' || !dependencies.playerDataManager || !dependencies.playerUtils || !dependencies.config || !dependencies.logManager || !dependencies.checks || !dependencies.getString || !dependencies.rankManager) {
+        console.error('[AntiCheat][handlePlayerSpawn] Critical: Invalid or incomplete dependencies object received. Aborting.');
+        if(player) player.sendMessage("§cAntiCheat Error: Critical issue during spawn processing. Please contact an admin. (Code: HPS_DEPS)");
+        return;
+    }
     const { playerDataManager, playerUtils, config, logManager, checks, getString, rankManager } = dependencies;
+
     if (!player) {
         console.warn('[AntiCheat] handlePlayerSpawn: eventData.player is undefined.');
         return;
@@ -516,23 +549,26 @@ export async function handleItemUse(eventData, dependencies) {
  * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData
  * @param {import('../types.js').CommandDependencies} dependencies
  */
-export async function handleItemUseOn(eventData, dependencies) {
-    const { checks, config, playerDataManager } = dependencies;
-    const { source: player, itemStack, block } = eventData;
-    if (!player || !itemStack || !block) return;
-    const pData = playerDataManager.getPlayerData(player.id);
-    if (!pData) return;
-    if (itemStack.typeId === 'minecraft:bow' && config.enableChatDuringItemUseCheck) {
-        if (pData) { pData.isChargingBow = true; pData.isDirtyForSave = true; }
-    }
-    if (config.preventedItemUsesOn && config.preventedItemUsesOn.includes(itemStack.typeId)) {
-        dependencies.playerUtils.warnPlayer(player, dependencies.getString('antigrief.itemUseDenied', {item: itemStack.typeId}));
-        eventData.cancel = true;
-        return;
-    }
-    pData.lastItemUseTick = dependencies.currentTick;
-    pData.isDirtyForSave = true;
-}
+// export async function handleItemUseOn(eventData, dependencies) {
+//     // This function is currently orphaned because mc.world.beforeEvents.itemUseOn is unavailable.
+//     // The features it supported (bow charging state for chat check, preventedItemUsesOn config) are disabled.
+//     // console.warn('[AntiCheat] handleItemUseOn called, but its event (world.beforeEvents.itemUseOn) is unavailable. This function will have no effect.');
+//     const { checks, config, playerDataManager } = dependencies;
+//     const { source: player, itemStack, block } = eventData;
+//     if (!player || !itemStack || !block) return;
+//     const pData = playerDataManager.getPlayerData(player.id);
+//     if (!pData) return;
+//     if (itemStack.typeId === 'minecraft:bow' && config.enableChatDuringItemUseCheck) {
+//         if (pData) { pData.isChargingBow = true; pData.isDirtyForSave = true; }
+//     }
+//     if (config.preventedItemUsesOn && config.preventedItemUsesOn.includes(itemStack.typeId)) {
+//         dependencies.playerUtils.warnPlayer(player, dependencies.getString('antigrief.itemUseDenied', {item: itemStack.typeId}));
+//         eventData.cancel = true;
+//         return;
+//     }
+//     pData.lastItemUseTick = dependencies.currentTick;
+//     pData.isDirtyForSave = true;
+// }
 
 /**
  * Handles player inventory item change events.

@@ -337,31 +337,10 @@ function performInitializations() {
         console.warn('[AntiCheat] Skipping subscription for afterEvents.entityHurt: object undefined.');
     }
 
-    // Specific entityHurt for TPA (this is a beforeEvent)
-    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.entityHurt) {
-        mc.world.beforeEvents.entityHurt.subscribe(eventData => {
-        const dependencies = getStandardDependencies();
-        if (!dependencies.config.enableTpaSystem || !dependencies.config.tpaTeleportWarmupSeconds || dependencies.config.tpaTeleportWarmupSeconds <= 0) {
-            return;
-        }
-        const { hurtEntity, damageSource } = eventData;
-        if (hurtEntity.typeId !== mc.MinecraftEntityTypes.player.id) return;
-        const player = hurtEntity;
-        const requestsInWarmup = tpaManager.getRequestsInWarmup();
-        const playerActiveWarmupRequest = requestsInWarmup.find(
-            req => (req.requesterName === player.nameTag && req.requestType === 'tpa') ||
-                   (req.targetName === player.nameTag && req.requestType === 'tpahere')
-        );
-        if (playerActiveWarmupRequest && playerActiveWarmupRequest.status === 'pending_teleport_warmup') {
-            const damageCause = damageSource?.cause || 'unknown';
-            const reasonMsgPlayer = dependencies.getString('tpa.manager.warmupCancelledDamage.player', { damageCause });
-            const reasonMsgLog = `Player ${player.nameTag} took damage (cause: ${damageCause}) during TPA warm-up for request ${playerActiveWarmupRequest.requestId}.`;
-            tpaManager.cancelTeleport(playerActiveWarmupRequest.requestId, reasonMsgPlayer, reasonMsgLog, dependencies);
-        }
-    });
-    } else {
-        console.warn('[AntiCheat] Skipping subscription for beforeEvents.entityHurt (TPA): object undefined.');
-    }
+    // Subscription for world.beforeEvents.entityHurt (for TPA) removed - event is unavailable.
+    // TPA warmup damage cancellation feature is disabled.
+    console.warn('[AntiCheat] Feature disabled: TPA warmup damage cancellation (world.beforeEvents.entityHurt unavailable).');
+
 
     if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerBreakBlock) {
         mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
@@ -387,13 +366,10 @@ function performInitializations() {
         console.warn('[AntiCheat] Skipping subscription for itemUse (before): object undefined.');
     }
 
-    if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.itemUseOn) {
-        mc.world.beforeEvents.itemUseOn.subscribe(async (eventData) => {
-            await eventHandlers.handleItemUseOn(eventData, getStandardDependencies());
-        });
-    } else {
-        console.warn('[AntiCheat] Skipping subscription for itemUseOn (before): object undefined.');
-    }
+    // Subscription for world.beforeEvents.itemUseOn removed - event is unavailable.
+    // Features handled by eventHandlers.handleItemUseOn are disabled.
+    console.warn('[AntiCheat] Feature disabled: world.beforeEvents.itemUseOn event handler (event unavailable).');
+
 
     if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerPlaceBlock) {
         mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {

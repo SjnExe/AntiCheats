@@ -148,42 +148,52 @@ function getPlayerRankAndPermissions(player, dependencies) {
     let adminTag = '';  // Default value
 
     // --- BEGIN DIAGNOSTIC LOGGING for rankManager config issue (using console.warn) ---
-    const diagPlayerName = player?.nameTag || 'UnknownPlayer';
-    console.warn(`[RankMan][CONSOLE] In getPlayerRankAndPermissions for player: ${diagPlayerName}`);
-    console.warn(`[RankMan][CONSOLE] typeof dependencies: ${typeof dependencies}`);
-
-    // config and playerUtils are already destructured from 'dependencies' at the start of the function.
-    // We use those existing variables for logging here.
-    // The check for 'dependencies' being valid is at the top of the function.
-
-    console.warn(`[RankMan][CONSOLE] typeof config (from function scope): ${typeof config}`);
+    // This entire block is now wrapped in a try-catch to catch errors within the diagnostic logging itself.
     try {
-        // Attempt to stringify only a few key expected properties of config to avoid large objects / circular refs
-        let configSample = "Not an object or null";
-        if (config && typeof config === 'object' && config !== null) {
-            configSample = JSON.stringify({
-                ownerPlayerName: config.ownerPlayerName,
-                adminTag: config.adminTag,
-                prefix: config.prefix,
-                enableDebugLogging: config.enableDebugLogging
-            }, null, 2);
-        }
-        console.warn(`[RankMan][CONSOLE] config sample JSON: ${configSample}`);
-    } catch (e) {
-        console.warn(`[RankMan][CONSOLE] config sample JSON.stringify error: ${e.message}`);
-    }
+        const diagPlayerName = player?.nameTag || 'UnknownPlayer';
+        // Note: typeof dependencies and its sample is logged by [RankMan][ENTRY] logs already.
+        // Here we focus on config and playerUtils after they have been destructured at the top of the function.
 
-    if (config && typeof config === 'object' && config !== null) {
-        console.warn(`[RankMan][CONSOLE] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
-        console.warn(`[RankMan][CONSOLE] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
-        console.warn(`[RankMan][CONSOLE] typeof config.adminTag: ${typeof config.adminTag}`);
-        console.warn(`[RankMan][CONSOLE] config.adminTag value: "${String(config.adminTag)}"`);
-    } else {
-        console.warn('[RankMan][CONSOLE] config is not a valid object or is null (after destructure).');
-    }
-    console.warn(`[RankMan][CONSOLE] typeof playerUtils (after destructure): ${typeof playerUtils}`);
-    if(playerUtils) {
-        console.warn(`[RankMan][CONSOLE] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
+        // config and playerUtils are from: const { config, playerUtils } = dependencies; (after initial guards for dependencies)
+
+        console.warn(`[RankMan][CONSOLE_BLOCK] typeof config (from function scope): ${typeof config}`);
+        if (config && typeof config === 'object' && config !== null) {
+            // Attempt to stringify only a few key expected properties of config
+            let configSample = "Error sampling config or not an object."; // Default if stringify fails or config is bad
+            try {
+                configSample = JSON.stringify({
+                    ownerPlayerNameExists: Object.prototype.hasOwnProperty.call(config, 'ownerPlayerName'),
+                    ownerPlayerNameType: typeof config.ownerPlayerName,
+                    adminTagExists: Object.prototype.hasOwnProperty.call(config, 'adminTag'),
+                    adminTagType: typeof config.adminTag,
+                    prefixExists: Object.prototype.hasOwnProperty.call(config, 'prefix'), // Assuming 'prefix' might exist
+                    prefixType: typeof config.prefix,
+                    enableDebugLoggingExists: Object.prototype.hasOwnProperty.call(config, 'enableDebugLogging'),
+                    enableDebugLoggingType: typeof config.enableDebugLogging,
+                }, null, 2);
+            } catch(stringifyError){
+                // If stringify itself errors (e.g. circular reference within these few properties, though unlikely)
+                configSample = `JSON.stringify error for config sample: ${stringifyError.message}`;
+            }
+            console.warn(`[RankMan][CONSOLE_BLOCK] config properties sample: ${configSample}`);
+
+            // Log individual properties carefully
+            console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
+            console.warn(`[RankMan][CONSOLE_BLOCK] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
+            console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.adminTag: ${typeof config.adminTag}`);
+            console.warn(`[RankMan][CONSOLE_BLOCK] config.adminTag value: "${String(config.adminTag)}"`);
+        } else {
+            console.warn('[RankMan][CONSOLE_BLOCK] config is not a valid object or is null (from function scope).');
+        }
+
+        console.warn(`[RankMan][CONSOLE_BLOCK] typeof playerUtils (from function scope): ${typeof playerUtils}`);
+        if(playerUtils && typeof playerUtils === 'object' && playerUtils !== null) {
+            console.warn(`[RankMan][CONSOLE_BLOCK] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
+        } else {
+            console.warn('[RankMan][CONSOLE_BLOCK] playerUtils is not a valid object or is null (from function scope).');
+        }
+    } catch (e) {
+        console.error(`[RankMan][CONSOLE_ERROR] Error within CONSOLE_BLOCK diagnostic logging: ${e.message}${e.stack ? ('\\nStack: ' + e.stack) : ''}`);
     }
     // --- END DIAGNOSTIC LOGGING ---
 
