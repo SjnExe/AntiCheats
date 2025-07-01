@@ -1108,17 +1108,11 @@ export function updateConfigValue(key, newValue) {
     }
 
     if (JSON.stringify(oldValue) === JSON.stringify(coercedNewValue)) {
-        if (enableDebugLogging) {
-            console.log(`[ConfigManager] No change for ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
-        }
+        // Debug log removed: console.log(`[ConfigManager] No change for ${key}, value is already ${JSON.stringify(coercedNewValue)}`);
         return false;
     }
 
     editableConfigValues[key] = coercedNewValue;
-    if (enableDebugLogging) {
-        const oldValStr = Array.isArray(oldValue) || typeof oldValue === 'object' ? JSON.stringify(oldValue) : oldValue;
-        const newValStr = Array.isArray(coercedNewValue) || typeof coercedNewValue === 'object' ? JSON.stringify(coercedNewValue) : coercedNewValue;
-        console.log(`[ConfigManager] Updated ${key} from "${oldValStr}" to "${newValStr}"`);
-    }
+    // Debug log removed: console.log(`[ConfigManager] Updated ${key} from "${oldValStr}" to "${newValStr}"`);
     return true;
 }
