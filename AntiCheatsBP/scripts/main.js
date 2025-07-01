@@ -75,137 +75,9 @@ function getStandardDependencies() {
     };
 }
 
-// Event subscriptions will be moved into initializeSystem
+// Comments about event subscriptions and tick loops being moved are now outdated, as they are in performInitializations.
+// The large commented-out mc.system.runInterval blocks (old main tick loop and TPA loop) will be removed.
 
-// Tick loops will be moved into performInitializations()
-/*
-mc.system.runInterval(async () => {
-    currentTick++;
-    const tickDependencies = getStandardDependencies();
-
-    if (tickDependencies.config.enableWorldBorderSystem) {
-        try {
-            worldBorderManager.processWorldBorderResizing(tickDependencies);
-        } catch (e) {
-            console.error(`[MainTick] Error processing world border resizing: ${e.stack || e.message}`);
-            playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
-            logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
-        }
-    }
-
-    const allPlayers = mc.world.getAllPlayers();
-    playerDataManager.cleanupActivePlayerData(allPlayers, tickDependencies);
-
-    for (const player of allPlayers) {
-        const pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
-        if (!pData) {
-            playerUtils.debugLog(`Critical: pData not available for ${player.nameTag} in tick loop after ensure. Skipping checks for this player this tick.`, player.nameTag, tickDependencies);
-            continue;
-        }
-
-        playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
-        playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
-
-        if (tickDependencies.config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, tickDependencies);
-        if (tickDependencies.config.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, tickDependencies);
-        if (tickDependencies.config.enableNofallCheck && checks.checkNoFall) await checks.checkNoFall(player, pData, tickDependencies);
-        if (tickDependencies.config.enableNoSlowCheck && checks.checkNoSlow) await checks.checkNoSlow(player, pData, tickDependencies);
-        if (tickDependencies.config.enableInvalidSprintCheck && checks.checkInvalidSprint) await checks.checkInvalidSprint(player, pData, tickDependencies);
-        if (tickDependencies.config.enableNetherRoofCheck && checks.checkNetherRoof && (currentTick - (pData.lastCheckNetherRoofTick || 0) >= tickDependencies.config.netherRoofCheckIntervalTicks)) {
-             await checks.checkNetherRoof(player, pData, tickDependencies); pData.lastCheckNetherRoofTick = currentTick;
-        }
-
-        if (tickDependencies.config.enableCpsCheck && checks.checkCps) await checks.checkCps(player, pData, tickDependencies, null);
-        if (tickDependencies.config.enableViewSnapCheck && checks.checkViewSnap) await checks.checkViewSnap(player, pData, tickDependencies, null);
-        if (tickDependencies.config.enableMultiTargetCheck && checks.checkMultiTarget) await checks.checkMultiTarget(player, pData, tickDependencies, null);
-        if (tickDependencies.config.enableStateConflictCheck && checks.checkStateConflict) await checks.checkStateConflict(player, pData, tickDependencies, null);
-
-        if (tickDependencies.config.enableNukerCheck && checks.checkNuker) await checks.checkNuker(player, pData, tickDependencies);
-        if (tickDependencies.config.enableAutoToolCheck && checks.checkAutoTool && (currentTick - (pData.lastCheckAutoToolTick || 0) >= tickDependencies.config.autoToolCheckIntervalTicks)) {
-            await checks.checkAutoTool(player, pData, tickDependencies); pData.lastCheckAutoToolTick = currentTick;
-        }
-        if (tickDependencies.config.enableFlatRotationCheck && checks.checkFlatRotationBuilding && (currentTick - (pData.lastCheckFlatRotationBuildingTick || 0) >= tickDependencies.config.flatRotationCheckIntervalTicks)) {
-            await checks.checkFlatRotationBuilding(player, pData, tickDependencies); pData.lastCheckFlatRotationBuildingTick = currentTick;
-        }
-
-        if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof && (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
-            await checks.checkNameSpoof(player, pData, tickDependencies); pData.lastCheckNameSpoofTick = currentTick;
-        }
-        if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc && (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
-            await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGmcTick = currentTick;
-        }
-
-        if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
-            await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
-            pData.lastRenderDistanceCheckTick = currentTick;
-        }
-
-        if (!player.isOnGround) {
-            if ((pData.velocity?.y ?? 0) < -0.078 && pData.previousPosition && pData.lastPosition) {
-                const deltaY = pData.previousPosition.y - pData.lastPosition.y;
-                if (deltaY > 0 && deltaY < 100) {
-                    pData.fallDistance = (pData.fallDistance || 0) + deltaY;
-                }
-            }
-        } else {
-            if (!pData.isTakingFallDamage) {
-                pData.fallDistance = 0;
-            }
-            pData.isTakingFallDamage = false;
-            pData.consecutiveOffGroundTicks = 0;
-        }
-
-        if (tickDependencies.config.enableWorldBorderSystem) {
-            try {
-                worldBorderManager.enforceWorldBorderForPlayer(player, pData, tickDependencies);
-            } catch (e) {
-                console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${e.stack || e.message}`);
-                playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
-                logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
-            }
-        }
-    }
-
-    if (currentTick % 600 === 0) {
-        playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
-        for (const player of allPlayers) {
-            const pData = playerDataManager.getPlayerData(player.id);
-            if (pData?.isDirtyForSave) {
-                try {
-                    await playerDataManager.saveDirtyPlayerData(player, tickDependencies);
-                    if (pData.isWatched) {
-                        playerUtils.debugLog(`Periodic save executed for watched player ${player.nameTag}.`, player.nameTag, tickDependencies);
-                    }
-                } catch (error) {
-                    console.error(`Error during periodic save for ${player.nameTag}: ${error.message}`);
-                    logManager.addLog({ actionType: 'error', context: 'PeriodicSaveFail', details: `Player: ${player.nameTag}, Error: ${error.message}` }, tickDependencies);
-                }
-            }
-        }
-        logManager.persistLogCacheToDisk(tickDependencies);
-        reportManager.persistReportsToDisk(tickDependencies);
-        if (tickDependencies.config.enableWorldBorderSystem) {
-            playerUtils.debugLog("[MainTick] World border settings are saved on modification. No global periodic save implemented currently.", "System", tickDependencies);
-        }
-    }
-}, 1);
-*/
-
-// Moved TPA tick loop into performInitializations()
-/*
-mc.system.runInterval(() => {
-    const tpaIntervalDependencies = getStandardDependencies();
-    if (tpaIntervalDependencies.config.enableTpaSystem) {
-        tpaManager.clearExpiredRequests(tpaIntervalDependencies);
-        const requestsInWarmup = tpaManager.getRequestsInWarmup();
-        for (const request of requestsInWarmup) {
-            if (Date.now() >= (request.warmupExpiryTimestamp || 0)) {
-                tpaManager.executeTeleport(request.requestId, tpaIntervalDependencies);
-            }
-        }
-    }
-}, 20);
-*/
 const MAX_INIT_RETRIES = 1; // Reduced for faster testing during diagnostics
 const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the first retry
 
@@ -495,6 +367,19 @@ function performInitializations() {
         playerDataManager.cleanupActivePlayerData(allPlayers, tickDependencies);
 
         for (const player of allPlayers) {
+            // Defensive check for player validity
+            if (!(player instanceof mc.Player) || !player.isValid()) {
+                if (tickDependencies?.config?.enableDebugLogging) {
+                    // Attempt to get a name or ID if possible, otherwise stringify
+                    let playerIdInfo = 'unknown player object';
+                    try {
+                        playerIdInfo = player?.id || player?.nameTag || JSON.stringify(player);
+                    } catch (e) { /* ignore stringify errors for potentially odd objects */ }
+                    console.warn(`[AntiCheatCoreTick] Skipping invalid player object in loop: ${playerIdInfo}`);
+                }
+                continue;
+            }
+
             // --- BEGIN PLAYER LOOP DIAGNOSTICS --- (Removed)
             // --- END PLAYER LOOP DIAGNOSTICS ---
 
