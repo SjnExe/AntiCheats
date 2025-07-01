@@ -78,8 +78,8 @@ function getStandardDependencies() {
 // Comments about event subscriptions and tick loops being moved are now outdated, as they are in performInitializations.
 // The large commented-out mc.system.runInterval blocks (old main tick loop and TPA loop) will be removed.
 
-const MAX_INIT_RETRIES = 3; // Adjusted for a more production-like setting
-const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the first retry
+const maxInitRetries = 3; // Adjusted for a more production-like setting
+const initialRetryDelayTicks = 20; // Start with a 1-second delay for the first retry
 
 /**
  * Checks if all required Minecraft event APIs are available.
@@ -509,13 +509,13 @@ function attemptInitializeSystem(retryCount = 0) {
     if (checkEventAPIsReady(tempStartupDepsForLog)) {
         performInitializations();
     } else {
-        const delay = INITIAL_RETRY_DELAY_TICKS * Math.pow(2, retryCount); // Exponential backoff
-        console.warn(`[AntiCheat] API not fully ready. Retrying initialization in ${delay} ticks (Attempt ${retryCount + 1}/${MAX_INIT_RETRIES})`);
+        const delay = initialRetryDelayTicks * Math.pow(2, retryCount); // Exponential backoff
+        console.warn(`[AntiCheat] API not fully ready. Retrying initialization in ${delay} ticks (Attempt ${retryCount + 1}/${maxInitRetries})`);
 
-        if (retryCount < MAX_INIT_RETRIES) {
+        if (retryCount < maxInitRetries) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // MAX_INIT_RETRIES reached - Simplified for diagnostics
+            // maxInitRetries reached - Simplified for diagnostics
             console.error('[AntiCheat] MAX RETRIES REACHED - EXHAUSTION BLOCK ENTERED. Attempting to proceed.');
             // Directly call performInitializations to see if this path is reached and if performInitializations logs anything.
             // Temporarily removed admin notification and other logic here to ensure this block itself isn't failing silently.
@@ -527,4 +527,4 @@ function attemptInitializeSystem(retryCount = 0) {
 // Initial call to start the initialization process
 mc.system.runTimeout(() => {
     attemptInitializeSystem();
-}, INITIAL_RETRY_DELAY_TICKS); // Start first attempt after an initial delay
+}, initialRetryDelayTicks); // Start first attempt after an initial delay
