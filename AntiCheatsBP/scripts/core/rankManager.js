@@ -207,45 +207,50 @@ export function updatePlayerNametag(player, dependencies) {
 
         const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
-        const baseName = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : 'Player')); // Use current nameTag or player.name as base
+        // Use current nameTag (which might have been set by other means) or player.name as base.
+        // Ensure player.name is a string before using it.
+        let baseName = 'Player'; // Default base name
+        if (player.nameTag && typeof player.nameTag === 'string' && player.nameTag.length > 0) {
+            // Attempt to strip existing known prefixes to get a cleaner base name.
+            // This is a simple approach; more robust prefix stripping might be needed if prefixes are complex.
+            let strippedName = player.nameTag;
+            if (sortedRankDefinitions) { // Check if sortedRankDefinitions is populated
+                for (const rankDef of sortedRankDefinitions) {
+                    if (rankDef.nametagPrefix && strippedName.startsWith(rankDef.nametagPrefix)) {
+                        strippedName = strippedName.substring(rankDef.nametagPrefix.length);
+                        break; // Found and stripped a prefix
+                    }
+                }
+            }
+             // Fallback to player.name if stripping results in empty or if nameTag was just prefix
+            baseName = (strippedName && strippedName.length > 0) ? strippedName : (typeof player.name === 'string' ? player.name : 'Player');
+        } else if (typeof player.name === 'string' && player.name.length > 0) {
+            baseName = player.name;
+        }
+
 
         player.nameTag = nametagToApply + baseName;
 
         if (config.enableDebugLogging && playerUtils && typeof playerUtils.debugLog === 'function') {
-            playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.nameTag, dependencies);
-        }
-    } catch (error) {
-        // Legitimate error log
-        console.error(`[RankManager] Error in updatePlayerNametag for ${player?.nameTag || 'Unknown'}: ${error.message}${error.stack ? '\\nStack:' + error.stack : ''}`);
-        try {
-            if (player && player.isValid()) {
-                player.nameTag = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : '') || ''); // Attempt to restore original nameTag or player.name
-            }
-        } catch(eSafe) { /* Silent fallback */ }
-    }
-}
-
-/**
- * Initializes the rank system. This must be called from `main.js` after all dependencies are available.
-            playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.name, dependencies);
+            playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} (original nameTag: '${String(player.nameTag || player.name)}') to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.nameTag, dependencies);
         }
     } catch (error) {
         let playerNameForError = 'UnknownPlayer';
         try {
-            if (player && typeof player.name === 'string') {
-                playerNameForError = player.name;
+            if (player && (player.nameTag || player.name)) { // Check if player.nameTag or player.name exists
+                playerNameForError = String(player.nameTag || player.name); // Use String() to handle potential non-string types gracefully
             }
         } catch (nameAccessError) {
             // Silent catch
         }
-        // Legitimate error log
-        console.error(`[RankManager] Error setting nametag for '${playerNameForError}': ${error.stack || error}`);
+        console.error(`[RankManager] Error in updatePlayerNametag for '${playerNameForError}': ${error.message}${error.stack ? '\\nStack:' + error.stack : ''}`);
         try {
-            // Attempt to restore original nameTag or player.name
             if (player && player.isValid()) {
-                 player.nameTag = typeof player.name === 'string' ? player.name : 'Player';
+                 // Attempt to restore original nameTag or player.name if possible, otherwise a generic default.
+                const originalName = String(player.nameTag || (typeof player.name === 'string' ? player.name : 'Player'));
+                player.nameTag = originalName;
             }
-        } catch (e) { /* Silent fallback */ }
+        } catch(eSafe) { /* Silent fallback */ }
     }
 }
 

@@ -32,9 +32,10 @@ let currentTick = 0;
  * This object provides access to configuration, utilities, managers, and Minecraft APIs.
  */
 function getStandardDependencies() {
-    return {
-        config: configModule.editableConfigValues,
-        automodConfig: automodConfig,
+    try {
+        return {
+            config: configModule.editableConfigValues,
+            automodConfig: automodConfig,
         checkActionProfiles: checkActionProfiles,
         playerUtils,
         playerDataManager,
@@ -73,6 +74,13 @@ function getStandardDependencies() {
         },
         editableConfig: configModule,
     };
+    } catch (error) {
+        console.error(`[AntiCheatCRITICAL] Error during getStandardDependencies(): ${error.stack || error}`);
+        // Re-throwing the error is important if the surrounding system relies on this failure
+        // to halt or retry initialization. If it's expected that undefined is passed,
+        // then `return undefined;` might be used, but re-throwing is safer for now.
+        throw error;
+    }
 }
 
 // Comments about event subscriptions and tick loops being moved are now outdated, as they are in performInitializations.
