@@ -111,21 +111,36 @@ function getPlayerRankAndPermissions(player, dependencies) {
     //     try { mc.world.sendMessage('EMERGENCY_CONSOLE_WARN_FAIL_GPRAP'); } catch (e2) {}
     // }
 
-    // Now, carefully try to use dependencies.config
-    let config; // Declare config here
-    if (Object.prototype.hasOwnProperty.call(dependencies, 'config') && typeof dependencies.config === 'object' && dependencies.config !== null) {
-        config = dependencies.config;
-        // console.warn("[GPRAP_DEBUG] config object obtained from dependencies."); // Extreme isolation: keep commented
-    } else {
-        console.error(`[GPRAP_ERROR] dependencies.config is invalid or not an object. Type: ${typeof dependencies.config}`);
+    let config;
+    let playerUtils; // Will be needed by full rank logic / some conditions if they log
+
+    try {
+        console.warn('[GPRAP_CLONE] Attempting to clone dependencies.config for getPlayerRankAndPermissions.');
+        if (dependencies.config && typeof dependencies.config === 'object') {
+            config = { ...dependencies.config }; // Shallow clone
+            console.warn('[GPRAP_CLONE] dependencies.config CLONED. typeof new config:', typeof config);
+        } else {
+            console.error(`[GPRAP_ERROR] dependencies.config is not a valid object for cloning. Player: ${player?.nameTag || 'UnknownPlayer'}. Type: ${typeof dependencies.config}`);
+            const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member');
+            return { rankDefinition: defaultMemberRank || null, permissionLevel: defaultPermissionLevel, rankId: 'member' };
+        }
+
+        // Safely assign playerUtils (restoring this as it was in the original function structure)
+        if (dependencies.playerUtils && typeof dependencies.playerUtils === 'object') {
+            playerUtils = dependencies.playerUtils;
+        } else {
+            // If playerUtils is critical for some rank conditions (e.g. debug logging within them), this might be an issue.
+            // For now, provide a dummy if not essential for core rank logic.
+            console.warn(`[GPRAP_WARN] dependencies.playerUtils is not a valid object. Player: ${player?.nameTag || 'UnknownPlayer'}. Type: ${typeof dependencies.playerUtils}`);
+            playerUtils = { debugLog: () => {} }; // Safe dummy
+        }
+    } catch (e) {
+        console.error(`[GPRAP_ERROR] Error during cloning/assignment of dependencies.config or playerUtils: ${e.message}${e.stack ? '\\nStack:'+e.stack:''}`);
         const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member');
         return { rankDefinition: defaultMemberRank || null, permissionLevel: defaultPermissionLevel, rankId: 'member' };
     }
 
-    // playerUtils is not strictly needed for the core rank logic if we strip it down,
-    // but the original function destructured it. For extreme isolation, we'll skip it for now.
-    // const { playerUtils } = dependencies;
-
+    // Now use the cloned 'config' and assigned 'playerUtils'
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
         console.error('[GPRAP_ERROR] Invalid player object.');
@@ -272,6 +287,7 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function updatePlayerNametag(player, dependencies) {
+    // Top-level console test - kept from "Extreme Isolation"
     try {
         console.error('[UPNT_CONSOLE_TEST] console.error works in updatePlayerNametag entry.');
     } catch(e) {
@@ -279,25 +295,48 @@ export function updatePlayerNametag(player, dependencies) {
         return;
     }
 
-    // Simplified initial guard
-    if (!dependencies || typeof dependencies !== 'object' || dependencies === null ||
-        !dependencies.config || typeof dependencies.config !== 'object' ||
-        !dependencies.playerUtils || typeof dependencies.playerUtils !== 'object') { // rankManager is not directly destructured here
-        console.error(`[UPNT_ERROR] Invalid or incomplete dependencies for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
-        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : '') || ''); } catch(eSafe) {console.error(`[UPNT_ERROR] Fallback nametag set failed (invalid deps): ${eSafe.message}`);}
+    // Initial validation of dependencies object itself
+    if (!dependencies || typeof dependencies !== 'object' || dependencies === null) {
+        console.error(`[UPNT_ERROR] Main dependencies object is invalid (type: ${typeof dependencies}) for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
+        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : '') || ''); } catch(eSafe) {console.error(`[UPNT_ERROR] Fallback nametag set failed (invalid deps obj): ${eSafe.message}`);}
         return;
     }
 
-    const config = dependencies.config;
-    const playerUtils = dependencies.playerUtils;
+    let config;
+    let playerUtils;
 
+    try {
+        console.warn('[UPNT_CLONE] Attempting to clone dependencies.config for updatePlayerNametag.');
+        if (dependencies.config && typeof dependencies.config === 'object') {
+            config = { ...dependencies.config }; // Shallow clone
+            console.warn('[UPNT_CLONE] dependencies.config CLONED. typeof new config:', typeof config);
+        } else {
+            console.error(`[UPNT_ERROR] dependencies.config is not a valid object for cloning. Player: ${player?.nameTag || 'UnknownPlayer'}. Type: ${typeof dependencies.config}`);
+            try { if (player && player.isValid()) player.nameTag = String(player.nameTag || 'Player'); } catch(eSafe){ console.error(`[UPNT_ERROR] Fallback nametag set failed (config not object): ${eSafe.message}`); }
+            return;
+        }
+
+        // Safely assign playerUtils
+        if (dependencies.playerUtils && typeof dependencies.playerUtils === 'object') {
+            playerUtils = dependencies.playerUtils;
+        } else {
+            console.error(`[UPNT_ERROR] dependencies.playerUtils is not a valid object. Player: ${player?.nameTag || 'UnknownPlayer'}. Type: ${typeof dependencies.playerUtils}`);
+            playerUtils = { debugLog: () => {} }; // Provide a safe dummy to prevent errors if it's used later
+        }
+    } catch (e) {
+        console.error(`[UPNT_ERROR] Error during cloning/assignment of dependencies.config or playerUtils: ${e.message}${e.stack ? '\\nStack:'+e.stack:''}`);
+        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || 'Player'); } catch(eSafe){ console.error(`[UPNT_ERROR] Fallback nametag set failed (clone/assign catch): ${eSafe.message}`); }
+        return;
+    }
+
+    // Now use the cloned 'config' and assigned 'playerUtils'
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
-        console.error('[UPNT_ERROR] Invalid player object.');
+        console.error('[UPNT_ERROR] Invalid player object received after dependency processing.');
         return;
     }
 
-    const vanishedTagToUse = config.vanishedPlayerTag || 'vanished'; // Assumes config is valid from guard
+    const vanishedTagToUse = config.vanishedPlayerTag || 'vanished';
 
     try {
         if (player.hasTag(vanishedTagToUse)) {
