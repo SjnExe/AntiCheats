@@ -31,7 +31,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
         return;
     }
 
-    const actionProfileKey = 'playerInventoryModSwitchUse';
+    const actionProfileKey = config.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse';
 
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
@@ -92,7 +92,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             slotChanged: slotIdentifier,
             actionInProgress: lockingActionKey,
         };
-        const actionProfileKey = 'playerInventoryModMoveLocked';
+        const actionProfileKey = config.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;

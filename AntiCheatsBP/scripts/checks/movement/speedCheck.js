@@ -60,7 +60,7 @@ export async function checkSpeed(player, pData, dependencies) {
         );
     }
 
-    const groundActionProfileKey = 'movementSpeedGround';
+    const groundActionProfileKey = config.speedGroundActionProfileName ?? 'movementSpeedGround';
 
     if (player.isOnGround) {
         if (hSpeedBPS > maxAllowedSpeedBPS) {

@@ -100,7 +100,8 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString(),
         };
-        await actionManager.executeCheckAction(player, 'worldTowerBuild', violationDetails, dependencies);
+        const actionProfileKey = config.towerBuildActionProfileName ?? 'worldTowerBuild';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[TowerCheck] Flagged ${player.nameTag} for tower height ${pData.consecutivePillarBlocks} with pitch ${pitch.toFixed(1)} (Threshold: >${maxPitchValue}).`, watchedPrefix, dependencies);
         pData.consecutivePillarBlocks = 0;
         pData.lastPillarTick = 0;
@@ -151,7 +152,8 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
             maxBlocks: maxBlocks.toString(),
             blockType: block.typeId ?? 'unknown',
         };
-        await actionManager.executeCheckAction(player, 'worldFastPlace', violationDetails, dependencies);
+        const actionProfileKey = config.fastPlaceActionProfileName ?? 'worldFastPlace';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[FastPlaceCheck] Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, pData.isWatched ? player.nameTag : null, dependencies);
     }
 }
@@ -229,9 +231,10 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                 z: blockLocation.z.toString(),
                 targetFaceType: targetBlock.typeId,
             };
-            await actionManager.executeCheckAction(player, 'worldAirPlace', violationDetails, dependencies);
+            const actionProfileKey = config.airPlaceActionProfileName ?? 'worldAirPlace';
+            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}) without solid support.`, pData.isWatched ? player.nameTag : null, dependencies);
-            if (config.checkActionProfiles['worldAirPlace']?.cancelEvent) {
+            if (config.checkActionProfiles[actionProfileKey]?.cancelEvent) {
                 eventData.cancel = true;
             }
         }
@@ -298,7 +301,8 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString(),
         };
-        await actionManager.executeCheckAction(player, 'worldDownwardScaffold', violationDetails, dependencies);
+        const actionProfileKey = config.downwardScaffoldActionProfileName ?? 'worldDownwardScaffold';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[DownwardScaffoldCheck] Flagged ${player.nameTag}. Blocks: ${pData.consecutiveDownwardBlocks}, Speed: ${horizontalSpeedBPS.toFixed(2)} BPS`, watchedPrefix, dependencies);
         pData.consecutiveDownwardBlocks = 0;
         pData.lastDownwardScaffoldBlockLocation = null;
@@ -409,7 +413,8 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
             minPitchObserved: minObservedPitch.toFixed(1),
             maxPitchObserved: maxObservedPitch.toFixed(1),
         };
-        await actionManager.executeCheckAction(player, 'worldFlatRotationBuilding', violationDetails, dependencies);
+        const actionProfileKey = config.flatRotationBuildingActionProfileName ?? 'worldFlatRotationBuilding';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${detectionReasonString}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
     }
 }
@@ -466,7 +471,8 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             blockType: blockType,
             actionTaken: config.blockSpamAction,
         };
-        await actionManager.executeCheckAction(player, 'worldAntiGriefBlockspam', violationDetails, dependencies);
+        const actionProfileKey = config.blockSpamActionProfileName ?? 'worldAntiGriefBlockspam';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamCheck] Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, pData.isWatched ? player.nameTag : null, dependencies);
 
         pData.recentBlockSpamTimestamps = [];
@@ -542,7 +548,8 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
             blockType: block.typeId,
             actionTaken: config.blockSpamDensityAction ?? 'warn',
         };
-        await actionManager.executeCheckAction(player, 'worldAntiGriefBlockspamDensity', violationDetails, dependencies);
+        const actionProfileKey = config.blockSpamDensityActionProfileName ?? 'worldAntiGriefBlockspamDensity';
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${radius} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null, dependencies);
     }
 }
