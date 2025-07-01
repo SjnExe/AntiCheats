@@ -103,7 +103,7 @@ export function getReports() {
 export function addReport(reporterPlayer, reportedPlayerName, reason, dependencies) {
     const { playerUtils, logManager, config } = dependencies;
 
-    const targetPlayer = playerUtils.findPlayerByNameTag(reportedPlayerName, world.getAllPlayers());
+    const targetPlayer = playerUtils.findPlayer(reportedPlayerName); // Corrected function name
 
     const newReport = {
         id: generateReportId(),
