@@ -78,8 +78,8 @@ function getStandardDependencies() {
 // Comments about event subscriptions and tick loops being moved are now outdated, as they are in performInitializations.
 // The large commented-out mc.system.runInterval blocks (old main tick loop and TPA loop) will be removed.
 
-const MAX_INIT_RETRIES = 1; // Reduced for faster testing during diagnostics
-const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the first retry
+const maxInitRetries = 3; // Adjusted for a more production-like setting
+const initialRetryDelayTicks = 20; // Start with a 1-second delay for the first retry
 
 /**
  * Checks if all required Minecraft event APIs are available.
@@ -88,12 +88,18 @@ const INITIAL_RETRY_DELAY_TICKS = 20; // Start with a 1-second delay for the fir
  */
 function checkEventAPIsReady(dependencies) {
     let overallAllReady = true; // Tracks if all APIs are ready in this specific call
-    const logger = (dependencies?.playerUtils?.debugLog && typeof dependencies.playerUtils.debugLog === 'function')
-                   ? (msg) => dependencies.playerUtils.debugLog(msg, 'System', dependencies)
-                   : console.log; // Fallback to console.log
     const errorLogger = console.error; // Always use console.error for critical issues
+    const useDebugLog = dependencies?.config?.enableDebugLogging && dependencies?.playerUtils?.debugLog;
 
-    logger('[API_CHECK] Starting API readiness check...');
+    const logger = (msg) => {
+        if (useDebugLog) {
+            dependencies.playerUtils.debugLog(msg, 'System', dependencies);
+        } else {
+            // console.log(msg); // Optionally keep console.log for non-debug builds or remove
+        }
+    };
+
+    if (useDebugLog) logger('[API_CHECK] Starting API readiness check...');
 
     if (!mc.world) {
         errorLogger('[API_CHECK] mc.world: UNDEFINED - CRITICAL');
@@ -102,7 +108,7 @@ function checkEventAPIsReady(dependencies) {
         // Return early to avoid cascading errors in the check itself.
         return overallAllReady;
     } else {
-        logger('[API_CHECK] mc.world: DEFINED');
+        if (useDebugLog) logger('[API_CHECK] mc.world: DEFINED');
     }
 
     // Removed 'entityHurt' and 'itemUseOn' as they are not standard mc.world.beforeEvents
@@ -115,10 +121,10 @@ function checkEventAPIsReady(dependencies) {
             errorLogger(`[API_CHECK] mc.world.beforeEvents.${eventName}: UNDEFINED (parent 'beforeEvents' is undefined)`);
         }
     } else {
-        logger('[API_CHECK] mc.world.beforeEvents: DEFINED');
+        if (useDebugLog) logger('[API_CHECK] mc.world.beforeEvents: DEFINED');
         for (const eventName of requiredBeforeEvents) {
             if (mc.world.beforeEvents[eventName]) {
-                logger(`[API_CHECK] mc.world.beforeEvents.${eventName}: DEFINED (type: ${typeof mc.world.beforeEvents[eventName]})`);
+                if (useDebugLog) logger(`[API_CHECK] mc.world.beforeEvents.${eventName}: DEFINED (type: ${typeof mc.world.beforeEvents[eventName]})`);
             } else {
                 errorLogger(`[API_CHECK] mc.world.beforeEvents.${eventName}: UNDEFINED - CRITICAL`);
                 overallAllReady = false;
@@ -135,10 +141,10 @@ function checkEventAPIsReady(dependencies) {
             errorLogger(`[API_CHECK] mc.world.afterEvents.${eventName}: UNDEFINED (parent 'afterEvents' is undefined)`);
         }
     } else {
-        logger('[API_CHECK] mc.world.afterEvents: DEFINED');
+        if (useDebugLog) logger('[API_CHECK] mc.world.afterEvents: DEFINED');
         for (const eventName of requiredAfterEvents) {
             if (mc.world.afterEvents[eventName]) {
-                logger(`[API_CHECK] mc.world.afterEvents.${eventName}: DEFINED (type: ${typeof mc.world.afterEvents[eventName]})`);
+                if (useDebugLog) logger(`[API_CHECK] mc.world.afterEvents.${eventName}: DEFINED (type: ${typeof mc.world.afterEvents[eventName]})`);
             } else {
                 errorLogger(`[API_CHECK] mc.world.afterEvents.${eventName}: UNDEFINED - CRITICAL`);
                 overallAllReady = false;
@@ -147,7 +153,7 @@ function checkEventAPIsReady(dependencies) {
     }
 
     if (overallAllReady) {
-        logger('[API_CHECK] All checked Minecraft event APIs appear to be available.');
+        if (useDebugLog) logger('[API_CHECK] All checked Minecraft event APIs appear to be available.');
     } else {
         errorLogger('[API_CHECK] Not all required Minecraft event APIs are available. See details above.');
     }
@@ -503,13 +509,13 @@ function attemptInitializeSystem(retryCount = 0) {
     if (checkEventAPIsReady(tempStartupDepsForLog)) {
         performInitializations();
     } else {
-        const delay = INITIAL_RETRY_DELAY_TICKS * Math.pow(2, retryCount); // Exponential backoff
-        console.warn(`[AntiCheat] API not fully ready. Retrying initialization in ${delay} ticks (Attempt ${retryCount + 1}/${MAX_INIT_RETRIES})`);
+        const delay = initialRetryDelayTicks * Math.pow(2, retryCount); // Exponential backoff
+        console.warn(`[AntiCheat] API not fully ready. Retrying initialization in ${delay} ticks (Attempt ${retryCount + 1}/${maxInitRetries})`);
 
-        if (retryCount < MAX_INIT_RETRIES) {
+        if (retryCount < maxInitRetries) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // MAX_INIT_RETRIES reached - Simplified for diagnostics
+            // maxInitRetries reached - Simplified for diagnostics
             console.error('[AntiCheat] MAX RETRIES REACHED - EXHAUSTION BLOCK ENTERED. Attempting to proceed.');
             // Directly call performInitializations to see if this path is reached and if performInitializations logs anything.
             // Temporarily removed admin notification and other logic here to ensure this block itself isn't failing silently.
@@ -521,4 +527,4 @@ function attemptInitializeSystem(retryCount = 0) {
 // Initial call to start the initialization process
 mc.system.runTimeout(() => {
     attemptInitializeSystem();
-}, INITIAL_RETRY_DELAY_TICKS); // Start first attempt after an initial delay
+}, initialRetryDelayTicks); // Start first attempt after an initial delay
