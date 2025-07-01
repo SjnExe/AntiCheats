@@ -2,7 +2,7 @@
  * @file Centralized handlers for various Minecraft Server API events.
  */
 import * as mc from '@minecraft/server';
-import { getExpectedBreakTicks, isNetherLocked, isEndLocked } from '../utils/index.js';
+import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
 
 /**
  * Handles player leave events.
