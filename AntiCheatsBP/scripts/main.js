@@ -463,15 +463,7 @@ function performInitializations() {
         currentTick++;
         const tickDependencies = getStandardDependencies();
 
-        // --- BEGIN TICK LOOP DIAGNOSTICS ---
-        if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) {
-            const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, 'System', tickDependencies) : console.log;
-            logger(`[TickLoopDiag] Tick: ${currentTick}`);
-            logger(`[TickLoopDiag] typeof mc.world: ${typeof mc.world}`);
-            if (mc.world) {
-                logger(`[TickLoopDiag] typeof mc.world.getAllPlayers: ${typeof mc.world.getAllPlayers}`);
-            }
-        }
+        // --- BEGIN TICK LOOP DIAGNOSTICS --- (Removed)
         // --- END TICK LOOP DIAGNOSTICS ---
 
         if (tickDependencies.config.enableWorldBorderSystem) {
@@ -488,42 +480,33 @@ function performInitializations() {
         try {
             if (mc.world && typeof mc.world.getAllPlayers === 'function') {
                 allPlayers = mc.world.getAllPlayers();
-                if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) {
-                    const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, 'System', tickDependencies) : console.log;
-                    logger(`[TickLoopDiag] mc.world.getAllPlayers() returned array of length: ${allPlayers.length}`);
-                }
+                // Removed: TickLoopDiag for getAllPlayers length
             } else {
-                if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) {
-                    const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, 'System', tickDependencies) : console.error;
-                    logger('[TickLoopDiag] mc.world or mc.world.getAllPlayers is not available!');
-                }
+                // Removed: TickLoopDiag for mc.world or getAllPlayers not available
+                 if (currentTick === 1 || currentTick % 600 === 0) { // Log less frequently if system isn't fully ready
+                    console.error('[AntiCheatCoreTick] mc.world or mc.world.getAllPlayers is not available!');
+                 }
             }
         } catch (e) {
             // This error is critical enough to always log if it happens.
-            console.error(`[TickLoopDiag] Error calling mc.world.getAllPlayers(): ${e}`);
+            console.error(`[AntiCheatCoreTick] Error calling mc.world.getAllPlayers(): ${e}`);
         }
 
         playerDataManager.cleanupActivePlayerData(allPlayers, tickDependencies);
 
         for (const player of allPlayers) {
-            // --- BEGIN PLAYER LOOP DIAGNOSTICS ---
-            if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) { // Log less frequently
-                const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, player?.nameTag, tickDependencies) : (msg) => console.log(`[Player: ${player?.nameTag}] ${msg}`);
-                logger(`[TickLoopDiag] Processing player (type: ${typeof player})`);
-            }
+            // --- BEGIN PLAYER LOOP DIAGNOSTICS --- (Removed)
             // --- END PLAYER LOOP DIAGNOSTICS ---
 
             let pData;
             try {
                 pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
-                if (tickDependencies.config.enableDebugLogging && (currentTick === 1 || currentTick % 200 === 0)) { // Log less frequently
-                    const logger = (playerUtils && typeof playerUtils.debugLog === 'function') ? (msg) => playerUtils.debugLog(msg, player?.nameTag, tickDependencies) : (msg) => console.log(`[Player: ${player?.nameTag}] ${msg}`);
-                    logger(`[TickLoopDiag] pData: typeof=${typeof pData}, totalFlags=${pData?.flags?.totalFlags ?? 'N/A'}`);
-                }
+                // Removed: TickLoopDiag for pData details
             } catch (e) {
-                console.error(`[TickLoopDiag] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e}`);
+                // This console.error is important if ensurePlayerDataInitialized fails.
+                console.error(`[AntiCheatCoreTick] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e}`);
                 if (playerUtils && typeof playerUtils.debugLog === 'function') {
-                    playerUtils.debugLog(`[TickLoopDiag] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e}`, player?.nameTag, tickDependencies);
+                    playerUtils.debugLog(`[AntiCheatCoreTick] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e}`, player?.nameTag, tickDependencies);
                 }
                 continue; // Skip this player if pData init fails
             }
