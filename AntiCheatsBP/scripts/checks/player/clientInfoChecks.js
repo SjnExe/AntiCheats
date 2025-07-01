@@ -46,7 +46,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
         };
 
-        const actionProfileKey = 'playerInvalidRenderDistance';
+        const actionProfileKey = config.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance';
         if (actionManager && typeof actionManager.executeCheckAction === 'function') {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         } else {

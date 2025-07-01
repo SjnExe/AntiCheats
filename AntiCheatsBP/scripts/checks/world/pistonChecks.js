@@ -58,7 +58,7 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
     data.activations = data.activations.filter(timestamp => timestamp >= sustainedWindowStart);
 
     const activationRate = data.activations.length / config.pistonActivationSustainedDurationSeconds;
-    const actionProfileKey = 'worldAntiGriefPistonLag';
+    const actionProfileKey = config.pistonLagActionProfileName ?? 'worldAntiGriefPistonLag';
 
     if (activationRate >= config.pistonActivationLogThresholdPerSecond) {
         if (currentTime - data.lastLogTime > (config.pistonLagLogCooldownSeconds * 1000)) {

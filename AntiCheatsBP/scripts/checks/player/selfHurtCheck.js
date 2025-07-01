@@ -56,7 +56,7 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
             playerHealth: playerHealthString,
         };
 
-        const actionProfileKey = 'playerSelfHurt';
+        const actionProfileKey = config.selfHurtActionProfileName ?? 'playerSelfHurt';
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
     } else if (pData.isWatched && damagingEntity && damagingEntity.id === player.id) {

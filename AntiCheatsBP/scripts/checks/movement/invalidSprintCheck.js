@@ -35,7 +35,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let conditionDetailsLog = '';
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
-        const actionProfileKey = 'movementInvalidSprint';
+        const actionProfileKey = config.invalidSprintActionProfileName ?? 'movementInvalidSprint';
 
         try {
             const foodComp = player.getComponent('minecraft:food');

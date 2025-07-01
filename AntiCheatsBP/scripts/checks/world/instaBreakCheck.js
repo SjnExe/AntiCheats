@@ -41,7 +41,7 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
                 z: eventData.block.location.z.toString(),
                 playerName: player.nameTag,
             };
-            const actionProfileKey = 'worldInstaBreakUnbreakable';
+            const actionProfileKey = config.instaBreakUnbreakableActionProfileName ?? 'worldInstaBreakUnbreakable';
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
             eventData.cancel = true;
@@ -117,7 +117,7 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
                 z: blockLocation.z.toString(),
                 toolUsed: pData.toolUsedForBreakAttempt ?? 'unknown',
             };
-            const actionProfileKey = 'worldInstaBreakSpeed';
+            const actionProfileKey = config.instaBreakSpeedActionProfileName ?? 'worldInstaBreakSpeed';
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[InstaBreakCheck](Speed): Flagged ${player.nameTag} for breaking ${blockTypeId} in ${actualDurationTicks}t (Expected: ${expectedTicks === Infinity ? 'Inf' : expectedTicks}t, Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}).`, pData.isWatched ? player.nameTag : null, dependencies);
         }
