@@ -89,144 +89,109 @@ function initializeRankSystem(dependencies) {
  *          Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
-    // --- BEGIN TOP-LEVEL DEPENDENCIES DIAGNOSTIC ---
-    console.warn(`[RankMan][ENTRY] getPlayerRankAndPermissions called for player: ${player?.nameTag || 'UnknownPlayer'}`);
-    console.warn(`[RankMan][ENTRY] typeof dependencies: ${typeof dependencies}`);
     try {
-        if (dependencies === undefined) {
-            console.warn('[RankMan][ENTRY] dependencies is undefined.');
-        } else if (dependencies === null) {
-            console.warn('[RankMan][ENTRY] dependencies is null.');
-        } else {
-            // Attempt to log specific parts of dependencies if it's an object
-            if (typeof dependencies === 'object') {
-                let depsSample = {
-                    configExists: Object.prototype.hasOwnProperty.call(dependencies, 'config'),
-                    playerUtilsExists: Object.prototype.hasOwnProperty.call(dependencies, 'playerUtils'),
-                    configType: typeof dependencies.config,
-                    playerUtilsType: typeof dependencies.playerUtils,
-                };
-                console.warn('[RankMan][ENTRY] dependencies content sample:', JSON.stringify(depsSample));
-            } else {
-                // If not an object, just try to stringify it directly if possible
-                console.warn('[RankMan][ENTRY] dependencies JSON (or string):', JSON.stringify(dependencies));
-            }
-        }
-    } catch (e) {
-        console.warn('[RankMan][ENTRY] Error trying to log/stringify dependencies:', e.message);
+        console.error('[GPRAP_CONSOLE_TEST] console.error works in GPRAP entry.');
+    } catch(e) {
+        try { mc.world.sendMessage('EMERGENCY_CONSOLE_FAIL_GPRAP'); } catch (e2) {}
+        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member'); // Ensure sortedRankDefinitions is accessible
+        return { rankDefinition: defaultMemberRank || null, permissionLevel: defaultPermissionLevel, rankId: 'member' };
     }
-    // --- END TOP-LEVEL DEPENDENCIES DIAGNOSTIC ---
 
-    // Ensure dependencies and config are what we expect at a basic level
     if (!dependencies || typeof dependencies !== 'object' || dependencies === null) {
-        console.error('[RankManager] Critical: Invalid dependencies object passed to getPlayerRankAndPermissions (checked after ENTRY logs). Falling back to default permissions.');
-        // Fallback to default permissions if dependencies are totally broken
-        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member' && r.permissionLevel === defaultPermissionLevel);
-        return {
-            rankDefinition: defaultMemberRank || null,
-            permissionLevel: defaultPermissionLevel,
-            rankId: defaultMemberRank ? 'member' : null,
-        };
+        console.error('[GPRAP_ERROR] Dependencies object itself is invalid.');
+        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member');
+        return { rankDefinition: defaultMemberRank || null, permissionLevel: defaultPermissionLevel, rankId: 'member' };
     }
 
-    const { config, playerUtils } = dependencies;
+    // Test console.warn with a simple string before using dependencies.config
+    // This test was from the previous iteration of diagnostics, if console.warn itself was an issue.
+    // try {
+    //     console.warn("[GPRAP_CONSOLE_TEST_2] Simple console.warn test.");
+    // } catch (e) {
+    //     try { mc.world.sendMessage('EMERGENCY_CONSOLE_WARN_FAIL_GPRAP'); } catch (e2) {}
+    // }
 
-    // --- BEGIN [RankMan][Detail] LOGS ---
-    console.warn(`[RankMan][Detail] After destructuring in getPlayerRankAndPermissions. typeof config: ${typeof config}`);
-    console.warn(`[RankMan][Detail] After destructuring. typeof playerUtils: ${typeof playerUtils}`);
-    if (config) {
-        console.warn('[RankMan][Detail] config is truthy after destructuring.');
+    // Now, carefully try to use dependencies.config
+    let config; // Declare config here
+    if (Object.prototype.hasOwnProperty.call(dependencies, 'config') && typeof dependencies.config === 'object' && dependencies.config !== null) {
+        config = dependencies.config;
+        // console.warn("[GPRAP_DEBUG] config object obtained from dependencies."); // Extreme isolation: keep commented
     } else {
-        console.warn('[RankMan][Detail] config is falsy (undefined, null, etc.) after destructuring.');
+        console.error(`[GPRAP_ERROR] dependencies.config is invalid or not an object. Type: ${typeof dependencies.config}`);
+        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member');
+        return { rankDefinition: defaultMemberRank || null, permissionLevel: defaultPermissionLevel, rankId: 'member' };
     }
-    if (playerUtils) {
-        console.warn('[RankMan][Detail] playerUtils is truthy after destructuring.');
-    } else {
-        console.warn('[RankMan][Detail] playerUtils is falsy (undefined, null, etc.) after destructuring.');
-    }
-    // --- END [RankMan][Detail] LOGS ---
+
+    // playerUtils is not strictly needed for the core rank logic if we strip it down,
+    // but the original function destructured it. For extreme isolation, we'll skip it for now.
+    // const { playerUtils } = dependencies;
+
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
-        // Use playerUtils safely after dependencies check
-        // Note: config and playerUtils here are from the destructuring above.
-        // Their validity is checked by the [Detail] logs and the subsequent [CONSOLE_BLOCK].
-        if (playerUtils && typeof playerUtils.debugLog === 'function' && config && typeof config.enableDebugLogging === 'boolean' && config.enableDebugLogging) {
-            playerUtils.debugLog('[RankManager] Invalid player object passed to getPlayerRankAndPermissions.', player?.nameTag || 'UnknownSource', dependencies);
-        }
-        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member' && r.permissionLevel === defaultPermissionLevel);
-        return {
-            rankDefinition: defaultMemberRank || null,
-            permissionLevel: defaultPermissionLevel,
-            rankId: defaultMemberRank ? 'member' : null,
-        };
+        console.error('[GPRAP_ERROR] Invalid player object.');
+        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member');
+        return { rankDefinition: defaultMemberRank || null, permissionLevel: defaultPermissionLevel, rankId: 'member' };
     }
 
-    let ownerName = ''; // Default value
-    let adminTag = '';  // Default value
+    let ownerName = '';
+    let adminTag = '';
 
-    // --- BEGIN DIAGNOSTIC LOGGING for rankManager config issue (using console.warn) ---
-    // This entire block is now wrapped in a try-catch to catch errors within the diagnostic logging itself.
     try {
-        const diagPlayerName = player?.nameTag || 'UnknownPlayer';
-        // Note: typeof dependencies and its sample is logged by [RankMan][ENTRY] logs already.
-        // Here we focus on config and playerUtils after they have been destructured at the top of the function.
-
-        // config and playerUtils are from: const { config, playerUtils } = dependencies; (after initial guards for dependencies)
-
-        console.warn('[RankMan][CONSOLE_BLOCK_PRE_CONFIG_TEST] Checking config reference next.');
-        console.warn('[RankMan][CONSOLE_BLOCK_CONFIG_TYPEOF_TEST] typeof config is:', typeof config);
-
-        // Temporarily comment out the rest of the CONSOLE_BLOCK to isolate the typeof config logging
-        /*
-        if (config && typeof config === 'object' && config !== null) {
-            // Attempt to stringify only a few key expected properties of config
-            let configSample = "Error sampling config or not an object."; // Default if stringify fails or config is bad
-            try {
-                configSample = JSON.stringify({
-                    ownerPlayerNameExists: Object.prototype.hasOwnProperty.call(config, 'ownerPlayerName'),
-                    ownerPlayerNameType: typeof config.ownerPlayerName,
-                    adminTagExists: Object.prototype.hasOwnProperty.call(config, 'adminTag'),
-                    adminTagType: typeof config.adminTag,
-                    prefixExists: Object.prototype.hasOwnProperty.call(config, 'prefix'),
-                    prefixType: typeof config.prefix,
-                    enableDebugLoggingExists: Object.prototype.hasOwnProperty.call(config, 'enableDebugLogging'),
-                    enableDebugLoggingType: typeof config.enableDebugLogging,
-                }, null, 2);
-            } catch(stringifyError){
-                configSample = `JSON.stringify error for config sample: ${stringifyError.message}`;
-            }
-            console.warn(`[RankMan][CONSOLE_BLOCK] config properties sample: ${configSample}`);
-
-            // Log individual properties carefully, each in its own try-catch
-            try {
-                console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.ownerPlayerName: ${typeof config.ownerPlayerName}`);
-                console.warn(`[RankMan][CONSOLE_BLOCK] config.ownerPlayerName value: "${String(config.ownerPlayerName)}"`);
-            } catch (e) {
-                console.warn(`[RankMan][CONSOLE_BLOCK] Error accessing/logging ownerPlayerName: ${e.message}`);
-            }
-            try {
-                console.warn(`[RankMan][CONSOLE_BLOCK] typeof config.adminTag: ${typeof config.adminTag}`);
-                console.warn(`[RankMan][CONSOLE_BLOCK] config.adminTag value: "${String(config.adminTag)}"`);
-            } catch (e) {
-                console.warn(`[RankMan][CONSOLE_BLOCK] Error accessing/logging adminTag: ${e.message}`);
-            }
-        } else {
-            console.warn('[RankMan][CONSOLE_BLOCK] config is not a valid object or is null (from function scope).');
+        // console.warn("[GPRAP_DEBUG] Attempting to access config.ownerPlayerName. Typeof config.ownerPlayerName:", typeof config.ownerPlayerName); // Keep commented
+        if (typeof config.ownerPlayerName === 'string') { // Check type BEFORE access for safety
+            ownerName = config.ownerPlayerName;
         }
-
-        console.warn(`[RankMan][CONSOLE_BLOCK] typeof playerUtils (from function scope): ${typeof playerUtils}`);
-        if(playerUtils && typeof playerUtils === 'object' && playerUtils !== null) {
-            console.warn(`[RankMan][CONSOLE_BLOCK] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
-        } else {
-            console.warn('[RankMan][CONSOLE_BLOCK] playerUtils is not a valid object or is null (from function scope).');
+        // console.warn("[GPRAP_DEBUG] Attempting to access config.adminTag. Typeof config.adminTag:", typeof config.adminTag); // Keep commented
+        if (typeof config.adminTag === 'string') { // Check type BEFORE access
+            adminTag = config.adminTag;
         }
-        */
     } catch (e) {
-        console.error(`[RankMan][CONSOLE_ERROR] Error within CONSOLE_BLOCK diagnostic logging: ${e.message}${e.stack ? ('\\nStack: ' + e.stack) : ''}`);
+        console.error(`[GPRAP_ERROR] Error accessing config properties (ownerPlayerName/adminTag): ${e.message}${e.stack ? '\\nStack:'+e.stack:''}`);
+        // ownerName and adminTag remain ''
     }
-    // --- END DIAGNOSTIC LOGGING ---
 
-    if (config && typeof config === 'object' && config !== null) {
+    // All other diagnostic logs ([RankMan][ENTRY], [RankMan][Detail], [RankMan][CONSOLE_BLOCK]) removed for this extreme isolation test.
+
+    // Core rank logic (simplified for this test, focusing on owner/admin/default)
+    for (const rankDef of sortedRankDefinitions) {
+        if (rankDef.conditions && Array.isArray(rankDef.conditions)) {
+            for (const condition of rankDef.conditions) {
+                let match = false;
+                try { // Add try-catch around player.hasTag as well
+                    switch (condition.type) {
+                        case 'owner_name':
+                            if (ownerName && player.nameTag === ownerName) match = true;
+                            break;
+                        case 'admin_tag':
+                            if (adminTag && player.hasTag(adminTag)) match = true;
+                            break;
+                        case 'manual_tag_prefix':
+                            if (condition.prefix && player.hasTag(condition.prefix + rankDef.id)) match = true;
+                            break;
+                        case 'tag':
+                            if (condition.tag && player.hasTag(condition.tag)) match = true;
+                            break;
+                        case 'default':
+                            match = true;
+                            break;
+                    }
+                } catch (eHasTag) {
+                    console.error(`[GPRAP_ERROR] Error during player.hasTag or nameTag access for condition type ${condition.type}: ${eHasTag.message}`);
+                    match = false; // Ensure match is false if hasTag errors
+                }
+                if (match) {
+                    return { rankDefinition: rankDef, permissionLevel: rankDef.permissionLevel, rankId: rankDef.id };
+                }
+            }
+        }
+    }
+
+    const memberRankDef = sortedRankDefinitions.find(r => r.id === 'member' && r.permissionLevel === defaultPermissionLevel);
+    return { rankDefinition: memberRankDef || null, permissionLevel: defaultPermissionLevel, rankId: memberRankDef ? 'member' : null };
+}
+
+/**
+ * Gets the effective permission level for a player.
         // Line 103 (approximately, after additions) would be here:
         ownerName = typeof config.ownerPlayerName === 'string' ? config.ownerPlayerName : '';
         adminTag = typeof config.adminTag === 'string' ? config.adminTag : '';
@@ -307,99 +272,78 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies Standard dependencies object.
  */
 export function updatePlayerNametag(player, dependencies) {
-    console.warn(`[updatePlayerNametag][BEGIN] Function entered for player: ${player?.nameTag || 'UnknownPlayer'}`);
-
-    // --- BEGIN DEPENDENCIES DIAGNOSTIC for updatePlayerNametag ---
-    console.warn(`[updatePlayerNametag][Diag] typeof dependencies: ${typeof dependencies}`);
     try {
-        if (dependencies === undefined) {
-            console.warn('[updatePlayerNametag][Diag] dependencies is undefined.');
-        } else if (dependencies === null) {
-            console.warn('[updatePlayerNametag][Diag] dependencies is null.');
-        } else if (typeof dependencies === 'object') {
-            let depsSample = {
-                configExists: Object.prototype.hasOwnProperty.call(dependencies, 'config'),
-                playerUtilsExists: Object.prototype.hasOwnProperty.call(dependencies, 'playerUtils'),
-                configType: typeof dependencies.config,
-                playerUtilsType: typeof dependencies.playerUtils,
-            };
-            console.warn('[updatePlayerNametag][Diag] dependencies content sample:', JSON.stringify(depsSample));
-        } else {
-            console.warn('[updatePlayerNametag][Diag] dependencies is not an object, undefined, or null. Actual type:', typeof dependencies);
-        }
-    } catch (e) {
-        console.warn('[updatePlayerNametag][Diag] Error trying to log/stringify dependencies:', e.message);
-    }
-    // --- END DEPENDENCIES DIAGNOSTIC for updatePlayerNametag ---
-
-    if (!dependencies || typeof dependencies !== 'object') {
-        console.error(`[RankManager][updatePlayerNametag] Critical: Main dependencies object is invalid (type: ${typeof dependencies}) for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
-        try { if (player && player.isValid()) player.nameTag = player.name; } catch(e) { console.error(`[RankManager][updatePlayerNametag] Error setting fallback nametag (early exit): ${e.message}`); }
+        console.error('[UPNT_CONSOLE_TEST] console.error works in updatePlayerNametag entry.');
+    } catch(e) {
+        try { mc.world.sendMessage('EMERGENCY_CONSOLE_FAIL_UPNT'); } catch (e2) {}
         return;
     }
 
-    let config, playerUtils;
-    try {
-        console.warn('[updatePlayerNametag][PreDestructure] Attempting to destructure config and playerUtils from dependencies.');
-        ({ config, playerUtils } = dependencies);
-        console.warn(`[updatePlayerNametag][PostDestructure] typeof config: ${typeof config}, typeof playerUtils: ${typeof playerUtils}`);
-    } catch (e) {
-        console.error(`[updatePlayerNametag][DestructureError] Error destructuring 'config' or 'playerUtils' from dependencies: ${e.message}${e.stack ? '\\nStack:'+e.stack : ''}`);
-        try { if (player && player.isValid()) player.nameTag = player.name; } catch(eSafe) { console.error(`[RankManager][updatePlayerNametag] Error setting fallback nametag (destructure fail): ${eSafe.message}`);}
+    // Simplified initial guard
+    if (!dependencies || typeof dependencies !== 'object' || dependencies === null ||
+        !dependencies.config || typeof dependencies.config !== 'object' ||
+        !dependencies.playerUtils || typeof dependencies.playerUtils !== 'object') { // rankManager is not directly destructured here
+        console.error(`[UPNT_ERROR] Invalid or incomplete dependencies for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
+        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : '') || ''); } catch(eSafe) {console.error(`[UPNT_ERROR] Fallback nametag set failed (invalid deps): ${eSafe.message}`);}
         return;
     }
 
-    if (!config || typeof config !== 'object' || !playerUtils || typeof playerUtils !== 'object') {
-        console.error(`[RankManager][updatePlayerNametag] Critical: Destructured 'config' (type: ${typeof config}) or 'playerUtils' (type: ${typeof playerUtils}) is invalid for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
-        try { if (player && player.isValid()) player.nameTag = player.name; } catch(eSafe) { console.error(`[RankManager][updatePlayerNametag] Error setting fallback nametag (post-destructure var check fail): ${eSafe.message}`);}
-        return;
-    }
+    const config = dependencies.config;
+    const playerUtils = dependencies.playerUtils;
+
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
-        console.error('[RankManager] Invalid player object passed to updatePlayerNametag.');
+        console.error('[UPNT_ERROR] Invalid player object.');
         return;
     }
 
-    const vanishedTagToUse = config?.vanishedPlayerTag || 'vanished';
+    const vanishedTagToUse = config.vanishedPlayerTag || 'vanished'; // Assumes config is valid from guard
 
     try {
         if (player.hasTag(vanishedTagToUse)) {
-            player.nameTag = ''; // Clear nametag if vanished
+            player.nameTag = '';
             return;
         }
 
-        const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
-        const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
-
-        // Use player.nameTag directly as player.name was causing issues on spawn.
-        // Ensure it's a string and provide a fallback if nameTag is also problematic.
-        let baseName = '';
-        if (player && typeof player.nameTag === 'string') {
-            baseName = player.nameTag;
-        } else if (player && typeof player.name === 'string') { // Fallback to player.name if nameTag isn't a string (less likely)
-            baseName = player.name;
-            console.warn(`[updatePlayerNametag] player.nameTag was not a string (type: ${typeof player.nameTag}), falling back to player.name for baseName.`);
-        } else {
-            console.warn(`[updatePlayerNametag] Both player.nameTag and player.name are not strings or player object is invalid. Using empty baseName.`);
-        }
-        console.warn(`[updatePlayerNametag] Using baseName: "${baseName}" (from nameTag or fallback)`);
+        let rankDefinition;
+        let nametagToApply = defaultNametagPrefix; // Default value
 
         try {
-            console.warn(`[updatePlayerNametag][NameTagSet] Attempting to set nameTag with nametagToApply: "${nametagToApply}", baseName: "${baseName}"`);
-            player.nameTag = nametagToApply + baseName;
-            console.warn(`[updatePlayerNametag][NameTagSet] player.nameTag set successfully to: "${player.nameTag}"`);
-        } catch (e) {
-            console.error(`[updatePlayerNametag][NameTagSetError] Error setting player.nameTag: ${e.message}${e.stack ? '\\nStack:' + e.stack : ''}`);
-            // Attempt a simpler nametag set if the combined one fails (e.g. if baseName was problematic)
-            try {
-                player.nameTag = player.nameTag || ""; // try to set it to itself or empty to see if assignment works at all
-            } catch (eNested) {
-                 console.error(`[updatePlayerNametag][NameTagSetErrorNested] Error setting player.nameTag even to itself: ${eNested.message}`);
+            const rankData = getPlayerRankAndPermissions(player, dependencies);
+            if (rankData && rankData.rankDefinition) {
+                rankDefinition = rankData.rankDefinition;
+                nametagToApply = rankDefinition.nametagPrefix ?? defaultNametagPrefix;
             }
+        } catch (eRank) {
+            console.error(`[UPNT_ERROR] Error in getPlayerRankAndPermissions call or processing its result: ${eRank.message}${eRank.stack ? '\\nStack:'+eRank.stack:''}`);
+            // nametagToApply remains defaultNametagPrefix
         }
 
+        let baseName = String(player.nameTag || 'Player'); // Use nameTag, ensure string, fallback to 'Player'
 
-        if (config?.enableDebugLogging && playerUtils?.debugLog) {
+        try {
+            player.nameTag = nametagToApply + baseName;
+        } catch (eSetTag) {
+            console.error(`[UPNT_ERROR] Error setting player.nameTag: ${eSetTag.message}${eSetTag.stack ? '\\nStack:' + eSetTag.stack : ''}`);
+            try { player.nameTag = baseName; } catch (eSafeSet) {} // Fallback to just baseName
+        }
+
+        if (config.enableDebugLogging && playerUtils && typeof playerUtils.debugLog === 'function') {
+            try {
+                // Using player.nameTag for logging context as player.name was problematic
+                playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.nameTag, dependencies);
+            } catch(eLog) {
+                console.warn(`[UPNT_WARN] playerUtils.debugLog failed: ${eLog.message}`);
+            }
+        }
+    } catch (error) {
+        console.error(`[UPNT_ERROR] Broader error in updatePlayerNametag for ${player?.nameTag || 'Unknown'}: ${error.message}${error.stack ? '\\nStack:' + error.stack : ''}`);
+        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || ''); } catch(eSafe) {}
+    }
+}
+
+/**
+ * Initializes the rank system. This must be called from `main.js` after all dependencies are available.
             playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.name, dependencies);
         }
     } catch (error) {
