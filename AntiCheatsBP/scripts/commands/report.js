@@ -9,7 +9,7 @@ export const definition = {
     name: 'report',
     syntax: '!report <playername> <reason...>',
     description: 'Reports a player for rule violations. Provide a clear reason.',
-    permissionLevel: permissionLevels.normal, // Or a higher level if desired
+    permissionLevel: permissionLevels.member, // Or a higher level if desired
     enabled: true,
 };
 

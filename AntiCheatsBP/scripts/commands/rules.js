@@ -13,7 +13,7 @@ export const definition = {
     description: 'Displays the server rules.',
     syntax: '!rules',
     aliases: ['rule'],
-    permissionLevel: permissionLevels.normal,
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 

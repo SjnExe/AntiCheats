@@ -74,11 +74,14 @@ Get up and running in minutes!
     *   <!-- Optional: Link to a video installation tutorial if one is created -->
     *   <!-- Example: [Watch Video Tutorial](your_video_link_here) -->
 2.  **Install:** Apply both `AntiCheatsBP` (Behavior Pack) and `AntiCheatsRP` (Resource Pack) to your world.
-3.  **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
-4.  **👑 Set Owner (CRUCIAL!):**
+3.  **Enable Beta APIs (CRITICAL!):**
+    *   In your world settings, go to the "Experiments" section.
+    *   **Enable the "Beta APIs" toggle.** This addon relies on beta Minecraft Scripting API features (as specified in its `manifest.json`) and will not function correctly with all features without this setting enabled.
+4.  **Prioritize:** Ensure `AntiCheatsBP` is at the **TOP** of your behavior pack list. This is crucial for the AntiCheat to function correctly.
+5.  **👑 Set Owner (CRUCIAL!):**
     *   Open `AntiCheatsBP/scripts/config.js`. (Note: `.mcaddon` files are zip archives; you may need to rename to `.zip` or use an archive tool to access the contents if editing manually.)
     *   Set `ownerPlayerName` to your **exact** in-game name (case-sensitive). This grants you full control!
-5.  **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
+6.  **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
 6.  **🔧 Configure (Optional but Recommended):**
     *   Review other core settings (admin tag, command prefix, etc.) in `AntiCheatsBP/scripts/config.js`.
     *   Explore the in-game settings panel (`!panel`) for more specific check configurations.
@@ -88,6 +91,7 @@ Get up and running in minutes!
 <summary><strong>💡 Quick Troubleshooting Tips & Full Guide</strong></summary>
 
 Common quick checks:
+- **Enable "Beta APIs":** Make sure the "Beta APIs" experimental toggle is ON in your world settings. This addon requires it.
 - Ensure `AntiCheatsBP` is at the very top of your behavior packs.
 - Verify your `ownerPlayerName` in `config.js` is exact (case-sensitive).
 - Check Minecraft version compatibility (see badge above).

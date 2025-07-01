@@ -1,0 +1,29 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "Minimal Event Test Pack",
+    "description": "Tests availability of mc.world.beforeEvents.chatSend",
+    "uuid": "f1f2f3f4-0102-0304-0506-f1f2f3f4f5f6", // Placeholder UUID
+    "version": [0, 0, 1],
+    "min_engine_version": [1, 20, 80] // Align with a reasonable recent version that supports @minecraft/server@2.0.0
+  },
+  "modules": [
+    {
+      "description": "Minimal Event Test Script",
+      "type": "script",
+      "language": "javascript",
+      "entry": "scripts/main.js",
+      "uuid": "a1a2a3a4-1112-1314-1516-a1a2a3a4a5a6", // Placeholder UUID
+      "version": [0, 0, 1]
+    }
+  ],
+  "dependencies": [
+    {
+      "module_name": "@minecraft/server",
+      "version": "2.0.0" // Matching the main pack's dependency
+    }
+  ],
+  "capabilities": [
+    "script_eval"
+  ]
+}
