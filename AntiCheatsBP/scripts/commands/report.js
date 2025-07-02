@@ -5,6 +5,7 @@
 import { permissionLevels } from '../core/rankManager.js';
 import * as reportManager from '../core/reportManager.js';
 
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'report',
     syntax: '!report <playername> <reason...>',

@@ -271,6 +271,52 @@ export const stringDB = {
     'tpa.manager.expired.requesterNotified': '§cYour TPA request to {targetName} has expired.',
     'tpa.manager.expired.targetNotified': '§cThe TPA request from {requesterName} has expired.',
 
+    // Command specific: addrank
+    'command.addrank.usage': '§cUsage: {prefix}addrank <playername> <rankId>',
+    'command.addrank.playerNotFound': "§cPlayer '{playerName}' not found.",
+    'command.addrank.rankIdInvalid': "§cRank ID '{rankId}' is not a valid rank.",
+    'command.addrank.rankNotManuallyAssignable': "§cRank '{rankName}' cannot be assigned using this command (not configured for manual tag assignment).",
+    'command.addrank.permissionDeniedAssign': "§cYou do not have permission to assign the rank '{rankName}'.",
+    'command.addrank.alreadyHasRank': "§ePlayer {playerName} already has the rank '{rankName}'.",
+    'command.addrank.assignSuccessToIssuer': "§aSuccessfully assigned rank '{rankName}' to {playerName}.",
+    'command.addrank.assignSuccessToTarget': "§aYou have been assigned the rank: {rankName}.",
+    'command.addrank.errorAssign': "§cAn error occurred while assigning the rank: {errorMessage}",
+
+    // Command specific: ban
+    'command.ban.usage': "§cUsage: {prefix}ban <playername> [duration] [reason]",
+    'command.ban.playerNotFound': "§cPlayer '{playerName}' not found.",
+    'command.ban.cannotBanSelf': "§cYou cannot ban yourself.",
+    'command.ban.permissionDeniedAdminOwner': "§cYou do not have permission to ban an admin or owner.",
+    'command.ban.permissionDeniedOwner': "§cYou do not have permission to ban an owner.",
+    'command.ban.ownerCannotBanOwner': "§cOwners cannot ban other owners through this command.",
+    'command.ban.invalidDuration': "§cInvalid duration format. Use: 7d, 2h, 30m, or perm.",
+    'command.ban.kickMessage.header': "§cYou have been banned from the server.",
+    'command.ban.kickMessage.reason': "§eReason: §f{reason}",
+    'command.ban.kickMessage.bannedBy': "§eBanned by: §f{bannedBy}",
+    'command.ban.kickMessage.duration': "§eDuration: §f{durationDisplay}",
+    'command.ban.kickMessage.appeal': "§eAppeal on Discord: §9{discordLink}",
+    'command.ban.success': "§aSuccessfully banned {playerName} for {durationString}. Reason: {reason}",
+    'command.ban.failure': "§cFailed to ban {playerName}. They might already be banned or an error occurred.",
+
+    // Command specific: clearchat
+    'command.clearchat.failPartial': "§cChat clear failed partially. Some messages might remain.",
+    'command.clearchat.success': "§aChat cleared successfully.",
+
+    // Command specific: clearreports
+    'command.clearreports.usage': "§cUsage: {prefix}{syntax}",
+    'command.clearreports.example': "§cExample: {prefix}clearreports <report_id> OR {prefix}clearreports <player_name> OR {prefix}clearreports all",
+    'command.clearreports.allSuccess': "§aSuccessfully cleared all {count} reports.",
+    'command.clearreports.idSuccess': "§aReport with ID '{reportId}' has been cleared.",
+    'command.clearreports.idNotFound': "§cReport with ID '{reportId}' not found.",
+    'command.clearreports.playerSuccess': "§aCleared {count} reports associated with player '{playerName}'.",
+    'command.clearreports.playerNotFound': "§eNo reports found associated with player '{playerName}'.",
+
+    // Configurable value descriptions (for potential UI)
+    'config.key.chatClearLinesCount.title': "Chat Clear Lines Count",
+    'config.key.chatClearLinesCount.description': "Number of empty lines sent by !clearchat command to clear chat.",
+    'config.key.reportsViewPerPage.title': "Reports View Per Page",
+    'config.key.reportsViewPerPage.description': "Number of reports displayed per page in the !viewreports command.",
+
     // Add more string keys and their corresponding text here as needed.
     // Example: 'some.module.someMessage': 'This is a message for {placeholder}.'
 };
