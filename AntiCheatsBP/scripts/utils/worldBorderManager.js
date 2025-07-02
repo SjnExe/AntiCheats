@@ -462,12 +462,13 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
             const wallHeight = config.worldBorderParticleWallHeight;
             const segmentLength = config.worldBorderParticleSegmentLength;
             const yBase = Math.floor(playerLoc.y);
-            const displayHalfSize = (borderSettings.isResizing && typeof currentEffectiveHalfSize === 'number') ? currentEffectiveHalfSize : borderSettings.halfSize;
-            const displayRadius = (borderSettings.isResizing && typeof currentEffectiveRadius === 'number') ? currentEffectiveRadius : borderSettings.radius;
-            if (borderSettings.shape === 'square' && typeof displayHalfSize === 'number' && displayHalfSize > 0) {
+            // Get current effective size considering resizing
+            const { currentSize: currentEffectiveSize, shape: currentShape } = getCurrentEffectiveBorderSize(borderSettings, dependencies);
+
+            if (currentShape === 'square' && typeof currentEffectiveSize === 'number' && currentEffectiveSize > 0) {
                 const { centerX, centerZ } = borderSettings;
-                const minX = centerX - displayHalfSize, maxX = centerX + displayHalfSize;
-                const minZ = centerZ - displayHalfSize, maxZ = centerZ + displayHalfSize;
+                const minX = centerX - currentEffectiveSize, maxX = centerX + currentEffectiveSize;
+                const minZ = centerZ - currentEffectiveSize, maxZ = centerZ + currentEffectiveSize;
                 const spawnLine = (isXAxis, fixedCoord, startDyn, endDyn, playerDynamicCoord) => {
                     const lineLength = Math.min(segmentLength, Math.abs(endDyn - startDyn));
                     let actualStartDyn = playerDynamicCoord - lineLength / 2;
@@ -488,14 +489,14 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
                 if (Math.abs(playerLoc.x - maxX) < visualRange) spawnLine(true, maxX, minZ, maxZ, playerLoc.z);
                 if (Math.abs(playerLoc.z - minZ) < visualRange) spawnLine(false, minZ, minX, maxX, playerLoc.x);
                 if (Math.abs(playerLoc.z - maxZ) < visualRange) spawnLine(false, maxZ, minX, maxX, playerLoc.x);
-            } else if (borderSettings.shape === 'circle' && typeof displayRadius === 'number' && displayRadius > 0) {
+            } else if (currentShape === 'circle' && typeof currentEffectiveSize === 'number' && currentEffectiveSize > 0) {
                 const { centerX, centerZ } = borderSettings;
-                const radiusToUse = displayRadius;
+                const radiusToUse = currentEffectiveSize;
                 if (Math.abs(Math.sqrt(Math.pow(playerLoc.x - centerX, 2) + Math.pow(playerLoc.z - centerZ, 2)) - radiusToUse) < visualRange) {
                     const playerAngle = Math.atan2(playerLoc.z - centerZ, playerLoc.x - centerX);
-                    const halfAngleSpan = radiusToUse > 0 ? (segmentLength / 2) / radiusToUse : Math.PI;
+                    const halfAngleSpan = radiusToUse > 0 ? (segmentLength / 2) / radiusToUse : Math.PI; // Ensure radiusToUse is positive
                     for (let i = 0; i < segmentLength * density; i++) {
-                        const currentAngleOffset = (i / (segmentLength * density) - 0.5) * (segmentLength / radiusToUse);
+                        const currentAngleOffset = radiusToUse > 0 ? (i / (segmentLength * density) - 0.5) * (segmentLength / radiusToUse) : 0;
                         if (Math.abs(currentAngleOffset) > halfAngleSpan && segmentLength * density > 1) continue;
                         const angle = playerAngle + currentAngleOffset;
                         const pX = centerX + radiusToUse * Math.cos(angle);
