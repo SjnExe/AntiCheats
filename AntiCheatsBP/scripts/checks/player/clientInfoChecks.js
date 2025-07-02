@@ -47,19 +47,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         };
 
         const actionProfileKey = config.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance';
-        if (actionManager && typeof actionManager.executeCheckAction === 'function') {
-            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        } else {
-            playerUtils.debugLog('[InvalidRenderDistanceCheck] actionManager.executeCheckAction not available. Critical logging fallback.', null, dependencies);
-            if (logManager && typeof logManager.addLog === 'function') {
-                logManager.addLog({
-                    adminName: 'System (AntiCheat)',
-                    actionType: 'errorMissingActionManager',
-                    targetName: player.nameTag,
-                    details: `executeCheckAction was not available for InvalidRenderDistance check. Details: ${JSON.stringify(violationDetails)}`,
-                }, dependencies);
-            }
-        }
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(`[InvalidRenderDistanceCheck] Player ${player.nameTag} reported ${clientRenderDistance} chunks, max allowed is ${config.maxAllowedClientRenderDistance}. Flagged via profile '${actionProfileKey}'.`, watchedPrefix, dependencies);
     }

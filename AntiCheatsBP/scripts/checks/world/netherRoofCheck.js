@@ -50,24 +50,9 @@ export async function checkNetherRoof(player, pData, dependencies) {
 
         const actionProfileKey = config.netherRoofActionProfileName ?? 'movementNetherRoof';
 
-        if (actionManager && typeof actionManager.executeCheckAction === 'function') {
-            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-            if (playerUtils.debugLog && (pData?.isWatched || config.enableDebugLogging)) {
-                playerUtils.debugLog(`[NetherRoofCheck] Player ${player.nameTag} on Nether roof. Y: ${detectedYValue}, Threshold: ${thresholdValue}. Action profile '${actionProfileKey}' triggered.`, player.nameTag, dependencies);
-            }
-        } else {
-            if (playerUtils?.debugLog) {
-                playerUtils.debugLog(`[NetherRoofCheck] actionManager.executeCheckAction not available for player ${player.nameTag}. Attempting direct flag.`, player.nameTag, dependencies);
-            }
-            if (playerDataManager && playerDataManager.addFlag) {
-                playerDataManager.addFlag(
-                    player,
-                    actionProfileKey,
-                    `Player detected on Nether roof (Y: ${detectedYValue} >= ${thresholdValue})`,
-                    violationDetails,
-                    dependencies
-                );
-            }
+        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        if (playerUtils.debugLog && (pData?.isWatched || config.enableDebugLogging)) {
+            playerUtils.debugLog(`[NetherRoofCheck] Player ${player.nameTag} on Nether roof. Y: ${detectedYValue}, Threshold: ${thresholdValue}. Action profile '${actionProfileKey}' triggered.`, player.nameTag, dependencies);
         }
     }
 }
