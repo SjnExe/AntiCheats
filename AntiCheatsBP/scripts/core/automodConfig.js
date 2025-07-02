@@ -22,7 +22,7 @@ export const automodConfig = {
      * Defines sets of rules for different checkTypes.
      * Each key is a checkType (e.g., 'movementFlyHover', 'combatCpsHigh'),
      * and its value is an array of AutoModRule objects, ordered by escalating severity.
-     * Note: checkType keys here should match the standardized camelCase versions (e.g., 'playerAntigmc').
+     * Note: checkType keys here should match the standardized camelCase versions (e.g., 'playerAntiGmc').
      */
     automodRules: {
         'movementFlyHover': [

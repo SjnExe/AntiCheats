@@ -35,23 +35,24 @@ let logsAreDirty = false;
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function initializeLogCache(dependencies) {
-    const { playerUtils, mc: minecraftSystem } = dependencies; // Added mc for world access
+    const { playerUtils, mc: minecraftSystem } = dependencies;
     try {
         const rawLogs = minecraftSystem.world.getDynamicProperty(logPropertyKeyName);
         if (typeof rawLogs === 'string') {
             const parsedLogs = JSON.parse(rawLogs);
             if (Array.isArray(parsedLogs)) {
                 logsInMemory = parsedLogs;
-                playerUtils.debugLog(`LogManager: Successfully loaded ${logsInMemory.length} logs into memory cache.`, 'System', dependencies);
+                playerUtils.debugLog(`LogManager: Successfully loaded ${logsInMemory.length} logs into memory cache.`, null, dependencies);
                 return;
             }
         }
-        playerUtils.debugLog('LogManager: No valid logs found in dynamic properties, or property not set. Initializing with empty cache.', 'System', dependencies);
+        playerUtils.debugLog('LogManager: No valid logs found in dynamic properties, or property not set. Initializing with empty cache.', null, dependencies);
     } catch (error) {
-        playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error.message}`, 'System', dependencies);
-        console.error(`LogManager: Error initializing log cache: ${error.stack || error}`);
+        const errorMsg = error.stack || error;
+        playerUtils.debugLog(`LogManager: Error reading or parsing logs from dynamic property during initialization: ${error.message}`, null, dependencies);
+        console.error(`LogManager: Error initializing log cache: ${errorMsg}`);
     }
-    logsInMemory = []; // Ensure it's an empty array if loading fails
+    logsInMemory = [];
 }
 
 /**
@@ -61,18 +62,19 @@ export function initializeLogCache(dependencies) {
  * @returns {boolean} True if successful or not needed, false on error.
  */
 export function persistLogCacheToDisk(dependencies) {
-    const { playerUtils, mc: minecraftSystem } = dependencies; // Added mc for world access
+    const { playerUtils, mc: minecraftSystem } = dependencies;
     if (!logsAreDirty && minecraftSystem.world.getDynamicProperty(logPropertyKeyName) !== undefined) {
-        return true; // No changes and already exists, no need to save
+        return true;
     }
     try {
         minecraftSystem.world.setDynamicProperty(logPropertyKeyName, JSON.stringify(logsInMemory));
         logsAreDirty = false;
-        playerUtils.debugLog(`LogManager: Successfully persisted ${logsInMemory.length} logs to dynamic property.`, 'System', dependencies);
+        playerUtils.debugLog(`LogManager: Successfully persisted ${logsInMemory.length} logs to dynamic property.`, null, dependencies);
         return true;
     } catch (error) {
-        playerUtils.debugLog(`LogManager: Error saving logs to dynamic property: ${error.message}`, 'System', dependencies);
-        console.error(`LogManager: Error persisting log cache: ${error.stack || error}`);
+        const errorMsg = error.stack || error;
+        playerUtils.debugLog(`LogManager: Error saving logs to dynamic property: ${error.message}`, null, dependencies);
+        console.error(`LogManager: Error persisting log cache: ${errorMsg}`);
         return false;
     }
 }
@@ -87,40 +89,34 @@ export function persistLogCacheToDisk(dependencies) {
 export function addLog(logEntry, dependencies) {
     const { playerUtils } = dependencies;
 
-    if (!logEntry || typeof logEntry.actionType !== 'string' || logEntry.actionType.trim() === '') {
-        playerUtils.debugLog('LogManager: Attempted to add invalid log entry. Missing or invalid actionType.', 'System', dependencies);
+    if (!logEntry?.actionType || typeof logEntry.actionType !== 'string' || logEntry.actionType.trim() === '') {
+        playerUtils.debugLog('LogManager: Attempted to add invalid log entry. Missing or invalid actionType.', null, dependencies);
         console.warn('LogManager: Invalid log entry object (missing or invalid actionType):', JSON.stringify(logEntry));
         return;
     }
 
-    // Ensure actionType is camelCase (basic check, assumes it's mostly correct)
+    // Ensure actionType is camelCase
     if (logEntry.actionType.includes('_') || logEntry.actionType.includes('-') || /[A-Z]/.test(logEntry.actionType[0])) {
-        // Attempt a simple conversion if it looks like snake_case or kebab-case, or starts with uppercase
-        // This is a heuristic and might not cover all non-camelCase scenarios perfectly.
-        // A more robust solution would involve a library or more complex regex if diverse inputs are expected.
         const originalActionType = logEntry.actionType;
         logEntry.actionType = logEntry.actionType
             .replace(/([-_][a-z])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
         if (originalActionType !== logEntry.actionType) {
-            playerUtils.debugLog(`LogManager: Converted actionType from '${originalActionType}' to '${logEntry.actionType}' for consistency.`, 'System', dependencies);
+            playerUtils.debugLog(`LogManager: Converted actionType from '${originalActionType}' to '${logEntry.actionType}' for consistency.`, null, dependencies);
         }
     }
 
+    logEntry.timestamp ??= Date.now();
+    logEntry.adminName ??= 'System';
 
-    if (typeof logEntry.timestamp !== 'number') {
-        logEntry.timestamp = Date.now();
+    if (logEntry.adminName === 'System' && logEntry.actionType !== 'playerJoin' && logEntry.actionType !== 'playerLeave') { // Avoid spamming for common system events
+        playerUtils.debugLog(`LogManager: logEntry missing adminName, defaulted to 'System'. Entry actionType: ${logEntry.actionType}`, null, dependencies);
     }
 
-    if (!logEntry.adminName) { // Default adminName if not provided
-        logEntry.adminName = 'System';
-        playerUtils.debugLog(`LogManager: logEntry missing adminName, defaulted to 'System'. Entry actionType: ${logEntry.actionType}`, 'System', dependencies);
-    }
-
-    logsInMemory.unshift(logEntry); // Add to the beginning for chronological order (newest first)
+    logsInMemory.unshift(logEntry);
     if (logsInMemory.length > maxLogEntriesCount) {
-        logsInMemory.length = maxLogEntriesCount; // Trim oldest entries
+        logsInMemory.length = maxLogEntriesCount;
     }
     logsAreDirty = true;
 }
@@ -132,7 +128,7 @@ export function addLog(logEntry, dependencies) {
  */
 export function getLogs(count) {
     if (typeof count === 'number' && count > 0 && count < logsInMemory.length) {
-        return logsInMemory.slice(0, count); // Return a copy of the specified number of recent logs
+        return logsInMemory.slice(0, count);
     }
-    return [...logsInMemory]; // Return a shallow copy of all logs
+    return [...logsInMemory];
 }
