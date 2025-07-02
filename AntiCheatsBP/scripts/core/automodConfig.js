@@ -229,42 +229,42 @@ export const automodConfig = {
             { flagThreshold: 5, actionType: 'mute', parameters: { duration: '10m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} muted for {duration} for using inappropriate language (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: 'mute', parameters: { duration: '1h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} muted for {duration} for persistent use of inappropriate language (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefTntPlace': [
+        'worldAntiGriefTntPlace': [
             { flagThreshold: 5, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, unauthorized TNT placement detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent unauthorized TNT placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: 'tempBan', parameters: { duration: '30m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive unauthorized TNT placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefWitherSpawn': [
+        'worldAntiGriefWitherSpawn': [
             { flagThreshold: 5, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, unauthorized Wither spawning activity detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent unauthorized Wither spawning (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: 'tempBan', parameters: { duration: '1h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive unauthorized Wither spawning (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefFire': [
+        'worldAntiGriefFire': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, unauthorized fire placement detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent unauthorized fire placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive unauthorized fire placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefLava': [
+        'worldAntiGriefLava': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, unauthorized lava placement detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent unauthorized lava placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive unauthorized lava placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefWater': [
+        'worldAntiGriefWater': [
             { flagThreshold: 15, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, unauthorized water placement detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent unauthorized water placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: 'tempBan', parameters: { duration: '10m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive unauthorized water placement (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefBlockspam': [
+        'worldAntiGriefBlockspam': [
             { flagThreshold: 15, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, block spamming detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent block spamming (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: 'tempBan', parameters: { duration: '5m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive block spamming (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefEntityspam': [
+        'worldAntiGriefEntityspam': [
             { flagThreshold: 15, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, entity spamming detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent entity spamming (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 45, actionType: 'tempBan', parameters: { duration: '10m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive entity spamming (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefBlockspamDensity': [
+        'worldAntiGriefBlockspamDensity': [
             { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, high-density block spamming detected (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for persistent high-density block spamming (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 30, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for excessive high-density block spamming (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
@@ -319,7 +319,7 @@ export const automodConfig = {
             { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for sustained flight (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
             { flagThreshold: 15, actionType: 'tempBan', parameters: { duration: '15m', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for sustained flight (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
         ],
-        'worldAntigriefPistonLag': [
+        'worldAntiGriefPistonLag': [
             { flagThreshold: 1, actionType: 'flagOnly', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Potential piston lag machine detected involving {playerName} (Flags: {flagCount}/{flagThreshold}). Logged.' }, resetFlagsAfterAction: true },
         ],
         // Add more checkTypes here in the future
@@ -387,7 +387,7 @@ export const automodConfig = {
         'chatCharRepeatDetected': false,
         'chatSymbolSpamDetected': false,
         'chatNewline': false,
-        'chatMaxlength': false,
+        'chatMaxLength': false,
         'movementNetherRoof': false,
         'movementHighYVelocity': false,
         'movementSustainedFly': false,
