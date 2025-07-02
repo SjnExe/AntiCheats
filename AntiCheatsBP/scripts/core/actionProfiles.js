@@ -911,7 +911,7 @@ export const checkActionProfiles = {
         },
         cancelMessage: true,
     },
-    'chatMaxLength': { // Note: Corrected from 'chatMaxlength' in automodConfig.js if it was a typo there
+    'chatMaxLength': { // Note: 'chatMaxLength' should align with automodConfig.js if 'chatMaxlength' was a typo there
         enabled: true,
         flag: {
             increment: 1,
