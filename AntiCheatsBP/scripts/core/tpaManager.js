@@ -64,6 +64,7 @@ export function addRequest(requester, target, type, dependencies) {
         creationTimestamp: now,
         expiryTimestamp: now + (config.tpaRequestTimeoutSeconds * 1000),
         warmupExpiryTimestamp: 0, // Will be set on acceptance
+        teleportingPlayerInitialLocation: undefined, // Will be set on acceptance
     };
 
     activeRequests.set(requestId, request);
@@ -166,17 +167,19 @@ export function acceptRequest(requestId, dependencies) {
 
     request.status = 'pending_teleport_warmup';
     request.warmupExpiryTimestamp = Date.now() + (config.tpaTeleportWarmupSeconds * 1000);
-    activeRequests.set(requestId, request); // Update the request in the map
 
     const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: config.tpaTeleportWarmupSeconds });
 
-    if (request.requestType === 'tpa') {
+    if (request.requestType === 'tpa') { // Requester is teleporting
+        request.teleportingPlayerInitialLocation = { ...requesterPlayer.location }; // Store initial location
         requesterPlayer.sendMessage(getString('tpa.manager.requester.accepted', { targetPlayerName: targetPlayer.nameTag, warmupMessage: warmupMsgString }));
         targetPlayer.sendMessage(getString('tpa.manager.target.acceptedFromRequester', { requesterPlayerName: requesterPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds }));
-    } else { // 'tpahere'
+    } else { // 'tpahere', Target is teleporting
+        request.teleportingPlayerInitialLocation = { ...targetPlayer.location }; // Store initial location
         targetPlayer.sendMessage(getString('tpa.manager.target.acceptedByRequester', { requesterPlayerName: requesterPlayer.nameTag, warmupMessage: warmupMsgString }));
         requesterPlayer.sendMessage(getString('tpa.manager.requester.acceptedHere', { targetPlayerName: targetPlayer.nameTag, warmupSeconds: config.tpaTeleportWarmupSeconds }));
     }
+    activeRequests.set(requestId, request); // Update the request in the map
 
     logManager.addLog({ actionType: 'tpaRequestAccepted', targetName: targetPlayer.nameTag, adminName: requesterPlayer.nameTag, details: `Type: ${request.requestType}, ID: ${requestId}` }, dependencies);
     playerUtils.debugLog(`[TpaManager] Request ${requestId} accepted, warm-up initiated. Expires at ${new Date(request.warmupExpiryTimestamp).toLocaleTimeString()}`, request.targetName, dependencies);
@@ -416,4 +419,57 @@ export function getRequestsInWarmup() {
         }
     }
     return warmupRequests;
+}
+
+/**
+ * Checks if the teleporting player has moved significantly during the TPA warmup.
+ * If movement is detected beyond tolerance, the teleport is cancelled.
+ * @param {TpaRequest} request - The TPA request to check.
+ * @param {Dependencies} dependencies - Standard dependencies object.
+ */
+export function checkPlayerMovementDuringWarmup(request, dependencies) {
+    const { config, playerUtils, getString, mc: minecraftSystem, logManager } = dependencies;
+
+    if (request.status !== 'pending_teleport_warmup' || !request.teleportingPlayerInitialLocation) {
+        return; // Not in warmup or initial location not set
+    }
+
+    let teleportingPlayer;
+    let otherPlayerNameForMessage;
+
+    if (request.requestType === 'tpa') { // Requester is teleporting
+        teleportingPlayer = minecraftSystem.world.getAllPlayers().find(p => p.name === request.requesterName);
+        otherPlayerNameForMessage = request.targetName;
+    } else { // 'tpahere', Target is teleporting
+        teleportingPlayer = minecraftSystem.world.getAllPlayers().find(p => p.name === request.targetName);
+        otherPlayerNameForMessage = request.requesterName;
+    }
+
+    if (!teleportingPlayer || !teleportingPlayer.isValid()) {
+        // Player logged off or became invalid during warmup
+        const reasonMsg = getString('tpa.manager.error.teleportWarmupTargetInvalid', { otherPlayerName: otherPlayerNameForMessage });
+        const reasonLog = `Teleporting player ${teleportingPlayer ? teleportingPlayer.nameTag : (request.requestType === 'tpa' ? request.requesterName : request.targetName)} became invalid during warmup for request ${request.requestId}.`;
+        cancelTeleport(request.requestId, reasonMsg, reasonLog, dependencies);
+        return;
+    }
+
+    const movementTolerance = config.tpaMovementTolerance;
+
+    const initialLoc = request.teleportingPlayerInitialLocation;
+    const currentLoc = teleportingPlayer.location;
+
+    // Simple distance check (squared for efficiency, avoiding Math.sqrt)
+    // Ignores vertical (y) movement for now, but can be added if desired.
+    const dx = initialLoc.x - currentLoc.x;
+    const dz = initialLoc.z - currentLoc.z;
+    const distanceSquared = dx * dx + dz * dz;
+
+    if (distanceSquared > movementTolerance * movementTolerance) {
+        const teleportingPlayerName = teleportingPlayer.nameTag;
+        const reasonMsgPlayer = getString('tpa.manager.cancelled.movementDuringWarmup', { playerName: teleportingPlayerName });
+        const reasonLog = `Player ${teleportingPlayerName} moved during TPA warmup for request ${request.requestId}. Moved ${Math.sqrt(distanceSquared).toFixed(2)} blocks.`;
+
+        playerUtils.debugLog(`[TpaManager] Movement detected for ${teleportingPlayerName} during TPA warmup. Cancelling request ${request.requestId}.`, teleportingPlayerName, dependencies);
+        cancelTeleport(request.requestId, reasonMsgPlayer, reasonLog, dependencies);
+    }
 }

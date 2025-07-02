@@ -535,12 +535,17 @@ function performInitializations() {
             tpaManager.clearExpiredRequests(tpaIntervalDependencies);
             const requestsInWarmup = tpaManager.getRequestsInWarmup();
             for (const request of requestsInWarmup) {
-                if (Date.now() >= (request.warmupExpiryTimestamp || 0)) {
+                // Check for movement first if the feature is enabled
+                if (tpaIntervalDependencies.config.tpaCancelOnMoveDuringWarmup) { // This config will be added later
+                    tpaManager.checkPlayerMovementDuringWarmup(request, tpaIntervalDependencies);
+                }
+                // If the request is still valid (not cancelled by movement), check for expiry
+                if (request.status === 'pending_teleport_warmup' && Date.now() >= (request.warmupExpiryTimestamp || 0)) {
                     tpaManager.executeTeleport(request.requestId, tpaIntervalDependencies);
                 }
             }
         }
-    }, 20);
+    }, 20); // Runs every second (20 ticks)
 }
 
 

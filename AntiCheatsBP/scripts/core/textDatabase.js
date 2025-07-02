@@ -270,6 +270,8 @@ export const stringDB = {
     'tpa.manager.decline.otherCancelledTarget': '§cThe TPA request from {requesterPlayerName} was cancelled.',
     'tpa.manager.expired.requesterNotified': '§cYour TPA request to {targetName} has expired.',
     'tpa.manager.expired.targetNotified': '§cThe TPA request from {requesterName} has expired.',
+    'tpa.manager.cancelled.movementDuringWarmup': '§cTPA cancelled: {playerName} moved during warm-up!',
+    'tpa.manager.error.teleportWarmupTargetInvalid': '§cTPA cancelled: {otherPlayerName} is no longer valid for teleport.',
 
     // Command specific: addrank
     'command.addrank.usage': '§cUsage: {prefix}addrank <playername> <rankId>',
