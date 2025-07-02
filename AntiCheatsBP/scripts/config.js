@@ -51,6 +51,10 @@ export const tpaRequestTimeoutSeconds = 60;
 export const tpaRequestCooldownSeconds = 10;
 /** @type {number} Seconds of warmup before a player is teleported after a TPA request is accepted. Movement or damage cancels it. */
 export const tpaTeleportWarmupSeconds = 10;
+/** @type {boolean} If true, TPA is cancelled if the teleporting player moves during the warmup period. */
+export const tpaCancelOnMoveDuringWarmup = true;
+/** @type {number} Maximum distance (in blocks) a player can move during TPA warmup before it's cancelled. */
+export const tpaMovementTolerance = 0.5;
 
 // --- Server Info & Links ---
 /** @type {string} Link to the server's Discord. Displayed in help or server info commands. */
@@ -770,6 +774,8 @@ export let editableConfigValues = {
     tpaRequestTimeoutSeconds,
     tpaRequestCooldownSeconds,
     tpaTeleportWarmupSeconds,
+    tpaCancelOnMoveDuringWarmup,
+    tpaMovementTolerance,
     // Server Info & Links
     discordLink,
     websiteLink,

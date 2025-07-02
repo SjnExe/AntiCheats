@@ -218,6 +218,7 @@
  * @property {'pending_acceptance'|'pending_teleport_warmup'|'teleporting'|'cancelled_by_requester'|'cancelled_by_target'|'cancelled_by_system'|'cancelled_damage'|'completed'|'expired'} [status='pending_acceptance'] Current status of the TPA request.
  * @property {number} [warmupExpiryTimestamp] Unix timestamp (ms) when teleport warmup ends (if applicable).
  * @property {string} [cancellationReason] Reason if the request was cancelled.
+ * @property {Vector3} [teleportingPlayerInitialLocation] Initial location of the player who will be teleported, captured at warmup start.
  */
 
 /**
