@@ -21,7 +21,7 @@ function formatViolationDetails(violationDetails) {
  * Formats a message template with player name, check type, and violation details.
  * @param {string | undefined} template - The message template with placeholders like {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
  * @param {string} playerName - The name of the player involved.
- * @param {string} checkType - The type of check that was triggered.
+ * @param {string} checkType - The type of check that was triggered (camelCase).
  * @param {object | undefined} violationDetails - An object containing details of the violation.
  * @returns {string} The formatted message.
  */
@@ -31,7 +31,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     }
     let message = template;
     message = message.replace(/{playerName}/g, playerName);
-    message = message.replace(/{checkType}/g, checkType);
+    message = message.replace(/{checkType}/g, checkType); // checkType is expected to be camelCase
     message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
     if (violationDetails && typeof violationDetails === 'object') {
         for (const key in violationDetails) {
@@ -57,19 +57,23 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
 export async function executeCheckAction(player, checkType, violationDetails, dependencies) {
     const { config, playerDataManager, playerUtils, logManager, checkActionProfiles } = dependencies;
     const playerNameForLog = player ? player.nameTag : 'System';
+
     if (!checkActionProfiles) {
         playerUtils.debugLog(`[ActionManager] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
+
     const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils.debugLog(`[ActionManager] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
+
     if (!profile.enabled) {
         playerUtils.debugLog(`[ActionManager] Actions for checkType '${checkType}' are disabled in its profile. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
+
     const baseReasonTemplate = profile.flag?.reason || `Triggered ${checkType}`;
     const flagReasonMessage = formatActionMessage(
         baseReasonTemplate,
@@ -77,8 +81,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         checkType,
         violationDetails
     );
+
     if (player && profile.flag) {
-        const flagType = profile.flag.type || checkType;
+        const flagType = profile.flag.type || checkType; // Use checkType (camelCase) as default flagType
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
         const flagDetailsForAdminNotify = formatViolationDetails(violationDetails);
         for (let i = 0; i < increment; i++) {
@@ -88,7 +93,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     } else if (!player && profile.flag) {
         playerUtils.debugLog(`[ActionManager] Skipping flagging for checkType '${checkType}' because player is null. Profile had flagging enabled.`, null, dependencies);
     }
+
     if (profile.log) {
+        // Ensure logActionType defaults to camelCase if derived from checkType
         const logActionType = profile.log.actionType || `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
         let logDetailsString = profile.log.detailsPrefix || '';
         if (profile.log.includeViolationDetails !== false) {
@@ -96,12 +103,13 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         }
         logManager.addLog({
             adminName: 'System',
-            actionType: logActionType,
+            actionType: logActionType, // This should also be camelCase as per guidelines
             targetName: playerNameForLog,
             details: logDetailsString.trim(),
             reason: flagReasonMessage,
         }, dependencies);
     }
+
     if (profile.notifyAdmins?.message) {
         const notifyMsg = formatActionMessage(
             profile.notifyAdmins.message,
@@ -112,6 +120,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         const pData = player ? playerDataManager.getPlayerData(player.id) : null;
         playerUtils.notifyAdmins(notifyMsg, dependencies, player, pData);
     }
+
     if (player && violationDetails?.itemTypeId) {
         const pData = playerDataManager.getPlayerData(player.id);
         if (pData) {

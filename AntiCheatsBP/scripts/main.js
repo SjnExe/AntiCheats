@@ -415,33 +415,70 @@ function performInitializations() {
                 continue;
             }
 
-            // Temporarily comment out these to isolate the error further
-
             playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
             playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
 
+            try {
+                // --- Execute Player-Specific Checks ---
+                // Continuous Checks (run every tick if enabled)
+                if (tickDependencies.config.enableFlyCheck && checks.checkFly) {
+                    await checks.checkFly(player, pData, tickDependencies);
+                }
+                if (tickDependencies.config.enableSpeedCheck && checks.checkSpeed) {
+                    await checks.checkSpeed(player, pData, tickDependencies);
+                }
+                if (tickDependencies.config.enableNofallCheck && checks.checkNoFall) {
+                    await checks.checkNoFall(player, pData, tickDependencies);
+                }
+                if (tickDependencies.config.enableNoSlowCheck && checks.checkNoSlow) {
+                    await checks.checkNoSlow(player, pData, tickDependencies, null); // Pass null for eventData
+                }
+                if (tickDependencies.config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
+                    await checks.checkInvalidSprint(player, pData, tickDependencies);
+                }
 
-            // Temporarily comment out all checks
-            /*
-            if (tickDependencies.config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, tickDependencies);
-            // ... and all other checks ...
-            if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc && (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
-                await checks.checkAntiGmc(player, pData, tickDependencies); pData.lastCheckAntiGmcTick = currentTick;
+                // Interval-Based Checks
+                if (tickDependencies.config.enableNetherRoofCheck && checks.checkNetherRoof &&
+                    (currentTick - (pData.lastCheckNetherRoofTick || 0) >= tickDependencies.config.netherRoofCheckIntervalTicks)) {
+                    await checks.checkNetherRoof(player, pData, tickDependencies);
+                    pData.lastCheckNetherRoofTick = currentTick;
+                }
+                if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc &&
+                    (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
+                    await checks.checkAntiGmc(player, pData, tickDependencies);
+                    pData.lastCheckAntiGmcTick = currentTick;
+                }
+                if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof &&
+                    (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
+                    await checks.checkNameSpoof(player, pData, tickDependencies);
+                    pData.lastCheckNameSpoofTick = currentTick;
+                }
+                if (tickDependencies.config.enableAutoToolCheck && checks.checkAutoTool &&
+                    (currentTick - (pData.lastCheckAutoToolTick || 0) >= tickDependencies.config.autoToolCheckIntervalTicks)) {
+                    await checks.checkAutoTool(player, pData, tickDependencies, null); // Pass null for eventData
+                    pData.lastCheckAutoToolTick = currentTick;
+                }
+                if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance &&
+                    (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
+                    await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
+                    pData.lastRenderDistanceCheckTick = currentTick;
+                }
+                // Note: Other checks like combat, building, and specific world interactions are typically event-driven
+                // and handled in eventHandlers.js or specific interaction points, not this general tick loop.
+            } catch (checkError) {
+                console.error(`[AntiCheatCoreTick] Error during player-specific checks for ${player?.nameTag}: ${checkError.stack || checkError}`);
+                playerUtils.debugLog(`[AntiCheatCoreTick] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
+                logManager.addLog({
+                    actionType: 'errorPlayerTickChecks',
+                    targetName: player?.nameTag || 'UnknownPlayer',
+                    details: `Error: ${checkError.message}`,
+                    error: checkError.stack || checkError.message,
+                    context: 'MainTickLoop.PlayerChecks',
+                }, tickDependencies);
+                // Continue to the next player rather than breaking the whole tick loop.
             }
-            */
 
-            // This is where the error was: main.js:410 (approximately, original line number before these comments)
-            // The lines above are what would have been executing.
-            // The error "cannot read property 'player' of undefined" implies something like `obj.player` where `obj` is undefined.
-            // This is not immediately obvious from the surrounding playerDataManager calls or check calls.
-            // The detailed logging for `player` and `pData` should help.
-
-            if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance && (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
-                // This is one of the last checks, keep it here just for structure, but it's effectively disabled by the main comment block above
-                // await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
-                pData.lastRenderDistanceCheckTick = currentTick;
-            }
-
+            // Update fall distance calculation (moved from original position to after checks)
             if (!player.isOnGround) {
                 if ((pData.velocity?.y ?? 0) < -0.078 && pData.previousPosition && pData.lastPosition) {
                     const deltaY = pData.previousPosition.y - pData.lastPosition.y;

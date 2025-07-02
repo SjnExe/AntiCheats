@@ -2,6 +2,7 @@
  * @file Defines a simple key-value store for UI and message strings.
  * Since full localization is not required, this provides a centralized
  * place for text, allowing for easier management and consistency.
+ * All keys should be camelCase or dot.case for structure.
  */
 
 export const stringDB = {
@@ -14,6 +15,9 @@ export const stringDB = {
     'common.boolean.yes': '§aYes§r',
     'common.boolean.no': '§cNo§r',
     'common.value.notAvailable': 'N/A',
+    'common.value.player': 'Player', // Generic placeholder for player name if actual name is unavailable
+    'common.value.unknown': 'Unknown',
+    'common.value.noReasonProvided': 'No reason provided.',
     'common.error.genericForm': '§cAn error occurred with the form.',
     'common.error.playerNotFound': '§cPlayer "{playerName}" not found.',
     'common.error.playerNotFoundOnline': '§cPlayer "{playerName}" is not online.',
@@ -22,6 +26,7 @@ export const stringDB = {
     'common.error.durationInvalid': '§cInvalid duration format.',
     'common.error.commandModuleNotFound': '§cError: Command module "{moduleName}" not found or not enabled.',
     'common.error.permissionDenied': '§cYou do not have permission to use this command.',
+    'common.error.chatProcessingUnavailable': '§cChat processing is currently unavailable. Please try again later or contact an admin.',
     'common.success.generic': '§aAction successful.',
 
     // Admin Panel
@@ -117,9 +122,9 @@ export const stringDB = {
     'ui.playerActions.error.generic': '§cAn error occurred performing the player action.',
 
     // Detailed Flags Form
-    'ui.detailedFlags.title': "§l§3Flags for {playerName}§r",
-    'ui.detailedFlags.noFlags': "No flags recorded for this player.",
-    'ui.detailedFlags.flagEntry': "§e{flagName}: §f{count} §7(Last: {lastDetectionTime})§r",
+    'ui.detailedFlags.title': '§l§3Flags for {playerName}§r',
+    'ui.detailedFlags.noFlags': 'No flags recorded for this player.',
+    'ui.detailedFlags.flagEntry': '§e{flagName}: §f{count} §7(Last: {lastDetectionTime})§r',
 
     // Confirmation Modal (Generic)
     'ui.common.actionCancelled': '§7Action cancelled.',
