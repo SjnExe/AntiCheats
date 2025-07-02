@@ -12,7 +12,7 @@
  * @property {string} message - Template for the admin notification message.
  *
  * @typedef {object} ActionProfileLog
- * @property {string} [actionType] - Specific actionType for logging; defaults to `detected_<checkType>`.
+ * @property {string} [actionType] - Specific actionType for logging (camelCase); defaults to `detected<CheckType>`.
  * @property {string} [detailsPrefix=''] - Prefix for the log details string.
  * @property {boolean} [includeViolationDetails=true] - Whether to include formatted violation details in the log.
  *
@@ -48,7 +48,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected excessive ground speed.',
-            type: 'speed',
+            type: 'speed', // General type, specific check is 'movementSpeedGround'
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})',
@@ -63,7 +63,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected excessive reach during combat.',
-            type: 'reach',
+            type: 'reach', // General type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Reach. Distance: {distance} (Max: {maxAllowed})',
@@ -123,7 +123,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected suspicious pitch snap after attack.',
-            type: 'combatViewSnap',
+            type: 'combatViewSnap', // General type for view snaps
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
@@ -138,7 +138,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 1,
             reason: 'System detected suspicious yaw snap after attack.',
-            type: 'combatViewSnap',
+            type: 'combatViewSnap', // General type for view snaps
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
@@ -168,7 +168,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected Multi-Target Aura (hitting multiple entities rapidly).',
-            type: 'combatAura',
+            type: 'combatAura', // General type for aura-like behaviors
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
@@ -468,7 +468,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory/hotbar manipulation ({reasonDetail}).',
-            type: 'playerInventoryMod',
+            type: 'playerInventoryMod', // General type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for InventoryMod (Switch-Use). Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}',
@@ -483,7 +483,7 @@ export const checkActionProfiles = {
         flag: {
             increment: 3,
             reason: 'System detected suspicious inventory/hotbar manipulation ({reasonDetail}).',
-            type: 'playerInventoryMod',
+            type: 'playerInventoryMod', // General type
         },
         notifyAdmins: {
             message: '§eAC: {playerName} flagged for InventoryMod (Move-Locked). Detail: {reasonDetail}. Item: {itemTypeInvolved}, Slot: {slotChanged}, Action: {actionInProgress}',
@@ -653,7 +653,7 @@ export const checkActionProfiles = {
     },
     'worldAntiGriefPistonLag': {
         enabled: true,
-        flag: null,
+        flag: null, // No direct player flag, system log/notification only
         notifyAdmins: {
             message: '§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)',
         },
@@ -725,7 +725,7 @@ export const checkActionProfiles = {
             includeViolationDetails: true,
         },
         cancelMessage: true,
-        customAction: 'MUTE',
+        customAction: 'MUTE', // Special handling by chatProcessor or AutoMod
     },
     'chatAdvertisingDetected': {
         enabled: true,
@@ -911,7 +911,7 @@ export const checkActionProfiles = {
         },
         cancelMessage: true,
     },
-    'chatMaxLength': {
+    'chatMaxLength': { // Note: Corrected from 'chatMaxlength' in automodConfig.js if it was a typo there
         enabled: true,
         flag: {
             increment: 1,
