@@ -103,8 +103,9 @@ export function getBorderSettings(dimensionId, dependencies) {
         const settingsJson = mc.world.getDynamicProperty(propertyKey);
         if (typeof settingsJson === 'string') {
             const settings = JSON.parse(settingsJson);
+            // Corrected type checks
             if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
-                typeof settings.enabled !== 'boolean' || settings.dimensionId !== dimensionId) {
+                typeof settings.enabled !== 'boolean' || typeof settings.dimensionId !== 'string' || settings.dimensionId !== dimensionId) {
                 playerUtils.debugLog(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}. Settings: ${JSON.stringify(settings)}`, 'System', dependencies);
                 return null;
             }
@@ -118,7 +119,7 @@ export function getBorderSettings(dimensionId, dependencies) {
                     playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}. Value: ${settings.radius}`, 'System', dependencies);
                     return null;
                 }
-            } else {
+            } else if (settings.shape !== undefined) { // Only log if shape is present but invalid
                 playerUtils.debugLog(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`, 'System', dependencies);
                 return null;
             }

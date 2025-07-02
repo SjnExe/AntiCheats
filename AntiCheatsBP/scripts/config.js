@@ -1022,6 +1022,9 @@ export let editableConfigValues = {
     autoToolCheckIntervalTicks,
     flatRotationCheckIntervalTicks,
     invalidRenderDistanceCheckIntervalTicks,
+    // Command Specific Configs
+    chatClearLinesCount, // For !clearchat (value is 150)
+    reportsViewPerPage,    // For !viewreports (value is 5)
 };
 
 /**

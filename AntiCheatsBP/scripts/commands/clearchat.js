@@ -24,24 +24,24 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils, logManager, getString, config } = dependencies;
 
-    const linesToClear = 150;
+    const linesToClear = config.chatClearLinesCount ?? 150; // Use config or default
     for (let i = 0; i < linesToClear; i++) {
         try {
             dependencies.mc.world.sendMessage('');
         } catch (error) {
             console.warn(`[ClearChatCommand] Error sending empty message line ${i + 1}: ${error}`);
-            if (i > 5) {
-                player.sendMessage('§cChat clear failed partially. Some messages might remain.');
+            if (i > 5) { // Arbitrary threshold for giving up
+                player.sendMessage(getString('command.clearchat.failPartial'));
                 return;
             }
         }
     }
-    player.sendMessage('§aChat cleared successfully.');
+    player.sendMessage(getString('command.clearchat.success'));
 
     try {
-        playerUtils.notifyAdmins(`§7[Admin] Chat cleared by §e${player.nameTag}§7.`, dependencies, player, null);
+        playerUtils.notifyAdmins(`§7[Admin] Chat cleared by §e${player.nameTag}§7.`, dependencies, player, null); // Admin notification can remain as is
 
         logManager.addLog({
             timestamp: Date.now(),

@@ -6,6 +6,7 @@ import { permissionLevels } from '../core/rankManager.js';
 import * as reportManager from '../core/reportManager.js';
 import { formatTimeDifference } from '../utils/playerUtils.js'; // Assuming a utility for time formatting
 
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'viewreports',
     syntax: '!viewreports [report_id|player_name|all] [page_number]',
@@ -18,7 +19,7 @@ export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager } = dependencies;
     const adminName = player.nameTag;
 
-    const reportsPerPage = 5; // Configurable? For now, fixed.
+    const reportsPerPage = config.reportsViewPerPage ?? 5;
     let pageNumber = 1;
     let filterType = 'all';
     let filterValue = '';
@@ -30,7 +31,7 @@ export async function execute(player, args, dependencies) {
             if (args.length > 1 && !isNaN(parseInt(args[1]))) {
                 pageNumber = parseInt(args[1]);
             }
-        } else if (args[0].includes('-') && args[0].length > 10) { // Heuristic for report ID (timestamp-random)
+        } else if (args[0].includes('-') && args[0].length > 10) { // TODO: Report ID detection is heuristic. Consider subcommands like `id <id>` for robustness.
             filterType = 'id';
             filterValue = args[0];
         } else {

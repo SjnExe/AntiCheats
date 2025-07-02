@@ -313,18 +313,18 @@
  * @property {ReportManager} reportManager Manager for player reports.
  * @property {TpaManager} tpaManager Manager for the TPA system.
  * @property {AllChecks} checks An object containing all check functions, keyed by check name.
- * @property {import('@minecraft/server')} mc The raw `@minecraft/server` module.
+ * @property {typeof import('@minecraft/server')} mc The raw `@minecraft/server` module.
  * @property {number} currentTick The current game tick count from the main loop.
  * @property {typeof import('./core/rankManager.js').permissionLevels} permissionLevels Enum-like object for permission levels.
- * @property {typeof ActionFormData} ActionFormData Constructor for ActionForm.
- * @property {typeof MessageFormData} MessageFormData Constructor for MessageForm.
- * @property {typeof ModalFormData} ModalFormData Constructor for ModalForm.
- * @property {typeof ItemComponentTypes} ItemComponentTypes Enum for item component types.
+ * @property {typeof import('@minecraft/server-ui').ActionFormData} ActionFormData Constructor for ActionForm.
+ * @property {typeof import('@minecraft/server-ui').MessageFormData} MessageFormData Constructor for MessageForm.
+ * @property {typeof import('@minecraft/server-ui').ModalFormData} ModalFormData Constructor for ModalForm.
+ * @property {typeof import('@minecraft/server').ItemComponentTypes} ItemComponentTypes Enum for item component types.
  * @property {ChatProcessor} chatProcessor Module for processing and validating chat messages.
  * @property {function(string, Record<string, string | number>?): string} getString Localization function (currently simplified).
  * @property {{getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions.
  * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder']}} worldBorderManager Subset of WorldBorderManager functions.
- * @property {System} system The `system` object from `@minecraft/server`.
+ * @property {import('@minecraft/server').System} system The `system` object from `@minecraft/server`.
  * @property {typeof import('./config.js')} editableConfig The full config module, allowing access to `updateConfigValue`.
  */
 

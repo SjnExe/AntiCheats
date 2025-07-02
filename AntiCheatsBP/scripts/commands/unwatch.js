@@ -6,6 +6,7 @@
 import { permissionLevels } from '../core/rankManager.js';
 import { getPlayerData, saveDirtyPlayerData } from '../core/playerDataManager.js';
 
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'unwatch',
     syntax: '!unwatch <playername>',

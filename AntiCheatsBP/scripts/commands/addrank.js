@@ -24,10 +24,10 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, rankManager: depRankManager } = dependencies;
+    const { config, playerUtils, logManager, rankManager: depRankManager, getString } = dependencies;
 
     if (args.length < 2) {
-        player.sendMessage(`§cUsage: ${config.prefix}addrank <playername> <rankId>`);
+        player.sendMessage(getString('command.addrank.usage', { prefix: config.prefix }));
         return;
     }
 
@@ -36,25 +36,25 @@ export async function execute(player, args, dependencies) {
 
     const targetPlayer = playerUtils.findPlayer(targetPlayerName);
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`);
+        player.sendMessage(getString('command.addrank.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
 
     const rankDef = rankDefinitions.find(r => r.id.toLowerCase() === rankIdToAssign);
     if (!rankDef) {
-        player.sendMessage(`§cRank ID '${rankIdToAssign}' is not a valid rank.`);
+        player.sendMessage(getString('command.addrank.rankIdInvalid', { rankId: rankIdToAssign }));
         return;
     }
 
     const manualTagCondition = rankDef.conditions.find(c => c.type === 'manual_tag_prefix' && typeof c.prefix === 'string');
     if (!manualTagCondition) {
-        player.sendMessage(`§cRank '${rankDef.name}' cannot be assigned using this command (not configured for manual tag assignment).`);
+        player.sendMessage(getString('command.addrank.rankNotManuallyAssignable', { rankName: rankDef.name }));
         return;
     }
 
     const issuerPermissionLevel = depRankManager.getPlayerPermissionLevel(player, dependencies);
     if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
-        player.sendMessage(`§cYou do not have permission to assign the rank '${rankDef.name}'.`);
+        player.sendMessage(getString('command.addrank.permissionDeniedAssign', { rankName: rankDef.name }));
         playerUtils.debugLog(`[AddRankCommand] ${player.nameTag} (Level ${issuerPermissionLevel}) attempted to assign rank ${rankDef.id} (AssignableBy ${rankDef.assignableBy}) but lacked permission.`, player.nameTag, dependencies);
         return;
     }
@@ -62,7 +62,7 @@ export async function execute(player, args, dependencies) {
     const rankTagToAdd = manualTagCondition.prefix + rankDef.id;
 
     if (targetPlayer.hasTag(rankTagToAdd)) {
-        player.sendMessage(`§ePlayer ${targetPlayer.nameTag} already has the rank '${rankDef.name}'.`);
+        player.sendMessage(getString('command.addrank.alreadyHasRank', { playerName: targetPlayer.nameTag, rankName: rankDef.name }));
         return;
     }
 
@@ -70,8 +70,8 @@ export async function execute(player, args, dependencies) {
         targetPlayer.addTag(rankTagToAdd);
         depRankManager.updatePlayerNametag(targetPlayer, dependencies);
 
-        player.sendMessage(`§aSuccessfully assigned rank '${rankDef.name}' to ${targetPlayer.nameTag}.`);
-        targetPlayer.sendMessage(`§aYou have been assigned the rank: ${rankDef.name}.`);
+        player.sendMessage(getString('command.addrank.assignSuccessToIssuer', { rankName: rankDef.name, playerName: targetPlayer.nameTag }));
+        targetPlayer.sendMessage(getString('command.addrank.assignSuccessToTarget', { rankName: rankDef.name }));
 
         logManager.addLog({
             adminName: player.nameTag,
@@ -83,7 +83,7 @@ export async function execute(player, args, dependencies) {
         playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 assigned rank §a${rankDef.name}§7 to §e${targetPlayer.nameTag}.`, dependencies, player, null);
 
     } catch (e) {
-        player.sendMessage(`§cAn error occurred while assigning the rank: ${e.message}`);
+        player.sendMessage(getString('command.addrank.errorAssign', { errorMessage: e.message }));
         console.error(`[AddRankCommand] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag}: ${e.stack || e}`);
         logManager.addLog({
             adminName: player.nameTag,

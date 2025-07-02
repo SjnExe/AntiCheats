@@ -5,6 +5,7 @@
 import { permissionLevels } from '../core/rankManager.js';
 import * as reportManager from '../core/reportManager.js';
 
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'clearreports',
     syntax: '!clearreports <report_id|player_name|all>',
@@ -14,12 +15,12 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player.nameTag;
 
     if (args.length < 1) {
-        playerUtils.sendMessage(player, `§cUsage: ${config.prefix}${definition.syntax}`);
-        playerUtils.sendMessage(player, `§cExample: ${config.prefix}clearreports <report_id> OR ${config.prefix}clearreports <player_name> OR ${config.prefix}clearreports all`);
+        playerUtils.sendMessage(player, getString('command.clearreports.usage', { prefix: config.prefix, syntax: definition.syntax }));
+        playerUtils.sendMessage(player, getString('command.clearreports.example', { prefix: config.prefix }));
         return;
     }
 
@@ -27,18 +28,18 @@ export async function execute(player, args, dependencies) {
 
     if (subCommand === 'all') {
         const clearedCount = reportManager.clearAllReports(dependencies);
-        playerUtils.sendMessage(player, `§aSuccessfully cleared all ${clearedCount} reports.`);
+        playerUtils.sendMessage(player, getString('command.clearreports.allSuccess', { count: clearedCount.toString() }));
         logManager.addLog({
             actionType: 'commandClearAllReports',
             adminName: adminName,
             details: `Cleared ${clearedCount} reports.`,
             context: 'ClearReportsCommand',
         }, dependencies);
-    } else if (args[0].includes('-') && args[0].length > 10) {
+    } else if (args[0].includes('-') && args[0].length > 10) { // TODO: Report ID detection is heuristic. Consider subcommands like `id <id>` for robustness.
         const reportId = args[0];
         const success = reportManager.clearReportById(reportId, dependencies);
         if (success) {
-            playerUtils.sendMessage(player, `§aReport with ID '${reportId}' has been cleared.`);
+            playerUtils.sendMessage(player, getString('command.clearreports.idSuccess', { reportId: reportId }));
             logManager.addLog({
                 actionType: 'commandClearReportById',
                 adminName: adminName,
@@ -46,13 +47,13 @@ export async function execute(player, args, dependencies) {
                 context: 'ClearReportsCommand',
             }, dependencies);
         } else {
-            playerUtils.sendMessage(player, `§cReport with ID '${reportId}' not found.`);
+            playerUtils.sendMessage(player, getString('command.clearreports.idNotFound', { reportId: reportId }));
         }
     } else {
         const targetPlayerName = args[0];
         const clearedCount = reportManager.clearReportsForPlayer(targetPlayerName, dependencies);
         if (clearedCount > 0) {
-            playerUtils.sendMessage(player, `§aCleared ${clearedCount} reports associated with player '${targetPlayerName}'.`);
+            playerUtils.sendMessage(player, getString('command.clearreports.playerSuccess', { count: clearedCount.toString(), playerName: targetPlayerName }));
             logManager.addLog({
                 actionType: 'commandClearReportsForPlayer',
                 adminName: adminName,
@@ -61,7 +62,7 @@ export async function execute(player, args, dependencies) {
                 context: 'ClearReportsCommand',
             }, dependencies);
         } else {
-            playerUtils.sendMessage(player, `§eNo reports found associated with player '${targetPlayerName}'.`);
+            playerUtils.sendMessage(player, getString('command.clearreports.playerNotFound', { playerName: targetPlayerName }));
         }
     }
 }
