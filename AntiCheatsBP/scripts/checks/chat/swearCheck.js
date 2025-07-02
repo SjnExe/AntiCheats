@@ -122,14 +122,8 @@ export async function checkSwear(player, eventData, pData, dependencies) {
                 };
                 playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: '${wordInMessage}' (normalized: '${normalizedInputWord}') matched '${swearItem.original}' (normalized: '${swearItem.normalized}') by exactNormalized.`, pData?.isWatched ? player.nameTag : null, dependencies);
 
-                if (actionManager && typeof actionManager.executeCheckAction === 'function') {
-                    await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-                } else {
-                    playerUtils.debugLog('[SwearCheck] actionManager.executeCheckAction is not available in dependencies. Attempting direct flag.', null, dependencies);
-                    if (playerDataManager && playerDataManager.addFlag) {
-                        playerDataManager.addFlag(player, actionProfileKey, `Swear word detected: ${swearItem.original} (matched: ${wordInMessage})`, violationDetails, dependencies);
-                    }
-                }
+                await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+
                 if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
                     eventData.cancel = true;
                 }
