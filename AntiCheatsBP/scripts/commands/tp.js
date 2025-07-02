@@ -52,9 +52,9 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const prefix = config.prefix;
-    const usageMessage = `§cUsage: ${prefix}tp <targetPlayerOrX> [destinationPlayerOrY] [z] [dimension]`;
+    const usageMessage = getString('command.tp.usage', { prefix: prefix });
 
     let playerToMove;
     let destinationLocation;
@@ -68,32 +68,32 @@ export async function execute(player, args, dependencies) {
         const destinationPlayer = playerUtils.findPlayer(args[1]);
 
         if (!playerToMove) {
-            player.sendMessage(`§cPlayer to move "${args[0]}" not found.`);
+            player.sendMessage(getString('command.tp.playerToMoveNotFound', { playerName: args[0] }));
             return;
         }
         if (!destinationPlayer) {
-            player.sendMessage(`§cDestination player "${args[1]}" not found.`);
+            player.sendMessage(getString('command.tp.destinationPlayerNotFound', { playerName: args[1] }));
             return;
         }
         if (playerToMove.id === destinationPlayer.id) {
-            player.sendMessage(`§cCannot teleport ${playerToMove.nameTag} to themselves.`);
+            player.sendMessage(getString('command.tp.cannotTeleportSelfToSelf', { playerName: playerToMove.nameTag }));
             return;
         }
         destinationLocation = destinationPlayer.location;
         targetDimension = destinationPlayer.dimension;
-        destinationDescription = `player ${destinationPlayer.nameTag}`;
-        dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`; // e.g., "in overworld"
+        destinationDescription = `player ${destinationPlayer.nameTag}`; // This part might remain hardcoded if too dynamic for simple getString
+        dimensionInfoForMessage = ` in ${targetDimension.id.split(':')[1]}`;
     }
     // Case 2: !tp <x> <y> <z> [dimension] (teleport self to coordinates)
     else if (args.length === 3 || args.length === 4) {
         if (isNaN(parseFloat(args[0])) || isNaN(parseFloat(args[1])) || isNaN(parseFloat(args[2]))) {
-            player.sendMessage(usageMessage);
+            player.sendMessage(usageMessage); // Usage message implies invalid coords here
             playerUtils.debugLog(`[TPCommand] Invalid coordinate arguments for self-teleport by ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag, dependencies);
             return;
         }
         playerToMove = player;
         destinationLocation = { x: parseFloat(args[0]), y: parseFloat(args[1]), z: parseFloat(args[2]) };
-        destinationDescription = `coordinates ${args[0]}, ${args[1]}, ${args[2]}`;
+        destinationDescription = `coordinates ${args[0]}, ${args[1]}, ${args[2]}`; // Similar to above, might remain
         targetDimension = playerToMove.dimension;
 
         if (args.length === 4) {
@@ -102,7 +102,7 @@ export async function execute(player, args, dependencies) {
                 targetDimension = parsedDim;
                 dimensionInfoForMessage = ` in dimension ${args[3].toLowerCase()}`;
             } else {
-                player.sendMessage(`§cInvalid dimension specified: ${args[3]}. Valid: overworld, nether, end.`);
+                player.sendMessage(getString('command.tp.invalidDimension', { dimensionName: args[3] }));
                 return;
             }
         } else {
@@ -115,11 +115,11 @@ export async function execute(player, args, dependencies) {
         if (isNaN(parseFloat(args[0]))) {
              playerToMove = playerUtils.findPlayer(args[0]);
              if (!playerToMove) {
-                player.sendMessage(`§cPlayer to move "${args[0]}" not found.`);
+                player.sendMessage(getString('command.tp.playerToMoveNotFound', { playerName: args[0] }));
                 return;
             }
             if (isNaN(parseFloat(args[1])) || isNaN(parseFloat(args[2])) || isNaN(parseFloat(args[3]))) {
-                player.sendMessage('§cInvalid coordinates provided for target player.');
+                player.sendMessage(getString('command.tp.invalidCoordinatesForTarget'));
                 return;
             }
             destinationLocation = { x: parseFloat(args[1]), y: parseFloat(args[2]), z: parseFloat(args[3]) };
@@ -132,7 +132,7 @@ export async function execute(player, args, dependencies) {
                     targetDimension = parsedDim;
                     dimensionInfoForMessage = ` in dimension ${args[4].toLowerCase()}`;
                 } else {
-                    player.sendMessage(`§cInvalid dimension specified: ${args[4]}. Valid: overworld, nether, end.`);
+                    player.sendMessage(getString('command.tp.invalidDimension', { dimensionName: args[4] }));
                     return;
                 }
             } else {
@@ -140,7 +140,7 @@ export async function execute(player, args, dependencies) {
             }
             destinationDescription += dimensionInfoForMessage;
         } else {
-             player.sendMessage(usageMessage); // If first arg is a number but not matching Case 2
+             player.sendMessage(usageMessage);
              return;
         }
     }
@@ -153,7 +153,7 @@ export async function execute(player, args, dependencies) {
     }
 
     if (!playerToMove || !destinationLocation || !targetDimension) {
-        player.sendMessage(usageMessage); // Should be caught by earlier checks, but as a safeguard
+        player.sendMessage(getString('command.tp.failedResolveParams'));
         playerUtils.debugLog(`[TPCommand] Failed to resolve teleport parameters for ${player.nameTag}. Args: ${args.join(' ')}`, player.nameTag, dependencies);
         return;
     }
@@ -166,18 +166,19 @@ export async function execute(player, args, dependencies) {
         await playerToMove.teleport(destinationLocation, { dimension: targetDimension });
 
         let successMsg;
-        if (destinationDescription.startsWith('player')) {
-            successMsg = `§aTeleported ${playerToMove.nameTag} to ${destinationDescription}.`;
-        } else {
+        if (destinationDescription.startsWith('player')) { // Destination desc like "player PlayerName"
+            successMsg = getString('command.tp.success.toPlayer', { playerToMoveName: playerToMove.nameTag, destinationPlayerName: destinationDescription.substring(7) }); // Extract player name
+        } else { // Destination desc like "coordinates X, Y, Z in dimension_name"
             const x = destinationLocation.x.toFixed(1);
             const y = destinationLocation.y.toFixed(1);
             const z = destinationLocation.z.toFixed(1);
-            successMsg = `§aTeleported ${playerToMove.nameTag} to ${x}, ${y}, ${z}${dimensionInfoForMessage}.`;
+            successMsg = getString('command.tp.success.toCoords', { playerToMoveName: playerToMove.nameTag, x, y, z, dimensionInfo: dimensionInfoForMessage });
         }
         player.sendMessage(successMsg);
 
         if (player.id !== playerToMove.id) {
-            playerToMove.sendMessage(`§eYou have been teleported by ${player.nameTag} to ${destinationDescription}.`);
+            // The destinationDescription is already quite descriptive
+            playerToMove.sendMessage(getString('command.tp.targetNotification', { adminName: player.nameTag, destinationDescription: destinationDescription }));
         }
 
         logManager.addLog({
@@ -189,7 +190,7 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
     } catch (error) {
-        player.sendMessage(`§cTeleport failed: ${error.message || error}`);
+        player.sendMessage(getString('command.tp.fail', { errorMessage: error.message || String(error) }));
         console.error(`[TPCommand] Teleport error for ${playerToMove.nameTag} (by ${player.nameTag}) to ${destinationDescription}: ${error.stack || error}`);
         logManager.addLog({
             timestamp: Date.now(),

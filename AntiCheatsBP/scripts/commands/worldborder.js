@@ -34,30 +34,31 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config, worldBorderManager, getString } = dependencies;
     const subCommand = args.shift()?.toLowerCase();
     const cmdPrefix = config.prefix;
 
     if (!subCommand || subCommand === 'help') {
-        playerUtils.notifyPlayer(player, '--- World Border Commands ---');
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb set <square|circle> <centerX> <centerZ> <size> [dimension] - Sets a border.`);
-        playerUtils.notifyPlayer(player, '  Example Size: For square, size is half-length (e.g., 500 for 1000x1000). For circle, size is radius.');
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb get [dimension] - Shows current border settings.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb toggle <on|off> [dimension] - Enables/disables the border.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb remove [dimension] confirm - Removes the border.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb <shrink|expand> <newSize> <timeSeconds> [dimension] [interpolationType] - Resizes border.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb resizepause [dimension] - Pauses an active resize.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb resizeresume [dimension] - Resumes a paused resize.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb setglobalparticle <particleName> - Sets default particle for all borders.`);
-        playerUtils.notifyPlayer(player, `${cmdPrefix}wb setparticle <particleName|reset> [dimension] - Sets particle for a specific border or resets to global.`);
-        playerUtils.notifyPlayer(player, 'Dimension defaults to current if not specified (overworld, nether, end).');
-        playerUtils.notifyPlayer(player, 'Interpolation types: linear (default), easeoutquad, easeinoutquad.');
+        let helpMsg = getString('command.worldborder.help.header') + '\n';
+        helpMsg += getString('command.worldborder.help.set', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.setSizeNote') + '\n';
+        helpMsg += getString('command.worldborder.help.get', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.toggle', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.remove', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.resize', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.pause', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.resume', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.setGlobalParticle', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.setParticle', { prefix: cmdPrefix }) + '\n';
+        helpMsg += getString('command.worldborder.help.dimensionNote') + '\n';
+        helpMsg += getString('command.worldborder.help.interpolationNote');
+        playerUtils.notifyPlayer(player, helpMsg);
         return;
     }
 
     const validSubcommands = ['set', 'get', 'toggle', 'remove', 'shrink', 'expand', 'resizepause', 'resizeresume', 'setglobalparticle', 'setparticle'];
     if (!validSubcommands.includes(subCommand)) {
-        playerUtils.warnPlayer(player, `§cInvalid subcommand '${subCommand}'. Use ${cmdPrefix}wb help.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
         return;
     }
 
@@ -92,8 +93,8 @@ export async function execute(player, args, dependencies) {
         case 'setparticle':
             await handleSetParticleCommand(player, args, dependencies);
             break;
-        default:
-            playerUtils.warnPlayer(player, `§cInvalid subcommand '${subCommand}'. Use ${cmdPrefix}wb help.`);
+        default: // Should be caught by validSubcommands check
+            playerUtils.warnPlayer(player, getString('command.worldborder.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
     }
 }
 
@@ -108,18 +109,18 @@ function normalizeDimensionId(player, inputDimId) {
 }
 
 async function handleSetCommand(player, args, dependencies) {
-    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager, getString } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
 
     if (args.length < 4) {
-        playerUtils.warnPlayer(player, `§cUsage: ${prefix}wb set <square|circle> <centerX> <centerZ> <size> [dimension]`);
-        playerUtils.notifyPlayer(player, '§eNote: For square, size is half-length (e.g., 500 for 1000x1000). For circle, size is radius.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.set.usage', { prefix: prefix }));
+        playerUtils.notifyPlayer(player, getString('command.worldborder.set.noteSize'));
         return;
     }
 
     const shape = args[0].toLowerCase();
     if (shape !== 'square' && shape !== 'circle') {
-        playerUtils.warnPlayer(player, '§cInvalid shape. Use \'square\' or \'circle\'.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.set.invalidShape'));
         return;
     }
 
@@ -128,11 +129,11 @@ async function handleSetCommand(player, args, dependencies) {
     const sizeParam = parseFloat(args[3]);
 
     if (isNaN(centerX) || isNaN(centerZ) || isNaN(sizeParam)) {
-        playerUtils.warnPlayer(player, '§cInvalid numbers for centerX, centerZ, or size.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.set.invalidNumbers'));
         return;
     }
     if (sizeParam <= 0) {
-        playerUtils.warnPlayer(player, '§cSize must be a positive number.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.set.sizePositive'));
         return;
     }
 
@@ -140,7 +141,7 @@ async function handleSetCommand(player, args, dependencies) {
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}. Use overworld, nether, or end.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionIdInput || player.dimension.id.split(':')[1] }));
         return;
     }
 
@@ -168,51 +169,56 @@ async function handleSetCommand(player, args, dependencies) {
 
     if (worldBorderManager.saveBorderSettings(dimensionId, settingsToSave, dependencies)) {
         let sizeDisplay = shape === 'square' ? `halfSize ${settingsToSave.halfSize} (Full: ${settingsToSave.halfSize * 2}x${settingsToSave.halfSize * 2})` : `radius ${settingsToSave.radius}`;
-        const damageStatus = settingsToSave.enableDamage ? `ON (Amount: ${settingsToSave.damageAmount}, Interval: ${settingsToSave.damageIntervalTicks}t, TP Events: ${settingsToSave.teleportAfterNumDamageEvents})` : 'OFF';
+        const damageStatus = settingsToSave.enableDamage ?
+            getString('command.worldborder.set.damage.on', { damageAmount: settingsToSave.damageAmount.toString(), damageIntervalTicks: settingsToSave.damageIntervalTicks.toString(), teleportAfterNumDamageEvents: settingsToSave.teleportAfterNumDamageEvents.toString() }) :
+            getString('command.worldborder.set.damage.off');
 
-        playerUtils.notifyPlayer(player, `§aWorld border set for ${dimensionId.replace('minecraft:', '')}:`);
-        playerUtils.notifyPlayer(player, `  Shape: ${shape}, Center: (${centerX}, ${centerZ}), Size: ${sizeDisplay}`);
-        playerUtils.notifyPlayer(player, `  Damage: ${damageStatus}`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.set.successHeader', { dimensionName: dimensionId.replace('minecraft:', '') }));
+        playerUtils.notifyPlayer(player, getString('command.worldborder.set.successDetails', { shape: shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay: sizeDisplay }));
+        playerUtils.notifyPlayer(player, getString('command.worldborder.set.successDamage', { damageStatus: damageStatus }));
         if (cancelledResize) {
-            playerUtils.notifyPlayer(player, '§eAny active border resize for this dimension was cancelled.');
+            playerUtils.notifyPlayer(player, getString('command.worldborder.set.resizeCancelled'));
         }
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderSet', targetName: dimensionId, details: JSON.stringify(worldBorderManager.getBorderSettings(dimensionId, dependencies) || settingsToSave) }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, '§cFailed to save world border settings.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.set.failSave'));
     }
 }
 
 async function handleGetCommand(player, args, dependencies) {
-    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager, getString } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:','') : (dimensionIdInput || player.dimension.id.split(':')[1]);
+
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}. Use overworld, nether, or end.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
 
     const settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (settings) {
-        playerUtils.notifyPlayer(player, `§e--- World Border: ${dimensionId.replace('minecraft:','')} ---`);
-        playerUtils.notifyPlayer(player, `  Enabled: ${settings.enabled}`);
-        playerUtils.notifyPlayer(player, `  Shape: ${settings.shape}`);
-        playerUtils.notifyPlayer(player, `  Center: X=${settings.centerX}, Z=${settings.centerZ}`);
+        let message = getString('command.worldborder.get.header', { dimensionName: dimensionName }) + '\n';
+        message += getString('command.worldborder.get.enabled', { status: settings.enabled.toString() }) + '\n';
+        message += getString('command.worldborder.get.shape', { shape: settings.shape }) + '\n';
+        message += getString('command.worldborder.get.center', { centerX: settings.centerX.toString(), centerZ: settings.centerZ.toString() }) + '\n';
+
 
         if (settings.shape === 'square' && typeof settings.halfSize === 'number') {
-            playerUtils.notifyPlayer(player, `  Half Size: ${settings.halfSize} (Diameter: ${settings.halfSize * 2})`);
-            playerUtils.notifyPlayer(player, `  Bounds: X(${settings.centerX - settings.halfSize} to ${settings.centerX + settings.halfSize}), Z(${settings.centerZ - settings.halfSize} to ${settings.centerZ + settings.halfSize})`);
+            message += getString('command.worldborder.get.square.halfSize', { halfSize: settings.halfSize.toString(), diameter: (settings.halfSize * 2).toString() }) + '\n';
+            message += getString('command.worldborder.get.square.bounds', { minX: (settings.centerX - settings.halfSize).toString(), maxX: (settings.centerX + settings.halfSize).toString(), minZ: (settings.centerZ - settings.halfSize).toString(), maxZ: (settings.centerZ + settings.halfSize).toString() }) + '\n';
         } else if (settings.shape === 'circle' && typeof settings.radius === 'number') {
-            playerUtils.notifyPlayer(player, `  Radius: ${settings.radius}`);
+            message += getString('command.worldborder.get.circle.radius', { radius: settings.radius.toString() }) + '\n';
         }
 
         const enableDamage = settings.enableDamage ?? currentRunTimeConfig.worldBorderDefaultEnableDamage;
-        playerUtils.notifyPlayer(player, `  Damage Enabled: ${enableDamage}`);
+        message += getString('command.worldborder.get.damageEnabled', { status: enableDamage.toString() }) + '\n';
         if (enableDamage) {
-            playerUtils.notifyPlayer(player, `  Damage Amount: ${settings.damageAmount ?? currentRunTimeConfig.worldBorderDefaultDamageAmount}`);
-            playerUtils.notifyPlayer(player, `  Damage Interval: ${settings.damageIntervalTicks ?? currentRunTimeConfig.worldBorderDefaultDamageIntervalTicks} ticks`);
-            playerUtils.notifyPlayer(player, `  Teleport After: ${settings.teleportAfterNumDamageEvents ?? currentRunTimeConfig.worldBorderTeleportAfterNumDamageEvents} damage events`);
+            message += getString('command.worldborder.get.damageAmount', { amount: (settings.damageAmount ?? currentRunTimeConfig.worldBorderDefaultDamageAmount).toString() }) + '\n';
+            message += getString('command.worldborder.get.damageInterval', { interval: (settings.damageIntervalTicks ?? currentRunTimeConfig.worldBorderDefaultDamageIntervalTicks).toString() }) + '\n';
+            message += getString('command.worldborder.get.teleportAfter', { events: (settings.teleportAfterNumDamageEvents ?? currentRunTimeConfig.worldBorderTeleportAfterNumDamageEvents).toString() }) + '\n';
         }
 
         if (settings.isResizing && settings.resizeDurationMs > 0) {
@@ -232,86 +238,88 @@ async function handleGetCommand(player, args, dependencies) {
             if (actualElapsedResizingMs >= settings.resizeDurationMs) currentInterpolatedSize = settings.targetSize;
             if (actualElapsedResizingMs <= 0) currentInterpolatedSize = settings.originalSize;
 
-            playerUtils.notifyPlayer(player, `  Resizing: YES (From ${settings.originalSize} to ${settings.targetSize})`);
-            playerUtils.notifyPlayer(player, `  Progress: ${progressPercent.toFixed(1)}% (${remainingSec.toFixed(1)}s remaining)`);
-            playerUtils.notifyPlayer(player, `  Current Approx. Size: ${currentInterpolatedSize.toFixed(1)}`);
-            playerUtils.notifyPlayer(player, `  Interpolation: ${settings.resizeInterpolationType || 'linear'}`);
+            message += getString('command.worldborder.get.resizing.yes', { originalSize: settings.originalSize.toString(), targetSize: settings.targetSize.toString() }) + '\n';
+            message += getString('command.worldborder.get.resizing.progress', { progressPercent: progressPercent.toFixed(1), remainingSeconds: remainingSec.toFixed(1) }) + '\n';
+            message += getString('command.worldborder.get.resizing.currentSize', { currentSize: currentInterpolatedSize.toFixed(1) }) + '\n';
+            message += getString('command.worldborder.get.resizing.interpolation', { interpolationType: settings.resizeInterpolationType || 'linear' }) + '\n';
             if (settings.isPaused) {
-                playerUtils.notifyPlayer(player, '  Resize Status: PAUSED');
+                message += getString('command.worldborder.get.resizing.statusPaused') + '\n';
                 let displayPausedTime = accumulatedPausedTime;
                 if (settings.isPaused && typeof settings.resizeLastPauseStartTimeMs === 'number') {
                     displayPausedTime += (Date.now() - settings.resizeLastPauseStartTimeMs);
                 }
-                playerUtils.notifyPlayer(player, `  Total Paused Time: ${formatDurationBrief(displayPausedTime)}`);
+                message += getString('command.worldborder.get.resizing.totalPausedTime', { pausedTime: formatDurationBrief(displayPausedTime) }) + '\n';
             }
         }
 
         const currentGlobalParticle = dependencies.config.worldBorderParticleName;
         if (settings.particleNameOverride) {
-            playerUtils.notifyPlayer(player, `  Particle Override: ${settings.particleNameOverride}`);
+            message += getString('command.worldborder.get.particle.override', { particleNameOverride: settings.particleNameOverride }) + '\n';
             if (settings.particleNameOverride !== currentGlobalParticle) {
-                 playerUtils.notifyPlayer(player, `    (Global default is: ${currentGlobalParticle})`);
+                 message += getString('command.worldborder.get.particle.override.globalInfo', { globalParticle: currentGlobalParticle }) + '\n';
             }
         } else {
-            playerUtils.notifyPlayer(player, `  Particle: Global Default (${currentGlobalParticle})`);
+            message += getString('command.worldborder.get.particle.globalDefault', { globalParticle: currentGlobalParticle }) + '\n';
         }
+        playerUtils.notifyPlayer(player, message.trimEnd());
     } else {
-        playerUtils.notifyPlayer(player, `§eNo world border configured for ${dimensionId.replace('minecraft:', '')}. Use ${prefix}wb set to create one.`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.get.noBorder', { dimensionName: dimensionName, prefix: prefix }));
     }
 }
 
 async function handleToggleCommand(player, args, dependencies) {
-    const { config, playerUtils, logManager, worldBorderManager } = dependencies;
+    const { config, playerUtils, logManager, worldBorderManager, getString } = dependencies;
     const prefix = config.prefix;
 
     if (args.length < 1) {
-        playerUtils.warnPlayer(player, `§cUsage: ${prefix}wb toggle <on|off> [dimension]`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.toggle.usage', { prefix: prefix }));
         return;
     }
 
     const state = args[0].toLowerCase();
     if (state !== 'on' && state !== 'off') {
-        playerUtils.warnPlayer(player, '§cInvalid state. Use \'on\' or \'off\'.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.toggle.invalidState'));
         return;
     }
 
     const dimensionIdInput = args.length > 1 ? args[1] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:', '') : (dimensionIdInput || player.dimension.id.split(':')[1]);
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
 
     const currentSettings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!currentSettings) {
-        playerUtils.warnPlayer(player, `§cNo border configured for ${dimensionId.replace('minecraft:', '')} to toggle.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.toggle.noBorder', { dimensionName: dimensionName }));
         return;
     }
 
     const newState = state === 'on';
-    if (currentSettings.enabled === newState && !currentSettings.isResizing) {
-        playerUtils.notifyPlayer(player, `§eBorder for ${dimensionId.replace('minecraft:', '')} is already ${state}.`);
+    if (currentSettings.enabled === newState && !currentSettings.isResizing) { // Only consider already in state if not resizing
+        playerUtils.notifyPlayer(player, getString('command.worldborder.toggle.alreadyState', { dimensionName: dimensionName, state: state }));
         return;
     }
 
     currentSettings.enabled = newState;
     let cancelledResizeMessage = '';
     if (!newState && currentSettings.isResizing) {
-        currentSettings.isResizing = false;
-        cancelledResizeMessage = ' Active resize has been cancelled.';
+        currentSettings.isResizing = false; // Stop resizing if border is turned off
+        cancelledResizeMessage = ' ' + getString('command.worldborder.set.resizeCancelled'); // Reuse this key
     }
 
     if (worldBorderManager.saveBorderSettings(dimensionId, currentSettings, dependencies)) {
-        playerUtils.notifyPlayer(player, `§aBorder for ${dimensionId.replace('minecraft:', '')} turned ${state}.${cancelledResizeMessage}`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.toggle.success', { dimensionName: dimensionName, state: state, resizeCancelledMessage: cancelledResizeMessage }));
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderToggle', targetName: dimensionId, details: `Set to ${state}. Full settings: ${JSON.stringify(worldBorderManager.getBorderSettings(dimensionId, dependencies))}` }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, '§cFailed to toggle world border state.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.toggle.fail'));
     }
 }
 
 async function handleRemoveCommand(player, args, dependencies) {
-    const { config, playerUtils, logManager, worldBorderManager } = dependencies;
+    const { config, playerUtils, logManager, worldBorderManager, getString } = dependencies;
     const prefix = config.prefix;
     let dimensionIdInput;
     let confirmationArg = false;
@@ -323,51 +331,54 @@ async function handleRemoveCommand(player, args, dependencies) {
     } else if (args.length === 2) {
         dimensionIdInput = args[0];
         if (args[1].toLowerCase() === 'confirm') confirmationArg = true;
-        else { playerUtils.warnPlayer(player, `§cTo remove, type: ${prefix}wb remove ${dimensionIdInput} confirm`); return; }
-    } else { playerUtils.warnPlayer(player, `§cUsage: ${prefix}wb remove [dimension] confirm`); return; }
+        else { playerUtils.warnPlayer(player, getString('command.worldborder.remove.usage', { prefix: prefix })); return; } // Corrected usage message here
+    } else { playerUtils.warnPlayer(player, getString('command.worldborder.remove.usage', { prefix: prefix })); return; }
 
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:', '') : (dimensionIdInput || player.dimension.id.split(':')[1]);
+
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
 
     if (!confirmationArg) {
-        const dimToDisplay = dimensionIdInput ? dimensionId.replace('minecraft:', '') : `your current dimension (${dimensionId.replace('minecraft:', '')})`;
-        const confirmCmd = `${prefix}wb remove ${dimensionIdInput ? dimensionId.replace('minecraft:', '') + ' ' : ''}confirm`;
-        playerUtils.warnPlayer(player, `§cAre you sure you want to remove the border for ${dimToDisplay}? Type: ${confirmCmd}`);
+        const dimToDisplay = dimensionIdInput ? dimensionName : getString('command.worldborder.remove.confirmNeeded.currentDimension', { dimensionName: dimensionName });
+        const confirmCommand = `${prefix}wb remove ${dimensionIdInput ? dimensionName + ' ' : ''}confirm`;
+        playerUtils.warnPlayer(player, getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimToDisplay, confirmCommand: confirmCommand }));
         return;
     }
 
     const currentSettings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
-    let cancelledResizeMessage = (currentSettings && currentSettings.isResizing) ? ' Active resize was also cancelled.' : '';
+    let cancelledResizeMessage = (currentSettings && currentSettings.isResizing) ? ' ' + getString('command.worldborder.set.resizeCancelled') : '';
+
 
     if (worldBorderManager.clearBorderSettings(dimensionId, dependencies)) {
-        playerUtils.notifyPlayer(player, `§aWorld border for ${dimensionId.replace('minecraft:', '')} removed.${cancelledResizeMessage}`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.remove.success', { dimensionName: dimensionName, resizeCancelledMessage: cancelledResizeMessage }));
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderRemove', targetName: dimensionId, details: `Border removed.${cancelledResizeMessage}` }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, `§cFailed to remove border for ${dimensionId.replace('minecraft:', '')}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.remove.fail', { dimensionName: dimensionName }));
     }
 }
 
 async function handleResizeCommand(player, args, operationType, dependencies) {
-    const { config, playerUtils, logManager, worldBorderManager } = dependencies;
+    const { config, playerUtils, logManager, worldBorderManager, getString } = dependencies;
     const prefix = config.prefix;
 
     if (args.length < 2) {
-        playerUtils.warnPlayer(player, `§cUsage: ${prefix}wb ${operationType} <newSize> <timeSeconds> [dimension] [interpolationType]`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.usage', { prefix: prefix, operationType: operationType }));
         return;
     }
 
     const newSize = parseFloat(args[0]);
     const timeSeconds = parseFloat(args[1]);
     let dimensionIdInput = undefined;
-    let interpolationType = 'linear';
+    let interpolationType = 'linear'; // Default
 
-    if (args.length > 3) {
+    if (args.length > 3) { // dimension and interpolation type provided
         dimensionIdInput = args[2];
         interpolationType = args[3].toLowerCase();
-    } else if (args.length > 2) {
+    } else if (args.length > 2) { // either dimension or interpolation type
         const thirdArg = args[2].toLowerCase();
         const validInterpTypes = ['linear', 'easeoutquad', 'easeinoutquad'];
         if (validInterpTypes.includes(thirdArg)) interpolationType = thirdArg;
@@ -375,45 +386,47 @@ async function handleResizeCommand(player, args, operationType, dependencies) {
     }
 
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:', '') : (dimensionIdInput || player.dimension.id.split(':')[1]);
+
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
 
     const validInterpTypes = ['linear', 'easeoutquad', 'easeinoutquad'];
     if (!validInterpTypes.includes(interpolationType)) {
-        playerUtils.warnPlayer(player, `§cInvalid interpolation type: ${interpolationType}. Valid: ${validInterpTypes.join(', ')}.`);
-        interpolationType = 'linear';
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.invalidInterpolation', { interpolationType: interpolationType, validTypes: validInterpTypes.join(', ') }));
+        interpolationType = 'linear'; // Default back
     }
 
     if (isNaN(newSize) || newSize <= 0 || isNaN(timeSeconds) || timeSeconds <= 0) {
-        playerUtils.warnPlayer(player, '§cNew size and time must be positive numbers.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.positiveNumbers'));
         return;
     }
 
     let currentSettings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!currentSettings || !currentSettings.enabled) {
-        playerUtils.warnPlayer(player, `§cNo active border in ${dimensionId.replace('minecraft:', '')} to ${operationType}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.noActiveBorder', { dimensionName: dimensionName, operationType: operationType }));
         return;
     }
 
     const currentActualSize = currentSettings.shape === 'circle' ? currentSettings.radius : currentSettings.halfSize;
     if (typeof currentActualSize !== 'number') {
-        playerUtils.warnPlayer(player, `§cCurrent border size not defined for ${dimensionId.replace('minecraft:', '')} to ${operationType}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.notDefined', { dimensionName: dimensionName, operationType: operationType }));
         return;
     }
 
     if (operationType === 'shrink' && newSize >= currentActualSize) {
-        playerUtils.warnPlayer(player, `§cNew size (${newSize}) must be smaller than current size (${currentActualSize}) for shrink.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.shrinkTooLarge', { newSize: newSize.toString(), currentSize: currentActualSize.toString() }));
         return;
     }
     if (operationType === 'expand' && newSize <= currentActualSize) {
-        playerUtils.warnPlayer(player, `§cNew size (${newSize}) must be larger than current size (${currentActualSize}) for expand.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.expandTooSmall', { newSize: newSize.toString(), currentSize: currentActualSize.toString() }));
         return;
     }
 
     if (currentSettings.isResizing) {
-        playerUtils.notifyPlayer(player, '§eOverriding current border resize operation.');
+        playerUtils.notifyPlayer(player, getString('command.worldborder.resize.overrideCurrent'));
     }
 
     currentSettings.isResizing = true;
@@ -422,15 +435,16 @@ async function handleResizeCommand(player, args, operationType, dependencies) {
     currentSettings.resizeStartTimeMs = Date.now();
     currentSettings.resizeDurationMs = timeSeconds * 1000;
     currentSettings.resizeInterpolationType = interpolationType;
-    currentSettings.isPaused = false;
+    currentSettings.isPaused = false; // Reset pause state on new resize
     currentSettings.resizePausedTimeMs = 0;
     currentSettings.resizeLastPauseStartTimeMs = undefined;
 
+
     if (worldBorderManager.saveBorderSettings(dimensionId, currentSettings, dependencies)) {
-        playerUtils.notifyPlayer(player, `§aBorder for ${dimensionId.replace('minecraft:', '')} now ${operationType}ing from ${currentActualSize} to ${newSize} over ${timeSeconds}s (${interpolationType}).`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.resize.success', { dimensionName: dimensionName, operationType: operationType, originalSize: currentActualSize.toString(), newSize: newSize.toString(), timeSeconds: timeSeconds.toString(), interpolationType: interpolationType }));
         logManager.addLog({ adminName: player.nameTag, actionType: `worldBorder${operationType.charAt(0).toUpperCase() + operationType.slice(1)}Start`, targetName: dimensionId, details: JSON.stringify(currentSettings) }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, `§cFailed to start border ${operationType}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resize.fail', { operationType: operationType }));
     }
 }
 
@@ -443,51 +457,52 @@ async function handleExpandCommand(player, args, dependencies) {
 }
 
 async function handleResizePauseCommand(player, args, dependencies) {
-    const { playerUtils, logManager, worldBorderManager, config } = dependencies;
-    const prefix = config.prefix;
+    const { playerUtils, logManager, worldBorderManager, config, getString } = dependencies;
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:', '') : (dimensionIdInput || player.dimension.id.split(':')[1]);
+
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
     const settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!settings || !settings.isResizing) {
-        playerUtils.warnPlayer(player, `§cNo border is currently resizing in ${dimensionId.replace('minecraft:', '')}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.pause.noResize', { dimensionName: dimensionName }));
         return;
     }
     if (settings.isPaused) {
-        playerUtils.notifyPlayer(player, `§eBorder resize in ${dimensionId.replace('minecraft:', '')} is already paused.`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.pause.alreadyPaused', { dimensionName: dimensionName }));
         return;
     }
     settings.isPaused = true;
     settings.resizeLastPauseStartTimeMs = Date.now();
     if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
-        playerUtils.notifyPlayer(player, `§aBorder resize in ${dimensionId.replace('minecraft:', '')} paused.`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.pause.success', { dimensionName: dimensionName }));
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderResizePause', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, `§cFailed to pause border resize in ${dimensionId.replace('minecraft:', '')}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.pause.fail', { dimensionName: dimensionName }));
     }
 }
 
 async function handleResizeResumeCommand(player, args, dependencies) {
-    const { playerUtils, logManager, worldBorderManager, config } = dependencies;
-    const prefix = config.prefix;
+    const { playerUtils, logManager, worldBorderManager, config, getString } = dependencies;
     const dimensionIdInput = args.length > 0 ? args[0] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:', '') : (dimensionIdInput || player.dimension.id.split(':')[1]);
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
     const settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!settings || !settings.isResizing) {
-        playerUtils.warnPlayer(player, `§cNo border is currently resizing in ${dimensionId.replace('minecraft:', '')} to resume.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resume.noResize', { dimensionName: dimensionName }));
         return;
     }
     if (!settings.isPaused) {
-        playerUtils.notifyPlayer(player, `§eBorder resize in ${dimensionId.replace('minecraft:', '')} is not currently paused.`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.resume.notPaused', { dimensionName: dimensionName }));
         return;
     }
     const currentPauseDurationMs = Date.now() - (settings.resizeLastPauseStartTimeMs || Date.now());
@@ -495,66 +510,67 @@ async function handleResizeResumeCommand(player, args, dependencies) {
     settings.isPaused = false;
     settings.resizeLastPauseStartTimeMs = undefined;
     if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
-        playerUtils.notifyPlayer(player, `§aBorder resize in ${dimensionId.replace('minecraft:', '')} resumed.`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.resume.success', { dimensionName: dimensionName }));
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderResizeResume', targetName: dimensionId, details: JSON.stringify(settings) }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, `§cFailed to resume border resize in ${dimensionId.replace('minecraft:', '')}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.resume.fail', { dimensionName: dimensionName }));
     }
 }
 
 async function handleSetGlobalParticleCommand(player, args, dependencies) {
-    const { playerUtils, logManager, editableConfig, config: currentRunTimeConfig } = dependencies;
+    const { playerUtils, logManager, editableConfig, config: currentRunTimeConfig, getString } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
 
     if (args.length < 1) {
-        playerUtils.warnPlayer(player, `§cUsage: ${prefix}wb setglobalparticle <particleName>`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.setglobalparticle.usage', { prefix: prefix }));
         return;
     }
     const particleName = args[0];
     if (typeof particleName !== 'string' || particleName.trim() === '') {
-        playerUtils.warnPlayer(player, '§cParticle name cannot be empty.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.particle.emptyName'));
         return;
     }
     if (!editableConfig || typeof editableConfig.updateConfigValue !== 'function') {
-        playerUtils.warnPlayer(player, '§cConfiguration system error. Cannot set global particle.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.setglobalparticle.errorConfig'));
         console.warn('[WB SetGlobalParticle] editableConfig or updateConfigValue is not available in dependencies.');
         return;
     }
     const success = editableConfig.updateConfigValue('worldBorderParticleName', particleName);
     if (success) {
-        playerUtils.notifyPlayer(player, `§aGlobal world border particle set to: ${particleName}`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.setglobalparticle.success', { particleName: particleName }));
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderSetGlobalParticle', targetName: 'global_config', details: `Set worldBorderParticleName to: ${particleName}` }, dependencies);
     } else {
-        // Compare against the live runtime config value
         const currentGlobalParticleFromRuntime = currentRunTimeConfig.worldBorderParticleName;
         if (currentGlobalParticleFromRuntime === particleName) {
-            playerUtils.warnPlayer(player, `§eGlobal particle is already set to ${particleName}. No change made.`);
+            playerUtils.warnPlayer(player, getString('command.worldborder.setglobalparticle.alreadySet', { particleName: particleName }));
         } else {
-            playerUtils.warnPlayer(player, '§cFailed to set global particle due to an internal error.');
+            playerUtils.warnPlayer(player, getString('command.worldborder.setglobalparticle.failInternal'));
         }
     }
 }
 
 async function handleSetParticleCommand(player, args, dependencies) {
-    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager } = dependencies;
+    const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager, getString } = dependencies;
     const prefix = currentRunTimeConfig.prefix;
     const globalDefaultParticle = currentRunTimeConfig.worldBorderParticleName;
 
     if (args.length < 1) {
-        playerUtils.warnPlayer(player, `§cUsage: ${prefix}wb setparticle <particleName|reset> [dimension]`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.setparticle.usage', { prefix: prefix }));
         return;
     }
     const particleNameInput = args[0];
     const dimensionIdInput = args.length > 1 ? args[1] : undefined;
     const dimensionId = normalizeDimensionId(player, dimensionIdInput);
+    const dimensionName = dimensionId ? dimensionId.replace('minecraft:', '') : (dimensionIdInput || player.dimension.id.split(':')[1]);
+
 
     if (!dimensionId) {
-        playerUtils.warnPlayer(player, `§cInvalid dimension: ${dimensionIdInput || player.dimension.id}.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.invalidDimension', { dimensionName: dimensionName }));
         return;
     }
     let settings = worldBorderManager.getBorderSettings(dimensionId, dependencies);
     if (!settings || !settings.enabled) {
-        playerUtils.warnPlayer(player, `§cNo active border in ${dimensionId.replace('minecraft:','')} to set particle for.`);
+        playerUtils.warnPlayer(player, getString('command.worldborder.setparticle.noActiveBorder', { dimensionName: dimensionName }));
         return;
     }
     let newParticleOverride;
@@ -564,16 +580,16 @@ async function handleSetParticleCommand(player, args, dependencies) {
         messageParticleName = `Global Default (${globalDefaultParticle})`;
     } else {
         if (typeof particleNameInput !== 'string' || particleNameInput.trim() === '') {
-            playerUtils.warnPlayer(player, '§cParticle name cannot be empty.');
+            playerUtils.warnPlayer(player, getString('command.worldborder.particle.emptyName'));
             return;
         }
         newParticleOverride = particleNameInput.trim();
     }
     settings.particleNameOverride = newParticleOverride;
     if (worldBorderManager.saveBorderSettings(dimensionId, settings, dependencies)) {
-        playerUtils.notifyPlayer(player, `§aParticle for border in ${dimensionId.replace('minecraft:','')} set to: ${messageParticleName}`);
+        playerUtils.notifyPlayer(player, getString('command.worldborder.setparticle.success', { dimensionName: dimensionName, particleNameDisplay: messageParticleName }));
         logManager.addLog({ adminName: player.nameTag, actionType: 'worldBorderSetParticle', targetName: dimensionId, details: `Set particle override to: ${newParticleOverride === undefined ? 'Global Default' : newParticleOverride}` }, dependencies);
     } else {
-        playerUtils.warnPlayer(player, '§cFailed to set particle for world border.');
+        playerUtils.warnPlayer(player, getString('command.worldborder.setparticle.fail'));
     }
 }

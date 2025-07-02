@@ -24,23 +24,23 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
-    const { uiManager, playerDataManager, config, logManager } = dependencies;
+    const { uiManager, playerDataManager, config, logManager, getString } = dependencies;
 
     try {
         await uiManager.showAdminPanelMain(player, playerDataManager, config, dependencies);
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'panelCommandUi', // Changed to camelCase
+            actionType: 'panelCommandUi',
             targetName: player.nameTag,
             details: 'Player opened main panel via command.',
         }, dependencies);
     } catch (error) {
         console.error(`[PanelCommand] Error executing panel command for ${player.nameTag}: ${error.stack || error}`);
-        player.sendMessage('§cAn unexpected error occurred while opening the panel. Please contact an administrator.'); // User-friendly error
+        player.sendMessage(getString('command.panel.error.generic'));
         logManager.addLog({
             actionType: 'error',
-            context: 'PanelCommandExecute', // Added context
+            context: 'PanelCommandExecute',
             details: `Error for ${player.nameTag}: ${error.stack || error}`,
         }, dependencies);
     }

@@ -21,7 +21,7 @@ export const definition = {
  * Executes the vanish command.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, playerDataManager } = dependencies;
+    const { playerUtils, logManager, playerDataManager, getString } = dependencies;
 
     let mode = args[0] ? args[0].toLowerCase() : 'silent';
     if (mode !== 'silent' && mode !== 'notify') {
@@ -41,18 +41,18 @@ export async function execute(player, args, dependencies) {
 
         if (mode === 'notify') {
             player.addTag(vanishModeNotifyTag);
-            mc.world.sendMessage(`§e${player.nameTag} left the game`);
-            player.onScreenDisplay.setActionBar('§7You are now vanished (notify mode).');
+            mc.world.sendMessage(getString('command.vanish.notify.leftGame', { playerName: player.nameTag }));
+            player.onScreenDisplay.setActionBar(getString('command.vanish.actionBar.on.notify'));
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanishOnNotify', details: `${player.nameTag} enabled vanish (notify).` }, dependencies);
         } else {
-            player.onScreenDisplay.setActionBar('§7You are now vanished (silent mode).');
+            player.onScreenDisplay.setActionBar(getString('command.vanish.actionBar.on.silent'));
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanishOnSilent', details: `${player.nameTag} enabled vanish (silent).` }, dependencies);
         }
 
         const pData = playerDataManager.getPlayerData(player.id);
-        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has enabled vanish (${mode} mode).`, dependencies, player, pData);
+        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has enabled vanish (${mode} mode).`, dependencies, player, pData); // Admin notification can remain
     } else {
-        player.onScreenDisplay.setActionBar('');
+        player.onScreenDisplay.setActionBar(''); // Clear action bar
         const wasNotifyMode = player.hasTag(vanishModeNotifyTag);
 
         player.canPickupItems = true;
@@ -63,16 +63,16 @@ export async function execute(player, args, dependencies) {
         player.removeEffect('fire_resistance');
 
         if (wasNotifyMode) {
-            mc.world.sendMessage(`§e${player.nameTag} joined the game`);
-            player.sendMessage('§7You are no longer vanished (notify mode).');
+            mc.world.sendMessage(getString('command.vanish.notify.joinedGame', { playerName: player.nameTag }));
+            player.sendMessage(getString('command.vanish.message.off.notify'));
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanishOffNotify', details: `${player.nameTag} disabled vanish (notify).` }, dependencies);
             player.removeTag(vanishModeNotifyTag);
         } else {
-            player.sendMessage('§7You are no longer vanished (silent mode).');
+            player.sendMessage(getString('command.vanish.message.off.silent'));
             logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'vanishOffSilent', details: `${player.nameTag} disabled vanish (silent).` }, dependencies);
         }
 
         const pData = playerDataManager.getPlayerData(player.id);
-        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has disabled vanish (${wasNotifyMode ? 'notify' : 'silent'} mode).`, dependencies, player, pData);
+        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has disabled vanish (${wasNotifyMode ? 'notify' : 'silent'} mode).`, dependencies, player, pData); // Admin notification
     }
 }

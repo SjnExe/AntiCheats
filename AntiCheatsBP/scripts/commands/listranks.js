@@ -26,14 +26,14 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { logManager, playerUtils } = dependencies;
+    const { logManager, playerUtils, getString } = dependencies;
 
     if (!rankDefinitions || rankDefinitions.length === 0) {
-        player.sendMessage('§cNo ranks are currently defined in the system.');
+        player.sendMessage(getString('command.listranks.noRanks'));
         return;
     }
 
-    let message = '§e--- Available Ranks ---\n';
+    let message = getString('command.listranks.header') + '\n';
     // Sort by priority for consistent display, then by name
     const sortedRanks = [...rankDefinitions].sort((a, b) => {
         const priorityA = a.priority ?? Infinity;
@@ -42,31 +42,31 @@ export async function execute(player, _args, dependencies) {
         if (priorityDiff !== 0) {
             return priorityDiff;
         }
-        return (a.name || 'Unknown Rank').localeCompare(b.name || 'Unknown Rank');
+        return (a.name || getString('common.value.unknown') + ' Rank').localeCompare(b.name || getString('common.value.unknown') + ' Rank');
     });
 
     for (const rankDef of sortedRanks) {
-        message += `§aID: §f${rankDef.id}\n`;
-        message += `  §bName: §f${rankDef.name}\n`;
-        message += `  §dPermLevel: §f${rankDef.permissionLevel}\n`;
-        message += `  §6Priority: §f${rankDef.priority}\n`;
+        message += getString('command.listranks.rank.id', { id: rankDef.id }) + '\n';
+        message += getString('command.listranks.rank.name', { name: rankDef.name }) + '\n';
+        message += getString('command.listranks.rank.permLevel', { permLevel: rankDef.permissionLevel.toString() }) + '\n';
+        message += getString('command.listranks.rank.priority', { priority: rankDef.priority.toString() }) + '\n';
 
         let conditionStrings = [];
         if (rankDef.conditions && rankDef.conditions.length > 0) {
             for (const cond of rankDef.conditions) {
-                if (cond.type === 'owner_name') conditionStrings.push('Is Owner (by name)');
-                else if (cond.type === 'admin_tag') conditionStrings.push('Has Admin Tag');
-                else if (cond.type === 'manual_tag_prefix') conditionStrings.push(`Manual Tag (e.g., ${cond.prefix}${rankDef.id})`);
-                else if (cond.type === 'tag') conditionStrings.push(`Has Tag: ${cond.tag}`);
-                else if (cond.type === 'default') conditionStrings.push('Default fallback');
-                else conditionStrings.push(`Custom (${cond.type})`);
+                if (cond.type === 'owner_name') conditionStrings.push(getString('command.listranks.condition.ownerName'));
+                else if (cond.type === 'admin_tag') conditionStrings.push(getString('command.listranks.condition.adminTag'));
+                else if (cond.type === 'manual_tag_prefix') conditionStrings.push(getString('command.listranks.condition.manualTagPrefix', { prefix: cond.prefix, rankId: rankDef.id }));
+                else if (cond.type === 'tag') conditionStrings.push(getString('command.listranks.condition.tag', { tag: cond.tag }));
+                else if (cond.type === 'default') conditionStrings.push(getString('command.listranks.condition.default'));
+                else conditionStrings.push(getString('command.listranks.condition.custom', { type: cond.type }));
             }
         } else {
-            conditionStrings.push('None (or implicit default)');
+            conditionStrings.push(getString('command.listranks.condition.none'));
         }
-        message += `  §3Conditions: §f${conditionStrings.join(', ')}\n`;
-        message += `  §7Chat Prefix: §r${rankDef.chatFormatting?.prefixText || 'Default'}\n`;
-        message += `  §7Nametag: §r${rankDef.nametagPrefix?.replace(/\\n/g, '') || 'Default'}\n\n`;
+        message += getString('command.listranks.rank.conditions', { conditions: conditionStrings.join(', ') }) + '\n';
+        message += getString('command.listranks.rank.chatPrefix', { prefix: rankDef.chatFormatting?.prefixText || getString('command.listranks.formatting.default') }) + '\n';
+        message += getString('command.listranks.rank.nametag', { nametag: rankDef.nametagPrefix?.replace(/\\n/g, '') || getString('command.listranks.formatting.default') }) + '\n\n';
     }
 
     player.sendMessage(message.trim());

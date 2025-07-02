@@ -27,10 +27,10 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager } = dependencies;
+    const { config, playerUtils, logManager, playerDataManager, getString } = dependencies;
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}copyinv <playername>`);
+        player.sendMessage(getString('command.copyinv.usage', { prefix: config.prefix }));
         return;
     }
 
@@ -38,12 +38,12 @@ export async function execute(player, args, dependencies) {
     const targetPlayer = playerUtils.findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`);
+        player.sendMessage(getString('command.copyinv.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
 
     if (targetPlayer.id === player.id) {
-        player.sendMessage('§cYou cannot copy your own inventory.');
+        player.sendMessage(getString('command.copyinv.cannotSelf'));
         return;
     }
 
@@ -51,21 +51,21 @@ export async function execute(player, args, dependencies) {
     const adminInvComp = player.getComponent(mc.EntityComponentTypes.Inventory);
 
     if (!targetInvComp?.container || !adminInvComp?.container) {
-        player.sendMessage('§cCould not access inventories.');
+        player.sendMessage(getString('command.copyinv.noAccess'));
         return;
     }
 
     const form = new ModalFormData()
-        .title('Confirm Inventory Copy')
-        .textField(`Type 'confirm' to copy ${targetPlayer.nameTag}'s inventory. THIS WILL OVERWRITE YOUR CURRENT INVENTORY.`, 'Type \'confirm\' here', '')
-        .toggle('Yes, I understand my inventory will be overwritten.', false);
+        .title(getString('ui.copyinv.confirm.title'))
+        .textField(getString('ui.copyinv.confirm.body', { targetPlayerName: targetPlayer.nameTag }), getString('ui.copyinv.confirm.placeholder'), '')
+        .toggle(getString('ui.copyinv.confirm.toggle'), false);
 
     try {
         const response = await form.show(player);
 
         if (response.canceled || !response.formValues || !response.formValues[1] || response.formValues[0]?.toLowerCase() !== 'confirm') {
             if (!response.canceled || response.cancelationReason !== 'UserBusy') {
-                 player.sendMessage('§eInventory copy cancelled.');
+                 player.sendMessage(getString('command.copyinv.cancelled'));
             }
             playerUtils.debugLog(`[CopyInvCommand] Confirmation form cancelled or not confirmed by ${player.nameTag}. Reason: ${response.cancelationReason}`, player.nameTag, dependencies);
             return;
@@ -73,7 +73,7 @@ export async function execute(player, args, dependencies) {
     } catch (formError) {
         playerUtils.debugLog(`[CopyInvCommand] Confirmation form error for ${player.nameTag}: ${formError.message}`, player.nameTag, dependencies);
         console.error(`[CopyInvCommand] Confirmation form error for ${player.nameTag}: ${formError.stack || formError}`);
-        player.sendMessage('§cAn error occurred with the confirmation form.');
+        player.sendMessage(getString('command.copyinv.error.form'));
         return;
     }
 
@@ -91,7 +91,7 @@ export async function execute(player, args, dependencies) {
             }
         }
 
-        player.sendMessage(`§aSuccessfully copied ${targetPlayer.nameTag}'s inventory (${itemsCopied} items/stacks).`);
+        player.sendMessage(getString('command.copyinv.success', { targetPlayerName: targetPlayer.nameTag, itemsCopied: itemsCopied.toString() }));
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,

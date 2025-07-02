@@ -24,25 +24,25 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager, permissionLevels: depPermLevels, rankManager } = dependencies;
+    const { config, playerUtils, logManager, playerDataManager, permissionLevels: depPermLevels, rankManager, getString } = dependencies;
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${config.prefix}kick <playername> [reason]`);
+        player.sendMessage(getString('command.kick.usage', { prefix: config.prefix }));
         return;
     }
 
     const targetPlayerName = args[0];
-    const reason = args.slice(1).join(' ') || 'Kicked by an administrator.';
+    const reason = args.slice(1).join(' ') || getString('common.value.noReasonProvided'); // Default reason
 
     const foundPlayer = playerUtils.findPlayer(targetPlayerName);
 
     if (!foundPlayer) {
-        player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`);
+        player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
 
     if (foundPlayer.id === player.id) {
-        player.sendMessage('§cYou cannot kick yourself.');
+        player.sendMessage(getString('command.kick.cannotSelf'));
         return;
     }
 
@@ -50,19 +50,19 @@ export async function execute(player, args, dependencies) {
     const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
 
     if (targetPermissionLevel <= depPermLevels.admin && issuerPermissionLevel > depPermLevels.owner) {
-        player.sendMessage('§cYou do not have permission to kick this player.');
+        player.sendMessage(getString('command.kick.noPermission'));
         return;
     }
     if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) {
-        player.sendMessage('§cOnly the server owner can kick another owner.');
+        player.sendMessage(getString('command.kick.noPermissionOwner'));
         return;
     }
 
     try {
-        const kickMessageToTarget = `§cYou have been kicked by ${player.nameTag}. Reason: ${reason}`;
+        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: player.nameTag, reason: reason });
         foundPlayer.kick(kickMessageToTarget);
 
-        player.sendMessage(`§aKicked ${foundPlayer.nameTag}. Reason: ${reason}`);
+        player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason: reason }));
 
         if (playerUtils.notifyAdmins) {
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
@@ -78,7 +78,7 @@ export async function execute(player, args, dependencies) {
             }, dependencies);
         }
     } catch (e) {
-        player.sendMessage(`§cError kicking ${targetPlayerName}: ${e.message}`);
+        player.sendMessage(getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message }));
         console.error(`[KickCommand] Error kicking player ${targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
         if (logManager?.addLog) {
             logManager.addLog({

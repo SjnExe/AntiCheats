@@ -24,19 +24,19 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, playerDataManager, logManager } = dependencies;
-    const findPlayer = playerUtils.findPlayer; // Consistent with other commands
+    const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
+    const findPlayer = playerUtils.findPlayer;
     const prefix = config.prefix;
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${prefix}resetflags <playerName>`);
+        player.sendMessage(getString('command.resetflags.usage', { prefix: prefix }));
         return;
     }
     const targetPlayerName = args[0];
     const targetPlayer = findPlayer(targetPlayerName);
 
     if (!targetPlayer) {
-        player.sendMessage(`§cPlayer '${targetPlayerName}' not found or is not online.`);
+        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
@@ -53,9 +53,9 @@ export async function execute(player, args, dependencies) {
                 }
             }
         } else {
-            pData.flags = { totalFlags: 0 }; // Initialize if flags object doesn't exist
+            pData.flags = { totalFlags: 0 };
         }
-        pData.lastFlagType = ''; // Use empty string for consistency
+        pData.lastFlagType = '';
 
         pData.consecutiveOffGroundTicks = 0;
         pData.fallDistance = 0;
@@ -83,23 +83,23 @@ export async function execute(player, args, dependencies) {
         pData.lastDownwardScaffoldBlockLocation = null;
         // Add any other specific playerData fields that track violations here
 
-        pData.isDirtyForSave = true; // Mark for saving
+        pData.isDirtyForSave = true;
         await playerDataManager.prepareAndSavePlayerData(targetPlayer, dependencies);
 
-        player.sendMessage(`§aSuccessfully reset flags and violation data for ${targetPlayer.nameTag}.`); // Clarified message
+        player.sendMessage(getString('command.resetflags.success', { playerName: targetPlayer.nameTag }));
         playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 reset flags for §e${targetPlayer.nameTag}.`, dependencies, player, pData);
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'resetFlags', // Changed to camelCase
+            actionType: 'resetFlags',
             targetName: targetPlayer.nameTag,
-            details: `Reset flags and violation data for ${targetPlayer.nameTag}`, // Clarified log
+            details: `Reset flags and violation data for ${targetPlayer.nameTag}`,
         }, dependencies);
 
         playerUtils.debugLog(`[ResetFlagsCommand] Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, pData.isWatched ? targetPlayer.nameTag : null, dependencies);
 
     } else {
-        player.sendMessage(`§cCould not reset flags for ${targetPlayer.nameTag} (no player data found).`);
+        player.sendMessage(getString('command.resetflags.noData', { playerName: targetPlayer.nameTag }));
         // Log this scenario as it might indicate an issue
         logManager.addLog({
             timestamp: Date.now(),

@@ -26,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, config, playerDataManager } = dependencies;
+    const { playerUtils, logManager, config, playerDataManager, getString } = dependencies;
     const notifEnabledPDataKey = 'ac_notifications_enabled';
     const notificationsOffTag = 'ac_notifications_off';
     const notificationsOnTag = 'ac_notifications_on';
@@ -35,12 +35,8 @@ export async function execute(player, args, dependencies) {
 
     let pData = playerDataManager.getPlayerData(player.id);
     if (!pData) {
-        // This should ideally not happen if ensurePlayerDataInitialized is called on player join/load.
-        // However, create a temporary minimal pData if it's missing to allow command to function.
         playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. Creating temporary minimal pData for this command.`, player.nameTag, dependencies);
         pData = { id: player.id, isWatched: false, [notifEnabledPDataKey]: config.acGlobalNotificationsDefaultOn };
-        // Note: This temporary pData won't be saved unless explicitly marked dirty and saved by another process.
-        // For a settings command like this, directly modifying tags is primary, pData is secondary/cache.
     }
 
     let currentPreference;
@@ -55,65 +51,64 @@ export async function execute(player, args, dependencies) {
     }
 
     let newPreference;
-    let responseMessage;
+    let responseMessageKey;
 
     switch (subCommand) {
         case 'on':
             newPreference = true;
-            responseMessage = '§aAntiCheat notifications are now ENABLED for you.';
+            responseMessageKey = 'command.notify.enabled';
             break;
         case 'off':
             newPreference = false;
-            responseMessage = '§cAntiCheat notifications are now DISABLED for you.';
+            responseMessageKey = 'command.notify.disabled';
             break;
         case 'toggle':
             newPreference = !currentPreference;
-            responseMessage = newPreference ? '§aAntiCheat notifications are now ENABLED for you.' : '§cAntiCheat notifications are now DISABLED for you.';
+            responseMessageKey = newPreference ? 'command.notify.enabled' : 'command.notify.disabled';
             break;
         case 'status':
-            const statusText = currentPreference ? 'ENABLED' : 'DISABLED';
-            let sourceText = '(Server Default)';
+            const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase(); // Or specific "ENABLED"/"DISABLED" keys
+            let sourceTextKey = 'command.notify.status.source.default';
             if (typeof pData[notifEnabledPDataKey] === 'boolean' || player.hasTag(notificationsOnTag) || player.hasTag(notificationsOffTag)) {
-                sourceText = '(Explicitly Set)';
+                sourceTextKey = 'command.notify.status.source.explicit';
             }
-            player.sendMessage(`§eYour AntiCheat notifications are currently: ${statusText} ${sourceText}`);
+            player.sendMessage(getString('command.notify.status', { statusText: statusText, sourceText: getString(sourceTextKey) }));
             try {
-                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'notifyStatusChecked', details: `Checked own notification status: ${statusText} ${sourceText}` }, dependencies);
+                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'notifyStatusChecked', details: `Checked own notification status: ${statusText} ${getString(sourceTextKey)}` }, dependencies);
             } catch (logError) {
                 console.error(`[NotifyCommand] Error logging status check: ${logError.stack || logError}`);
             }
             return;
         default:
-            player.sendMessage(`§cUsage: ${config.prefix}notify <on|off|toggle|status>`);
+            player.sendMessage(getString('command.notify.usage', { prefix: config.prefix }));
             return;
     }
 
     try {
         if (newPreference) {
-            player.removeTag(notificationsOffTag); // Safe even if tag isn't present
+            player.removeTag(notificationsOffTag);
             player.addTag(notificationsOnTag);
         } else {
             player.removeTag(notificationsOnTag);
             player.addTag(notificationsOffTag);
         }
 
-        if (pData) { // Check again in case it was temporarily created
+        if (pData) {
             pData[notifEnabledPDataKey] = newPreference;
             pData.isDirtyForSave = true;
         } else {
-            // Should not be reached if pData was initialized correctly or temporary one was made
             playerUtils.debugLog(`[NotifyCommand] Critical: pData was unexpectedly null/undefined when trying to set ${notifEnabledPDataKey} for ${player.nameTag}. Tags set, but pData not updated.`, player.nameTag, dependencies);
         }
 
-        player.sendMessage(responseMessage);
+        player.sendMessage(getString(responseMessageKey));
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
-        const logActionType = newPreference ? 'notifyEnabled' : 'notifyDisabled'; // camelCase actionType
+        const logActionType = newPreference ? 'notifyEnabled' : 'notifyDisabled';
         playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. New preference: ${newPreference}`, player.nameTag, dependencies);
         logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: logActionType, details: `Notifications ${logMessageAction}` }, dependencies);
 
     } catch (tagError) {
-        player.sendMessage('§cAn error occurred while updating your notification settings.');
+        player.sendMessage(getString('command.notify.error.update'));
         console.error(`[NotifyCommand] Error setting tags for ${player.nameTag}: ${tagError.stack || tagError}`);
         logManager.addLog({
             adminName: player.nameTag,

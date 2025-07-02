@@ -9,51 +9,57 @@ import { permissionLevels } from '../core/rankManager.js';
  * Shows the player their anti-cheat statistics.
  */
 async function showMyStatsUI(player, dependencies) {
-    const { playerDataManager, playerUtils, config } = dependencies;
+    const { playerDataManager, playerUtils, config, getString } = dependencies; // Added getString
     const pData = playerDataManager.getPlayerData(player.id);
-    let statsOutput = "Your AntiCheat Stats:\n";
+    let statsOutputLines = [];
 
     if (pData && pData.flags) {
-        statsOutput += `Total Flags: ${pData.flags.totalFlags || 0}\n`;
-        statsOutput += `Last Flag Type: ${pData.lastFlagType || "None"}\n\n`;
-        statsOutput += "Flag Breakdown:\n";
+        statsOutputLines.push(getString('command.inspect.totalFlags', { totalFlags: (pData.flags.totalFlags || 0).toString() }));
+        statsOutputLines.push(getString('command.inspect.lastFlagType', { lastFlagType: pData.lastFlagType || getString('common.value.notAvailable') }));
+        statsOutputLines.push(''); // For spacing
+        statsOutputLines.push(getString('command.inspect.flagsByTypeHeader'));
         let specificFlagsFound = false;
         for (const flagKey in pData.flags) {
-            if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
-                const flagData = pData.flags[flagKey];
-                statsOutput += `- ${flagKey}: ${flagData.count} (Last: ${flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : "N/A"})\n`;
-                specificFlagsFound = true;
+            if (Object.prototype.hasOwnProperty.call(pData.flags, flagKey)) {
+                if (flagKey !== "totalFlags" && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
+                    const flagData = pData.flags[flagKey];
+                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : getString('common.value.notAvailable');
+                    statsOutputLines.push(getString('command.inspect.flagEntry', { flagKey: flagKey, count: flagData.count.toString(), timestamp: timestamp }));
+                    specificFlagsFound = true;
+                }
             }
         }
         if (!specificFlagsFound && (pData.flags.totalFlags === 0 || !pData.flags.totalFlags)) {
-             statsOutput = "You have no active flags.";
+            statsOutputLines = [getString('uinfo.myStats.noFlags')]; // Using a more specific key from textDatabase
         } else if (!specificFlagsFound && pData.flags.totalFlags > 0) {
-             statsOutput = `Total Flags: ${pData.flags.totalFlags || 0}. Last Type: ${pData.lastFlagType || "None"}. (No specific flag details)`;
+            statsOutputLines.push(getString('uinfo.myStats.noSpecificFlags'));
         }
     } else {
-        statsOutput = "No AntiCheat data found for you.";
+        statsOutputLines.push(getString('uinfo.myStats.noData'));
     }
     const form = new MessageFormData()
-        .title("My AntiCheat Stats")
-        .body(statsOutput.trim())
-        .button1("Close");
+        .title(getString('ui.myStats.title')) // Already uses getString
+        .body(statsOutputLines.join('\n').trim())
+        .button1(getString('common.button.close'));
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showMyStatsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
+
 /**
  * Shows the server rules to the player.
  */
 async function showServerRulesUI(player, dependencies) {
-    const { config, playerUtils } = dependencies;
+    const { config, playerUtils, getString } = dependencies; // Added getString
     const rulesValue = config.serverRules;
 
-    let rulesText = (Array.isArray(rulesValue) && rulesValue.length > 0)
-        ? rulesValue.join("\n")
-        : "No server rules are currently configured. Please check back later!";
+    let rulesText = (typeof rulesValue === 'string' && rulesValue.trim() !== '') ? rulesValue :
+                    (Array.isArray(rulesValue) && rulesValue.length > 0) ? rulesValue.join("\n") :
+                    getString('ui.serverRules.noRulesDefined');
+
 
     const form = new MessageFormData()
-        .title("Server Rules")
+        .title(getString('ui.serverRules.title')) // Already uses getString
         .body(rulesText)
-        .button1("Close");
+        .button1(getString('common.button.close'));
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showServerRulesUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 
@@ -61,60 +67,62 @@ async function showServerRulesUI(player, dependencies) {
  * Shows helpful links to the player.
  */
 async function showHelpLinksUI(player, dependencies) {
-    const { config, playerUtils } = dependencies;
-    let linksBody = "Helpful Links:\n";
+    const { config, playerUtils, getString } = dependencies; // Added getString
+    let linksBodyLines = [getString('ui.helpfulLinks.body')]; // Changed to array for easier line management
     let hasContent = false;
 
     if (config.discordLink && config.discordLink.trim() !== "" && config.discordLink !== "https://discord.gg/example") {
-        linksBody += `Discord: ${config.discordLink}\n`;
+        linksBodyLines.push(getString('ui.helpfulLinks.linkMessageFormat', { title: 'Discord', url: config.discordLink }));
         hasContent = true;
     }
     if (config.websiteLink && config.websiteLink.trim() !== "" && config.websiteLink !== "https://example.com") {
-        linksBody += `Website: ${config.websiteLink}\n`;
+        linksBodyLines.push(getString('ui.helpfulLinks.linkMessageFormat', { title: 'Website', url: config.websiteLink }));
         hasContent = true;
     }
 
     if (config.helpLinks && config.helpLinks.length > 0) {
         if (hasContent) {
-            linksBody += "\nOther Links:\n";
+            linksBodyLines.push(''); // Add a blank line for separation
+            linksBodyLines.push(getString('ui.helpfulLinks.otherLinksHeader', {defaultValue: "Other Links:"})); // Added new key
         }
         config.helpLinks.forEach(link => {
-            linksBody += `- ${link.title}: ${link.url}\n`;
+            linksBodyLines.push(getString('ui.helpfulLinks.linkEntryFormat', { title: link.title, url: link.url })); // Added new key
             hasContent = true;
         });
     }
 
     if (!hasContent) {
-        linksBody = "No helpful links are currently configured.";
+        linksBodyLines = [getString('ui.helpfulLinks.noLinks')];
     }
 
     const form = new MessageFormData()
-        .title("Helpful Links")
-        .body(linksBody.trim())
-        .button1("Close");
+        .title(getString('ui.helpfulLinks.title')) // Already uses getString
+        .body(linksBodyLines.join('\n').trim())
+        .button1(getString('common.button.close'));
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showHelpLinksUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 /**
  * Shows general tips to the player.
  */
 async function showGeneralTipsUI(player, dependencies) {
-    const { config, playerUtils } = dependencies;
+    const { config, playerUtils, getString } = dependencies; // Added getString
     let tips = "";
 
     if (config.generalHelpMessages && config.generalHelpMessages.length > 0) {
         tips = config.generalHelpMessages
             .filter(tip => typeof tip === 'string' && tip.trim() !== '')
+            .map(tip => getString(tip) || tip) // Attempt to use tip as a key, fallback to literal
             .join("\n");
     }
 
     if (!tips) {
-        tips = "No general tips available at the moment.";
+        tips = getString('ui.generalTips.noTips', {defaultValue: "No general tips available at the moment."}); // Added new key
     }
 
     const form = new MessageFormData()
-        .title("General Tips")
+        .title(getString('ui.generalTips.title', {defaultValue: "General Tips"})) // Added new key
         .body(tips)
-        .button1("Close");
+        .button1(getString('common.button.close'));
     await form.show(player).catch(e => { playerUtils.debugLog(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies); console.error(`[UInfoCommand] Error in showGeneralTipsUI for ${player.nameTag}: ${e.stack || e}`); });
 }
 

@@ -23,24 +23,24 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils, logManager, getString } = dependencies;
 
-    const notificationMessage = `§6This is a test notification from ${player.nameTag} via the AntiCheat system.`; // Hardcoded base message
+    const notificationMessage = getString('command.testnotify.message', { playerName: player.nameTag });
 
     try {
         playerUtils.notifyAdmins(notificationMessage, dependencies, player, null);
-        player.sendMessage('§aTest notification sent to online admins/owners.');
+        player.sendMessage(getString('command.testnotify.success'));
 
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'commandTestNotify', // Changed to camelCase
+            actionType: 'commandTestNotify',
             details: 'Successfully sent a test notification.',
         }, dependencies);
 
     } catch (error) {
         console.error(`[TestNotifyCommand] Error sending test notification for ${player.nameTag}: ${error.stack || error}`);
-        player.sendMessage('§cAn error occurred while sending the test notification. Check server logs.');
+        player.sendMessage(getString('command.testnotify.error'));
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
