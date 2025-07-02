@@ -26,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager } = dependencies;
+    const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager, getString } = dependencies;
 
     const userPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
     const prefix = config.prefix;
@@ -49,59 +49,63 @@ export async function execute(player, args, dependencies) {
             }
 
             if (!isEffectivelyEnabled) {
-                player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`);
+                player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandName }));
                 return;
             }
 
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
                 const syntaxArgs = foundCmdDef.syntax.substring(foundCmdDef.syntax.indexOf(' ') + 1);
-                let permLevelName = 'Unknown';
+                let permLevelName = 'Unknown'; // Fallback
                 for (const key in depPermLevels) {
                     if (depPermLevels[key] === foundCmdDef.permissionLevel) {
                         permLevelName = key.charAt(0).toUpperCase() + key.slice(1);
                         break;
                     }
                 }
-                const description = foundCmdDef.description;
+                // Assuming commandDef.description is already a key or plain text.
+                // If it's a key, it should be resolved by getString if this help text itself becomes localized.
+                // For now, we use it directly as it's from the command definition.
+                const description = getString(foundCmdDef.description) || foundCmdDef.description;
+
 
                 player.sendMessage(
-                    `§6--- Help: ${prefix}${foundCmdDef.name} ---` + '\n' +
-                    `§eSyntax: ${prefix}${foundCmdDef.name} ${syntaxArgs}` + '\n' +
-                    `§7Description: ${description}` + '\n' +
-                    `§7Permission: ${permLevelName} (Level ${foundCmdDef.permissionLevel})`
+                    getString('command.help.specific.header', { prefix: prefix, commandName: foundCmdDef.name }) + '\n' +
+                    getString('command.help.specific.syntax', { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs }) + '\n' +
+                    getString('command.help.specific.description', { description: description }) + '\n' +
+                    getString('command.help.specific.permission', { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() })
                 );
             } else {
-                player.sendMessage(`§cCommand ${prefix}${specificCommandName} not found or you do not have permission.`);
+                player.sendMessage(getString('command.help.noPermission', { prefix: prefix, commandName: specificCommandName }));
             }
         } else {
-            player.sendMessage(`§cUnknown command: ${prefix}${specificCommandName}`);
+            player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandName }));
         }
     } else {
-        let helpMessage = `§6--- Available Commands (Prefix: ${prefix}) ---§r\n`;
+        let helpMessage = getString('command.help.header', { prefix: prefix }) + '\n';
         let commandsListed = 0;
 
         const categories = [
             {
-                nameString: '§2General Commands:§r',
+                nameStringKey: 'command.help.category.general',
                 commands: ['help', 'myflags', 'rules', 'uinfo', 'version'],
             },
             {
-                nameString: '§2Teleportation Commands:§r',
+                nameStringKey: 'command.help.category.teleport',
                 commands: ['tpa', 'tpahere', 'tpaccept', 'tpacancel', 'tpastatus'],
                 condition: () => config.enableTPASystem,
             },
             {
-                nameString: '§cModeration Commands:§r',
+                nameStringKey: 'command.help.category.moderation',
                 permissionRequired: depPermLevels.moderator,
                 commands: ['kick', 'mute', 'unmute', 'clearchat', 'freeze', 'warnings', 'inspect', 'panel'],
             },
             {
-                nameString: '§cAdministrative Commands:§r',
+                nameStringKey: 'command.help.category.admin',
                 permissionRequired: depPermLevels.admin,
                 commands: ['ban', 'unban', 'vanish', 'tp', 'invsee', 'copyinv', 'gmc', 'gms', 'gma', 'gmsp', 'notify', 'xraynotify', 'resetflags', 'netherlock', 'endlock', 'worldborder'],
             },
             {
-                nameString: '§4Owner Commands:§r',
+                nameStringKey: 'command.help.category.owner',
                 permissionRequired: depPermLevels.owner,
                 commands: ['testnotify', 'addrank', 'removerank', 'listranks'],
             },
@@ -129,19 +133,20 @@ export async function execute(player, args, dependencies) {
                     }
 
                     const syntaxArgs = cmdDef.syntax.substring(cmdDef.syntax.indexOf(' ') + 1);
-                    let description = cmdDef.description;
-                    categoryHelp += `§e${prefix}${cmdDef.name} ${syntaxArgs}§7 - ${description}\n`;
+                     // Assuming cmdDef.description is a key or already localized text
+                    const description = getString(cmdDef.description) || cmdDef.description;
+                    categoryHelp += getString('command.help.entryFormat', { prefix: prefix, commandName: cmdDef.name, syntaxArgs: syntaxArgs, description: description }) + '\n';
                     commandsListed++;
                 }
             });
 
             if (categoryHelp) {
-                helpMessage += `\n${category.nameString}\n${categoryHelp}`;
+                helpMessage += `\n${getString(category.nameStringKey)}\n${categoryHelp}`;
             }
         });
 
         if (commandsListed === 0) {
-            helpMessage += '§7No commands available to you at this time.';
+            helpMessage += getString('command.help.noCommandsAvailable');
         } else {
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);

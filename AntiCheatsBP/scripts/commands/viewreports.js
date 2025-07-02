@@ -16,7 +16,7 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player.nameTag;
 
     const reportsPerPage = config.reportsViewPerPage ?? 5;
@@ -31,7 +31,7 @@ export async function execute(player, args, dependencies) {
             if (args.length > 1 && !isNaN(parseInt(args[1]))) {
                 pageNumber = parseInt(args[1]);
             }
-        } else if (args[0].includes('-') && args[0].length > 10) { // TODO: Report ID detection is heuristic. Consider subcommands like `id <id>` for robustness.
+        } else if (args[0].includes('-') && args[0].length > 10) {
             filterType = 'id';
             filterValue = args[0];
         } else {
@@ -44,7 +44,7 @@ export async function execute(player, args, dependencies) {
     }
      if (pageNumber < 1) pageNumber = 1;
 
-    const allReports = reportManager.getReports(); // Already sorted newest first
+    const allReports = reportManager.getReports();
     let filteredReports = [];
 
     if (filterType === 'all') {
@@ -54,7 +54,7 @@ export async function execute(player, args, dependencies) {
         if (report) {
             filteredReports.push(report);
         } else {
-            playerUtils.sendMessage(player, `§cReport with ID "${filterValue}" not found.`);
+            playerUtils.sendMessage(player, getString('command.viewreports.idNotFound', { reportId: filterValue }));
             return;
         }
     } else if (filterType === 'player') {
@@ -64,13 +64,13 @@ export async function execute(player, args, dependencies) {
             r.reportedName.toLowerCase().includes(filterValueLower)
         );
         if (filteredReports.length === 0) {
-            playerUtils.sendMessage(player, `§cNo reports found involving player "${filterValue}".`);
+            playerUtils.sendMessage(player, getString('command.viewreports.playerNoReports', { playerName: filterValue }));
             return;
         }
     }
 
     if (filteredReports.length === 0 && filterType !== 'id') {
-        playerUtils.sendMessage(player, `§eNo reports found matching your criteria.`);
+        playerUtils.sendMessage(player, getString('command.viewreports.noReportsMatching'));
         return;
     }
 
@@ -85,46 +85,48 @@ export async function execute(player, args, dependencies) {
     const reportsToShow = filteredReports.slice(startIndex, endIndex);
 
     if (reportsToShow.length === 0 && totalReports > 0) {
-         playerUtils.sendMessage(player, `§cNo reports on page ${pageNumber}. Max pages: ${totalPages}.`);
+         playerUtils.sendMessage(player, getString('command.viewreports.noReportsOnPage', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString() }));
          return;
     }
-     if (reportsToShow.length === 0 && totalReports === 0 && filterType !== 'id') {
-         playerUtils.sendMessage(player, `§eNo reports found.`);
+     if (reportsToShow.length === 0 && totalReports === 0 && filterType !== 'id') { // If truly no reports at all
+         playerUtils.sendMessage(player, getString('command.viewreports.noReportsFound'));
          return;
      }
 
-
-    let message = `§2--- Reports (Page ${pageNumber}/${totalPages}, Total: ${totalReports}) ---\n`;
+    let messageLines = [];
     if (filterType !== 'all') {
-        message = `§2--- Reports (Filter: ${filterType === 'id' ? 'ID ' + filterValue : 'Player ' + filterValue}, Page ${pageNumber}/${totalPages}, Total: ${totalReports}) ---\n`;
+        messageLines.push(getString('command.viewreports.header.filtered', { filterType: filterType, filterValue: filterValue, pageNumber: pageNumber.toString(), totalPages: totalPages.toString(), totalReports: totalReports.toString() }));
+    } else {
+        messageLines.push(getString('command.viewreports.header.all', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString(), totalReports: totalReports.toString() }));
     }
+
 
     reportsToShow.forEach(report => {
         const timeAgo = formatTimeDifference(Date.now() - report.timestamp);
-        message += `§eID: §f${report.id} §7(${timeAgo} ago)\n`;
-        message += `  §bReporter: §f${report.reporterName}\n`;
-        message += `  §cReported: §f${report.reportedName}\n`;
-        message += `  §dReason: §f${report.reason}\n`;
-        message += `  §7Status: §f${report.status}\n`;
-        if (report.assignedAdmin) message += `  §7Assigned: §f${report.assignedAdmin}\n`;
-        if (report.resolutionDetails) message += `  §7Resolution: §f${report.resolutionDetails}\n`;
-        message += `§7--------------------\n`;
+        messageLines.push(getString('command.viewreports.entry.id', { reportId: report.id, timeAgo: timeAgo }));
+        messageLines.push(getString('command.viewreports.entry.reporter', { reporterName: report.reporterName }));
+        messageLines.push(getString('command.viewreports.entry.reported', { reportedName: report.reportedName }));
+        messageLines.push(getString('command.viewreports.entry.reason', { reason: report.reason }));
+        messageLines.push(getString('command.viewreports.entry.status', { status: report.status }));
+        if (report.assignedAdmin) messageLines.push(getString('command.viewreports.entry.assigned', { assignedAdmin: report.assignedAdmin }));
+        if (report.resolutionDetails) messageLines.push(getString('command.viewreports.entry.resolution', { resolutionDetails: report.resolutionDetails }));
+        messageLines.push(getString('command.viewreports.entry.separator'));
     });
 
     if (totalPages > 1 && filterType !== 'id') {
-        let nextPageSyntax = `${config.prefix}viewreports`;
-        if (filterType === 'all') nextPageSyntax += ` all`;
-        else if (filterType === 'player') nextPageSyntax += ` ${filterValue}`;
+        let nextPageCommand = `${config.prefix}viewreports`;
+        if (filterType === 'all') nextPageCommand += ` all`;
+        else if (filterType === 'player') nextPageCommand += ` ${filterValue}`;
 
         if (pageNumber < totalPages) {
-             message += `§aType "${nextPageSyntax} ${pageNumber + 1}" for the next page.\n`;
+             messageLines.push(getString('command.viewreports.footer.nextPage', { nextPageCommand: `${nextPageCommand} ${pageNumber + 1}` }));
         }
         if (pageNumber > 1) {
-            message += `§aType "${nextPageSyntax} ${pageNumber - 1}" for the previous page.\n`;
+            messageLines.push(getString('command.viewreports.footer.prevPage', { prevPageCommand: `${nextPageCommand} ${pageNumber - 1}` }));
         }
     }
 
-    playerUtils.sendMessage(player, message.trimEnd());
+    playerUtils.sendMessage(player, messageLines.join('\n').trimEnd());
 
     logManager.addLog({
         actionType: 'commandViewReports',

@@ -16,11 +16,11 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player.nameTag;
 
     if (args.length < 1) {
-        playerUtils.sendMessage(player, `§cUsage: ${config.prefix}${definition.syntax}`);
+        playerUtils.sendMessage(player, getString('command.watch.usage', { prefix: config.prefix, syntax: definition.syntax }));
         return;
     }
 
@@ -28,18 +28,18 @@ export async function execute(player, args, dependencies) {
     const targetPlayer = playerUtils.findPlayerByNameTag(targetPlayerName, dependencies.mc.world.getAllPlayers());
 
     if (!targetPlayer) {
-        playerUtils.sendMessage(player, `§cPlayer "${targetPlayerName}" not found or is not online.`);
+        playerUtils.sendMessage(player, getString('command.watch.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
 
     const pData = getPlayerData(targetPlayer.id);
     if (!pData) {
-        playerUtils.sendMessage(player, `§cCould not retrieve data for player "${targetPlayer.nameTag}".`);
+        playerUtils.sendMessage(player, getString('command.watch.noData', { playerName: targetPlayer.nameTag }));
         return;
     }
 
     if (pData.isWatched) {
-        playerUtils.sendMessage(player, `§ePlayer "${targetPlayer.nameTag}" is already being watched.`);
+        playerUtils.sendMessage(player, getString('command.watch.alreadyWatched', { playerName: targetPlayer.nameTag }));
         return;
     }
 
@@ -48,10 +48,10 @@ export async function execute(player, args, dependencies) {
 
     await saveDirtyPlayerData(targetPlayer, dependencies);
 
-    const messageToAdmin = `§aPlayer "${targetPlayer.nameTag}" is now being watched. Detailed logs will be generated.`;
+    const messageToAdmin = getString('command.watch.success.admin', { playerName: targetPlayer.nameTag });
     playerUtils.sendMessage(player, messageToAdmin);
 
-    const messageToTarget = `§eYou are now being watched by an administrator (${adminName}). More detailed logging of your activity will occur.`;
+    const messageToTarget = getString('command.watch.success.target', { adminName: adminName });
     playerUtils.sendMessage(targetPlayer, messageToTarget);
 
     logManager.addLog({

@@ -15,11 +15,11 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, currentTick } = dependencies;
+    const { config, playerUtils, logManager, currentTick, getString } = dependencies;
     const adminName = player.nameTag;
 
     if (args.length < 1) {
-        playerUtils.sendMessage(player, `§cUsage: ${config.prefix}${definition.syntax}`);
+        playerUtils.sendMessage(player, getString('command.purgeflags.usage', { prefix: config.prefix, syntax: definition.syntax }));
         return;
     }
 
@@ -27,7 +27,7 @@ export async function execute(player, args, dependencies) {
     const targetPlayer = playerUtils.findPlayerByNameTag(targetPlayerName, dependencies.mc.world.getAllPlayers());
 
     if (!targetPlayer) {
-        playerUtils.sendMessage(player, `§cPlayer "${targetPlayerName}" not found or is not online.`);
+        playerUtils.sendMessage(player, getString('command.purgeflags.playerNotFound', { playerName: targetPlayerName }));
         // TODO: Implement offline player flag purging if necessary by modifying dynamic properties directly.
         // This would require careful handling of data loading/saving for offline players.
         // For now, this command only works for online players.
@@ -36,7 +36,7 @@ export async function execute(player, args, dependencies) {
 
     const pData = getPlayerData(targetPlayer.id);
     if (!pData) {
-        playerUtils.sendMessage(player, `§cCould not retrieve data for player "${targetPlayer.nameTag}".`);
+        playerUtils.sendMessage(player, getString('command.purgeflags.noData', { playerName: targetPlayer.nameTag }));
         return;
     }
 
@@ -55,10 +55,10 @@ export async function execute(player, args, dependencies) {
     // This ensures the change is immediate if an admin inspects right after.
     await saveDirtyPlayerData(targetPlayer, dependencies);
 
-    const messageToAdmin = `§aSuccessfully purged all flags and violation history for player "${targetPlayer.nameTag}". Old total flags: ${oldTotalFlags}.`;
+    const messageToAdmin = getString('command.purgeflags.success.admin', { playerName: targetPlayer.nameTag, oldTotalFlags: oldTotalFlags.toString() });
     playerUtils.sendMessage(player, messageToAdmin);
 
-    const messageToTarget = `§eYour AntiCheat flags and violation history have been purged by an administrator (${adminName}).`;
+    const messageToTarget = getString('command.purgeflags.success.target', { adminName: adminName });
     playerUtils.sendMessage(targetPlayer, messageToTarget);
 
     logManager.addLog({

@@ -15,11 +15,11 @@ export const definition = {
 };
 
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const reporterPlayer = player;
 
     if (args.length < 2) {
-        playerUtils.sendMessage(reporterPlayer, `§cUsage: ${config.prefix}${definition.syntax}`);
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.usage', { prefix: config.prefix, syntax: definition.syntax }));
         return;
     }
 
@@ -27,16 +27,16 @@ export async function execute(player, args, dependencies) {
     const reason = args.slice(1).join(' ');
 
     if (reportedPlayerName.toLowerCase() === reporterPlayer.nameTag.toLowerCase()) {
-        playerUtils.sendMessage(reporterPlayer, `§cYou cannot report yourself.`);
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.cannotSelf'));
         return;
     }
 
     if (reason.length < 10) {
-        playerUtils.sendMessage(reporterPlayer, `§cPlease provide a more detailed reason (at least 10 characters).`);
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.reasonTooShort'));
         return;
     }
     if (reason.length > 256) {
-        playerUtils.sendMessage(reporterPlayer, `§cYour report reason is too long (max 256 characters).`);
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.reasonTooLong'));
         return;
     }
 
@@ -44,7 +44,7 @@ export async function execute(player, args, dependencies) {
     const newReport = reportManager.addReport(reporterPlayer, reportedPlayerName, reason, dependencies);
 
     if (newReport) {
-        playerUtils.sendMessage(reporterPlayer, `§aReport submitted successfully against "${reportedPlayerName}". Report ID: ${newReport.id}. Thank you.`);
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.success', { reportedPlayerName: reportedPlayerName, reportId: newReport.id }));
         logManager.addLog({
             actionType: 'commandReportExecuted',
             adminName: reporterPlayer.nameTag, // Using adminName field for reporter
@@ -53,6 +53,6 @@ export async function execute(player, args, dependencies) {
             context: 'ReportCommand',
         }, dependencies);
     } else {
-        playerUtils.sendMessage(reporterPlayer, `§cCould not submit your report at this time. Please try again later.`);
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.failure'));
     }
 }

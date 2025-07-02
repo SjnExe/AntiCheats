@@ -27,7 +27,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerDataManager, playerUtils, logManager } = dependencies;
+    const { playerDataManager, playerUtils, logManager, getString } = dependencies;
 
     const onlinePlayers = mc.world.getAllPlayers();
     const watchedPlayersNames = [];
@@ -40,9 +40,9 @@ export async function execute(player, _args, dependencies) {
     }
 
     if (watchedPlayersNames.length === 0) {
-        player.sendMessage('No players are currently being watched.');
+        player.sendMessage(getString('command.listwatched.noPlayers'));
     } else {
-        const header = 'Currently watched players: ';
+        const header = getString('command.listwatched.header');
         player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
     }
 

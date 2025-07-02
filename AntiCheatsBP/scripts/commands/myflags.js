@@ -25,14 +25,14 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerDataManager } = dependencies;
+    const { playerDataManager, getString } = dependencies;
     const pDataSelf = playerDataManager.getPlayerData(player.id);
 
     if (pDataSelf && pDataSelf.flags) {
         const totalFlags = pDataSelf.flags.totalFlags || 0;
-        const lastFlagTypeString = pDataSelf.lastFlagType || 'None';
+        const lastFlagTypeString = pDataSelf.lastFlagType || getString('common.value.notAvailable');
 
-        let message = `§7Your current flags: §eTotal=${totalFlags}§7. Last type: §e${lastFlagTypeString}§r\n`;
+        let message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n';
         let specificFlagsFound = false;
 
         // Iterate over own properties of the flags object to avoid issues with Object.prototype
@@ -42,22 +42,22 @@ export async function execute(player, _args, dependencies) {
                     const flagDetail = pDataSelf.flags[key];
                     const lastDetectionTime = flagDetail.lastDetectionTime ?
                         new Date(flagDetail.lastDetectionTime).toLocaleTimeString() :
-                        'N/A';
-                    message += ` §7- ${key}: §e${flagDetail.count} §7(Last: ${lastDetectionTime})\n`;
+                        getString('common.value.notAvailable');
+                    message += getString('command.myflags.flagEntry', { key: key, count: flagDetail.count.toString(), lastDetectionTime: lastDetectionTime }) + '\n';
                     specificFlagsFound = true;
                 }
             }
         }
 
         if (!specificFlagsFound && totalFlags === 0) {
-            message = '§7You have no active flags.';
+            message = getString('command.myflags.noFlags');
         } else if (!specificFlagsFound && totalFlags > 0) {
             // This case might occur if totalFlags got desynced or only contains non-object/empty flags
-            message = `§7Your current flags: §eTotal=${totalFlags}§7. Last type: §e${lastFlagTypeString}§r\n§7(No specific flag type details available with counts > 0).`;
+            message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n' + getString('command.myflags.noSpecificFlags');
         }
         player.sendMessage(message.trim());
     } else {
-        player.sendMessage('§7No flag data found for you, or you have no flags.');
+        player.sendMessage(getString('command.myflags.noData'));
     }
     // No logManager.addLog needed for players checking their own flags typically, unless desired for audit.
 }

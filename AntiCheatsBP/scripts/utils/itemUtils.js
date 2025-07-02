@@ -304,10 +304,10 @@ export function getOptimalToolForBlock(player, blockPermutation) {
  * @param {import('@minecraft/server').Player} player - The player breaking the block.
  * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block being broken.
  * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item stack used, or undefined if hand.
- * @param {object} config - The AntiCheat configuration object.
+ * @param {import('../types.js').CommandDependencies} dependencies - The standard dependencies object.
  * @returns {number} The expected number of ticks to break the block. Returns Infinity for unbreakable blocks.
  */
-export function getExpectedBreakTicks(player, blockPermutation, itemStack, config) {
+export function getExpectedBreakTicks(player, blockPermutation, itemStack, dependencies) {
     const blockTypeId = blockPermutation.type.id;
     const blockHardness = blockHardnessMap[blockTypeId];
 
@@ -318,7 +318,7 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, confi
         return 1; // Instantly breakable
     }
 
-    if (config.instaBreakUnbreakableBlocks?.includes(blockTypeId) && player.gameMode !== mc.GameMode.creative) {
+    if (dependencies.config.instaBreakUnbreakableBlocks?.includes(blockTypeId) && player.gameMode !== mc.GameMode.creative) {
         return Infinity;
     }
 

@@ -17,18 +17,16 @@ export const definition = {
  * Executes the !tpa command.
  */
 export async function execute(player, args, dependencies) {
-    // Use permissionLevels from dependencies for runtime checks if necessary
-    const { playerUtils, config, tpaManager, logManager } = dependencies;
-
+    const { playerUtils, config, tpaManager, logManager, getString } = dependencies;
     const prefix = config.prefix;
 
     if (!config.enableTPASystem) {
-        player.sendMessage("§cThe TPA system is currently disabled.");
+        player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
 
     if (args.length < 1) {
-        player.sendMessage(`§cUsage: ${prefix}tpa <playerName>`);
+        player.sendMessage(getString('command.tpa.usage', { prefix: prefix }));
         return;
     }
 
@@ -36,39 +34,41 @@ export async function execute(player, args, dependencies) {
     const target = playerUtils.findPlayer(targetName);
 
     if (!target) {
-        player.sendMessage(`§cPlayer '${targetName}' not found or is not online.`);
+        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetName }));
         return;
     }
 
     if (target.name === player.name) {
-        player.sendMessage("§cYou cannot send a TPA request to yourself.");
+        player.sendMessage(getString('command.tpa.cannotSelf'));
         return;
     }
 
     const targetTpaStatus = tpaManager.getPlayerTpaStatus(target.name, dependencies);
     if (!targetTpaStatus.acceptsTpaRequests) {
-        player.sendMessage(`§cPlayer "${target.nameTag}" is not currently accepting TPA requests.`);
+        player.sendMessage(getString('command.tpa.targetNotAccepting', { playerName: target.nameTag }));
         return;
     }
 
     const existingRequest = tpaManager.findRequest(player.name, target.name);
     if (existingRequest) {
-         player.sendMessage(`§cYou already have an active TPA request with "${target.nameTag}".`);
+         player.sendMessage(getString('command.tpa.alreadyActive', { playerName: target.nameTag }));
          return;
     }
 
     const requestResult = tpaManager.addRequest(player, target, 'tpa', dependencies);
 
     if (requestResult && requestResult.error === 'cooldown') {
-        player.sendMessage(`§cYou must wait ${requestResult.remaining} more seconds before sending another TPA request.`);
+        player.sendMessage(getString('command.tpa.cooldown', { remainingTime: requestResult.remaining.toString() }));
         return;
     }
 
     if (requestResult) {
-        player.sendMessage(`§aTPA request sent to "${target.nameTag}". They have ${config.tpaRequestTimeoutSeconds} seconds to accept. Type ${prefix}tpacancel to cancel.`);
+        player.sendMessage(getString('command.tpa.requestSent', { playerName: target.nameTag, timeoutSeconds: config.tpaRequestTimeoutSeconds.toString(), prefix: prefix }));
 
         dependencies.mc.system.run(() => {
             try {
+                // Action bar messages are often unique and might not need full externalization if simple, but can be done.
+                // For now, keeping this one as is, as it's dynamic and an action bar.
                 target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
             } catch (e) {
                 if (config.enableDebugLogging) {
@@ -77,7 +77,7 @@ export async function execute(player, args, dependencies) {
             }
         });
     } else {
-        player.sendMessage("§cCould not send TPA request. There might be an existing request or other issue.");
+        player.sendMessage(getString('command.tpa.error.genericSend'));
         playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
         logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`}, dependencies);
     }

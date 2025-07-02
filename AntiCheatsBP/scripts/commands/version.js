@@ -17,6 +17,6 @@ export const definition = {
  * Executes the version command.
  */
 export async function execute(player, _args, dependencies) {
-    const { config } = dependencies;
-    player.sendMessage(`§7AntiCheat Addon Version: §e${config.acVersion || 'N/A'}`);
+    const { config, getString } = dependencies;
+    player.sendMessage(getString('command.version.message', { version: config.acVersion || getString('common.value.notAvailable') }));
 }

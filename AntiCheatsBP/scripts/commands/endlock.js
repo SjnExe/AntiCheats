@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const subCommand = args[0] ? args[0].toLowerCase() : 'status';
     const prefix = config.prefix;
 
@@ -38,35 +38,35 @@ export async function execute(player, args, dependencies) {
             case 'lock':
                 success = setEndLocked(true);
                 if (success) {
-                    player.sendMessage('§aThe End dimension is now locked.');
+                    player.sendMessage(getString('command.endlock.locked'));
                     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'endLockOn', details: 'The End locked' }, dependencies);
                     playerUtils.notifyAdmins(`§7[Admin] The End dimension was locked by §e${player.nameTag}§7.`, dependencies, player, null);
                 } else {
-                    player.sendMessage('§cFailed to update End lock status.');
+                    player.sendMessage(getString('command.endlock.failUpdate'));
                 }
                 break;
             case 'off':
             case 'unlock':
                 success = setEndLocked(false);
                 if (success) {
-                    player.sendMessage('§aThe End dimension is now unlocked.');
+                    player.sendMessage(getString('command.endlock.unlocked'));
                     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'endLockOff', details: 'The End unlocked' }, dependencies);
                     playerUtils.notifyAdmins(`§7[Admin] The End dimension was unlocked by §e${player.nameTag}§7.`, dependencies, player, null);
                 } else {
-                    player.sendMessage('§cFailed to update End lock status.');
+                    player.sendMessage(getString('command.endlock.failUpdate'));
                 }
                 break;
             case 'status':
                 const locked = isEndLocked();
-                statusText = locked ? '§cLocked' : '§aUnlocked';
-                player.sendMessage(`§eEnd dimension status: ${statusText}`);
+                statusText = locked ? getString('command.endlock.status.locked') : getString('command.endlock.status.unlocked');
+                player.sendMessage(getString('command.endlock.status', { statusText: statusText }));
                 break;
             default:
-                player.sendMessage(`§cUsage: ${prefix}endlock <on|off|status>`);
+                player.sendMessage(getString('command.endlock.usage', { prefix: prefix }));
                 return;
         }
     } catch (error) {
-        player.sendMessage(`§cAn unexpected error occurred with the ${definition.name} command: ${error.message}`);
+        player.sendMessage(getString('command.endlock.error.generic', { commandName: definition.name, errorMessage: error.message }));
         console.error(`[EndlockCommand] Error executing '${subCommand}' for ${player.nameTag}: ${error.stack || error}`);
         logManager.addLog({
             adminName: player.nameTag,

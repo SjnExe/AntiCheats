@@ -18,13 +18,11 @@ export const definition = {
  * Executes the !tpastatus command.
  */
 export async function execute(player, args, dependencies) {
-    // Use permissionLevels from dependencies for runtime checks if necessary
-    const { playerUtils, config, tpaManager, logManager } = dependencies;
-
+    const { playerUtils, config, tpaManager, logManager, getString } = dependencies;
     const prefix = config.prefix;
 
     if (!config.enableTPASystem) {
-        player.sendMessage("§cThe TPA system is currently disabled.");
+        player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
 
@@ -34,11 +32,11 @@ export async function execute(player, args, dependencies) {
         switch (option) {
             case 'on':
                 tpaManager.setPlayerTpaStatus(player.name, true, dependencies);
-                player.sendMessage("§aYou are now accepting TPA requests.");
+                player.sendMessage(getString('command.tpastatus.on'));
                 break;
             case 'off':
                 tpaManager.setPlayerTpaStatus(player.name, false, dependencies);
-                player.sendMessage("§cYou are no longer accepting TPA requests.");
+                player.sendMessage(getString('command.tpastatus.off'));
 
                 const incomingRequests = tpaManager.findRequestsForPlayer(player.name)
                     .filter(req => req.targetName === player.name && Date.now() < req.expiryTimestamp);
@@ -49,39 +47,40 @@ export async function execute(player, args, dependencies) {
                         await tpaManager.declineRequest(req.requestId, dependencies);
                         const requesterPlayer = mc.world.getAllPlayers().find(p => p.name === req.requesterName);
                         if (requesterPlayer) {
+                            const declineMessage = `§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`;
                             mc.system.run(() => {
                                 try {
-                                    requesterPlayer.onScreenDisplay.setActionBar(`§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`);
+                                    requesterPlayer.onScreenDisplay.setActionBar(declineMessage);
                                 } catch (e) {
                                     if (config.enableDebugLogging) {
                                         playerUtils.debugLog(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e.stack || e}`, player.nameTag, dependencies);
                                     }
                                 }
                             });
-                            requesterPlayer.sendMessage(`§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`);
+                            requesterPlayer.sendMessage(declineMessage);
                         }
                         declinedCount++;
                     }
                     if (declinedCount > 0) {
-                        player.sendMessage(`§e${declinedCount} pending incoming TPA request(s) were automatically declined.`);
+                        player.sendMessage(getString('command.tpastatus.off.declinedNotification', { count: declinedCount.toString() }));
                     }
                 }
                 break;
             case 'status':
                 const currentStatus = tpaManager.getPlayerTpaStatus(player.name, dependencies);
                 if (currentStatus.acceptsTpaRequests) {
-                    player.sendMessage("§aYou are currently accepting TPA requests.");
+                    player.sendMessage(getString('command.tpastatus.status.accepting'));
                 } else {
-                    player.sendMessage("§cYou are currently not accepting TPA requests.");
+                    player.sendMessage(getString('command.tpastatus.status.notAccepting'));
                 }
                 break;
             default:
-                player.sendMessage(`§cInvalid option. Usage: ${prefix}tpastatus [on|off|status]`);
+                player.sendMessage(getString('command.tpastatus.invalidOption', { prefix: prefix }));
                 break;
         }
     } catch (error) {
         console.error(`[TpaStatusCommand] Error for ${player.nameTag} processing option ${option}: ${error.stack || error}`);
-        player.sendMessage("§cAn unexpected error occurred.");
+        player.sendMessage(getString('command.tpacancel.error.generic')); // Reusing generic error
         logManager.addLog({actionType: 'error', details: `[TpaStatusCommand] ${player.nameTag} error (option: ${option}): ${error.stack || error}`}, dependencies);
     }
 }

@@ -25,7 +25,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils, logManager, getString } = dependencies;
     const targetPlayerName = args[0];
     const gamemodeName = 'Spectator';
     const gamemodeMc = mc.GameMode.spectator;
@@ -35,9 +35,9 @@ export async function execute(player, args, dependencies) {
             const targetPlayer = playerUtils.findPlayer(targetPlayerName);
             if (targetPlayer) {
                 targetPlayer.setGameMode(gamemodeMc);
-                player.sendMessage(`§aSet ${targetPlayer.nameTag}'s gamemode to ${gamemodeName}.`);
+                player.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName: gamemodeName }));
                 if (player.id !== targetPlayer.id) {
-                    targetPlayer.sendMessage(`§eYour gamemode has been set to ${gamemodeName}.`);
+                    targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName: gamemodeName }));
                 }
                 logManager.addLog({
                     timestamp: Date.now(),
@@ -47,11 +47,11 @@ export async function execute(player, args, dependencies) {
                     details: `Set to ${gamemodeName}`,
                 }, dependencies);
             } else {
-                player.sendMessage(`§cPlayer '${targetPlayerName}' not found.`);
+                player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
             }
         } else {
             player.setGameMode(gamemodeMc);
-            player.sendMessage(`§aYour gamemode has been set to ${gamemodeName}.`);
+            player.sendMessage(getString('command.gamemode.success.self', { gamemodeName: gamemodeName }));
             logManager.addLog({
                 timestamp: Date.now(),
                 adminName: player.nameTag,
@@ -62,7 +62,7 @@ export async function execute(player, args, dependencies) {
         }
     } catch (error) {
         const targetNameForError = targetPlayerName || player.nameTag;
-        player.sendMessage(`§cFailed to set gamemode for ${targetNameForError} to ${gamemodeName}: ${error.message}`);
+        player.sendMessage(getString('command.gamemode.error.generic', { targetNameForError: targetNameForError, gamemodeName: gamemodeName, errorMessage: error.message }));
         playerUtils.debugLog(`[GMSPCommand] Error setting gamemode for ${targetNameForError}: ${error.message}`, player.nameTag, dependencies);
         console.error(`[GMSPCommand] Error setting gamemode for ${targetNameForError} by ${player.nameTag}: ${error.stack || error}`);
         logManager.addLog({
