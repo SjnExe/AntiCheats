@@ -73,7 +73,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     }
 
     const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5;
-    const actionProfileKey = config.entitySpamActionProfileName ?? 'worldAntigriefEntityspam';
+    const actionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
 
     if (pData.recentEntitySpamTimestamps[entityType].length > maxSpawns) {
         const violationDetails = {
