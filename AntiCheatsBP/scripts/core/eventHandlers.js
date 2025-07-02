@@ -125,7 +125,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
     // It's possible 'dependencies' itself is problematic (e.g. undefined), handle gracefully.
     if (!dependencies || typeof dependencies !== 'object' || !dependencies.playerDataManager || !dependencies.playerUtils || !dependencies.config || !dependencies.logManager || !dependencies.checks || !dependencies.getString || !dependencies.rankManager) {
         console.error('[AntiCheat][handlePlayerSpawn] Critical: Invalid or incomplete dependencies object received. Aborting.');
-        if(player) player.sendMessage("§cAntiCheat Error: Critical issue during spawn processing. Please contact an admin. (Code: HPS_DEPS)");
+        if (player) player.sendMessage("§cAntiCheat Error: Critical issue during spawn processing. Please contact an admin. (Code: HPS_DEPS)");
         return;
     }
     const { playerDataManager, playerUtils, config, logManager, checks, getString, rankManager } = dependencies;

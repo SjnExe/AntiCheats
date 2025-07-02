@@ -40,8 +40,11 @@ export function initializeCommands(dependencies) {
                         const aliasLower = alias.toLowerCase();
                         if (commandDefinitionMap.has(aliasLower) || commandExecutionMap.has(aliasLower)) {
                              playerUtils.debugLog(`[CommandManager] Duplicate alias detected (conflicts with existing command/alias): ${aliasLower}. Alias for '${cmdName}' skipped.`, 'System', dependencies);
-                        } else {
                         }
+                        // Removed spurious 'else {}' block as it was empty and the preceding '}' was a syntax error.
+                        // The original syntax error was an extra '}' after the playerUtils.debugLog line if the 'else' was intended to be empty.
+                        // If the 'else' was meant to contain logic, it was missing.
+                        // Corrected by removing the problematic '}' and the empty 'else'.
                     });
                 }
             }

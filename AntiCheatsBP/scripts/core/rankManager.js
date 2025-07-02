@@ -45,7 +45,7 @@ function initializeRankSystem(dependencies) {
             } else {
                 // Fallback to defaultPermissionLevel from ranksConfig.js if 'member' rank or its level is missing
                 newPermissionLevels.member = defaultPermissionLevel;
-                 if (dependencies?.playerUtils && dependencies?.config?.enableDebugLogging) {
+                if (dependencies?.playerUtils && dependencies?.config?.enableDebugLogging) {
                     dependencies.playerUtils.debugLog(`[RankManager] 'member' rank permission level not found in definitions, using defaultPermissionLevel: ${defaultPermissionLevel}`, 'System', dependencies);
                 } else {
                     console.warn(`[RankManager] 'member' rank permission level not found in definitions, using defaultPermissionLevel: ${defaultPermissionLevel}`);
@@ -193,7 +193,7 @@ export function updatePlayerNametag(player, dependencies) {
     // Ensure config is an object before trying to access properties from it
     if (!config || typeof config !== 'object') {
         console.error(`[RankManager] Config object is invalid in updatePlayerNametag for player ${player?.nameTag || 'UnknownPlayer'}. Cannot update nametag.`);
-        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : '') || ''); } catch(eSafe) { /* Silently try to reset nametag */ }
+        try { if (player && player.isValid()) player.nameTag = String(player.nameTag || (player.name && typeof player.name === 'string' ? player.name : '') || ''); } catch (eSafe) { /* Silently try to reset nametag */ }
         return;
     }
 
@@ -247,10 +247,10 @@ export function updatePlayerNametag(player, dependencies) {
         try {
             if (player && player.isValid()) {
                  // Attempt to restore original nameTag or player.name if possible, otherwise a generic default.
-                const originalName = String(player.nameTag || (typeof player.name === 'string' ? player.name : 'Player'));
+                const originalName = String(player.nameTag || (typeof player.name === 'string' ? player.name : 'Player')); // Simplified
                 player.nameTag = originalName;
             }
-        } catch(eSafe) { /* Silent fallback */ }
+        } catch (eSafe) { /* Silent fallback */ }
     }
 }
 
