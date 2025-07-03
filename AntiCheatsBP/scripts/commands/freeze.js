@@ -1,16 +1,17 @@
 /**
  * @file Defines the !freeze command for administrators to immobilize or release players.
  */
+import * as mc from '@minecraft/server'; // For mc.MinecraftEffectTypes
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'freeze',
+    name: 'freeze', // Already camelCase
     syntax: '!freeze <playername> [on|off|toggle|status]',
     description: 'Freezes or unfreezes a player, preventing movement by applying strong slowness.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Assuming permissionLevels is correctly populated
     enabled: true,
 };
 
@@ -25,31 +26,32 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
-    const frozenTag = 'frozen';
-    const effectDuration = 2000000;
-    const slownessAmplifier = 255;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const frozenTag = config?.frozenPlayerTag ?? 'frozen'; // Use config or default
+    const effectDuration = 2000000; // Very long duration for slowness
+    const slownessAmplifier = 255; // Max slowness to effectively immobilize
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.freeze.usage', { prefix: config.prefix }));
+        player?.sendMessage(getString('command.freeze.usage', { prefix: config?.prefix }));
         return;
     }
 
     const targetPlayerName = args[0];
-    const subCommand = args[1] ? args[1].toLowerCase() : 'toggle';
+    const subCommand = args[1]?.toLowerCase() || 'toggle'; // Default to 'toggle'
 
-    const foundPlayer = playerUtils.findPlayer(targetPlayerName);
+    const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!foundPlayer) {
-        player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
+    if (!targetPlayer) {
+        player?.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
 
-    if (foundPlayer.id === player.id) {
-        player.sendMessage(getString('command.freeze.cannotSelf'));
+    if (targetPlayer.id === player.id) {
+        player?.sendMessage(getString('command.freeze.cannotSelf'));
         return;
     }
 
-    let currentFreezeState = foundPlayer.hasTag(frozenTag);
+    const currentFreezeState = targetPlayer.hasTag(frozenTag);
     let targetFreezeState;
 
     switch (subCommand) {
@@ -64,45 +66,45 @@ export async function execute(player, args, dependencies) {
             break;
         case 'status':
             const statusMessage = currentFreezeState ?
-                getString('command.freeze.status.isFrozen', { playerName: foundPlayer.nameTag }) :
-                getString('command.freeze.status.notFrozen', { playerName: foundPlayer.nameTag });
-            player.sendMessage(statusMessage);
+                getString('command.freeze.status.isFrozen', { playerName: targetPlayer.nameTag }) :
+                getString('command.freeze.status.notFrozen', { playerName: targetPlayer.nameTag });
+            player?.sendMessage(statusMessage);
             return;
         default:
-            player.sendMessage(getString('command.freeze.invalidArg'));
+            player?.sendMessage(getString('command.freeze.invalidArg'));
             return;
     }
 
-    if (targetFreezeState === true && !currentFreezeState) {
+    if (targetFreezeState === true && !currentFreezeState) { // Freeze action
         try {
-            foundPlayer.addTag(frozenTag);
-            foundPlayer.addEffect('slowness', effectDuration, { amplifier: slownessAmplifier, showParticles: false });
-            foundPlayer.sendMessage(getString('command.freeze.targetFrozen'));
-            player.sendMessage(getString('command.freeze.success.frozen', { playerName: foundPlayer.nameTag }));
-            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 froze §e${foundPlayer.nameTag}§7.`, dependencies, player, null);
-            logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'freeze', targetName: foundPlayer.nameTag, details: 'Player frozen' }, dependencies);
+            targetPlayer.addTag(frozenTag);
+            targetPlayer.addEffect(mc.MinecraftEffectTypes.slowness, effectDuration, { amplifier: slownessAmplifier, showParticles: false });
+            targetPlayer.sendMessage(getString('command.freeze.targetFrozen'));
+            player?.sendMessage(getString('command.freeze.success.frozen', { playerName: targetPlayer.nameTag }));
+            playerUtils?.notifyAdmins(`§7[Admin] §e${adminName}§7 froze §e${targetPlayer.nameTag}§7.`, dependencies, player, null);
+            logManager?.addLog({ adminName, actionType: 'playerFrozen', targetName: targetPlayer.nameTag, details: 'Player frozen' }, dependencies);
         } catch (e) {
-            player.sendMessage(getString('command.freeze.error.apply', { playerName: foundPlayer.nameTag, errorMessage: e.message }));
-            playerUtils.debugLog(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
-            console.error(`[FreezeCommand] Error freezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
+            player?.sendMessage(getString('command.freeze.error.apply', { playerName: targetPlayer.nameTag, errorMessage: e.message }));
+            playerUtils?.debugLog(`[FreezeCommand.execute] Error freezing ${targetPlayer.nameTag} by ${adminName}: ${e.message}`, adminName, dependencies);
+            console.error(`[FreezeCommand.execute] Error freezing ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         }
-    } else if (targetFreezeState === false && currentFreezeState) {
+    } else if (targetFreezeState === false && currentFreezeState) { // Unfreeze action
         try {
-            foundPlayer.removeTag(frozenTag);
-            foundPlayer.removeEffect('slowness');
-            foundPlayer.sendMessage(getString('command.freeze.targetUnfrozen'));
-            player.sendMessage(getString('command.freeze.success.unfrozen', { playerName: foundPlayer.nameTag }));
-            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 unfroze §e${foundPlayer.nameTag}§7.`, dependencies, player, null);
-            logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'unfreeze', targetName: foundPlayer.nameTag, details: 'Player unfrozen' }, dependencies);
+            targetPlayer.removeTag(frozenTag);
+            targetPlayer.removeEffect(mc.MinecraftEffectTypes.slowness);
+            targetPlayer.sendMessage(getString('command.freeze.targetUnfrozen'));
+            player?.sendMessage(getString('command.freeze.success.unfrozen', { playerName: targetPlayer.nameTag }));
+            playerUtils?.notifyAdmins(`§7[Admin] §e${adminName}§7 unfroze §e${targetPlayer.nameTag}§7.`, dependencies, player, null);
+            logManager?.addLog({ adminName, actionType: 'playerUnfrozen', targetName: targetPlayer.nameTag, details: 'Player unfrozen' }, dependencies);
         } catch (e) {
-            player.sendMessage(getString('command.freeze.error.remove', { playerName: foundPlayer.nameTag, errorMessage: e.message }));
-            playerUtils.debugLog(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
-            console.error(`[FreezeCommand] Error unfreezing ${foundPlayer.nameTag} by ${player.nameTag}: ${e.stack || e}`);
+            player?.sendMessage(getString('command.freeze.error.remove', { playerName: targetPlayer.nameTag, errorMessage: e.message }));
+            playerUtils?.debugLog(`[FreezeCommand.execute] Error unfreezing ${targetPlayer.nameTag} by ${adminName}: ${e.message}`, adminName, dependencies);
+            console.error(`[FreezeCommand.execute] Error unfreezing ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         }
-    } else {
-        player.sendMessage(targetFreezeState ?
-            getString('command.freeze.alreadyFrozen', { playerName: foundPlayer.nameTag }) :
-            getString('command.freeze.alreadyUnfrozen', { playerName: foundPlayer.nameTag })
+    } else { // No change in state
+        player?.sendMessage(targetFreezeState ?
+            getString('command.freeze.alreadyFrozen', { playerName: targetPlayer.nameTag }) :
+            getString('command.freeze.alreadyUnfrozen', { playerName: targetPlayer.nameTag })
         );
     }
 }

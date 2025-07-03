@@ -20,7 +20,7 @@ export async function execute(player, args, dependencies) {
     const adminName = player.nameTag;
 
     if (args.length < 1) {
-        playerUtils.sendMessage(player, getString('command.watch.usage', { prefix: config.prefix, syntax: definition.syntax }));
+        playerUtils.sendMessage(player, getString('command.watch.usage', { prefix: config?.prefix ?? '!', syntax: definition.syntax }));
         return;
     }
 

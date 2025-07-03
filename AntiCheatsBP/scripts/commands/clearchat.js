@@ -7,10 +7,10 @@ import { permissionLevels } from '../core/rankManager.js';
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'clearchat',
+    name: 'clearchat', // Already camelCase
     syntax: '!clearchat',
     description: 'Clears the global chat for all players.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Assuming permissionLevels is correctly populated
     enabled: true,
 };
 
@@ -24,34 +24,40 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerUtils, logManager, getString, config } = dependencies;
+    const { playerUtils, logManager, getString, config, mc } = dependencies; // mc from dependencies
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
 
-    const linesToClear = config.chatClearLinesCount ?? 150; // Use config or default
+    const linesToClear = config?.chatClearLinesCount ?? 150;
+    let allMessagesSent = true;
     for (let i = 0; i < linesToClear; i++) {
         try {
-            dependencies.mc.world.sendMessage('');
+            mc.world.sendMessage(''); // Use mc from dependencies
         } catch (error) {
-            console.warn(`[ClearChatCommand] Error sending empty message line ${i + 1}: ${error}`);
-            if (i > 5) { // Arbitrary threshold for giving up
-                player.sendMessage(getString('command.clearchat.failPartial'));
-                return;
+            console.warn(`[ClearChatCommand.execute] Error sending empty message line ${i + 1} for ${adminName}: ${error.stack || error}`);
+            if (i > 5) { // Arbitrary threshold for giving up if errors persist
+                player?.sendMessage(getString('command.clearchat.failPartial'));
+                allMessagesSent = false;
+                break; // Stop trying if multiple errors occur
             }
         }
     }
-    player.sendMessage(getString('command.clearchat.success'));
+
+    if (allMessagesSent) {
+        player?.sendMessage(getString('command.clearchat.success'));
+    }
 
     try {
-        playerUtils.notifyAdmins(`§7[Admin] Chat cleared by §e${player.nameTag}§7.`, dependencies, player, null); // Admin notification can remain as is
+        playerUtils?.notifyAdmins(`§7[Admin] Chat cleared by §e${adminName}§7.`, dependencies, player, null);
 
-        logManager.addLog({
-            timestamp: Date.now(),
-            adminName: player.nameTag,
-            actionType: 'clearChat',
+        logManager?.addLog({
+            // timestamp: Date.now(), // logManager should handle timestamp
+            adminName: adminName,
+            actionType: 'chatCleared', // Standardized to camelCase
             targetName: 'Global',
-            details: `Chat cleared by ${player.nameTag}`,
+            details: `Chat cleared by ${adminName}`,
         }, dependencies);
     } catch (logError) {
-        console.error(`[ClearChatCommand] Error during logging or admin notification: ${logError.stack || logError}`);
-        playerUtils.debugLog(`[ClearChatCommand] Logging/Notify Error: ${logError.message}`, player.nameTag, dependencies);
+        console.error(`[ClearChatCommand.execute] Error during logging/notification for ${adminName}: ${logError.stack || logError}`);
+        playerUtils?.debugLog(`[ClearChatCommand.execute] Logging/Notify Error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }
 }

@@ -22,23 +22,32 @@
 export async function checkUnicodeAbuse(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableUnicodeAbuseCheck) {
+    if (!config?.enableUnicodeAbuseCheck) {
         return;
     }
 
-    if (!pData && config.enableDebugLogging) {
-        playerUtils.debugLog('[UnicodeAbuseCheck] pData is null. Watched player status might be unavailable for logging.', player.nameTag, dependencies);
+    if (!pData && config?.enableDebugLogging) {
+        playerUtils?.debugLog(`[UnicodeAbuseCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const minMessageLength = config.unicodeAbuseMinMessageLength ?? 5;
+    const DEFAULT_MIN_MESSAGE_LENGTH = 5;
+    const DEFAULT_MAX_DIACRITIC_RATIO = 0.5;
+    const DEFAULT_ABSOLUTE_MAX_DIACRITICS = 10;
+    const DEFAULT_ACTION_PROFILE_KEY = 'chatUnicodeAbuse';
+
+    const minMessageLength = config?.unicodeAbuseMinMessageLength ?? DEFAULT_MIN_MESSAGE_LENGTH;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    const maxDiacriticRatio = config.unicodeAbuseMaxDiacriticRatio ?? 0.5;
-    const absoluteMaxDiacritics = config.unicodeAbuseAbsoluteMaxDiacritics ?? 10;
-    const actionProfileKey = config.unicodeAbuseActionProfileName ?? 'chatUnicodeAbuse';
+    const maxDiacriticRatio = config?.unicodeAbuseMaxDiacriticRatio ?? DEFAULT_MAX_DIACRITIC_RATIO;
+    const absoluteMaxDiacritics = config?.unicodeAbuseAbsoluteMaxDiacritics ?? DEFAULT_ABSOLUTE_MAX_DIACRITICS;
+
+    // Ensure actionProfileKey is camelCase
+    const actionProfileKey = config?.unicodeAbuseActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+
     let diacriticCount = 0;
     let otherCharCount = 0;
 
@@ -80,10 +89,11 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
             flagReason: reason,
         };
 
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils.debugLog(`[UnicodeAbuseCheck] Flagged ${player.nameTag} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, pData?.isWatched ? player.nameTag : null, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, pData?.isWatched ? playerName : null, dependencies);
 
-        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        if (profile?.cancelMessage) {
             eventData.cancel = true;
         }
     }

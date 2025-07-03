@@ -22,26 +22,37 @@
 export async function checkGibberish(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    const enableCheck = config.enableGibberishCheck ?? false;
+    const enableCheck = config?.enableGibberishCheck ?? false;
     if (!enableCheck) {
         return;
     }
 
-    if (!pData && config.enableDebugLogging) {
-        playerUtils.debugLog('[GibberishCheck] pData is null. Watched player status might be unavailable for logging.', player.nameTag, dependencies);
+    if (!pData && config?.enableDebugLogging) {
+        playerUtils?.debugLog(`[GibberishCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const minMessageLength = config.gibberishMinMessageLength ?? 10;
+    const DEFAULT_MIN_MESSAGE_LENGTH = 10;
+    const DEFAULT_MIN_ALPHA_RATIO = 0.6;
+    const DEFAULT_VOWEL_RATIO_LOWER_BOUND = 0.15;
+    const DEFAULT_VOWEL_RATIO_UPPER_BOUND = 0.80;
+    const DEFAULT_MAX_CONSECUTIVE_CONSONANTS = 5;
+    const DEFAULT_ACTION_PROFILE_KEY = 'chatGibberish';
+
+    const minMessageLength = config?.gibberishMinMessageLength ?? DEFAULT_MIN_MESSAGE_LENGTH;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    const minAlphaRatio = config.gibberishMinAlphaRatio ?? 0.6;
-    const vowelRatioLowerBound = config.gibberishVowelRatioLowerBound ?? 0.15;
-    const vowelRatioUpperBound = config.gibberishVowelRatioUpperBound ?? 0.80;
-    const maxConsecutiveConsonants = config.gibberishMaxConsecutiveConsonants ?? 5;
-    const actionProfileKey = config.gibberishActionProfileName ?? 'chatGibberish';
+    const minAlphaRatio = config?.gibberishMinAlphaRatio ?? DEFAULT_MIN_ALPHA_RATIO;
+    const vowelRatioLowerBound = config?.gibberishVowelRatioLowerBound ?? DEFAULT_VOWEL_RATIO_LOWER_BOUND;
+    const vowelRatioUpperBound = config?.gibberishVowelRatioUpperBound ?? DEFAULT_VOWEL_RATIO_UPPER_BOUND;
+    const maxConsecutiveConsonants = config?.gibberishMaxConsecutiveConsonants ?? DEFAULT_MAX_CONSECUTIVE_CONSONANTS;
+
+    // Ensure actionProfileKey is camelCase
+    const actionProfileKey = config?.gibberishActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?]/g, ''); // Remove common punctuation
 
     let totalAlphaChars = 0;
@@ -107,10 +118,11 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
             triggerReasons: flagReasons.join(', '),
         };
 
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils.debugLog(`[GibberishCheck] Flagged ${player.nameTag} for ${flagReasons.join(', ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, pData?.isWatched ? player.nameTag : null, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[GibberishCheck] Flagged ${playerName} for ${flagReasons.join(', ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, pData?.isWatched ? playerName : null, dependencies);
 
-        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        if (profile?.cancelMessage) {
             eventData.cancel = true;
         }
     }

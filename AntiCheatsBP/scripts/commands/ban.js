@@ -7,10 +7,10 @@ import { permissionLevels } from '../core/rankManager.js';
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'ban',
+    name: 'ban', // Already camelCase
     syntax: '!ban <playername> [duration] [reason]',
     description: 'Bans a player for a specified duration (e.g., 7d, 2h, perm).',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Assuming permissionLevels is correctly populated
     enabled: true,
 };
 
@@ -22,7 +22,7 @@ export const definition = {
  * @param {import('../types.js').CommandDependencies} dependencies - Command dependencies.
  * @param {string} [invokedBy='PlayerCommand'] - How the command was invoked (e.g., 'PlayerCommand', 'AutoMod').
  * @param {boolean} [isAutoModAction=false] - Whether this ban is a direct result of an AutoMod action.
- * @param {string|null} [autoModCheckType=null] - If isAutoModAction, the checkType that triggered it.
+ * @param {string|null} [autoModCheckType=null] - If by AutoMod, the checkType (camelCase) that triggered it.
  * @returns {Promise<void>}
  */
 export async function execute(
@@ -31,39 +31,40 @@ export async function execute(
     dependencies,
     invokedBy = 'PlayerCommand',
     isAutoModAction = false,
-    autoModCheckType = null
+    autoModCheckType = null // Should be camelCase if provided
 ) {
     const { config, playerUtils, playerDataManager, logManager, permissionLevels: depPermLevels, rankManager, getString } = dependencies;
+    const issuerName = player?.nameTag ?? invokedBy; // Use invokedBy if player is null (system call)
 
     if (args.length < 1) {
-        const usageMessage = getString('command.ban.usage', { prefix: config.prefix });
+        const usageMessage = getString('command.ban.usage', { prefix: config?.prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {
-            console.warn('[BanCommand] Ban command called by system without sufficient arguments.');
-            playerUtils.debugLog('[BanCommand] System call missing target player name.', null, dependencies);
+            console.warn(`[BanCommand.execute] System call missing arguments. Usage: ${usageMessage}`);
+            playerUtils?.debugLog('[BanCommand.execute] System call missing target player name.', null, dependencies);
         }
         return;
     }
 
     const targetPlayerName = args[0];
-    const durationString = args[1] || 'perm';
+    const durationString = args[1] || 'perm'; // Default to 'perm'
 
     let reason;
     if (invokedBy === 'AutoMod') {
         reason = args.length > 2 ? args.slice(2).join(' ') : `Banned due to ${autoModCheckType || 'violations'}.`;
     } else {
-        reason = args.slice(2).join(' ') || 'Banned by an administrator.';
+        reason = args.slice(2).join(' ') || getString('command.ban.defaultReason') || 'Banned by an administrator.';
     }
 
-    const foundPlayer = playerUtils.findPlayer(targetPlayerName);
+    const foundPlayer = playerUtils?.findPlayer(targetPlayerName);
 
     if (!foundPlayer) {
         const message = getString('command.ban.playerNotFound', { playerName: targetPlayerName });
         if (player) {
             player.sendMessage(message);
         } else {
-            console.warn(`[BanCommand] ${message.replace(/§[a-f0-9]/g, '')} (Invoked by ${invokedBy})`);
+            console.warn(`[BanCommand.execute] Target ${targetPlayerName} not found (Invoked by ${invokedBy}).`);
         }
         return;
     }
@@ -73,9 +74,10 @@ export async function execute(
         return;
     }
 
+    // Permission checks
     if (invokedBy === 'PlayerCommand' && player) {
-        const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies);
-        const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
+        const targetPermissionLevel = rankManager?.getPlayerPermissionLevel(foundPlayer, dependencies);
+        const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
 
         if (targetPermissionLevel <= depPermLevels.admin && issuerPermissionLevel > depPermLevels.owner) {
             player.sendMessage(getString('command.ban.permissionDeniedAdminOwner'));
@@ -85,42 +87,43 @@ export async function execute(
             player.sendMessage(getString('command.ban.permissionDeniedOwner'));
             return;
         }
+        // Prevent owner from banning owner via this command as a safeguard, though permission system might already handle.
         if (targetPermissionLevel === depPermLevels.owner && issuerPermissionLevel === depPermLevels.owner && player.id !== foundPlayer.id) {
             player.sendMessage(getString('command.ban.ownerCannotBanOwner'));
             return;
         }
     }
 
-    const durationMs = playerUtils.parseDuration(durationString);
+    const durationMs = playerUtils?.parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
         const message = getString('command.ban.invalidDuration');
         if (player) {
             player.sendMessage(message);
         } else {
-            console.warn(`[BanCommand] ${message.replace(/§[a-f0-9]/g, '')} (Invoked by ${invokedBy})`);
+            console.warn(`[BanCommand.execute] Invalid duration '${durationString}' (Invoked by ${invokedBy}).`);
         }
         return;
     }
 
-    const bannedBy = invokedBy === 'AutoMod' ? 'AutoMod' : (player ? player.nameTag : 'System');
+    const bannedByForRecord = invokedBy === 'AutoMod' ? 'AutoMod' : (player?.nameTag ?? 'System');
 
-    const banAdded = playerDataManager.addBan(
+    const banAdded = await playerDataManager?.addBan( // Ensure await if addBan can be async
         foundPlayer,
         durationMs,
         reason,
-        bannedBy,
+        bannedByForRecord,
         isAutoModAction,
-        autoModCheckType,
+        autoModCheckType, // Already expected to be camelCase or null
         dependencies
     );
 
     if (banAdded) {
-        const banInfo = playerDataManager.getBanInfo(foundPlayer, dependencies);
-        const actualReason = banInfo ? banInfo.reason : reason;
-        const actualBannedBy = banInfo ? banInfo.bannedBy : bannedBy;
-        const unbanTime = banInfo ? banInfo.unbanTime : (Date.now() + durationMs);
+        const banInfo = playerDataManager?.getBanInfo(foundPlayer, dependencies); // Re-fetch to get the stored info
+        const actualReason = banInfo?.reason ?? reason;
+        const actualBannedBy = banInfo?.bannedBy ?? bannedByForRecord;
+        const unbanTime = banInfo?.unbanTime ?? (Date.now() + durationMs); // Fallback, though banInfo should exist
 
-        const durationDisplay = durationMs === Infinity ? 'Permanent' : `Expires: ${new Date(unbanTime).toLocaleString()}`;
+        const durationDisplay = durationMs === Infinity ? getString('ban.duration.permanent') : getString('ban.duration.expires', { expiryDate: new Date(unbanTime).toLocaleString() });
 
         const kickMessageParts = [
             getString('command.ban.kickMessage.header'),
@@ -128,47 +131,45 @@ export async function execute(
             getString('command.ban.kickMessage.bannedBy', { bannedBy: actualBannedBy }),
             getString('command.ban.kickMessage.duration', { durationDisplay: durationDisplay }),
         ];
-        if (config.discordLink && config.discordLink.trim() !== '' && config.discordLink !== 'https://discord.gg/example') {
+        if (config?.discordLink && config.discordLink.trim() !== '' && config.discordLink !== 'https://discord.gg/example') {
             kickMessageParts.push(getString('command.ban.kickMessage.appeal', { discordLink: config.discordLink }));
         }
         const kickMessage = kickMessageParts.join('\n');
 
         try {
-            foundPlayer.kick(kickMessage);
+            await foundPlayer.kick(kickMessage);
         } catch (e) {
-            playerUtils.debugLog(`[BanCommand] Attempted to kick banned player ${foundPlayer.nameTag} but they might have already disconnected: ${e.message}`, player ? player.nameTag : 'System', dependencies);
+            playerUtils?.debugLog(`[BanCommand.execute] Failed to kick ${foundPlayer.nameTag} (may have disconnected): ${e.message}`, issuerName, dependencies);
         }
 
-        const successMessage = getString('command.ban.success', { playerName: foundPlayer.nameTag, durationString: durationString, reason: actualReason });
+        const successMessage = getString('command.ban.success', { playerName: foundPlayer.nameTag, durationString: durationDisplay, reason: actualReason });
         if (player) {
             player.sendMessage(successMessage);
         } else {
-            console.log(successMessage.replace(/§[a-f0-9]/g, ''));
+            console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`); // Log for system/AutoMod
         }
 
-        if (playerUtils.notifyAdmins) {
-            const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            const adminNotifyMsg = `§7[Admin] §e${actualBannedBy}§7 banned §e${foundPlayer.nameTag}§7 for ${durationString}. Reason: ${actualReason}`; // Admin notify can remain less templatized for now
-            playerUtils.notifyAdmins(adminNotifyMsg, dependencies, player, targetPData);
-        }
-        if (logManager?.addLog) {
-            logManager.addLog({
-                timestamp: Date.now(),
-                adminName: actualBannedBy,
-                actionType: 'ban',
-                targetName: foundPlayer.nameTag,
-                duration: durationString,
-                reason: actualReason,
-                isAutoMod: isAutoModAction,
-                checkType: autoModCheckType,
-            }, dependencies);
-        }
+        const targetPData = playerDataManager?.getPlayerData(foundPlayer.id); // For admin notification context
+        const adminNotifyMsg = `§7[Admin] §e${actualBannedBy}§7 banned §e${foundPlayer.nameTag}§7 for ${durationDisplay}. Reason: ${actualReason}`;
+        playerUtils?.notifyAdmins(adminNotifyMsg, dependencies, player, targetPData);
+
+        logManager?.addLog({
+            timestamp: Date.now(), // Can be omitted if addLog defaults it
+            adminName: actualBannedBy,
+            actionType: 'playerBanned', // Standardized camelCase
+            targetName: foundPlayer.nameTag,
+            targetId: foundPlayer.id, // Add targetId
+            duration: durationString, // Store original string for readability
+            reason: actualReason,
+            isAutoMod: isAutoModAction,
+            checkType: autoModCheckType, // Will be null if not automod
+        }, dependencies);
     } else {
         const failureMessage = getString('command.ban.failure', { playerName: foundPlayer.nameTag });
         if (player) {
             player.sendMessage(failureMessage);
         } else {
-            console.warn(failureMessage.replace(/§[a-f0-9]/g, ''));
+            console.warn(`[BanCommand.execute] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${invokedBy})`);
         }
     }
 }

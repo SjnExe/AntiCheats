@@ -1,12 +1,12 @@
 /**
  * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
- * Ranks are defined in `ranksConfig.js` and processed here.
+ * Ranks are defined in `ranksConfig.js` and processed here. All rank IDs are handled case-insensitively (lowerCased).
  */
 import * as mc from '@minecraft/server';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
 
 /**
- * @description Dynamically generated mapping of rank IDs to their numeric permission levels.
+ * @description Dynamically generated mapping of rank IDs (lowerCase) to their numeric permission levels.
  * Populated by `initializeRanks`.
  * @export
  * @type {Object.<string, number>}
@@ -14,7 +14,7 @@ import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPe
 export let permissionLevels = {};
 
 /**
- * @description Array of rank definitions, sorted by priority.
+ * @description Array of rank definitions, sorted by priority (lower number = higher priority).
  * Populated by `initializeRankSystem`.
  * @type {Array<import('./ranksConfig.js').RankDefinition>}
  */
@@ -28,38 +28,40 @@ let sortedRankDefinitions = [];
 function initializeRankSystem(dependencies) {
     const { playerUtils, config } = dependencies;
 
-    if (Array.isArray(rankDefinitions)) {
-        sortedRankDefinitions = [...rankDefinitions].sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
-
-        const newPermissionLevels = {};
-        for (const rankDef of sortedRankDefinitions) {
-            if (rankDef.id && typeof rankDef.permissionLevel === 'number') {
-                newPermissionLevels[rankDef.id.toLowerCase()] = rankDef.permissionLevel;
-            }
-        }
-
-        const memberRankDefinition = sortedRankDefinitions.find(r => r.id.toLowerCase() === 'member');
-        newPermissionLevels.member ??= memberRankDefinition?.permissionLevel ?? defaultPermissionLevel;
-        if (newPermissionLevels.member === defaultPermissionLevel && !memberRankDefinition) {
-            const debugMsg = `[RankManager] 'member' rank permission level not found, using default: ${defaultPermissionLevel}`;
-            playerUtils?.debugLog(debugMsg, null, dependencies) || console.warn(debugMsg);
-        }
-
-        const ownerRank = sortedRankDefinitions.find(r => r.id.toLowerCase() === 'owner');
-        newPermissionLevels.owner ??= ownerRank?.permissionLevel ?? 0;
-
-        const adminRank = sortedRankDefinitions.find(r => r.id.toLowerCase() === 'admin');
-        newPermissionLevels.admin ??= adminRank?.permissionLevel ?? 1;
-
-        permissionLevels = Object.freeze(newPermissionLevels);
-
-        const logMsg = `[RankManager] Initialized with ${sortedRankDefinitions.length} ranks. PermissionLevels map: ${JSON.stringify(permissionLevels)}`;
-        playerUtils?.debugLog(logMsg, null, dependencies) || console.log(logMsg);
-    } else {
-        console.error('[RankManager] rankDefinitions not found or not an array in ranksConfig.js. Rank system will not function correctly.');
+    if (!Array.isArray(rankDefinitions)) {
+        console.error('[RankManager.initializeRankSystem] rankDefinitions is not an array. Rank system may not function.');
         sortedRankDefinitions = [];
-        permissionLevels = Object.freeze({ owner: 0, admin: 1, member: defaultPermissionLevel });
+        permissionLevels = Object.freeze({ owner: 0, admin: 1, member: defaultPermissionLevel }); // Minimal fallback
+        return;
     }
+
+    // Ensure all rank IDs in definitions are lowercase for consistent internal use.
+    const standardizedRankDefinitions = rankDefinitions.map(rd => ({ ...rd, id: rd.id.toLowerCase() }));
+    sortedRankDefinitions = [...standardizedRankDefinitions].sort((a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity));
+
+    const newPermissionLevels = {};
+    for (const rankDef of sortedRankDefinitions) {
+        if (rankDef.id && typeof rankDef.permissionLevel === 'number') {
+            newPermissionLevels[rankDef.id] = rankDef.permissionLevel; // id is already lowercased
+        }
+    }
+
+    // Ensure essential permission levels ('member', 'owner', 'admin') are defined, using defaults if necessary.
+    const memberRank = sortedRankDefinitions.find(r => r.id === 'member');
+    newPermissionLevels.member = newPermissionLevels.member ?? memberRank?.permissionLevel ?? defaultPermissionLevel;
+    if (newPermissionLevels.member === defaultPermissionLevel && !memberRank) {
+        playerUtils?.debugLog(`[RankManager.initializeRankSystem] 'member' rank not explicitly defined, using default permission: ${defaultPermissionLevel}`, null, dependencies);
+    }
+
+    const ownerRank = sortedRankDefinitions.find(r => r.id === 'owner');
+    newPermissionLevels.owner = newPermissionLevels.owner ?? ownerRank?.permissionLevel ?? 0; // Owner defaults to 0 (highest)
+
+    const adminRank = sortedRankDefinitions.find(r => r.id === 'admin');
+    newPermissionLevels.admin = newPermissionLevels.admin ?? adminRank?.permissionLevel ?? 1; // Admin defaults to 1
+
+    permissionLevels = Object.freeze(newPermissionLevels); // Make it immutable after initialization
+
+    playerUtils?.debugLog(`[RankManager.initializeRankSystem] Initialized ${sortedRankDefinitions.length} ranks. PermissionLevels: ${JSON.stringify(permissionLevels)}`, null, dependencies);
 }
 
 /**
@@ -67,52 +69,42 @@ function initializeRankSystem(dependencies) {
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {{ rankDefinition: import('./ranksConfig.js').RankDefinition | null, permissionLevel: number, rankId: string | null }}
- *          Object containing matched rank definition, permission level, and rank ID.
+ *          Object containing matched rank definition, permission level, and rank ID (lowerCase).
  *          Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
     const { config, playerUtils, getString } = dependencies;
+    const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
-        const errorMsg = '[RankManager] Invalid player object passed to getPlayerRankAndPermissions.';
-        console.error(errorMsg);
-        playerUtils?.debugLog(errorMsg, null, dependencies);
-        const defaultMemberRank = sortedRankDefinitions.find(r => r.id.toLowerCase() === 'member');
+        console.error(`[RankManager.getPlayerRankAndPermissions] Invalid player object for ${playerName}.`);
+        playerUtils?.debugLog(`[RankManager.getPlayerRankAndPermissions] Invalid player object for ${playerName}.`, playerName, dependencies);
+        const defaultMemberRank = sortedRankDefinitions.find(r => r.id === 'member');
         return { rankDefinition: defaultMemberRank || null, permissionLevel: permissionLevels.member ?? defaultPermissionLevel, rankId: 'member' };
     }
 
-    let ownerName = '';
-    let adminTag = '';
+    const ownerName = config?.ownerPlayerName?.toLowerCase() ?? ''; // Compare names case-insensitively
+    const adminTag = config?.adminTag ?? '';
 
-    if (config && typeof config === 'object') {
-        ownerName = config.ownerPlayerName ?? '';
-        adminTag = config.adminTag ?? '';
-    } else {
-        const configType = typeof config;
-        const configValPreview = String(config).substring(0, 100);
-        const errorMsg = `[RankManager] Warning: 'config' in dependencies is not a valid object (type: ${configType}, value: ${configValPreview}). Using default ownerName/adminTag.`;
-        console.warn(errorMsg);
-        playerUtils?.debugLog(`${errorMsg} Player: ${player?.nameTag ?? getString('common.value.notAvailable')}.`, player?.nameTag || null, dependencies);
-    }
-
-    for (const rankDef of sortedRankDefinitions) {
+    for (const rankDef of sortedRankDefinitions) { // rankDef.id is already lowercased
         if (Array.isArray(rankDef.conditions)) {
             for (const condition of rankDef.conditions) {
                 let match = false;
                 switch (condition.type) {
                     case 'owner_name':
-                        if (ownerName && player.nameTag === ownerName) match = true;
+                        if (ownerName && player.nameTag.toLowerCase() === ownerName) match = true;
                         break;
                     case 'admin_tag':
                         if (adminTag && player.hasTag(adminTag)) match = true;
                         break;
                     case 'manual_tag_prefix':
-                        if (condition.prefix && player.hasTag(condition.prefix + rankDef.id)) match = true;
+                        // Ensure condition.prefix and rankDef.id are defined. rankDef.id is already lowercased.
+                        if (condition.prefix && rankDef.id && player.hasTag(condition.prefix + rankDef.id)) match = true;
                         break;
                     case 'tag':
                         if (condition.tag && player.hasTag(condition.tag)) match = true;
                         break;
-                    case 'default':
+                    case 'default': // Fallback condition
                         match = true;
                         break;
                 }
@@ -123,7 +115,8 @@ function getPlayerRankAndPermissions(player, dependencies) {
         }
     }
 
-    const memberRankDef = sortedRankDefinitions.find(r => r.id.toLowerCase() === 'member');
+    // Fallback to member rank if no other conditions met
+    const memberRankDef = sortedRankDefinitions.find(r => r.id === 'member');
     return { rankDefinition: memberRankDef || null, permissionLevel: permissionLevels.member ?? defaultPermissionLevel, rankId: memberRankDef ? 'member' : null };
 }
 
@@ -147,8 +140,9 @@ export function getPlayerPermissionLevel(player, dependencies) {
 export function getPlayerRankFormattedChatElements(player, dependencies) {
     const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
 
+    // Use optional chaining and nullish coalescing for robust default handling
     const chatFormatting = rankDefinition?.chatFormatting ?? defaultChatFormatting;
-    const prefixText = chatFormatting.prefixText ?? defaultChatFormatting.prefixText ?? '';
+    const prefixText = chatFormatting.prefixText ?? defaultChatFormatting.prefixText ?? ''; // Ensure prefixText is always a string
 
     return {
         fullPrefix: (chatFormatting.prefixColor ?? defaultChatFormatting.prefixColor) + prefixText,
@@ -164,68 +158,67 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
  */
 export function updatePlayerNametag(player, dependencies) {
     const { config, playerUtils, getString } = dependencies;
+    const playerNameForLog = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
-        console.error('[RankManager] Invalid player object received in updatePlayerNametag.');
+        console.error(`[RankManager.updatePlayerNametag] Invalid player object for ${playerNameForLog}.`);
         return;
     }
 
     if (!config || typeof config !== 'object') {
-        const errorMsg = `[RankManager] Config object is invalid in updatePlayerNametag for player ${player?.nameTag ?? 'UnknownPlayer'}. Cannot update nametag.`;
-        console.error(errorMsg);
-        playerUtils?.debugLog(errorMsg, player?.nameTag || null, dependencies);
-        try {
-            if (player.isValid()) {
-                player.nameTag = String(player.nameTag || player.name || '');
-            }
-        } catch (eSafe) { /* ignore */ }
+        console.error(`[RankManager.updatePlayerNametag] Config object invalid for ${playerNameForLog}. Nametag not updated.`);
+        playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Config invalid for ${playerNameForLog}.`, playerNameForLog, dependencies);
+        try { if (player.isValid()) player.nameTag = String(player.nameTag || player.name || ''); } catch (e) { /* ignore */ }
         return;
     }
 
-    const vanishedTagToUse = config.vanishedPlayerTag || 'vanished';
+    const vanishedTagToUse = config.vanishedPlayerTag || 'vanished'; // Default vanish tag
 
     try {
         if (player.hasTag(vanishedTagToUse)) {
-            player.nameTag = '';
+            player.nameTag = ''; // Vanished players have no visible nametag
             return;
         }
 
         const { rankDefinition } = getPlayerRankAndPermissions(player, dependencies);
         const nametagToApply = rankDefinition?.nametagPrefix ?? defaultNametagPrefix;
 
-        let baseName = player.name ?? getString('common.value.player');
-        if (player.nameTag && typeof player.nameTag === 'string' && player.nameTag.length > 0) {
-            let currentNameTagSeemsPrefixed = false;
-            if (Array.isArray(sortedRankDefinitions)) {
-                for (const rankDef of sortedRankDefinitions) {
-                    if (rankDef.nametagPrefix && player.nameTag.startsWith(rankDef.nametagPrefix)) {
-                        currentNameTagSeemsPrefixed = true;
-                        const potentialBaseName = player.nameTag.substring(rankDef.nametagPrefix.length);
-                        if (potentialBaseName.length > 0) baseName = potentialBaseName;
-                        break;
+        // Attempt to derive base name more reliably if current nameTag seems to have a prefix
+        let baseName = player.name ?? getString('common.value.player'); // Default to system name
+        const currentNameTag = player.nameTag;
+
+        if (currentNameTag && typeof currentNameTag === 'string' && currentNameTag.length > 0) {
+            let currentTagSeemsPrefixed = false;
+            // Check against all known rank prefixes to strip existing one if present
+            for (const def of sortedRankDefinitions) {
+                if (def.nametagPrefix && currentNameTag.startsWith(def.nametagPrefix)) {
+                    const potentialBase = currentNameTag.substring(def.nametagPrefix.length);
+                    if (potentialBase.length > 0) { // Ensure stripping prefix doesn't leave an empty name
+                        baseName = potentialBase;
+                        currentTagSeemsPrefixed = true;
                     }
+                    break;
                 }
             }
-            if (!currentNameTagSeemsPrefixed && player.nameTag !== baseName) {
-                baseName = (player.name && player.name.length > 0) ? player.name : player.nameTag;
+            // If no known prefix was stripped, but nameTag is different from system name, use nameTag as base.
+            // This handles cases where a name might have been set by other means or an unknown prefix.
+            if (!currentTagSeemsPrefixed && currentNameTag !== baseName) {
+                baseName = currentNameTag;
             }
         }
+        // If after all checks baseName is empty (e.g. player.name was empty), default again.
+        if (!baseName || baseName.trim() === '') baseName = getString('common.value.player');
+
 
         player.nameTag = nametagToApply + baseName;
 
         if (config.enableDebugLogging && playerUtils) {
-            playerUtils.debugLog(`[RankManager] Updated nametag for ${baseName} (original nameTag: '${String(player.nameTag || player.name)}') to '${player.nameTag}' (Rank: ${rankDefinition?.id || 'default'})`, player.nameTag, dependencies);
+            playerUtils.debugLog(`[RankManager.updatePlayerNametag] Updated nametag for ${playerNameForLog} (Original: '${currentNameTag}') to '${player.nameTag}' (Rank: ${rankDefinition?.id ?? 'default'})`, playerNameForLog, dependencies);
         }
     } catch (error) {
-        const errorMsg = error.stack || error;
-        const playerNameForError = player?.nameTag ?? player?.name ?? getString('common.value.unknownPlayer');
-        console.error(`[RankManager] Error in updatePlayerNametag for '${playerNameForError}': ${errorMsg}`);
-        playerUtils?.debugLog(`Error in updatePlayerNametag for ${playerNameForError}: ${error.message}`, playerNameForError, dependencies);
-        try {
-            if (player.isValid()) {
-                player.nameTag = String(player.name ?? getString('common.value.player'));
-            }
-        } catch (eSafe) { /* ignore */ }
+        console.error(`[RankManager.updatePlayerNametag] Error for '${playerNameForLog}': ${error.stack || error}`);
+        playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Error for ${playerNameForLog}: ${error.message}`, playerNameForLog, dependencies);
+        try { if (player.isValid()) player.nameTag = String(player.name ?? getString('common.value.player')); } catch (e) { /* ignore */ }
     }
 }
 
@@ -239,13 +232,13 @@ export function initializeRanks(dependencies) {
 
 /**
  * Retrieves a rank definition object by its unique ID.
- * @param {string} rankId - The ID of the rank to retrieve (case-insensitive).
+ * @param {string} rankId - The ID (case-insensitive) of the rank to retrieve.
  * @returns {import('./ranksConfig.js').RankDefinition | undefined} The rank definition object if found, otherwise undefined.
  */
 export function getRankById(rankId) {
     if (typeof rankId !== 'string' || !rankId) {
         return undefined;
     }
-    const lowerRankId = rankId.toLowerCase();
-    return sortedRankDefinitions.find(rankDef => rankDef.id.toLowerCase() === lowerRankId);
+    const lowerRankId = rankId.toLowerCase(); // Ensure lookup is case-insensitive
+    return sortedRankDefinitions.find(rankDef => rankDef.id === lowerRankId); // rankDef.id is already lowercased
 }

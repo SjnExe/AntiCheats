@@ -2,95 +2,94 @@
  * @file AntiCheatsBP/scripts/core/reportManager.js
  * Manages player-submitted reports. Reports are stored in a world dynamic property
  * with an in-memory cache for performance. This includes adding reports, retrieving them,
- * and clearing reports.
+ * and clearing reports. All actionType strings should be camelCase.
  */
-import * as mc from '@minecraft/server'; // Use mc alias
+import * as mc from '@minecraft/server';
 
 /**
- * @const {string} reportsPropertyKeyName - The dynamic property key used for storing player reports.
+ * @const {string} reportsPropertyKeyName - The dynamic property key for storing player reports.
  */
-const reportsPropertyKeyName = 'anticheat:reports_v1';
+const reportsPropertyKeyName = 'anticheat:reports_v1'; // Consistent naming with _v1
 
 /**
  * @typedef {import('../types.js').ReportEntry} ReportEntry
- * @typedef {import('../types.js').CommandDependencies} Dependencies - Corrected typedef name
+ * @typedef {import('../types.js').CommandDependencies} CommandDependencies
  */
 
 /**
  * @type {ReportEntry[]}
- * In-memory cache for report entries. Initialized on script load.
+ * In-memory cache for report entries. Newest reports are typically at the beginning.
  */
 let reportsInMemory = [];
 
 /**
  * @type {boolean}
- * Flag indicating if the in-memory reports have changed and need to be persisted.
+ * Flag indicating if `reportsInMemory` has changes needing persistence.
  */
 let reportsAreDirty = false;
 
 /**
  * Generates a unique ID for a new report.
- * Uses a combination of timestamp and a short random string to minimize collisions.
  * @returns {string} A unique report ID.
  */
 function generateReportId() {
+    // Timestamp + random component for uniqueness
     return `${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
 }
 
 /**
- * Loads reports from the dynamic property into the in-memory cache.
- * Must be called once during script initialization from a context that can provide dependencies.
- * @param {Dependencies} dependencies - The standard dependencies object.
+ * Loads reports from dynamic properties into the in-memory cache.
+ * Called once during script initialization.
+ * @param {CommandDependencies} dependencies - Standard dependencies object.
  */
 export function initializeReportCache(dependencies) {
-    const { playerUtils, mc: minecraftSystem } = dependencies; // Use mc from dependencies
+    const { playerUtils, mc: minecraftSystem } = dependencies;
     try {
-        const rawReports = minecraftSystem.world.getDynamicProperty(reportsPropertyKeyName);
+        const rawReports = minecraftSystem?.world?.getDynamicProperty(reportsPropertyKeyName);
         if (typeof rawReports === 'string') {
             const parsedReports = JSON.parse(rawReports);
             if (Array.isArray(parsedReports)) {
-                reportsInMemory = parsedReports;
-                playerUtils.debugLog(`[ReportManager] Successfully loaded ${reportsInMemory.length} reports into memory cache.`, 'System', dependencies);
+                reportsInMemory = parsedReports; // Assume stored order is acceptable (e.g., oldest first)
+                playerUtils?.debugLog(`[ReportManager.initializeReportCache] Loaded ${reportsInMemory.length} reports.`, 'System', dependencies);
                 return;
             }
         }
-        playerUtils.debugLog(`[ReportManager] No valid reports found for key '${reportsPropertyKeyName}'. Initializing empty cache.`, 'System', dependencies);
+        playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKeyName}'. Initializing empty cache.`, 'System', dependencies);
     } catch (error) {
-        console.error(`[ReportManager] Error reading/parsing reports during initialization: ${error.stack || error}`);
-        playerUtils.debugLog(`[ReportManager] Error reading/parsing reports during initialization: ${error.message}`, 'System', dependencies);
+        console.error(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`);
+        playerUtils?.debugLog(`[ReportManager.initializeReportCache] Exception: ${error.message}`, 'System', dependencies);
     }
-    reportsInMemory = []; // Ensure it's an empty array if loading fails
+    reportsInMemory = []; // Ensure it's an array on failure or no data
 }
 
 /**
- * Persists the current in-memory report cache to dynamic properties if changes have been made.
- * @param {Dependencies} dependencies - The standard dependencies object.
- * @returns {boolean} True if saving was successful or not needed, false on error.
+ * Persists the in-memory report cache to dynamic properties if changes exist.
+ * @param {CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {boolean} True if successful or no changes needed, false on error.
  */
 export function persistReportsToDisk(dependencies) {
-    const { playerUtils, mc: minecraftSystem } = dependencies; // Use mc from dependencies
-    if (!reportsAreDirty && minecraftSystem.world.getDynamicProperty(reportsPropertyKeyName) !== undefined) {
-        return true; // No changes and already exists, no need to save
+    const { playerUtils, mc: minecraftSystem } = dependencies;
+    if (!reportsAreDirty && minecraftSystem?.world?.getDynamicProperty(reportsPropertyKeyName) !== undefined) {
+        return true;
     }
     try {
-        minecraftSystem.world.setDynamicProperty(reportsPropertyKeyName, JSON.stringify(reportsInMemory));
+        minecraftSystem?.world?.setDynamicProperty(reportsPropertyKeyName, JSON.stringify(reportsInMemory));
         reportsAreDirty = false;
-        playerUtils.debugLog(`[ReportManager] Persisted ${reportsInMemory.length} reports to dynamic property.`, 'System', dependencies);
+        playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Persisted ${reportsInMemory.length} reports.`, 'System', dependencies);
         return true;
     } catch (error) {
-        console.error(`[ReportManager] Error saving reports to dynamic property: ${error.stack || error}`);
-        playerUtils.debugLog(`[ReportManager] Error saving reports to dynamic property: ${error.message}`, 'System', dependencies);
+        console.error(`[ReportManager.persistReportsToDisk] Error saving reports: ${error.stack || error}`);
+        playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Exception: ${error.message}`, 'System', dependencies);
         return false;
     }
 }
 
 /**
- * Retrieves reports from the in-memory cache.
- * @returns {ReportEntry[]} An array of report objects (a copy of the cache, sorted newest first).
+ * Retrieves reports from the in-memory cache, sorted newest first.
+ * @returns {ReportEntry[]} A new array of report objects, sorted by timestamp descending.
  */
 export function getReports() {
-    // Return a shallow copy, sorted by timestamp descending (newest first)
-    return [...reportsInMemory].sort((a, b) => b.timestamp - a.timestamp);
+    return [...reportsInMemory].sort((a, b) => b.timestamp - a.timestamp); // Newest first
 }
 
 /**
@@ -98,52 +97,59 @@ export function getReports() {
  * @param {import('@minecraft/server').Player} reporterPlayer - The player making the report.
  * @param {string} reportedPlayerName - The name of the player being reported.
  * @param {string} reason - The reason for the report.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {ReportEntry | null} The created report entry, or null if failed.
  */
 export function addReport(reporterPlayer, reportedPlayerName, reason, dependencies) {
-    const { playerUtils, logManager, config, mc: minecraftSystem } = dependencies; // Use mc from dependencies
+    const { playerUtils, logManager, config, mc: minecraftSystem } = dependencies;
 
-    // Attempt to find the reported player if they are online
-    const targetPlayer = playerUtils.findPlayerByNameTag(reportedPlayerName, minecraftSystem.world.getAllPlayers());
+    if (!reporterPlayer?.isValid() || !reportedPlayerName || !reason) {
+        playerUtils?.debugLog('[ReportManager.addReport] Invalid arguments for adding report.', reporterPlayer?.nameTag, dependencies);
+        return null;
+    }
+
+    const targetPlayer = playerUtils?.findPlayer(reportedPlayerName); // Use general findPlayer
 
     const newReport = {
         id: generateReportId(),
         timestamp: Date.now(),
         reporterId: reporterPlayer.id,
         reporterName: reporterPlayer.nameTag,
-        reportedId: targetPlayer ? targetPlayer.id : 'offline_or_unknown', // Store ID if found
-        reportedName: reportedPlayerName, // Always store the name as reported
+        reportedId: targetPlayer?.id ?? 'offlineOrUnknown', // Store ID if found, else placeholder
+        reportedName: reportedPlayerName, // Always store the name as provided by reporter
         reason: reason,
-        status: 'open', // Default status
-        assignedAdmin: '', // Not assigned initially
-        resolutionDetails: '', // Empty initially
+        status: 'open', // Default status, camelCase
+        assignedAdmin: '',
+        resolutionDetails: '',
         lastUpdatedTimestamp: Date.now(),
     };
 
-    reportsInMemory.unshift(newReport); // Add to the beginning for chronological order
+    reportsInMemory.unshift(newReport); // Add to beginning (newest first in memory for quick access)
     reportsAreDirty = true;
-    persistReportsToDisk(dependencies); // Persist immediately or on next interval
+    // Consider if persistReportsToDisk should be called here or batched. For now, assuming immediate for critical data.
+    persistReportsToDisk(dependencies);
 
-    playerUtils.debugLog(`[ReportManager] Added new report ${newReport.id} by ${reporterPlayer.nameTag} against ${reportedPlayerName}.`, reporterPlayer.nameTag, dependencies);
-    logManager.addLog({
-        actionType: 'reportAdded',
+    playerUtils?.debugLog(`[ReportManager.addReport] Added report ${newReport.id} by ${reporterPlayer.nameTag} against ${reportedPlayerName}.`, reporterPlayer.nameTag, dependencies);
+    logManager?.addLog({
+        actionType: 'reportAdded', // camelCase
         reporterName: reporterPlayer.nameTag,
         reportedName: reportedPlayerName,
         details: `Reason: ${reason}. Report ID: ${newReport.id}`,
-        context: 'ReportManager', // Consistent context
+        context: 'ReportManager.addReport',
     }, dependencies);
 
-    // Notify admins about the new report
     const adminNotification = `§e[Report] §b${reporterPlayer.nameTag} §7reported §b${reportedPlayerName}§7. Reason: §f${reason} §7(ID: ${newReport.id})`;
-    playerUtils.notifyAdmins(adminNotification, dependencies, null, null, `${config.prefix}viewreports ${newReport.id}`); // Suggest command to view
+    // The last parameter for notifyAdmins in the original code was a command string.
+    // This seems like a specific feature for this notification. Assuming it's meant to be part of the message or handled differently.
+    // For now, just passing the core message. If a clickable command is needed, UI elements are better.
+    playerUtils?.notifyAdmins(adminNotification, dependencies, null, null);
 
     return newReport;
 }
 
 /**
  * Clears all reports from the system.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
 export function clearAllReports(dependencies) {
@@ -151,13 +157,13 @@ export function clearAllReports(dependencies) {
     const count = reportsInMemory.length;
     reportsInMemory = [];
     reportsAreDirty = true;
-    persistReportsToDisk(dependencies); // Persist change
+    persistReportsToDisk(dependencies);
 
-    playerUtils.debugLog(`[ReportManager] Cleared all ${count} reports.`, 'System', dependencies);
-    logManager.addLog({
-        actionType: 'allReportsCleared',
+    playerUtils?.debugLog(`[ReportManager.clearAllReports] Cleared all ${count} reports.`, 'System', dependencies);
+    logManager?.addLog({
+        actionType: 'allReportsCleared', // camelCase
         details: `Cleared ${count} reports.`,
-        context: 'ReportManager', // Consistent context
+        context: 'ReportManager.clearAllReports',
     }, dependencies);
     return count;
 }
@@ -165,7 +171,7 @@ export function clearAllReports(dependencies) {
 /**
  * Clears a specific report by its ID.
  * @param {string} reportId - The ID of the report to clear.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the report was found and cleared, false otherwise.
  */
 export function clearReportById(reportId, dependencies) {
@@ -175,12 +181,12 @@ export function clearReportById(reportId, dependencies) {
 
     if (reportsInMemory.length < initialLength) {
         reportsAreDirty = true;
-        persistReportsToDisk(dependencies); // Persist change
-        playerUtils.debugLog(`[ReportManager] Cleared report with ID: ${reportId}.`, 'System', dependencies);
-        logManager.addLog({
-            actionType: 'reportClearedById',
+        persistReportsToDisk(dependencies);
+        playerUtils?.debugLog(`[ReportManager.clearReportById] Cleared report ID: ${reportId}.`, 'System', dependencies);
+        logManager?.addLog({
+            actionType: 'reportClearedById', // camelCase
             details: `Cleared report ID: ${reportId}.`,
-            context: 'ReportManager', // Consistent context
+            context: 'ReportManager.clearReportById',
         }, dependencies);
         return true;
     }
@@ -189,40 +195,39 @@ export function clearReportById(reportId, dependencies) {
 
 /**
  * Clears all reports associated with a specific player (either as reporter or reported).
- * This is a simplified version; more specific versions could be added.
  * @param {string} playerNameOrId - The nameTag or ID of the player whose reports to clear.
- * @param {Dependencies} dependencies - Standard dependencies object.
+ * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
 export function clearReportsForPlayer(playerNameOrId, dependencies) {
-    const { playerUtils, logManager, mc: minecraftSystem } = dependencies; // Use mc from dependencies
+    const { playerUtils, logManager, mc: minecraftSystem } = dependencies;
     const initialLength = reportsInMemory.length;
+    const lowerPlayerNameOrId = playerNameOrId.toLowerCase(); // For case-insensitive name matching
 
-    // Attempt to resolve to player ID if a nameTag is given and player is online
-    let playerIdToClear = playerNameOrId; // Assume it's an ID initially
-    const targetOnlinePlayer = playerUtils.findPlayerByNameTag(playerNameOrId, minecraftSystem.world.getAllPlayers());
+    // Try to get ID if a nameTag is provided and player is online for more accurate ID matching.
+    let resolvedPlayerId = playerNameOrId; // Assume it might be an ID
+    const targetOnlinePlayer = playerUtils?.findPlayer(playerNameOrId); // General find player
     if (targetOnlinePlayer) {
-        playerIdToClear = targetOnlinePlayer.id; // Use ID if player is online
+        resolvedPlayerId = targetOnlinePlayer.id;
     }
 
-    // Filter out reports where the player is either the reporter or the reported party
     reportsInMemory = reportsInMemory.filter(report =>
-        report.reporterName !== playerNameOrId && // Check against nameTag
-        report.reportedName !== playerNameOrId && // Check against nameTag
-        report.reporterId !== playerIdToClear &&   // Check against ID
-        report.reportedId !== playerIdToClear    // Check against ID
+        report.reporterName.toLowerCase() !== lowerPlayerNameOrId &&
+        report.reportedName.toLowerCase() !== lowerPlayerNameOrId &&
+        report.reporterId !== resolvedPlayerId && // Check against resolved ID
+        report.reportedId !== resolvedPlayerId    // Check against resolved ID
     );
 
     const clearedCount = initialLength - reportsInMemory.length;
     if (clearedCount > 0) {
         reportsAreDirty = true;
-        persistReportsToDisk(dependencies); // Persist change
-        playerUtils.debugLog(`[ReportManager] Cleared ${clearedCount} reports associated with player: ${playerNameOrId}.`, 'System', dependencies);
-        logManager.addLog({
-            actionType: 'reportsClearedForPlayer',
-            targetName: playerNameOrId, // Log with the name/ID used for clearing
+        persistReportsToDisk(dependencies);
+        playerUtils?.debugLog(`[ReportManager.clearReportsForPlayer] Cleared ${clearedCount} reports for: ${playerNameOrId}.`, 'System', dependencies);
+        logManager?.addLog({
+            actionType: 'reportsClearedForPlayer', // camelCase
+            targetName: playerNameOrId,
             details: `Cleared ${clearedCount} reports.`,
-            context: 'ReportManager', // Consistent context
+            context: 'ReportManager.clearReportsForPlayer',
         }, dependencies);
     }
     return clearedCount;

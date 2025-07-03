@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect players repeating the same message content.
+ * All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -9,6 +10,10 @@
  * @typedef {import('../../types.js').ActionManager} ActionManager
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
+
+const defaultHistoryLength = 5;
+const defaultRepeatThreshold = 3;
+const maxSnippetLength = 50; // For violation details
 
 /**
  * Normalizes a chat message for comparison by converting to lowercase,
@@ -36,34 +41,38 @@ function normalizeMessage(message) {
 export async function checkChatContentRepeat(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    const actionProfileKey = config.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
+    // Ensure actionProfileKey is camelCase
+    const actionProfileKey = config?.chatContentRepeatActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatContentRepeat';
 
-    if (!config.enableChatContentRepeatCheck) {
+    if (!config?.enableChatContentRepeatCheck) {
         return;
     }
     if (!pData) {
-        playerUtils.debugLog('[ChatContentRepeatCheck] pData is null, skipping check.', player.nameTag, dependencies);
+        playerUtils?.debugLog(`[ChatContentRepeatCheck.execute] pData is null for ${playerName}, skipping check.`, playerName, dependencies);
         return;
     }
 
-    const historyLength = config.chatContentRepeatHistoryLength ?? 5;
-    const triggerThreshold = config.chatContentRepeatThreshold ?? 3;
+    const historyLength = config?.chatContentRepeatHistoryLength ?? defaultHistoryLength;
+    const triggerThreshold = config?.chatContentRepeatThreshold ?? defaultRepeatThreshold;
     const normalizedMessage = normalizeMessage(rawMessageContent);
 
-    if (normalizedMessage.length === 0) {
+    if (normalizedMessage.length === 0) { // Ignore empty or whitespace-only messages after normalization
         return;
     }
 
-    pData.chatMessageHistory = pData.chatMessageHistory || [];
+    pData.chatMessageHistory = pData.chatMessageHistory || []; // Initialize if undefined
     pData.chatMessageHistory.push(normalizedMessage);
     pData.isDirtyForSave = true;
 
+    // Trim history to the configured length
     while (pData.chatMessageHistory.length > historyLength) {
         pData.chatMessageHistory.shift();
     }
 
     let matchCount = 0;
+    // Count occurrences of the current normalized message in the recent history
     for (const oldMessage of pData.chatMessageHistory) {
         if (oldMessage === normalizedMessage) {
             matchCount++;
@@ -72,15 +81,21 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
 
     if (matchCount >= triggerThreshold) {
         const violationDetails = {
-            repeatedMessageSnippet: normalizedMessage.substring(0, 50),
+            repeatedMessageSnippet: normalizedMessage.substring(0, maxSnippetLength),
             matchCountInHistory: matchCount.toString(),
             historyLookback: historyLength.toString(),
+            originalMessage: rawMessageContent, // Add original for context
         };
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        playerUtils.debugLog(`[ChatContentRepeatCheck] Flagged ${player.nameTag} for repeating '${normalizedMessage.substring(0, 20)}...'. Count: ${matchCount}/${historyLength}`, pData.isWatched ? player.nameTag : null, dependencies);
+        playerUtils?.debugLog(
+            `[ChatContentRepeatCheck.execute] Flagged ${playerName} for repeating '${normalizedMessage.substring(0, 20)}...'. ` +
+            `Count: ${matchCount} in last ${pData.chatMessageHistory.length} (lookback: ${historyLength}).`,
+            pData.isWatched ? playerName : null, dependencies
+        );
 
-        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        if (profile?.cancelMessage) {
             eventData.cancel = true;
         }
     }
