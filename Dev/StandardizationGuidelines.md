@@ -18,8 +18,8 @@ This document outlines the consolidated standardization guidelines for the AntiC
     *   **Variables, Function Names, Configuration Variables (`config.js`), Constants (General):** Use `camelCase` (e.g., `let myVariable; function processData() {}; export const exampleConfigValue = true; const internalMaxRetries = 3;`). This aligns with `Dev/CodingStyle.md`.
     *   **Acronyms in JS Identifiers:** Acronyms within `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerTpsData`, not `enableAntiGMCCheck`). This clarifies the previous contradiction with `CodingStyle.md`.
     *   **Class Names:** `PascalCase` (e.g., `class PlayerManager {}`). (Currently not prevalent).
-    *   **`checkType` String Identifiers:** `camelCase` (e.g., `playerAntiGmc`, `movementFlyHover`). Acronyms are lowercased as part of the camel casing. This aligns with `CodingStyle.md` after its update.
-    *   **`actionType` String Literals:** `camelCase` (e.g., `warn`, `kick`, `detectedFlyHover`).
+    *   **`checkType` String Identifiers:** Must use `camelCase` (e.g., `playerAntiGmc`, `movementFlyHover`). This is critical for linking detections in check scripts to `actionProfiles.js` and `automodConfig.js`. Acronyms are lowercased as part of the camel casing. This aligns with `Dev/CodingStyle.md`.
+    *   **`actionType` String Literals:** Must use `camelCase` (e.g., `warn`, `kick`, `detectedFlyHover`). This applies to `log.actionType` in `actionProfiles.js` and rule `actionType` in `automodConfig.js`. This consistency is crucial for the system to correctly interpret and process these actions.
 *   **Quotes:**
     *   Prefer **single quotes (`'`)** for string literals.
     *   Use **double quotes (`"`)** if the string contains single quotes (e.g., `"Player's data"`) or for JSON objects.
@@ -86,10 +86,10 @@ This document outlines the consolidated standardization guidelines for the AntiC
 *   **World/System Access:** Use `mc.world` and `mc.system`.
 *   **Entity/Player Handling:**
     *   Type check with `instanceof mc.Player` where necessary.
-    *   Check `player.isValid()` before use if staleness is possible (e.g., in delayed callbacks or after potential disconnections).
-    *   Utilize optional chaining (`?.`) more consistently when accessing potentially nullable properties from Minecraft API objects or custom data structures to prevent runtime errors (e.g., `player.getComponent("...")?.property`).
-    *   Use `EntityComponentTypes`, `ItemComponentTypes` from `mc` for component names.
-*   **Dynamic Properties:** Define keys clearly (constants in manager files). Handle `undefined` returns. Wrap `JSON.parse()` in `try...catch`. Be mindful of size limits.
+    *   Check `player.isValid()` before use if staleness is possible (e.g., in delayed callbacks or after potential disconnections). This is critical to prevent errors with stale player objects.
+    *   Utilize optional chaining (`?.`) consistently and proactively when accessing potentially nullable properties from Minecraft API objects (e.g., `player.getComponent("...")?.property`) or custom data structures (e.g., `pData?.flags?.someFlag`). This helps prevent runtime errors and improves code robustness.
+    *   Use `EntityComponentTypes`, `ItemComponentTypes` from `mc` for component names (e.g., `mc.EntityComponentTypes.Inventory` or `mc.ItemComponentTypes.Durability`).
+*   **Dynamic Properties:** Define keys clearly (constants in manager files, e.g., `playerDataManager.js`). Handle `undefined` returns from `getDynamicProperty`. Wrap `JSON.parse()` in `try...catch`. Be mindful of size limits (approx. 32KB per property).
 *   **Event Handling:** Check for expected properties in `eventData`. Set `eventData.cancel = true;` explicitly in `beforeEvents` if the event is to be cancelled.
 *   **Dimension Handling:** Use `world.getDimension(dimensionId)`. Normalize dimension IDs if necessary.
 *   **Teleportation:** Use options object with `player.teleport()`, especially `dimension`. Consider `dimension.findClosestSafeLocation()` for safer teleports.

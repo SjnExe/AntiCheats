@@ -51,16 +51,34 @@
 
 This addon is packed with features to keep your server clean:
 
-*   ⚔️ **Advanced Cheat Detections:** Movement (Fly, Speed, NoFall), Combat (Reach, CPS), World (Nuker, Illegal Items), Player (AntiGMC, NameSpoof), and much more.
+*   🛡️ **Comprehensive Cheat Detection Suite:**
+    *   **Movement:** Fly, Speed, NoFall, NoSlow, Invalid Sprint, Nether Roof exploits, and more.
+    *   **Combat:** Reach, Clicks Per Second (CPS), View Snapping (Aimbot utils), Multi-Target Aura, State Conflicts (e.g., attacking while eating).
+    *   **World Interaction:** Nuker, Illegal Item usage/placement, Fast Place/Use, AutoTool, InstaBreak, Anti-Grief (TNT, Fire, Lava, Wither, etc.), Building exploits (Tower, Scaffold).
+    *   **Player Behavior:** Anti-Gamemode Creative (AntiGMC), NameSpoof, Self-Hurt, Inventory Modifications.
+    *   **Chat:** Spam (fast message, max words, content repeat), Swear/Advertising filtering, CAPS/Symbol abuse, Unicode abuse, Impersonation.
     *   <!-- TODO: Placeholder for a GIF/Screenshot showcasing a cheat detection in action -->
-*   🛠️ **Powerful Admin Tools:** Intuitive UI (`!panel`) & comprehensive text commands.
+*   🛠️ **Powerful Admin & Moderation Tools:**
+    *   Intuitive in-game UI (`!panel` or `!ui`) for player management, server settings, and log viewing.
+    *   Extensive text commands for all administrative functions.
     *   <!-- TODO: Placeholder for a GIF/Screenshot of the !panel UI -->
-*   💾 **Persistent Player Data:** Flags & violation records are saved across sessions.
-*   ⚙️ **Highly Configurable:** Tailor detection sensitivity and actions to your server's needs via `config.js` and UI settings.
-*   🤖 **AutoMod System:** Automated warnings, kicks, and bans based on configurable violation thresholds.
-*   🗺️ **Dynamic World Border:** Per-dimension, resizable borders with visual cues & configurable damage.
+*   💾 **Persistent Player Data Management:**
+    *   Flags, violation records, mutes, and bans are saved across player sessions using dynamic properties.
+*   ⚙️ **Highly Configurable System:**
+    *   Fine-tune detection sensitivity, toggle checks, and customize actions via `config.js`.
+    *   Detailed action profiles in `actionProfiles.js` to control immediate consequences of detections.
+    *   In-game UI settings for many common configurations.
+*   🤖 **Automated Moderation (AutoMod):**
+    *   Define escalating punishments (warn, kick, mute, ban) based on accumulated flag counts for specific cheat types via `automodConfig.js`.
+*   🗺️ **Dynamic World Border System:**
+    *   Per-dimension, resizable (square or circle) borders with visual cues and configurable damage for out-of-bounds players.
     *   <!-- TODO: Placeholder for a GIF/Screenshot of the World Border visuals -->
-*   🏅 **Rank System:** Define Owner, Admin, and Member roles with custom visual tags and permissions.
+*   🏅 **Flexible Rank System:**
+    *   Define Owner, Admin, Member, and custom roles with specific permissions and visual chat/nametag prefixes via `ranksConfig.js`.
+*   📞 **Teleport Request System (TPA/TPAHere):**
+    *   Allows players to request teleports to others or summon others, with configurable cooldowns and warmup periods.
+*   📝 **Reporting System:**
+    *   Players can report others for violations, viewable by admins.
 
 ➡️ **Dive Deeper:** For a full list and details of all features, check out our [**Features Overview in the Docs**](Docs/FeaturesOverview.md)!
 
