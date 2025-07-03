@@ -727,6 +727,12 @@ export const invalidRenderDistanceCheckIntervalTicks = 400; // 20 seconds
 /** @type {string} The current version of the AntiCheat system. Updated by build process. */
 export const acVersion = 'v__VERSION_STRING__';
 
+// --- Command Specific Configs ---
+/** @type {number} Number of empty lines sent by !clearchat command to clear chat. */
+export const chatClearLinesCount = 150;
+/** @type {number} Number of reports displayed per page in the !viewreports command. */
+export const reportsViewPerPage = 5;
+
 // --- Command Aliases ---
 /** @type {Object.<string, string>} Defines aliases for commands. Key is alias, value is the actual command name. */
 export const commandAliases = {
