@@ -30,6 +30,7 @@
  * @typedef {import('./core/uiManager.js')} UIManager Manager for creating and showing UI forms.
  * @typedef {import('./core/reportManager.js')} ReportManager Manager for player reports.
  * @typedef {import('./core/tpaManager.js')} TpaManager Manager for TPA system.
+ * @property {typeof import('./core/commandManager.js')} CommandManagerFull Module for command management.
  * @typedef {import('./core/rankManager.js')} RankManagerFull Module for rank management.
  * @typedef {import('./core/chatProcessor.js')} ChatProcessor Module for processing chat messages.
  * @typedef {import('./utils/worldBorderManager.js')} WorldBorderManagerFull Module for world border.
@@ -121,6 +122,7 @@
  * @property {number} [lastLoginTime] Timestamp of the last login.
  * @property {number} [lastLogoutTime] Timestamp of the last logout.
  * @property {number} [joinCount=0] Total number of times the player has joined.
+ * @property {number} [joinTime] Timestamp (ms) of when the player last joined the server. Persisted.
  *
  * Movement Related State:
  * @property {number} [consecutiveOffGroundTicks=0] How many ticks the player has been airborne.
@@ -131,7 +133,7 @@
  * @property {number} [jumpBoostAmplifier=0] Current jump boost effect amplifier.
  * @property {boolean} [hasSlowFalling=false] Current slow falling effect status.
  * @property {boolean} [hasLevitation=false] Current levitation effect status.
- * @property {number} [speedAmplifier=0] Current speed effect amplifier.
+ * @property {number} [speedAmplifier=-1] Current speed effect amplifier (default -1 if no effect).
  * @property {number} [blindnessTicks=0] Remaining ticks of blindness effect.
  * @property {number} [lastUsedElytraTick=0] Game tick when elytra was last used.
  * @property {number} [lastUsedRiptideTick=0] Game tick when riptide trident was last used.
@@ -195,6 +197,10 @@
  * @property {number} [lastCheckNetherRoofTick=0]
  * @property {number} [lastCheckAutoToolTick=0]
  * @property {number} [lastCheckFlatRotationBuildingTick=0]
+ * @property {string} [lastGameMode] Last known GameMode of the player (transient, updated by tick).
+ * @property {string} [lastDimensionId] Last known dimension ID of the player (transient, updated by tick).
+ * @property {string | null} [deathMessageToShowOnSpawn] Message to show player on respawn (e.g., death coordinates). Persisted.
+ * @property {boolean} [slimeCheckErrorLogged=false] Transient flag to prevent spamming slime block check errors.
  *
  * World Border State:
  * @property {number} [lastBorderVisualTick=0] Last tick world border visuals were updated for this player.
@@ -323,11 +329,139 @@
  * @property {typeof import('@minecraft/server').ItemComponentTypes} ItemComponentTypes Enum for item component types.
  * @property {ChatProcessor} chatProcessor Module for processing and validating chat messages.
  * @property {function(string, Record<string, string | number>?): string} getString Localization function (currently simplified).
- * @property {{getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions.
- * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder']}} worldBorderManager Subset of WorldBorderManager functions.
+ * @property {{getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById?: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions. (getRankById is used in addrank/removerank but not passed in default main.js dependencies).
+ * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder'], clearBorderSettings?: WorldBorderManagerFull['clearBorderSettings']}} worldBorderManager Subset of WorldBorderManager functions.
  * @property {import('@minecraft/server').System} system The `system` object from `@minecraft/server`.
+ * @property {{registerCommand: CommandManagerFull['registerCommandInternal'], unregisterCommand: CommandManagerFull['unregisterCommandInternal'], reloadCommands: CommandManagerFull['initializeCommands']}} commandManager Subset of CommandManager functions (for internal use by main.js etc.).
  * @property {typeof import('./config.js')} editableConfig The full config module, allowing access to `updateConfigValue`.
  */
+
+// --- Action Profile Types (from actionProfiles.js) ---
+
+/**
+ * Defines flagging behavior within an ActionProfile.
+ * @typedef {object} ActionProfileFlag
+ * @property {number} [increment=1] - How much to increment the flag count by.
+ * @property {string} reason - Template for the flag reason. Placeholders: {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
+ * @property {string} [type] - Specific flag type key (camelCase) for storage; defaults to the main checkType if not provided.
+ */
+
+/**
+ * Defines admin notification behavior within an ActionProfile.
+ * @typedef {object} ActionProfileNotify
+ * @property {string} message - Template for the admin notification message. Placeholders same as ActionProfileFlag.reason.
+ */
+
+/**
+ * Defines logging behavior within an ActionProfile.
+ * @typedef {object} ActionProfileLog
+ * @property {string} [actionType] - Specific actionType for logging (camelCase); defaults to `detected<CheckType>` (e.g., `detectedMovementFlyHover`).
+ * @property {string} [detailsPrefix=''] - Prefix for the log details string.
+ * @property {boolean} [includeViolationDetails=true] - Whether to include formatted violation details in the log.
+ */
+
+/**
+ * Defines an entry in `checkActionProfiles`. It determines the immediate consequences
+ * when a specific `checkType` is triggered.
+ * @typedef {object} ActionProfileEntry
+ * @property {boolean} enabled - Whether this action profile is active.
+ * @property {ActionProfileFlag} [flag] - Configuration for flagging the player.
+ * @property {ActionProfileNotify} [notifyAdmins] - Configuration for notifying admins.
+ * @property {ActionProfileLog} [log] - Configuration for logging the event.
+ * @property {boolean} [cancelMessage] - If true, cancels the chat message (for chat-related checks).
+ * @property {string} [customAction] - A custom action string (camelCase) for special handling by other modules or for informational purposes.
+ * @property {boolean} [cancelEvent] - If true, cancels the underlying game event (e.g., block placement).
+ */
+
+// --- AutoMod Configuration Types (from automodConfig.js) ---
+
+/**
+ * Defines parameters for a specific AutoMod action.
+ * @typedef {object} AutoModRuleActionParameters
+ * @property {string} [messageTemplate] - Template for messages to players or admins. Placeholders: {playerName}, {actionType}, {checkType}, {flagCount}, {flagThreshold}, {duration}, {itemTypeId}, {itemQuantity}, {teleportCoordinates}.
+ * @property {string} [adminMessageTemplate] - Optional separate template for admin notifications. Same placeholders.
+ * @property {string} [duration] - Duration string for tempBan or mute (e.g., '5m', '1h', 'perm'). Parsed by `playerUtils.parseDuration`.
+ * @property {{x?: number, y: number, z?: number}} [coordinates] - Coordinates for `teleportSafe` action. Y is mandatory. X/Z default to player's current X/Z.
+ * @property {string} [itemToRemoveTypeId] - Type ID of item to remove for `removeIllegalItem` action.
+ */
+
+/**
+ * Defines a rule within the AutoMod system for a specific `checkType`.
+ * @typedef {object} AutoModRule
+ * @property {number} flagThreshold - The number of flags of a specific `checkType` (camelCase) to trigger this rule.
+ * @property {('warn'|'kick'|'tempBan'|'permBan'|'mute'|'freezePlayer'|'removeIllegalItem'|'teleportSafe'|'flagOnly')} actionType - The type of action to take (camelCase). Note: `automodManager.js` handles `mute`; `freezePlayer` is conceptual.
+ * @property {AutoModRuleActionParameters} parameters - Parameters specific to the actionType.
+ * @property {boolean} resetFlagsAfterAction - Whether to reset the specific `checkType` flags for the player after this action is taken.
+ */
+
+// --- Rank Configuration Types (from ranksConfig.js) ---
+
+/**
+ * Defines chat formatting for a rank.
+ * @typedef {object} ChatFormatting
+ * @property {string} [prefixText=''] - The text part of the rank prefix (e.g., "[Admin] ").
+ * @property {string} [prefixColor='§7'] - Minecraft color code for the prefix text (e.g., "§c").
+ * @property {string} [nameColor='§7'] - Minecraft color code for the player's name (e.g., "§b").
+ * @property {string} [messageColor='§f'] - Minecraft color code for the player's chat message (e.g., "§f").
+ */
+
+/**
+ * Defines a condition for a player to be assigned a rank.
+ * @typedef {object} RankCondition
+ * @property {('ownerName'|'adminTag'|'manualTagPrefix'|'tag'|'default')} type - The type of condition (camelCase).
+ *      - `ownerName`: Matches if player's nameTag equals `config.ownerPlayerName`.
+ *      - `adminTag`: Matches if player has the tag specified in `config.adminTag`.
+ *      - `manualTagPrefix`: Matches if player has a tag like `prefix` + `rankId` (e.g., 'rank_vip'). The `rankId` part is the ID of the rank definition this condition belongs to.
+ *      - `tag`: Matches if player has the specified `tag` string.
+ *      - `default`: A fallback condition, usually for the 'member' rank.
+ * @property {string} [prefix] - Required if type is `manualTagPrefix`. The prefix for the rank tag (e.g., "rank_").
+ * @property {string} [tag] - Required if type is `tag`. The specific tag to check for.
+ */
+
+// --- World Border System Types ---
+
+/**
+ * Defines the settings for a world border in a specific dimension.
+ * @typedef {object} WorldBorderSettings
+ * @property {string} dimensionId - The ID of the dimension these settings apply to (e.g., "minecraft:overworld").
+ * @property {boolean} enabled - Whether the border is active in this dimension.
+ * @property {'square' | 'circle'} shape - The shape of the world border.
+ * @property {number} centerX - The X-coordinate of the border's center.
+ * @property {number} centerZ - The Z-coordinate of the border's center.
+ * @property {number} [halfSize] - For 'square' shape: half the length of a side (e.g., 500 for a 1000x1000 border).
+ * @property {number} [radius] - For 'circle' shape: the radius of the border.
+ * @property {boolean} [enableDamage=false] - Whether players take damage when outside the border.
+ * @property {number} [damageAmount=0.5] - Damage amount per interval for players outside (0.5 heart = 1 damage).
+ * @property {number} [damageIntervalTicks=20] - Interval in game ticks at which damage is applied (20 ticks = 1 second).
+ * @property {number} [teleportAfterNumDamageEvents=30] - Number of damage events after which a player is teleported back inside. 0 or negative to disable.
+ * @property {string} [particleNameOverride] - Specific particle name to use for this dimension's border, overrides global. 'reset' or 'default' to use global.
+ * @property {boolean} [isResizing=false] - True if the border is currently undergoing a resize operation.
+ * @property {number} [originalSize] - The size (halfSize/radius) before the resize started.
+ * @property {number} [targetSize] - The target size (halfSize/radius) for the resize operation.
+ * @property {number} [resizeStartTimeMs] - Timestamp (ms) when the current resize operation began.
+ * @property {number} [resizeDurationMs] - Total duration (ms) for the current resize operation.
+ * @property {boolean} [isPaused=false] - True if the current resize operation is paused.
+ * @property {number} [resizePausedTimeMs=0] - Total accumulated time (ms) this resize has been paused.
+ * @property {number} [resizeLastPauseStartTimeMs] - Timestamp (ms) when the current pause began (if `isPaused` is true).
+ * @property {'linear' | 'easeOutQuad' | 'easeInOutQuad'} [resizeInterpolationType='linear'] - The interpolation method for resizing.
+ */
+
+// --- Miscellaneous Generic Types ---
+
+/**
+ * Generic type for `violationDetails` objects passed by check scripts.
+ * Specific keys depend on the `checkType`. Common examples: `{value: number, threshold: number, itemTypeId: string}`.
+ * Refer to individual check implementations or `actionProfiles.js` for expected placeholders.
+ * @typedef {Object<string, any>} ViolationDetails
+ */
+
+/**
+ * Generic type for `eventSpecificData` objects passed to some check functions.
+ * Contains context from the game event that triggered the check.
+ * Specific keys depend on the event and check. Example: `{ targetEntity: Entity, gameMode: GameMode }` for `reachCheck`.
+ * @typedef {object} EventSpecificData
+ */
+
 
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
 export {};
