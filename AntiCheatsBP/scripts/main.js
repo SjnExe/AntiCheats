@@ -83,9 +83,6 @@ function getStandardDependencies() {
     }
 }
 
-// Comments about event subscriptions and tick loops being moved are now outdated, as they are in performInitializations.
-// The large commented-out mc.system.runInterval blocks (old main tick loop and TPA loop) will be removed.
-
 const maxInitRetries = 3; // Adjusted for a more production-like setting
 const initialRetryDelayTicks = 20; // Start with a 1-second delay for the first retry
 
@@ -349,9 +346,6 @@ function performInitializations() {
         currentTick++;
         const tickDependencies = getStandardDependencies();
 
-        // --- BEGIN TICK LOOP DIAGNOSTICS --- (Removed)
-        // --- END TICK LOOP DIAGNOSTICS ---
-
         if (tickDependencies.config.enableWorldBorderSystem) {
             try {
                 worldBorderManager.processWorldBorderResizing(tickDependencies);
@@ -366,9 +360,7 @@ function performInitializations() {
         try {
             if (mc.world && typeof mc.world.getAllPlayers === 'function') {
                 allPlayers = mc.world.getAllPlayers();
-                // Removed: TickLoopDiag for getAllPlayers length
             } else {
-                // Removed: TickLoopDiag for mc.world or getAllPlayers not available
                  if (currentTick === 1 || currentTick % 600 === 0) { // Log less frequently if system isn't fully ready
                     console.error('[AntiCheatCoreTick] mc.world or mc.world.getAllPlayers is not available!');
                  }
@@ -394,13 +386,9 @@ function performInitializations() {
                 continue;
             }
 
-            // --- BEGIN PLAYER LOOP DIAGNOSTICS --- (Removed)
-            // --- END PLAYER LOOP DIAGNOSTICS ---
-
             let pData;
             try {
                 pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
-                // Removed: TickLoopDiag for pData details
             } catch (e) {
                 // This console.error is important if ensurePlayerDataInitialized fails.
                 console.error(`[AntiCheatCoreTick] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e}`);
