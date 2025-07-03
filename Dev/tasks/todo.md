@@ -3,7 +3,6 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## Documentation Tasks
-- **(Medium) Docs/FeaturesOverview.md**: Ensure this is fully up-to-date with all `config.js` toggles and their effects. Add sections for new major features like World Border, TPA, Reporting if not already comprehensive.
 - **(Medium) Docs/ConfigurationGuide.md**: Expand to cover `actionProfiles.js` and `automodConfig.js` in more detail, explaining how to customize actions and AutoMod behavior.
 - **(Medium) Docs/Commands.md**: Verify all commands from `AntiCheatsBP/scripts/commands/` are listed with correct syntax, permissions, and descriptions.
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
