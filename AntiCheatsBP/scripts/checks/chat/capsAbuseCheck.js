@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect excessive capitalization (CAPS abuse) in chat messages.
+ * All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -22,14 +23,20 @@
 export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    const actionProfileKey = config.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
+    // Ensure actionProfileKey is camelCase
+    const actionProfileKey = config?.capsCheckActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatCapsAbuseDetected';
 
-    if (!config.enableCapsCheck) {
+    if (!config?.enableCapsCheck) {
         return;
     }
 
-    if (message.length < config.capsCheckMinLength) {
+    const DEFAULT_MIN_LENGTH = 10;
+    const DEFAULT_PERCENTAGE_THRESHOLD = 70;
+
+    const minLength = config?.capsCheckMinLength ?? DEFAULT_MIN_LENGTH;
+    if (message.length < minLength) {
         return;
     }
 
@@ -38,37 +45,40 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
-        if (char.match(/[a-zA-Z]/)) {
+        // More robust letter check (Unicode aware, though less critical for caps)
+        if (char.toLowerCase() !== char.toUpperCase()) { // Checks if it's a letter
             totalLetters++;
-            if (char.match(/[A-Z]/)) {
+            if (char === char.toUpperCase() && char !== char.toLowerCase()) { // Is uppercase and not a non-alphabetic char that has no case
                 upperCaseLetters++;
             }
         }
     }
 
-    if (totalLetters === 0) {
+    if (totalLetters === 0) { // No letters in the message
         return;
     }
 
     const upperCasePercentage = (upperCaseLetters / totalLetters) * 100;
+    const percentageThreshold = config?.capsCheckUpperCasePercentage ?? DEFAULT_PERCENTAGE_THRESHOLD;
 
-    if (upperCasePercentage >= config.capsCheckUpperCasePercentage) {
-        playerUtils.debugLog(
-            `[CapsAbuseCheck] Player ${player.nameTag} triggered CAPS abuse. ` +
+    if (upperCasePercentage >= percentageThreshold) {
+        playerUtils?.debugLog(
+            `[CapsAbuseCheck.execute] Player ${playerName} triggered CAPS abuse. ` +
             `Msg: '${message}', CAPS: ${upperCasePercentage.toFixed(1)}%, ` +
-            `Threshold: ${config.capsCheckUpperCasePercentage}%, MinLength: ${config.capsCheckMinLength}`,
-            pData?.isWatched ? player.nameTag : null, dependencies
+            `Threshold: ${percentageThreshold}%, MinLength: ${minLength}`,
+            pData?.isWatched ? playerName : null, dependencies
         );
 
         const violationDetails = {
             percentage: `${upperCasePercentage.toFixed(1)}%`,
-            threshold: `${config.capsCheckUpperCasePercentage}%`,
-            minLength: config.capsCheckMinLength,
+            threshold: `${percentageThreshold}%`,
+            minLength: minLength,
             originalMessage: message,
         };
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        if (profile?.cancelMessage) {
             eventData.cancel = true;
         }
     }

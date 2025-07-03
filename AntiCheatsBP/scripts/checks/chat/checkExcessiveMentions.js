@@ -23,24 +23,36 @@
 export async function checkExcessiveMentions(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const rawMessageContent = eventData.message;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    const enableCheck = config.enableExcessiveMentionsCheck ?? false;
+    const enableCheck = config?.enableExcessiveMentionsCheck ?? false;
     if (!enableCheck) {
         return;
     }
 
-    if (!pData && config.enableDebugLogging) {
-        playerUtils.debugLog('[ExcessiveMentionsCheck] pData is null. Watched player status might be unavailable for logging.', player.nameTag, dependencies);
+    // It's generally better to check pData presence if it's strictly needed for a core part of the check.
+    // For now, it's only used for the watched status in logging.
+    if (!pData && config?.enableDebugLogging) {
+        // Use playerName for consistency, and optional chaining for playerUtils
+        playerUtils?.debugLog(`[ExcessiveMentionsCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const minMessageLength = config.mentionsMinMessageLength ?? 10;
+    const DEFAULT_MIN_MESSAGE_LENGTH = 10;
+    const DEFAULT_MAX_UNIQUE_PER_MESSAGE = 4;
+    const DEFAULT_MAX_REPEATED_PER_MESSAGE = 3;
+    const DEFAULT_ACTION_PROFILE_KEY = 'chatExcessiveMentions';
+
+    const minMessageLength = config?.mentionsMinMessageLength ?? DEFAULT_MIN_MESSAGE_LENGTH;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    const maxUniquePerMessage = config.mentionsMaxUniquePerMessage ?? 4;
-    const maxRepeatedPerMessage = config.mentionsMaxRepeatedPerMessage ?? 3;
-    const actionProfileKey = config.mentionsActionProfileName ?? 'chatExcessiveMentions';
+    const maxUniquePerMessage = config?.mentionsMaxUniquePerMessage ?? DEFAULT_MAX_UNIQUE_PER_MESSAGE;
+    const maxRepeatedPerMessage = config?.mentionsMaxRepeatedPerMessage ?? DEFAULT_MAX_REPEATED_PER_MESSAGE;
+
+    // Ensure actionProfileKey is camelCase
+    const actionProfileKey = config?.mentionsActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+
     const mentionRegex = /@([A-Za-z0-9_]{3,16})/g; // Common Minecraft username pattern
     const allMentions = [];
     let match;
@@ -83,10 +95,11 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
             triggerReasons: flagReasonTexts.join('; '),
         };
 
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils.debugLog(`[ExcessiveMentionsCheck] Flagged ${player.nameTag} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, pData?.isWatched ? player.nameTag : null, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, pData?.isWatched ? playerName : null, dependencies);
 
-        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        if (profile?.cancelMessage) {
             eventData.cancel = true;
         }
     }

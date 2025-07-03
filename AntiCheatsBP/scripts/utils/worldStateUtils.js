@@ -2,10 +2,10 @@
  * @file Provides utility functions for managing global world states like dimension locks
  * using world dynamic properties.
  */
-import { world } from '@minecraft/server';
+import * as mc from '@minecraft/server'; // Standard practice to import * as mc
 
-const netherLockedProp = 'anticheat:netherLocked';
-const endLockedProp = 'anticheat:endLocked';
+const netherLockedPropertyKey = 'anticheat:netherLocked';
+const endLockedPropertyKey = 'anticheat:endLocked';
 
 /**
  * Checks if the Nether dimension is currently locked.
@@ -13,25 +13,30 @@ const endLockedProp = 'anticheat:endLocked';
  */
 export function isNetherLocked() {
     try {
-        const locked = world.getDynamicProperty(netherLockedProp);
+        const locked = mc.world.getDynamicProperty(netherLockedPropertyKey);
         return typeof locked === 'boolean' ? locked : false;
     } catch (e) {
-        console.warn(`[worldStateUtils] Error reading Nether lock state: ${e}. Defaulting to false.`);
+        // Use console.error for errors, console.warn for warnings as per guidelines
+        console.error(`[WorldStateUtils.isNetherLocked] Error reading Nether lock state: ${e.stack || e}. Defaulting to false.`);
         return false;
     }
 }
 
 /**
  * Sets the lock state for the Nether dimension.
- * @param {boolean} isLocked - True to lock the Nether, false to unlock.
+ * @param {boolean} newLockState - True to lock the Nether, false to unlock.
  * @returns {boolean} True if the state was set successfully, false otherwise.
  */
-export function setNetherLocked(isLocked) {
+export function setNetherLocked(newLockState) {
+    if (typeof newLockState !== 'boolean') {
+        console.error(`[WorldStateUtils.setNetherLocked] Invalid lock state provided: ${newLockState}. Must be boolean.`);
+        return false;
+    }
     try {
-        world.setDynamicProperty(netherLockedProp, isLocked);
+        mc.world.setDynamicProperty(netherLockedPropertyKey, newLockState);
         return true;
     } catch (e) {
-        console.error(`[worldStateUtils] Error setting Nether lock state: ${e}`);
+        console.error(`[WorldStateUtils.setNetherLocked] Error setting Nether lock state: ${e.stack || e}`);
         return false;
     }
 }
@@ -42,25 +47,29 @@ export function setNetherLocked(isLocked) {
  */
 export function isEndLocked() {
     try {
-        const locked = world.getDynamicProperty(endLockedProp);
+        const locked = mc.world.getDynamicProperty(endLockedPropertyKey);
         return typeof locked === 'boolean' ? locked : false;
     } catch (e) {
-        console.warn(`[worldStateUtils] Error reading End lock state: ${e}. Defaulting to false.`);
+        console.error(`[WorldStateUtils.isEndLocked] Error reading End lock state: ${e.stack || e}. Defaulting to false.`);
         return false;
     }
 }
 
 /**
  * Sets the lock state for The End dimension.
- * @param {boolean} isLocked - True to lock The End, false to unlock.
+ * @param {boolean} newLockState - True to lock The End, false to unlock.
  * @returns {boolean} True if the state was set successfully, false otherwise.
  */
-export function setEndLocked(isLocked) {
+export function setEndLocked(newLockState) {
+    if (typeof newLockState !== 'boolean') {
+        console.error(`[WorldStateUtils.setEndLocked] Invalid lock state provided: ${newLockState}. Must be boolean.`);
+        return false;
+    }
     try {
-        world.setDynamicProperty(endLockedProp, isLocked);
+        mc.world.setDynamicProperty(endLockedPropertyKey, newLockState);
         return true;
     } catch (e) {
-        console.error(`[worldStateUtils] Error setting End lock state: ${e}`);
+        console.error(`[WorldStateUtils.setEndLocked] Error setting End lock state: ${e.stack || e}`);
         return false;
     }
 }

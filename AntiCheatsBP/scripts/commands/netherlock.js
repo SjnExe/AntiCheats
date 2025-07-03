@@ -2,13 +2,13 @@
  * @file Defines the !netherlock command for administrators to manage Nether dimension access.
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
-import { permissionLevels } from '../core/rankManager.js';
+import { permissionLevels } from '../core/rankManager.js'; // Assuming permissionLevels is correctly populated
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'netherlock',
+    name: 'netherlock', // Already camelCase
     syntax: '!netherlock <on|off|status>',
     description: 'Manages Nether dimension access.',
     permissionLevel: permissionLevels.admin,
@@ -26,8 +26,9 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
-    const subCommand = args[0] ? args[0].toLowerCase() : 'status';
-    const prefix = config.prefix;
+    const subCommand = args[0]?.toLowerCase() || 'status'; // Default to 'status', ensure lowercase
+    const prefix = config?.prefix;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     let statusText;
     let success = false;

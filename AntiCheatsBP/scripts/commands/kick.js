@@ -1,13 +1,13 @@
 /**
  * @file Defines the !kick command for administrators to remove a player from the server.
  */
-import { permissionLevels } from '../core/rankManager.js';
+import { permissionLevels } from '../core/rankManager.js'; // Assuming permissionLevels is correctly populated
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'kick',
+    name: 'kick', // Already camelCase
     syntax: '!kick <playername> [reason]',
     description: 'Kicks a player from the server.',
     permissionLevel: permissionLevels.admin,

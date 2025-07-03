@@ -22,14 +22,22 @@
 export async function checkCharRepeat(player, eventData, pData, dependencies) {
     const { config, actionManager, playerUtils } = dependencies;
     const message = eventData.message;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    const actionProfileKey = config.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
+    // Ensure actionProfileKey is camelCase and provide a default
+    const actionProfileKey = config?.charRepeatActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatCharRepeatDetected';
 
-    if (!config.enableCharRepeatCheck) {
+    if (!config?.enableCharRepeatCheck) {
         return;
     }
 
-    if (message.length < config.charRepeatMinLength) {
+    const DEFAULT_MIN_LENGTH = 5; // Example default, adjust as needed
+    const DEFAULT_THRESHOLD = 5;  // Example default, adjust as needed
+
+    const minLength = config?.charRepeatMinLength ?? DEFAULT_MIN_LENGTH;
+    const threshold = config?.charRepeatThreshold ?? DEFAULT_THRESHOLD;
+
+    if (message.length < minLength) {
         return;
     }
 
@@ -56,23 +64,24 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         charThatRepeated = currentChar;
     }
 
-    if (maxRepeatCount >= config.charRepeatThreshold) {
-        playerUtils.debugLog(
-            `[CharRepeatCheck] Player ${player.nameTag} triggered char repeat. ` +
+    if (maxRepeatCount >= threshold) {
+        playerUtils?.debugLog(
+            `[CharRepeatCheck] Player ${playerName} triggered char repeat. ` +
             `Msg: '${message}', Char: '${charThatRepeated}', Count: ${maxRepeatCount}, ` +
-            `Threshold: ${config.charRepeatThreshold}, MinLength: ${config.charRepeatMinLength}`,
-            pData?.isWatched ? player.nameTag : null, dependencies
+            `Threshold: ${threshold}, MinLength: ${minLength}`,
+            pData?.isWatched ? playerName : null, dependencies
         );
 
         const violationDetails = {
             char: charThatRepeated,
             count: maxRepeatCount,
-            threshold: config.charRepeatThreshold,
+            threshold: threshold,
             originalMessage: message,
         };
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        if (profile?.cancelMessage) {
             eventData.cancel = true;
         }
     }

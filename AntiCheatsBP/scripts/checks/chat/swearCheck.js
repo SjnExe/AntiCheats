@@ -1,6 +1,6 @@
 /**
  * @file Implements swear word detection in chat messages with obfuscation resistance
- * using exact normalized matching.
+ * using exact normalized matching. All actionProfileKey and checkType strings should be camelCase.
  */
 
 /**
@@ -10,17 +10,15 @@
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
 
+const defaultLeetMap = {
+    '@': 'a', '4': 'a', '8': 'b', '3': 'e', '1': 'l', '!': 'i', '0': 'o', '5': 's', '7': 't', '$': 's',
+};
+
 /**
- * Normalizes a word for swear checking. This includes:
- * - Converting to lowercase.
- * - Removing common separators (space, dot, underscore, hyphen).
- * - Collapsing consecutive identical characters to a single character (e.g., 'heelloo' -> 'helo').
- * - Optionally applying leet speak conversion based on `config.swearCheckLeetSpeakMap`.
- * - Collapsing characters again after leet speak.
- *
+ * Normalizes a word for swear checking.
  * @param {string} word - The word to normalize.
- * @param {Config} config - The server configuration object, used for leet speak settings.
- * @returns {string} The normalized word, or an empty string if the input is invalid or results in empty after normalization.
+ * @param {Config} config - Server configuration, for leet speak settings.
+ * @returns {string} Normalized word, or empty string if input is invalid/empty after normalization.
  */
 function normalizeWordForSwearCheck(word, config) {
     if (typeof word !== 'string' || word.trim() === '') {
@@ -28,87 +26,74 @@ function normalizeWordForSwearCheck(word, config) {
     }
     let normalized = word.toLowerCase();
 
-    normalized = normalized.replace(/[\s._-]+/g, '');
-    if (!normalized) {
-        return '';
-    }
+    normalized = normalized.replace(/[\s._-]+/g, ''); // Remove common separators
+    if (!normalized) return ''; // Check after each step
 
-    normalized = normalized.replace(/(.)\1+/g, '$1');
-    if (!normalized) {
-        return '';
-    }
+    normalized = normalized.replace(/(.)\1+/g, '$1'); // Collapse consecutive identical characters
+    if (!normalized) return '';
 
-    if (config.swearCheckEnableLeetSpeak) {
-        const leetMap = config.swearCheckLeetSpeakMap || {
-            '@': 'a', '4': 'a', '8': 'b', '3': 'e', '1': 'l', '!': 'i', '0': 'o', '5': 's', '7': 't', '$': 's',
-        };
-
+    if (config?.swearCheckEnableLeetSpeak) {
+        const leetMap = config.swearCheckLeetSpeakMap ?? defaultLeetMap;
         let leetChars = Array.from(normalized);
         for (let i = 0; i < leetChars.length; i++) {
-            if (leetChars[i] === 'p' && i + 1 < leetChars.length && leetChars[i + 1] === 'h' && leetMap['ph'] === 'f') {
-                leetChars.splice(i, 2, 'f');
-            } else {
-                leetChars[i] = leetMap[leetChars[i]] || leetChars[i];
+            // Handle multi-char leet like 'ph' -> 'f' if defined in map
+            if (leetMap[`${leetChars[i]}${leetChars[i+1]}`]) {
+                 leetChars.splice(i, 2, leetMap[`${leetChars[i]}${leetChars[i+1]}`]);
+            } else if (leetMap[leetChars[i]]) {
+                leetChars[i] = leetMap[leetChars[i]];
             }
         }
         normalized = leetChars.join('');
 
-        normalized = normalized.replace(/(.)\1+/g, '$1');
-        if (!normalized) {
-            return '';
-        }
+        normalized = normalized.replace(/(.)\1+/g, '$1'); // Collapse again after leet speak
+        if (!normalized) return '';
     }
     return normalized;
 }
 
 /**
- * Checks a chat message for swear words based on a configurable list,
- * using normalization and optionally leet speak conversion for matching.
- * If a swear word is detected, it triggers an action profile and may cancel the message.
- *
+ * Checks a chat message for swear words.
  * @async
  * @param {import('@minecraft/server').Player} player - The player sending the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
- * @param {PlayerAntiCheatData} pData - Player-specific data from playerDataManager.
+ * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {CommandDependencies} dependencies - Full dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkSwear(player, eventData, pData, dependencies) {
-    const { config, playerUtils, actionManager, playerDataManager } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies; // Removed playerDataManager as pData is passed in
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableSwearCheck) {
+    if (!config?.enableSwearCheck) {
         return;
     }
     const originalMessage = eventData.message;
-    if (!config.swearWordList || config.swearWordList.length === 0) {
-        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as swearWordList is empty or undefined.`, pData?.isWatched ? player.nameTag : null, dependencies);
+    if (!Array.isArray(config.swearWordList) || config.swearWordList.length === 0) {
+        playerUtils?.debugLog(`[SwearCheck.execute] Skipped for ${playerName}: swearWordList is empty/undefined.`, pData?.isWatched ? playerName : null, dependencies);
         return;
     }
 
     const normalizedSwearWordList = config.swearWordList
         .map(sw => ({
-            original: sw,
-            normalized: normalizeWordForSwearCheck(sw, config),
+            original: String(sw), // Ensure original is string
+            normalized: normalizeWordForSwearCheck(String(sw), config),
         }))
-        .filter(item => item.normalized.length > 0);
+        .filter(item => item.normalized.length > 0); // Filter out swears that become empty after normalization
 
     if (normalizedSwearWordList.length === 0) {
-        playerUtils.debugLog(`[SwearCheck] Skipped for ${player.nameTag} as normalizedSwearWordList is empty (all configured swears were invalid or became empty).`, pData?.isWatched ? player.nameTag : null, dependencies);
+        playerUtils?.debugLog(`[SwearCheck.execute] Skipped for ${playerName}: normalizedSwearWordList is empty.`, pData?.isWatched ? playerName : null, dependencies);
         return;
     }
 
-    const wordsInMessage = originalMessage.split(/\s+/);
-    const actionProfileKey = config.swearCheckActionProfileName ?? 'chatSwearViolation';
+    const wordsInMessage = originalMessage.split(/\s+/); // Split by any whitespace
+    // Ensure actionProfileKey is camelCase
+    const actionProfileKey = config?.swearCheckActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatSwearViolation';
 
     for (const wordInMessage of wordsInMessage) {
-        if (wordInMessage.trim() === '') {
-            continue;
-        }
+        if (wordInMessage.trim() === '') continue;
 
         const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, config);
-        if (normalizedInputWord.length === 0) {
-            continue;
-        }
+        if (normalizedInputWord.length === 0) continue;
 
         for (const swearItem of normalizedSwearWordList) {
             if (normalizedInputWord === swearItem.normalized) {
@@ -117,17 +102,21 @@ export async function checkSwear(player, eventData, pData, dependencies) {
                     matchedWordInMessage: wordInMessage,
                     normalizedInput: normalizedInputWord,
                     normalizedSwear: swearItem.normalized,
-                    matchMethod: 'exactNormalized',
+                    matchMethod: 'exactNormalized', // Method of detection
                     originalMessage: originalMessage,
                 };
-                playerUtils.debugLog(`[SwearCheck] ${player.nameTag} triggered swear check. Word: '${wordInMessage}' (normalized: '${normalizedInputWord}') matched '${swearItem.original}' (normalized: '${swearItem.normalized}') by exactNormalized.`, pData?.isWatched ? player.nameTag : null, dependencies);
+                playerUtils?.debugLog(
+                    `[SwearCheck.execute] ${playerName} triggered swear check. Word: '${wordInMessage}' (norm: '${normalizedInputWord}') matched '${swearItem.original}' (norm: '${swearItem.normalized}').`,
+                    pData?.isWatched ? playerName : null, dependencies
+                );
 
-                await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+                await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-                if (config.checkActionProfiles[actionProfileKey]?.cancelMessage) {
+                const profile = config?.checkActionProfiles?.[actionProfileKey];
+                if (profile?.cancelMessage) {
                     eventData.cancel = true;
                 }
-                return;
+                return; // Stop after first swear word found and actioned
             }
         }
     }
