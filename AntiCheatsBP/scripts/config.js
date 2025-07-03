@@ -750,6 +750,36 @@ export const commandAliases = {
     playerinfo: 'uinfo',
     userinfo: 'uinfo',
     worldb: 'worldborder',
+    // --- Proposed new aliases from review ---
+    "ar": "addrank",
+    "b": "ban",
+    "cr": "clearreports",
+    "ci": "copyinv",
+    "el": "endlock",
+    "frz": "freeze",
+    "h": "help",
+    "is": "invsee",
+    "k": "kick",
+    "lr": "listranks",
+    "lsw": "listwatched",
+    "m": "mute",
+    "nl": "netherlock",
+    "noti": "notify", // Additional to 'notifications'
+    "rr": "removerank",
+    "rep": "report",
+    "r": "rules",
+    "tn": "testnotify",
+    "tpc": "tpacancel",
+    "tpaa": "tpaccept",
+    // "tph": "tpahere", // tpahere already has 'tph' in its own definition
+    "tps": "tpastatus",
+    "ub": "unban",
+    "um": "unmute",
+    "uw": "unwatch",
+    "vsh": "vanish",
+    "vr": "viewreports",
+    "warns": "warnings",
+    "wb": "worldborder", // Additional to 'worldb'
 };
 
 // --- Editable Configuration Values ---

@@ -3,7 +3,6 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## Documentation Tasks
-- **(Medium) Docs/Commands.md**: Verify all commands from `AntiCheatsBP/scripts/commands/` are listed with correct syntax, permissions, and descriptions.
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
 - **(Low) AGENTS.md**: Consider creating an `AGENTS.md` in the root or `Dev/` directory to provide high-level instructions or tips for AI agents working on the codebase, if the AI section in `Dev/README.md` proves insufficient over time.
 - **(Low) Placeholder Images/GIFs in README.md**: Replace the `<!-- TODO: ... -->` comments in the main `README.md` with actual visuals for features like the Admin Panel, World Border, and cheat detections.
