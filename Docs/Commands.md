@@ -11,7 +11,7 @@ Command permissions are based on a level system, typically:
 *   **Owner (0):** Highest permission, usually for server owner only.
 *   **Admin (1):** High-level administrative commands.
 *   **Moderator (2):** Mid-level moderation commands. (Note: This level might not be explicitly used by all commands; some may jump from Admin to Member).
-*   **Member (3+):** Basic commands available to all players.
+*   **Member (Default: 1024):** Basic commands available to all players. The default permission level for members is `1024` as defined in `ranksConfig.js`.
 
 Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksConfig.js` and individual command definitions.
 
@@ -162,7 +162,7 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 ---
 
 ## Member Commands (All Players)
-*(Typically Permission Level 3+ or as configured)*
+*(Typically Permission Level 1024 or as configured for the default rank)*
 
 *   **`!help`** (Alias: `!h`)
     *   **Syntax:** `!help [command_name]`

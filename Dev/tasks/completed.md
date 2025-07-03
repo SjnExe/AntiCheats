@@ -40,5 +40,6 @@ This document lists significant tasks that have been completed.
 *   Completely revised `Docs/Commands.md` with a new structure (grouped by permission level), ensuring all commands are listed with their primary names, all effective aliases, full syntax, permission levels, and clear descriptions.
 *   Maintained task management files.
 *   **Submission:** Branch `docs/update-commands-md-aliases`. (Actual branch name will be from the submit tool call for this task)
+*   **Follow-up Correction (Same Session):** Corrected Member permission level in `Docs/Commands.md` from `3+` to `1024 (Default)`.
 
 ---
