@@ -62,12 +62,12 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     const { playerDataManager, playerUtils, logManager, checkActionProfiles } = dependencies;
     const playerNameForLog = player?.nameTag ?? 'System'; // Use optional chaining and nullish coalescing
 
-    if (!checkActionProfiles) {
+    if (!checkActionProfiles) { // checkActionProfiles comes from dependencies
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] checkActionProfiles not found in dependencies. Cannot process action for ${checkType}. Context: ${playerNameForLog}`, null, dependencies);
         return;
     }
 
-    const profile = checkActionProfiles[checkType];
+    const profile = checkActionProfiles?.[checkType]; // Added ?. for safety, though checkActionProfiles is checked above.
     if (!profile) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
         return;

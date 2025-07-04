@@ -7,7 +7,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) AGENTS.md**: Consider creating an `AGENTS.md` in the root or `Dev/` directory to provide high-level instructions or tips for AI agents working on the codebase, if the AI section in `Dev/README.md` proves insufficient over time.
 
 ## Code Refinement & Feature Enhancements
-- **(Medium) Optional Chaining (`?.`)**: While `Dev/StandardizationGuidelines.md` recommends it, systematically review and apply optional chaining more broadly, especially in `uiManager.js` and event handlers where objects from the game API or nested custom data might be unexpectedly null/undefined.
 - **(Low) Linter Integration**: Explore setting up ESLint with a shared configuration (e.g., based on `StandardizationGuidelines.md`) to automatically enforce code style and catch common errors. This would improve consistency, especially with multiple contributors.
 - **(Low) `config.js` Structure**: The `editableConfigValues` object in `config.js` re-declares many constants. Investigate if there's a more DRY (Don't Repeat Yourself) way to manage this, perhaps by initializing `editableConfigValues` from the exported constants directly at startup.
 - **(Medium) `worldBorderManager.js` Robustness**: Consider if `worldBorderManager.getBorderSettings` should be more robust if a dimension from `config.worldBorderKnownDimensions` is invalid or if the dynamic property for a specific dimension is corrupted.

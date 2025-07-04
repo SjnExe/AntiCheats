@@ -439,8 +439,8 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.lastOnGroundPosition = { ...player.location };
         try {
             const feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
-            const blockBelowFeet = player.dimension.getBlock(feetPos.offset(0, -1, 0)); // Use offset for clarity
-            const blockAtFeet = player.dimension.getBlock(feetPos);
+            const blockBelowFeet = player.dimension?.getBlock(feetPos.offset(0, -1, 0)); // Use offset for clarity
+            const blockAtFeet = player.dimension?.getBlock(feetPos);
 
             if (blockBelowFeet?.typeId === mc.MinecraftBlockTypes.slime.id || blockAtFeet?.typeId === mc.MinecraftBlockTypes.slime.id) {
                 pData.lastOnSlimeBlockTick = currentTick;

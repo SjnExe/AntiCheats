@@ -50,7 +50,7 @@ export function isAdmin(player, dependencies) {
  * @param {string} reason - The reason for the warning.
  */
 export function warnPlayer(player, reason) {
-    player.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
+    player?.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
 }
 
 /**

@@ -44,7 +44,7 @@ export function initializeCommands(dependencies) {
 
             // Process aliases defined directly in command definition (though config.commandAliases is primary)
             if (Array.isArray(cmdModule.definition.aliases)) {
-                cmdModule.definition.aliases.forEach(alias => {
+                cmdModule.definition.aliases?.forEach(alias => { // Added ?.
                     const aliasLower = alias.toLowerCase();
                     if (commandDefinitionMap.has(aliasLower) || commandExecutionMap.has(aliasLower)) {
                         // Avoid overwriting a main command with an alias, or an existing alias from another command.
@@ -128,12 +128,12 @@ export async function handleChatCommand(eventData, dependencies) {
     playerUtils?.debugLog(`[CommandManager.handleChatCommand] Player ${playerName} command attempt: '${commandNameInput || ''}', Args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
 
     if (!commandNameInput) {
-        player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config.prefix }));
+        player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config?.prefix }));
         eventData.cancel = true; // Cancel if it was a prefix-only message
         return;
     }
 
-    const aliasTarget = config.commandAliases?.[commandNameInput]; // commandNameInput is already lowerCase
+    const aliasTarget = config?.commandAliases?.[commandNameInput]; // commandNameInput is already lowerCase
     const finalCommandName = aliasTarget ? aliasTarget.toLowerCase() : commandNameInput; // Ensure alias target is also lowerCase
 
     if (aliasTarget) {
@@ -144,19 +144,19 @@ export async function handleChatCommand(eventData, dependencies) {
     const commandExecute = dependencies.commandExecutionMap?.get(finalCommandName);
 
     if (!commandDef || !commandExecute) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config?.prefix, commandName: finalCommandName }));
         eventData.cancel = true;
         return;
     }
 
     // Check if command is enabled, first via commandDefinition, then via config override
     let isEffectivelyEnabled = commandDef.enabled; // Default to definition's enabled state
-    if (config.commandSettings?.[finalCommandName] && typeof config.commandSettings[finalCommandName].enabled === 'boolean') {
+    if (config?.commandSettings?.[finalCommandName] && typeof config.commandSettings[finalCommandName].enabled === 'boolean') {
         isEffectivelyEnabled = config.commandSettings[finalCommandName].enabled; // Override with config if present
     }
 
     if (!isEffectivelyEnabled) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName })); // Treat as unknown if disabled
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config?.prefix, commandName: finalCommandName })); // Treat as unknown if disabled
         eventData.cancel = true;
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Command '${finalCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
