@@ -323,7 +323,10 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
             ...baseMessageContext, // Already contains updated itemQuantity, teleportCoordinates, duration (if applicable)
         };
         const finalAdminMessage = formatAutomodMessage(adminMessageTemplate, adminContext);
-        playerUtils?.notifyAdmins(finalAdminMessage, dependencies, player, pData);
+        // Configurable notification for AutoMod actions
+        if (dependencies.config.notifications?.notifyOnAutoModAction !== false) { // Default true if undefined
+            playerUtils?.notifyAdmins(finalAdminMessage, dependencies, player, pData);
+        }
 
     } else {
         const criticalActions = ['warn', 'kick', 'tempBan', 'permBan', 'mute', 'removeIllegalItem', 'teleportSafe'];

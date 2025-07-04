@@ -81,7 +81,10 @@ export async function execute(player, args, dependencies) {
             targetPlayer.addEffect(mc.MinecraftEffectTypes.slowness, effectDuration, { amplifier: slownessAmplifier, showParticles: false });
             targetPlayer.sendMessage(getString('command.freeze.targetFrozen'));
             player?.sendMessage(getString('command.freeze.success.frozen', { playerName: targetPlayer.nameTag }));
-            playerUtils?.notifyAdmins(`§7[Admin] §e${adminName}§7 froze §e${targetPlayer.nameTag}§7.`, dependencies, player, null);
+            if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
+                const baseNotifyMsg = `§e${adminName}§r froze §e${targetPlayer.nameTag}§r.`;
+                playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+            }
             logManager?.addLog({ adminName, actionType: 'playerFrozen', targetName: targetPlayer.nameTag, details: 'Player frozen' }, dependencies);
         } catch (e) {
             player?.sendMessage(getString('command.freeze.error.apply', { playerName: targetPlayer.nameTag, errorMessage: e.message }));
@@ -94,7 +97,10 @@ export async function execute(player, args, dependencies) {
             targetPlayer.removeEffect(mc.MinecraftEffectTypes.slowness);
             targetPlayer.sendMessage(getString('command.freeze.targetUnfrozen'));
             player?.sendMessage(getString('command.freeze.success.unfrozen', { playerName: targetPlayer.nameTag }));
-            playerUtils?.notifyAdmins(`§7[Admin] §e${adminName}§7 unfroze §e${targetPlayer.nameTag}§7.`, dependencies, player, null);
+            if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
+                const baseNotifyMsg = `§e${adminName}§r unfroze §e${targetPlayer.nameTag}§r.`;
+                playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+            }
             logManager?.addLog({ adminName, actionType: 'playerUnfrozen', targetName: targetPlayer.nameTag, details: 'Player unfrozen' }, dependencies);
         } catch (e) {
             player?.sendMessage(getString('command.freeze.error.remove', { playerName: targetPlayer.nameTag, errorMessage: e.message }));

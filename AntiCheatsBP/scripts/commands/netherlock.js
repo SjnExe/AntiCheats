@@ -41,7 +41,10 @@ export async function execute(player, args, dependencies) {
                 if (success) {
                     player.sendMessage(getString('command.netherlock.locked'));
                     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'netherLockOn', details: 'Nether locked' }, dependencies);
-                    playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has LOCKED the Nether.`, dependencies, player, null);
+                    if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = `The Nether dimension was locked by §e${player.nameTag}§r.`;
+                        playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+                    }
                 } else {
                     player.sendMessage(getString('command.netherlock.failUpdate'));
                 }
@@ -52,7 +55,10 @@ export async function execute(player, args, dependencies) {
                 if (success) {
                     player.sendMessage(getString('command.netherlock.unlocked'));
                     logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'netherLockOff', details: 'Nether unlocked' }, dependencies);
-                    playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has UNLOCKED the Nether.`, dependencies, player, null);
+                    if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = `The Nether dimension was unlocked by §e${player.nameTag}§r.`;
+                        playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+                    }
                 } else {
                     player.sendMessage(getString('command.netherlock.failUpdate'));
                 }

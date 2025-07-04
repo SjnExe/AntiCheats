@@ -128,7 +128,10 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             violationDetails
         );
         const pData = player ? playerDataManager?.getPlayerData(player.id) : null;
-        playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
+        // Configurable notification
+        if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) { // Default to true if undefined
+            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
+        }
     }
 
     // Store last violation item details if applicable

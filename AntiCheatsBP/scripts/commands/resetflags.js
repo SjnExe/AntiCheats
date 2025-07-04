@@ -87,7 +87,10 @@ export async function execute(player, args, dependencies) {
         await playerDataManager.prepareAndSavePlayerData(targetPlayer, dependencies);
 
         player.sendMessage(getString('command.resetflags.success', { playerName: targetPlayer.nameTag }));
-        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 reset flags for §e${targetPlayer.nameTag}.`, dependencies, player, pData);
+        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+            const baseNotifyMsg = `§e${player.nameTag}§r reset flags for §e${targetPlayer.nameTag}§r.`;
+            playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
+        }
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,

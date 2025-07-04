@@ -66,7 +66,10 @@ export async function execute(player, args, dependencies) {
                 if (config.enableDebugLogging) {
                     playerUtils.debugLog(`[UnbanCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
-                playerUtils.notifyAdmins(`§7[Admin] Flags for check type '${oldBanInfo.triggeringCheckType}' were cleared for ${foundPlayer.nameTag} by ${player.nameTag} (AutoMod unban).`, dependencies, player, targetPDataForFlagClearLog);
+                if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+                    const baseNotifyMsg = `Flags for check type '§b${oldBanInfo.triggeringCheckType}§r' were cleared for §e${foundPlayer.nameTag}§r by §e${player.nameTag}§r (AutoMod unban).`;
+                    playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, targetPDataForFlagClearLog);
+                }
             }
         } else {
             player.sendMessage(getString('command.unban.failure', { playerName: foundPlayer.nameTag }));

@@ -150,8 +150,9 @@ export async function execute(
         }
 
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id); // For admin notification context
-        const adminNotifyMsg = `§7[Admin] §e${actualBannedBy}§7 banned §e${foundPlayer.nameTag}§7 for ${durationDisplay}. Reason: ${actualReason}`;
-        playerUtils?.notifyAdmins(adminNotifyMsg, dependencies, player, targetPData);
+        // Standardized message, relying on notifyAdmins for prefix and potential admin player context
+        const baseAdminNotifyMsg = `§e${actualBannedBy}§r banned §e${foundPlayer.nameTag}§r for §b${durationDisplay}§r. Reason: §f${actualReason}`;
+        playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
 
         logManager?.addLog({
             timestamp: Date.now(), // Can be omitted if addLog defaults it

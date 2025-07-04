@@ -80,7 +80,10 @@ export async function execute(player, args, dependencies) {
             details: `Removed rank: ${rankDef.name} (ID: ${rankDef.id}, Tag: ${rankTagToRemove})`,
         }, dependencies);
 
-        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 removed rank §a${rankDef.name}§7 from §e${targetPlayer.nameTag}.`, dependencies, player, null);
+        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+            const baseNotifyMsg = `§e${player.nameTag}§r removed rank §a${rankDef.name}§r from §e${targetPlayer.nameTag}§r.`;
+            playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+        }
 
     } catch (error) {
         player.sendMessage(getString('command.removerank.error.generic', { errorMessage: error.message }));

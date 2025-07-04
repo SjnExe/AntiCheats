@@ -65,14 +65,18 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         console.warn('[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.');
         return;
     }
-    let fullMessage = `§7[AC Notify] ${baseMessage}§r`;
+    // New standard prefix
+    const prefix = "§c[AC] §r";
+    let fullMessage = prefix + baseMessage;
 
+    // Standardized player/flag context suffix
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
         const flagType = pData.lastFlagType || 'N/A';
         const specificFlagCount = (flagType !== 'N/A' && pData.flags[flagType]) ? pData.flags[flagType].count : 0;
-        fullMessage += ` §c(Player: ${player.nameTag}, Total Flags: ${pData.flags.totalFlags}, Last: ${flagType} [${specificFlagCount}])§r`;
+        // Using §7 for context, §e for player name, §b for values
+        fullMessage += ` §7(Player: §e${player.nameTag}§7, Flags: §b${pData.flags.totalFlags}§7, Last: §b${flagType}§7[§b${specificFlagCount}§7])§r`;
     } else if (player) {
-        fullMessage += ` §c(Player: ${player.nameTag})§r`;
+        fullMessage += ` §7(Player: §e${player.nameTag}§7)§r`;
     }
 
     const allPlayers = mc.world.getAllPlayers();

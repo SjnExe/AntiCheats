@@ -175,7 +175,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                 gameMode: spawnGameMode,
             }, dependencies);
 
-            if (config.notifyAdminOnNewPlayerJoin) {
+            if (config.notifyAdminOnNewPlayerJoin && dependencies.config.notifications?.notifyOnNewPlayerJoin !== false) { // Default true if undefined
                 playerUtils.notifyAdmins(getString('admin.notify.newPlayerJoined', { playerName: player.nameTag }), dependencies, player, pData);
             }
         } else if (!initialSpawn) { // Respawn
@@ -842,7 +842,9 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
         try {
             await player.teleport(fromLocation, { dimension: fromDimension });
             playerUtils?.warnPlayer(player, getString('dimensionLock.teleportMessage', { lockedDimensionName: lockedDimensionName }));
-            playerUtils?.notifyAdmins(getString('admin.notify.dimensionLockAttempt', { playerName: playerName, dimensionName: lockedDimensionName }), dependencies, player, null);
+                if (dependencies.config.notifications?.notifyOnDimensionLockAttempt !== false) { // Default true
+                    playerUtils?.notifyAdmins(getString('admin.notify.dimensionLockAttempt', { playerName: playerName, dimensionName: lockedDimensionName }), dependencies, player, null);
+                }
         } catch (e) {
             console.error(`[EventHandler.handlePlayerDimensionChangeAfterEvent] Failed to teleport ${playerName} from locked ${toDimensionId}: ${e.stack || e}`);
             logManager?.addLog({

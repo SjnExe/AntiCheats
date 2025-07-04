@@ -596,7 +596,12 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
     const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
 
     playerUtils?.warnPlayer(player, reasonMessage);
-    playerUtils?.notifyAdmins(`Flagged ${playerName} for ${finalFlagType}. ${notifyString}`, dependencies, player, pData);
+    // Configurable notification for flagging
+    if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) { // Default true if undefined
+        // Construct a base message without player name, as notifyAdmins will add it with flag context
+        const baseNotifyMsg = `Flagged for §b${finalFlagType}§r. Details: ${notifyString}`;
+        playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
+    }
     playerUtils?.debugLog(`[PlayerDataManager.addFlag] FLAG: ${playerName} for ${finalFlagType}. Reason: '${fullReasonForLog}'. Total: ${pData.flags.totalFlags}. Count[${finalFlagType}]: ${pData.flags[finalFlagType].count}`, playerName, dependencies);
 
     if (config?.enableAutoMod && config?.automodConfig) {

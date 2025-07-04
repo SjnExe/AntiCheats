@@ -126,19 +126,36 @@ This document lists significant tasks that have been completed.
 ## Code Refinement: Standardize Error Logging (Jules - Completed: 2024-08-01)
 **Objective:** Review and refactor error logging (`logManager.addLog` with `actionType: 'error...'`) to ensure consistent and useful `context` and `details` are provided for different error types across modules.
 **Summary of Work:**
-*   **Analysis:** Identified all existing `logManager.addLog` calls for errors and relevant `try...catch` blocks across command files, core managers (`playerDataManager.js`, `main.js`, `eventHandlers.js`, `uiManager.js`).
-*   **Guidelines Defined:** Established standardization guidelines:
-    *   `actionType`: `error<ModuleName><SpecificErrorDescription>` (camelCase).
-    *   `context`: `'<moduleName>.<functionName>[.<subContext>]'`.
-    *   `details`: Always an object, including `errorMessage`, `stack` (for exceptions), and other relevant contextual variables (e.g., `playerName`, `commandArgs`, `operation`).
-    *   `targetName` / `adminName`: Retained as top-level fields in `LogEntry` where appropriate.
-    *   Removed redundant top-level `error` field from log calls.
-*   **Typedef Update:** Modified `LogEntry` typedef in `types.js` to change `details` from `string` to `object | string` to accommodate structured error details while being backward compatible for non-error string details.
-*   **Refactoring:**
-    *   Updated existing error log call sites in `tpa.js`, `tpacancel.js`, `tpaccept.js`, `unban.js`, `tpahere.js`, `tpastatus.js`, `unmute.js`, `main.js`, `playerDataManager.js`, `eventHandlers.js`, and `uiManager.js` to conform to the new guidelines.
-    *   Added new standardized error logs in `eventHandlers.js` (for entity kill failures) and `uiManager.js` (for UI teleport action failures) where errors were previously only sent to console or player.
-*   **Testing:** Conducted conceptual testing to ensure new log formats are clearer and more informative.
+*   **Analysis:** Identified all existing `logManager.addLog` calls for errors and relevant `try...catch` blocks.
+*   **Guidelines Defined:** Standardized `actionType` (to `error<ModuleName><SpecificErrorDescription>`), `context` (to `'<moduleName>.<functionName>[.<subContext>]'`), and `details` (to be a structured object including `errorMessage`, `stack`, and other context).
+*   **Typedef Update:** Modified `LogEntry` in `types.js` for `details` to be `object | string`.
+*   **Refactoring:** Updated error log calls in commands, `main.js`, `playerDataManager.js`, `eventHandlers.js`, `uiManager.js`. Added new error logs where appropriate.
+*   **Testing:** Conceptual test confirmed improved clarity and usefulness.
 *   Updated task management files.
-*   **Submission:** Branch `refactor/standardize-error-logging`. (To be submitted next)
+*   **Submission:** Branch `refactor/standardize-error-logging`.
+
+---
+
+## Code Refinement: Standardize Admin Notifications (Jules - Completed: 2024-08-01)
+**Objective:** Review all `playerUtils.notifyAdmins` calls to ensure messages are informative and consistently formatted. Introduce configurability for some notifications.
+**Summary of Work:**
+*   **Analysis:** Identified all `playerUtils.notifyAdmins` call sites and analyzed message content, formatting, and existing prefixes.
+*   **Guidelines Defined:**
+    *   `playerUtils.notifyAdmins` now applies a single global prefix: `§c[AC] §r`.
+    *   `baseMessage` strings passed to `notifyAdmins` should not contain local prefixes.
+    *   Standardized color coding for player names (`§e`), actions, and key details within `baseMessage`.
+    *   `notifyAdmins` continues to append its detailed player/flag context suffix.
+*   **Configuration:** Identified notifications for configurability and proposed `config.notifications.<eventName>` keys (e.g., `notifyOnPlayerFlagged`, `notifyOnCombatLog`, `notifyOnNewPlayerJoin`, `notifyOnAdminUtilCommandUsage`, `notifyOnCopyInventory`, `notifyOnNewPlayerReport`).
+*   **Refactoring:**
+    *   Modified `playerUtils.notifyAdmins` to implement the new global prefix and standardized player/flag context suffix.
+    *   Updated `actionProfiles.js` message templates to remove local prefixes and standardize colors.
+    *   Refactored `notifyAdmins` call sites in commands, `actionManager.js`, `playerDataManager.js`, `automodManager.js`, `eventHandlers.js`, and `reportManager.js` to:
+        *   Remove local message prefixes.
+        *   Standardize message content and color coding.
+        *   Wrap calls with `if (dependencies.config.notifications.<keyName> !== false)` for newly configurable notifications.
+*   **Testing:** Conceptual test confirmed improved consistency and that configurability logic should work as expected.
+*   **Documentation:** Identified future tasks to document the new config keys in `config.example.js` and `Docs/Configuration.md`.
+*   Updated task management files.
+*   **Submission:** Branch `refactor/standardize-admin-notifications`. (To be submitted next)
 
 ---
