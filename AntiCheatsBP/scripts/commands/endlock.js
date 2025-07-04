@@ -42,7 +42,7 @@ export async function execute(player, args, dependencies) {
                     player?.sendMessage(getString('command.endlock.locked'));
                     logManager?.addLog({ adminName, actionType: 'endLockEnabled', details: 'The End locked' }, dependencies);
                     if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
-                        const baseNotifyMsg = `The End dimension was locked by §e${adminName}§r.`;
+                        const baseNotifyMsg = getString('command.endlock.notify.locked', { adminName: adminName });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
                 } else {
@@ -56,7 +56,7 @@ export async function execute(player, args, dependencies) {
                     player?.sendMessage(getString('command.endlock.unlocked'));
                     logManager?.addLog({ adminName, actionType: 'endLockDisabled', details: 'The End unlocked' }, dependencies);
                     if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
-                        const baseNotifyMsg = `The End dimension was unlocked by §e${adminName}§r.`;
+                        const baseNotifyMsg = getString('command.endlock.notify.unlocked', { adminName: adminName });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
                 } else {

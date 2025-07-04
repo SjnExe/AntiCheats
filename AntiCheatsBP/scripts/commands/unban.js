@@ -48,7 +48,8 @@ export async function execute(player, args, dependencies) {
         if (unbanned) {
             player.sendMessage(getString('command.unban.success', { playerName: foundPlayer.nameTag }));
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 unbanned §e${foundPlayer.nameTag}.`, dependencies, player, targetPData); // Admin notification can remain
+            const baseUnbanNotifyMsg = getString('command.unban.notify.unbanned', { adminName: player.nameTag, targetName: foundPlayer.nameTag });
+            playerUtils.notifyAdmins(baseUnbanNotifyMsg, dependencies, player, targetPData);
             logManager.addLog({
                 timestamp: Date.now(),
                 adminName: player.nameTag,
@@ -67,7 +68,7 @@ export async function execute(player, args, dependencies) {
                     playerUtils.debugLog(`[UnbanCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
                 if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-                    const baseNotifyMsg = `Flags for check type '§b${oldBanInfo.triggeringCheckType}§r' were cleared for §e${foundPlayer.nameTag}§r by §e${player.nameTag}§r (AutoMod unban).`;
+                    const baseNotifyMsg = getString('command.unban.notify.flagsCleared', { checkType: oldBanInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag });
                     playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, targetPDataForFlagClearLog);
                 }
             }

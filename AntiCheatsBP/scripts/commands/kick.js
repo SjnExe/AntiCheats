@@ -66,7 +66,7 @@ export async function execute(player, args, dependencies) {
 
         if (playerUtils.notifyAdmins) {
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            const baseAdminNotifyMsg = `§e${foundPlayer.nameTag}§r was kicked by §e${player.nameTag}§r. Reason: §f${reason}`;
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: reason });
             playerUtils.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         }
         if (logManager?.addLog) {

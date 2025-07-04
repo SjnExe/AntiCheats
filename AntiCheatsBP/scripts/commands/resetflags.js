@@ -88,7 +88,7 @@ export async function execute(player, args, dependencies) {
 
         player.sendMessage(getString('command.resetflags.success', { playerName: targetPlayer.nameTag }));
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-            const baseNotifyMsg = `§e${player.nameTag}§r reset flags for §e${targetPlayer.nameTag}§r.`;
+            const baseNotifyMsg = getString('command.resetflags.notify.reset', { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag });
             playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
         }
         logManager.addLog({

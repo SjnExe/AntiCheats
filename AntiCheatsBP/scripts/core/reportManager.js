@@ -139,7 +139,7 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
     }, dependencies);
 
     // Message without local prefix, relying on global prefix from notifyAdmins
-    const adminNotification = `§b${reporterPlayer.nameTag}§r §7reported §b${reportedPlayerName}§r§7. Reason: §f${reason} §7(ID: ${newReport.id})`;
+    const adminNotification = getString('report.notify.newReport', { reporterName: reporterPlayer.nameTag, reportedName: reportedPlayerName, reason: reason, reportId: newReport.id });
     // The last parameter for notifyAdmins in the original code was a command string.
     // This seems like a specific feature for this notification. Assuming it's meant to be part of the message or handled differently.
     // For now, just passing the core message. If a clickable command is needed, UI elements are better.

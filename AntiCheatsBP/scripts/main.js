@@ -337,7 +337,7 @@ function performInitializations() {
     }
 
     playerUtils.debugLog('Anti-Cheat Core System Initialized. Event handlers and tick loop are active.', 'System', startupDependencies);
-    mc.world.sendMessage('§a[AntiCheat] §2System Core Initialized. Version: ' + configModule.acVersion);
+    mc.world.sendMessage(startupDependencies.getString('system.core.initialized', { version: configModule.acVersion }));
 
     // Start Tick Loops now that initializations are done
     playerUtils.debugLog('[PerformInitializations] Starting main tick loop and TPA tick loop...', 'System', startupDependencies);

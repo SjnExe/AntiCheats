@@ -49,7 +49,7 @@ export async function execute(player, _args, dependencies) {
     try {
         // Configurable notification
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-            const baseNotifyMsg = `Chat cleared by §e${adminName}§r.`;
+            const baseNotifyMsg = getString('command.clearchat.notify.cleared', { adminName: adminName });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 

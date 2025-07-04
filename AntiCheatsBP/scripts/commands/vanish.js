@@ -52,7 +52,7 @@ export async function execute(player, args, dependencies) {
 
         const pData = playerDataManager.getPlayerData(player.id);
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-            const baseNotifyMsg = `§e${player.nameTag}§r has enabled vanish (§b${mode}§r mode).`;
+            const baseNotifyMsg = getString('command.vanish.notify.enabled', { adminName: player.nameTag, mode: mode });
             playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
         }
     } else {
@@ -78,7 +78,7 @@ export async function execute(player, args, dependencies) {
 
         const pData = playerDataManager.getPlayerData(player.id);
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-            const baseNotifyMsg = `§e${player.nameTag}§r has disabled vanish (§b${wasNotifyMode ? 'notify' : 'silent'}§r mode).`;
+            const baseNotifyMsg = getString('command.vanish.notify.disabled', { adminName: player.nameTag, mode: (wasNotifyMode ? 'notify' : 'silent') });
             playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
         }
     }

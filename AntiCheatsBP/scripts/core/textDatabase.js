@@ -793,8 +793,44 @@ export const stringDB = {
 
     // --- Admin notifications (some are direct, some could be templatized) ---
     'admin.notify.newPlayerJoined': '§e[AC] New player {playerName} has joined the server for the first time!',
-    'admin.notify.combatLog': '§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}', // Example if used by actionProfile
-    // ... more admin notifications can be added if they become complex enough to warrant externalization
+    // 'admin.notify.combatLog': '§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}', // This is now directly in actionProfiles.js
+
+    // --- System Messages & Errors ---
+    'system.core.initialized': "§a[AntiCheat] §2System Core Initialized. Version: {version}",
+    'error.system.criticalDeps': "§cAntiCheat Error: Critical issue (HPS_DEPS). Contact admin.",
+
+    // --- Player Data Notifications ---
+    'playerData.notify.flagged': "Flagged for §b{flagType}§r. Details: {details}",
+
+    // --- Report Notifications ---
+    'report.notify.newReport': "§b{reporterName}§r §7reported §b{reportedName}§r§7. Reason: §f{reason} §7(ID: {reportId})",
+
+    // --- Command Specific Admin Notifications (New Keys) ---
+    'command.addrank.notify.assigned': "§e{adminName}§r assigned rank §a{rankName}§r to §e{targetPlayerName}§r.",
+    'command.ban.notify.banned': "§e{bannedBy}§r banned §e{targetName}§r for §b{durationDisplay}§r. Reason: §f{reason}",
+    'command.clearchat.notify.cleared': "Chat cleared by §e{adminName}§r.",
+    'command.copyinv.notify.copiedSimple': "§e{adminName}§r copied the inventory of §e{targetPlayerName}§r.",
+    'command.endlock.notify.locked': "The End dimension was locked by §e{adminName}§r.",
+    'command.endlock.notify.unlocked': "The End dimension was unlocked by §e{adminName}§r.",
+    'command.freeze.notify.froze': "§e{adminName}§r froze §e{targetPlayerName}§r.",
+    'command.freeze.notify.unfroze': "§e{adminName}§r unfroze §e{targetPlayerName}§r.",
+    'command.kick.notify.kicked': "§e{targetName}§r was kicked by §e{adminName}§r. Reason: §f{reason}",
+    'command.mute.notify.muted': "§e{targetName}§r was muted by §e{mutedBy}§r for §b{duration}§r. Reason: §f{reason}",
+    'command.netherlock.notify.locked': "The Nether dimension was locked by §e{adminName}§r.",
+    'command.netherlock.notify.unlocked': "The Nether dimension was unlocked by §e{adminName}§r.",
+    'command.purgeflags.notify.purged': "§e{adminName}§r purged all flags and violation history for §e{targetPlayerName}§r. (Old total flags: {oldTotalFlags})",
+    'command.removerank.notify.removedRank': "§e{adminName}§r removed rank §a{rankName}§r from §e{targetPlayerName}§r.",
+    'command.resetflags.notify.reset': "§e{adminName}§r reset flags for §e{targetPlayerName}§r.",
+    'command.unban.notify.unbanned': "§e{adminName}§r unbanned §e{targetName}§r.",
+    'command.unban.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unban).",
+    'command.unmute.notify.unmuted': "§e{adminName}§r unmuted §e{targetName}§r.",
+    'command.unmute.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unmute).",
+    'command.vanish.notify.enabled': "§e{adminName}§r has enabled vanish (§b{mode}§r mode).",
+    'command.vanish.notify.disabled': "§e{adminName}§r has disabled vanish (§b{mode}§r mode).",
+
+    // --- Optional Action Bar Localizations (from TPA review) ---
+    'command.tpastatus.notify.autoDeclinedActionBar': "§e{playerName}§r is no longer accepting TPA requests; your request was automatically declined."
+
 
     // --- UI Manager specific (beyond what's in ui.*) ---
     // If uiManager constructs complex strings dynamically that aren't just titles/buttons, they could go here.

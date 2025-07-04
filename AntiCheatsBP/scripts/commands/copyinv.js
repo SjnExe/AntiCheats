@@ -104,7 +104,7 @@ export async function execute(player, args, dependencies) {
 
         const targetPData = playerDataManager?.getPlayerData(targetPlayer.id);
         if (dependencies.config.notifications?.notifyOnCopyInventory !== false) { // Default true
-            const baseNotifyMsg = `§e${adminName}§r copied the inventory of §e${targetPlayer.nameTag}§r.`;
+            const baseNotifyMsg = getString('command.copyinv.notify.copiedSimple', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, targetPData);
         }
     } catch (e) {

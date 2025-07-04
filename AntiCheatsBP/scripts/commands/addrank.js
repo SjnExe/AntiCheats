@@ -83,7 +83,7 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-            const baseNotifyMsg = `§e${adminName}§r assigned rank §a${rankDef.name}§r to §e${targetPlayer.nameTag}§r.`;
+            const baseNotifyMsg = getString('command.addrank.notify.assigned', { adminName: adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null); // Passing admin player as 'player' for context
         }
 

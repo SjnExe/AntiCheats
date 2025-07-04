@@ -155,16 +155,8 @@ This document lists significant tasks that have been completed.
 **Summary of Work:**
 *   **Configuration:** Defined a `soundEvents` object structure in `config.js` (within `defaultConfigSettings`) allowing users to enable/disable sounds, set Minecraft sound IDs, volume, pitch, and target audience (player, admin, targetPlayer, global) for predefined event names (e.g., `tpaRequestReceived`, `adminNotificationReceived`, `playerWarningReceived`, `automodActionTaken`, `commandSuccess`, `commandError`, `uiFormOpen`).
 *   **Utility Function:** Created `playerUtils.playSoundForEvent(player, eventName, dependencies, ?targetPlayerContext)` to look up and play sounds based on the configuration.
-*   **Integration:**
-    *   Called `playSoundForEvent` from `playerUtils.notifyAdmins` for the `adminNotificationReceived` event.
-    *   Updated `playerUtils.warnPlayer` to accept `dependencies` and call `playSoundForEvent` for the `playerWarningReceived` event. Calls to `warnPlayer` in `playerDataManager.js` and `automodManager.js` were updated to pass dependencies.
-    *   Added calls in TPA command files (`tpa.js`, `tpahere.js`) for `tpaRequestReceived` sound targeting the recipient.
-    *   Added calls in `automodManager.js` for `automodActionTaken` sound targeting the actioned player.
-    *   Added representative examples for `commandSuccess` and `commandError` sounds in `kick.js` and `ban.js`.
-    *   Added a representative example for `uiFormOpen` sound in `uiManager.js`.
-*   **Documentation:**
-    *   Created `config.example.js` with the new `soundEvents` structure and other key settings.
-    *   Updated `Docs/ConfigurationGuide.md` with a detailed section on "Sound Event Configuration."
+*   **Integration:** Integrated `playSoundForEvent` into `playerUtils.notifyAdmins`, `playerUtils.warnPlayer`, TPA commands, `automodManager.js`, and example command/UI files. Updated `warnPlayer` callers.
+*   **Documentation:** Created `config.example.js` with the new `soundEvents` structure. Updated `Docs/ConfigurationGuide.md` with a "Sound Event Configuration" section.
 *   **Testing:** Performed conceptual testing of the system's logic and configurability.
 *   Updated task management files.
 *   **Submission:** Branch `feat/configurable-sound-events`.
@@ -174,9 +166,27 @@ This document lists significant tasks that have been completed.
 ## Chore: Remove config.example.js and Fix JSDoc (Jules - Completed: 2024-08-01)
 **Objective:** Remove the `AntiCheatsBP/scripts/config.example.js` file and correct an incomplete JSDoc comment in `AntiCheatsBP/scripts/config.js`.
 **Summary of Work:**
-*   Deleted the `AntiCheatsBP/scripts/config.example.js` file as per user request, to rely solely on `defaultConfigSettings` within the main `config.js` for default values reference.
-*   Corrected the JSDoc block for the `updateConfigValue` function in `AntiCheatsBP/scripts/config.js` by adding the missing `@param` and `@returns` tags and ensuring the block was properly closed.
+*   Deleted the `AntiCheatsBP/scripts/config.example.js` file.
+*   Corrected the JSDoc block for the `updateConfigValue` function in `AntiCheatsBP/scripts/config.js`.
 *   Updated task management files.
-*   **Submission:** Branch `chore/remove-config-example-fix-jsdoc`. (To be submitted next)
+*   **Submission:** Branch `chore/remove-config-example-fix-jsdoc`.
+
+---
+
+## Refactor: Externalize User-Facing Strings (Jules - Completed: 2024-08-01)
+**Objective:** Ensure all user-facing strings in UI and command responses are sourced from `textDatabase.js` via `getString()`. Add any missing strings and organize keys logically.
+**Summary of Work:**
+*   **Analysis:** Systematically reviewed command files, core modules (`uiManager.js`, `eventHandlers.js`, `playerDataManager.js`, `reportManager.js`, `main.js`, etc.), checks, and utility files. Identified hardcoded user-facing strings, primarily in admin notifications within command files and some system messages.
+*   **`textDatabase.js` Update:** Added new keys for all identified strings, following a `module.subModule.keyName` or `command.commandName.notify.action` convention. Included placeholders where necessary.
+*   **Code Refactoring:** Replaced hardcoded strings in the codebase with calls to `playerUtils.getString('new.key.name', {placeholder: value})`. This included:
+    *   Admin notification messages in most command files.
+    *   The admin notification message in `playerDataManager.js` for flagging.
+    *   The admin notification message in `reportManager.js` for new reports.
+    *   A critical error message in `eventHandlers.js`.
+    *   The system initialization message in `main.js`.
+*   **Scope Note:** Templates in `actionProfiles.js` and `automodConfig.js`, and dynamic action bar messages in TPA commands were considered out of scope for full `getString()` abstraction in this pass but were reviewed. The default admin message template in `automodManager.js` was improved.
+*   **Testing:** Conceptual test confirmed that strings are now sourced correctly and new keys are logical.
+*   Updated task management files.
+*   **Submission:** Branch `refactor/localize-user-strings`. (To be submitted next)
 
 ---

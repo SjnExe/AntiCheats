@@ -112,7 +112,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
     if (!playerDataManager || !playerUtils || !config || !logManager || !checks || !getString || !rankManager || !minecraftSystem?.system) {
         console.error('[EventHandler.handlePlayerSpawn] Critical: Invalid or incomplete dependencies. Aborting.');
         if (player?.isValid()) {
-            try { player.sendMessage('§cAntiCheat Error: Critical issue (HPS_DEPS). Contact admin.'); } catch (e) { /* ignore */ }
+            try { player.sendMessage(getString('error.system.criticalDeps')); } catch (e) { /* ignore */ }
         }
         return;
     }

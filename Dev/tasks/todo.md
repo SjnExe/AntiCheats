@@ -13,7 +13,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) `uiManager.js` `formatDimensionName()`**: This helper is useful. Ensure it covers all standard Minecraft dimension IDs gracefully. Consider moving it to `playerUtils.js` or a new `worldUtils.js` if used elsewhere or if `playerUtils.js` becomes too large.
 - **(Low) `playerDataManager.js` `isDirtyForSave` Optimization**: Evaluate if frequently updated transient fields (e.g., `lastGameMode`, `lastDimensionId`) should trigger `isDirtyForSave = true` if they are the *only* changes, to potentially optimize save frequency.
 - **(Low) Review `main.js` API Readiness Checks**: As the Script API evolves, ensure `checkEventAPIsReady` in `main.js` remains relevant or adapts to new API stability patterns.
-- **(High) Comprehensive Review of `stringDB` keys**: Ensure all user-facing strings in UI and command responses are sourced from `textDatabase.js` via `getString()`. Add any missing strings and organize keys logically.
 
 ## New Feature Ideas (Examples - to be expanded by project owner)
 - **(Medium) More advanced X-Ray detection methods (if feasible with Script API).**

@@ -82,7 +82,7 @@ export async function execute(player, args, dependencies) {
             targetPlayer.sendMessage(getString('command.freeze.targetFrozen'));
             player?.sendMessage(getString('command.freeze.success.frozen', { playerName: targetPlayer.nameTag }));
             if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
-                const baseNotifyMsg = `§e${adminName}§r froze §e${targetPlayer.nameTag}§r.`;
+                const baseNotifyMsg = getString('command.freeze.notify.froze', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
                 playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
             }
             logManager?.addLog({ adminName, actionType: 'playerFrozen', targetName: targetPlayer.nameTag, details: 'Player frozen' }, dependencies);
@@ -98,7 +98,7 @@ export async function execute(player, args, dependencies) {
             targetPlayer.sendMessage(getString('command.freeze.targetUnfrozen'));
             player?.sendMessage(getString('command.freeze.success.unfrozen', { playerName: targetPlayer.nameTag }));
             if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
-                const baseNotifyMsg = `§e${adminName}§r unfroze §e${targetPlayer.nameTag}§r.`;
+                const baseNotifyMsg = getString('command.freeze.notify.unfroze', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
                 playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
             }
             logManager?.addLog({ adminName, actionType: 'playerUnfrozen', targetName: targetPlayer.nameTag, details: 'Player unfrozen' }, dependencies);

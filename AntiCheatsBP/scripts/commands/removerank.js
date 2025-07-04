@@ -81,7 +81,7 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
         if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-            const baseNotifyMsg = `§e${player.nameTag}§r removed rank §a${rankDef.name}§r from §e${targetPlayer.nameTag}§r.`;
+            const baseNotifyMsg = getString('command.removerank.notify.removedRank', { adminName: player.nameTag, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
             playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 

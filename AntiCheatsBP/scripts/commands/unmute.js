@@ -52,7 +52,7 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(getString('command.unmute.success', { playerName: foundPlayer.nameTag }));
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
             // Critical notification - no config check
-            const baseMainNotifyMsg = `§e${player.nameTag}§r unmuted §e${foundPlayer.nameTag}§r.`;
+            const baseMainNotifyMsg = getString('command.unmute.notify.unmuted', { adminName: player.nameTag, targetName: foundPlayer.nameTag });
             playerUtils.notifyAdmins(baseMainNotifyMsg, dependencies, player, targetPData);
             logManager.addLog({
                 timestamp: Date.now(),
@@ -72,7 +72,7 @@ export async function execute(player, args, dependencies) {
                     playerUtils.debugLog(`[UnmuteCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
                 if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-                    const baseFlagClearNotifyMsg = `Flags for check type '§b${oldMuteInfo.triggeringCheckType}§r' were cleared for §e${foundPlayer.nameTag}§r by §e${player.nameTag}§r (AutoMod unmute).`;
+                    const baseFlagClearNotifyMsg = getString('command.unmute.notify.flagsCleared', { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag });
                     playerUtils.notifyAdmins(baseFlagClearNotifyMsg, dependencies, player, targetPDataForFlagClearLog);
                 }
             }
