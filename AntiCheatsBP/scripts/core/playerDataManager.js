@@ -6,6 +6,7 @@
  */
 import * as mc from '@minecraft/server';
 import { processAutoModActions } from './automodManager.js';
+import { checkActionProfiles } from './actionProfiles.js'; // Added for dynamic flag types
 
 /**
  * In-memory cache for player data.
@@ -188,6 +189,35 @@ export async function prepareAndSavePlayerData(player, dependencies) {
 }
 
 /**
+ * Dynamically generates the list of all known flag types from actionProfiles.
+ * This ensures that any flag type defined in actionProfiles (either as a primary checkType
+ * or a specific profile.flag.type) is initialized in player data.
+ */
+const dynamicallyGeneratedFlagTypes = new Set();
+for (const checkKey in checkActionProfiles) {
+    const profile = checkActionProfiles[checkKey];
+    // Ensure profile and profile.flag are valid objects
+    if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
+        if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
+            // Use specific flag.type if defined and non-empty
+            dynamicallyGeneratedFlagTypes.add(profile.flag.type);
+        } else {
+            // Otherwise, if a flag object exists but flag.type is not specified or empty,
+            // use the main checkKey as the flag type, as this is the implicit flag name.
+            dynamicallyGeneratedFlagTypes.add(checkKey);
+        }
+    }
+}
+const allKnownFlagTypes = Array.from(dynamicallyGeneratedFlagTypes);
+if (allKnownFlagTypes.length === 0) {
+    // This is a fallback/warning. If actionProfiles is empty or misconfigured,
+    // this log helps identify that no flag types were found.
+    // In a production environment with valid actionProfiles, this shouldn't trigger.
+    console.warn('[PlayerDataManager] Warning: allKnownFlagTypes is empty after dynamic generation. Check actionProfiles.js configuration.');
+}
+
+
+/**
  * Initializes a new default PlayerAntiCheatData object for a player.
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {number} currentTick - The current game tick.
@@ -201,22 +231,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
 
     // Initialize all flag types to ensure they exist in pData.flags
     const defaultFlags = { totalFlags: 0 };
-    const allKnownFlagTypes = [ // This list should be exhaustive or dynamically generated if possible
-        'movementFlyHover', 'movementSpeedGround', 'movementNoFall', 'movementNoSlow', 'movementInvalidSprint',
-        'movementNetherRoof', 'movementHighYVelocity', 'movementSustainedFly', 'combatReachAttack', 'combatCpsHigh',
-        'combatViewSnapPitch', 'combatViewSnapYaw', 'combatInvalidPitch', 'combatMultiTargetAura',
-        'combatAttackWhileSleeping', 'combatAttackWhileConsuming', 'combatAttackWhileBowCharging', 'combatAttackWhileShielding',
-        'combatLog', 'worldNuker', 'worldIllegalItemUse', 'worldIllegalItemPlace', 'worldTowerBuild',
-        'worldFlatRotationBuilding', 'worldDownwardScaffold', 'worldAirPlace', 'worldFastPlace', 'worldAutoTool',
-        'worldInstaBreakUnbreakable', 'worldInstaBreakSpeed', 'actionFastUse', 'playerNameSpoof', 'playerAntiGmc',
-        'playerInventoryMod', 'playerInventoryModSwitchUse', 'playerInventoryModMoveLocked', 'playerSelfHurt',
-        'playerClientAnomaly', 'playerChatStateViolation', 'chatSpamFast', 'chatSpamMaxWords', 'chatLanguageViolation',
-        'chatAdvertising', 'chatCapsAbuse', 'chatCharRepeat', 'chatSymbolSpam', 'chatContentRepeat', 'chatUnicodeAbuse',
-        'chatGibberish', 'chatExcessiveMentions', 'chatImpersonationAttempt', 'chatNewline', 'chatMaxLength',
-        'worldAntiGriefTntPlace', 'worldAntiGriefWitherSpawn', 'worldAntiGriefFire', 'worldAntiGriefLava',
-        'worldAntiGriefWater', 'worldAntiGriefBlockspam', 'worldAntiGriefEntityspam', 'worldAntiGriefBlockspamDensity',
-        'worldAntiGriefPistonLag'
-    ];
+    // Uses the dynamically generated allKnownFlagTypes array from module scope
     for (const flagKey of allKnownFlagTypes) {
         defaultFlags[flagKey] = { count: 0, lastDetectionTime: 0 };
     }
