@@ -246,7 +246,7 @@
  * @property {string} [targetId] XUID or game ID of the target player, if applicable.
  * @property {string} [checkType] Specific AntiCheat check involved, if applicable (e.g., "fly", "speed").
  * @property {string} [flagSeverity] Severity of the flag (e.g., "low", "medium", "high"), if applicable.
- * @property {string} [details] Additional details or context about the logged event.
+ * @property {object | string} [details] Additional details or context about the logged event. Can be a structured object for errors or a string for simpler logs.
  * @property {string} [context] Broader context or module where the log originated (e.g., "SpeedCheck", "BanCommand").
  * @property {Vector3} [location] Location associated with the event, if applicable.
  * @property {string} [dimensionId] Dimension ID associated with the event's location.

@@ -352,7 +352,14 @@ function performInitializations() {
             } catch (e) {
                 console.error(`[MainTick] Error processing world border resizing: ${e.stack || e.message}`);
                 playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
-                logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
+                logManager.addLog({
+                    actionType: 'errorMainWorldBorderResize', // Standardized
+                    context: 'main.tickLoop.worldBorderResizing', // Standardized
+                    details: {
+                        errorMessage: e.message,
+                        stack: e.stack
+                    }
+                }, tickDependencies);
             }
         }
 
@@ -457,11 +464,13 @@ function performInitializations() {
                 console.error(`[AntiCheatCoreTick] Error during player-specific checks for ${player?.nameTag}: ${checkError.stack || checkError}`);
                 playerUtils.debugLog(`[AntiCheatCoreTick] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
                 logManager.addLog({
-                    actionType: 'errorPlayerTickChecks',
+                    actionType: 'errorMainPlayerTickChecks', // Standardized
+                    context: 'main.tickLoop.playerChecks',   // Standardized
                     targetName: player?.nameTag || 'UnknownPlayer',
-                    details: `Error: ${checkError.message}`,
-                    error: checkError.stack || checkError.message,
-                    context: 'MainTickLoop.PlayerChecks',
+                    details: {
+                        errorMessage: checkError.message,
+                        stack: checkError.stack
+                    }
                 }, tickDependencies);
                 // Continue to the next player rather than breaking the whole tick loop.
             }
@@ -488,7 +497,15 @@ function performInitializations() {
                 } catch (e) {
                     console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${e.stack || e.message}`);
                     playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
-                    logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
+                    logManager.addLog({
+                        actionType: 'errorMainWorldBorderEnforce', // Standardized
+                        context: 'main.tickLoop.worldBorderEnforcement', // Standardized
+                        targetName: player.nameTag,
+                        details: {
+                            errorMessage: e.message,
+                            stack: e.stack
+                        }
+                    }, tickDependencies);
                 }
             }
         }
@@ -505,7 +522,15 @@ function performInitializations() {
                         }
                     } catch (error) {
                         console.error(`Error during periodic save for ${player.nameTag}: ${error.message}`);
-                        logManager.addLog({ actionType: 'error', context: 'PeriodicSaveFail', details: `Player: ${player.nameTag}, Error: ${error.message}` }, tickDependencies);
+                        logManager.addLog({
+                            actionType: 'errorMainPeriodicSave', // Standardized
+                            context: 'main.tickLoop.periodicDataSave', // Standardized
+                            details: {
+                                playerName: player.nameTag,
+                                errorMessage: error.message,
+                                stack: error.stack // Assuming error might have stack
+                            }
+                        }, tickDependencies);
                     }
                 }
             }

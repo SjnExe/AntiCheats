@@ -69,11 +69,14 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         console.error(`[PlayerDataManager.savePlayerDataToDynamicProperties] Error stringifying pData for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] Failed to stringify pData for ${playerName}. Error: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorPdataStringify',
-            context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
+            actionType: 'errorPlayerDataManagerStringify', // Standardized
+            context: 'playerDataManager.savePlayerDataToDynamicProperties', // Standardized
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error,
+            details: {
+                operation: 'JSON.stringify',
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
         return false;
     }
@@ -92,11 +95,15 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         console.error(`[PlayerDataManager.savePlayerDataToDynamicProperties] Error setting dynamic property for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] Failed to set dynamic property for ${playerName}. Error: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorPdataSetProperty',
-            context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
+            actionType: 'errorPlayerDataManagerSetProperty', // Standardized
+            context: 'playerDataManager.savePlayerDataToDynamicProperties', // Standardized
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error,
+            details: {
+                operation: 'player.setDynamicProperty',
+                propertyKey: dynamicPropertyKeyV1,
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
         return false;
     }
@@ -124,11 +131,15 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         console.error(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Error getting dynamic property for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Failed to get dynamic property for ${playerName}. Error: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorPdataGetProperty',
-            context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
+            actionType: 'errorPlayerDataManagerGetProperty', // Standardized
+            context: 'playerDataManager.loadPlayerDataFromDynamicProperties', // Standardized
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error,
+            details: {
+                operation: 'player.getDynamicProperty',
+                propertyKey: dynamicPropertyKeyV1,
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
         return null;
     }
@@ -142,11 +153,15 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             console.error(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Error parsing pData JSON for ${playerName}: ${error.stack || error}`);
             playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Failed to parse JSON for ${playerName}. JSON (start): '${jsonString.substring(0, 200)}'. Error: ${error.message}`, playerName, dependencies);
             logManager?.addLog({
-                actionType: 'errorPdataParse',
-                context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
+                actionType: 'errorPlayerDataManagerParse', // Standardized
+                context: 'playerDataManager.loadPlayerDataFromDynamicProperties', // Standardized
                 targetName: playerName,
-                details: `Error: ${error.message}. JSON (truncated): ${jsonString.substring(0, 100)}...`,
-                error: error.stack || error,
+                details: {
+                    operation: 'JSON.parse',
+                    jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : ''),
+                    errorMessage: error.message,
+                    stack: error.stack
+                }
             }, dependencies);
             return null;
         }
@@ -467,11 +482,14 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             if (!pData.slimeCheckErrorLogged) { // Prevent log spam
                 console.warn(`[PlayerDataManager.updateTransientPlayerData] Error checking slime block for ${playerName}: ${e.stack || e}`);
                 logManager?.addLog({
-                    actionType: 'errorSlimeCheck',
-                    targetName: playerName, // Use consistent targetName
-                    details: `Error: ${e.message}`,
-                    error: e.stack || e.message,
-                    context: 'updateTransientPlayerData.slimeBlockCheck',
+                    actionType: 'errorPlayerDataManagerSlimeCheck', // Standardized
+                    context: 'playerDataManager.updateTransientPlayerData.slimeBlockCheck', // Standardized
+                    targetName: playerName,
+                    details: {
+                        errorMessage: e.message,
+                        stack: e.stack,
+                        feetPos: feetPos // Added for more context
+                    }
                 }, dependencies);
                 pData.slimeCheckErrorLogged = true; // Set flag to prevent repeated logging of this error per session
             }
@@ -590,7 +608,16 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         } catch (e) {
             console.error(`[PlayerDataManager.addFlag] Error calling processAutoModActions for ${playerName} / ${finalFlagType}: ${e.stack || e}`);
             playerUtils?.debugLog(`[PlayerDataManager.addFlag] Error in processAutoModActions: ${e.stack || e}`, playerName, dependencies);
-            logManager?.addLog({ actionType: 'errorAutomodProcess', context: 'PlayerDataManager.addFlag', details: `Player: ${playerName}, Check: ${finalFlagType}, Error: ${e.message}`, error: e.stack || e.message }, dependencies);
+            logManager?.addLog({
+                actionType: 'errorPlayerDataManagerAutomodProcess', // Standardized
+                context: 'playerDataManager.addFlag', // Standardized
+                targetName: playerName,
+                details: {
+                    checkType: finalFlagType,
+                    errorMessage: e.message,
+                    stack: e.stack
+                }
+            }, dependencies);
         }
     } else if (pData.isWatched) {
         const autoModEnabled = config ? config.enableAutoMod : 'N/A (config missing)';

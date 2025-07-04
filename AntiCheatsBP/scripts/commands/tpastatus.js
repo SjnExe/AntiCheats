@@ -81,6 +81,16 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[TpaStatusCommand] Error for ${player.nameTag} processing option ${option}: ${error.stack || error}`);
         player.sendMessage(getString('command.tpacancel.error.generic')); // Reusing generic error
-        logManager.addLog({actionType: 'error', details: `[TpaStatusCommand] ${player.nameTag} error (option: ${option}): ${error.stack || error}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorTpaStatusCommand',
+            context: 'tpastatus.execute',
+            details: {
+                playerName: player.nameTag,
+                commandArgs: args,
+                option: option,
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
     }
 }

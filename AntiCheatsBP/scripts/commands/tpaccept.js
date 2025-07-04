@@ -68,6 +68,17 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[TpAcceptCommand] Error during tpaccept for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage(getString('command.tpacancel.error.generic')); // Reusing generic error
-        logManager.addLog({actionType: 'error', details: `[TpAcceptCommand] ${player.nameTag} failed to accept TPA: ${error.stack || error}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorTpAcceptCommand',
+            context: 'tpaccept.execute',
+            details: {
+                playerName: player.nameTag,
+                commandArgs: args,
+                specificRequesterName: specificRequesterName,
+                requestIdAttempted: requestToAccept?.requestId,
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
     }
 }

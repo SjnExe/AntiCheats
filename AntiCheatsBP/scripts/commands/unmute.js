@@ -77,6 +77,16 @@ export async function execute(player, args, dependencies) {
     } catch (e) {
         player.sendMessage(getString('command.unmute.error.generic', { errorMessage: e.message }));
         console.error(`[UnmuteCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
-        logManager.addLog({ actionType: 'error', details: `[UnmuteCommand] Failed to unmute ${foundPlayer?.nameTag || targetPlayerName}: ${e.stack || e}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorUnmuteCommand',
+            context: 'unmute.execute',
+            adminName: player.nameTag,
+            targetName: foundPlayer?.nameTag || targetPlayerName,
+            details: {
+                commandArgs: args,
+                errorMessage: e.message,
+                stack: e.stack
+            }
+        }, dependencies);
     }
 }

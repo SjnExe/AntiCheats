@@ -14,7 +14,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) `playerDataManager.js` `isDirtyForSave` Optimization**: Evaluate if frequently updated transient fields (e.g., `lastGameMode`, `lastDimensionId`) should trigger `isDirtyForSave = true` if they are the *only* changes, to potentially optimize save frequency.
 - **(Low) Review `main.js` API Readiness Checks**: As the Script API evolves, ensure `checkEventAPIsReady` in `main.js` remains relevant or adapts to new API stability patterns.
 - **(High) Comprehensive Review of `stringDB` keys**: Ensure all user-facing strings in UI and command responses are sourced from `textDatabase.js` via `getString()`. Add any missing strings and organize keys logically.
-- **(Medium) Error Handling Granularity**: Review error logging (`logManager.addLog` with `actionType: 'error...'`) to ensure consistent and useful `context` and `details` are provided for different error types across modules.
 - **(Medium) Admin Notification Review**: Review all `playerUtils.notifyAdmins` calls to ensure messages are informative and consistently formatted. Consider if some notifications should be configurable (on/off) via `config.js`.
 
 ## New Feature Ideas (Examples - to be expanded by project owner)

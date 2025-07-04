@@ -74,6 +74,16 @@ export async function execute(player, args, dependencies) {
     } catch (e) {
         player.sendMessage(getString('command.unban.error.generic', { errorMessage: e.message }));
         console.error(`[UnbanCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
-        logManager.addLog({ actionType: 'error', details: `[UnbanCommand] Failed to unban ${foundPlayer?.nameTag || targetPlayerName}: ${e.stack || e}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorUnbanCommand',
+            context: 'unban.execute',
+            adminName: player.nameTag, // Already a top-level field in LogEntry, but good to ensure it's passed
+            targetName: foundPlayer?.nameTag || targetPlayerName, // Already a top-level field
+            details: {
+                commandArgs: args,
+                errorMessage: e.message,
+                stack: e.stack
+            }
+        }, dependencies);
     }
 }

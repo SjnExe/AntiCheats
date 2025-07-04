@@ -27,7 +27,15 @@ export async function handlePlayerLeave(eventData, dependencies) {
             playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Data saved for ${playerName} on leave via saveDirtyPlayerData.`, playerName, dependencies);
         } catch (error) {
             console.error(`[EventHandler.handlePlayerLeave] Error in saveDirtyPlayerData for ${playerName} on leave: ${error.stack || error}`);
-            logManager?.addLog({ actionType: 'errorPdataSaveOnLeave', context: 'handlePlayerLeave.saveDirtyPlayerData', targetName: playerName, details: `Error: ${error.message}`, error: error.stack || error }, dependencies);
+            logManager?.addLog({
+                actionType: 'errorEventHandlersPdataSaveOnLeave',
+                context: 'eventHandlers.handlePlayerLeave.saveDirtyPlayerData',
+                targetName: playerName,
+                details: {
+                    errorMessage: error.message,
+                    stack: error.stack
+                }
+            }, dependencies);
         }
     }
 
@@ -73,7 +81,15 @@ export async function handlePlayerLeave(eventData, dependencies) {
         await playerDataManager?.prepareAndSavePlayerData(player, dependencies);
     } catch (error) {
         console.error(`[EventHandler.handlePlayerLeave] Error in prepareAndSavePlayerData for ${playerName} on leave: ${error.stack || error}`);
-        logManager?.addLog({ actionType: 'errorPdataPrepareSaveOnLeave', context: 'handlePlayerLeave.prepareAndSavePlayerData', targetName: playerName, details: `Error: ${error.message}`, error: error.stack || error }, dependencies);
+        logManager?.addLog({
+            actionType: 'errorEventHandlersPdataPrepareSaveOnLeave',
+            context: 'eventHandlers.handlePlayerLeave.prepareAndSavePlayerData',
+            targetName: playerName,
+            details: {
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
     }
     playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Finished processing for ${playerName}.`, playerName, dependencies);
 
@@ -202,11 +218,14 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         console.error(`[EventHandler.handlePlayerSpawn] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[EventHandler.handlePlayerSpawn] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorHandlePlayerSpawn',
+            actionType: 'errorEventHandlersPlayerSpawn',
+            context: 'eventHandlers.handlePlayerSpawn',
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error, // Full stack for logs
-            context: 'handlePlayerSpawn',
+            details: {
+                initialSpawn: initialSpawn,
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
     }
 }
@@ -259,7 +278,19 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
         const violationDetails = { entityId: entity.id, entityType: entity.typeId, actionTaken: config.witherSpawnAction, playerNameOrContext: 'System/Environment' };
         await actionManager?.executeCheckAction(null, 'worldAntiGriefWitherSpawn', violationDetails, dependencies); // Pass null for player
         if (config.witherSpawnAction === 'kill') {
-            try { entity.kill(); } catch (e) { console.warn(`[EventHandler.handleEntitySpawnEvent_AntiGrief] Failed to kill wither: ${e.message}`); }
+            try { entity.kill(); } catch (e) {
+                console.warn(`[EventHandler.handleEntitySpawnEvent_AntiGrief] Failed to kill wither: ${e.message}`);
+                dependencies.logManager?.addLog({
+                    actionType: 'errorEventHandlersKillWither',
+                    context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief',
+                    details: {
+                        entityId: entity.id,
+                        entityType: entity.typeId,
+                        errorMessage: e.message,
+                        stack: e.stack
+                    }
+                }, dependencies);
+            }
             playerUtils?.debugLog(`[EventHandler.handleEntitySpawnEvent_AntiGrief] Wither (ID: ${entity.id}) killed.`, null, dependencies);
         }
     } else if (config?.enableEntitySpamAntiGrief && (entity.typeId === 'minecraft:snow_golem' || entity.typeId === 'minecraft:iron_golem')) {
@@ -273,7 +304,20 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
                 if (checks?.checkEntitySpam) {
                     const isSpam = await checks.checkEntitySpam(player, entity.typeId, pData, dependencies);
                     if (isSpam && config.entitySpamAction === 'kill') {
-                        try { entity.kill(); } catch (e) { console.warn(`[EventHandler.handleEntitySpawnEvent_AntiGrief] Failed to kill ${entityName}: ${e.message}`); }
+                        try { entity.kill(); } catch (e) {
+                            console.warn(`[EventHandler.handleEntitySpawnEvent_AntiGrief] Failed to kill ${entityName}: ${e.message}`);
+                            dependencies.logManager?.addLog({
+                                actionType: 'errorEventHandlersKillRestrictedEntity',
+                                context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief.spamKill',
+                                details: {
+                                    entityId: entity.id,
+                                    entityType: entityName,
+                                    attributedPlayer: playerName,
+                                    errorMessage: e.message,
+                                    stack: e.stack
+                                }
+                            }, dependencies);
+                        }
                         playerUtils?.debugLog(`[EventHandler.handleEntitySpawnEvent_AntiGrief] ${entityName} (ID: ${entity.id}) killed (spam by ${playerName}).`, playerName, dependencies);
                     }
                 }
@@ -350,11 +394,15 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
     } catch (e) {
         console.warn(`[EventHandler.handleEntityDieForDeathEffects] Error applying death effect for ${entityName}: ${e.message}`);
         logManager?.addLog({
-            actionType: 'errorDeathEffect',
+            actionType: 'errorEventHandlersDeathEffect',
+            context: 'eventHandlers.handleEntityDieForDeathEffects',
             targetName: entityName,
-            details: `Error: ${e.message}`,
-            error: e.stack || e.message,
-            context: 'handleEntityDieForDeathEffects',
+            details: {
+                particleName: currentConfig.deathEffectParticleName,
+                soundId: currentConfig.deathEffectSoundId,
+                errorMessage: e.message,
+                stack: e.stack
+            }
         }, dependencies);
     }
 }
@@ -798,11 +846,16 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
         } catch (e) {
             console.error(`[EventHandler.handlePlayerDimensionChangeAfterEvent] Failed to teleport ${playerName} from locked ${toDimensionId}: ${e.stack || e}`);
             logManager?.addLog({
-                actionType: 'errorDimensionLockTeleport',
+                    actionType: 'errorEventHandlersDimensionLockTeleport',
+                    context: 'eventHandlers.handlePlayerDimensionChangeAfterEvent',
                 targetName: playerName,
-                details: `Failed to teleport from locked ${toDimensionId}. Error: ${e.message}`,
-                error: e.stack || e.message,
-                context: 'handlePlayerDimensionChangeAfterEvent',
+                    details: {
+                        fromDimensionId: fromDimension.id,
+                        toDimensionId: toDimension.id, // Use the raw toDimension.id for logging
+                        lockedDimensionName: lockedDimensionName, // User-facing name
+                        errorMessage: e.message,
+                        stack: e.stack
+                    }
             }, dependencies);
         }
     }

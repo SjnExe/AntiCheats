@@ -78,7 +78,16 @@ export async function execute(player, args, dependencies) {
         });
     } else {
         player.sendMessage(getString('command.tpa.error.genericSend'));
-        playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
-        logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`}, dependencies);
+        const errorMessage = `TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`;
+        playerUtils.debugLog(`[TpaCommand] ${errorMessage}`, player.nameTag, dependencies);
+        logManager.addLog({
+            actionType: 'errorTpaRequestFailed',
+            context: 'tpa.execute',
+            details: {
+                reason: "TPA requestResult was falsy after call to tpaManager.addRequest.",
+                requesterName: player.nameTag,
+                targetName: targetName
+            }
+        }, dependencies);
     }
 }

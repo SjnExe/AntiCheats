@@ -117,8 +117,28 @@ This document lists significant tasks that have been completed.
 *   Implemented this dynamic generation logic at the module scope in `playerDataManager.js`, so `allKnownFlagTypes` is populated when the module loads.
 *   The `initializeDefaultPlayerData` function was updated to use this dynamically generated array.
 *   Removed the old manually defined `allKnownFlagTypes` array.
-*   Conducted a conceptual test to verify the logic against various scenarios, including profiles with and without specific `flag.type`, profiles with no flag configuration, and duplicate `flag.type`s.
-*   Updated task management files (`todo.md`, `completed.md`, `ongoing.md`).
-*   **Submission:** Branch `refactor/dynamic-allknownflagtypes`. (To be submitted next)
+*   Conducted a conceptual test to verify the logic against various scenarios.
+*   Updated task management files.
+*   **Submission:** Branch `refactor/dynamic-allknownflagtypes`.
+
+---
+
+## Code Refinement: Standardize Error Logging (Jules - Completed: 2024-08-01)
+**Objective:** Review and refactor error logging (`logManager.addLog` with `actionType: 'error...'`) to ensure consistent and useful `context` and `details` are provided for different error types across modules.
+**Summary of Work:**
+*   **Analysis:** Identified all existing `logManager.addLog` calls for errors and relevant `try...catch` blocks across command files, core managers (`playerDataManager.js`, `main.js`, `eventHandlers.js`, `uiManager.js`).
+*   **Guidelines Defined:** Established standardization guidelines:
+    *   `actionType`: `error<ModuleName><SpecificErrorDescription>` (camelCase).
+    *   `context`: `'<moduleName>.<functionName>[.<subContext>]'`.
+    *   `details`: Always an object, including `errorMessage`, `stack` (for exceptions), and other relevant contextual variables (e.g., `playerName`, `commandArgs`, `operation`).
+    *   `targetName` / `adminName`: Retained as top-level fields in `LogEntry` where appropriate.
+    *   Removed redundant top-level `error` field from log calls.
+*   **Typedef Update:** Modified `LogEntry` typedef in `types.js` to change `details` from `string` to `object | string` to accommodate structured error details while being backward compatible for non-error string details.
+*   **Refactoring:**
+    *   Updated existing error log call sites in `tpa.js`, `tpacancel.js`, `tpaccept.js`, `unban.js`, `tpahere.js`, `tpastatus.js`, `unmute.js`, `main.js`, `playerDataManager.js`, `eventHandlers.js`, and `uiManager.js` to conform to the new guidelines.
+    *   Added new standardized error logs in `eventHandlers.js` (for entity kill failures) and `uiManager.js` (for UI teleport action failures) where errors were previously only sent to console or player.
+*   **Testing:** Conducted conceptual testing to ensure new log formats are clearer and more informative.
+*   Updated task management files.
+*   **Submission:** Branch `refactor/standardize-error-logging`. (To be submitted next)
 
 ---

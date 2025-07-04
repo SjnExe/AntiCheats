@@ -77,6 +77,15 @@ export async function execute(player, args, dependencies) {
     } catch (error) {
         console.error(`[TpaCancelCommand] Error for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage(getString('command.tpacancel.error.generic'));
-        logManager.addLog({actionType: 'error', details: `[TpaCancelCommand] ${player.nameTag} error: ${error.stack || error}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorTpaCancelCommand',
+            context: 'tpacancel.execute',
+            details: {
+                playerName: player.nameTag,
+                commandArgs: args,
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
     }
 }

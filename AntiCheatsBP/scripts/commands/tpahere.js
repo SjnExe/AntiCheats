@@ -77,12 +77,30 @@ export async function execute(player, args, dependencies) {
             });
         } else {
             player.sendMessage(getString('command.tpahere.error.genericSend'));
-            playerUtils.debugLog(`[TpaHereCommand] Failed to send TPAHere request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
-            logManager.addLog({actionType: 'error', details: `[TPAHereCommand] TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`}, dependencies);
+            const errorMessage = `TPAHere requestResult was falsy for ${player.nameTag} -> ${targetName}`;
+            playerUtils.debugLog(`[TpaHereCommand] ${errorMessage}`, player.nameTag, dependencies);
+            logManager.addLog({
+                actionType: 'errorTpaHereRequestFailed',
+                context: 'tpahere.execute',
+                details: {
+                    reason: "TPAHere requestResult was falsy after call to tpaManager.addRequest.",
+                    requesterName: player.nameTag,
+                    targetName: targetName
+                }
+            }, dependencies);
         }
     } catch (error) {
         console.error(`[TpaHereCommand] Error for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage(getString('command.tpacancel.error.generic')); // Reusing a generic error message
-        logManager.addLog({actionType: 'error', details: `[TpaHereCommand] ${player.nameTag} error: ${error.stack || error}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorTpaHereCommand',
+            context: 'tpahere.execute',
+            details: {
+                playerName: player.nameTag,
+                commandArgs: args,
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
     }
 }

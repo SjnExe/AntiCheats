@@ -65,7 +65,17 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
     } catch (error) {
         console.error(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleKey}): ${error.stack || error}`);
         playerUtils?.debugLog(`[UiManager._showConfirmationModal] Error for ${playerName} (Title: ${titleKey}): ${error.message}`, playerName, dependencies);
-        logManager?.addLog({ adminName: playerName, actionType: 'errorUiConfirmationModal', context: 'UiManager._showConfirmationModal', details: `TitleKey: ${titleKey}, Error: ${error.message}`, error: error.stack || error }, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiConfirmationModal', // Retain specific actionType
+            context: 'uiManager._showConfirmationModal', // Standardized
+            adminName: playerName,
+            details: {
+                titleKey: titleKey,
+                bodyKey: bodyKey, // Added for context
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
         adminPlayer?.sendMessage(getString('common.error.genericForm'));
     }
 }
@@ -106,7 +116,17 @@ async function showInspectPlayerForm(adminPlayer, dependencies) {
     } catch (error) {
         console.error(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[UiManager.showInspectPlayerForm] Error for ${adminName}: ${error.message}`, adminName, dependencies);
-        logManager?.addLog({ adminName, actionType: 'errorUiInspectForm', context: 'UiManager.showInspectPlayerForm', details: `Error: ${error.message}`, error: error.stack || error }, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiInspectPlayerForm', // Standardized
+            context: 'uiManager.showInspectPlayerForm', // Standardized
+            adminName: adminName,
+            details: {
+                // response.formValues might be relevant if error happens after form.show
+                formValues: response?.formValues, // Optional: include form values if available
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
         adminPlayer?.sendMessage(getString('common.error.genericForm'));
     }
 }
@@ -169,8 +189,8 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
 
     form.button(getString('ui.playerActions.button.viewFlags'), 'textures/ui/magnifying_glass');
     form.button(getString('ui.playerActions.button.viewInventory'), 'textures/ui/chest_icon.png');
-    form.button(getString('ui.playerActions.button.teleportTo'), 'textures/ui/portal');
-    form.button(getString('ui.playerActions.button.teleportHere'), 'textures/ui/arrow_down_thin');
+    form.button(getString('ui.playerActions.button.teleportTo'), 'textures/ui/portal'); // Index 2
+    form.button(getString('ui.playerActions.button.teleportHere'), 'textures/ui/arrow_down_thin'); // Index 3
     form.button(getString('ui.playerActions.button.kick'), 'textures/ui/icon_hammer');
     form.button(freezeButtonText, freezeButtonIcon);
     form.button(muteButtonText, muteButtonIcon);
@@ -193,8 +213,45 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         switch (response.selection) {
             case 0: await showDetailedFlagsForm(adminPlayer, targetPlayer, dependencies); shouldReturnToPlayerActions = false; break;
             case 1: if (cmdExec('invsee')) { await cmdExec('invsee')(adminPlayer, [targetName], dependencies); } else { adminPlayer?.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'invsee' })); } break;
-            case 2: /* Teleport To Player */ try { if (targetPlayer?.location && targetPlayer?.dimension) await adminPlayer?.teleport(targetPlayer.location, { dimension: targetPlayer.dimension }); adminPlayer?.sendMessage(getString('ui.playerActions.teleportTo.success', { targetPlayerName: targetName })); logManager?.addLog({ adminName, actionType: 'teleportSelfToPlayer', targetName, details: `Admin TP to ${targetName}` }, dependencies); } catch (e) { adminPlayer?.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message })); } break;
-            case 3: /* Teleport Player Here */ try { if (adminPlayer?.location && adminPlayer?.dimension) await targetPlayer?.teleport(adminPlayer.location, { dimension: adminPlayer.dimension }); adminPlayer?.sendMessage(getString('ui.playerActions.teleportHere.success', { targetPlayerName: targetName })); targetPlayer?.sendMessage(getString('ui.playerActions.teleportHere.targetNotification')); logManager?.addLog({ adminName, actionType: 'teleportPlayerToAdmin', targetName, details: `Admin TP'd ${targetName} to self` }, dependencies); } catch (e) { adminPlayer?.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message })); } break;
+            case 2: /* Teleport To Player */
+                try {
+                    if (targetPlayer?.location && targetPlayer?.dimension) await adminPlayer?.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
+                    adminPlayer?.sendMessage(getString('ui.playerActions.teleportTo.success', { targetPlayerName: targetName }));
+                    logManager?.addLog({ adminName, actionType: 'teleportSelfToPlayer', targetName, details: `Admin TP to ${targetName}` }, dependencies);
+                } catch (e) {
+                    adminPlayer?.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message }));
+                    logManager?.addLog({
+                        actionType: 'errorUiTeleportToPlayer',
+                        context: 'uiManager.showPlayerActionsForm.teleportToPlayer',
+                        adminName: adminName,
+                        targetName: targetName,
+                        details: {
+                            errorMessage: e.message,
+                            stack: e.stack
+                        }
+                    }, dependencies);
+                }
+                break;
+            case 3: /* Teleport Player Here */
+                try {
+                    if (adminPlayer?.location && adminPlayer?.dimension) await targetPlayer?.teleport(adminPlayer.location, { dimension: adminPlayer.dimension });
+                    adminPlayer?.sendMessage(getString('ui.playerActions.teleportHere.success', { targetPlayerName: targetName }));
+                    targetPlayer?.sendMessage(getString('ui.playerActions.teleportHere.targetNotification'));
+                    logManager?.addLog({ adminName, actionType: 'teleportPlayerToAdmin', targetName, details: `Admin TP'd ${targetName} to self` }, dependencies);
+                } catch (e) {
+                    adminPlayer?.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message }));
+                    logManager?.addLog({
+                        actionType: 'errorUiTeleportPlayerToAdmin',
+                        context: 'uiManager.showPlayerActionsForm.teleportPlayerToAdmin',
+                        adminName: adminName,
+                        targetName: targetName,
+                        details: {
+                            errorMessage: e.message,
+                            stack: e.stack
+                        }
+                    }, dependencies);
+                }
+                break;
             case 4: await _showModalAndExecuteWithTransform('kick', 'ui.playerActions.kick.title', [{ type: 'textField', labelKey: 'ui.playerActions.kick.reasonPrompt', placeholderKey: 'ui.playerActions.kick.reasonPlaceholder' }], (vals) => [targetName, vals?.[0]], dependencies, adminPlayer, { targetPlayerName: targetName }); shouldReturnToPlayerList = true; break;
             case 5: if (cmdExec('freeze')) { await cmdExec('freeze')(adminPlayer, [targetName, 'toggle'], dependencies); } else { adminPlayer?.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'freeze' })); } break; // Assume 'toggle' is default
             case 6: if (isTargetMuted) { if (cmdExec('unmute')) { await cmdExec('unmute')(adminPlayer, [targetName], dependencies); } } else { await _showModalAndExecuteWithTransform('mute', 'ui.playerActions.mute.title', [{ type: 'textField', labelKey: 'ui.playerActions.mute.durationPrompt', placeholderKey: 'ui.playerActions.mute.durationPlaceholder' }, { type: 'textField', labelKey: 'ui.playerActions.mute.reasonPrompt', placeholderKey: 'ui.playerActions.mute.reasonPlaceholder' }], (vals) => [targetName, vals?.[0], vals?.[1]], dependencies, adminPlayer, { targetPlayerName: targetName }); } break;
@@ -215,7 +272,16 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
         }
     } catch (error) {
         playerUtils?.debugLog(`[UiManager.showPlayerActionsForm] Error for ${adminName}: ${error.stack || error}`, adminName, dependencies);
-        logManager?.addLog({ adminName, actionType: 'errorUiPlayerActions', context: 'UiManager.showPlayerActionsForm', details: `Target: ${targetName}, Error: ${error.message}`, error: error.stack || error }, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiPlayerActionsForm', // Standardized
+            context: 'uiManager.showPlayerActionsForm', // Standardized
+            adminName: adminName,
+            targetName: targetName, // Retain as top-level field as per LogEntry
+            details: {
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
         adminPlayer?.sendMessage(getString('ui.playerActions.error.generic'));
         await showOnlinePlayersList(adminPlayer, dependencies); // Fallback
     }
@@ -299,7 +365,15 @@ showAdminPanelMain = async function (player, playerDataManager, config_unused, d
     } catch (error) {
         console.error(`[UiManager.showAdminPanelMain] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Error for ${playerName}: ${error.message}`, playerName, dependencies);
-        logManager?.addLog({ adminName: playerName, actionType: 'errorUiAdminPanel', context: 'UiManager.showAdminPanelMain', details: `Error: ${error.message}`, error: error.stack || error }, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiAdminPanelMain', // Standardized
+            context: 'uiManager.showAdminPanelMain', // Standardized
+            adminName: playerName, // adminName is the player in this context
+            details: {
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
         player?.sendMessage(getString('ui.adminPanel.error.generic'));
     }
 };
@@ -346,7 +420,15 @@ showOnlinePlayersList = async function (adminPlayer, dependencies) {
     } catch (error) {
         console.error(`[UiManager.showOnlinePlayersList] Error for ${adminName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[UiManager.showOnlinePlayersList] Error for ${adminName}: ${error.message}`, adminName, dependencies);
-        logManager?.addLog({ adminName, actionType: 'errorUiOnlinePlayers', context: 'UiManager.showOnlinePlayersList', details: `Error: ${error.message}`, error: error.stack || error }, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiOnlinePlayersList', // Standardized
+            context: 'uiManager.showOnlinePlayersList', // Standardized
+            adminName: adminName,
+            details: {
+                errorMessage: error.message,
+                stack: error.stack
+            }
+        }, dependencies);
         adminPlayer?.sendMessage(getString('ui.onlinePlayers.error.generic'));
         // Optionally, try to go back to admin panel on error
         await uiManager?.showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies).catch(() => {});
