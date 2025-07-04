@@ -167,6 +167,16 @@ This document lists significant tasks that have been completed.
     *   Updated `Docs/ConfigurationGuide.md` with a detailed section on "Sound Event Configuration."
 *   **Testing:** Performed conceptual testing of the system's logic and configurability.
 *   Updated task management files.
-*   **Submission:** Branch `feat/configurable-sound-events`. (To be submitted next)
+*   **Submission:** Branch `feat/configurable-sound-events`.
+
+---
+
+## Chore: Remove config.example.js and Fix JSDoc (Jules - Completed: 2024-08-01)
+**Objective:** Remove the `AntiCheatsBP/scripts/config.example.js` file and correct an incomplete JSDoc comment in `AntiCheatsBP/scripts/config.js`.
+**Summary of Work:**
+*   Deleted the `AntiCheatsBP/scripts/config.example.js` file as per user request, to rely solely on `defaultConfigSettings` within the main `config.js` for default values reference.
+*   Corrected the JSDoc block for the `updateConfigValue` function in `AntiCheatsBP/scripts/config.js` by adding the missing `@param` and `@returns` tags and ensuring the block was properly closed.
+*   Updated task management files.
+*   **Submission:** Branch `chore/remove-config-example-fix-jsdoc`. (To be submitted next)
 
 ---

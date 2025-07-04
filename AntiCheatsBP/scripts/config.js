@@ -812,3 +812,7 @@ export let editableConfigValues = { ...defaultConfigSettings };
 /**
  * Updates a configuration value at runtime.
  * Performs type checking and coercion for basic types (string, number, boolean) and simple arrays of these types.
+ * @param {string} key - The configuration key to update (must exist in `editableConfigValues`).
+ * @param {any} value - The new value for the configuration key.
+ * @returns {boolean} True if the update was successful, false otherwise (e.g., key not found, type mismatch if strict).
+ */
