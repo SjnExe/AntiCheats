@@ -4,7 +4,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Documentation Tasks
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
-- **(Low) AGENTS.md**: Consider creating an `AGENTS.md` in the root or `Dev/` directory to provide high-level instructions or tips for AI agents working on the codebase, if the AI section in `Dev/README.md` proves insufficient over time.
 
 ## Code Refinement & Feature Enhancements
 - **(Low) Linter Integration**: Explore setting up ESLint with a shared configuration (e.g., based on `StandardizationGuidelines.md`) to automatically enforce code style and catch common errors. This would improve consistency, especially with multiple contributors.

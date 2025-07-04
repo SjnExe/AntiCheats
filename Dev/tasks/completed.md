@@ -95,3 +95,16 @@ This document lists significant tasks that have been completed.
 *   **Submission:** Branch `refactor/apply-optional-chaining`. (Actual branch name will be from the submit tool call for this task)
 
 ---
+
+## Documentation: Creation of AGENTS.md (Jules - Completed: 2024-08-01)
+**Objective:** Evaluate the need for and create a dedicated `AGENTS.md` file to provide high-level instructions for AI agents, enhancing the existing AI guidelines in `Dev/README.md`.
+**Summary of Work:**
+*   Reviewed existing AI guidelines in `Dev/README.md`.
+*   Determined that a separate `AGENTS.md` in the root directory would improve AI discoverability and allow for more detailed, project-specific instructions.
+*   Created `AGENTS.md` in the root directory.
+*   Drafted its content by incorporating and significantly expanding upon the AI workflow notes previously in `Dev/README.md`. Added emphasis on critical project conventions (e.g., `camelCase` for `checkType`/`actionType`), architectural awareness, and best practices for AI interaction with this codebase.
+*   Updated `Dev/README.md` to remove its detailed AI workflow section and instead direct AI agents to the new `AGENTS.md`.
+*   Updated task management files.
+*   **Submission:** Branch `docs/create-agents-md`. (Actual branch name will be from the submit tool call for this task)
+
+---

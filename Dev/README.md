@@ -153,20 +153,10 @@ The Behavior Pack scripts for this addon (`AntiCheatsBP/scripts/`) are currently
 
 ## Important Workflow Notes for AI Assistants
 
-### Guidelines for AI Development Sessions (e.g., Jules)
+For detailed guidelines, project-specific conventions, and workflow instructions tailored for AI assistants (like Jules) working on this codebase, please refer to the main **[AGENTS.md](../../AGENTS.md)** file located in the root of the repository.
 
-To ensure consistency, continuity, and up-to-date documentation when an AI assistant like Jules works on this addon:
-
-1.  **Maintain Task Files:**
-    *   Before starting new work, review `Dev/tasks/ongoing.md` and `Dev/tasks/todo.md`.
-    *   If continuing a previous task, ensure `Dev/tasks/ongoing.md` reflects this.
-    *   When starting a new task from `Dev/tasks/todo.md`, move it to `Dev/tasks/ongoing.md` and update its description if necessary.
-    *   Upon completion and submission of a task, summarize it in `Dev/tasks/completed.md` and clear `Dev/tasks/ongoing.md` (or update it if starting another task immediately).
-    *   Add any newly identified future work, bugs, or ideas to `Dev/tasks/todo.md`.
-
-2.  **Update Root `README.md`:**
-    *   If significant new user-facing features are added or major changes are made to the addon's functionality, the AI assistant should also update the main project `README.md` (located in the repository root) to reflect these changes. This keeps the primary user documentation current.
-
-3.  **Follow Existing Code Style and Documentation Practices:**
-    *   Adhere to the established coding style found in the existing `.js` files.
-    *   Add JSDoc comments for new functions and complex logic, similar to existing documentation.
+This includes crucial information on:
+*   Task management using the `Dev/tasks/` directory.
+*   Responsibilities for updating user-facing documentation (e.g., root `README.md`, files in `Docs/`).
+*   Adherence to coding standards (`Dev/CodingStyle.md`, `Dev/StandardizationGuidelines.md`) and JSDoc practices.
+*   Key architectural points and critical naming conventions (e.g., `camelCase` for `checkType` and `actionType`).
