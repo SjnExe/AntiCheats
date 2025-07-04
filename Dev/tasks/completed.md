@@ -57,6 +57,20 @@ This document lists significant tasks that have been completed.
 
 ---
 
+## Code Refinement: config.js DRY Initialization (Jules - Completed: 2024-08-01)
+**Objective:** Refactor `editableConfigValues` in `AntiCheatsBP/scripts/config.js` to be more DRY by initializing it from a central default object rather than re-listing constants.
+**Summary of Work:**
+*   Analyzed current `config.js` structure, focusing on `editableConfigValues` and `updateConfigValue`.
+*   Implemented a DRY approach by:
+    *   Creating a `defaultConfigSettings` object to hold all default values and JSDoc for runtime-editable settings.
+    *   Initializing `editableConfigValues` by spreading `defaultConfigSettings`.
+    *   Removing redundant individual `export const` declarations for settings now in `defaultConfigSettings`.
+*   Confirmed compatibility with `updateConfigValue` and improved maintainability.
+*   Updated task management files.
+*   **Submission:** Branch `refactor/config-dry-editable-values`. (Actual branch name will be from the submit tool call for this task)
+
+---
+
 ## Code Refinement: Optional Chaining Application (Jules - Completed: 2024-08-01)
 **Objective:** Systematically review and apply optional chaining (`?.`) more broadly across the codebase, especially in `uiManager.js` and `eventHandlers.js`, to improve robustness against errors from potentially null/undefined objects or properties.
 **Summary of Work:**

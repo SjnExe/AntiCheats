@@ -8,7 +8,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Code Refinement & Feature Enhancements
 - **(Low) Linter Integration**: Explore setting up ESLint with a shared configuration (e.g., based on `StandardizationGuidelines.md`) to automatically enforce code style and catch common errors. This would improve consistency, especially with multiple contributors.
-- **(Low) `config.js` Structure**: The `editableConfigValues` object in `config.js` re-declares many constants. Investigate if there's a more DRY (Don't Repeat Yourself) way to manage this, perhaps by initializing `editableConfigValues` from the exported constants directly at startup.
 - **(Medium) `worldBorderManager.js` Robustness**: Consider if `worldBorderManager.getBorderSettings` should be more robust if a dimension from `config.worldBorderKnownDimensions` is invalid or if the dynamic property for a specific dimension is corrupted.
 - **(Low) `tpaManager.js` `generateRequestId()`**: The current UUID-like generator is simple. For higher collision resistance if many TPAs occur, evaluate if a more robust UUID method is needed (current is likely fine).
 - **(Low) `uiManager.js` `formatDimensionName()`**: This helper is useful. Ensure it covers all standard Minecraft dimension IDs gracefully. Consider moving it to `playerUtils.js` or a new `worldUtils.js` if used elsewhere or if `playerUtils.js` becomes too large.
