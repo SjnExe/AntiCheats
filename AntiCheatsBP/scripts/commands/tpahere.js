@@ -69,6 +69,8 @@ export async function execute(player, args, dependencies) {
             mc.system.run(() => {
                 try {
                     target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested you to teleport to them. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
+                    // Play sound for the target player
+                    playerUtils.playSoundForEvent(null, "tpaRequestReceived", dependencies, target);
                 } catch (e) {
                     if (config.enableDebugLogging) {
                         playerUtils.debugLog(`[TpaHereCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);

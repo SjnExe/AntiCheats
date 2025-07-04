@@ -16,7 +16,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(High) Comprehensive Review of `stringDB` keys**: Ensure all user-facing strings in UI and command responses are sourced from `textDatabase.js` via `getString()`. Add any missing strings and organize keys logically.
 
 ## New Feature Ideas (Examples - to be expanded by project owner)
-- **(Low) Configurable sounds for notifications/actions.**
 - **(Medium) More advanced X-Ray detection methods (if feasible with Script API).**
 - **(High) Webhook integration for critical alerts or logs.**
 

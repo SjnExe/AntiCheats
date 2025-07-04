@@ -269,6 +269,79 @@ const defaultConfigSettings = {
     /** @type {boolean} If true, admins receive X-Ray notifications by default (can be toggled per admin using !xraynotify). */
     xrayDetectionAdminNotifyByDefault: true,
 
+    /**
+     * @description Configuration for sound events triggered by the AntiCheat system.
+     * Each key represents a specific event.
+     * `enabled`: (boolean) Whether this sound event is active.
+     * `soundId`: (string) The Minecraft sound ID (e.g., "random.orb", "note.pling"). Empty or null means no sound.
+     * `volume`: (number, optional) Sound volume, typically 0.0 to 1.0. Defaults to 1.0.
+     * `pitch`: (number, optional) Sound pitch. Defaults to 1.0.
+     * `target`: (string, optional) Who hears the sound:
+     *           - "player": The player directly involved in or causing the event.
+     *           - "admin": All online administrators who have notifications enabled.
+     *           - "targetPlayer": A specific target player of an action (e.g., for TPA).
+     *           - "global": All online players (use with extreme caution).
+     * `description`: (string) A human-readable description of when this sound plays.
+     */
+    soundEvents: {
+        tpaRequestReceived: {
+            enabled: true,
+            soundId: "random.orb",
+            volume: 1.0,
+            pitch: 1.2,
+            target: "targetPlayer",
+            description: "Sound played for a player when they receive a TPA request (tpa or tpahere)."
+        },
+        adminNotificationReceived: { // Played for admins when playerUtils.notifyAdmins is called
+            enabled: true,
+            soundId: "note.pling",
+            volume: 0.8,
+            pitch: 1.5,
+            target: "admin",
+            description: "Sound played for an admin when they receive any AntiCheat system notification via notifyAdmins."
+        },
+        playerWarningReceived: { // Played for player when playerUtils.warnPlayer is called
+            enabled: true,
+            soundId: "note.bass",
+            volume: 1.0,
+            pitch: 0.8,
+            target: "player",
+            description: "Sound played for a player when they receive a direct warning message from AntiCheat (e.g., from a check or AutoMod)."
+        },
+        uiFormOpen: {
+            enabled: false,
+            soundId: "ui.button.click",
+            volume: 0.7,
+            pitch: 1.0,
+            target: "player",
+            description: "Sound played when a UI form (e.g., admin panel, report form) is opened for a player."
+        },
+        commandSuccess: {
+            enabled: false,
+            soundId: "random.successful_hit",
+            volume: 0.8,
+            pitch: 1.0,
+            target: "player",
+            description: "Sound played for a player when they execute a command successfully."
+        },
+        commandError: {
+            enabled: false,
+            soundId: "mob.villager.no",
+            volume: 1.0,
+            pitch: 0.9,
+            target: "player",
+            description: "Sound played for a player when a command they executed results in an error."
+        },
+        automodActionTaken: { // Played for the player being actioned by automod (kick/mute/ban)
+            enabled: true,
+            soundId: "mob.irongolem.hit",
+            volume: 1.0,
+            pitch: 0.9,
+            target: "player",
+            description: "Sound played for a player when AutoMod takes a significant action against them (e.g., mute, kick, ban)."
+        }
+    },
+
     // --- Command Specific Toggles ---
     /** @type {Object.<string, {enabled: boolean}>} Allows toggling individual commands on or off. */
     commandSettings: {

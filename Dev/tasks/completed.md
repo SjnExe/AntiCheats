@@ -140,22 +140,33 @@ This document lists significant tasks that have been completed.
 **Objective:** Review all `playerUtils.notifyAdmins` calls to ensure messages are informative and consistently formatted. Introduce configurability for some notifications.
 **Summary of Work:**
 *   **Analysis:** Identified all `playerUtils.notifyAdmins` call sites and analyzed message content, formatting, and existing prefixes.
-*   **Guidelines Defined:**
-    *   `playerUtils.notifyAdmins` now applies a single global prefix: `§c[AC] §r`.
-    *   `baseMessage` strings passed to `notifyAdmins` should not contain local prefixes.
-    *   Standardized color coding for player names (`§e`), actions, and key details within `baseMessage`.
-    *   `notifyAdmins` continues to append its detailed player/flag context suffix.
-*   **Configuration:** Identified notifications for configurability and proposed `config.notifications.<eventName>` keys (e.g., `notifyOnPlayerFlagged`, `notifyOnCombatLog`, `notifyOnNewPlayerJoin`, `notifyOnAdminUtilCommandUsage`, `notifyOnCopyInventory`, `notifyOnNewPlayerReport`).
-*   **Refactoring:**
-    *   Modified `playerUtils.notifyAdmins` to implement the new global prefix and standardized player/flag context suffix.
-    *   Updated `actionProfiles.js` message templates to remove local prefixes and standardize colors.
-    *   Refactored `notifyAdmins` call sites in commands, `actionManager.js`, `playerDataManager.js`, `automodManager.js`, `eventHandlers.js`, and `reportManager.js` to:
-        *   Remove local message prefixes.
-        *   Standardize message content and color coding.
-        *   Wrap calls with `if (dependencies.config.notifications.<keyName> !== false)` for newly configurable notifications.
-*   **Testing:** Conceptual test confirmed improved consistency and that configurability logic should work as expected.
-*   **Documentation:** Identified future tasks to document the new config keys in `config.example.js` and `Docs/Configuration.md`.
+*   **Guidelines Defined:** Centralized global prefix in `playerUtils.notifyAdmins` to `§c[AC] §r`. Standardized `baseMessage` content and color coding.
+*   **Configuration:** Proposed `config.notifications.<eventName>` keys for toggling specific notification types.
+*   **Refactoring:** Modified `playerUtils.notifyAdmins`. Updated `actionProfiles.js` templates. Refactored call sites in commands and core modules to remove local prefixes, standardize messages, and add conditional checks against new config keys.
+*   **Testing:** Conceptual test confirmed improved consistency and configurability.
+*   **Documentation:** Identified future tasks for documenting new config keys.
 *   Updated task management files.
-*   **Submission:** Branch `refactor/standardize-admin-notifications`. (To be submitted next)
+*   **Submission:** Branch `refactor/standardize-admin-notifications`.
+
+---
+
+## Feature: Configurable Sound Events (Jules - Completed: 2024-08-01)
+**Objective:** Implement a system for playing configurable sound effects for various in-game notifications and actions.
+**Summary of Work:**
+*   **Configuration:** Defined a `soundEvents` object structure in `config.js` (within `defaultConfigSettings`) allowing users to enable/disable sounds, set Minecraft sound IDs, volume, pitch, and target audience (player, admin, targetPlayer, global) for predefined event names (e.g., `tpaRequestReceived`, `adminNotificationReceived`, `playerWarningReceived`, `automodActionTaken`, `commandSuccess`, `commandError`, `uiFormOpen`).
+*   **Utility Function:** Created `playerUtils.playSoundForEvent(player, eventName, dependencies, ?targetPlayerContext)` to look up and play sounds based on the configuration.
+*   **Integration:**
+    *   Called `playSoundForEvent` from `playerUtils.notifyAdmins` for the `adminNotificationReceived` event.
+    *   Updated `playerUtils.warnPlayer` to accept `dependencies` and call `playSoundForEvent` for the `playerWarningReceived` event. Calls to `warnPlayer` in `playerDataManager.js` and `automodManager.js` were updated to pass dependencies.
+    *   Added calls in TPA command files (`tpa.js`, `tpahere.js`) for `tpaRequestReceived` sound targeting the recipient.
+    *   Added calls in `automodManager.js` for `automodActionTaken` sound targeting the actioned player.
+    *   Added representative examples for `commandSuccess` and `commandError` sounds in `kick.js` and `ban.js`.
+    *   Added a representative example for `uiFormOpen` sound in `uiManager.js`.
+*   **Documentation:**
+    *   Created `config.example.js` with the new `soundEvents` structure and other key settings.
+    *   Updated `Docs/ConfigurationGuide.md` with a detailed section on "Sound Event Configuration."
+*   **Testing:** Performed conceptual testing of the system's logic and configurability.
+*   Updated task management files.
+*   **Submission:** Branch `feat/configurable-sound-events`. (To be submitted next)
 
 ---

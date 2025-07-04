@@ -595,7 +595,7 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         String(detailsForNotify);
     const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
 
-    playerUtils?.warnPlayer(player, reasonMessage);
+    playerUtils?.warnPlayer(player, reasonMessage, dependencies); // Pass dependencies
     // Configurable notification for flagging
     if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) { // Default true if undefined
         // Construct a base message without player name, as notifyAdmins will add it with flag context

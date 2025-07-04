@@ -171,6 +171,28 @@ export async function execute(
             player.sendMessage(failureMessage);
         } else {
             console.warn(`[BanCommand.execute] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${invokedBy})`);
+            if (player) playerUtils.playSoundForEvent(player, "commandError", dependencies);
         }
+        // If banAdded was true, it implies success from player's perspective of command execution
+        if (player && banAdded) playerUtils.playSoundForEvent(player, "commandSuccess", dependencies);
+
+    } catch (e) { // General catch for unexpected errors in the command's flow
+        const genericErrorMsg = getString('command.ban.error.generic', { errorMessage: e.message });
+        if (player) {
+            player.sendMessage(genericErrorMsg);
+            playerUtils.playSoundForEvent(player, "commandError", dependencies);
+        } else {
+            console.error(`[BanCommand.execute] System call error: ${genericErrorMsg.replace(/§[a-f0-9]/g, '')} - ${e.stack || e}`);
+        }
+        logManager?.addLog({
+            actionType: 'errorBanCommand',
+            context: 'ban.execute.unexpected',
+            adminName: issuerName,
+            details: {
+                targetPlayerName: targetPlayerName,
+                errorMessage: e.message,
+                stack: e.stack
+            }
+        }, dependencies);
     }
 }

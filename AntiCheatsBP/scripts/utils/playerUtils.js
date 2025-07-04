@@ -48,9 +48,13 @@ export function isAdmin(player, dependencies) {
  * Sends a standardized warning message to a player.
  * @param {import('@minecraft/server').Player} player - The player to warn.
  * @param {string} reason - The reason for the warning.
+ * @param {import('../types.js').CommandDependencies} [dependencies] - Optional dependencies, needed if playing a sound.
  */
-export function warnPlayer(player, reason) {
+export function warnPlayer(player, reason, dependencies) {
     player?.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
+    if (dependencies && player) { // Check if dependencies and player are provided
+        playSoundForEvent(player, "playerWarningReceived", dependencies);
+    }
 }
 
 /**
@@ -91,6 +95,8 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
             if (shouldReceiveMessage) {
                 try {
                     p.sendMessage(fullMessage);
+                    // Play sound for this specific admin receiving the notification
+                    playSoundForEvent(p, "adminNotificationReceived", dependencies, null);
                 } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
                     debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag, dependencies);
@@ -231,4 +237,66 @@ export function formatTimeDifference(msDifference) {
         return `${minutes}m ago`;
     }
     return `${seconds}s ago`;
+}
+
+/**
+ * Plays a sound for a specific game event based on configuration.
+ * @param {import('@minecraft/server').Player | null} primaryPlayer - The primary player associated with the event (e.g., the one executing a command, or an admin receiving a notification). Can be null for global sounds.
+ * @param {string} eventName - The key of the sound event in `config.soundEvents` (e.g., "tpaRequestReceived", "adminNotificationReceived").
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').Player | null} [targetPlayerContext=null] - An optional secondary player, used if `soundConfig.target` is "targetPlayer".
+ */
+export function playSoundForEvent(primaryPlayer, eventName, dependencies, targetPlayerContext = null) {
+    const { config, playerUtils } = dependencies; // playerUtils for isAdmin if needed
+
+    if (!config?.soundEvents) {
+        // console.warn(`[PlayerUtils.playSoundForEvent] soundEvents configuration is missing.`);
+        return;
+    }
+
+    const soundConfig = config.soundEvents[eventName];
+
+    if (!soundConfig || !soundConfig.enabled || !soundConfig.soundId || typeof soundConfig.soundId !== 'string' || soundConfig.soundId.trim() === '') {
+        // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Sound for event '${eventName}' is disabled or misconfigured.`, primaryPlayer?.nameTag, dependencies);
+        return;
+    }
+
+    const soundOptions = {
+        volume: typeof soundConfig.volume === 'number' ? soundConfig.volume : 1.0,
+        pitch: typeof soundConfig.pitch === 'number' ? soundConfig.pitch : 1.0,
+    };
+
+    const playToPlayer = (playerInstance) => {
+        if (playerInstance?.isValid()) {
+            try {
+                playerInstance.playSound(soundConfig.soundId, soundOptions);
+            } catch (e) {
+                console.warn(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.message}`);
+                // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.stack}`, playerInstance.nameTag, dependencies);
+            }
+        }
+    };
+
+    switch (soundConfig.target) {
+        case 'player':
+            if (primaryPlayer) playToPlayer(primaryPlayer);
+            break;
+        case 'admin':
+            mc.world.getAllPlayers().forEach(p => {
+                if (playerUtils.isAdmin(p, dependencies)) { // Assuming isAdmin is part of playerUtils
+                    playToPlayer(p);
+                }
+            });
+            break;
+        case 'targetPlayer':
+            if (targetPlayerContext) playToPlayer(targetPlayerContext);
+            else if (primaryPlayer) playToPlayer(primaryPlayer); // Fallback to primary if targetPlayerContext is null
+            break;
+        case 'global':
+            mc.world.getAllPlayers().forEach(p => playToPlayer(p));
+            break;
+        default: // Defaults to 'player' if target is unspecified or invalid
+            if (primaryPlayer) playToPlayer(primaryPlayer);
+            break;
+    }
 }

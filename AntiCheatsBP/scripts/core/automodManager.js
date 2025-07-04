@@ -92,7 +92,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
     switch (actionType) {
         case 'warn': {
             const messageWarn = formatAutomodMessage(messageTemplate, baseMessageContext);
-            playerUtils?.warnPlayer(player, messageWarn);
+            playerUtils?.warnPlayer(player, messageWarn, dependencies); // Pass dependencies
             logDetails = `Warned player. Check: ${checkType}. Message: '${messageWarn}'`;
             actionProcessed = true;
             break;
@@ -103,6 +103,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 player?.kick(kickReason);
                 logDetails = `Kicked player. Check: ${checkType}. Reason: '${kickReason}'`;
                 actionProcessed = true;
+                playerUtils?.playSoundForEvent(player, "automodActionTaken", dependencies);
             } catch (e) {
                 const errorMsg = e.stack || e;
                 playerUtils?.debugLog(`[AutoModManager] Error kicking player ${player?.nameTag}: ${errorMsg}`, player?.nameTag, dependencies);
@@ -131,11 +132,14 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 try {
                     player?.kick(kickMsgTempBan);
                     logDetails = `Temp banned player for ${friendlyDurationTempBan}. Check: ${checkType}. Kick Reason: '${kickMsgTempBan}'. Stored Reason: ${banReasonForStorageTemp}`;
+                    playerUtils?.playSoundForEvent(player, "automodActionTaken", dependencies); // Sound on successful ban + kick
                 } catch (e) {
                     const errorMsg = e.stack || e;
                     playerUtils?.debugLog(`[AutoModManager] Error kicking player ${player?.nameTag} after tempBan: ${errorMsg}`, player?.nameTag, dependencies);
                     logDetails = `Temp banned player (kick failed). Duration: ${friendlyDurationTempBan}, Check: ${checkType}. Stored Reason: ${banReasonForStorageTemp}. Error: ${e.message}`;
                     logManager?.addLog({ event: 'automodKickFailure', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickMsgTempBan, details: `Error: ${e.message}`, checkType: checkType, actionType: 'error' }, dependencies);
+                    // Still play sound if ban was added but kick failed, as ban is the primary action
+                    playerUtils?.playSoundForEvent(player, "automodActionTaken", dependencies);
                 }
                 actionProcessed = true; // Ban was successful
             } else {
@@ -158,11 +162,13 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 try {
                     player?.kick(kickMsgPermBan);
                     logDetails = `Permanently banned player. Check: ${checkType}. Kick Reason: '${kickMsgPermBan}'. Stored Reason: ${permBanReasonForStorage}`;
+                    playerUtils?.playSoundForEvent(player, "automodActionTaken", dependencies); // Sound on successful ban + kick
                 } catch (e) {
                     const errorMsg = e.stack || e;
                     playerUtils?.debugLog(`[AutoModManager] Error kicking player ${player?.nameTag} after permBan: ${errorMsg}`, player?.nameTag, dependencies);
                     logDetails = `Permanently banned player (kick failed). Check: ${checkType}. Stored Reason: ${permBanReasonForStorage}. Error: ${e.message}`;
                     logManager?.addLog({ event: 'automodKickFailure', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickMsgPermBan, details: `Error: ${e.message}`, checkType: checkType, actionType: 'error' }, dependencies);
+                    playerUtils?.playSoundForEvent(player, "automodActionTaken", dependencies); // Still play sound if ban was added but kick failed
                 }
                 actionProcessed = true; // Ban was successful
             } else {
@@ -189,9 +195,10 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 durationForLog = parsedDurationMsMute;
                 baseMessageContext.duration = friendlyDurationMute;
                 const muteNotificationToPlayer = formatAutomodMessage(messageTemplate, muteContext);
-                playerUtils?.warnPlayer(player, muteNotificationToPlayer);
+                playerUtils?.warnPlayer(player, muteNotificationToPlayer, dependencies); // Pass dependencies
                 logDetails = `Muted player for ${friendlyDurationMute}. Check: ${checkType}. Reason: ${muteReasonForStorage}. Notification: '${muteNotificationToPlayer}'`;
                 actionProcessed = true;
+                playerUtils?.playSoundForEvent(player, "automodActionTaken", dependencies);
             } else {
                 playerUtils?.debugLog(`[AutoModManager] Failed to apply mute to ${player?.nameTag} via playerDataManager.addMute.`, player?.nameTag, dependencies);
                 logDetails = `Failed to apply mute. Duration: ${durationStringMute}, Check: ${checkType}. Reason: ${muteReasonForStorage}`;
@@ -201,7 +208,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
         }
         case 'freeze': {
             const freezeMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
-            playerUtils?.warnPlayer(player, freezeMessage);
+            playerUtils?.warnPlayer(player, freezeMessage, dependencies); // Pass dependencies
             logDetails = `Player ${player?.nameTag} 'frozen' by AutoMod for ${checkType}. Message: '${freezeMessage}'. (Note: Actual freeze mechanics depend on separate implementation).`;
             actionProcessed = true;
             playerUtils?.debugLog(`[AutoModManager] 'freeze' action for ${player?.nameTag} (check: ${checkType}). Player notified.`, player?.nameTag, dependencies);
@@ -238,10 +245,10 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
                 const removalMessage = formatAutomodMessage(messageTemplate, removeItemContext);
                 if (removedItemCount > 0) {
-                    playerUtils?.warnPlayer(player, removalMessage);
+                    playerUtils?.warnPlayer(player, removalMessage, dependencies); // Pass dependencies
                     logDetails = `Removed ${removedItemCount}x ${itemTypeIdToRemove} from ${player?.nameTag} (Check: ${checkType}). Message: '${removalMessage}'`;
                 } else {
-                    playerUtils?.warnPlayer(player, removalMessage); // Notify even if no items found, template might handle it.
+                    playerUtils?.warnPlayer(player, removalMessage, dependencies); // Pass dependencies & Notify even if no items found
                     logDetails = `No items of type ${itemTypeIdToRemove} found to remove from ${player?.nameTag} (Check: ${checkType}). Player notified with: '${removalMessage}'`;
                 }
                 actionProcessed = true;
@@ -281,13 +288,13 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
 
                 const teleportMessage = formatAutomodMessage(messageTemplate, teleportContext);
                 player?.teleport(locationToTeleport, { dimension: player.dimension });
-                playerUtils?.warnPlayer(player, teleportMessage);
+                playerUtils?.warnPlayer(player, teleportMessage, dependencies); // Pass dependencies
                 logDetails = `Teleported player ${player?.nameTag} to ${finalTeleportDesc}. Check: ${checkType}. Message: '${teleportMessage}'`;
                 actionProcessed = true;
             } catch (e) {
                 const errorMsg = e.stack || e;
                 playerUtils?.debugLog(`[AutoModManager] Error teleporting player ${player?.nameTag} for teleportSafe: ${errorMsg}`, player?.nameTag, dependencies);
-                playerUtils?.warnPlayer(player, `Failed to teleport: ${e.message}`);
+                playerUtils?.warnPlayer(player, `Failed to teleport: ${e.message}`, dependencies); // Pass dependencies
                 logDetails = `Failed to teleport player ${player?.nameTag} to ${teleportTargetDesc}. Check: ${checkType}. Error: ${e.message}`;
                 logManager?.addLog({ event: 'automodTeleportFailure', adminName: 'AutoMod', targetName: player?.nameTag, reason: `Target: ${teleportTargetDesc}`, details: `Error: ${e.message}`, checkType: checkType, actionType: 'error' }, dependencies);
             }

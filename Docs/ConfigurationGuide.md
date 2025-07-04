@@ -220,6 +220,74 @@ For each `checkType` you want to configure, you can define the following propert
 
 ---
 
+## Sound Event Configuration (`config.js`)
+
+The `AntiCheatsBP/scripts/config.js` file allows you to configure sounds that play for various in-game events related to the AntiCheat system. This is managed through the `soundEvents` object within the main configuration.
+
+**Structure of `soundEvents`:**
+
+```javascript
+// Example in config.js (within defaultConfigSettings or editableConfigValues)
+soundEvents: {
+    eventName1: {
+        enabled: true,
+        soundId: "minecraft:random.orb",
+        volume: 1.0,
+        pitch: 1.0,
+        target: "player", // "player", "admin", "targetPlayer", "global"
+        description: "A brief note about when this sound plays."
+    },
+    eventName2: { /* ... other sound event ... */ }
+}
+```
+
+**Properties for each `eventName`:**
+
+*   `enabled` (boolean):
+    *   **Purpose:** Set to `true` to enable this sound, `false` to disable it.
+    *   **Default:** Varies per event (see `config.example.js` or `config.js`).
+
+*   `soundId` (string):
+    *   **Purpose:** The Minecraft sound ID to play (e.g., `"random.orb"`, `"note.pling"`, `"mob.villager.no"`).
+    *   **Finding Sound IDs:** You can find vanilla sound IDs on the [Minecraft Wiki](https://minecraft.fandom.com/wiki/Sounds.json) or by using in-game commands like `/playsound`.
+    *   **Behavior:** If empty, `null`, or an invalid ID, no sound will play for this event even if `enabled` is true.
+
+*   `volume` (number, optional):
+    *   **Purpose:** Sets the volume of the sound.
+    *   **Range:** Typically `0.0` (silent) to `1.0` (normal). Values above 1.0 might amplify but can cause distortion.
+    *   **Default:** `1.0` if not specified.
+
+*   `pitch` (number, optional):
+    *   **Purpose:** Sets the pitch of the sound.
+    *   **Range:** `0.0` to `2.0`. `1.0` is normal pitch. Lower values are deeper, higher values are higher-pitched.
+    *   **Default:** `1.0` if not specified.
+
+*   `target` (string, optional):
+    *   **Purpose:** Determines who hears the sound.
+    *   **Valid Values:**
+        *   `"player"`: The primary player associated with the event (e.g., the one executing a command, the one receiving a warning). This is often the default if `target` is omitted or invalid.
+        *   `"admin"`: All online administrators who have their AntiCheat notifications enabled (respects `ac_notifications_on`/`_off` tags and `acGlobalNotificationsDefaultOn` config).
+        *   `"targetPlayer"`: A specific secondary player involved in an event (e.g., the player receiving a TPA request). The utility function `playSoundForEvent` needs to be called with this target player context.
+        *   `"global"`: All players currently online. **Use this with extreme caution** as it can be very spammy.
+    *   **Default:** Typically `"player"` if not specified.
+
+*   `description` (string):
+    *   **Purpose:** A human-readable description of when this sound is intended to play. This is for configuration reference and does not affect in-game behavior.
+
+**Currently Configurable Sound Events (Examples):**
+
+*   `tpaRequestReceived`: Sound for the player who receives a TPA or TPAHere request.
+*   `adminNotificationReceived`: Sound for an admin when they receive any AntiCheat system notification (via `playerUtils.notifyAdmins`).
+*   `playerWarningReceived`: Sound for a player when they receive a direct warning (via `playerUtils.warnPlayer`).
+*   `uiFormOpen`: (Example, default disabled) Sound when a UI form is opened for a player.
+*   `commandSuccess`: (Example, default disabled) Sound for a player upon successful command execution.
+*   `commandError`: (Example, default disabled) Sound for a player when their command results in an error.
+*   `automodActionTaken`: Sound for a player when AutoMod takes a significant action (kick, mute, ban) against them.
+
+Refer to `config.example.js` or the `soundEvents` object within `config.js` for the full list of available sound event keys and their default settings.
+
+---
+
 ## Customizing Automated Moderation (`automodConfig.js`)
 
 The file `AntiCheatsBP/scripts/core/automodConfig.js` controls the addon's Automated Moderation (AutoMod) system. This system allows you to define escalating punishments based on the number of flags a player accumulates for specific types of violations.

@@ -335,6 +335,7 @@ showAdminPanelMain = async function (player, playerDataManager, config_unused, d
     form.button(getString('common.button.close'), 'textures/ui/cancel');
 
     try {
+        playerUtils?.playSoundForEvent(player, "uiFormOpen", dependencies); // Sound for opening a form
         const response = await form.show(player);
         if (response.canceled) {
             playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Panel cancelled by ${playerName}. Reason: ${response.cancelationReason}`, playerName, dependencies);
