@@ -11,7 +11,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) `tpaManager.js` `generateRequestId()`**: The current UUID-like generator is simple. For higher collision resistance if many TPAs occur, evaluate if a more robust UUID method is needed (current is likely fine).
 - **(Medium) Offline Player Flag Purging (`purgeflags` command)**: Implement the functionality to purge flags for offline players, likely by directly modifying their persisted data in dynamic properties. (Context: `AntiCheatsBP/scripts/commands/purgeflags.js:31`).
 - **(Low) `uiManager.js` `formatDimensionName()`**: This helper is useful. Ensure it covers all standard Minecraft dimension IDs gracefully. Consider moving it to `playerUtils.js` or a new `worldUtils.js` if used elsewhere or if `playerUtils.js` becomes too large.
-- **(Low) `playerDataManager.js` `isDirtyForSave` Optimization**: Evaluate if frequently updated transient fields (e.g., `lastGameMode`, `lastDimensionId`) should trigger `isDirtyForSave = true` if they are the *only* changes, to potentially optimize save frequency.
 - **(Low) Review `main.js` API Readiness Checks**: As the Script API evolves, ensure `checkEventAPIsReady` in `main.js` remains relevant or adapts to new API stability patterns.
 
 ## New Feature Ideas (Examples - to be expanded by project owner)

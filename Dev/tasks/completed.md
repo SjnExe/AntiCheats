@@ -178,15 +178,22 @@ This document lists significant tasks that have been completed.
 **Summary of Work:**
 *   **Analysis:** Systematically reviewed command files, core modules (`uiManager.js`, `eventHandlers.js`, `playerDataManager.js`, `reportManager.js`, `main.js`, etc.), checks, and utility files. Identified hardcoded user-facing strings, primarily in admin notifications within command files and some system messages.
 *   **`textDatabase.js` Update:** Added new keys for all identified strings, following a `module.subModule.keyName` or `command.commandName.notify.action` convention. Included placeholders where necessary.
-*   **Code Refactoring:** Replaced hardcoded strings in the codebase with calls to `playerUtils.getString('new.key.name', {placeholder: value})`. This included:
-    *   Admin notification messages in most command files.
-    *   The admin notification message in `playerDataManager.js` for flagging.
-    *   The admin notification message in `reportManager.js` for new reports.
-    *   A critical error message in `eventHandlers.js`.
-    *   The system initialization message in `main.js`.
+*   **Code Refactoring:** Replaced hardcoded strings in the codebase with calls to `playerUtils.getString('new.key.name', {placeholder: value})`.
 *   **Scope Note:** Templates in `actionProfiles.js` and `automodConfig.js`, and dynamic action bar messages in TPA commands were considered out of scope for full `getString()` abstraction in this pass but were reviewed. The default admin message template in `automodManager.js` was improved.
 *   **Testing:** Conceptual test confirmed that strings are now sourced correctly and new keys are logical.
 *   Updated task management files.
-*   **Submission:** Branch `refactor/localize-user-strings`. (To be submitted next)
+*   **Submission:** Branch `refactor/localize-user-strings`.
+
+---
+
+## Optimization: `isDirtyForSave` Logic in `playerDataManager.js` (Jules - Completed: 2024-08-01)
+**Objective:** Evaluate if frequently updated transient fields (e.g., `lastGameMode`, `lastDimensionId`) should trigger `isDirtyForSave = true` if they are the *only* changes, to potentially optimize save frequency.
+**Summary of Work:**
+*   **Analysis:** Reviewed `updateTransientPlayerData` and `persistedPlayerDataKeys` in `playerDataManager.js`. Identified that changes to non-persisted fields `lastGameMode`, `lastDimensionId`, and item use booleans (`isUsingConsumable`, etc., in `clearExpiredItemUseStates`) were incorrectly setting `isDirtyForSave = true`.
+*   **Refinement:** Implemented a simple strategy to remove the `isDirtyForSave = true;` assignments for these specific non-persisted fields.
+*   **Impact:** This change prevents unnecessary save operations when only these non-critical, non-persisted transient data points change, while ensuring saves still occur for actual persisted data modifications.
+*   **Testing:** Conceptual testing confirmed the optimization works as intended without affecting saves for critical data.
+*   Updated task management files.
+*   **Submission:** Branch `optimize/pdata-dirty-save-logic`. (To be submitted next)
 
 ---

@@ -507,11 +507,11 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
     if (pData.lastGameMode !== player.gameMode) {
         pData.lastGameMode = player.gameMode;
-        pData.isDirtyForSave = true; // Game mode changes should be persisted
+        // pData.isDirtyForSave = true; // Removed: lastGameMode is not persisted
     }
     if (pData.lastDimensionId !== player.dimension.id) {
         pData.lastDimensionId = player.dimension.id;
-        pData.isDirtyForSave = true; // Dimension changes should be persisted
+        // pData.isDirtyForSave = true; // Removed: lastDimensionId is not persisted
     }
 
     const effects = player.getEffects();
@@ -935,7 +935,7 @@ export function clearExpiredItemUseStates(pData, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.clearExpiredItemUseStates] Auto-clearing isUsingConsumable for ${playerName}. Tick: ${currentTick}`, playerName, dependencies);
         }
         pData.isUsingConsumable = false;
-        pData.isDirtyForSave = true;
+        // pData.isDirtyForSave = true; // Removed: isUsingConsumable is not persisted
     }
 
     if (pData.isChargingBow && (currentTick - (pData.lastItemUseTick || 0) > itemUseTimeoutTicks)) {
@@ -943,7 +943,7 @@ export function clearExpiredItemUseStates(pData, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.clearExpiredItemUseStates] Auto-clearing isChargingBow for ${playerName}. Tick: ${currentTick}`, playerName, dependencies);
         }
         pData.isChargingBow = false;
-        pData.isDirtyForSave = true;
+        // pData.isDirtyForSave = true; // Removed: isChargingBow is not persisted
     }
 
     if (pData.isUsingShield && (currentTick - (pData.lastItemUseTick || 0) > itemUseTimeoutTicks)) {
@@ -951,6 +951,6 @@ export function clearExpiredItemUseStates(pData, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.clearExpiredItemUseStates] Auto-clearing isUsingShield for ${playerName}. Tick: ${currentTick}`, playerName, dependencies);
         }
         pData.isUsingShield = false;
-        pData.isDirtyForSave = true;
+        // pData.isDirtyForSave = true; // Removed: isUsingShield is not persisted
     }
 }
