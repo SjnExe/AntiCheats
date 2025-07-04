@@ -71,6 +71,20 @@ This document lists significant tasks that have been completed.
 
 ---
 
+## Code Review: TODO/FIXME Comments (Jules - Completed: 2024-08-01)
+**Objective:** Review all `TODO` and `FIXME` comments in the codebase, addressing them or converting them to tasks.
+**Summary of Work:**
+*   Scanned codebase for "TODO" and "FIXME" comments.
+*   Reviewed identified comments:
+    *   A feature enhancement TODO in `purgeflags.js` (offline purging) was converted to a new task in `Dev/tasks/todo.md`.
+    *   Asset placeholder TODOs in `README.md` were converted to new tasks in `Dev/tasks/todo.md` for tracking.
+    *   No quick code fixes or obsolete comment removals were necessary based on the scan.
+*   Updated `Dev/tasks/todo.md` with these new items.
+*   Updated `Dev/tasks/ongoing.md` to reflect the progress of this review task.
+*   **Submission:** Branch `chore/review-todo-fixme-comments`. (Actual branch name will be from the submit tool call for this task)
+
+---
+
 ## Code Refinement: Optional Chaining Application (Jules - Completed: 2024-08-01)
 **Objective:** Systematically review and apply optional chaining (`?.`) more broadly across the codebase, especially in `uiManager.js` and `eventHandlers.js`, to improve robustness against errors from potentially null/undefined objects or properties.
 **Summary of Work:**
