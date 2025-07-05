@@ -576,11 +576,16 @@ function attemptInitializeSystem(retryCount = 0) {
         if (retryCount < maxInitRetries) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // maxInitRetries reached - Simplified for diagnostics
-            console.error('[AntiCheat] MAX RETRIES REACHED - EXHAUSTION BLOCK ENTERED. Attempting to proceed.');
-            // Directly call performInitializations to see if this path is reached and if performInitializations logs anything.
-            // Temporarily removed admin notification and other logic here to ensure this block itself isn't failing silently.
-            performInitializations();
+            // Max retries reached
+            if (checkEventAPIsReady(tempStartupDepsForLog)) { // Final check
+                console.warn('[AntiCheat] MAX RETRIES REACHED, but APIs appear to be ready now. Proceeding with initialization.');
+                performInitializations();
+            } else {
+                console.error('[AntiCheatCRITICAL] MAX RETRIES REACHED and critical APIs are STILL MISSING. AntiCheat system will NOT initialize.');
+                console.error('[AntiCheatCRITICAL] Please check Minecraft version, experimental toggles, and for conflicting addons or script engine errors.');
+                // Optionally, try a very minimal admin notification if a safe way exists
+                // For now, primarily relying on console errors.
+            }
         }
     }
 }
