@@ -100,7 +100,7 @@ Get up and running in minutes!
     *   Open `AntiCheatsBP/scripts/config.js`. (Note: `.mcaddon` files are zip archives; you may need to rename to `.zip` or use an archive tool to access the contents if editing manually.)
     *   Set `ownerPlayerName` to your **exact** in-game name (case-sensitive). This grants you full control!
 6.  **🎮 Explore:** Join your world and type `!panel` (or `!ui`) to open the Admin UI.
-6.  **🔧 Configure (Optional but Recommended):**
+7.  **🔧 Configure (Optional but Recommended):**
     *   Review other core settings (admin tag, command prefix, etc.) in `AntiCheatsBP/scripts/config.js`.
     *   Explore the in-game settings panel (`!panel`) for more specific check configurations.
     *   For detailed setup and advanced options, visit our [**Setup and Configuration Guide**](Docs/ConfigurationGuide.md).
