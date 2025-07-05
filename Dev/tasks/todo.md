@@ -10,8 +10,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Medium) `worldBorderManager.js` Robustness**: Consider if `worldBorderManager.getBorderSettings` should be more robust if a dimension from `config.worldBorderKnownDimensions` is invalid or if the dynamic property for a specific dimension is corrupted.
 - **(Low) `tpaManager.js` `generateRequestId()`**: The current UUID-like generator is simple. For higher collision resistance if many TPAs occur, evaluate if a more robust UUID method is needed (current is likely fine).
 - **(Medium) Offline Player Flag Purging (`purgeflags` command)**: Implement the functionality to purge flags for offline players, likely by directly modifying their persisted data in dynamic properties. (Context: `AntiCheatsBP/scripts/commands/purgeflags.js:31`).
-- **(Low) `uiManager.js` `formatDimensionName()`**: This helper is useful. Ensure it covers all standard Minecraft dimension IDs gracefully. Consider moving it to `playerUtils.js` or a new `worldUtils.js` if used elsewhere or if `playerUtils.js` becomes too large.
-- **(Low) Review `main.js` API Readiness Checks**: As the Script API evolves, ensure `checkEventAPIsReady` in `main.js` remains relevant or adapts to new API stability patterns.
 
 ## New Feature Ideas (Examples - to be expanded by project owner)
 - **(Medium) More advanced X-Ray detection methods (if feasible with Script API).**

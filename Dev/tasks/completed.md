@@ -210,3 +210,21 @@ This document lists significant tasks that have been completed.
 *   **Submission:** Branch `jules/general-review-cleanup`.
 
 ---
+
+## Comprehensive Documentation Review (Jules - Completed: Current Session Date)
+**Objective:** Review and update `README.md`, `AGENTS.md`, `Docs/*`, and `Dev/*` to ensure accuracy, consistency, and completeness.
+**Summary of Work:**
+*   **AGENTS.md:** Reviewed and found to be up-to-date.
+*   **Dev Folder (`Dev/*.md`):**
+    *   Reviewed `Dev/README.md`, `Dev/CodingStyle.md`, `Dev/StandardizationGuidelines.md`, `Dev/VersioningNotes.md`; all found current.
+    *   Updated `Dev/tasks/ongoing.md` to reflect the current documentation task throughout the process.
+    *   Updated `Dev/tasks/todo.md` to remove completed items (`formatDimensionName` utility refactor, `main.js` API readiness review).
+*   **Docs Folder (`Docs/*.md`):**
+    *   Reviewed `Docs/ConfigurationGuide.md` and `Docs/FeaturesOverview.md`; found them largely accurate. Made a minor correction in `Docs/ConfigurationGuide.md` regarding `config.example.js` reference.
+    *   Reviewed `Docs/Commands.md`, `Docs/AutoModDetails.md`, `Docs/Troubleshooting.md`, `Docs/WorldBorderDetails.md`; all found current.
+    *   Updated `Docs/RankSystem.md` to better explain the role and structure of `ranksConfig.js`.
+*   **Root README.md:**
+    *   Reviewed and found to be largely up-to-date. Corrected a minor list numbering typo in the "Quick Start & Setup" section.
+*   Updated `Dev/tasks/ongoing.md` to "No tasks currently ongoing." upon completion of all reviews and updates.
+*   **Submission:** Branch `docs/comprehensive-review-updates`.
+---

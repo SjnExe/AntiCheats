@@ -284,7 +284,7 @@ soundEvents: {
 *   `commandError`: (Example, default disabled) Sound for a player when their command results in an error.
 *   `automodActionTaken`: Sound for a player when AutoMod takes a significant action (kick, mute, ban) against them.
 
-Refer to `config.example.js` or the `soundEvents` object within `config.js` for the full list of available sound event keys and their default settings.
+Refer to the `soundEvents` object within `defaultConfigSettings` in `config.js` for the full list of available sound event keys and their default settings.
 
 ---
 
