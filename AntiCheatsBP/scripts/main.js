@@ -224,7 +224,6 @@ function performInitializations() {
     // TPA warmup damage cancellation feature is disabled.
     console.warn('[AntiCheat] Feature disabled: TPA warmup damage cancellation (world.beforeEvents.entityHurt unavailable).');
 
-
     if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerBreakBlock) {
         mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
@@ -560,7 +559,6 @@ function performInitializations() {
         }
     }, 20); // Runs every second (20 ticks)
 }
-
 
 /**
  * Attempts to initialize the system. If critical APIs are not ready, it schedules a retry.

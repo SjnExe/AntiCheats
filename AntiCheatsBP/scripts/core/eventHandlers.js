@@ -191,7 +191,6 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                 gameMode: spawnGameMode,
             }, dependencies);
         }
-
         if (pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
             minecraftSystem.system.runTimeout(() => {
                 try { if (player.isValid()) player.sendMessage(pData.deathMessageToShowOnSpawn); } catch (e) { console.warn(`[EventHandler.handlePlayerSpawn] Failed to send death coords to ${playerName}: ${e.message}`); }

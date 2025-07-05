@@ -52,7 +52,6 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 }
             }
         }
-
         if (!eventData.cancel && config?.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
             const itemUseState = pData.isUsingConsumable ? getString('check.inventoryMod.action.usingConsumable') : getString('check.inventoryMod.action.chargingBow');
             const profile = config.checkActionProfiles?.['playerChatDuringItemUse'];

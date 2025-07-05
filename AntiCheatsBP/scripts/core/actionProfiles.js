@@ -150,7 +150,6 @@ export const checkActionProfiles = {
             detailsPrefix: 'Sustained Flight: ',
         },
     },
-
     // Combat Checks
     combatReachAttack: {
         enabled: true,

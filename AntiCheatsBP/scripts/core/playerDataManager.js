@@ -231,7 +231,6 @@ if (allKnownFlagTypes.length === 0) {
     console.warn('[PlayerDataManager] Warning: allKnownFlagTypes is empty after dynamic generation. Check actionProfiles.js configuration.');
 }
 
-
 /**
  * Initializes a new default PlayerAntiCheatData object for a player.
  * @param {import('@minecraft/server').Player} player - The player object.
@@ -409,7 +408,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }
-
     playerData.set(player.id, newPData);
     return newPData;
 }
