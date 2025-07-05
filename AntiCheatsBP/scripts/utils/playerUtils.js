@@ -58,6 +58,33 @@ export function warnPlayer(player, reason, dependencies) {
 }
 
 /**
+ * Formats a dimension ID string into a more readable name.
+ * @param {string} dimensionId - The dimension ID (e.g., 'minecraft:the_nether', 'overworld').
+ * @returns {string} The formatted dimension name (e.g., 'The Nether', 'Overworld'), or 'Unknown Dimension' for invalid/empty input.
+ */
+export function formatDimensionName(dimensionId) {
+    if (typeof dimensionId !== 'string' || dimensionId.trim() === '') {
+        return 'Unknown Dimension'; // Handle empty or non-string input
+    }
+
+    // Case-insensitive removal of "minecraft:" prefix
+    let name = dimensionId.toLowerCase().startsWith('minecraft:')
+        ? dimensionId.substring(10)
+        : dimensionId;
+
+    name = name.replace(/_/g, ' ').trim(); // Replace underscores and trim whitespace
+
+    if (name === '') {
+        return 'Unknown Dimension'; // Handle cases where only "minecraft:" was passed or became empty
+    }
+
+    return name
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+/**
  * Notifies online administrators of an event.
  * @param {string} baseMessage - The core message to send.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies.

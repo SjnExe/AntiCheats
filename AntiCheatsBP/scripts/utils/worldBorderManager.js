@@ -98,7 +98,7 @@ export function getBorderSettings(dimensionId, dependencies) {
         playerUtils.debugLog('[WorldBorderManager] getBorderSettings: Invalid dimensionId provided.', null, dependencies);
         return null;
     }
-    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace('minecraft:', '');
+    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.toLowerCase().replace('minecraft:', '');
     try {
         const settingsJson = mc.world.getDynamicProperty(propertyKey);
         if (typeof settingsJson === 'string') {
@@ -148,7 +148,7 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
         playerUtils.debugLog('[WorldBorderManager] saveBorderSettings: Invalid dimensionId or settings provided.', null, dependencies);
         return false;
     }
-    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace('minecraft:', '');
+    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.toLowerCase().replace('minecraft:', '');
     const fullSettings = { ...settingsToSave, dimensionId: dimensionId };
     if (fullSettings.shape === 'square') {
         if (typeof fullSettings.halfSize !== 'number' || fullSettings.halfSize <= 0) {
@@ -326,7 +326,7 @@ export function processWorldBorderResizing(dependencies) {
                 dimBorderSettings.resizeStartTimeMs = undefined;
                 dimBorderSettings.resizeDurationMs = undefined;
                 if (saveBorderSettings(dimId, dimBorderSettings, dependencies)) {
-                    playerUtils.debugLog(`[WorldBorderManager] Border resize in ${dimId.replace('minecraft:', '')} completed. New size: ${targetSize}.`, 'System', dependencies);
+                    playerUtils.debugLog(`[WorldBorderManager] Border resize in ${playerUtils.formatDimensionName(dimId)} completed. New size: ${targetSize}.`, 'System', dependencies);
                     logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` }, dependencies);
                 } else {
                     playerUtils.debugLog(`[WorldBorderManager] Failed to save completed border resize for ${dimId}.`, 'System', dependencies);
@@ -526,7 +526,7 @@ export function clearBorderSettings(dimensionId, dependencies) {
         playerUtils.debugLog('[WorldBorderManager] clearBorderSettings: Invalid dimensionId provided.', null, dependencies);
         return false;
     }
-    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.replace('minecraft:', '');
+    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.toLowerCase().replace('minecraft:', '');
     try {
         mc.world.setDynamicProperty(propertyKey, undefined); // Setting to undefined removes the property
         playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, 'System', dependencies);

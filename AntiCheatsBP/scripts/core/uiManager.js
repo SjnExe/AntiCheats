@@ -5,19 +5,8 @@
  */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui'; // Direct imports
-import { formatSessionDuration } from '../utils/playerUtils.js';
+import { formatSessionDuration, formatDimensionName } from '../utils/index.js'; // Updated import
 import { editableConfigValues as globalEditableConfigValues } from '../config.js';
-
-/**
- * Formats a dimension ID string into a more readable name.
- * @param {string} dimensionId - The dimension ID (e.g., 'minecraft:the_nether').
- * @returns {string} The formatted dimension name (e.g., 'The Nether').
- */
-function formatDimensionName(dimensionId) {
-    if (typeof dimensionId !== 'string') return 'Unknown';
-    let name = dimensionId.replace('minecraft:', '').replace(/_/g, ' ');
-    return name.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
 
 // Forward declarations for UI functions
 let showAdminPanelMain;

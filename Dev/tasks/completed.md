@@ -194,6 +194,19 @@ This document lists significant tasks that have been completed.
 *   **Impact:** This change prevents unnecessary save operations when only these non-critical, non-persisted transient data points change, while ensuring saves still occur for actual persisted data modifications.
 *   **Testing:** Conceptual testing confirmed the optimization works as intended without affecting saves for critical data.
 *   Updated task management files.
-*   **Submission:** Branch `optimize/pdata-dirty-save-logic`. (To be submitted next)
+*   **Submission:** Branch `optimize/pdata-dirty-save-logic`.
+
+---
+
+## General Code Review & Minor Cleanup (Jules - Completed: Current Session Date)
+**Objective:** Perform a general review of the codebase for minor cleanup opportunities and ensure understanding of current development practices.
+**Summary of Work:**
+*   Reviewed comments in key core files; most were kept for clarity, minor placeholder/redundant comments removed.
+*   Reviewed selected core, utility, and check files for internal unused code; no significant findings.
+*   Reviewed all script directories for excessive empty lines; removed several instances primarily in core files.
+*   Read and acknowledged `AGENTS.md`, `Dev/CodingStyle.md`, `Dev/StandardizationGuidelines.md`, and `Dev/README.md`.
+*   Updated `Dev/tasks/ongoing.md` to reflect the session's work.
+*   Reviewed main `README.md` and developer documentation; confirmed they are largely up-to-date with no major changes required from this pass.
+*   **Submission:** Branch `jules/general-review-cleanup`.
 
 ---
