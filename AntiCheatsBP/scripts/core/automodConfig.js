@@ -325,7 +325,6 @@ export const automodConfig = {
         ],
         // Add more checkTypes here in the future
     },
-
     /**
      * Allows enabling or disabling AutoMod for specific checkTypes.
      * Keys are checkType strings (e.g., 'flyHover').

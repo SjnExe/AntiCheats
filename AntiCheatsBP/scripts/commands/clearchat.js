@@ -47,7 +47,11 @@ export async function execute(player, _args, dependencies) {
     }
 
     try {
-        playerUtils?.notifyAdmins(`§7[Admin] Chat cleared by §e${adminName}§7.`, dependencies, player, null);
+        // Configurable notification
+        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+            const baseNotifyMsg = getString('command.clearchat.notify.cleared', { adminName: adminName });
+            playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
+        }
 
         logManager?.addLog({
             // timestamp: Date.now(), // logManager should handle timestamp

@@ -66,7 +66,8 @@ export async function execute(player, args, dependencies) {
 
         if (playerUtils.notifyAdmins) {
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            playerUtils.notifyAdmins(`§7[Admin] §e${foundPlayer.nameTag} §7was kicked by §e${player.nameTag}§7. Reason: §f${reason}`, dependencies, player, targetPData);
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: reason });
+            playerUtils.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         }
         if (logManager?.addLog) {
             logManager.addLog({
@@ -77,15 +78,21 @@ export async function execute(player, args, dependencies) {
                 reason: reason,
             }, dependencies);
         }
+        playerUtils.playSoundForEvent(player, "commandSuccess", dependencies);
     } catch (e) {
         player.sendMessage(getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message }));
         console.error(`[KickCommand] Error kicking player ${targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
+        playerUtils.playSoundForEvent(player, "commandError", dependencies);
         if (logManager?.addLog) {
-            logManager.addLog({
+            logManager.addLog({ // This is for system error logging, separate from commandError sound
+                actionType: 'errorKickCommand', // Standardized error actionType
+                context: 'kick.execute',    // Standardized context
                 adminName: player.nameTag,
-                actionType: 'error',
-                context: 'kickCommand.execution',
-                details: `Failed to kick ${targetPlayerName}: ${e.stack || e}`,
+                details: {
+                    targetPlayerName: targetPlayerName,
+                    errorMessage: e.message,
+                    stack: e.stack
+                }
             }, dependencies);
         }
     }

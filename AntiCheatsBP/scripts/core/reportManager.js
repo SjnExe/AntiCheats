@@ -138,11 +138,18 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
         context: 'ReportManager.addReport',
     }, dependencies);
 
-    const adminNotification = `§e[Report] §b${reporterPlayer.nameTag} §7reported §b${reportedPlayerName}§7. Reason: §f${reason} §7(ID: ${newReport.id})`;
+    // Message without local prefix, relying on global prefix from notifyAdmins
+    const adminNotification = getString('report.notify.newReport', { reporterName: reporterPlayer.nameTag, reportedName: reportedPlayerName, reason: reason, reportId: newReport.id });
     // The last parameter for notifyAdmins in the original code was a command string.
     // This seems like a specific feature for this notification. Assuming it's meant to be part of the message or handled differently.
     // For now, just passing the core message. If a clickable command is needed, UI elements are better.
-    playerUtils?.notifyAdmins(adminNotification, dependencies, null, null);
+
+    // Configurable notification for new reports
+    // Default to true if dependencies.config.notifications is undefined or the specific key is undefined
+    const shouldNotify = dependencies.config.notifications ? dependencies.config.notifications.notifyOnNewPlayerReport !== false : true;
+    if (shouldNotify) {
+        playerUtils?.notifyAdmins(adminNotification, dependencies, null, null);
+    }
 
     return newReport;
 }

@@ -224,7 +224,6 @@ function performInitializations() {
     // TPA warmup damage cancellation feature is disabled.
     console.warn('[AntiCheat] Feature disabled: TPA warmup damage cancellation (world.beforeEvents.entityHurt unavailable).');
 
-
     if (mc.world && mc.world.beforeEvents && mc.world.beforeEvents.playerBreakBlock) {
         mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
@@ -337,7 +336,7 @@ function performInitializations() {
     }
 
     playerUtils.debugLog('Anti-Cheat Core System Initialized. Event handlers and tick loop are active.', 'System', startupDependencies);
-    mc.world.sendMessage('§a[AntiCheat] §2System Core Initialized. Version: ' + configModule.acVersion);
+    mc.world.sendMessage(startupDependencies.getString('system.core.initialized', { version: configModule.acVersion }));
 
     // Start Tick Loops now that initializations are done
     playerUtils.debugLog('[PerformInitializations] Starting main tick loop and TPA tick loop...', 'System', startupDependencies);
@@ -352,7 +351,14 @@ function performInitializations() {
             } catch (e) {
                 console.error(`[MainTick] Error processing world border resizing: ${e.stack || e.message}`);
                 playerUtils.debugLog(`[MainTick] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
-                logManager.addLog({ actionType: 'errorWorldBorderResizeTick', context: 'MainTickLoop.worldBorderResizing', details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
+                logManager.addLog({
+                    actionType: 'errorMainWorldBorderResize', // Standardized
+                    context: 'main.tickLoop.worldBorderResizing', // Standardized
+                    details: {
+                        errorMessage: e.message,
+                        stack: e.stack
+                    }
+                }, tickDependencies);
             }
         }
 
@@ -457,11 +463,13 @@ function performInitializations() {
                 console.error(`[AntiCheatCoreTick] Error during player-specific checks for ${player?.nameTag}: ${checkError.stack || checkError}`);
                 playerUtils.debugLog(`[AntiCheatCoreTick] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
                 logManager.addLog({
-                    actionType: 'errorPlayerTickChecks',
+                    actionType: 'errorMainPlayerTickChecks', // Standardized
+                    context: 'main.tickLoop.playerChecks',   // Standardized
                     targetName: player?.nameTag || 'UnknownPlayer',
-                    details: `Error: ${checkError.message}`,
-                    error: checkError.stack || checkError.message,
-                    context: 'MainTickLoop.PlayerChecks',
+                    details: {
+                        errorMessage: checkError.message,
+                        stack: checkError.stack
+                    }
                 }, tickDependencies);
                 // Continue to the next player rather than breaking the whole tick loop.
             }
@@ -488,7 +496,15 @@ function performInitializations() {
                 } catch (e) {
                     console.error(`[MainTick] Error enforcing world border for player ${player.nameTag}: ${e.stack || e.message}`);
                     playerUtils.debugLog(`[MainTick] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
-                    logManager.addLog({ actionType: 'errorWorldBorderEnforceTick', context: 'MainTickLoop.worldBorderEnforcement', targetName: player.nameTag, details: `Error: ${e.message}`, error: e.stack || e.message }, tickDependencies);
+                    logManager.addLog({
+                        actionType: 'errorMainWorldBorderEnforce', // Standardized
+                        context: 'main.tickLoop.worldBorderEnforcement', // Standardized
+                        targetName: player.nameTag,
+                        details: {
+                            errorMessage: e.message,
+                            stack: e.stack
+                        }
+                    }, tickDependencies);
                 }
             }
         }
@@ -505,7 +521,15 @@ function performInitializations() {
                         }
                     } catch (error) {
                         console.error(`Error during periodic save for ${player.nameTag}: ${error.message}`);
-                        logManager.addLog({ actionType: 'error', context: 'PeriodicSaveFail', details: `Player: ${player.nameTag}, Error: ${error.message}` }, tickDependencies);
+                        logManager.addLog({
+                            actionType: 'errorMainPeriodicSave', // Standardized
+                            context: 'main.tickLoop.periodicDataSave', // Standardized
+                            details: {
+                                playerName: player.nameTag,
+                                errorMessage: error.message,
+                                stack: error.stack // Assuming error might have stack
+                            }
+                        }, tickDependencies);
                     }
                 }
             }
@@ -536,7 +560,6 @@ function performInitializations() {
     }, 20); // Runs every second (20 ticks)
 }
 
-
 /**
  * Attempts to initialize the system. If critical APIs are not ready, it schedules a retry.
  * @param {number} retryCount - Current number of retry attempts.
@@ -553,11 +576,16 @@ function attemptInitializeSystem(retryCount = 0) {
         if (retryCount < maxInitRetries) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // maxInitRetries reached - Simplified for diagnostics
-            console.error('[AntiCheat] MAX RETRIES REACHED - EXHAUSTION BLOCK ENTERED. Attempting to proceed.');
-            // Directly call performInitializations to see if this path is reached and if performInitializations logs anything.
-            // Temporarily removed admin notification and other logic here to ensure this block itself isn't failing silently.
-            performInitializations();
+            // Max retries reached
+            if (checkEventAPIsReady(tempStartupDepsForLog)) { // Final check
+                console.warn('[AntiCheat] MAX RETRIES REACHED, but APIs appear to be ready now. Proceeding with initialization.');
+                performInitializations();
+            } else {
+                console.error('[AntiCheatCRITICAL] MAX RETRIES REACHED and critical APIs are STILL MISSING. AntiCheat system will NOT initialize.');
+                console.error('[AntiCheatCRITICAL] Please check Minecraft version, experimental toggles, and for conflicting addons or script engine errors.');
+                // Optionally, try a very minimal admin notification if a safe way exists
+                // For now, primarily relying on console errors.
+            }
         }
     }
 }

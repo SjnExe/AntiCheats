@@ -6,6 +6,7 @@
  */
 import * as mc from '@minecraft/server';
 import { processAutoModActions } from './automodManager.js';
+import { checkActionProfiles } from './actionProfiles.js'; // Added for dynamic flag types
 
 /**
  * In-memory cache for player data.
@@ -68,11 +69,14 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         console.error(`[PlayerDataManager.savePlayerDataToDynamicProperties] Error stringifying pData for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] Failed to stringify pData for ${playerName}. Error: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorPdataStringify',
-            context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
+            actionType: 'errorPlayerDataManagerStringify', // Standardized
+            context: 'playerDataManager.savePlayerDataToDynamicProperties', // Standardized
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error,
+            details: {
+                operation: 'JSON.stringify',
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
         return false;
     }
@@ -91,11 +95,15 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         console.error(`[PlayerDataManager.savePlayerDataToDynamicProperties] Error setting dynamic property for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] Failed to set dynamic property for ${playerName}. Error: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorPdataSetProperty',
-            context: 'PlayerDataManager.savePlayerDataToDynamicProperties',
+            actionType: 'errorPlayerDataManagerSetProperty', // Standardized
+            context: 'playerDataManager.savePlayerDataToDynamicProperties', // Standardized
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error,
+            details: {
+                operation: 'player.setDynamicProperty',
+                propertyKey: dynamicPropertyKeyV1,
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
         return false;
     }
@@ -123,11 +131,15 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
         console.error(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Error getting dynamic property for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Failed to get dynamic property for ${playerName}. Error: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorPdataGetProperty',
-            context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
+            actionType: 'errorPlayerDataManagerGetProperty', // Standardized
+            context: 'playerDataManager.loadPlayerDataFromDynamicProperties', // Standardized
             targetName: playerName,
-            details: `Error: ${error.message}`,
-            error: error.stack || error,
+            details: {
+                operation: 'player.getDynamicProperty',
+                propertyKey: dynamicPropertyKeyV1,
+                errorMessage: error.message,
+                stack: error.stack
+            }
         }, dependencies);
         return null;
     }
@@ -141,11 +153,15 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             console.error(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Error parsing pData JSON for ${playerName}: ${error.stack || error}`);
             playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Failed to parse JSON for ${playerName}. JSON (start): '${jsonString.substring(0, 200)}'. Error: ${error.message}`, playerName, dependencies);
             logManager?.addLog({
-                actionType: 'errorPdataParse',
-                context: 'PlayerDataManager.loadPlayerDataFromDynamicProperties',
+                actionType: 'errorPlayerDataManagerParse', // Standardized
+                context: 'playerDataManager.loadPlayerDataFromDynamicProperties', // Standardized
                 targetName: playerName,
-                details: `Error: ${error.message}. JSON (truncated): ${jsonString.substring(0, 100)}...`,
-                error: error.stack || error,
+                details: {
+                    operation: 'JSON.parse',
+                    jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : ''),
+                    errorMessage: error.message,
+                    stack: error.stack
+                }
             }, dependencies);
             return null;
         }
@@ -188,6 +204,34 @@ export async function prepareAndSavePlayerData(player, dependencies) {
 }
 
 /**
+ * Dynamically generates the list of all known flag types from actionProfiles.
+ * This ensures that any flag type defined in actionProfiles (either as a primary checkType
+ * or a specific profile.flag.type) is initialized in player data.
+ */
+const dynamicallyGeneratedFlagTypes = new Set();
+for (const checkKey in checkActionProfiles) {
+    const profile = checkActionProfiles[checkKey];
+    // Ensure profile and profile.flag are valid objects
+    if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
+        if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
+            // Use specific flag.type if defined and non-empty
+            dynamicallyGeneratedFlagTypes.add(profile.flag.type);
+        } else {
+            // Otherwise, if a flag object exists but flag.type is not specified or empty,
+            // use the main checkKey as the flag type, as this is the implicit flag name.
+            dynamicallyGeneratedFlagTypes.add(checkKey);
+        }
+    }
+}
+const allKnownFlagTypes = Array.from(dynamicallyGeneratedFlagTypes);
+if (allKnownFlagTypes.length === 0) {
+    // This is a fallback/warning. If actionProfiles is empty or misconfigured,
+    // this log helps identify that no flag types were found.
+    // In a production environment with valid actionProfiles, this shouldn't trigger.
+    console.warn('[PlayerDataManager] Warning: allKnownFlagTypes is empty after dynamic generation. Check actionProfiles.js configuration.');
+}
+
+/**
  * Initializes a new default PlayerAntiCheatData object for a player.
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {number} currentTick - The current game tick.
@@ -201,22 +245,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
 
     // Initialize all flag types to ensure they exist in pData.flags
     const defaultFlags = { totalFlags: 0 };
-    const allKnownFlagTypes = [ // This list should be exhaustive or dynamically generated if possible
-        'movementFlyHover', 'movementSpeedGround', 'movementNoFall', 'movementNoSlow', 'movementInvalidSprint',
-        'movementNetherRoof', 'movementHighYVelocity', 'movementSustainedFly', 'combatReachAttack', 'combatCpsHigh',
-        'combatViewSnapPitch', 'combatViewSnapYaw', 'combatInvalidPitch', 'combatMultiTargetAura',
-        'combatAttackWhileSleeping', 'combatAttackWhileConsuming', 'combatAttackWhileBowCharging', 'combatAttackWhileShielding',
-        'combatLog', 'worldNuker', 'worldIllegalItemUse', 'worldIllegalItemPlace', 'worldTowerBuild',
-        'worldFlatRotationBuilding', 'worldDownwardScaffold', 'worldAirPlace', 'worldFastPlace', 'worldAutoTool',
-        'worldInstaBreakUnbreakable', 'worldInstaBreakSpeed', 'actionFastUse', 'playerNameSpoof', 'playerAntiGmc',
-        'playerInventoryMod', 'playerInventoryModSwitchUse', 'playerInventoryModMoveLocked', 'playerSelfHurt',
-        'playerClientAnomaly', 'playerChatStateViolation', 'chatSpamFast', 'chatSpamMaxWords', 'chatLanguageViolation',
-        'chatAdvertising', 'chatCapsAbuse', 'chatCharRepeat', 'chatSymbolSpam', 'chatContentRepeat', 'chatUnicodeAbuse',
-        'chatGibberish', 'chatExcessiveMentions', 'chatImpersonationAttempt', 'chatNewline', 'chatMaxLength',
-        'worldAntiGriefTntPlace', 'worldAntiGriefWitherSpawn', 'worldAntiGriefFire', 'worldAntiGriefLava',
-        'worldAntiGriefWater', 'worldAntiGriefBlockspam', 'worldAntiGriefEntityspam', 'worldAntiGriefBlockspamDensity',
-        'worldAntiGriefPistonLag'
-    ];
+    // Uses the dynamically generated allKnownFlagTypes array from module scope
     for (const flagKey of allKnownFlagTypes) {
         defaultFlags[flagKey] = { count: 0, lastDetectionTime: 0 };
     }
@@ -379,7 +408,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }
-
     playerData.set(player.id, newPData);
     return newPData;
 }
@@ -439,8 +467,8 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.lastOnGroundPosition = { ...player.location };
         try {
             const feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
-            const blockBelowFeet = player.dimension.getBlock(feetPos.offset(0, -1, 0)); // Use offset for clarity
-            const blockAtFeet = player.dimension.getBlock(feetPos);
+            const blockBelowFeet = player.dimension?.getBlock(feetPos.offset(0, -1, 0)); // Use offset for clarity
+            const blockAtFeet = player.dimension?.getBlock(feetPos);
 
             if (blockBelowFeet?.typeId === mc.MinecraftBlockTypes.slime.id || blockAtFeet?.typeId === mc.MinecraftBlockTypes.slime.id) {
                 pData.lastOnSlimeBlockTick = currentTick;
@@ -452,11 +480,14 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             if (!pData.slimeCheckErrorLogged) { // Prevent log spam
                 console.warn(`[PlayerDataManager.updateTransientPlayerData] Error checking slime block for ${playerName}: ${e.stack || e}`);
                 logManager?.addLog({
-                    actionType: 'errorSlimeCheck',
-                    targetName: playerName, // Use consistent targetName
-                    details: `Error: ${e.message}`,
-                    error: e.stack || e.message,
-                    context: 'updateTransientPlayerData.slimeBlockCheck',
+                    actionType: 'errorPlayerDataManagerSlimeCheck', // Standardized
+                    context: 'playerDataManager.updateTransientPlayerData.slimeBlockCheck', // Standardized
+                    targetName: playerName,
+                    details: {
+                        errorMessage: e.message,
+                        stack: e.stack,
+                        feetPos: feetPos // Added for more context
+                    }
                 }, dependencies);
                 pData.slimeCheckErrorLogged = true; // Set flag to prevent repeated logging of this error per session
             }
@@ -474,11 +505,11 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
     if (pData.lastGameMode !== player.gameMode) {
         pData.lastGameMode = player.gameMode;
-        pData.isDirtyForSave = true; // Game mode changes should be persisted
+        // pData.isDirtyForSave = true; // Removed: lastGameMode is not persisted
     }
     if (pData.lastDimensionId !== player.dimension.id) {
         pData.lastDimensionId = player.dimension.id;
-        pData.isDirtyForSave = true; // Dimension changes should be persisted
+        // pData.isDirtyForSave = true; // Removed: lastDimensionId is not persisted
     }
 
     const effects = player.getEffects();
@@ -562,8 +593,13 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         String(detailsForNotify);
     const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
 
-    playerUtils?.warnPlayer(player, reasonMessage);
-    playerUtils?.notifyAdmins(`Flagged ${playerName} for ${finalFlagType}. ${notifyString}`, dependencies, player, pData);
+    playerUtils?.warnPlayer(player, reasonMessage, dependencies); // Pass dependencies
+    // Configurable notification for flagging
+    if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) { // Default true if undefined
+        // Construct a base message without player name, as notifyAdmins will add it with flag context
+        const baseNotifyMsg = getString('playerData.notify.flagged', { flagType: finalFlagType, details: notifyString });
+        playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
+    }
     playerUtils?.debugLog(`[PlayerDataManager.addFlag] FLAG: ${playerName} for ${finalFlagType}. Reason: '${fullReasonForLog}'. Total: ${pData.flags.totalFlags}. Count[${finalFlagType}]: ${pData.flags[finalFlagType].count}`, playerName, dependencies);
 
     if (config?.enableAutoMod && config?.automodConfig) {
@@ -575,7 +611,16 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         } catch (e) {
             console.error(`[PlayerDataManager.addFlag] Error calling processAutoModActions for ${playerName} / ${finalFlagType}: ${e.stack || e}`);
             playerUtils?.debugLog(`[PlayerDataManager.addFlag] Error in processAutoModActions: ${e.stack || e}`, playerName, dependencies);
-            logManager?.addLog({ actionType: 'errorAutomodProcess', context: 'PlayerDataManager.addFlag', details: `Player: ${playerName}, Check: ${finalFlagType}, Error: ${e.message}`, error: e.stack || e.message }, dependencies);
+            logManager?.addLog({
+                actionType: 'errorPlayerDataManagerAutomodProcess', // Standardized
+                context: 'playerDataManager.addFlag', // Standardized
+                targetName: playerName,
+                details: {
+                    checkType: finalFlagType,
+                    errorMessage: e.message,
+                    stack: e.stack
+                }
+            }, dependencies);
         }
     } else if (pData.isWatched) {
         const autoModEnabled = config ? config.enableAutoMod : 'N/A (config missing)';
@@ -888,7 +933,7 @@ export function clearExpiredItemUseStates(pData, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.clearExpiredItemUseStates] Auto-clearing isUsingConsumable for ${playerName}. Tick: ${currentTick}`, playerName, dependencies);
         }
         pData.isUsingConsumable = false;
-        pData.isDirtyForSave = true;
+        // pData.isDirtyForSave = true; // Removed: isUsingConsumable is not persisted
     }
 
     if (pData.isChargingBow && (currentTick - (pData.lastItemUseTick || 0) > itemUseTimeoutTicks)) {
@@ -896,7 +941,7 @@ export function clearExpiredItemUseStates(pData, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.clearExpiredItemUseStates] Auto-clearing isChargingBow for ${playerName}. Tick: ${currentTick}`, playerName, dependencies);
         }
         pData.isChargingBow = false;
-        pData.isDirtyForSave = true;
+        // pData.isDirtyForSave = true; // Removed: isChargingBow is not persisted
     }
 
     if (pData.isUsingShield && (currentTick - (pData.lastItemUseTick || 0) > itemUseTimeoutTicks)) {
@@ -904,6 +949,6 @@ export function clearExpiredItemUseStates(pData, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.clearExpiredItemUseStates] Auto-clearing isUsingShield for ${playerName}. Tick: ${currentTick}`, playerName, dependencies);
         }
         pData.isUsingShield = false;
-        pData.isDirtyForSave = true;
+        // pData.isDirtyForSave = true; // Removed: isUsingShield is not persisted
     }
 }

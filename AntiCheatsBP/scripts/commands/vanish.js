@@ -51,7 +51,10 @@ export async function execute(player, args, dependencies) {
         }
 
         const pData = playerDataManager.getPlayerData(player.id);
-        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has enabled vanish (${mode} mode).`, dependencies, player, pData); // Admin notification can remain
+        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+            const baseNotifyMsg = getString('command.vanish.notify.enabled', { adminName: player.nameTag, mode: mode });
+            playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
+        }
     } else {
         player.onScreenDisplay.setActionBar(''); // Clear action bar
         const wasNotifyMode = player.hasTag(vanishModeNotifyTag);
@@ -74,6 +77,9 @@ export async function execute(player, args, dependencies) {
         }
 
         const pData = playerDataManager.getPlayerData(player.id);
-        playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 has disabled vanish (${wasNotifyMode ? 'notify' : 'silent'} mode).`, dependencies, player, pData); // Admin notification
+        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+            const baseNotifyMsg = getString('command.vanish.notify.disabled', { adminName: player.nameTag, mode: (wasNotifyMode ? 'notify' : 'silent') });
+            playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
+        }
     }
 }

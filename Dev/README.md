@@ -75,15 +75,66 @@ This directory can be used by developers (including AI assistants like Jules) to
 ## Target Minecraft Version
 The addon currently targets Minecraft Bedrock version 1.21.90 and newer. Please ensure development and testing align with this version.
 
+## Codebase Architecture Overview
+
+The AntiCheats addon is structured to be modular and configurable. Here's a high-level overview:
+
+*   **`AntiCheatsBP/scripts/`**: This is the root for all behavior pack scripts.
+    *   **`main.js`**: The entry point of the addon. It initializes all core modules, subscribes to Minecraft server events, and runs the main system tick loop for processing checks and player data updates.
+    *   **`config.js`**: Contains a vast array of configurable settings for various features, checks, system behaviors, command aliases, and general check toggles. It also supports runtime updates for many of these values.
+    *   **`core/`**: Houses the central manager modules that form the backbone of the addon:
+        *   `playerDataManager.js`: Manages runtime and persistent data for each player (`PlayerAntiCheatData`), including flags, mutes, bans, and various states needed by checks. Handles data serialization to dynamic properties.
+        *   `commandManager.js`: Registers, parses, and executes chat-based commands. Handles permission checking and alias resolution.
+        *   `actionManager.js`: Executes configured actions (flagging, logging, notifying) based on cheat detection profiles when a check is triggered.
+        *   `logManager.js`: Manages the storage and retrieval of action logs (admin commands, system events), persisting them to dynamic properties.
+        *   `automodManager.js`: Handles automated moderation actions (warn, kick, ban, mute) based on player flag counts and escalating rules defined in `automodConfig.js`.
+        *   `rankManager.js`: Manages player ranks, permission levels, and their display properties (chat/nametag prefixes) based on `ranksConfig.js`.
+        *   `reportManager.js`: Manages player-submitted reports, storing them and providing admin access.
+        *   `tpaManager.js`: Manages the Teleport Ask (TPA/TPAHere) system.
+        *   `uiManager.js`: Creates and displays various UI forms for admin panels and player interactions.
+        *   `chatProcessor.js`: Handles pre-processing of chat messages for checks and command detection.
+        *   `eventHandlers.js`: Contains listeners for various Minecraft game events, which often trigger specific checks or update player data.
+        *   `actionProfiles.js`: Defines immediate consequences (flagging, logging, notifications) for specific `checkType` violations. This is a critical configuration file linking detections to actions.
+        *   `automodConfig.js`: Defines rules for escalating automated actions based on accumulated flag counts for different `checkType`s.
+        *   `ranksConfig.js`: Defines the available ranks, their permissions, and display properties.
+        *   `textDatabase.js`: Stores all user-facing strings for UI, command responses, and messages, facilitating consistency.
+    *   **`checks/`**: Contains all the individual cheat detection logic, categorized into subdirectories (e.g., `movement/`, `combat/`, `world/`, `player/`, `chat/`). Each check file typically exports one or more functions that perform specific violation detections.
+        *   `checks/index.js`: A barrel file that re-exports all check modules for easy importing.
+    *   **`commands/`**: Contains modules for each chat command. Each command module defines its name, syntax, permission level, and execution logic.
+        *   `commands/commandRegistry.js`: A barrel file that exports all command modules.
+    *   **`utils/`**: Provides utility functions used across the addon (e.g., `playerUtils.js` for player-related helpers like `getString`, `notifyAdmins`, `findPlayer`; `worldUtils.js` for world-related helpers).
+        *   `utils/index.js`: A barrel file for utility modules.
+    *   **`types.js`**: Contains JSDoc `@typedef` definitions for complex object structures used throughout the addon, like `PlayerAntiCheatData`, `CommandDependencies`, etc.
+
+### Key Data Structures and Flows
+
+*   **`PlayerAntiCheatData` (`pData`)**: This is a central object, managed by `playerDataManager.js`, that stores all runtime and some persistent data for each player. This includes their current flags for various cheats, violation counts, mute/ban status, last known positions, velocities, and other states required by different checks.
+*   **Detection-to-Action Flow**:
+    1.  **Detection**: An event occurs (e.g., player moves, attacks, chats) or a periodic tick check runs.
+    2.  A specific **check function** (e.g., from `flyCheck.js` or `cpsCheck.js`) analyzes player actions or data.
+    3.  If a violation is detected, the check function calls `actionManager.executeCheckAction(player, checkType, details, dependencies)`. The `checkType` is a `camelCase` string identifying the specific violation (e.g., `movementFlyHover`, `combatCpsHigh`).
+    4.  **Immediate Action**: `actionManager` looks up the `checkType` in `core/actionProfiles.js`. Based on the profile, it may:
+        *   Flag the player by calling `playerDataManager.addFlag(...)`.
+        *   Log the event using `logManager.addLog(...)`.
+        *   Notify admins using `playerUtils.notifyAdmins(...)`.
+        *   Cancel the game event or chat message.
+    5.  **Automated Moderation (AutoMod)**: When `playerDataManager.addFlag(...)` is called, it can trigger `automodManager.processAutoModActions(...)`.
+    6.  `automodManager` consults `core/automodConfig.js` using the `checkType` (which is the same as the flag type). If the player's accumulated flag count for that `checkType` meets a defined threshold in the AutoMod rules, further automated actions (like warnings, kicks, mutes, or bans) are executed.
+
+### Text and Localization
+
+*   All user-facing text (UI messages, command responses, warnings) is intended to be managed through `AntiCheatsBP/scripts/core/textDatabase.js`.
+*   Strings are retrieved using the `playerUtils.getString(key, params)` utility function, where `key` is a dot-notation string (e.g., `ui.adminPanel.title`) and `params` is an object for placeholder replacement.
+
 ## Task Management for Development
 
 To help track the development progress of this addon, especially when working with AI assistants or multiple developers, a simple task management system is maintained within the `Dev/tasks/` directory. This directory contains the following files:
 
 *   **`Dev/tasks/completed.md`**: Lists tasks and features that have been successfully implemented, tested (where applicable), and submitted to the main codebase. Each entry should ideally include a brief description of the completed work and a reference to the submission (e.g., date, commit SHA if available).
 
-*   **`Dev/tasks/ongoing.md`**: Details the task(s) currently being actively worked on. This file should be updated when a developer or AI assistant begins work on a new task from the `todo.md` list. It should clearly state the objectives of the ongoing task.
+*   **`Dev/tasks/ongoing.md`**: Details the task(s) currently being actively worked on. This file should be updated when a developer or AI assistant begins work on a new task from the `todo.md` list. It should clearly state the objectives of the ongoing task. *This file should be updated by the AI at the start of its work session.*
 
-*   **`Dev/tasks/todo.md`**: A list of planned features, improvements, bug fixes, and areas for future investigation. Tasks are generally categorized by priority (e.g., High, Medium, Low) or by type (e.g., New Features, Refactoring, Documentation). When a task is selected for development, it should be moved from this file to `ongoing.md`.
+*   **`Dev/tasks/todo.md`**: A list of planned features, improvements, bug fixes, and areas for future investigation. Tasks are generally categorized by priority (e.g., High, Medium, Low) or by type (e.g., New Features, Refactoring, Documentation). When a task is selected for development, it should be moved from this file to `ongoing.md`. *New tasks identified by the AI can be added here.*
 
 Maintaining these files helps ensure clarity on project status and facilitates smoother handoffs or continuations of work.
 
@@ -102,20 +153,10 @@ The Behavior Pack scripts for this addon (`AntiCheatsBP/scripts/`) are currently
 
 ## Important Workflow Notes for AI Assistants
 
-### Guidelines for AI Development Sessions (e.g., Jules)
+For detailed guidelines, project-specific conventions, and workflow instructions tailored for AI assistants (like Jules) working on this codebase, please refer to the main **[AGENTS.md](../../AGENTS.md)** file located in the root of the repository.
 
-To ensure consistency, continuity, and up-to-date documentation when an AI assistant like Jules works on this addon:
-
-1.  **Maintain Task Files:**
-    *   Before starting new work, review `Dev/tasks/ongoing.md` and `Dev/tasks/todo.md`.
-    *   If continuing a previous task, ensure `Dev/tasks/ongoing.md` reflects this.
-    *   When starting a new task from `Dev/tasks/todo.md`, move it to `Dev/tasks/ongoing.md` and update its description if necessary.
-    *   Upon completion and submission of a task, summarize it in `Dev/tasks/completed.md` and clear `Dev/tasks/ongoing.md` (or update it if starting another task immediately).
-    *   Add any newly identified future work, bugs, or ideas to `Dev/tasks/todo.md`.
-
-2.  **Update Root `README.md`:**
-    *   If significant new user-facing features are added or major changes are made to the addon's functionality, the AI assistant should also update the main project `README.md` (located in the repository root) to reflect these changes. This keeps the primary user documentation current.
-
-3.  **Follow Existing Code Style and Documentation Practices:**
-    *   Adhere to the established coding style found in the existing `.js` files.
-    *   Add JSDoc comments for new functions and complex logic, similar to existing documentation.
+This includes crucial information on:
+*   Task management using the `Dev/tasks/` directory.
+*   Responsibilities for updating user-facing documentation (e.g., root `README.md`, files in `Docs/`).
+*   Adherence to coding standards (`Dev/CodingStyle.md`, `Dev/StandardizationGuidelines.md`) and JSDoc practices.
+*   Key architectural points and critical naming conventions (e.g., `camelCase` for `checkType` and `actionType`).

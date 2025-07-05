@@ -70,6 +70,8 @@ export async function execute(player, args, dependencies) {
                 // Action bar messages are often unique and might not need full externalization if simple, but can be done.
                 // For now, keeping this one as is, as it's dynamic and an action bar.
                 target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
+                // Play sound for the target player
+                playerUtils.playSoundForEvent(null, "tpaRequestReceived", dependencies, target);
             } catch (e) {
                 if (config.enableDebugLogging) {
                     playerUtils.debugLog(`[TpaCommand] Failed to set action bar for target ${target.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
@@ -78,7 +80,16 @@ export async function execute(player, args, dependencies) {
         });
     } else {
         player.sendMessage(getString('command.tpa.error.genericSend'));
-        playerUtils.debugLog(`[TpaCommand] Failed to send TPA request from ${player.nameTag} to ${targetName} (requestResult was falsy).`, player.nameTag, dependencies);
-        logManager.addLog({actionType: 'error', details: `[TpaCommand] TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`}, dependencies);
+        const errorMessage = `TPA requestResult was falsy for ${player.nameTag} -> ${targetName}`;
+        playerUtils.debugLog(`[TpaCommand] ${errorMessage}`, player.nameTag, dependencies);
+        logManager.addLog({
+            actionType: 'errorTpaRequestFailed',
+            context: 'tpa.execute',
+            details: {
+                reason: "TPA requestResult was falsy after call to tpaManager.addRequest.",
+                requesterName: player.nameTag,
+                targetName: targetName
+            }
+        }, dependencies);
     }
 }

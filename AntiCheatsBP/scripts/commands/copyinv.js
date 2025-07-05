@@ -103,12 +103,10 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
         const targetPData = playerDataManager?.getPlayerData(targetPlayer.id);
-        playerUtils?.notifyAdmins(
-            `§7[Admin] §e${adminName}§7 copied the inventory of §e${targetPlayer.nameTag}§7.`,
-            dependencies,
-            player,
-            targetPData
-        );
+        if (dependencies.config.notifications?.notifyOnCopyInventory !== false) { // Default true
+            const baseNotifyMsg = getString('command.copyinv.notify.copiedSimple', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
+            playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, targetPData);
+        }
     } catch (e) {
         player?.sendMessage(getString('command.copyinv.error.generic', { errorMessage: e.message }));
         playerUtils?.debugLog(`[CopyInvCommand.execute] Error for ${adminName} copying from ${targetPlayer.nameTag}: ${e.message}`, adminName, dependencies);

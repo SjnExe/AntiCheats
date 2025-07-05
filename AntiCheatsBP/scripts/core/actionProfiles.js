@@ -38,7 +38,7 @@ export const checkActionProfiles = {
             type: 'movementFlyHover', // camelCase
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Fly (Hover). Details: {detailsString}',
+            message: '§e{playerName}§r flagged for §bFly (Hover)§r. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedFlyHover', // camelCase
@@ -53,7 +53,7 @@ export const checkActionProfiles = {
             type: 'movementSpeed', // General type, specific check is 'movementSpeedGround'
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Speed (Ground). Speed: {speedBps} BPS (Max: {maxAllowedBps})',
+            message: '§e{playerName}§r flagged for §bSpeed (Ground)§r. Speed: §a{speedBps}§r BPS (Max: §a{maxAllowedBps}§r)',
         },
         log: {
             actionType: 'detectedSpeedGround',
@@ -68,7 +68,7 @@ export const checkActionProfiles = {
             type: 'movementNoFall',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for NoFall. Fall Distance: {fallDistance}m. Details: {detailsString}',
+            message: '§e{playerName}§r flagged for §bNoFall§r. Fall Distance: §a{fallDistance}m§r. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedMovementNoFall',
@@ -83,7 +83,7 @@ export const checkActionProfiles = {
             type: 'movementNoSlow',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for NoSlow. Action: {action}, Speed: {speed}bps (Max: {maxAllowedSpeed}bps)',
+            message: '§e{playerName}§r flagged for §bNoSlow§r. Action: §a{action}§r, Speed: §a{speed}bps§r (Max: §a{maxAllowedSpeed}bps§r)',
         },
         log: {
             actionType: 'detectedMovementNoSlow',
@@ -98,7 +98,7 @@ export const checkActionProfiles = {
             type: 'movementInvalidSprint',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Invalid Sprint. Condition: {condition}',
+            message: '§e{playerName}§r flagged for §bInvalid Sprint§r. Condition: §a{condition}§r',
         },
         log: {
             actionType: 'detectedMovementInvalidSprint',
@@ -113,7 +113,7 @@ export const checkActionProfiles = {
             type: 'movementNetherRoof',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} detected on Nether Roof at {x},{y},{z}.',
+            message: '§e{playerName}§r detected on §bNether Roof§r at §a{x},{y},{z}§r.',
         },
         log: {
             actionType: 'detectedNetherRoof',
@@ -128,7 +128,7 @@ export const checkActionProfiles = {
             type: 'movementHighYVelocity',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for High Y-Velocity: {yVelocity} m/s.',
+            message: '§e{playerName}§r flagged for §bHigh Y-Velocity§r: §a{yVelocity} m/s§r.',
         },
         log: {
             actionType: 'detectedHighYVelocity',
@@ -143,14 +143,13 @@ export const checkActionProfiles = {
             type: 'movementSustainedFly',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Sustained Flight ({duration} ticks).',
+            message: '§e{playerName}§r flagged for §bSustained Flight§r (§a{duration}§r ticks).',
         },
         log: {
             actionType: 'detectedSustainedFly',
             detailsPrefix: 'Sustained Flight: ',
         },
     },
-
     // Combat Checks
     combatReachAttack: {
         enabled: true,
@@ -160,7 +159,7 @@ export const checkActionProfiles = {
             type: 'combatReach', // General type
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Reach. Distance: {distance} (Max: {maxAllowed})',
+            message: '§e{playerName}§r flagged for §bReach§r. Distance: §a{distance}§r (Max: §a{maxAllowed}§r)',
         },
         log: {
             actionType: 'detectedReachAttack',
@@ -175,7 +174,7 @@ export const checkActionProfiles = {
             type: 'combatCpsHigh',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for High CPS. Count: {cpsCount} in {windowSeconds}s. Max: {threshold}',
+            message: '§e{playerName}§r flagged for §bHigh CPS§r. Count: §a{cpsCount}§r in §a{windowSeconds}s§r. Max: §a{threshold}§r',
         },
         log: {
             actionType: 'detectedCombatCpsHigh',
@@ -190,7 +189,7 @@ export const checkActionProfiles = {
             type: 'combatViewSnap',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Pitch Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
+            message: '§e{playerName}§r flagged for §bPitch Snap§r. Change: §a{change}°§r, Limit: §a{limit}°§r (§a{postAttackTimeMs}ms§r after attack)',
         },
         log: {
             actionType: 'detectedViewSnapPitch',
@@ -205,7 +204,7 @@ export const checkActionProfiles = {
             type: 'combatViewSnap',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Yaw Snap. Change: {change}°, Limit: {limit}° ({postAttackTimeMs}ms after attack)',
+            message: '§e{playerName}§r flagged for §bYaw Snap§r. Change: §a{change}°§r, Limit: §a{limit}°§r (§a{postAttackTimeMs}ms§r after attack)',
         },
         log: {
             actionType: 'detectedViewSnapYaw',
@@ -220,7 +219,7 @@ export const checkActionProfiles = {
             type: 'combatInvalidPitch',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Invalid Pitch. Pitch: {pitch}° (Limits: {minLimit}° to {maxLimit}°)',
+            message: '§e{playerName}§r flagged for §bInvalid Pitch§r. Pitch: §a{pitch}°§r (Limits: §a{minLimit}°§r to §a{maxLimit}°§r)',
         },
         log: {
             actionType: 'detectedInvalidPitch',
@@ -235,7 +234,7 @@ export const checkActionProfiles = {
             type: 'combatAura',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Multi-Target Aura. Targets: {targetsHit} in {windowSeconds}s (Threshold: {threshold})',
+            message: '§e{playerName}§r flagged for §bMulti-Target Aura§r. Targets: §a{targetsHit}§r in §a{windowSeconds}s§r (Threshold: §a{threshold}§r)',
         },
         log: {
             actionType: 'detectedMultiTargetAura',
@@ -250,7 +249,7 @@ export const checkActionProfiles = {
             type: 'combatAttackWhileSleeping',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Attacking While Sleeping. Target: {targetEntityType}',
+            message: '§e{playerName}§r flagged for §bAttacking While Sleeping§r. Target: §a{targetEntityType}§r',
         },
         log: {
             actionType: 'detectedAttackWhileSleeping',
@@ -265,7 +264,7 @@ export const checkActionProfiles = {
             type: 'combatStateConflictConsuming',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Attacking While Consuming. State: {state}, Item Category: {itemCategory}',
+            message: '§e{playerName}§r flagged for §bAttacking While Consuming§r. State: §a{state}§r, Item Category: §a{itemCategory}§r',
         },
         log: {
             actionType: 'detectedAttackWhileConsuming',
@@ -280,7 +279,7 @@ export const checkActionProfiles = {
             type: 'combatStateConflictBow',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Attacking While Charging Bow. State: {state}, Item Category: {itemCategory}',
+            message: '§e{playerName}§r flagged for §bAttacking While Charging Bow§r. State: §a{state}§r, Item Category: §a{itemCategory}§r',
         },
         log: {
             actionType: 'detectedAttackWhileBowCharging',
@@ -295,7 +294,7 @@ export const checkActionProfiles = {
             type: 'combatStateConflictShield',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Attacking While Shielding. State: {state}, Item Category: {itemCategory}',
+            message: '§e{playerName}§r flagged for §bAttacking While Shielding§r. State: §a{state}§r, Item Category: §a{itemCategory}§r',
         },
         log: {
             actionType: 'detectedAttackWhileShielding',
@@ -310,7 +309,7 @@ export const checkActionProfiles = {
             type: 'combatLog',
         },
         notifyAdmins: {
-            message: '§c[AC-CombatLog] §e{playerName}§c disconnected {timeSinceLastCombat}s after combat. Flags: +{incrementAmount}. Details: {detailsString}',
+            message: '§e{playerName}§c disconnected §a{timeSinceLastCombat}s§c after combat. Flags: §a+{incrementAmount}§c. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedCombatLog',
@@ -327,7 +326,7 @@ export const checkActionProfiles = {
             type: 'worldNuker',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Nuker. Blocks: {blocksBroken} in window. Details: {detailsString}',
+            message: '§e{playerName}§r flagged for §bNuker§r. Blocks: §a{blocksBroken}§r in window. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedWorldNuker',
@@ -342,7 +341,7 @@ export const checkActionProfiles = {
             type: 'worldIllegalItemUse',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Illegal Item Use. Item: {itemTypeId}. Details: {detailsString}',
+            message: '§e{playerName}§r flagged for §bIllegal Item Use§r. Item: §a{itemTypeId}§r. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedIllegalItemUse',
@@ -357,7 +356,7 @@ export const checkActionProfiles = {
             type: 'worldIllegalItemPlace',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Illegal Item Placement. Item: {itemTypeId} at {blockLocationX},{blockLocationY},{blockLocationZ}. Details: {detailsString}',
+            message: '§e{playerName}§r flagged for §bIllegal Item Placement§r. Item: §a{itemTypeId}§r at §a{blockLocationX},{blockLocationY},{blockLocationZ}§r. Details: {detailsString}',
         },
         log: {
             actionType: 'detectedIllegalItemPlace',
@@ -372,7 +371,7 @@ export const checkActionProfiles = {
             type: 'worldTowerBuild',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Tower Building. Height: {height}, Look Pitch: {pitch}° (Threshold: {pitchThreshold}°)',
+            message: '§e{playerName}§r flagged for §bTower Building§r. Height: §a{height}§r, Look Pitch: §a{pitch}°§r (Threshold: §a{pitchThreshold}°§r)',
         },
         log: {
             actionType: 'detectedWorldTowerBuild',
@@ -387,7 +386,7 @@ export const checkActionProfiles = {
             type: 'worldFlatRotationBuilding',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Flat/Static Rotation Building. Pitch Var: {pitchVariance}, Yaw Var: {yawMaxDifferenceFromFirst}, Reason: {detectionReason}',
+            message: '§e{playerName}§r flagged for §bFlat/Static Rotation Building§r. Pitch Var: §a{pitchVariance}§r, Yaw Var: §a{yawMaxDifferenceFromFirst}§r, Reason: §a{detectionReason}§r',
         },
         log: {
             actionType: 'detectedWorldFlatRotationBuilding',
@@ -402,7 +401,7 @@ export const checkActionProfiles = {
             type: 'worldDownwardScaffold',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Downward Scaffold. Blocks: {count}, Speed: {horizontalSpeedBPS}bps (MinSpeed: {minHorizontalSpeedBPS}bps)',
+            message: '§e{playerName}§r flagged for §bDownward Scaffold§r. Blocks: §a{count}§r, Speed: §a{horizontalSpeedBPS}bps§r (MinSpeed: §a{minHorizontalSpeedBPS}bps§r)',
         },
         log: {
             actionType: 'detectedWorldDownwardScaffold',
@@ -417,7 +416,7 @@ export const checkActionProfiles = {
             type: 'worldAirPlace',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Air Placement. Block: {blockType} at {x},{y},{z} targeting {targetFaceType}.',
+            message: '§e{playerName}§r flagged for §bAir Placement§r. Block: §a{blockType}§r at §a{x},{y},{z}§r targeting §a{targetFaceType}§r.',
         },
         log: {
             actionType: 'detectedWorldAirPlace',
@@ -432,7 +431,7 @@ export const checkActionProfiles = {
             type: 'worldFastPlace',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Fast Place. Blocks: {count} in {windowMs}ms (Max: {maxBlocks})',
+            message: '§e{playerName}§r flagged for §bFast Place§r. Blocks: §a{count}§r in §a{windowMs}ms§r (Max: §a{maxBlocks}§r)',
         },
         log: {
             actionType: 'detectedWorldFastPlace',
@@ -447,7 +446,7 @@ export const checkActionProfiles = {
             type: 'worldAutoTool',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for AutoTool. Block: {blockType}, ToolUsed: {toolUsed}, Pattern: {switchPattern}',
+            message: '§e{playerName}§r flagged for §bAutoTool§r. Block: §a{blockType}§r, ToolUsed: §a{toolUsed}§r, Pattern: §a{switchPattern}§r',
         },
         log: {
             actionType: 'detectedWorldAutoTool',
@@ -462,7 +461,7 @@ export const checkActionProfiles = {
             type: 'worldInstaBreakUnbreakable',
         },
         notifyAdmins: {
-            message: '§cAC: {playerName} flagged for InstaBreak (Unbreakable). Block: {blockType} at {x},{y},{z}. Event cancelled.',
+            message: '§e{playerName}§c flagged for §bInstaBreak (Unbreakable)§c. Block: §a{blockType}§c at §a{x},{y},{z}§c. Event cancelled.',
         },
         log: {
             actionType: 'detectedInstaBreakUnbreakable',
@@ -477,7 +476,7 @@ export const checkActionProfiles = {
             type: 'worldInstaBreakSpeed',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for InstaBreak (Speed). Block: {blockType}. Expected: {expectedTicks}t, Actual: {actualTicks}t',
+            message: '§e{playerName}§r flagged for §bInstaBreak (Speed)§r. Block: §a{blockType}§r. Expected: §a{expectedTicks}t§r, Actual: §a{actualTicks}t§r',
         },
         log: {
             actionType: 'detectedInstaBreakSpeed',
@@ -494,7 +493,7 @@ export const checkActionProfiles = {
             type: 'playerNameSpoof',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for NameSpoofing. Reason: {reasonDetail}. NameTag: \'{currentNameTagDisplay}\'',
+            message: '§e{playerName}§r flagged for §bNameSpoofing§r. Reason: §a{reasonDetail}§r. NameTag: \'§f{currentNameTagDisplay}§r\'',
         },
         log: {
             actionType: 'detectedPlayerNameSpoof',
@@ -509,7 +508,7 @@ export const checkActionProfiles = {
             type: 'playerAntiGmc',
         },
         notifyAdmins: {
-            message: '§cAC: {playerName} detected in unauthorized Creative Mode! Switched to {switchToMode}: {autoSwitched}',
+            message: '§e{playerName}§c detected in unauthorized §bCreative Mode§c! Switched to §a{switchToMode}§c: §a{autoSwitched}§c',
         },
         log: {
             actionType: 'detectedPlayerAntiGmc',
@@ -524,7 +523,7 @@ export const checkActionProfiles = {
             type: 'playerInventoryMod',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for InventoryMod (Switch-Use). Detail: {reasonDetail}. Item: {itemType}, Slot: {slot}',
+            message: '§e{playerName}§r flagged for §bInventoryMod (Switch-Use)§r. Detail: §a{reasonDetail}§r. Item: §a{itemType}§r, Slot: §a{slot}§r',
         },
         log: {
             actionType: 'detectedPlayerInventoryModSwitchUse',
@@ -539,7 +538,7 @@ export const checkActionProfiles = {
             type: 'playerInventoryMod',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for InventoryMod (Move-Locked). Detail: {reasonDetail}. Item: {itemTypeInvolved}, Slot: {slotChanged}, Action: {actionInProgress}',
+            message: '§e{playerName}§r flagged for §bInventoryMod (Move-Locked)§r. Detail: §a{reasonDetail}§r. Item: §a{itemTypeInvolved}§r, Slot: §a{slotChanged}§r, Action: §a{actionInProgress}§r',
         },
         log: {
             actionType: 'detectedPlayerInventoryModMoveLocked',
@@ -554,7 +553,7 @@ export const checkActionProfiles = {
             type: 'playerClientAnomaly',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} reported render distance of {reportedDistance} chunks (Max: {maxAllowed}). Potential client modification.',
+            message: '§e{playerName}§r reported render distance of §a{reportedDistance}§r chunks (Max: §a{maxAllowed}§r). Potential client modification.',
         },
         log: {
             actionType: 'detectedInvalidRenderDistance',
@@ -569,7 +568,7 @@ export const checkActionProfiles = {
             type: 'playerSelfHurt',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Self-Hurt. Cause: {damageCause}, Attacker: {damagingEntityType}, Health: {playerHealth}',
+            message: '§e{playerName}§r flagged for §bSelf-Hurt§r. Cause: §a{damageCause}§r, Attacker: §a{damagingEntityType}§r, Health: §a{playerHealth}§r',
         },
         log: {
             actionType: 'detectedPlayerSelfHurt',
@@ -586,7 +585,7 @@ export const checkActionProfiles = {
             type: 'actionFastUse',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Fast Use. Item: {itemType}, Cooldown: {cooldownMs}ms, Actual: {actualTimeMs}ms',
+            message: '§e{playerName}§r flagged for §bFast Use§r. Item: §a{itemType}§r, Cooldown: §a{cooldownMs}ms§r, Actual: §a{actualTimeMs}ms§r',
         },
         log: {
             actionType: 'detectedFastUse',
@@ -608,7 +607,7 @@ export const checkActionProfiles = {
             includeViolationDetails: false,
         },
         notifyAdmins: {
-            message: '§c[AC] §e{playerName} §7is sending messages too quickly ({timeSinceLastMsgMs}ms). Flagged. (Msg: §f{messageContent}§7)',
+            message: '§e{playerName}§7 is sending messages too quickly (§a{timeSinceLastMsgMs}ms§7). Flagged. (Msg: §f{messageContent}§7)',
         },
         cancelMessage: true,
     },
@@ -625,7 +624,7 @@ export const checkActionProfiles = {
             includeViolationDetails: false,
         },
         notifyAdmins: {
-            message: '§c[AC] §e{playerName} §7sent message with too many words ({wordCount}/{maxWords}). Flagged. (Msg: §f{messageContent}§7)',
+            message: '§e{playerName}§7 sent message with too many words (§a{wordCount}/{maxWords}§7). Flagged. (Msg: §f{messageContent}§7)',
         },
         cancelMessage: true,
     },
@@ -637,7 +636,7 @@ export const checkActionProfiles = {
             type: 'playerChatStateViolation',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} attempted to chat during combat cooldown ({timeSinceCombat}s ago). Message cancelled.',
+            message: '§e{playerName}§r attempted to chat during combat cooldown (§a{timeSinceCombat}s§r ago). Message cancelled.',
         },
         cancelMessage: true,
         log: {
@@ -653,7 +652,7 @@ export const checkActionProfiles = {
             type: 'playerChatStateViolation',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} attempted to chat while {itemUseState}. Message cancelled.',
+            message: '§e{playerName}§r attempted to chat while §a{itemUseState}§r. Message cancelled.',
         },
         cancelMessage: true,
         log: {
@@ -669,7 +668,7 @@ export const checkActionProfiles = {
             type: 'chatLanguageViolation',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Swear Word. Word: \'{detectedSwear}\'. Message: §f{originalMessage}',
+            message: '§e{playerName}§r flagged for §bSwear Word§r. Word: \'§f{detectedSwear}§r\'. Message: §f{originalMessage}',
         },
         log: {
             actionType: 'detectedSwearWord',
@@ -692,7 +691,7 @@ export const checkActionProfiles = {
             includeViolationDetails: true,
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} may have advertised. Matched: \'{detectedLink}\'. Message: §f{originalMessage}',
+            message: '§e{playerName}§r may have advertised. Matched: \'§f{detectedLink}§r\'. Message: §f{originalMessage}',
         },
         cancelMessage: true,
     },
@@ -709,7 +708,7 @@ export const checkActionProfiles = {
             includeViolationDetails: true,
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for CAPS abuse ({percentage}% CAPS). Message: §f{originalMessage}',
+            message: '§e{playerName}§r flagged for §bCAPS abuse§r (§a{percentage}%§r CAPS). Message: §f{originalMessage}',
         },
         cancelMessage: true,
     },
@@ -726,7 +725,7 @@ export const checkActionProfiles = {
             includeViolationDetails: true,
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for Char Repeat: \'{char}\' x{count}. Message: §f{originalMessage}',
+            message: '§e{playerName}§r flagged for §bChar Repeat§r: \'§f{char}§r\' x§a{count}§r. Message: §f{originalMessage}',
         },
         cancelMessage: true,
     },
@@ -743,7 +742,7 @@ export const checkActionProfiles = {
             includeViolationDetails: true,
         },
         notifyAdmins: {
-            message: 'Player {playerName} triggered symbol spam check ({percentage}%). Message: {originalMessage}',
+            message: '§e{playerName}§r triggered §bsymbol spam§r check (§a{percentage}%§r). Message: §f{originalMessage}§r',
         },
         cancelMessage: true,
     },
@@ -755,7 +754,7 @@ export const checkActionProfiles = {
             type: 'chatContentRepeat',
         },
         notifyAdmins: {
-            message: '{playerName} flagged for Chat Content Repeat. Snippet: {repeatedMessageSnippet}',
+            message: '§e{playerName}§r flagged for §bChat Content Repeat§r. Snippet: §f{repeatedMessageSnippet}§r',
         },
         log: {
             actionType: 'detectedChatContentRepeat',
@@ -772,7 +771,7 @@ export const checkActionProfiles = {
             type: 'chatUnicodeAbuse',
         },
         notifyAdmins: {
-            message: '{playerName} flagged for Unicode Abuse. Reason: {flagReason}. Message: {messageSnippet}',
+            message: '§e{playerName}§r flagged for §bUnicode Abuse§r. Reason: §a{flagReason}§r. Message: §f{messageSnippet}§r',
         },
         log: {
             actionType: 'detectedChatUnicodeAbuse',
@@ -789,7 +788,7 @@ export const checkActionProfiles = {
             type: 'chatGibberish',
         },
         notifyAdmins: {
-            message: '{playerName} flagged for Gibberish. Reasons: {triggerReasons}. Message: {messageSnippet}',
+            message: '§e{playerName}§r flagged for §bGibberish§r. Reasons: §a{triggerReasons}§r. Message: §f{messageSnippet}§r',
         },
         log: {
             actionType: 'detectedChatGibberish',
@@ -806,7 +805,7 @@ export const checkActionProfiles = {
             type: 'chatExcessiveMentions',
         },
         notifyAdmins: {
-            message: '{playerName} flagged for Excessive Mentions. Reasons: {triggerReasons}. Message: {messageSnippet}',
+            message: '§e{playerName}§r flagged for §bExcessive Mentions§r. Reasons: §a{triggerReasons}§r. Message: §f{messageSnippet}§r',
         },
         log: {
             actionType: 'detectedChatExcessiveMentions',
@@ -823,7 +822,7 @@ export const checkActionProfiles = {
             type: 'chatImpersonationAttempt',
         },
         notifyAdmins: {
-            message: '{playerName} flagged for Impersonation Attempt. Matched: {matchedPattern}. Message: {messageSnippet}',
+            message: '§e{playerName}§r flagged for §bImpersonation Attempt§r. Matched: §f{matchedPattern}§r. Message: §f{messageSnippet}§r',
         },
         log: {
             actionType: 'detectedChatImpersonationAttempt',
@@ -840,7 +839,7 @@ export const checkActionProfiles = {
             type: 'chatFormatting',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for using newlines in chat. Message: §f{message}',
+            message: '§e{playerName}§r flagged for using §bnewlines§r in chat. Message: §f{message}§r',
         },
         log: {
             actionType: 'detectedChatNewline',
@@ -856,7 +855,7 @@ export const checkActionProfiles = {
             type: 'chatFormatting',
         },
         notifyAdmins: {
-            message: '§eAC: {playerName} flagged for overly long message ({messageLength}/{maxLength}). Snippet: §f{messageSnippet}',
+            message: '§e{playerName}§r flagged for §boverly long message§r (§a{messageLength}/{maxLength}§r). Snippet: §f{messageSnippet}§r',
         },
         log: {
             actionType: 'detectedChatMaxLength',
@@ -874,7 +873,7 @@ export const checkActionProfiles = {
             type: 'antiGriefTnt',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: {playerName} attempted to place TNT at {x},{y},{z}. Action: {actionTaken}.',
+            message: '[AntiGrief] §e{playerName}§r attempted to place §bTNT§r at §a{x},{y},{z}§r. Action: §a{actionTaken}§r.',
         },
         log: {
             actionType: 'antiGriefTntPlacement',
@@ -890,7 +889,7 @@ export const checkActionProfiles = {
             type: 'antiGriefWither',
         },
         notifyAdmins: {
-            message: '§cAC [AntiGrief]: A Wither spawn event occurred. Context: {playerNameOrContext}. Action: {actionTaken}.',
+            message: '[AntiGrief] §cWither spawn event occurred§r. Context: §e{playerNameOrContext}§r. Action: §a{actionTaken}§r.',
         },
         log: {
             actionType: 'antiGriefWitherSpawn',
@@ -905,7 +904,7 @@ export const checkActionProfiles = {
             type: 'antiGriefFire',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: Fire event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
+            message: '[AntiGrief] Fire event involving §e{playerNameOrContext}§r. Action: §a{actionTaken}§r. Details: {detailsString}',
         },
         log: {
             actionType: 'antiGriefFireIncident',
@@ -921,7 +920,7 @@ export const checkActionProfiles = {
             type: 'antiGriefLava',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: Lava placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
+            message: '[AntiGrief] Lava placement involving §e{playerNameOrContext}§r. Action: §a{actionTaken}§r. Details: {detailsString}',
         },
         log: {
             actionType: 'antiGriefLavaPlacement',
@@ -937,7 +936,7 @@ export const checkActionProfiles = {
             type: 'antiGriefWater',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: Water placement event involving {playerNameOrContext}. Action: {actionTaken}. Details: {detailsString}',
+            message: '[AntiGrief] Water placement involving §e{playerNameOrContext}§r. Action: §a{actionTaken}§r. Details: {detailsString}',
         },
         log: {
             actionType: 'antiGriefWaterPlacement',
@@ -953,7 +952,7 @@ export const checkActionProfiles = {
             type: 'antiGriefBlockspam',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: {playerName} suspected of Block Spam. Blocks: {count}/{maxBlocks} in {windowMs}ms. Type: {blockType}. Action: {actionTaken}.',
+            message: '[AntiGrief] §e{playerName}§r suspected of §bBlock Spam§r. Blocks: §a{count}/{maxBlocks}§r in §a{windowMs}ms§r. Type: §a{blockType}§r. Action: §a{actionTaken}§r.',
         },
         log: {
             actionType: 'antiGriefBlockspamDetected',
@@ -968,7 +967,7 @@ export const checkActionProfiles = {
             type: 'antiGriefEntityspam',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: {playerName} suspected of Entity Spam. Entity: {entityType}. Count: {count}/{maxSpawns} in {windowMs}ms. Action: {actionTaken}.',
+            message: '[AntiGrief] §e{playerName}§r suspected of §bEntity Spam§r. Entity: §a{entityType}§r. Count: §a{count}/{maxSpawns}§r in §a{windowMs}ms§r. Action: §a{actionTaken}§r.',
         },
         log: {
             actionType: 'antiGriefEntityspamDetected',
@@ -983,7 +982,7 @@ export const checkActionProfiles = {
             type: 'antiGriefBlockspamDensity',
         },
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: {playerName} suspected of Block Spam (Density). Density: {densityPercentage}% in {radius} radius. Block: {blockType}. Action: {actionTaken}.',
+            message: '[AntiGrief] §e{playerName}§r suspected of §bBlock Spam (Density)§r. Density: §a{densityPercentage}%§r in §a{radius}§r radius. Block: §a{blockType}§r. Action: §a{actionTaken}§r.',
         },
         log: {
             actionType: 'antiGriefBlockspamDensityDetected',
@@ -994,7 +993,7 @@ export const checkActionProfiles = {
         enabled: true,
         flag: null,
         notifyAdmins: {
-            message: '§eAC [AntiGrief]: Rapid piston activity detected at {x},{y},{z} in {dimensionId}. Rate: {rate}/sec over {duration}s. (Potential Lag)',
+            message: '[AntiGrief] Rapid §bpiston activity§r detected at §a{x},{y},{z}§r in §a{dimensionId}§r. Rate: §a{rate}/sec§r over §a{duration}s§r. (Potential Lag)',
         },
         log: {
             actionType: 'antiGriefPistonLagDetected',

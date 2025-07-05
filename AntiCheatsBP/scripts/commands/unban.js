@@ -48,7 +48,8 @@ export async function execute(player, args, dependencies) {
         if (unbanned) {
             player.sendMessage(getString('command.unban.success', { playerName: foundPlayer.nameTag }));
             const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            playerUtils.notifyAdmins(`§7[Admin] §e${player.nameTag}§7 unbanned §e${foundPlayer.nameTag}.`, dependencies, player, targetPData); // Admin notification can remain
+            const baseUnbanNotifyMsg = getString('command.unban.notify.unbanned', { adminName: player.nameTag, targetName: foundPlayer.nameTag });
+            playerUtils.notifyAdmins(baseUnbanNotifyMsg, dependencies, player, targetPData);
             logManager.addLog({
                 timestamp: Date.now(),
                 adminName: player.nameTag,
@@ -66,7 +67,10 @@ export async function execute(player, args, dependencies) {
                 if (config.enableDebugLogging) {
                     playerUtils.debugLog(`[UnbanCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
                 }
-                playerUtils.notifyAdmins(`§7[Admin] Flags for check type '${oldBanInfo.triggeringCheckType}' were cleared for ${foundPlayer.nameTag} by ${player.nameTag} (AutoMod unban).`, dependencies, player, targetPDataForFlagClearLog);
+                if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+                    const baseNotifyMsg = getString('command.unban.notify.flagsCleared', { checkType: oldBanInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag });
+                    playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, targetPDataForFlagClearLog);
+                }
             }
         } else {
             player.sendMessage(getString('command.unban.failure', { playerName: foundPlayer.nameTag }));
@@ -74,6 +78,16 @@ export async function execute(player, args, dependencies) {
     } catch (e) {
         player.sendMessage(getString('command.unban.error.generic', { errorMessage: e.message }));
         console.error(`[UnbanCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
-        logManager.addLog({ actionType: 'error', details: `[UnbanCommand] Failed to unban ${foundPlayer?.nameTag || targetPlayerName}: ${e.stack || e}`}, dependencies);
+        logManager.addLog({
+            actionType: 'errorUnbanCommand',
+            context: 'unban.execute',
+            adminName: player.nameTag, // Already a top-level field in LogEntry, but good to ensure it's passed
+            targetName: foundPlayer?.nameTag || targetPlayerName, // Already a top-level field
+            details: {
+                commandArgs: args,
+                errorMessage: e.message,
+                stack: e.stack
+            }
+        }, dependencies);
     }
 }

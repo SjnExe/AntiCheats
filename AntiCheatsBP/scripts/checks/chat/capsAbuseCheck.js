@@ -28,7 +28,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     // Ensure actionProfileKey is camelCase
     const actionProfileKey = config?.capsCheckActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatCapsAbuseDetected';
 
-    if (!config?.enableCapsCheck) {
+    if (!config?.enableCapsCheck) { // config itself is already checked by this point by ?.
         return;
     }
 
@@ -77,7 +77,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         };
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey]; // Access checkActionProfiles from dependencies
         if (profile?.cancelMessage) {
             eventData.cancel = true;
         }

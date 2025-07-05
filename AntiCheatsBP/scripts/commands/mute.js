@@ -134,7 +134,8 @@ export async function execute(
 
             if (playerUtils.notifyAdmins) {
                 const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-                playerUtils.notifyAdmins(`§7[Admin] §e${foundPlayer.nameTag} §7was muted by §e${actualMutedBy} §7for ${durationText}. Reason: §f${actualReason}`, dependencies, player, targetPData);
+                const baseAdminNotifyMsg = getString('command.mute.notify.muted', { targetName: foundPlayer.nameTag, mutedBy: actualMutedBy, duration: durationText, reason: actualReason });
+                playerUtils.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
             }
             if (logManager?.addLog) {
                 logManager.addLog({

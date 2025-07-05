@@ -150,8 +150,9 @@ export async function execute(
         }
 
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id); // For admin notification context
-        const adminNotifyMsg = `§7[Admin] §e${actualBannedBy}§7 banned §e${foundPlayer.nameTag}§7 for ${durationDisplay}. Reason: ${actualReason}`;
-        playerUtils?.notifyAdmins(adminNotifyMsg, dependencies, player, targetPData);
+        // Standardized message, relying on notifyAdmins for prefix and potential admin player context
+        const baseAdminNotifyMsg = getString('command.ban.notify.banned', { bannedBy: actualBannedBy, targetName: foundPlayer.nameTag, durationDisplay: durationDisplay, reason: actualReason });
+        playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
 
         logManager?.addLog({
             timestamp: Date.now(), // Can be omitted if addLog defaults it
@@ -170,6 +171,28 @@ export async function execute(
             player.sendMessage(failureMessage);
         } else {
             console.warn(`[BanCommand.execute] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${invokedBy})`);
+            if (player) playerUtils.playSoundForEvent(player, "commandError", dependencies);
         }
+        // If banAdded was true, it implies success from player's perspective of command execution
+        if (player && banAdded) playerUtils.playSoundForEvent(player, "commandSuccess", dependencies);
+
+    } catch (e) { // General catch for unexpected errors in the command's flow
+        const genericErrorMsg = getString('command.ban.error.generic', { errorMessage: e.message });
+        if (player) {
+            player.sendMessage(genericErrorMsg);
+            playerUtils.playSoundForEvent(player, "commandError", dependencies);
+        } else {
+            console.error(`[BanCommand.execute] System call error: ${genericErrorMsg.replace(/§[a-f0-9]/g, '')} - ${e.stack || e}`);
+        }
+        logManager?.addLog({
+            actionType: 'errorBanCommand',
+            context: 'ban.execute.unexpected',
+            adminName: issuerName,
+            details: {
+                targetPlayerName: targetPlayerName,
+                errorMessage: e.message,
+                stack: e.stack
+            }
+        }, dependencies);
     }
 }

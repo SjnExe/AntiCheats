@@ -7,178 +7,223 @@ The default command prefix for this addon is `!` (this can be configured in `Ant
 > Square brackets (`[ ]`) denote optional parameters.
 > Do not include the brackets themselves when using the commands.
 
-## Admin Commands
+Command permissions are based on a level system, typically:
+*   **Owner (0):** Highest permission, usually for server owner only.
+*   **Admin (1):** High-level administrative commands.
+*   **Moderator (2):** Mid-level moderation commands. (Note: This level might not be explicitly used by all commands; some may jump from Admin to Member).
+*   **Member (Default: 1024):** Basic commands available to all players. The default permission level for members is `1024` as defined in `ranksConfig.js`.
 
-These commands are typically available to players with administrative privileges (e.g., those with the `admin` tag, as configured in `config.js`).
+Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksConfig.js` and individual command definitions.
 
-*   **`!panel`** (alias: `!ui`)
-    *   **Purpose:** Opens the main AntiCheat Admin Menu UI.
-    *   **Syntax:** `!panel`
-    *   **Permission:** Admin-only.
-*   **`!help [command_name]`**
-    *   **Purpose:** Lists available commands or shows detailed help for a specific command.
-    *   **Syntax:** `!help` or `!help <command_name>`
-    *   **Permission:** Available to all, but shows commands based on permission level.
-*   **`!kick <playername> [reason]`**
-    *   **Purpose:** Kicks a player from the server.
-    *   **Syntax:** `!kick <playername> [reason]`
-    *   **Permission:** Admin-only.
-*   **`!ban <playername> [duration] [reason]`**
-    *   **Purpose:** Bans a player. Duration can be specified (e.g., `30m`, `2h`, `7d`) or `perm` for permanent.
-    *   **Syntax:** `!ban <playername> [duration] [reason]`
-    *   **Permission:** Admin-only.
-*   **`!mute <playername> <duration> [reason]`**
-    *   **Purpose:** Mutes a player for a specified duration (e.g., `30m`, `1h`, `perm`).
-    *   **Syntax:** `!mute <playername> <duration> [reason]`
-    *   **Permission:** Admin-only.
-*   **`!unban <playername>`**
-    *   **Purpose:** Removes an active ban for a player.
-    *   **Syntax:** `!unban <playername>`
-    *   **Permission:** Admin-only.
-*   **`!unmute <playername>`**
-    *   **Purpose:** Removes an active mute for a player.
-    *   **Syntax:** `!unmute <playername>`
-    *   **Permission:** Admin-only.
-*   **`!freeze <playername>`**
-    *   **Purpose:** Freezes a player, preventing movement.
-    *   **Syntax:** `!freeze <playername>`
-    *   **Permission:** Admin-only.
-*   **`!unfreeze <playername>`**
-    *   **Purpose:** Unfreezes a player.
-    *   **Syntax:** `!unfreeze <playername>`
-    *   **Permission:** Admin-only.
-*   **`!inspect <playername>`**
-    *   **Purpose:** Shows detailed anti-cheat statistics and flag information for a player.
-    *   **Syntax:** `!inspect <playername>`
-    *   **Permission:** Admin-only.
-*   **`!resetflags <playername> [checkType]`**
-    *   **Purpose:** Resets all accumulated flags or flags for a specific `checkType` for a player.
-    *   **Syntax:** `!resetflags <playername> [checkType]`
-    *   **Permission:** Admin-only.
-*   **`!worldborder`** (alias: `!wb`)
-    *   **Purpose:** Manages per-dimension world borders.
-    *   **Syntax:** `!worldborder <subcommand> [options...]` (Use `!wb help` for detailed subcommands)
-    *   **Permission:** Admin-only.
-*   **`!version`** (alias: `!v`)
-    *   **Purpose:** Displays the current version of the AntiCheat addon.
-    *   **Syntax:** `!version`
-    *   **Permission:** All Players.
-*   **`!clearchat`**
-    *   **Purpose:** Clears the chat for all players.
-    *   **Syntax:** `!clearchat`
-    *   **Permission:** Admin-only.
-*   **`!gmc <playername>`**
-    *   **Purpose:** Sets a player's gamemode to Creative.
-    *   **Syntax:** `!gmc <playername>`
-    *   **Permission:** Admin-only.
-*   **`!gms <playername>`**
-    *   **Purpose:** Sets a player's gamemode to Survival.
-    *   **Syntax:** `!gms <playername>`
-    *   **Permission:** Admin-only.
-*   **`!gma <playername>`**
-    *   **Purpose:** Sets a player's gamemode to Adventure.
-    *   **Syntax:** `!gma <playername>`
-    *   **Permission:** Admin-only.
-*   **`!gmsp <playername>`**
-    *   **Purpose:** Sets a player's gamemode to Spectator.
-    *   **Syntax:** `!gmsp <playername>`
-    *   **Permission:** Admin-only.
-*   **`!invsee <playername>`**
-    *   **Purpose:** Allows viewing another player's inventory.
-    *   **Syntax:** `!invsee <playername>`
-    *   **Permission:** Admin-only.
-*   **`!listwatched`** (alias: `!w`)
-    *   **Purpose:** Lists all players currently being "watched" (e.g., for debug or detailed logging purposes).
-    *   **Syntax:** `!listwatched`
-    *   **Permission:** Admin-only.
-*   **`!notify`** (alias: `!notifications`)
-    *   **Purpose:** Toggles personal admin notifications for cheat detections.
-    *   **Syntax:** `!notify`
-    *   **Permission:** Admin-only.
-*   **`!rules`**
-    *   **Purpose:** Displays the server rules (as configured in `config.js`).
-    *   **Syntax:** `!rules`
-    *   **Permission:** All Players.
-*   **`!testnotify`**
-    *   **Purpose:** Sends a test notification to yourself (for admins to test the notification system).
+---
+
+## Owner Commands
+*(Typically Permission Level 0)*
+
+*   **`!testnotify`** (Alias: `!tn`)
     *   **Syntax:** `!testnotify`
-    *   **Permission:** Admin-only.
-*   **`!tp <targetPlayer | x> <destinationPlayer | y> [z] [dimensionTargetOrPlayerToMove] [dimensionForCoords]`**
-    *   **Purpose:** Teleports players or self.
-    *   **Syntax Examples:**
-        *   `!tp <playerToMove> <destinationPlayer>`
-        *   `!tp <x> <y> <z> [dimension]` (teleports self)
-        *   `!tp <playerToMove> <x> <y> <z> [dimension]`
-    *   **Permission:** Admin-only.
-*   **`!vanish`**
-    *   **Purpose:** Toggles visibility for an admin (vanish mode).
-    *   **Syntax:** `!vanish`
-    *   **Permission:** Admin-only.
-*   **`!warnings <playername>`**
-    *   **Purpose:** Views a player's AntiCheat flags. Use `!resetflags` (or alias `!clearwarnings`) to clear them.
-    *   **Syntax:** `!warnings <playername>`
-    *   **Permission:** Admin-only.
-*   **`!xraynotify`** (alias: `!xn`)
-    *   **Purpose:** Toggles personal admin notifications for X-Ray ore mining alerts.
-    *   **Syntax:** `!xraynotify`
-    *   **Permission:** Admin-only.
-*   **`!copyinv <playername>`**
-    *   **Purpose:** Copies the inventory of the specified player to your own.
+    *   **Description:** Sends a test admin notification to verify system functionality.
+    *   **Permission:** Owner
+
+---
+
+## Admin Commands
+*(Typically Permission Level 1)*
+
+*   **`!addrank`** (Alias: `!ar`)
+    *   **Syntax:** `!addrank <playername> <rankId>`
+    *   **Description:** Assigns a manual rank to a player by adding the associated tag.
+    *   **Permission:** Admin
+*   **`!ban`** (Alias: `!b`)
+    *   **Syntax:** `!ban <playername> [duration] [reason]`
+    *   **Description:** Bans a player. Duration e.g., `30m`, `2h`, `7d`, `perm`.
+    *   **Permission:** Admin
+*   **`!clearchat`** (Alias: `!clrchat`)
+    *   **Syntax:** `!clearchat`
+    *   **Description:** Clears the global chat for all players.
+    *   **Permission:** Admin
+*   **`!clearreports`** (Alias: `!cr`)
+    *   **Syntax:** `!clearreports <report_id|player_name|all>`
+    *   **Description:** Clears player reports by ID, player name, or all reports.
+    *   **Permission:** Admin
+*   **`!copyinv`** (Alias: `!ci`)
     *   **Syntax:** `!copyinv <playername>`
-    *   **Permission:** Admin-only.
-*   **`!netherlock`**
-    *   **Purpose:** Toggles a lock on Nether portal usage.
-    *   **Syntax:** `!netherlock`
-    *   **Permission:** Admin-only.
-*   **`!endlock`**
-    *   **Purpose:** Toggles a lock on End portal usage.
-    *   **Syntax:** `!endlock`
-    *   **Permission:** Admin-only.
+    *   **Description:** Copies another player's inventory to your own (requires confirmation).
+    *   **Permission:** Admin
+*   **`!endlock`** (Alias: `!el`)
+    *   **Syntax:** `!endlock <on|off|status>`
+    *   **Description:** Manages End dimension access lock.
+    *   **Permission:** Admin
+*   **`!freeze`** (Alias: `!frz`)
+    *   **Syntax:** `!freeze <playername> [on|off|toggle|status]`
+    *   **Description:** Freezes or unfreezes a player, preventing movement.
+    *   **Permission:** Admin
+*   **`!gma`**
+    *   **Syntax:** `!gma [playername]`
+    *   **Description:** Sets a player's gamemode to Adventure.
+    *   **Permission:** Admin
+*   **`!gmc`**
+    *   **Syntax:** `!gmc [playername]`
+    *   **Description:** Sets a player's gamemode to Creative.
+    *   **Permission:** Admin
+*   **`!gms`**
+    *   **Syntax:** `!gms [playername]`
+    *   **Description:** Sets a player's gamemode to Survival.
+    *   **Permission:** Admin
+*   **`!gmsp`**
+    *   **Syntax:** `!gmsp [playername]`
+    *   **Description:** Sets a player's gamemode to Spectator.
+    *   **Permission:** Admin
+*   **`!inspect`** (Alias: `!i`)
+    *   **Syntax:** `!inspect <playername>`
+    *   **Description:** Views a player's AntiCheat data, flags, and status.
+    *   **Permission:** Admin
+*   **`!invsee`** (Alias: `!is`)
+    *   **Syntax:** `!invsee <playername>`
+    *   **Description:** Views a player's inventory through a UI.
+    *   **Permission:** Admin
+*   **`!kick`** (Alias: `!k`)
+    *   **Syntax:** `!kick <playername> [reason]`
+    *   **Description:** Kicks a player from the server.
+    *   **Permission:** Admin
+*   **`!listwatched`** (Aliases: `!lsw`, `!lw`, `!watchedlist`)
+    *   **Syntax:** `!listwatched`
+    *   **Description:** Lists all online players currently being watched.
+    *   **Permission:** Admin
+*   **`!mute`** (Alias: `!m`)
+    *   **Syntax:** `!mute <playername> [duration] [reason]`
+    *   **Description:** Mutes a player. Duration e.g., `30m`, `1h`, `perm`.
+    *   **Permission:** Admin
+*   **`!netherlock`** (Alias: `!nl`)
+    *   **Syntax:** `!netherlock <on|off|status>`
+    *   **Description:** Manages Nether dimension access lock.
+    *   **Permission:** Admin
+*   **`!notify`** (Aliases: `!notifications`, `!noti`)
+    *   **Syntax:** `!notify [on|off|toggle|status]`
+    *   **Description:** Manages your AntiCheat system notification preferences.
+    *   **Permission:** Admin
+*   **`!panel`** (Alias: `!ui`)
+    *   **Syntax:** `!panel`
+    *   **Description:** Opens the main AntiCheat Admin UI panel.
+    *   **Permission:** Member+ (Content dynamically shown based on permission)
+*   **`!purgeflags`** (Alias: `!pf`)
+    *   **Syntax:** `!purgeflags <playername>`
+    *   **Description:** Completely purges all flags, violation history, and AutoMod state for a player.
+    *   **Permission:** Admin
+*   **`!removerank`** (Alias: `!rr`)
+    *   **Syntax:** `!removerank <playerName> <rankId>`
+    *   **Description:** Removes a manually assigned rank from a player.
+    *   **Permission:** Admin
+*   **`!resetflags`** (Aliases: `!rf`, `!cw`, `!clearwarnings`)
+    *   **Syntax:** `!resetflags <playername>`
+    *   **Description:** Clears a player's AntiCheat flags and violation data.
+    *   **Permission:** Admin
+*   **`!tp`**
+    *   **Syntax:** `!tp <targetPlayerOrX> [destinationPlayerOrY] [z] [dimensionTargetOrPlayerToMove] [dimensionForCoords]`
+    *   **Description:** Teleports a player to another player or to coordinates.
+    *   **Permission:** Admin
+*   **`!unban`** (Alias: `!ub`)
+    *   **Syntax:** `!unban <playername>`
+    *   **Description:** Removes an active ban for a player.
+    *   **Permission:** Admin
+*   **`!unmute`** (Alias: `!um`)
+    *   **Syntax:** `!unmute <playername>`
+    *   **Description:** Removes an active mute for a player.
+    *   **Permission:** Admin
+*   **`!unwatch`** (Alias: `!uw`)
+    *   **Syntax:** `!unwatch <playername>`
+    *   **Description:** Removes a player from the watchlist.
+    *   **Permission:** Admin
+*   **`!vanish`** (Alias: `!vsh`)
+    *   **Syntax:** `!vanish [silent|notify]`
+    *   **Description:** Toggles your visibility and related effects (invisibility, no item pickup, etc.).
+    *   **Permission:** Admin
+*   **`!viewreports`** (Alias: `!vr`)
+    *   **Syntax:** `!viewreports [report_id|player_name|all] [page_number]`
+    *   **Description:** Views player-submitted reports. Supports filtering and pagination.
+    *   **Permission:** Admin
+*   **`!warnings`** (Alias: `!warns`)
+    *   **Syntax:** `!warnings <playername>`
+    *   **Description:** Views a player's AntiCheat flags (similar to inspect).
+    *   **Permission:** Admin
+*   **`!watch`** (Alias: `!w`)
+    *   **Syntax:** `!watch <playername>`
+    *   **Description:** Adds a player to the watchlist for detailed logging.
+    *   **Permission:** Admin
+*   **`!worldborder`** (Aliases: `!wb`, `!worldb`)
+    *   **Syntax:** `!worldborder <subcommand> [options...]` (Use `!wb help` for subcommands)
+    *   **Description:** Manages per-dimension world borders (set, get, toggle, resize, etc.).
+    *   **Permission:** Admin
+*   **`!xraynotify`** (Alias: `!xn`)
+    *   **Syntax:** `!xraynotify [on|off|status]`
+    *   **Description:** Manages your X-Ray mining notification preferences.
+    *   **Permission:** Admin
 
-## Player Commands
+---
 
-These commands are generally available to all players on the server.
+## Member Commands (All Players)
+*(Typically Permission Level 1024 or as configured for the default rank)*
 
-*   **`!help [command_name]`**
-    *   **Purpose:** Shows available commands or help for a specific command.
-    *   **Syntax:** `!help` or `!help <command_name>`
-    *   **Permission:** All Players (shows commands relevant to the user's permission level).
-*   **`!myflags`** (alias: `!mf`)
-    *   **Purpose:** Allows a player to check their own current anti-cheat flag status.
+*   **`!help`** (Alias: `!h`)
+    *   **Syntax:** `!help [command_name]`
+    *   **Description:** Shows available commands or help for a specific command.
+    *   **Permission:** Member
+*   **`!listranks`** (Alias: `!lr`)
+    *   **Syntax:** `!listranks`
+    *   **Description:** Lists all defined ranks and their basic properties.
+    *   **Permission:** Member
+*   **`!myflags`** (Alias: `!mf`)
     *   **Syntax:** `!myflags`
-    *   **Permission:** All Players.
-*   **`!uinfo`**
-    *   **Purpose:** Displays a UI with the player's own anti-cheat stats, server rules, and help links.
-    *   **Syntax:** `!uinfo`
-    *   **Permission:** All Players.
-*   **`!report <playername> <reason...>`**
-    *   **Purpose:** Reports a player to administrators for review. (Note: Implementation may vary, e.g., through `reportManager.js` rather than a direct command file).
-    *   **Syntax:** `!report <playername> <reason...>` (Reason is mandatory).
-    *   **Permission:** All Players.
-*   **`!rules`**
-    *   **Purpose:** Displays the server rules. (Moved here as it's typically a player command)
+    *   **Description:** Allows players to view their own AntiCheat flag status.
+    *   **Permission:** Member
+*   **`!panel`** (Alias: `!ui`)
+    *   **Syntax:** `!panel`
+    *   **Description:** Opens the player information panel (content varies by permission).
+    *   **Permission:** Member
+*   **`!report`** (Alias: `!rep`)
+    *   **Syntax:** `!report <playername> <reason...>`
+    *   **Description:** Reports a player to administrators for review. Reason is mandatory.
+    *   **Permission:** Member
+*   **`!rules`** (Alias: `!r`)
     *   **Syntax:** `!rules`
-    *   **Permission:** All Players.
+    *   **Description:** Displays the server rules.
+    *   **Permission:** Member
+*   **`!uinfo`** (Aliases: `!playerinfo`, `!userinfo`)
+    *   **Syntax:** `!uinfo`
+    *   **Description:** Shows your anti-cheat stats, server rules, and help links in a UI.
+    *   **Permission:** Member
+*   **`!version`** (Alias: `!v`)
+    *   **Syntax:** `!version`
+    *   **Description:** Displays the AntiCheat addon version.
+    *   **Permission:** Member
 
-## TPA Commands (Teleportation Request System)
-These commands are available if the TPA system is enabled in `config.js` (`enableTPASystem`).
-*   **`!tpa <playername>`**
-    *   **Purpose:** Sends a teleport request to another player.
-    *   **Syntax:** `!tpa <playername>`
-    *   **Permission:** All Players.
-*   **`!tpaccept [playername]`**
-    *   **Purpose:** Accepts an incoming teleport request. If multiple requests are pending, specify which player's request to accept.
-    *   **Syntax:** `!tpaccept [playername]`
-    *   **Permission:** All Players.
-*   **`!tpacancel`**
-    *   **Purpose:** Cancels your outgoing teleport request or denies an incoming one.
-    *   **Syntax:** `!tpacancel`
-    *   **Permission:** All Players.
-*   **`!tpahere <playername>`**
-    *   **Purpose:** Requests another player to teleport to your location.
-    *   **Syntax:** `!tpahere <playername>`
-    *   **Permission:** All Players.
-*   **`!tpastatus`**
-    *   **Purpose:** Checks the status of your current TPA requests (incoming/outgoing).
-    *   **Syntax:** `!tpastatus`
-    *   **Permission:** All Players.
+### TPA System Commands
+*(Available if `enableTpaSystem` is true in `config.js`)*
+
+*   **`!tpa <playerName>`**
+    *   **Syntax:** `!tpa <playerName>`
+    *   **Description:** Sends a teleport request to another player.
+    *   **Permission:** Member
+*   **`!tpahere <playerName>`** (Alias: `!tph`; also `!tpask` from definition)
+    *   **Syntax:** `!tpahere <playerName>`
+    *   **Description:** Requests another player to teleport to your location.
+    *   **Permission:** Member
+*   **`!tpaccept [playerName]`** (Alias: `!tpaa`; also `!tpaaccept` from definition)
+    *   **Syntax:** `!tpaccept [playerName]`
+    *   **Description:** Accepts an incoming teleport request. Specify player name if multiple requests are pending.
+    *   **Permission:** Member
+*   **`!tpacancel [playerName]`** (Aliases: `!tpc`, `!tpadeny`, `!tpcancel`)
+    *   **Syntax:** `!tpacancel [playerName]`
+    *   **Description:** Cancels your outgoing TPA request or denies an incoming one. If no player name is given, cancels/denies the most recent or relevant request.
+    *   **Permission:** Member
+*   **`!tpastatus`** (Alias: `!tps`)
+    *   **Syntax:** `!tpastatus [on|off|status]`
+    *   **Description:** Manages your TPA availability or checks current request status.
+        *   `on`: Allow incoming TPA requests.
+        *   `off`: Block incoming TPA requests (auto-declines pending).
+        *   `status`: Shows if you are accepting TPA requests.
+    *   **Permission:** Member
+
+---
+
+This list is based on the addon's structure and `config.js`. Some commands' availability or exact behavior might be further influenced by specific settings in `config.js` (e.g., `commandSettings` toggles). Always refer to in-game `!help` for the most context-aware command list.

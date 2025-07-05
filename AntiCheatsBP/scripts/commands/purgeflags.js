@@ -61,6 +61,11 @@ export async function execute(player, args, dependencies) {
     const messageToTarget = getString('command.purgeflags.success.target', { adminName: adminName });
     playerUtils.sendMessage(targetPlayer, messageToTarget);
 
+    if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
+        const notifyMsg = getString('command.purgeflags.notify.purged', { adminName: adminName, targetPlayerName: targetPlayer.nameTag, oldTotalFlags: oldTotalFlags.toString() });
+        playerUtils.notifyAdmins(notifyMsg, dependencies, player, pData);
+    }
+
     logManager.addLog({
         actionType: 'commandPurgeFlags',
         adminName: adminName,
