@@ -791,14 +791,7 @@ export const acVersion = 'v__VERSION_STRING__';
 // --- Command Aliases (Not part of editableConfigValues by default) ---
 // Command aliases are now defined directly in each command's definition object
 // within its respective file in AntiCheatsBP/scripts/commands/.
-// This section is deprecated and can be removed in a future cleanup.
-// export const commandAliases = {
-//     v: 'version',
-//     w: 'watch',
-//     "ar": "addrank",
-//     "b": "ban",
-//     // ... and so on for all previous aliases
-// };
+// This ensures that alias definitions are co-located with their command logic.
 
 // --- Editable Configuration Values ---
 // This object holds configurations that can be modified at runtime via commands (e.g., !acconfig).
