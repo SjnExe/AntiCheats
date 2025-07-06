@@ -175,6 +175,7 @@
  * @property {number} [breakStartTimeMs=0] System time (ms) when block breaking started (for InstaBreak).
  * @property {number} [breakStartTickGameTime=0] Game time (ticks) when block breaking started (for InstaBreak).
  * @property {number} [expectedBreakDurationTicks=0] Expected vanilla break duration for current block/tool (for InstaBreak).
+ * @property {string | null} [toolUsedForBreakAttempt] Item type ID of the tool used when break attempt started.
  * @property {number} [lastPillarBaseY=0] For Tower check: Y-level of the base of the current pillar.
  * @property {number} [consecutivePillarBlocks=0] For Tower check: number of blocks in current pillar.
  * @property {number} [lastPillarTick=0] For Tower check: game tick of last pillar block placement.
