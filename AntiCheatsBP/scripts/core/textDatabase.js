@@ -824,7 +824,6 @@ export const stringDB = {
 
     // --- Admin notifications (some are direct, some could be templatized) ---
     'admin.notify.newPlayerJoined': '§e[AC] New player {playerName} has joined the server for the first time!',
-    // 'admin.notify.combatLog': '§c[CombatLog] §e{playerName}§c disconnected {timeSinceCombat}s after being in combat! Flags: +{incrementAmount}', // This is now directly in actionProfiles.js
 
     // --- System Messages & Errors ---
     'system.core.initialized': "§a[AntiCheat] §2System Core Initialized. Version: {version}",
@@ -843,14 +842,10 @@ export const stringDB = {
     'command.copyinv.notify.copiedSimple': "§e{adminName}§r copied the inventory of §e{targetPlayerName}§r.",
     'command.dimensionLock.notify.locked': "The {dimensionNamePlaceholder} dimension was locked by §e{adminName}§r.",
     'command.dimensionLock.notify.unlocked': "The {dimensionNamePlaceholder} dimension was unlocked by §e{adminName}§r.",
-    // 'command.endlock.notify.locked': "The End dimension was locked by §e{adminName}§r.", // Superseded by generic
-    // 'command.endlock.notify.unlocked': "The End dimension was unlocked by §e{adminName}§r.", // Superseded by generic
     'command.freeze.notify.froze': "§e{adminName}§r froze player §e{targetPlayerName}§r.",
     'command.freeze.notify.unfroze': "§e{adminName}§r unfroze player §e{targetPlayerName}§r.",
     'command.kick.notify.kicked': "§e{targetName}§r was kicked by §e{adminName}§r. Reason: §f{reason}",
     'command.mute.notify.muted': "§e{targetName}§r was muted by §e{mutedBy}§r for §b{duration}§r. Reason: §f{reason}",
-    // 'command.netherlock.notify.locked': "The Nether dimension was locked by §e{adminName}§r.", // Superseded by generic
-    // 'command.netherlock.notify.unlocked': "The Nether dimension was unlocked by §e{adminName}§r.", // Superseded by generic
     'command.purgeflags.notify.purged': "§e{adminName}§r purged all flags and violation history for §e{targetPlayerName}§r. (Old total flags: {oldTotalFlags})",
     'command.removerank.notify.removedRank': "§e{adminName}§r removed rank §a{rankName}§r from §e{targetPlayerName}§r.",
     'command.resetflags.notify.reset': "§e{adminName}§r reset flags for §e{targetPlayerName}§r.",
