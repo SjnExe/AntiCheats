@@ -111,7 +111,7 @@ The addon includes a comprehensive suite of chat checks to maintain a clean and 
         *   *Key Configs: `enableUnicodeAbuseCheck`*
     *   **Gibberish/Unreadable Messages:** Attempts to identify messages that appear to be random, unreadable characters.
         *   *Key Configs: `enableGibberishCheck`*
-    *   **Excessive Mentions:** Prevents spamming player tags (@player) in messages.
+    *   **Excessive Mentions:** Prevents spamming multiple player name mentions (e.g., @PlayerName) excessively in a single message.
         *   *Key Configs: `enableExcessiveMentionsCheck`*
     *   **Simple Impersonation:** Detects attempts to mimic server or staff messages using common formats or color codes.
         *   *Key Configs: `enableSimpleImpersonationCheck`, `impersonationServerMessagePatterns`*
@@ -185,7 +185,7 @@ The addon includes a comprehensive suite of chat checks to maintain a clean and 
     *   *Key Configs: `enableDeathCoordsMessage`, `deathCoordsMessage`*
 *   **Server Rules Display:** Players can view server rules using the `!rules` command.
     *   *Key Configs: `serverRules` (string containing all rules)*
-*   **Helpful Links:** Admins can configure a list of helpful links (e.g., Discord, website, forums) accessible via `!helplinks` (or a UI button).
+*   **Helpful Links:** Admins can configure a list of helpful links (e.g., Discord, website, forums). These are typically accessible via a UI button in the !panel or a similar interface; a direct !helplinks command may vary in availability.
     *   *Key Configs: `helpLinks` (array of title/URL objects)*
 *   **X-Ray Ore Mining Notifications:** Optionally notify admins when players mine valuable ores like diamonds or ancient debris. This is a monitoring tool, not a preventative measure.
     *   *Key Configs: `xrayDetectionNotifyOnOreMineEnabled`, `xrayDetectionMonitoredOres`, `xrayDetectionAdminNotifyByDefault`*

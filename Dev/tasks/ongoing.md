@@ -1,6 +1,3 @@
-# Ongoing Development Tasks
+# No ongoing development tasks.
 
-This file tracks tasks currently in progress.
----
-_When starting a new task, please move it from `todo.md` (if applicable) to this file and describe your objectives._
-_When a task is completed, move its summary to `completed.md` and clear this entry or update it for the next task._
+(This file is automatically updated by the AI assistant at the start and end of tasks.)
