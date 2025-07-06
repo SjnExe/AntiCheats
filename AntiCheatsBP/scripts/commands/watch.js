@@ -60,7 +60,7 @@ export async function execute(player, args, dependencies) {
         targetName: targetPlayer.nameTag,
         targetId: targetPlayer.id,
         details: `Player added to watchlist.`,
-        context: 'WatchCommand',
+        context: 'WatchCommand.execute', // Consistent casing and context
     }, dependencies);
 
     playerUtils.debugLog(`Admin ${adminName} started watching ${targetPlayer.nameTag}.`, adminName, dependencies);

@@ -29,8 +29,11 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const message = eventData.message;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.symbolSpamActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatSymbolSpamDetected';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected'; // Default is already camelCase
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (!config?.enableSymbolSpamCheck) {
         return;

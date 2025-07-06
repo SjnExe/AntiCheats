@@ -242,9 +242,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                 }
 
                 baseMessageContext.itemQuantity = removedItemCount;
-                const removeItemContext = { ...baseMessageContext }; // itemQuantity already updated in baseMessageContext
-
-                const removalMessage = formatAutomodMessage(messageTemplate, removeItemContext);
+                const removalMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
                 if (removedItemCount > 0) {
                     playerUtils?.warnPlayer(player, removalMessage, dependencies); // Pass dependencies
                     logDetails = `Removed ${removedItemCount}x ${itemTypeIdToRemove} from ${player?.nameTag} (Check: ${checkType}). Message: '${removalMessage}'`;
@@ -285,9 +283,7 @@ async function _executeAutomodAction(player, pData, actionType, parameters, chec
                     finalTeleportDesc = `X:${safeLocation.x.toFixed(1)}, Y:${safeLocation.y.toFixed(1)}, Z:${safeLocation.z.toFixed(1)} (near requested ${teleportTargetDesc})`;
                 }
                 baseMessageContext.teleportCoordinates = finalTeleportDesc;
-                const teleportContext = { ...baseMessageContext }; // teleportCoordinates already updated in baseMessageContext
-
-                const teleportMessage = formatAutomodMessage(messageTemplate, teleportContext);
+                const teleportMessage = formatAutomodMessage(messageTemplate, baseMessageContext);
                 player?.teleport(locationToTeleport, { dimension: player.dimension });
                 playerUtils?.warnPlayer(player, teleportMessage, dependencies); // Pass dependencies
                 logDetails = `Teleported player ${player?.nameTag} to ${finalTeleportDesc}. Check: ${checkType}. Message: '${teleportMessage}'`;

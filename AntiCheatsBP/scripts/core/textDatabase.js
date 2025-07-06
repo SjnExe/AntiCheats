@@ -27,7 +27,13 @@ export const stringDB = {
     'common.error.commandModuleNotFound': '§cError: Command module "{moduleName}" not found or not enabled.',
     'common.error.permissionDenied': '§cYou do not have permission to use this command.',
     'common.error.chatProcessingUnavailable': '§cChat processing is currently unavailable. Please try again later or contact an admin.',
+    'common.error.genericCommandError': '§cAn error occurred while running !{commandName}: {errorMessage}',
     'common.success.generic': '§aAction successful.',
+
+    // Command Specific Errors (used by commandManager)
+    'command.error.noCommandEntered': '§cNo command entered. Type {prefix}help for commands.',
+    'command.error.unknownCommand': '§cUnknown command: "{commandName}". Type {prefix}help for commands.',
+    'command.error.executionFailed': '§cError executing command "{commandName}". Please contact an admin.',
 
     // Admin Panel
     'ui.adminPanel.title': '§l§bAntiCheat Admin Panel§r',
@@ -40,16 +46,29 @@ export const stringDB = {
     'ui.adminPanel.button.editConfig': '§l§6Edit Configuration§r (Owner)',
     'ui.adminPanel.error.generic': '§cError displaying admin panel.',
 
-    // Normal User Panel
+    // User Info Panel (UInfo Command)
+    'ui.uinfo.mainPanel.title': 'Player Information Panel',
+    'ui.uinfo.mainPanel.body': 'Welcome, {playerName}! Select an option:',
+    'ui.uinfo.button.myStats': 'My AntiCheat Stats',
+    'ui.uinfo.button.serverRules': 'Server Rules',
+    'ui.uinfo.button.helpfulLinks': 'Helpful Links',
+    'ui.uinfo.button.generalTips': 'General Tips',
+    'uinfo.myStats.noFlags': 'You currently have no flags!',
+    'ui.helpfulLinks.otherLinksHeader': 'Other Links:',
+    'ui.helpfulLinks.linkEntryFormat': '{title}: {url}',
+    'ui.generalTips.noTips': 'No general tips available at the moment.',
+    'ui.generalTips.title': 'General Tips',
+
+    // Normal User Panel (Fallback from Admin Panel if not admin)
     'ui.normalPanel.title': '§l§aPlayer Panel§r',
     'ui.normalPanel.body': 'Welcome, {playerName}!',
-    'ui.normalPanel.button.myStats': '§bMy Stats§r',
-    'ui.normalPanel.button.serverRules': '§eServer Rules§r',
-    'ui.normalPanel.button.helpLinks': '§9Helpful Links§r',
+    'ui.normalPanel.button.myStats': '§bMy Stats§r', // Can reuse uinfo.button.myStats if text is same
+    'ui.normalPanel.button.serverRules': '§eServer Rules§r', // Can reuse uinfo.button.serverRules
+    'ui.normalPanel.button.helpLinks': '§9Helpful Links§r', // Can reuse uinfo.button.helpfulLinks
 
-    // My Stats UI
-    'ui.myStats.title': '§l§bYour Stats§r',
-    'ui.myStats.body': 'Session Playtime: {playtime}',
+    // My Stats UI (Shared by Admin Panel > Inspect (conceptually) and UInfo)
+    'ui.myStats.title': '§l§bYour Stats§r', // uinfo uses this directly
+    // 'ui.myStats.body': 'Session Playtime: {playtime}', // This was for a different My Stats, uinfo shows flags.
     'ui.myStats.labelLocation': 'Location: X: {x}, Y: {y}, Z: {z}',
     'ui.myStats.labelDimension': 'Dimension: {dimensionName}',
 
@@ -118,7 +137,7 @@ export const stringDB = {
     'ui.playerActions.clearInventory.confirmToggle': '§cConfirm Clear Inventory',
     'ui.playerActions.clearInventory.success': '§aInventory of {targetPlayerName} cleared.',
     'ui.playerActions.clearInventory.fail': '§cFailed to clear inventory for {targetPlayerName}.',
-    'ui.playerActions.error.invalidSelection': '§cInvalid selection.',
+    'ui.playerActions.error.invalidSelection': '§cInvalid selection. Please try again.',
     'ui.playerActions.error.generic': '§cAn error occurred performing the player action.',
 
     // Detailed Flags Form
@@ -272,6 +291,19 @@ export const stringDB = {
     'tpa.manager.expired.targetNotified': '§cThe TPA request from {requesterName} has expired.',
     'tpa.manager.cancelled.movementDuringWarmup': '§cTPA cancelled: {playerName} moved during warm-up!',
     'tpa.manager.error.teleportWarmupTargetInvalid': '§cTPA cancelled: {otherPlayerName} is no longer valid for teleport.',
+    'tpa.notify.actionBar.requestToYou': '§e{requestingPlayerName} has requested to teleport to you. Use {prefix}tpaccept {requestingPlayerName} or {prefix}tpacancel {requestingPlayerName}.',
+    'tpa.notify.actionBar.requestYouToThem': '§e{requestingPlayerName} has requested you to teleport to them. Use {prefix}tpaccept {requestingPlayerName} or {prefix}tpacancel {requestingPlayerName}.',
+    'tpa.notify.actionBar.autoDeclined': '§e{playerName} is no longer accepting TPA requests; your request was automatically declined.',
+
+
+    // --- Command Descriptions (for help command) ---
+    'command.tpa.description': 'Requests to teleport to another player.',
+    'command.tpacancel.description': 'Cancels or declines a TPA request.',
+    'command.tpaccept.description': 'Accepts an incoming TPA request.',
+    'command.tpahere.description': 'Requests another player to teleport to you.',
+    'command.tpastatus.description': 'Manages your TPA request availability (on/off/status).',
+    'command.unban.description': 'Unbans a player.',
+    'command.unmute.description': 'Unmutes a player, allowing them to chat.',
 
     // Command specific: addrank
     'command.addrank.usage': '§cUsage: {prefix}addrank <playername> <rankId>',
@@ -672,6 +704,7 @@ export const stringDB = {
     'command.worldborder.help.get': '{prefix}wb get [dimension] - Shows current border settings.',
     'command.worldborder.help.toggle': '{prefix}wb toggle <on|off> [dimension] - Enables/disables the border.',
     'command.worldborder.help.remove': '{prefix}wb remove [dimension] confirm - Removes the border.',
+    'command.worldborder.remove.confirmNeeded.currentDimension': 'current ({dimensionName})',
     'command.worldborder.help.resize': '{prefix}wb <shrink|expand> <newSize> <timeSeconds> [dimension] [interpolationType] - Resizes border.',
     'command.worldborder.help.pause': '{prefix}wb resizepause [dimension] - Pauses an active resize.',
     'command.worldborder.help.resume': '{prefix}wb resizeresume [dimension] - Resumes a paused resize.',
@@ -810,29 +843,29 @@ export const stringDB = {
     'command.ban.notify.banned': "§e{bannedBy}§r banned §e{targetName}§r for §b{durationDisplay}§r. Reason: §f{reason}",
     'command.clearchat.notify.cleared': "Chat cleared by §e{adminName}§r.",
     'command.copyinv.notify.copiedSimple': "§e{adminName}§r copied the inventory of §e{targetPlayerName}§r.",
-    'command.endlock.notify.locked': "The End dimension was locked by §e{adminName}§r.",
-    'command.endlock.notify.unlocked': "The End dimension was unlocked by §e{adminName}§r.",
-    'command.freeze.notify.froze': "§e{adminName}§r froze §e{targetPlayerName}§r.",
-    'command.freeze.notify.unfroze': "§e{adminName}§r unfroze §e{targetPlayerName}§r.",
+    'command.dimensionLock.notify.locked': "The {dimensionNamePlaceholder} dimension was locked by §e{adminName}§r.",
+    'command.dimensionLock.notify.unlocked': "The {dimensionNamePlaceholder} dimension was unlocked by §e{adminName}§r.",
+    // 'command.endlock.notify.locked': "The End dimension was locked by §e{adminName}§r.", // Superseded by generic
+    // 'command.endlock.notify.unlocked': "The End dimension was unlocked by §e{adminName}§r.", // Superseded by generic
+    'command.freeze.notify.froze': "§e{adminName}§r froze player §e{targetPlayerName}§r.",
+    'command.freeze.notify.unfroze': "§e{adminName}§r unfroze player §e{targetPlayerName}§r.",
     'command.kick.notify.kicked': "§e{targetName}§r was kicked by §e{adminName}§r. Reason: §f{reason}",
     'command.mute.notify.muted': "§e{targetName}§r was muted by §e{mutedBy}§r for §b{duration}§r. Reason: §f{reason}",
-    'command.netherlock.notify.locked': "The Nether dimension was locked by §e{adminName}§r.",
-    'command.netherlock.notify.unlocked': "The Nether dimension was unlocked by §e{adminName}§r.",
+    // 'command.netherlock.notify.locked': "The Nether dimension was locked by §e{adminName}§r.", // Superseded by generic
+    // 'command.netherlock.notify.unlocked': "The Nether dimension was unlocked by §e{adminName}§r.", // Superseded by generic
     'command.purgeflags.notify.purged': "§e{adminName}§r purged all flags and violation history for §e{targetPlayerName}§r. (Old total flags: {oldTotalFlags})",
     'command.removerank.notify.removedRank': "§e{adminName}§r removed rank §a{rankName}§r from §e{targetPlayerName}§r.",
     'command.resetflags.notify.reset': "§e{adminName}§r reset flags for §e{targetPlayerName}§r.",
-    'command.unban.notify.unbanned': "§e{adminName}§r unbanned §e{targetName}§r.",
+    'command.unban.notify.unbanned': "§e{adminName}§r unbanned player §e{targetName}§r.",
     'command.unban.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unban).",
-    'command.unmute.notify.unmuted': "§e{adminName}§r unmuted §e{targetName}§r.",
+    'command.unmute.notify.unmuted': "§e{adminName}§r unmuted player §e{targetName}§r.",
     'command.unmute.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unmute).",
     'command.vanish.notify.enabled': "§e{adminName}§r has enabled vanish (§b{mode}§r mode).",
     'command.vanish.notify.disabled': "§e{adminName}§r has disabled vanish (§b{mode}§r mode).",
-
-    // --- Optional Action Bar Localizations (from TPA review) ---
-    'command.tpastatus.notify.autoDeclinedActionBar': "§e{playerName}§r is no longer accepting TPA requests; your request was automatically declined."
-
+    'command.worldborder.remove.confirmNeeded.currentDimension': 'current ({dimensionName})'
 
     // --- UI Manager specific (beyond what's in ui.*) ---
     // If uiManager constructs complex strings dynamically that aren't just titles/buttons, they could go here.
     // For now, most specific UI text is keyed under ui.*
 };
+>>>>>>> REPLACE

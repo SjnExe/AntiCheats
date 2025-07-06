@@ -2,7 +2,6 @@
  * @file Defines the !addrank command for server administrators to assign a manual rank to a player.
  */
 import { permissionLevels } from '../core/rankManager.js'; // Assuming permissionLevels is still exported if needed here.
-import { rankDefinitions } from '../core/ranksConfig.js'; // Direct import, rankManager methods are preferred for logic.
 
 /**
  * @type {import('../types.js').CommandDefinition}

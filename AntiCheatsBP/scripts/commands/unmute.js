@@ -84,7 +84,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[UnmuteCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
         logManager.addLog({
             actionType: 'errorUnmuteCommand',
-            context: 'unmute.execute',
+            context: 'UnmuteCommand.execute', // Consistent casing
             adminName: player.nameTag,
             targetName: foundPlayer?.nameTag || targetPlayerName,
             details: {

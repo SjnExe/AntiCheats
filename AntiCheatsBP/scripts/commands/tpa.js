@@ -67,9 +67,7 @@ export async function execute(player, args, dependencies) {
 
         dependencies.mc.system.run(() => {
             try {
-                // Action bar messages are often unique and might not need full externalization if simple, but can be done.
-                // For now, keeping this one as is, as it's dynamic and an action bar.
-                target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested to teleport to you. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
+                target.onScreenDisplay.setActionBar(getString('tpa.notify.actionBar.requestToYou', { requestingPlayerName: player.nameTag, prefix: prefix }));
                 // Play sound for the target player
                 playerUtils.playSoundForEvent(null, "tpaRequestReceived", dependencies, target);
             } catch (e) {

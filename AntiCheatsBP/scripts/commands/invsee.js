@@ -112,8 +112,8 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString('command.invsee.error.display'));
         logManager.addLog({
             adminName: player.nameTag,
-            actionType: 'error',
-            context: 'invseeCommand.formDisplay',
+            actionType: 'errorInvseeDisplay', // More specific
+            context: 'InvSeeCommand.formDisplay', // Consistent casing with other logs
             details: `Failed to display inventory for ${foundPlayer.nameTag}: ${e.message}`,
         }, dependencies);
     }

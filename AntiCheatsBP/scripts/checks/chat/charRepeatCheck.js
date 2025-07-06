@@ -24,18 +24,21 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     const message = eventData.message;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    // Ensure actionProfileKey is camelCase and provide a default
-    const actionProfileKey = config?.charRepeatActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatCharRepeatDetected';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (!config?.enableCharRepeatCheck) {
         return;
     }
 
-    const DEFAULT_MIN_LENGTH = 5; // Example default, adjust as needed
-    const DEFAULT_THRESHOLD = 5;  // Example default, adjust as needed
+    const defaultMinLength = 5; // Example default, adjust as needed
+    const defaultThreshold = 5;  // Example default, adjust as needed
 
-    const minLength = config?.charRepeatMinLength ?? DEFAULT_MIN_LENGTH;
-    const threshold = config?.charRepeatThreshold ?? DEFAULT_THRESHOLD;
+    const minLength = config?.charRepeatMinLength ?? defaultMinLength;
+    const threshold = config?.charRepeatThreshold ?? defaultThreshold;
 
     if (message.length < minLength) {
         return;

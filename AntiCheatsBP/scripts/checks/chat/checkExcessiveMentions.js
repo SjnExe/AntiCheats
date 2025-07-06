@@ -37,21 +37,24 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         playerUtils?.debugLog(`[ExcessiveMentionsCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const DEFAULT_MIN_MESSAGE_LENGTH = 10;
-    const DEFAULT_MAX_UNIQUE_PER_MESSAGE = 4;
-    const DEFAULT_MAX_REPEATED_PER_MESSAGE = 3;
-    const DEFAULT_ACTION_PROFILE_KEY = 'chatExcessiveMentions';
+    const defaultMinMessageLength = 10;
+    const defaultMaxUniquePerMessage = 4;
+    const defaultMaxRepeatedPerMessage = 3;
+    const defaultActionProfileKey = 'chatExcessiveMentions';
 
-    const minMessageLength = config?.mentionsMinMessageLength ?? DEFAULT_MIN_MESSAGE_LENGTH;
+    const minMessageLength = config?.mentionsMinMessageLength ?? defaultMinMessageLength;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    const maxUniquePerMessage = config?.mentionsMaxUniquePerMessage ?? DEFAULT_MAX_UNIQUE_PER_MESSAGE;
-    const maxRepeatedPerMessage = config?.mentionsMaxRepeatedPerMessage ?? DEFAULT_MAX_REPEATED_PER_MESSAGE;
+    const maxUniquePerMessage = config?.mentionsMaxUniquePerMessage ?? defaultMaxUniquePerMessage;
+    const maxRepeatedPerMessage = config?.mentionsMaxRepeatedPerMessage ?? defaultMaxRepeatedPerMessage;
 
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.mentionsActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.mentionsActionProfileName ?? defaultActionProfileKey; // Use the camelCase default
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     const mentionRegex = /@([A-Za-z0-9_]{3,16})/g; // Common Minecraft username pattern
     const allMentions = [];

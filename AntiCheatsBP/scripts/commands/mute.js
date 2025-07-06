@@ -168,8 +168,8 @@ export async function execute(
             playerUtils.debugLog(`Unexpected error during mute command for ${foundPlayer.nameTag} by ${player ? player.nameTag : invokedBy}: ${e.stack || e}`, (player ? player.nameTag : 'System'), dependencies);
         }
         logManager.addLog({
-            actionType: 'error',
-            context: 'muteCommand.execution',
+            actionType: 'errorMuteCommand', // More specific
+            context: 'MuteCommand.execution', // Consistent casing
             details: `Failed to mute ${foundPlayer.nameTag}: ${e.stack || e}`,
         }, dependencies);
     }

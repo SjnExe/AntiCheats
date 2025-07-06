@@ -80,7 +80,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[UnbanCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
         logManager.addLog({
             actionType: 'errorUnbanCommand',
-            context: 'unban.execute',
+            context: 'UnbanCommand.execute', // Consistent casing
             adminName: player.nameTag, // Already a top-level field in LogEntry, but good to ensure it's passed
             targetName: foundPlayer?.nameTag || targetPlayerName, // Already a top-level field
             details: {

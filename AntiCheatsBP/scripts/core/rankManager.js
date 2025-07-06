@@ -91,13 +91,13 @@ function getPlayerRankAndPermissions(player, dependencies) {
             for (const condition of rankDef.conditions) {
                 let match = false;
                 switch (condition.type) {
-                    case 'owner_name':
+                    case 'ownerName': // Corrected to camelCase
                         if (ownerName && player.nameTag.toLowerCase() === ownerName) match = true;
                         break;
-                    case 'admin_tag':
+                    case 'adminTag': // Corrected to camelCase
                         if (adminTag && player.hasTag(adminTag)) match = true;
                         break;
-                    case 'manual_tag_prefix':
+                    case 'manualTagPrefix': // Corrected to camelCase
                         // Ensure condition.prefix and rankDef.id are defined. rankDef.id is already lowercased.
                         if (condition.prefix && rankDef.id && player.hasTag(condition.prefix + rankDef.id)) match = true;
                         break;

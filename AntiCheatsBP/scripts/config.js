@@ -25,6 +25,8 @@ const defaultConfigSettings = {
     prefix: '!',
     /** @type {string} The tag applied to players who are vanished. */
     vanishedPlayerTag: 'vanished',
+    /** @type {string} The tag applied to players who are frozen. */
+    frozenPlayerTag: 'frozen',
 
     // --- Welcomer & Player Info ---
     /** @type {boolean} If true, a welcome message is sent to players when they join. */
@@ -94,7 +96,6 @@ const defaultConfigSettings = {
     swearCheckMuteDuration: '30s',
     /** @type {string} The action profile name from `actionProfiles.js` for swear word violations. */
     swearCheckActionProfileName: 'chatSwearViolation',
-
     /** @type {boolean} If true, enables the basic anti-advertising check in chat. */
     enableAntiAdvertisingCheck: false,
     /** @type {string[]} List of string patterns to detect potential advertisements. These are simple substring matches. */
@@ -105,7 +106,6 @@ const defaultConfigSettings = {
     ],
     /** @type {string} The action profile name from `actionProfiles.js` for advertising violations. */
     antiAdvertisingActionProfileName: 'chatAdvertisingDetected',
-
     /** @type {boolean} If true, enables advanced regex-based link detection and whitelisting. More comprehensive but potentially more resource-intensive. */
     enableAdvancedLinkDetection: false,
     /** @type {string[]} List of regex strings for advanced link detection. Ensure these are valid JavaScript regex patterns. */
@@ -117,7 +117,6 @@ const defaultConfigSettings = {
     ],
     /** @type {string[]} List of patterns (strings or regex strings) to whitelist from advertising flags. If using regex, ensure they are valid. */
     advertisingWhitelistPatterns: [],
-
     /** @type {boolean} If true, enables the check for excessive capitalization (CAPS abuse) in chat. */
     enableCapsCheck: false,
     /** @type {number} The minimum message length for the CAPS abuse check to apply. */
@@ -126,7 +125,6 @@ const defaultConfigSettings = {
     capsCheckUpperCasePercentage: 70,
     /** @type {string} The action profile name from `actionProfiles.js` for CAPS abuse violations. */
     capsCheckActionProfileName: 'chatCapsAbuseDetected',
-
     /** @type {boolean} If true, enables the check for excessive character repetition in chat (e.g., "helloooooo"). */
     enableCharRepeatCheck: false,
     /** @type {number} The minimum message length for the character repeat check to apply. */
@@ -135,7 +133,6 @@ const defaultConfigSettings = {
     charRepeatThreshold: 6,
     /** @type {string} The action profile name from `actionProfiles.js` for character repeat violations. */
     charRepeatActionProfileName: 'chatCharRepeatDetected',
-
     /** @type {boolean} If true, enables the check for excessive symbol usage in chat. */
     enableSymbolSpamCheck: false,
     /** @type {number} The minimum message length for the symbol spam check to apply. */
@@ -222,10 +219,17 @@ const defaultConfigSettings = {
     pistonActivationSustainedDurationSeconds: 3,
     /** @type {number} Cooldown in seconds before logging/alerting for the same piston again to prevent log spam. */
     pistonLagLogCooldownSeconds: 60,
+    /** @type {number} Max size of the piston activity tracking map to prevent memory issues. */
+    pistonActivityMapMaxSize: 2000,
+    /** @type {number} Seconds after which an inactive piston entry is removed from tracking map. */
+    pistonActivityEntryTimeoutSeconds: 300,
+
 
     // --- World Border System ---
     /** @type {boolean} Master switch for the entire World Border feature. */
     enableWorldBorderSystem: false,
+    /** @type {string[]} Dimensions where world border settings are actively managed and checked. */
+    worldBorderKnownDimensions: ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'],
     /** @type {string} Warning message shown to players approaching the border. */
     worldBorderWarningMessage: '§cYou are approaching the world border!',
     /** @type {boolean} Default setting for whether players take damage when outside the world border. */
@@ -269,6 +273,7 @@ const defaultConfigSettings = {
     /** @type {boolean} If true, admins receive X-Ray notifications by default (can be toggled per admin using !xraynotify). */
     xrayDetectionAdminNotifyByDefault: true,
 
+    // --- Sound Event Configuration ---
     /**
      * @description Configuration for sound events triggered by the AntiCheat system.
      * Each key represents a specific event.
@@ -342,7 +347,7 @@ const defaultConfigSettings = {
         }
     },
 
-    // --- Command Specific Toggles ---
+    // --- Command Specific Toggles & Values ---
     /** @type {Object.<string, {enabled: boolean}>} Allows toggling individual commands on or off. */
     commandSettings: {
         version: { enabled: true },
@@ -391,10 +396,19 @@ const defaultConfigSettings = {
         watch: { enabled: true },
         unwatch: { enabled: true },
     },
+    /** @type {number} Number of empty lines sent by !clearchat command to clear chat. */
+    chatClearLinesCount: 150,
+    /** @type {number} Number of reports displayed per page in the !viewreports command. */
+    reportsViewPerPage: 5,
+
 
     // --- Automated Moderation System ---
     /** @type {boolean} If true, the Automated Moderation system (AutoMod) is active. This system uses `automodConfig.js` and `actionProfiles.js`. */
     enableAutoMod: false,
+    /** @type {string} Default duration for mutes applied by AutoMod. */
+    automodDefaultMuteDuration: '10m',
+    /** @type {string} Default duration for mutes applied manually by admins if no duration is specified. */
+    manualMuteDefaultDuration: '1h',
 
     // --- Server Rules ---
     /** @type {string} A single string containing all server rules, separated by newlines. Displayed by the `!rules` command. */
@@ -432,10 +446,16 @@ Rule 6: Have fun and contribute to a positive community!`,
     enableNetherRoofCheck: false,
 
     // --- Movement Checks Specifics ---
+    /** @type {number} Percentage (0.0 to 1.0) of general tolerance for NoSlow check if not Speed affected. */
+    noSlowGeneralTolerancePercent: 0.05,
     /** @type {number} The Y-level at or above which a player in the Nether is considered to be on the roof. */
     netherRoofYLevelThreshold: 128,
     /** @type {number} Minimum fall distance in blocks that is expected to cause fall damage. Used by NoFall check. Vanilla is >3 blocks. */
     minFallDistanceForDamage: 3.5,
+    /** @type {number} Bonus Y-velocity per level of Jump Boost effect (e.g. 0.2 means +20% Y velocity bonus per level). */
+    jumpBoostYVelocityBonus: 0.2,
+    /** @type {number} Grace ticks after damage/elytra use before Y-velocity checks apply strictly. */
+    yVelocityGraceTicks: 10,
     /** @type {number} Threshold for vertical speed (blocks per tick, positive is upward) for sustained fly detection. (0.5 BPT = 10 BPS) */
     flySustainedVerticalSpeedThreshold: 0.5,
     /** @type {number} Number of consecutive off-ground ticks, while exceeding `flySustainedVerticalSpeedThreshold`, to trigger a fly flag. */
@@ -508,6 +528,8 @@ Rule 6: Have fun and contribute to a positive community!`,
     autoToolSwitchToOptimalWindowTicks: 2,
     /** @type {number} Maximum ticks after breaking a block (with a switched optimal tool) to detect a switch back to a previous non-optimal tool, for AutoTool check. */
     autoToolSwitchBackWindowTicks: 5,
+    /** @type {number} Ticks after which a break attempt state for AutoTool is considered stale and reset. */
+    autoToolBreakAttemptTimeoutTicks: 200,
     /** @type {boolean} If true, the check for breaking normally unbreakable blocks (like bedrock by non-ops) is active. */
     enableInstaBreakUnbreakableCheck: false,
     /** @type {string[]} List of block type IDs considered normally unbreakable by non-Operator players in Survival/Adventure. */
@@ -694,11 +716,29 @@ Rule 6: Have fun and contribute to a positive community!`,
     /** @type {number} Maximum number of blocks allowed to be placed within `fastPlaceTimeWindowMs`. */
     fastPlaceMaxBlocksInWindow: 10,
 
-    // --- Admin Notifications ---
-    /** @type {boolean} If true, admins receive AntiCheat notifications by default (can be toggled per admin using !notify). */
+    // --- Admin Notifications & System Event Notifications ---
+    /** @type {boolean} If true, admins receive general AntiCheat notifications by default (can be toggled per admin using !notify). */
     acGlobalNotificationsDefaultOn: true,
     /** @type {boolean} If true, admins are notified when a banned player attempts to join. */
     notifyAdminOnBannedPlayerAttempt: true,
+    /** @type {boolean} If true, admins are notified when various admin utility commands are used (e.g., rank changes, dimension locks). */
+    notifyOnAdminUtilCommandUsage: true,
+    /** @type {boolean} If true, admins are notified when an admin uses the !copyinv command. */
+    notifyOnCopyInventory: true,
+    /** @type {boolean} If true, admins are notified when a player is flagged by a check. */
+    notifyOnPlayerFlagged: true,
+    /** @type {boolean} If true, admins are notified when AutoMod takes an action against a player. */
+    notifyOnAutoModAction: true,
+    /** @type {boolean} If true, admins are notified when a new player report is submitted. */
+    notifyOnNewPlayerReport: true,
+    /** @type {boolean} If true, admins are notified when a player attempts to enter a locked dimension. */
+    notifyOnDimensionLockAttempt: true,
+
+    // --- Moderation Defaults ---
+    /** @type {string} Default duration for mutes applied by AutoMod. */
+    automodDefaultMuteDuration: '10m',
+    /** @type {string} Default duration for mutes applied manually by admins if no duration is specified. */
+    manualMuteDefaultDuration: '1h',
 
     // --- Death Effects (Cosmetic) ---
     /** @type {boolean} If true, cosmetic effects (particles, sounds) are shown when a player dies. */

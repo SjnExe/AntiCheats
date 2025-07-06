@@ -20,7 +20,7 @@ export const definition = {
  * Executes the testnotify command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} _args Command arguments (not used).
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;
@@ -44,8 +44,8 @@ export async function execute(player, _args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'error',
-            context: 'TestNotifyCommandExecute',
+            actionType: 'errorTestNotifyCommand', // More specific
+            context: 'TestNotifyCommand.execute', // Consistent casing
             details: `Failed to send test notification: ${error.stack || error}`,
         }, dependencies);
     }

@@ -86,7 +86,7 @@ export async function execute(player, args, dependencies) {
         if (logManager?.addLog) {
             logManager.addLog({ // This is for system error logging, separate from commandError sound
                 actionType: 'errorKickCommand', // Standardized error actionType
-                context: 'kick.execute',    // Standardized context
+                context: 'KickCommand.execute',    // Consistent casing
                 adminName: player.nameTag,
                 details: {
                     targetPlayerName: targetPlayerName,

@@ -39,7 +39,11 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const currentTime = Date.now();
     const threshold = config.fastMessageSpamThresholdMs ?? 500;
-    const actionProfileKey = config.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage'; // Default is already camelCase
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
     const profile = config.checkActionProfiles?.[actionProfileKey];
 
     if (pData.lastChatMessageTimestamp && pData.lastChatMessageTimestamp > 0) {

@@ -86,8 +86,11 @@ export async function checkSwear(player, eventData, pData, dependencies) {
     }
 
     const wordsInMessage = originalMessage.split(/\s+/); // Split by any whitespace
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.swearCheckActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatSwearViolation';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.swearCheckActionProfileName ?? 'chatSwearViolation'; // Default is already camelCase
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     for (const wordInMessage of wordsInMessage) {
         if (wordInMessage.trim() === '') continue;

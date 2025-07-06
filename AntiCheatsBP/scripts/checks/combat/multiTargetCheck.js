@@ -37,7 +37,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
         return;
     }
 
-    pData.recentHits = pData.recentHits || [];
+    pData.recentHits ??= [];
 
     const newHit = {
         entityId: targetEntity.id,
@@ -82,7 +82,11 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             threshold: threshold.toString(),
             targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '),
         };
-        const actionProfileKey = config.multiTargetActionProfileName ?? 'combatMultitargetAura';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.multiTargetActionProfileName ?? 'combatMultiTargetAura'; // Corrected default casing
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix, dependencies);

@@ -34,7 +34,11 @@ export async function checkViewSnap(player, pData, dependencies) {
 
     const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
     const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
-    const invalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawInvalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch'; // Default is already camelCase
+    const invalidPitchActionProfileKey = rawInvalidPitchActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (currentPitch < invalidPitchMin || currentPitch > invalidPitchMax) {
         const violationDetails = {
@@ -59,7 +63,11 @@ export async function checkViewSnap(player, pData, dependencies) {
         const postAttackTimeMs = ticksSinceLastAttack * 50;
 
         const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
-        const pitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewsnapPitch';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawPitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewSnapPitch'; // Corrected default casing
+        const pitchSnapActionProfileKey = rawPitchSnapActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
         if (deltaPitch > maxPitchSnap) {
             const violationDetails = {
@@ -74,7 +82,11 @@ export async function checkViewSnap(player, pData, dependencies) {
         }
 
         const maxYawSnap = config.maxYawSnapPerTick ?? 100;
-        const yawSnapActionProfileKey = config.yawSnapActionProfileName ?? 'combatViewsnapYaw';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawYawSnapActionProfileKey = config.yawSnapActionProfileName ?? 'combatViewSnapYaw'; // Corrected default casing
+        const yawSnapActionProfileKey = rawYawSnapActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
         if (deltaYaw > maxYawSnap) {
             const violationDetails = {

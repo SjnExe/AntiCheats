@@ -54,9 +54,9 @@ export async function execute(player, _args, dependencies) {
         let conditionStrings = [];
         if (rankDef.conditions && rankDef.conditions.length > 0) {
             for (const cond of rankDef.conditions) {
-                if (cond.type === 'owner_name') conditionStrings.push(getString('command.listranks.condition.ownerName'));
-                else if (cond.type === 'admin_tag') conditionStrings.push(getString('command.listranks.condition.adminTag'));
-                else if (cond.type === 'manual_tag_prefix') conditionStrings.push(getString('command.listranks.condition.manualTagPrefix', { prefix: cond.prefix, rankId: rankDef.id }));
+                if (cond.type === 'ownerName') conditionStrings.push(getString('command.listranks.condition.ownerName'));
+                else if (cond.type === 'adminTag') conditionStrings.push(getString('command.listranks.condition.adminTag'));
+                else if (cond.type === 'manualTagPrefix') conditionStrings.push(getString('command.listranks.condition.manualTagPrefix', { prefix: cond.prefix, rankId: rankDef.id }));
                 else if (cond.type === 'tag') conditionStrings.push(getString('command.listranks.condition.tag', { tag: cond.tag }));
                 else if (cond.type === 'default') conditionStrings.push(getString('command.listranks.condition.default'));
                 else conditionStrings.push(getString('command.listranks.condition.custom', { type: cond.type }));

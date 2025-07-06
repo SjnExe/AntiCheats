@@ -35,7 +35,11 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let conditionDetailsLog = '';
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
-        const actionProfileKey = config.invalidSprintActionProfileName ?? 'movementInvalidSprint';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.invalidSprintActionProfileName ?? 'movementInvalidSprint'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
         try {
             const foodComp = player.getComponent('minecraft:food');

@@ -70,7 +70,11 @@ export async function checkNoSlow(player, pData, dependencies) {
                 hasSpeedEffect: (speedAmplifier >= 0).toString(),
                 speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : '0',
             };
-            const actionProfileKey = config.noSlowActionProfileName ?? 'movementNoSlow';
+            // Ensure actionProfileKey is camelCase, standardizing from config
+            const rawActionProfileKey = config.noSlowActionProfileName ?? 'movementNoSlow'; // Default is already camelCase
+            const actionProfileKey = rawActionProfileKey
+                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+                .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;

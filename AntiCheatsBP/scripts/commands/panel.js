@@ -21,7 +21,7 @@ export const definition = {
  * Executes the panel command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} _args Command arguments (not used in this command).
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
     const { uiManager, playerDataManager, config, logManager, getString } = dependencies;
@@ -39,8 +39,8 @@ export async function execute(player, _args, dependencies) {
         console.error(`[PanelCommand] Error executing panel command for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage(getString('command.panel.error.generic'));
         logManager.addLog({
-            actionType: 'error',
-            context: 'PanelCommandExecute',
+            actionType: 'errorPanelCommand', // More specific
+            context: 'PanelCommand.execute', // Consistent casing
             details: `Error for ${player.nameTag}: ${error.stack || error}`,
         }, dependencies);
     }

@@ -46,8 +46,8 @@ export async function execute(player, args, dependencies) {
                     for (const req of incomingRequests) {
                         await tpaManager.declineRequest(req.requestId, dependencies);
                         const requesterPlayer = mc.world.getAllPlayers().find(p => p.name === req.requesterName);
-                        if (requesterPlayer) {
-                            const declineMessage = `§e${player.nameTag} is no longer accepting TPA requests; your request was automatically declined.`;
+                        if (requesterPlayer?.isValid()) { // Check validity
+                            const declineMessage = getString('tpa.notify.actionBar.autoDeclined', { playerName: player.nameTag });
                             mc.system.run(() => {
                                 try {
                                     requesterPlayer.onScreenDisplay.setActionBar(declineMessage);
