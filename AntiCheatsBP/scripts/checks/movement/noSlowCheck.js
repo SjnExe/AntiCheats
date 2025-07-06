@@ -26,7 +26,7 @@ export async function checkNoSlow(player, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableNoSlowCheck) { // Check master toggle
+    if (!config?.enableNoSlowCheck) {
         return;
     }
     if (!pData) {
@@ -34,44 +34,35 @@ export async function checkNoSlow(player, pData, dependencies) {
         return;
     }
 
-    // velocity should be current, typically from pData updated by updateTransientPlayerData
-    const velocity = pData.velocity ?? player.getVelocity(); // Fallback to live velocity if pData.velocity isn't set
-    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20; // Blocks per second
+    const velocity = pData.velocity ?? player.getVelocity();
+    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
 
     let resolvedSlowingActionString = null;
-    let maxAllowedBaseSpeedBPS = Infinity; // Default to no limit if no action matches
+    let maxAllowedBaseSpeedBPS = Infinity;
 
-    // Determine if player is performing a slowing action and get the base max speed
     if (pData.isUsingConsumable) {
         resolvedSlowingActionString = 'Eating/Drinking';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedEating ?? 1.0;
     } else if (pData.isChargingBow) {
         resolvedSlowingActionString = 'Charging Bow';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedChargingBow ?? 1.0;
-    } else if (pData.isUsingShield) { // pData.isUsingShield should be set if player is actively blocking
+    } else if (pData.isUsingShield) {
         resolvedSlowingActionString = 'Using Shield';
-        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedUsingShield ?? 4.4; // Vanilla walking speed is ~4.3, shield doesn't slow normal walking
+        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedUsingShield ?? 4.4;
     } else if (player.isSneaking) {
         resolvedSlowingActionString = 'Sneaking';
-        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedSneaking ?? 1.5; // Vanilla sneaking is ~1.31
+        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedSneaking ?? 1.5;
     }
 
-    if (resolvedSlowingActionString) { // If a slowing action is identified
+    if (resolvedSlowingActionString) {
         let effectiveMaxAllowedSpeedBPS = maxAllowedBaseSpeedBPS;
-        const speedAmplifier = pData.speedAmplifier ?? -1; // From updateTransientPlayerData
+        const speedAmplifier = pData.speedAmplifier ?? -1;
 
-        // Adjust max speed for Speed effect
         if (speedAmplifier >= 0) {
-            // Vanilla Speed effect adds 20% per level to base speed (not multiplicative with action speed directly)
-            // This is a simplification; true calculation might be more complex.
-            // For NoSlow, we're checking if they bypass the action's slowdown.
-            // So, we allow a percentage increase on the action's max speed.
-            const speedEffectMultiplier = 1 + ((speedAmplifier + 1) * (config?.noSlowSpeedEffectMultiplierPerLevel ?? 0.20)); // Configurable multiplier
+            const speedEffectMultiplier = 1 + ((speedAmplifier + 1) * (config?.noSlowSpeedEffectMultiplierPerLevel ?? 0.20));
             effectiveMaxAllowedSpeedBPS *= speedEffectMultiplier;
-            // Apply an additional tolerance specifically for when speed effect is active
             effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowSpeedEffectTolerancePercent ?? 0.10));
         } else {
-            // Apply general tolerance if no speed effect
             effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowGeneralTolerancePercent ?? 0.05));
         }
 
@@ -85,7 +76,6 @@ export async function checkNoSlow(player, pData, dependencies) {
                 hasSpeedEffect: (speedAmplifier >= 0).toString(),
                 speedEffectLevel: speedAmplifier >= 0 ? (speedAmplifier + 1).toString() : '0',
             };
-            // Ensure actionProfileKey is camelCase
             const rawActionProfileKey = config?.noSlowActionProfileName ?? 'movementNoSlow';
             const actionProfileKey = rawActionProfileKey
                 .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))

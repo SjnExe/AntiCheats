@@ -1,7 +1,6 @@
 /**
  * @file Defines the !mute command for administrators to prevent a player from sending chat messages.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,9 +8,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'mute',
-    syntax: '<playername> [duration] [reason]', // Prefix handled by commandManager
+    syntax: '<playername> [duration] [reason]',
     description: 'Mutes a player, preventing them from sending chat messages.',
-    permissionLevel: permissionLevels.admin, // Default admin, can be adjusted
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -40,54 +39,43 @@ export async function execute(
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
-    // Args: <playername> [duration] [reason]
-    // Reason starts at index 2. Playername is args[0], duration is args[1].
     const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 2, 'command.mute.defaultReason', dependencies);
     const targetPlayerName = parsedArgs.targetPlayerName;
-    let reason = parsedArgs.reason; // Default reason from parsePlayerAndReasonArgs
+    let reason = parsedArgs.reason;
 
     if (!targetPlayerName) {
         const usageMessage = getString('command.mute.usage', { prefix: prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {
-            // System call error logging
             console.warn(`[MuteCommand WARNING] System call for mute missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
             playerUtils?.debugLog('[MuteCommand WARNING] System call missing target player name.', null, dependencies);
         }
         return;
     }
 
-    // Determine default duration based on invoker
     const defaultDurationKey = invokedBy === 'AutoMod' ? 'automodDefaultMuteDuration' : 'manualMuteDefaultDuration';
     const fallbackDuration = invokedBy === 'AutoMod' ? '10m' : '1h';
     const defaultDuration = config?.[defaultDurationKey] ?? fallbackDuration;
     const durationString = args[1] || defaultDuration;
 
-    // Override reason if invoked by AutoMod and specific conditions are met
     if (invokedBy === 'AutoMod') {
-        if (args.length <= 2 || !args.slice(2).join(' ').trim()) { // If no explicit reason provided in args[2+] for automod
+        if (args.length <= 2 || !args.slice(2).join(' ').trim()) {
             reason = getString('command.mute.automodReason', { checkType: autoModCheckType || 'violations' });
         }
-        // If args.length > 2, parsedArgs.reason would have already captured it.
     }
-    // If not AutoMod, parsedArgs.reason (with its default) is already set correctly.
 
     const foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'mute' });
     if (!foundPlayer) {
-        // If player is null (system invocation), validateCommandTarget doesn't send a message.
         if (!player) {
             console.warn(`[MuteCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
         }
-        return; // validateCommandTarget already sent a message to the player if applicable
+        return;
     }
 
-    // Permission checks for player-invoked mutes
-    if (invokedBy === 'PlayerCommand' && player) { // Ensure player is not null for permission check
+    if (invokedBy === 'PlayerCommand' && player) {
         const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'mute', dependencies);
         if (!permCheck.allowed) {
-            // A more specific message for mute if target is same/higher rank (but not owner/admin, which canAdminActionTarget handles)
-            // For now, canAdminActionTarget provides generic keys. If more specific needed, enhance canAdminActionTarget or add logic here.
             const messageKey = permCheck.messageKey || 'command.mute.noPermission';
             player.sendMessage(getString(messageKey, permCheck.messageParams));
             return;
@@ -113,25 +101,23 @@ export async function execute(
             reason,
             mutedByForRecord,
             isAutoModAction,
-            autoModCheckType, // Already camelCase or null
+            autoModCheckType,
             dependencies
         );
 
         if (muteAdded) {
-            const muteInfo = playerDataManager?.getMuteInfo(foundPlayer, dependencies); // Re-fetch to get canonical info
+            const muteInfo = playerDataManager?.getMuteInfo(foundPlayer, dependencies);
             const actualReason = muteInfo?.reason ?? reason;
-            const actualMutedBy = muteInfo?.bannedBy ?? mutedByForRecord; // Corrected to mutedBy from banInfo
-            const durationTextUser = durationMs === Infinity ? getString('ban.duration.permanent') : playerUtils.formatDurationFriendly(durationMs); // User-friendly duration
+            const actualMutedBy = muteInfo?.bannedBy ?? mutedByForRecord;
+            const durationTextUser = durationMs === Infinity ? getString('ban.duration.permanent') : playerUtils.formatDurationFriendly(durationMs);
 
             const targetNotificationMessage = durationMs === Infinity ?
                 getString('command.mute.targetNotification.permanent', { reason: actualReason }) :
                 getString('command.mute.targetNotification.timed', { durationString: durationTextUser, reason: actualReason });
 
             try {
-                // Attempt to use ActionBar for less intrusive notification to the target
                 foundPlayer.onScreenDisplay.setActionBar(targetNotificationMessage);
             } catch (e) {
-                // Fallback to chat message if ActionBar fails (e.g., different UI context)
                 playerUtils?.sendMessage(foundPlayer, targetNotificationMessage);
                 playerUtils?.debugLog(`[MuteCommand INFO] Failed to set action bar for muted player ${foundPlayer.nameTag}, sent chat message instead. Error: ${e.message}`, issuerName, dependencies);
             }
@@ -141,7 +127,7 @@ export async function execute(
                 player.sendMessage(successMessage);
                 playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
             } else {
-                console.log(`[MuteCommand INFO] ${successMessage.replace(/§[a-f0-9]/g, '')}`); // Log for system/AutoMod
+                console.log(`[MuteCommand INFO] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
             }
 
             const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
@@ -152,10 +138,10 @@ export async function execute(
 
             logManager?.addLog({
                 adminName: actualMutedBy,
-                actionType: 'playerMuted', // Standardized camelCase
+                actionType: 'playerMuted',
                 targetName: foundPlayer.nameTag,
                 targetId: foundPlayer.id,
-                duration: durationMs === Infinity ? 'Permanent' : durationString, // Log original duration string
+                duration: durationMs === Infinity ? 'Permanent' : durationString,
                 reason: actualReason,
                 isAutoMod: isAutoModAction,
                 checkType: autoModCheckType,

@@ -1,8 +1,8 @@
 /**
+/**
  * @file Defines the !netherlock command for administrators to manage Nether dimension access.
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'netherlock',
-    syntax: '<on|off|status>', // Prefix handled by commandManager
+    syntax: '<on|off|status>',
     description: 'Manages Nether dimension access. "on" locks, "off" unlocks, "status" checks.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -27,19 +27,19 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
-    const subCommand = args[0]?.toLowerCase() || 'status'; // Default to 'status', ensure lowercase
+    const subCommand = args[0]?.toLowerCase() || 'status';
     const prefix = config?.prefix ?? '!';
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     let statusText;
     let success = false;
-    const dimensionNameForMsg = getString('dimensionLock.name.nether'); // Get user-friendly name
+    const dimensionNameForMsg = getString('dimensionLock.name.nether');
 
     try {
         switch (subCommand) {
             case 'on':
             case 'lock':
-                success = setNetherLocked(true); // worldStateUtils functions are assumed synchronous
+                success = setNetherLocked(true);
                 if (success) {
                     player?.sendMessage(getString('command.netherlock.locked'));
                     logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'Nether', details: 'Nether dimension locked' }, dependencies);
@@ -70,10 +70,9 @@ export async function execute(player, args, dependencies) {
                 }
                 break;
             case 'status':
-                const locked = isNetherLocked(); // Synchronous
+                const locked = isNetherLocked();
                 statusText = locked ? getString('command.netherlock.status.locked') : getString('command.netherlock.status.unlocked');
                 player?.sendMessage(getString('command.netherlock.status', { statusText: statusText }));
-                // No sound for status check typically
                 break;
             default:
                 player?.sendMessage(getString('command.netherlock.usage', { prefix: prefix }));
@@ -85,7 +84,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorDimensionLockCommand', // Standardized
+            actionType: 'errorDimensionLockCommand',
             context: `NetherlockCommand.execute.${subCommand}`,
             targetName: 'Nether',
             details: `Execution error: ${error.message}`,

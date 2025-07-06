@@ -1,7 +1,6 @@
 /**
  * @file Defines the !removerank command for server administrators to remove a manual rank from a player.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,7 +8,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'removerank',
-    syntax: '<playerName> <rankId>', // Prefix handled by commandManager
+    syntax: '<playerName> <rankId>',
     description: 'Removes a manually assigned rank from a player by removing the associated tag.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -34,28 +33,27 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    const rankIdToRemove = args[1].toLowerCase(); // Ensure rankId is lowerCase for matching
+    const rankIdToRemove = args[1].toLowerCase();
 
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
+    if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
-    const rankDef = depRankManager?.getRankById(rankIdToRemove); // Use rankManager from dependencies
+    const rankDef = depRankManager?.getRankById(rankIdToRemove);
     if (!rankDef) {
         player.sendMessage(getString('command.removerank.rankIdInvalid', { rankId: rankIdToRemove }));
         return;
     }
 
     const manualTagCondition = rankDef.conditions.find(c => c.type === 'manualTagPrefix' && typeof c.prefix === 'string');
-    if (!manualTagCondition?.prefix) { // Check if prefix exists
+    if (!manualTagCondition?.prefix) {
         player.sendMessage(getString('command.removerank.notManuallyManaged', { rankName: rankDef.name }));
         return;
     }
 
     const issuerPermissionLevel = depRankManager?.getPlayerPermissionLevel(player, dependencies);
-    // Ensure assignableBy is a number, default to owner level (0) if not specified.
     const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : permissionLevels.owner;
 
     if (typeof issuerPermissionLevel !== 'number' || issuerPermissionLevel > assignableByPermission) {
@@ -64,7 +62,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const rankTagToRemove = manualTagCondition.prefix + rankDef.id; // rankDef.id is already lowercase
+    const rankTagToRemove = manualTagCondition.prefix + rankDef.id;
 
     if (!targetPlayer.hasTag(rankTagToRemove)) {
         player.sendMessage(getString('command.removerank.notHasRank', { playerName: targetPlayer.nameTag, rankName: rankDef.name, rankTag: rankTagToRemove }));
@@ -73,12 +71,11 @@ export async function execute(player, args, dependencies) {
 
     try {
         const removed = targetPlayer.removeTag(rankTagToRemove);
-        if (!removed) { // removeTag returns boolean
+        if (!removed) {
             throw new Error('Failed to remove tag from player entity.');
         }
 
-        // Force a refresh of rank and nametag
-        if (depRankManager?.updatePlayerNametag) { // Check if function exists
+        if (depRankManager?.updatePlayerNametag) {
              await depRankManager.updatePlayerNametag(targetPlayer, dependencies);
         }
 
@@ -89,13 +86,12 @@ export async function execute(player, args, dependencies) {
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'rankRemoved', // Standardized camelCase
+            actionType: 'rankRemoved',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `Removed rank: ${rankDef.name} (ID: ${rankDef.id}, Tag: ${rankTagToRemove})`,
         }, dependencies);
 
-        // Notify other admins if configured
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
             const baseNotifyMsg = getString('command.removerank.notify.removedRank', { adminName: adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
@@ -107,7 +103,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorRankRemove', // Standardized camelCase
+            actionType: 'errorRankRemove',
             context: 'RemoveRankCommand.execute',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,

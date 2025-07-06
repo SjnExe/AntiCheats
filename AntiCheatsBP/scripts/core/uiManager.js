@@ -6,7 +6,6 @@
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData, MessageFormData } from '@minecraft/server-ui'; // Direct imports
 import { formatSessionDuration, formatDimensionName } from '../utils/index.js'; // Updated import
-import { editableConfigValues as globalEditableConfigValues } from '../config.js';
 
 // Forward declarations for UI functions
 let showAdminPanelMain;
@@ -273,7 +272,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
 
 
 // Assign other functions similarly ensure dependencies are passed correctly, and use optional chaining.
-showAdminPanelMain = async function (player, playerDataManager, config_unused, dependencies) {
+showAdminPanelMain = async function (player, playerDataManager, dependencies) {
     const { playerUtils, logManager, getString, permissionLevels, rankManager, uiManager } = dependencies; // uiManager for recursive calls
     const playerName = player?.nameTag ?? 'UnknownPlayer';
     playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Requested by ${playerName}`, playerName, dependencies);

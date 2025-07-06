@@ -10,8 +10,7 @@
 
 const defaultLeetMap = {
     '@': 'a', '4': 'a', '8': 'b', '3': 'e', '1': 'l', '!': 'i', '0': 'o', '5': 's', '7': 't', '$': 's',
-    // Add more common leet speak mappings as needed
-    'ph': 'f', // Example multi-char mapping
+    'ph': 'f',
 };
 
 /**
@@ -29,46 +28,38 @@ function normalizeWordForSwearCheck(word, dependencies) {
     }
     let normalized = word.toLowerCase();
 
-    // Remove common separators and special characters that might be used to bypass
-    // This regex can be expanded. Using a whitelist of allowed characters might be more robust
-    // but also more restrictive for legitimate complex words.
-    normalized = normalized.replace(/[\s._\-~`!@#$%^&*()+={}\[\]|\\:;"'<>,.?/0-9]+/g, ''); // Remove spaces, punctuation, numbers
-    if (!normalized) return ''; // Check if anything is left
+    normalized = normalized.replace(/[\s._\-~`!@#$%^&*()+={}\[\]|\\:;"'<>,.?/0-9]+/g, '');
+    if (!normalized) return '';
 
-    // Collapse consecutive identical characters (e.g., "hellooo" -> "helo")
     normalized = normalized.replace(/(.)\1+/g, '$1');
     if (!normalized) return '';
 
     if (config?.swearCheckEnableLeetSpeak) {
         const leetMap = config?.swearCheckLeetSpeakMap ?? defaultLeetMap;
-        let chars = Array.from(normalized); // Work with array for easier multi-char replacement
+        let chars = Array.from(normalized);
         let resultChars = [];
         let i = 0;
         while (i < chars.length) {
             let replaced = false;
-            // Check for multi-character leet mappings (e.g., 'ph' -> 'f')
-            // This simple loop only checks 2-char sequences. More complex mapping would need more logic.
             if (i + 1 < chars.length) {
                 const twoCharSeq = chars[i] + chars[i+1];
                 if (leetMap[twoCharSeq]) {
                     resultChars.push(leetMap[twoCharSeq]);
-                    i += 2; // Skip two characters
+                    i += 2;
                     replaced = true;
                 }
             }
-            // If no multi-char match, check single character
             if (!replaced) {
                 if (leetMap[chars[i]]) {
                     resultChars.push(leetMap[chars[i]]);
                 } else {
-                    resultChars.push(chars[i]); // Keep original if no mapping
+                    resultChars.push(chars[i]);
                 }
                 i++;
             }
         }
         normalized = resultChars.join('');
 
-        // Collapse again after leet speak conversion as it might introduce new consecutive chars
         normalized = normalized.replace(/(.)\1+/g, '$1');
         if (!normalized) return '';
     }
@@ -97,25 +88,23 @@ export async function checkSwear(player, eventData, pData, dependencies) {
         return;
     }
 
-    // Normalize the swear word list once (could be cached if list is huge and doesn't change)
     const normalizedSwearWordList = config.swearWordList
         .map(sw => {
-            const originalSwear = String(sw ?? ''); // Ensure it's a string
+            const originalSwear = String(sw ?? '');
             return {
                 original: originalSwear,
                 normalized: normalizeWordForSwearCheck(originalSwear, dependencies),
             };
         })
-        .filter(item => item.normalized.length > 0); // Filter out swears that become empty
+        .filter(item => item.normalized.length > 0);
 
     if (normalizedSwearWordList.length === 0) {
         playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: normalizedSwearWordList is empty after processing.`, pData?.isWatched ? playerName : null, dependencies);
         return;
     }
 
-    const wordsInMessage = originalMessage.split(/\s+/); // Split by any whitespace
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config?.swearCheckActionProfileName ?? 'chatSwearViolation'; // Default is already camelCase
+    const wordsInMessage = originalMessage.split(/\s+/);
+    const rawActionProfileKey = config?.swearCheckActionProfileName ?? 'chatSwearViolation';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -128,11 +117,10 @@ export async function checkSwear(player, eventData, pData, dependencies) {
         if (normalizedInputWord.length === 0) continue;
 
         for (const swearItem of normalizedSwearWordList) {
-            // Exact match of normalized forms
             if (normalizedInputWord === swearItem.normalized) {
                 const violationDetails = {
-                    detectedSwear: swearItem.original, // Show the original form of the swear word from the list
-                    matchedWordInMessage: wordInMessage, // The word from the player's message that matched
+                    detectedSwear: swearItem.original,
+                    matchedWordInMessage: wordInMessage,
                     normalizedInput: normalizedInputWord,
                     normalizedSwear: swearItem.normalized,
                     matchMethod: 'exactNormalized',
@@ -149,7 +137,7 @@ export async function checkSwear(player, eventData, pData, dependencies) {
                 if (profile?.cancelMessage) {
                     eventData.cancel = true;
                 }
-                return; // Stop after first swear word found and actioned
+                return;
             }
         }
     }

@@ -2,6 +2,10 @@
 
 This file tracks tasks currently in progress.
 
+*   **(High) Code Cleanup Pass (Jules):**
+    *   **Objective:** Remove unnecessary comments, unused code, and unnecessary empty lines from the JavaScript codebase (`AntiCheatsBP/scripts/`).
+    *   **Status:** In progress. Currently focusing on removing unnecessary empty lines. Unused code and comments review completed.
+
 *   **(Medium) Code Deduplication/Refactoring Pass (Jules):**
     *   **Objective:** Conduct a dedicated review of the codebase to identify and refactor repeated logic patterns or utility functions to improve maintainability and reduce redundancy.
     *   **Current Focus:** Implementing centralized helper functions for player data management (mute/ban), dynamic property error handling, command argument parsing, and admin action permission checking.

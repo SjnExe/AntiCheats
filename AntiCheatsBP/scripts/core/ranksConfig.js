@@ -103,25 +103,6 @@ export const rankDefinitions = [
         priority: 10,
         assignableBy: 0, // Only Owner can assign/remove Admin by default
     },
-    // Example VIP rank
-    // {
-    //     id: 'vip', // lowercase
-    //     name: 'VIP',
-    //     permissionLevel: 500,
-    //     chatFormatting: {
-    //         prefixText: '§e[VIP] ',
-    //         prefixColor: '§e', // Yellow
-    //         nameColor: '§e',   // Yellow
-    //         messageColor: '§f', // White
-    //     },
-    //     nametagPrefix: '§eVIP §f\n',
-    //     conditions: [
-    //         { type: 'tag', tag: 'vipRankTag' }, // Ensure tag is specific
-    //         // Or for manual prefix: { type: 'manualTagPrefix', prefix: 'rank_' } // checks for 'rank_vip'
-    //     ],
-    //     priority: 100,
-    //     assignableBy: 1, // Admins or higher
-    // },
     {
         id: 'member', // lowercase, Default/Fallback rank
         name: 'Member',

@@ -1,7 +1,6 @@
 /**
  * @file Defines the !unwatch command for administrators to stop watching a player.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,7 +8,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'unwatch',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Stops watching a player, reducing detailed logging for them.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -34,11 +33,11 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetPlayerName = args[0]; // Unwatch command doesn't have a "reason" part.
+    const targetPlayerName = args[0];
 
     const targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unwatch' });
     if (!targetPlayer) {
-        return; // Message already sent by validateCommandTarget
+        return;
     }
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);
@@ -53,10 +52,8 @@ export async function execute(player, args, dependencies) {
     }
 
     pData.isWatched = false;
-    pData.isDirtyForSave = true; // Mark for saving
+    pData.isDirtyForSave = true;
 
-    // Explicitly save the data now, though the main loop would eventually pick it up.
-    // This makes the change effective immediately for logging purposes.
     await playerDataManager?.saveDirtyPlayerData(targetPlayer, dependencies);
 
     player.sendMessage(getString('command.unwatch.success.admin', { playerName: targetPlayer.nameTag }));
@@ -65,7 +62,7 @@ export async function execute(player, args, dependencies) {
 
     logManager?.addLog({
         adminName: adminName,
-        actionType: 'playerUnwatched', // Standardized camelCase
+        actionType: 'playerUnwatched',
         targetName: targetPlayer.nameTag,
         targetId: targetPlayer.id,
         details: `Player ${targetPlayer.nameTag} is no longer being watched by ${adminName}.`,

@@ -52,8 +52,7 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
             cooldownMs: cooldown.toString(),
             actualTimeMs: timeSinceLastUseMs.toString(),
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse'; // Default is already camelCase
+        const rawActionProfileKey = config.fastUseActionProfileName ?? 'actionFastUse';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());

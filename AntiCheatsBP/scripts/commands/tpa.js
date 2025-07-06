@@ -1,7 +1,6 @@
 /**
  * @file Defines the !tpa command for players to request teleporting to another player.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,10 +8,10 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'tpa',
-    syntax: '<playerName>', // Prefix handled by commandManager
+    syntax: '<playerName>',
     description: 'Requests to teleport to another player. They must accept with !tpaccept.',
-    permissionLevel: permissionLevels.member, // Default TPA accessible by members
-    enabled: true, // Master toggle for this command, TPA system itself has a global toggle in config.js
+    permissionLevel: permissionLevels.member,
+    enabled: true,
 };
 
 /**
@@ -33,7 +32,7 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-    if (!dependencies.commandSettings?.tpa?.enabled) { // Check specific command toggle
+    if (!dependencies.commandSettings?.tpa?.enabled) {
         player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
         return;
     }
@@ -47,7 +46,7 @@ export async function execute(player, args, dependencies) {
     const targetPlayerName = args[0];
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
+    if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
@@ -57,13 +56,12 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetTpaStatus = tpaManager?.getPlayerTpaStatus(targetPlayer.name, dependencies); // Use system name for status map
+    const targetTpaStatus = tpaManager?.getPlayerTpaStatus(targetPlayer.name, dependencies);
     if (!targetTpaStatus?.acceptsTpaRequests) {
         player.sendMessage(getString('command.tpa.targetNotAccepting', { playerName: targetPlayer.nameTag }));
         return;
     }
 
-    // Check if there's already an active request between these two players
     const existingRequest = tpaManager?.findRequest(player.name, targetPlayer.name);
     if (existingRequest && (existingRequest.status === 'pendingAcceptance' || existingRequest.status === 'pendingTeleportWarmup')) {
         player.sendMessage(getString('command.tpa.alreadyActive', { playerName: targetPlayer.nameTag }));
@@ -76,7 +74,7 @@ export async function execute(player, args, dependencies) {
         if (addResult.error === 'cooldown' && typeof addResult.remaining === 'number') {
             player.sendMessage(getString('command.tpa.cooldown', { remainingTime: addResult.remaining.toString() }));
         } else {
-            player.sendMessage(getString('command.tpa.error.genericSend')); // Generic error if specific one not handled
+            player.sendMessage(getString('command.tpa.error.genericSend'));
             playerUtils?.debugLog(`[TpaCommand] Failed to add TPA request from ${requesterName} to ${targetPlayer.nameTag}. Result: ${JSON.stringify(addResult)}`, requesterName, dependencies);
         }
     } else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
@@ -84,22 +82,20 @@ export async function execute(player, args, dependencies) {
         const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? 60;
         player.sendMessage(getString('command.tpa.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix: prefix }));
 
-        // Notify target player via ActionBar
         const actionBarMessage = getString('tpa.notify.actionBar.requestToYou', { requestingPlayerName: requesterName, prefix: prefix });
         try {
             targetPlayer.onScreenDisplay.setActionBar(actionBarMessage);
         } catch (e) {
-            // Fallback to chat message if action bar fails (e.g. player in UI)
             playerUtils?.sendMessage(targetPlayer, actionBarMessage);
             playerUtils?.debugLog(`[TpaCommand INFO] Failed to set action bar for TPA target ${targetPlayer.nameTag}, sent chat message instead. Error: ${e.message}`, requesterName, dependencies);
         }
-        playerUtils?.playSoundForEvent(targetPlayer, "tpaRequestReceived", dependencies); // Sound for target
+        playerUtils?.playSoundForEvent(targetPlayer, "tpaRequestReceived", dependencies);
 
         logManager?.addLog({
-            actionType: 'tpaRequestSent', // Already camelCase in original
+            actionType: 'tpaRequestSent',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
-            adminName: requesterName, // Use adminName for requester
+            adminName: requesterName,
             requesterId: player.id,
             details: `TPA request sent. ID: ${request.requestId}, Type: ${request.requestType}`,
             context: 'TpaCommand.execute',

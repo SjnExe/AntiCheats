@@ -81,7 +81,6 @@ export async function handlePlayerLeave(eventData, dependencies) {
         }
     }
 
-
     if (config?.enableDetailedJoinLeaveLogging) {
         console.warn(`[LeaveLog] Player: ${playerName} (ID: ${player?.id}) left the game.`);
     }

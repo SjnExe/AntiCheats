@@ -5,7 +5,7 @@
  * assumes `pData` fields like `blindnessTicks`, `isUsingConsumable`, `isChargingBow`
  * are updated by `updateTransientPlayerData` or relevant event handlers.
  */
-import * as mc from '@minecraft/server'; // For mc.EntityComponentTypes
+import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -40,7 +40,6 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
 
-        // Standardize actionProfileKey
         const rawActionProfileKey = config?.invalidSprintActionProfileName ?? 'movementInvalidSprint';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -48,17 +47,14 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         const watchedPlayerName = pData.isWatched ? playerName : null;
 
         try {
-            // Ensure mc.EntityComponentTypes.Food is used correctly
             const foodComp = player.getComponent(mc.EntityComponentTypes.Food);
             if (foodComp) {
                 currentFoodLevel = foodComp.foodLevel.toString();
-                // Default sprintHungerLimit to 6 if not in config (vanilla is >6, meaning 7+)
                 if (foodComp.foodLevel <= (config?.sprintHungerLimit ?? 6)) {
                     isHungerTooLow = true;
                 }
             }
         } catch (e) {
-            // Log error if food component access fails, but don't let it crash the check
             playerUtils?.debugLog(`[InvalidSprintCheck WARNING] Error getting food component for ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
         }
 
@@ -68,7 +64,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         } else if (player.isSneaking) {
             resolvedConditionString = 'Sneaking';
             conditionDetailsLog = 'Player is sneaking';
-        } else if (player.isRiding) { // player.isRiding is a direct boolean property
+        } else if (player.isRiding) {
             resolvedConditionString = 'Riding Entity';
             conditionDetailsLog = 'Player is riding an entity';
         } else if (isHungerTooLow) {
@@ -81,7 +77,6 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             resolvedConditionString = 'Charging Bow';
             conditionDetailsLog = 'Player is charging a bow';
         }
-        // Add more conditions here if needed, e.g., swimming, gliding (though gliding often handled separately)
 
         if (resolvedConditionString) {
             const violationDetails = {
@@ -89,7 +84,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
                 details: conditionDetailsLog,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
-                isRiding: player.isRiding.toString(), // Ensure this is correct based on API
+                isRiding: player.isRiding.toString(),
                 blindnessTicks: (pData.blindnessTicks ?? 0).toString(),
                 hungerLevel: currentFoodLevel,
                 isUsingConsumable: (pData.isUsingConsumable ?? false).toString(),

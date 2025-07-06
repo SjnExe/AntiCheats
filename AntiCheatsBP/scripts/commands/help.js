@@ -2,7 +2,6 @@
  * @file Defines the !help command, which provides players with a list of available commands
  * or detailed information about a specific command based on their permission level.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,9 +9,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'help',
-    syntax: '[command_name]', // Prefix handled by commandManager
-    description: 'command.help.description', // Key for textDatabase
-    permissionLevel: permissionLevels.member, // Available to all members
+    syntax: '[command_name]',
+    description: 'command.help.description',
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
@@ -38,18 +37,14 @@ export async function execute(player, args, dependencies) {
     const userPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (typeof userPermissionLevel !== 'number') {
         playerUtils?.debugLog(`[HelpCommand WARNING] Could not determine permission level for ${playerName}. Defaulting to most restrictive for help display.`, playerName, dependencies);
-        // Fallback to a very high number if perm level is unknown, effectively showing no restricted commands.
-        // Or, send an error. For help, perhaps show only member-level commands.
-        // For now, let it proceed, it will filter out commands they can't access.
     }
 
     const prefix = config?.prefix ?? '!';
 
-    if (args[0]) { // Help for a specific command
-        const specificCommandNameInput = args[0].toLowerCase().replace(prefix, ''); // Remove prefix if present
+    if (args[0]) {
+        const specificCommandNameInput = args[0].toLowerCase().replace(prefix, '');
         let foundCmdDef = commandDefinitionMap?.get(specificCommandNameInput);
 
-        // Check aliases if not found by primary name
         if (!foundCmdDef && config?.commandAliases) {
             const aliasTargetName = config.commandAliases[specificCommandNameInput];
             if (aliasTargetName) {
@@ -58,7 +53,7 @@ export async function execute(player, args, dependencies) {
         }
 
         if (foundCmdDef) {
-            let isEffectivelyEnabled = foundCmdDef.enabled !== false; // Default to true if undefined
+            let isEffectivelyEnabled = foundCmdDef.enabled !== false;
             if (config?.commandSettings?.[foundCmdDef.name] && typeof config.commandSettings[foundCmdDef.name].enabled === 'boolean') {
                 isEffectivelyEnabled = config.commandSettings[foundCmdDef.name].enabled;
             }
@@ -69,20 +64,19 @@ export async function execute(player, args, dependencies) {
             }
 
             if (userPermissionLevel <= foundCmdDef.permissionLevel) {
-                // Remove command name from syntax string if it's included (e.g., "!command <arg>" -> "<arg>")
                 const syntaxArgs = foundCmdDef.syntax.startsWith(prefix + foundCmdDef.name)
                     ? foundCmdDef.syntax.substring((prefix + foundCmdDef.name).length).trim()
                     : (foundCmdDef.syntax.startsWith(foundCmdDef.name) ? foundCmdDef.syntax.substring(foundCmdDef.name.length).trim() : foundCmdDef.syntax);
 
 
-                let permLevelName = getString('common.value.unknown'); // Fallback
+                let permLevelName = getString('common.value.unknown');
                 for (const key in depPermLevels) {
                     if (depPermLevels[key] === foundCmdDef.permissionLevel) {
                         permLevelName = key.charAt(0).toUpperCase() + key.slice(1);
                         break;
                     }
                 }
-                const descriptionText = getString(foundCmdDef.description) || foundCmdDef.description; // Use getString if key, else direct
+                const descriptionText = getString(foundCmdDef.description) || foundCmdDef.description;
 
                 player.sendMessage(
                     getString('command.help.specific.header', { prefix: prefix, commandName: foundCmdDef.name }) + '\n' +
@@ -96,15 +90,14 @@ export async function execute(player, args, dependencies) {
         } else {
             player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandNameInput }));
         }
-    } else { // General help - list available commands
+    } else {
         let helpMessage = getString('command.help.header', { prefix: prefix }) + '\n';
         let commandsListed = 0;
 
-        // Define categories for display. Order matters.
         const categories = [
             { nameStringKey: 'command.help.category.general', minPerm: depPermLevels.member },
             { nameStringKey: 'command.help.category.teleport', minPerm: depPermLevels.member, condition: () => config?.enableTpaSystem === true },
-            { nameStringKey: 'command.help.category.moderation', minPerm: depPermLevels.moderator }, // Assuming moderator level exists
+            { nameStringKey: 'command.help.category.moderation', minPerm: depPermLevels.moderator },
             { nameStringKey: 'command.help.category.admin', minPerm: depPermLevels.admin },
             { nameStringKey: 'command.help.category.owner', minPerm: depPermLevels.owner },
         ];
@@ -113,9 +106,9 @@ export async function execute(player, args, dependencies) {
 
         categories.forEach(category => {
             if (category.condition && !category.condition()) {
-                return; // Skip category if condition not met (e.g., TPA disabled)
+                return;
             }
-            if (userPermissionLevel > category.minPerm) { // User doesn't have high enough permission for this category
+            if (userPermissionLevel > category.minPerm) {
                 return;
             }
 
@@ -125,10 +118,10 @@ export async function execute(player, args, dependencies) {
                     isEffectivelyEnabled = config.commandSettings[cmdDef.name].enabled;
                 }
                 return isEffectivelyEnabled &&
-                       userPermissionLevel <= cmdDef.permissionLevel && // User can use this command
-                       cmdDef.permissionLevel >= category.minPerm && // Command belongs to this category or higher
-                       (categories.findIndex(c => c.minPerm === cmdDef.permissionLevel) === categories.indexOf(category) || // Belongs exactly to this category level
-                        (cmdDef.permissionLevel < category.minPerm && category.minPerm === depPermLevels.member && cmdDef.permissionLevel >= depPermLevels.member)); // General commands shown in general category
+                       userPermissionLevel <= cmdDef.permissionLevel &&
+                       cmdDef.permissionLevel >= category.minPerm &&
+                       (categories.findIndex(c => c.minPerm === cmdDef.permissionLevel) === categories.indexOf(category) ||
+                        (cmdDef.permissionLevel < category.minPerm && category.minPerm === depPermLevels.member && cmdDef.permissionLevel >= depPermLevels.member));
             }).sort((a,b) => a.name.localeCompare(b.name));
 
 
@@ -149,7 +142,7 @@ export async function execute(player, args, dependencies) {
         if (commandsListed === 0) {
             helpMessage += getString('command.help.noCommandsAvailable');
         } else {
-            if (helpMessage.endsWith('\n')) { // Trim trailing newline if any commands were added
+            if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);
             }
         }

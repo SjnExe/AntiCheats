@@ -1,8 +1,6 @@
 /**
  * @file Defines the !addrank command for server administrators to assign a manual rank to a player.
  */
-// permissionLevels might be better accessed via dependencies.rankManager.permissionLevels if it's dynamic
-// For now, assuming a static import is acceptable as per original structure.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +8,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'addrank',
-    syntax: '<playername> <rankId>', // Prefix is handled by commandManager
+    syntax: '<playername> <rankId>',
     description: 'Assigns a manual rank to a player by adding the associated tag.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -35,7 +33,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    const rankIdToAssign = args[1].toLowerCase(); // Ensure rankId is lowerCase for matching
+    const rankIdToAssign = args[1].toLowerCase();
 
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
     if (!targetPlayer) {
@@ -56,7 +54,6 @@ export async function execute(player, args, dependencies) {
     }
 
     const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-    // Ensure assignableBy is a number, default to owner level (0) if not specified, meaning only owner can assign.
     const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : permissionLevels.owner;
 
     if (typeof issuerPermissionLevel !== 'number' || issuerPermissionLevel > assignableByPermission) {
@@ -65,7 +62,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const rankTagToAdd = manualTagCondition.prefix + rankDef.id; // rankDef.id is already lowercase
+    const rankTagToAdd = manualTagCondition.prefix + rankDef.id;
 
     if (targetPlayer.hasTag(rankTagToAdd)) {
         player?.sendMessage(getString('command.addrank.alreadyHasRank', { playerName: targetPlayer.nameTag, rankName: rankDef.name }));
@@ -74,8 +71,7 @@ export async function execute(player, args, dependencies) {
 
     try {
         targetPlayer.addTag(rankTagToAdd);
-        // Updating nametag after rank change is crucial
-        if (rankManager?.updatePlayerNametag) { // Check if function exists on the passed rankManager
+        if (rankManager?.updatePlayerNametag) {
             await rankManager.updatePlayerNametag(targetPlayer, dependencies);
         }
 
@@ -85,13 +81,12 @@ export async function execute(player, args, dependencies) {
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'rankAssigned', // Standardized camelCase
+            actionType: 'rankAssigned',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `Assigned rank: ${rankDef.name} (ID: ${rankDef.id}, Tag: ${rankTagToAdd})`,
         }, dependencies);
 
-        // Notify admins if configured
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
             const baseNotifyMsg = getString('command.addrank.notify.assigned', { adminName: adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
@@ -102,12 +97,12 @@ export async function execute(player, args, dependencies) {
         console.error(`[AddRankCommand CRITICAL] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorRankAssign', // Standardized camelCase
+            actionType: 'errorRankAssign',
             context: 'AddRankCommand.execute',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `Failed to assign rank ${rankDef.id} to ${targetPlayer.nameTag}: ${e.message}`,
-            errorStack: e.stack || e.toString(), // Store stack
+            errorStack: e.stack || e.toString(),
         }, dependencies);
     }
 }

@@ -30,7 +30,6 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
         return;
     }
 
-    // Ensure actionProfileName is camelCase, standardizing from config
     const rawActionProfileName = config?.antiAdvertisingActionProfileName ?? 'chatAdvertisingDetected';
     const actionProfileName = rawActionProfileName
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -38,30 +37,26 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
 
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
-    // Advanced Regex Detection
     if (config?.enableAdvancedLinkDetection && Array.isArray(config.advancedLinkRegexList) && config.advancedLinkRegexList.length > 0) {
         for (const regexString of config.advancedLinkRegexList) {
             if (typeof regexString !== 'string' || regexString.trim() === '') continue;
             try {
-                const regex = new RegExp(regexString, 'i'); // Case-insensitive matching
+                const regex = new RegExp(regexString, 'i');
                 const match = regex.exec(message);
                 if (match) {
                     const detectedLink = match[0];
                     let isWhitelisted = false;
 
-                    // Check Whitelist Patterns
                     if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
                         for (const wlPattern of config.advertisingWhitelistPatterns) {
                             if (typeof wlPattern !== 'string' || wlPattern.trim() === '') continue;
                             try {
-                                // Attempt regex match for whitelist pattern
                                 if (new RegExp(wlPattern, 'i').test(detectedLink)) {
                                     isWhitelisted = true;
                                     playerUtils?.debugLog(`[AntiAdvertisingCheck] Link '${detectedLink}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
                                     break;
                                 }
                             } catch (eRegexWl) {
-                                // Fallback to simple string inclusion if regex for whitelist pattern is invalid
                                 if (detectedLink.toLowerCase().includes(wlPattern.toLowerCase())) {
                                     isWhitelisted = true;
                                     playerUtils?.debugLog(`[AntiAdvertisingCheck] Link '${detectedLink}' for ${playerName} whitelisted by simple include: '${wlPattern}'. (Whitelist pattern was not valid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
@@ -76,7 +71,6 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                         continue; // This link was whitelisted, but other regex patterns might find other non-whitelisted links.
                     }
 
-                    // Link detected and not whitelisted by any pattern
                     playerUtils?.debugLog(`[AntiAdvertisingCheck] ${playerName} triggered ADVANCED regex '${regexString}' with link: '${detectedLink}'. Message: '${message}'`, watchedPlayerName, dependencies);
                     const violationDetails = {
                         detectedLink,
@@ -85,28 +79,24 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                         originalMessage: message,
                     };
                     await actionManager?.executeCheckAction(player, actionProfileName, violationDetails, dependencies);
-                    // Access cancelMessage from the correct place (checkActionProfiles on config)
                     const profile = dependencies.checkActionProfiles?.[actionProfileName];
                     if (profile?.cancelMessage) {
                         eventData.cancel = true;
                     }
-                    return; // Action taken, no need to check further patterns or simple patterns
+                    return;
                 }
             } catch (eRegexMain) {
                 console.error(`[AntiAdvertisingCheck CRITICAL] Invalid regex pattern in config.advancedLinkRegexList: '${regexString}'. Error: ${eRegexMain.stack || eRegexMain.message}`);
                 playerUtils?.debugLog(`[AntiAdvertisingCheck CRITICAL] Error with regex '${regexString}' for ${playerName}: ${eRegexMain.message}`, watchedPlayerName, dependencies);
-                // Potentially log this to a more persistent admin log if such errors are frequent
             }
         }
     }
 
-    // Simple Pattern Matching (Fallback or if advanced is disabled/yielded no non-whitelisted results)
     if (!eventData.cancel && config?.enableAntiAdvertisingCheck && Array.isArray(config.antiAdvertisingPatterns) && config.antiAdvertisingPatterns.length > 0) {
         const lowerCaseMessage = message.toLowerCase();
         for (const pattern of config.antiAdvertisingPatterns) {
-            if (typeof pattern !== 'string' || pattern.trim() === '') continue; // Skip invalid patterns
+            if (typeof pattern !== 'string' || pattern.trim() === '') continue;
 
-            // Check if this simple pattern is whitelisted (less common for simple patterns but possible)
             let isSimplePatternWhitelisted = false;
             if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
                 for (const wlPattern of config.advertisingWhitelistPatterns) {
@@ -121,7 +111,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                      }
                 }
             }
-            if (isSimplePatternWhitelisted) continue; // Skip this simple pattern if it's broadly whitelisted
+            if (isSimplePatternWhitelisted) continue;
 
             if (lowerCaseMessage.includes(pattern.toLowerCase())) {
                 playerUtils?.debugLog(`[AntiAdvertisingCheck] ${playerName} triggered SIMPLE pattern '${pattern}'. Message: '${message}'`, watchedPlayerName, dependencies);
@@ -135,7 +125,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 if (profile?.cancelMessage) {
                     eventData.cancel = true;
                 }
-                return; // Action taken
+                return;
             }
         }
     } else if (!config?.enableAdvancedLinkDetection && (!config?.antiAdvertisingPatterns || config.antiAdvertisingPatterns.length === 0)) {

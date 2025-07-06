@@ -24,7 +24,7 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableStateConflictCheck) { // General toggle for all state conflict checks
+    if (!config?.enableStateConflictCheck) {
         return;
     }
     if (!pData) {
@@ -34,13 +34,12 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
 
     const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    if (player.isSleeping) { // isSleeping is a direct property
+    if (player.isSleeping) {
         const violationDetails = {
             state: 'isSleeping',
-            targetEntityId: eventSpecificData?.targetEntity?.id, // Optional
-            targetEntityType: eventSpecificData?.targetEntity?.typeId, // Optional
+            targetEntityId: eventSpecificData?.targetEntity?.id,
+            targetEntityType: eventSpecificData?.targetEntity?.typeId,
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
         const rawActionProfileKey = config?.attackWhileSleepingActionProfileName ?? 'combatAttackWhileSleeping';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -67,7 +66,7 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableStateConflictCheck) { // General toggle
+    if (!config?.enableStateConflictCheck) {
         return;
     }
     if (!pData) {
@@ -85,7 +84,7 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
         const violationDetails = {
             ...targetDetails,
             state: 'isUsingConsumable',
-            itemCategory: 'consumable', // Generic category
+            itemCategory: 'consumable',
         };
         const rawActionProfileKeyConsuming = config?.attackWhileConsumingActionProfileName ?? 'combatAttackWhileConsuming';
         const actionProfileKeyConsuming = rawActionProfileKeyConsuming
@@ -99,7 +98,7 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
         const violationDetails = {
             ...targetDetails,
             state: 'isChargingBow',
-            itemCategory: 'bow', // Or 'crossbow' if distinguishable
+            itemCategory: 'bow',
         };
         const rawActionProfileKeyBow = config?.attackWhileBowChargingActionProfileName ?? 'combatAttackWhileBowCharging';
         const actionProfileKeyBow = rawActionProfileKeyBow

@@ -15,7 +15,7 @@ function formatViolationDetails(violationDetails) {
     return Object.entries(violationDetails)
         .map(([key, value]) => {
             if (typeof value === 'number' && !Number.isInteger(value)) {
-                return `${key}: ${value.toFixed(3)}`; // Format floats to 3 decimal places
+                return `${key}: ${value.toFixed(3)}`;
             }
             return `${key}: ${String(value)}`;
         })
@@ -35,7 +35,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
         return '';
     }
     let message = template;
-    // Ensure global replacement for all placeholders
     message = message.replace(/{playerName}/g, playerName);
     message = message.replace(/{checkType}/g, checkType);
     message = message.replace(/{detailsString}/g, formatViolationDetails(violationDetails));
@@ -43,7 +42,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
     if (violationDetails && typeof violationDetails === 'object') {
         for (const key in violationDetails) {
             if (Object.prototype.hasOwnProperty.call(violationDetails, key)) {
-                // Escape key for regex, then create global regex
                 const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                 const placeholderRegex = new RegExp(`{${escapedKey}}`, 'g');
                 let valueStr = String(violationDetails[key]);
@@ -76,7 +74,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         return;
     }
 
-    const profile = checkActionProfiles[checkType]; // Direct access, already checked checkActionProfiles
+    const profile = checkActionProfiles[checkType];
     if (!profile) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] No action profile found for checkType: '${checkType}'. Context: ${playerNameForLog}`, null, dependencies);
         return;
@@ -98,8 +96,6 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     if (player && profile.flag) {
         const flagType = profile.flag.type || checkType;
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
-        // flagDetailsForAdminNotify is derived from violationDetails inside addFlag if needed by automod.
-        // For direct admin notification, the formatted message is used.
 
         for (let i = 0; i < increment; i++) {
             await playerDataManager?.addFlag(player, flagType, flagReasonMessage, violationDetails, dependencies);
@@ -111,7 +107,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
 
     if (profile.log) {
         const defaultPascalCase = `detected${checkType.charAt(0).toUpperCase() + checkType.slice(1)}`;
-        const logActionType = profile.log.actionType || (defaultPascalCase.charAt(0).toLowerCase() + defaultPascalCase.slice(1)); // Ensure camelCase
+        const logActionType = profile.log.actionType || (defaultPascalCase.charAt(0).toLowerCase() + defaultPascalCase.slice(1));
 
         let logDetailsString = profile.log.detailsPrefix || '';
         if (profile.log.includeViolationDetails !== false) {
@@ -122,9 +118,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             actionType: logActionType,
             targetName: playerNameForLog,
             targetId: player?.id,
-            details: logDetailsString.trim() || 'N/A', // Ensure details is not empty string
+            details: logDetailsString.trim() || 'N/A',
             reason: flagReasonMessage,
-            checkType: checkType, // Add checkType to log for better context
+            checkType: checkType,
             location: player?.location,
             dimensionId: player?.dimension?.id
         }, dependencies);
@@ -138,7 +134,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             violationDetails
         );
         const pData = player ? playerDataManager?.getPlayerData(player.id) : null;
-        if (config.notifyOnPlayerFlagged !== false) { // Access from config directly
+        if (config.notifyOnPlayerFlagged !== false) {
             playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
     }
@@ -150,7 +146,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             pData.lastViolationDetailsMap[checkType] = {
                 itemTypeId: violationDetails.itemTypeId,
                 timestamp: Date.now(),
-                details: formatViolationDetails(violationDetails) // Store formatted details too
+                details: formatViolationDetails(violationDetails)
             };
             pData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored itemTypeId '${violationDetails.itemTypeId}' and details for check '${checkType}' for ${playerNameForLog}.`, player?.nameTag, dependencies);

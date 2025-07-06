@@ -30,7 +30,6 @@ export async function execute(player, _args, dependencies) {
     form.title(getString('ui.serverRules.title'));
 
     if (config.serverRules && config.serverRules.trim() !== '') {
-        // Assuming config.serverRules is either a direct string or an array of strings
         const rulesText = Array.isArray(config.serverRules) ? config.serverRules.join('\n') : config.serverRules;
         form.body(rulesText);
     } else {
@@ -42,16 +41,13 @@ export async function execute(player, _args, dependencies) {
     try {
         await form.show(player);
     } catch (error) {
-        // Log errors specifically if form display fails
         console.error(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.stack || error}`);
         playerUtils.debugLog(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.message}`, player.nameTag, dependencies);
-        // No need to message player here as form.show() failing is usually a client-side issue
-        // or an unrecoverable server-side issue with UI.
         logManager.addLog({
             timestamp: Date.now(),
-            actionType: 'errorRulesCommandForm', // More specific
-            context: 'RulesCommand.showForm', // Consistent casing
-            adminName: player.nameTag, // Consistent field name for command issuer
+            actionType: 'errorRulesCommandForm',
+            context: 'RulesCommand.showForm',
+            adminName: player.nameTag,
             details: `Error showing rules form: ${error.stack || error}`,
         }, dependencies);
     }

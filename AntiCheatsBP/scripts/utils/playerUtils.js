@@ -52,7 +52,7 @@ export function isAdmin(player, dependencies) {
  */
 export function warnPlayer(player, reason, dependencies) {
     player?.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
-    if (dependencies && player) { // Check if dependencies and player are provided
+    if (dependencies && player) {
         playSoundForEvent(player, "playerWarningReceived", dependencies);
     }
 }
@@ -64,18 +64,17 @@ export function warnPlayer(player, reason, dependencies) {
  */
 export function formatDimensionName(dimensionId) {
     if (typeof dimensionId !== 'string' || dimensionId.trim() === '') {
-        return 'Unknown Dimension'; // Handle empty or non-string input
+        return 'Unknown Dimension';
     }
 
-    // Case-insensitive removal of "minecraft:" prefix
     let name = dimensionId.toLowerCase().startsWith('minecraft:')
         ? dimensionId.substring(10)
         : dimensionId;
 
-    name = name.replace(/_/g, ' ').trim(); // Replace underscores and trim whitespace
+    name = name.replace(/_/g, ' ').trim();
 
     if (name === '') {
-        return 'Unknown Dimension'; // Handle cases where only "minecraft:" was passed or became empty
+        return 'Unknown Dimension';
     }
 
     return name
@@ -96,15 +95,12 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         console.warn('[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.');
         return;
     }
-    // New standard prefix
     const prefix = "§c[AC] §r";
     let fullMessage = prefix + baseMessage;
 
-    // Standardized player/flag context suffix
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
         const flagType = pData.lastFlagType || 'N/A';
         const specificFlagCount = (flagType !== 'N/A' && pData.flags[flagType]) ? pData.flags[flagType].count : 0;
-        // Using §7 for context, §e for player name, §b for values
         fullMessage += ` §7(Player: §e${player.nameTag}§7, Flags: §b${pData.flags.totalFlags}§7, Last: §b${flagType}§7[§b${specificFlagCount}§7])§r`;
     } else if (player) {
         fullMessage += ` §7(Player: §e${player.nameTag}§7)§r`;
@@ -122,7 +118,6 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
             if (shouldReceiveMessage) {
                 try {
                     p.sendMessage(fullMessage);
-                    // Play sound for this specific admin receiving the notification
                     playSoundForEvent(p, "adminNotificationReceived", dependencies, null);
                 } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
@@ -277,14 +272,12 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
     const { config, playerUtils } = dependencies; // playerUtils for isAdmin if needed
 
     if (!config?.soundEvents) {
-        // console.warn(`[PlayerUtils.playSoundForEvent] soundEvents configuration is missing.`);
         return;
     }
 
     const soundConfig = config.soundEvents[eventName];
 
     if (!soundConfig || !soundConfig.enabled || !soundConfig.soundId || typeof soundConfig.soundId !== 'string' || soundConfig.soundId.trim() === '') {
-        // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Sound for event '${eventName}' is disabled or misconfigured.`, primaryPlayer?.nameTag, dependencies);
         return;
     }
 
@@ -310,19 +303,19 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             break;
         case 'admin':
             mc.world.getAllPlayers().forEach(p => {
-                if (playerUtils.isAdmin(p, dependencies)) { // Assuming isAdmin is part of playerUtils
+                if (playerUtils.isAdmin(p, dependencies)) {
                     playToPlayer(p);
                 }
             });
             break;
         case 'targetPlayer':
             if (targetPlayerContext) playToPlayer(targetPlayerContext);
-            else if (primaryPlayer) playToPlayer(primaryPlayer); // Fallback to primary if targetPlayerContext is null
+            else if (primaryPlayer) playToPlayer(primaryPlayer);
             break;
         case 'global':
             mc.world.getAllPlayers().forEach(p => playToPlayer(p));
             break;
-        default: // Defaults to 'player' if target is unspecified or invalid
+        default:
             if (primaryPlayer) playToPlayer(primaryPlayer);
             break;
     }
@@ -339,9 +332,9 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
  *          `targetPlayerName` will be undefined if `args` is empty.
  */
 export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided', dependencies) {
-    const { getString } = dependencies.playerUtils; // Assuming getString is exported from playerUtils itself or accessible via dependencies.playerUtils.getString
+    const { getString } = dependencies.playerUtils;
 
-    const targetPlayerName = args[0]; // Might be undefined if args is empty
+    const targetPlayerName = args[0];
     let reason = '';
 
     if (args.length > reasonStartIndex) {
@@ -373,32 +366,24 @@ export function validateCommandTarget(issuer, targetPlayerName, dependencies, op
     const { allowSelf = false, commandName = 'command', requireOnline = true } = options;
 
     if (!targetPlayerName) {
-        // This case should ideally be caught by the command's initial argument length check.
-        // If parsePlayerAndReasonArgs returns undefined for targetPlayerName, the command should handle it.
-        // However, adding a safeguard here if a command directly passes undefined.
         issuer.sendMessage(getString(`command.${commandName}.usage`, { prefix: dependencies.config?.prefix ?? '!' }));
         return null;
     }
 
-    const targetPlayer = findPlayer(targetPlayerName); // findPlayer is already in playerUtils
+    const targetPlayer = findPlayer(targetPlayerName);
 
     if (!targetPlayer || !targetPlayer.isValid()) {
         if (requireOnline) {
             issuer.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         } else {
-            // If we were to support finding offline players, this message might change.
             issuer.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         }
         return null;
     }
 
     if (!allowSelf && targetPlayer.id === issuer.id) {
-        // Construct a generic self-target error key or use a specific one if provided.
-        // Example: command.kick.cannotSelf, command.ban.cannotSelf
-        // For a truly generic utility, it might need a specific message key passed in options.
-        // Using a more generic approach for now.
         const selfTargetErrorKey = `command.${commandName}.cannotSelf`;
-        if (stringDB[selfTargetErrorKey]) { // Check if specific key exists
+        if (stringDB[selfTargetErrorKey]) {
              issuer.sendMessage(getString(selfTargetErrorKey));
         } else {
             issuer.sendMessage(getString('command.error.cannotTargetSelf', { commandName: commandName }));

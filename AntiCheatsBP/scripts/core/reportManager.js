@@ -9,7 +9,7 @@ import * as mc from '@minecraft/server';
 /**
  * @const {string} reportsPropertyKeyName - The dynamic property key for storing player reports.
  */
-const reportsPropertyKeyName = 'anticheat:reports_v1'; // Consistent naming with _v1
+const reportsPropertyKeyName = 'anticheat:reports_v1';
 
 /**
  * @typedef {import('../types.js').ReportEntry} ReportEntry

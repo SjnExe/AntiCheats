@@ -1,7 +1,6 @@
 /**
  * @file Defines the !xraynotify command for administrators to manage their X-Ray ore mining notification preferences.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,9 +8,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'xraynotify',
-    syntax: '[on|off|toggle|status]', // Prefix handled by commandManager
+    syntax: '[on|off|toggle|status]',
     description: 'Toggles your personal X-Ray ore mining notifications if the feature is enabled server-wide.',
-    permissionLevel: permissionLevels.admin, // Typically for admins who would act on these notifications
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -30,9 +29,8 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    // This command only makes sense if the server-wide X-Ray notification feature is enabled.
     if (!config?.xrayDetectionNotifyOnOreMineEnabled) {
-        player.sendMessage(getString('xraynotify.featureDisabledServerWide')); // Assuming this key exists
+        player.sendMessage(getString('xraynotify.featureDisabledServerWide'));
         return;
     }
 
@@ -42,15 +40,13 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const subCommand = args[0]?.toLowerCase() || 'toggle'; // Default to 'toggle'
+    const subCommand = args[0]?.toLowerCase() || 'toggle';
 
-    // Player-specific preference stored in pData.xrayNotificationsEnabled
-    // Global default is config.xrayDetectionAdminNotifyByDefault
     let currentPreference;
     if (typeof pData.xrayNotificationsEnabled === 'boolean') {
         currentPreference = pData.xrayNotificationsEnabled;
     } else {
-        currentPreference = config?.xrayDetectionAdminNotifyByDefault ?? true; // Default to true if not in pData or config
+        currentPreference = config?.xrayDetectionAdminNotifyByDefault ?? true;
     }
 
     let newPreference;
@@ -71,35 +67,32 @@ export async function execute(player, args, dependencies) {
             break;
         case 'status':
             let statusKey;
-            if (typeof pData.xrayNotificationsEnabled === 'boolean') { // Explicitly set
+            if (typeof pData.xrayNotificationsEnabled === 'boolean') {
                 statusKey = currentPreference ? 'command.xraynotify.status.onExplicit' : 'command.xraynotify.status.offExplicit';
-            } else { // Using server default
+            } else {
                 statusKey = currentPreference ? 'command.xraynotify.status.onDefault' : 'command.xraynotify.status.offDefault';
             }
             player.sendMessage(getString(statusKey));
             logManager?.addLog({
                 adminName: adminName,
-                actionType: 'xrayNotifyStatusChecked', // Standardized
+                actionType: 'xrayNotifyStatusChecked',
                 details: `Checked own X-Ray notification status: ${getString(statusKey)}`
             }, dependencies);
-            return; // Status check done.
+            return;
         default:
             player.sendMessage(getString('command.xraynotify.usage', { prefix: prefix }));
             return;
     }
 
-    // Apply the new preference
     try {
         pData.xrayNotificationsEnabled = newPreference;
-        pData.isDirtyForSave = true; // Mark pData for saving
-
-        // No tags needed if pData is the source of truth and saved reliably.
+        pData.isDirtyForSave = true;
 
         player.sendMessage(getString(responseMessageKey));
         playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
-        const logActionType = newPreference ? 'xrayNotifyEnabledUser' : 'xrayNotifyDisabledUser'; // User-specific action
+        const logActionType = newPreference ? 'xrayNotifyEnabledUser' : 'xrayNotifyDisabledUser';
         playerUtils?.debugLog(`[XrayNotifyCommand] Admin ${adminName} ${logMessageAction} X-Ray notifications. New preference: ${newPreference}`, adminName, dependencies);
         logManager?.addLog({
             adminName: adminName,
@@ -108,12 +101,12 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
     } catch (error) {
-        player.sendMessage(getString('command.xraynotify.error.update')); // Assuming this key exists
+        player.sendMessage(getString('command.xraynotify.error.update'));
         console.error(`[XrayNotifyCommand CRITICAL] Error setting X-Ray notification preference for ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorXrayNotifyCommand', // Standardized
+            actionType: 'errorXrayNotifyCommand',
             context: 'XrayNotifyCommand.setPreference',
             details: `Failed to set X-Ray notification preference to ${newPreference}: ${error.message}`,
             errorStack: error.stack || error.toString(),

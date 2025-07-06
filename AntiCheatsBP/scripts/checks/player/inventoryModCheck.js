@@ -3,7 +3,7 @@
  * 1. Using an item in the same game tick as a hotbar slot change (Switch-Use).
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating, charging bow) (Move-Locked).
  */
-import * as mc from '@minecraft/server'; // For mc.ItemStack
+import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -28,30 +28,28 @@ import * as mc from '@minecraft/server'; // For mc.ItemStack
  */
 export async function checkSwitchAndUseInSameTick(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
-    const itemStack = eventSpecificData?.itemStack; // Item being used
+    const itemStack = eventSpecificData?.itemStack;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableInventoryModCheck) { // General toggle for all inventory mod checks
+    if (!config?.enableInventoryModCheck) {
         return;
     }
-    if (!pData || !(itemStack instanceof mc.ItemStack)) { // Ensure itemStack is valid
+    if (!pData || !(itemStack instanceof mc.ItemStack)) {
         playerUtils?.debugLog(`[InventoryModCheck.SwitchUse] Skipping for ${playerName}: pData or itemStack invalid.`, playerName, dependencies);
         return;
     }
 
-    // Ensure actionProfileKey is camelCase
     const rawActionProfileKey = config?.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-    // pData.lastSelectedSlotChangeTick is updated in playerDataManager.updateTransientPlayerData
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
             reasonDetail: 'Used item in the same tick as a hotbar slot change.',
             itemType: itemStack.typeId,
             itemName: itemStack.nameTag ?? itemStack.typeId.replace('minecraft:', ''),
-            slot: player.selectedSlotIndex.toString(), // Current selected slot where item is being used
+            slot: player.selectedSlotIndex.toString(),
             lastSlotChangeTick: (pData.lastSelectedSlotChangeTick ?? 'N/A').toString(),
             currentTick: currentTick.toString(),
         };
@@ -83,11 +81,10 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
  */
 export async function checkInventoryMoveWhileActionLocked(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
-    // Ensure eventSpecificData and its nested inventoryChangeDetails are correctly accessed
     const inventoryChangeDetails = eventSpecificData?.inventoryChangeDetails ?? eventSpecificData;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableInventoryModCheck) { // General toggle
+    if (!config?.enableInventoryModCheck) {
         return;
     }
     if (!pData || !inventoryChangeDetails) {
@@ -101,10 +98,8 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     } else if (pData.isChargingBow) {
         lockingActionKey = 'chargingBow';
     }
-    // Could add pData.isUsingShield here if shield use is meant to lock inventory actions.
 
     if (lockingActionKey) {
-        // Extract item details carefully, as newItemStack or oldItemStack can be undefined
         const newItem = inventoryChangeDetails.newItemStack ?? inventoryChangeDetails.newItem;
         const oldItem = inventoryChangeDetails.oldItemStack ?? inventoryChangeDetails.oldItem;
         const changedItemType = newItem?.typeId ?? oldItem?.typeId ?? 'unknown_item';
@@ -118,7 +113,6 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             newItemAmount: newItem?.amount?.toString() ?? 'N/A',
             oldItemAmount: oldItem?.amount?.toString() ?? 'N/A',
         };
-        // Ensure actionProfileKey is camelCase
         const rawActionProfileKey = config?.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))

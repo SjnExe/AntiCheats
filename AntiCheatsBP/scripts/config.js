@@ -5,9 +5,6 @@
  * It also includes a mechanism for runtime updates to certain configuration values.
  */
 
-// Note: `checkActionProfiles` and `automodConfig` are complex objects imported from their respective modules.
-// They are not part of `editableConfigValues` due to their complexity and are managed directly by their modules.
-
 /**
  * @description Defines all default configuration values that are potentially runtime-editable.
  * JSDoc comments for each setting are placed here.
@@ -405,8 +402,6 @@ const defaultConfigSettings = {
     // --- Automated Moderation System ---
     /** @type {boolean} If true, the Automated Moderation system (AutoMod) is active. This system uses `automodConfig.js` and `actionProfiles.js`. */
     enableAutoMod: false,
-    /** @type {string} Default duration for mutes applied by AutoMod. */
-    // automodDefaultMuteDuration: '10m', // Duplicate, defined below
     /** @type {string} Default duration for mutes applied manually by admins if no duration is specified. */
     manualMuteDefaultDuration: '1h',
 
@@ -798,7 +793,6 @@ export const acVersion = 'v__VERSION_STRING__';
 export const commandAliases = {
     v: 'version',
     w: 'watch',
-    // Proposed new aliases from review - uncommented to activate
     "ar": "addrank",
     "b": "ban",
     "cr": "clearreports",
@@ -840,7 +834,6 @@ export const commandAliases = {
     playerinfo: 'uinfo',
     userinfo: 'uinfo',
     worldb: 'worldborder',
-    // --- Proposed new aliases from review ---
     "ar": "addrank",
     "b": "ban",
     "cr": "clearreports",
@@ -891,7 +884,6 @@ export function updateConfigValue(key, value) {
         return { success: false, message: `Configuration key "${key}" does not exist in default settings.` };
     }
     if (!Object.prototype.hasOwnProperty.call(editableConfigValues, key)) {
-        // This case should ideally not happen if editableConfigValues is always a spread of defaultConfigSettings
         return { success: false, message: `Configuration key "${key}" does not exist in editable runtime settings.` };
     }
 
@@ -918,7 +910,6 @@ export function updateConfigValue(key, value) {
         }
     } else if (Array.isArray(defaultConfigSettings[key])) {
         if (!Array.isArray(value)) {
-            // Attempt to parse if it's a string representation of an array
             if (typeof value === 'string') {
                 try {
                     coercedValue = JSON.parse(value);
@@ -932,7 +923,6 @@ export function updateConfigValue(key, value) {
                 return { success: false, message: `Key "${key}" expects an array. Got type ${typeof value}.`, oldValue };
             }
         }
-        // Optional: Could add checks for element types within the array if defaultConfigSettings[key] has elements
     } else if (expectedType === 'object' && defaultConfigSettings[key] !== null) {
          if (typeof value === 'string') {
             try {
@@ -946,8 +936,6 @@ export function updateConfigValue(key, value) {
         } else if (typeof value !== 'object' || value === null || Array.isArray(value)) {
              return { success: false, message: `Key "${key}" expects an object. Got type ${typeof value}.`, oldValue };
         }
-        // Deep merge or type checking for objects could be complex and might be better handled by specific setters if needed.
-        // For now, we'll assign the new object directly if it's an object.
     }
 
 

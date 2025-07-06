@@ -6,7 +6,7 @@
  */
 import * as mc from '@minecraft/server';
 import { processAutoModActions } from './automodManager.js';
-import { checkActionProfiles } from './actionProfiles.js'; // Added for dynamic flag types
+import { checkActionProfiles } from './actionProfiles.js';
 
 /**
  * In-memory cache for player data.
@@ -15,7 +15,7 @@ import { checkActionProfiles } from './actionProfiles.js'; // Added for dynamic 
 const playerData = new Map();
 
 const dynamicPropertyKeyV1 = 'anticheat:pdata_v1';
-const dynamicPropertySizeLimit = 32760; // Approximate limit for dynamic properties
+const dynamicPropertySizeLimit = 32760;
 
 /**
  * Keys from PlayerAntiCheatData that are persisted to dynamic properties.
@@ -34,12 +34,9 @@ const persistedPlayerDataKeys = [
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
     'lastChatMessageTimestamp', // For messageRateCheck
     'recentHits', // For multiTargetCheck
-    'lastUsedElytraTick', // For flyCheck grace period
-    'lastOnSlimeBlockTick', // For noFallCheck grace period
-    'recentEntitySpamTimestamps', // For entityChecks
-    // Note: lastPosition, previousPosition, velocity, previousVelocity are typically transient.
-    // lastOnGroundTick, lastOnGroundPosition are also often transient.
-    // Review if any other fields like recentMessages, isTakingFallDamage, etc., need persistence.
+    'lastUsedElytraTick',
+    'lastOnSlimeBlockTick',
+    'recentEntitySpamTimestamps',
 ];
 
 /**
@@ -68,11 +65,10 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
     playerUtils?.debugLog(`${baseMessage}. Error: ${error.message}`, playerName, dependencies);
 
     const logContext = `playerDataManager.${callingFunction}`;
-    // Construct a more specific actionType, e.g., errorPlayerDataManagerSaveSetProperty
     const actionType = `errorPDM${callingFunction.replace('playerData', '')}${operation.replace('player.', '').replace('JSON.', '')}`;
 
     logManager?.addLog({
-        actionType: actionType.charAt(0).toLowerCase() + actionType.slice(1), // Ensure camelCase
+        actionType: actionType.charAt(0).toLowerCase() + actionType.slice(1),
         context: logContext,
         targetName: playerName,
         details: {
@@ -110,7 +106,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
             playerName,
             error,
             dependencies,
-            { dataToSave: typeof pDataToSave } // Avoid logging potentially large pDataToSave
+            { dataToSave: typeof pDataToSave }
         );
         return false;
     }
@@ -118,7 +114,6 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     if (jsonString.length > dynamicPropertySizeLimit) {
         console.warn(`[PlayerDataManager.savePlayerDataToDynamicProperties] pData for ${playerName} too large (${jsonString.length}b). Cannot save.`);
         playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] pData for ${playerName} exceeds size limit. Size: ${jsonString.length}b.`, playerName, dependencies);
-        // Consider alternative storage or data trimming if this becomes common.
         return false;
     }
 
@@ -184,7 +179,7 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             );
             return null;
         }
-    } else if (jsonString === undefined) { // Check for undefined explicitly
+    } else if (jsonString === undefined) {
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] No dynamic property '${dynamicPropertyKeyV1}' for ${playerName}.`, playerName, dependencies);
         return null;
     } else {
@@ -230,23 +225,16 @@ export async function prepareAndSavePlayerData(player, dependencies) {
 const dynamicallyGeneratedFlagTypes = new Set();
 for (const checkKey in checkActionProfiles) {
     const profile = checkActionProfiles[checkKey];
-    // Ensure profile and profile.flag are valid objects
     if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
         if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
-            // Use specific flag.type if defined and non-empty
             dynamicallyGeneratedFlagTypes.add(profile.flag.type);
         } else {
-            // Otherwise, if a flag object exists but flag.type is not specified or empty,
-            // use the main checkKey as the flag type, as this is the implicit flag name.
             dynamicallyGeneratedFlagTypes.add(checkKey);
         }
     }
 }
 const allKnownFlagTypes = Array.from(dynamicallyGeneratedFlagTypes);
 if (allKnownFlagTypes.length === 0) {
-    // This is a fallback/warning. If actionProfiles is empty or misconfigured,
-    // this log helps identify that no flag types were found.
-    // In a production environment with valid actionProfiles, this shouldn't trigger.
     console.warn('[PlayerDataManager] Warning: allKnownFlagTypes is empty after dynamic generation. Check actionProfiles.js configuration.');
 }
 
@@ -262,16 +250,14 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
     playerUtils?.debugLog(`[PlayerDataManager.initializeDefaultPlayerData] Initializing for ${playerName} (ID: ${player.id})`, playerName, dependencies);
 
-    // Initialize all flag types to ensure they exist in pData.flags
     const defaultFlags = { totalFlags: 0 };
-    // Uses the dynamically generated allKnownFlagTypes array from module scope
     for (const flagKey of allKnownFlagTypes) {
         defaultFlags[flagKey] = { count: 0, lastDetectionTime: 0 };
     }
 
     return {
         id: player.id,
-        playerNameTag: player.nameTag, // Store current nameTag
+        playerNameTag: player.nameTag,
         lastPosition: { ...player.location },
         previousPosition: { ...player.location },
         velocity: { ...player.getVelocity() },
@@ -286,7 +272,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastAttackTime: 0,
         lastCombatInteractionTime: 0,
         blockBreakEvents: [],
-        recentMessages: [], // Consider size limit if this grows large and is persisted
+        recentMessages: [],
         flags: defaultFlags,
         lastFlagType: '',
         isWatched: false,
@@ -294,12 +280,12 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastPitch: player.getRotation().x,
         lastYaw: player.getRotation().y,
         lastAttackTick: 0,
-        recentHits: [], // Consider size limit if persisted
+        recentHits: [],
         isUsingConsumable: false,
         isChargingBow: false,
         isUsingShield: false,
         lastItemUseTick: 0,
-        recentBlockPlacements: [], // Consider size limit if persisted
+        recentBlockPlacements: [],
         lastPillarBaseY: 0,
         consecutivePillarBlocks: 0,
         lastPillarTick: 0,
@@ -308,8 +294,8 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         consecutiveDownwardBlocks: 0,
         lastDownwardScaffoldTick: 0,
         lastDownwardScaffoldBlockLocation: null,
-        itemUseTimestamps: {}, // Consider size limit if persisted
-        recentPlaceTimestamps: [], // Consider size limit if persisted
+        itemUseTimestamps: {},
+        recentPlaceTimestamps: [],
         jumpBoostAmplifier: 0,
         hasSlowFalling: false,
         hasLevitation: false,
@@ -335,31 +321,29 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         breakStartTickGameTime: 0,
         expectedBreakDurationTicks: 0,
         toolUsedForBreakAttempt: null,
-        lastKnownNameTag: player.nameTag, // Persisted
-        lastNameTagChangeTick: currentTick, // Persisted
-        muteInfo: null, // Persisted
-        banInfo: null, // Persisted
-        joinTime: Date.now(), // Persisted
-        lastGameMode: player.gameMode, // Transient, updated on tick
-        lastDimensionId: player.dimension.id, // Transient, updated on tick
-        isDirtyForSave: true, // New data, needs initial save
-        lastViolationDetailsMap: {}, // Persisted
-        automodState: {}, // Persisted
-        deathMessageToShowOnSpawn: null, // Persisted
-        // Added persisted fields from checks
-        lastChatMessageTimestamp: 0, // For messageRateCheck
-        recentHits: [], // For multiTargetCheck, already present from before but ensure it's here
-        lastUsedElytraTick: 0, // For flyCheck grace period
-        lastOnSlimeBlockTick: 0, // For noFallCheck grace period
-        recentEntitySpamTimestamps: {}, // For entityChecks
-        // Persisted tick counters for interval checks
+        lastKnownNameTag: player.nameTag,
+        lastNameTagChangeTick: currentTick,
+        muteInfo: null,
+        banInfo: null,
+        joinTime: Date.now(),
+        lastGameMode: player.gameMode,
+        lastDimensionId: player.dimension.id,
+        isDirtyForSave: true,
+        lastViolationDetailsMap: {},
+        automodState: {},
+        deathMessageToShowOnSpawn: null,
+        lastChatMessageTimestamp: 0,
+        recentHits: [], // already present from before but ensure it's here
+        lastUsedElytraTick: 0,
+        lastOnSlimeBlockTick: 0,
+        recentEntitySpamTimestamps: {},
         lastCheckNameSpoofTick: 0,
         lastCheckAntiGmcTick: 0,
         lastCheckNetherRoofTick: 0,
         lastCheckAutoToolTick: 0,
         lastCheckFlatRotationBuildingTick: 0,
         lastRenderDistanceCheckTick: 0,
-        slimeCheckErrorLogged: false, // Transient, not persisted
+        slimeCheckErrorLogged: false,
     };
 }
 
@@ -377,13 +361,12 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
 
     if (playerData.has(player.id)) {
         const existingPData = playerData.get(player.id);
-        // Update critical transient fields even for existing data
         existingPData.lastPosition = { ...player.location };
-        existingPData.previousPosition = { ...player.location }; // Or keep old previousPosition based on design
+        existingPData.previousPosition = { ...player.location };
         existingPData.velocity = { ...player.getVelocity() };
         existingPData.lastGameMode = player.gameMode;
         existingPData.lastDimensionId = player.dimension.id;
-        existingPData.playerNameTag = player.nameTag; // Ensure current nameTag is reflected
+        existingPData.playerNameTag = player.nameTag;
         return existingPData;
     }
 
@@ -392,14 +375,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
 
     if (loadedData && typeof loadedData === 'object') {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Merging persisted pData for ${playerName}.`, playerName, dependencies);
-        // Create a fresh default structure to ensure all fields are present
         const defaultPDataForMerge = initializeDefaultPlayerData(player, currentTick, dependencies);
-        // Merge loadedData onto the default structure. Persisted fields in loadedData will overwrite.
         newPData = { ...defaultPDataForMerge, ...loadedData };
 
-        // Deep merge for nested objects like 'flags', 'lastViolationDetailsMap', 'automodState'
         newPData.flags = { ...defaultPDataForMerge.flags, ...(loadedData.flags || {}) };
-        // Ensure totalFlags is correct after merge
         if (typeof newPData.flags.totalFlags !== 'number' || isNaN(newPData.flags.totalFlags)) {
             newPData.flags.totalFlags = 0;
             for (const flagKey in newPData.flags) {
@@ -411,18 +390,15 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.lastViolationDetailsMap = { ...(defaultPDataForMerge.lastViolationDetailsMap || {}), ...(loadedData.lastViolationDetailsMap || {}) };
         newPData.automodState = { ...(defaultPDataForMerge.automodState || {}), ...(loadedData.automodState || {}) };
 
-        // Always update to current nameTag from player object, but keep loaded lastKnownNameTag if it exists
         newPData.playerNameTag = player.nameTag;
         newPData.lastKnownNameTag = loadedData.lastKnownNameTag ?? player.nameTag;
         newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick;
-        newPData.joinTime = loadedData.joinTime ?? Date.now(); // Fallback to now if joinTime wasn't persisted
-        newPData.isDirtyForSave = false; // Loaded data is not initially dirty
+        newPData.joinTime = loadedData.joinTime ?? Date.now();
+        newPData.isDirtyForSave = false;
     } else {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data.`, playerName, dependencies);
-        // newPData is already the fresh default, and isDirtyForSave is true from initializeDefaultPlayerData
     }
 
-    // Check for expired mutes/bans
     if (newPData.muteInfo && newPData.muteInfo.unmuteTime !== Infinity && Date.now() >= newPData.muteInfo.unmuteTime) {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Mute for ${newPData.playerNameTag} expired on load. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
         newPData.muteInfo = null;
@@ -446,7 +422,7 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
     const { playerUtils } = dependencies;
     const activePlayerIds = new Set();
     for (const player of activePlayers) {
-        if (player?.isValid()) { // Ensure player object is valid
+        if (player?.isValid()) {
             activePlayerIds.add(player.id);
         }
     }
@@ -475,13 +451,13 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     pData.lastPitch = rotation.x;
     pData.lastYaw = rotation.y;
 
-    pData.previousVelocity = { ...(pData.velocity || { x: 0, y: 0, z: 0 }) }; // Ensure pData.velocity exists
+    pData.previousVelocity = { ...(pData.velocity || { x: 0, y: 0, z: 0 }) };
     pData.velocity = { ...player.getVelocity() };
 
-    pData.previousPosition = { ...(pData.lastPosition || player.location) }; // Ensure pData.lastPosition exists
+    pData.previousPosition = { ...(pData.lastPosition || player.location) };
     pData.lastPosition = { ...player.location };
 
-    if (pData.playerNameTag !== player.nameTag) { // nameTag might have changed
+    if (pData.playerNameTag !== player.nameTag) {
         pData.playerNameTag = player.nameTag;
         pData.isDirtyForSave = true;
     }
@@ -492,7 +468,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.lastOnGroundPosition = { ...player.location };
         try {
             const feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
-            const blockBelowFeet = player.dimension?.getBlock(feetPos.offset(0, -1, 0)); // Use offset for clarity
+            const blockBelowFeet = player.dimension?.getBlock(feetPos.offset(0, -1, 0));
             const blockAtFeet = player.dimension?.getBlock(feetPos);
 
             if (blockBelowFeet?.typeId === mc.MinecraftBlockTypes.slime.id || blockAtFeet?.typeId === mc.MinecraftBlockTypes.slime.id) {
@@ -502,39 +478,36 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                 }
             }
         } catch (e) {
-            if (!pData.slimeCheckErrorLogged) { // Prevent log spam
+            if (!pData.slimeCheckErrorLogged) {
                 console.warn(`[PlayerDataManager.updateTransientPlayerData] Error checking slime block for ${playerName}: ${e.stack || e}`);
                 logManager?.addLog({
-                    actionType: 'errorPlayerDataManagerSlimeCheck', // Standardized
-                    context: 'playerDataManager.updateTransientPlayerData.slimeBlockCheck', // Standardized
+                    actionType: 'errorPlayerDataManagerSlimeCheck',
+                    context: 'playerDataManager.updateTransientPlayerData.slimeBlockCheck',
                     targetName: playerName,
                     details: {
                         errorMessage: e.message,
                         stack: e.stack,
-                        feetPos: feetPos // Added for more context
+                        feetPos: feetPos
                     }
                 }, dependencies);
-                pData.slimeCheckErrorLogged = true; // Set flag to prevent repeated logging of this error per session
+                pData.slimeCheckErrorLogged = true;
             }
         }
     } else {
         pData.consecutiveOffGroundTicks++;
-        pData.slimeCheckErrorLogged = false; // Reset if off ground
+        pData.slimeCheckErrorLogged = false;
     }
 
     if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
         pData.lastSelectedSlotChangeTick = currentTick;
         pData.previousSelectedSlotIndex = player.selectedSlotIndex;
-        // pData.isDirtyForSave = true; // Persisting this is optional, depends on if it's needed across sessions
     }
 
     if (pData.lastGameMode !== player.gameMode) {
         pData.lastGameMode = player.gameMode;
-        // pData.isDirtyForSave = true; // Removed: lastGameMode is not persisted
     }
     if (pData.lastDimensionId !== player.dimension.id) {
         pData.lastDimensionId = player.dimension.id;
-        // pData.isDirtyForSave = true; // Removed: lastDimensionId is not persisted
     }
 
     const effects = player.getEffects();
@@ -549,7 +522,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             vx: pData.velocity.x.toFixed(3), vy: pData.velocity.y.toFixed(3), vz: pData.velocity.z.toFixed(3),
             pitch: pData.lastPitch.toFixed(3), yaw: pData.lastYaw.toFixed(3),
             sprinting: player.isSprinting, sneaking: player.isSneaking, onGround: player.isOnGround,
-            fallDist: player.fallDistance.toFixed(3), // Corrected property name from spec
+            fallDist: player.fallDistance.toFixed(3),
             jumpBoost: pData.jumpBoostAmplifier, slowFall: pData.hasSlowFalling, lev: pData.hasLevitation, speedAmp: pData.speedAmplifier,
         };
         playerUtils?.debugLog(`[PlayerDataManager.updateTransientPlayerData] Watched ${playerName} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, playerName, dependencies);
@@ -578,7 +551,6 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
         return;
     }
 
-    // Standardize flagType to camelCase just in case (should already be, but defensive)
     const originalFlagType = flagType;
     const standardizedFlagType = originalFlagType
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -595,13 +567,13 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
     pData.flags[finalFlagType].count++;
     pData.flags[finalFlagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
-    pData.lastFlagType = finalFlagType; // Store the standardized version
+    pData.lastFlagType = finalFlagType;
 
     if (typeof detailsForNotify === 'object' && detailsForNotify !== null && detailsForNotify.itemTypeId) {
         pData.lastViolationDetailsMap ??= {};
         pData.lastViolationDetailsMap[finalFlagType] = {
             itemTypeId: detailsForNotify.itemTypeId,
-            quantityFound: detailsForNotify.quantityFound || 0, // Ensure quantityFound is a number
+            quantityFound: detailsForNotify.quantityFound || 0,
             timestamp: Date.now(),
         };
         playerUtils?.debugLog(`[PlayerDataManager.addFlag] Stored violation details for ${finalFlagType} on ${playerName}: ${JSON.stringify(pData.lastViolationDetailsMap[finalFlagType])}`, playerName, dependencies);
@@ -609,14 +581,12 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
     pData.isDirtyForSave = true;
 
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null) ?
-        (detailsForNotify.originalDetailsForNotify || `Item: ${String(detailsForNotify.itemTypeId || 'N/A')}`) : // Handle undefined itemTypeId
+        (detailsForNotify.originalDetailsForNotify || `Item: ${String(detailsForNotify.itemTypeId || 'N/A')}`) :
         String(detailsForNotify);
     const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
 
-    playerUtils?.warnPlayer(player, reasonMessage, dependencies); // Pass dependencies
-    // Configurable notification for flagging
-    if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) { // Default true if undefined
-        // Construct a base message without player name, as notifyAdmins will add it with flag context
+    playerUtils?.warnPlayer(player, reasonMessage, dependencies);
+    if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) {
         const baseNotifyMsg = getString('playerData.notify.flagged', { flagType: finalFlagType, details: notifyString });
         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
     }
@@ -632,8 +602,8 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
             console.error(`[PlayerDataManager.addFlag] Error calling processAutoModActions for ${playerName} / ${finalFlagType}: ${e.stack || e}`);
             playerUtils?.debugLog(`[PlayerDataManager.addFlag] Error in processAutoModActions: ${e.stack || e}`, playerName, dependencies);
             logManager?.addLog({
-                actionType: 'errorPlayerDataManagerAutomodProcess', // Standardized
-                context: 'playerDataManager.addFlag', // Standardized
+                actionType: 'errorPlayerDataManagerAutomodProcess',
+                context: 'playerDataManager.addFlag',
                 targetName: playerName,
                 details: {
                     checkType: finalFlagType,
@@ -679,25 +649,24 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
  */
 function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason, restrictedBy, isAutoMod, triggeringCheckType, dependencies) {
     const { playerUtils, getString } = dependencies;
-    const playerName = pData.playerNameTag; // pData is guaranteed to be valid here
+    const playerName = pData.playerNameTag;
 
     const expiryTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
     const actualReason = reason || getString(`playerData.${stateType}.defaultReason`);
 
     const restrictionInfo = {
         reason: actualReason,
-        [stateType === 'ban' ? 'bannedBy' : 'mutedBy']: restrictedBy, // Match existing property names
+        [stateType === 'ban' ? 'bannedBy' : 'mutedBy']: restrictedBy,
         isAutoMod,
         triggeringCheckType,
-        [stateType === 'ban' ? 'unbanTime' : 'unmuteTime']: expiryTime, // Match existing property names
+        [stateType === 'ban' ? 'unbanTime' : 'unmuteTime']: expiryTime,
     };
 
     if (stateType === 'ban') {
         restrictionInfo.xuid = player.id;
-        restrictionInfo.playerName = playerName; // Persist current nameTag at time of ban
+        restrictionInfo.playerName = playerName;
         restrictionInfo.banTime = Date.now();
-    } else { // Mute specific fields (if any were different, currently not)
-        // restrictionInfo.muteTime = Date.now(); // Example if mute had a 'muteTime' field
+    } else {
     }
 
     pData[stateType === 'ban' ? 'banInfo' : 'muteInfo'] = restrictionInfo;
@@ -957,7 +926,6 @@ export async function clearFlagsForCheckType(player, checkType, dependencies) {
             pData.flags.totalFlags = Math.max(0, pData.flags.totalFlags - clearedCount);
         }
         pData.flags[checkType].count = 0;
-        // pData.flags[checkType].lastDetectionTime = 0; // Optionally reset last detection time
     }
 
     if (pData.automodState?.[checkType]) {

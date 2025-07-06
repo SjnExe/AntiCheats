@@ -38,7 +38,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     const watchedPlayerName = pData.isWatched ? playerName : null;
     const now = Date.now();
 
-    if (!targetEntity || typeof targetEntity.id === 'undefined' || !targetEntity.isValid()) { // Added isValid check
+    if (!targetEntity || typeof targetEntity.id === 'undefined' || !targetEntity.isValid()) {
         playerUtils?.debugLog(`[MultiTargetCheck] Invalid or undefined targetEntity for ${playerName}.`, watchedPlayerName, dependencies);
         return;
     }
@@ -46,32 +46,29 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     pData.recentHits ??= [];
 
     const newHit = {
-        entityId: targetEntity.id, // Store the ID for reliable distinction
+        entityId: targetEntity.id,
         timestamp: now,
-        entityType: targetEntity.typeId // Optional: for logging or more specific analysis
+        entityType: targetEntity.typeId
     };
     pData.recentHits.push(newHit);
     pData.isDirtyForSave = true;
 
-    const windowMs = config?.multiTargetWindowMs ?? 1000; // Default 1 second window
-    const maxHistory = config?.multiTargetMaxHistory ?? 20; // Limit history size
+    const windowMs = config?.multiTargetWindowMs ?? 1000;
+    const maxHistory = config?.multiTargetMaxHistory ?? 20;
 
-    // Filter out old hits
     const originalCountBeforeTimeFilter = pData.recentHits.length;
     pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= windowMs);
     if (pData.recentHits.length !== originalCountBeforeTimeFilter) {
         pData.isDirtyForSave = true;
     }
 
-    // Trim history to max size
     if (pData.recentHits.length > maxHistory) {
         pData.recentHits = pData.recentHits.slice(pData.recentHits.length - maxHistory);
-        pData.isDirtyForSave = true; // Array was modified
+        pData.isDirtyForSave = true;
     }
 
-    const threshold = config?.multiTargetThreshold ?? 3; // Default 3 distinct targets
+    const threshold = config?.multiTargetThreshold ?? 3;
 
-    // Check only if there are enough hits to potentially meet the threshold
     if (pData.recentHits.length < threshold) {
         return;
     }
@@ -90,9 +87,8 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             targetsHit: distinctTargets.size.toString(),
             windowSeconds: (windowMs / 1000).toFixed(1),
             threshold: threshold.toString(),
-            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '), // Sample of target IDs
+            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '),
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
         const rawActionProfileKey = config?.multiTargetActionProfileName ?? 'combatMultiTargetAura';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -102,9 +98,6 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
 
         playerUtils?.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${playerName} hit ${distinctTargets.size} distinct targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPlayerName, dependencies);
 
-        // Optionally clear recentHits after a detection to prevent immediate re-flagging on the same set.
-        // Or rely on the time window to naturally phase them out.
-        // For now, let's clear to make subsequent detections require a new set of multi-hits.
         pData.recentHits = [];
         pData.isDirtyForSave = true;
     }

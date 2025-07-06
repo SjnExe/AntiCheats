@@ -35,22 +35,19 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
     }
 
     const defaultMinMessageLength = 10;
-    const defaultActionProfileKey = 'chatImpersonationAttempt'; // Already camelCase
+    const defaultActionProfileKey = 'chatImpersonationAttempt';
 
     const minMessageLength = config?.impersonationMinMessageLengthForPatternMatch ?? defaultMinMessageLength;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    // Use permissionLevels from dependencies, with a fallback if it's not fully defined.
-    // permissionLevels.admin should be a number (e.g., 1)
     const adminPermissionLevelDefault = typeof permissionLevels?.admin === 'number' ? permissionLevels.admin : 1;
     const exemptPermissionLevel = config?.impersonationExemptPermissionLevel ?? adminPermissionLevelDefault;
 
     const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (typeof playerPermission !== 'number') {
         playerUtils?.debugLog(`[SimpleImpersonationCheck] Could not determine permission level for ${playerName}. Assuming not exempt for safety.`, watchedPlayerName, dependencies);
-        // If permission cannot be determined, proceed with the check (safer than exempting by default).
     } else if (playerPermission <= exemptPermissionLevel) {
         playerUtils?.debugLog(`[SimpleImpersonationCheck] Player ${playerName} (perm: ${playerPermission}) is exempt (threshold: ${exemptPermissionLevel}).`, watchedPlayerName, dependencies);
         return;
@@ -62,7 +59,6 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
     const rawActionProfileKey = config?.impersonationActionProfileName ?? defaultActionProfileKey;
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -74,7 +70,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
             continue;
         }
         try {
-            const regex = new RegExp(patternString, 'i'); // Case-insensitive matching by default
+            const regex = new RegExp(patternString, 'i');
             if (regex.test(rawMessageContent)) {
                 const messageSnippetLimit = 75;
                 const violationDetails = {
@@ -92,15 +88,14 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
                 if (profile?.cancelMessage) {
                     eventData.cancel = true;
                 }
-                return; // Stop after first match and action
+                return;
             }
         } catch (e) {
             playerUtils?.debugLog(`[SimpleImpersonationCheck CRITICAL] Invalid regex pattern '${patternString}' in config for ${playerName}. Error: ${e.message}`, watchedPlayerName, dependencies);
             console.error(`[SimpleImpersonationCheck CRITICAL] Regex pattern error for pattern '${patternString}': ${e.stack || e.message || String(e)}`);
-            // Log to admin log if available
             dependencies.logManager?.addLog({
-                actionType: 'errorSystemConfig', // Standardized
-                context: 'SimpleImpersonationCheck.regexCompilation', // Standardized
+                actionType: 'errorSystemConfig',
+                context: 'SimpleImpersonationCheck.regexCompilation',
                 details: { error: `Invalid regex: '${patternString}'`, message: e.message },
                 errorStack: e.stack
             }, dependencies);

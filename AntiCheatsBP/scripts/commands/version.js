@@ -1,18 +1,19 @@
 /**
+/**
  * @file Defines the !version command, which displays the current version of the AntiCheat addon.
  */
 import { permissionLevels } from '../core/rankManager.js';
-import { acVersion } from '../config.js'; // Import the version string from config.js
+import { acVersion } from '../config.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'version',
-    syntax: '', // No arguments, prefix handled by commandManager
+    syntax: '',
     description: 'Displays the current version of the AntiCheat addon.',
-    aliases: ['ver', 'v'], // Aliases are managed in config.js commandAliases
-    permissionLevel: permissionLevels.member, // Accessible by all members
+    aliases: ['ver', 'v'],
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
@@ -26,20 +27,16 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { getString, playerUtils } = dependencies; // playerUtils for sound
+    const { getString, playerUtils } = dependencies;
 
     if (!player?.isValid()) {
         console.warn('[VersionCommand] Invalid player object.');
         return;
     }
 
-    // acVersion is imported directly from config.js
-    const versionString = acVersion || getString('common.value.notAvailable'); // Fallback if acVersion is undefined
+    const versionString = acVersion || getString('common.value.notAvailable');
 
     player.sendMessage(getString('command.version.message', { version: versionString }));
     playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
-    // No server-side logging for this informational command by default.
-    // Optional: Add a debug log if needed.
-    // playerUtils?.debugLog(`[VersionCommand] Player ${player.nameTag} checked version: ${versionString}`, player.nameTag, dependencies);
 }

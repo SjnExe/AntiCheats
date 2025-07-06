@@ -2,7 +2,7 @@
  * @file Provides utility functions for managing global world states like dimension locks
  * using world dynamic properties.
  */
-import * as mc from '@minecraft/server'; // Standard practice to import * as mc
+import * as mc from '@minecraft/server';
 
 const netherLockedPropertyKey = 'anticheat:netherLocked';
 const endLockedPropertyKey = 'anticheat:endLocked';
@@ -16,7 +16,6 @@ export function isNetherLocked() {
         const locked = mc.world.getDynamicProperty(netherLockedPropertyKey);
         return typeof locked === 'boolean' ? locked : false;
     } catch (e) {
-        // Use console.error for errors, console.warn for warnings as per guidelines
         console.error(`[WorldStateUtils.isNetherLocked] Error reading Nether lock state: ${e.stack || e}. Defaulting to false.`);
         return false;
     }

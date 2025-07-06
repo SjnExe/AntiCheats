@@ -1,7 +1,6 @@
 /**
  * @file Defines the !tpahere command for players to request another player to teleport to them.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,10 +8,10 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'tpahere',
-    syntax: '<playerName>', // Prefix handled by commandManager
+    syntax: '<playerName>',
     description: 'Requests another player to teleport to your location. They must accept with !tpaccept.',
-    permissionLevel: permissionLevels.member, // Default TPAHere accessible by members
-    enabled: true, // Master toggle for this command, TPA system itself has a global toggle in config.js
+    permissionLevel: permissionLevels.member,
+    enabled: true,
 };
 
 /**
@@ -33,7 +32,7 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-    if (!dependencies.commandSettings?.tpahere?.enabled) { // Check specific command toggle
+    if (!dependencies.commandSettings?.tpahere?.enabled) {
         player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
         return;
     }
@@ -46,24 +45,23 @@ export async function execute(player, args, dependencies) {
     const targetPlayerName = args[0];
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
+    if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
     if (targetPlayer.id === player.id) {
-        player.sendMessage(getString('command.tpahere.cannotSelf')); // Specific message for tpahere
+        player.sendMessage(getString('command.tpahere.cannotSelf'));
         return;
     }
 
-    const targetTpaStatus = tpaManager?.getPlayerTpaStatus(targetPlayer.name, dependencies); // Use system name
+    const targetTpaStatus = tpaManager?.getPlayerTpaStatus(targetPlayer.name, dependencies);
     if (!targetTpaStatus?.acceptsTpaRequests) {
         player.sendMessage(getString('command.tpa.targetNotAccepting', { playerName: targetPlayer.nameTag }));
         return;
     }
 
-    // Check if there's already an active request between these two players
-    const existingRequest = tpaManager?.findRequest(player.name, targetPlayer.name); // Use system names
+    const existingRequest = tpaManager?.findRequest(player.name, targetPlayer.name);
     if (existingRequest && (existingRequest.status === 'pendingAcceptance' || existingRequest.status === 'pendingTeleportWarmup')) {
         player.sendMessage(getString('command.tpa.alreadyActive', { playerName: targetPlayer.nameTag }));
         return;
@@ -83,21 +81,20 @@ export async function execute(player, args, dependencies) {
         const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? 60;
         player.sendMessage(getString('command.tpahere.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix: prefix }));
 
-        // Notify target player via ActionBar
         const actionBarMessage = getString('tpa.notify.actionBar.requestYouToThem', { requestingPlayerName: requesterName, prefix: prefix });
         try {
             targetPlayer.onScreenDisplay.setActionBar(actionBarMessage);
         } catch (e) {
-            playerUtils?.sendMessage(targetPlayer, actionBarMessage); // Fallback to chat
+            playerUtils?.sendMessage(targetPlayer, actionBarMessage);
             playerUtils?.debugLog(`[TpaHereCommand INFO] Failed to set action bar for TPAHere target ${targetPlayer.nameTag}, sent chat message instead. Error: ${e.message}`, requesterName, dependencies);
         }
-        playerUtils?.playSoundForEvent(targetPlayer, "tpaRequestReceived", dependencies); // Sound for target
+        playerUtils?.playSoundForEvent(targetPlayer, "tpaRequestReceived", dependencies);
 
         logManager?.addLog({
-            actionType: 'tpaHereRequestSent', // Differentiate from tpaRequestSent
+            actionType: 'tpaHereRequestSent',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
-            adminName: requesterName, // Use adminName for requester
+            adminName: requesterName,
             requesterId: player.id,
             details: `TPAHere request sent. ID: ${request.requestId}, Type: ${request.requestType}`,
             context: 'TpaHereCommand.execute',

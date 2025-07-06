@@ -2,7 +2,7 @@
  * @file Implements a check to detect suspicious self-inflicted damage, specifically when a player
  * damages themselves via a direct entity attack (which is normally not possible without cheats).
  */
-import * as mc from '@minecraft/server'; // For mc.EntityDamageCause and mc.EntityComponentTypes
+import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -26,8 +26,7 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    // damageSource.cause is directly from the event, not from eventSpecificData.cause
-    const cause = eventSpecificData?.damageCause ?? eventSpecificData?.cause; // Accommodate if it's passed as damageCause
+    const cause = eventSpecificData?.damageCause ?? eventSpecificData?.cause;
     const damagingEntity = eventSpecificData?.damagingEntity;
 
     if (!config?.enableSelfHurtCheck) {
@@ -37,7 +36,7 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
         playerUtils?.debugLog(`[SelfHurtCheck] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
         return;
     }
-    if (!cause) { // Cause is essential for this check
+    if (!cause) {
         playerUtils?.debugLog(`[SelfHurtCheck] Skipping for ${playerName}: cause is missing from eventSpecificData.`, playerName, dependencies);
         return;
     }
@@ -45,7 +44,6 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
 
     const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    // The core of the check: player is damaged by themselves AND the cause is a direct entity attack.
     if (damagingEntity && damagingEntity.id === player.id && cause === mc.EntityDamageCause.entityAttack) {
         playerUtils?.debugLog(
             `[SelfHurtCheck] ${playerName} damaged by self via entityAttack. Cause: ${cause}, DamagingEntity: ${damagingEntity.typeId} (ID: ${damagingEntity.id})`,
@@ -63,12 +61,11 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
         }
 
         const violationDetails = {
-            damageCause: cause, // Store the actual cause enum value or its string name
+            damageCause: cause,
             damagingEntityType: damagingEntity.typeId,
             playerHealth: playerHealthString,
         };
 
-        // Ensure actionProfileKey is camelCase
         const rawActionProfileKey = config?.selfHurtActionProfileName ?? 'playerSelfHurt';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -78,8 +75,6 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
         playerUtils?.debugLog(`[SelfHurtCheck] Flagged ${playerName} for suspicious self-hurt (entityAttack by self).`, watchedPlayerName, dependencies);
 
     } else if (pData.isWatched && damagingEntity && damagingEntity.id === player.id && config?.enableDebugLogging) {
-        // Log if player hurt themselves but not via direct entity attack (e.g., fall damage, magic)
-        // This is informational for watched players if extensive debugging is on.
         playerUtils?.debugLog(
             `[SelfHurtCheck INFO] ${playerName} damaged by self. Cause: ${cause} (NOT flagged as it's not mc.EntityDamageCause.entityAttack). DamagingEntity: ${damagingEntity.typeId}`,
             watchedPlayerName, dependencies

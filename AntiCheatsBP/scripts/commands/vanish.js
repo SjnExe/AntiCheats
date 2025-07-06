@@ -4,7 +4,6 @@
  * True vanish requires more complex server-side packet manipulation not available in Bedrock Scripting API.
  */
 import * as mc from '@minecraft/server';
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -12,10 +11,10 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'vanish',
-    syntax: '[on|off|toggle] [silent|notify]', // Prefix handled by commandManager
+    syntax: '[on|off|toggle] [silent|notify]',
     description: 'Makes you invisible to other players. Optional mode: silent (no join/leave msgs) or notify.',
-    permissionLevel: permissionLevels.admin, // Typically admin or higher
-    enabled: true, // This command's master toggle
+    permissionLevel: permissionLevels.admin,
+    enabled: true,
 };
 
 /**
@@ -33,10 +32,10 @@ export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString, rankManager } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
-    const vanishedPlayerTagName = config?.vanishedPlayerTag ?? 'vanished'; // Tag to mark vanished players
+    const vanishedPlayerTagName = config?.vanishedPlayerTag ?? 'vanished';
 
-    let mode = 'notify'; // Default mode
-    let action = 'toggle'; // Default action
+    let mode = 'notify';
+    let action = 'toggle';
 
     args.forEach(arg => {
         const lowerArg = arg.toLowerCase();
@@ -69,22 +68,19 @@ export async function execute(player, args, dependencies) {
             break;
     }
 
-    pData.vanishMode = mode; // Store selected mode even if already vanished/unvanished in that mode
+    pData.vanishMode = mode;
     pData.isDirtyForSave = true;
 
-    if (targetVanishState) { // Entering vanish
-        if (isCurrentlyVanished && pData.vanishTagApplied) { // Already vanished and tag is set (check pData to avoid re-applying effects if already applied)
+    if (targetVanishState) {
+        if (isCurrentlyVanished && pData.vanishTagApplied) {
              player.sendMessage(`§eYou are already vanished (Mode: ${pData.vanishMode ?? mode}).`);
              return;
         }
         player.addTag(vanishedPlayerTagName);
-        pData.vanishTagApplied = true; // Track that we applied the tag and effects
+        pData.vanishTagApplied = true;
         pData.isDirtyForSave = true;
 
-        // Effects for vanish (invisibility, optionally no collision if possible though not via API)
         player.addEffect(mc.MinecraftEffectTypes.invisibility, 2000000, { amplifier: 1, showParticles: false });
-        // Consider adding NoGravity component if available and desired, though it has side effects.
-        // player.triggerEvent('minecraft:start_flying'); // If wanting to force flight, but might conflict with survival
 
         if (mode === 'notify') {
             mc.world.sendMessage(getString('command.vanish.notify.leftGame', { playerName: adminName }));
@@ -92,8 +88,8 @@ export async function execute(player, args, dependencies) {
         player.onScreenDisplay.setActionBar(getString(mode === 'silent' ? 'command.vanish.actionBar.on.silent' : 'command.vanish.actionBar.on.notify'));
         logManager?.addLog({ adminName, actionType: 'vanishEnabled', details: `Mode: ${mode}` }, dependencies);
 
-    } else { // Exiting vanish
-        if (!isCurrentlyVanished && !pData.vanishTagApplied) { // Already unvanished
+    } else {
+        if (!isCurrentlyVanished && !pData.vanishTagApplied) {
             player.sendMessage(`§eYou are already unvanished.`);
             return;
         }
@@ -102,7 +98,6 @@ export async function execute(player, args, dependencies) {
         pData.isDirtyForSave = true;
 
         player.removeEffect(mc.MinecraftEffectTypes.invisibility);
-        // player.triggerEvent('minecraft:stop_flying'); // If flight was forced
 
         if (mode === 'notify') {
             mc.world.sendMessage(getString('command.vanish.notify.joinedGame', { playerName: adminName }));
@@ -112,7 +107,6 @@ export async function execute(player, args, dependencies) {
     }
     playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
-    // Update nametag after vanish state change
     if (rankManager?.updatePlayerNametag) {
         await rankManager.updatePlayerNametag(player, dependencies);
     }

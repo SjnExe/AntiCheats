@@ -1,9 +1,9 @@
 /**
+/**
  * @file Defines the !invsee command for administrators to view a player's inventory.
  */
 import { MessageFormData } from '@minecraft/server-ui';
-import * as mc from '@minecraft/server'; // For mc.ItemComponentTypes, mc.EntityComponentTypes
-// Assuming permissionLevels is a static export for now.
+import * as mc from '@minecraft/server';
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -11,7 +11,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'invsee',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Views a player\'s inventory.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -39,7 +39,7 @@ export async function execute(player, args, dependencies) {
     const targetPlayerName = args[0];
     const foundPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!foundPlayer || !foundPlayer.isValid()) { // Added isValid
+    if (!foundPlayer || !foundPlayer.isValid()) {
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
@@ -65,37 +65,35 @@ export async function execute(player, args, dependencies) {
     let itemCount = 0;
 
     for (let i = 0; i < container.size; i++) {
-        const itemStack = container.getItem(i); // This is an ItemStack or undefined
-        if (itemStack) { // Check if itemStack is not undefined
+        const itemStack = container.getItem(i);
+        if (itemStack) {
             itemCount++;
             let nameTagText = itemStack.nameTag ? getString('command.invsee.item.nameTag', { nameTag: itemStack.nameTag }) : '';
             let durabilityText = '';
             try {
-                // mc.ItemComponentTypes.Durability is correct
                 const durabilityComponent = itemStack.getComponent(mc.ItemComponentTypes.Durability);
                 if (durabilityComponent) {
                     durabilityText = getString('command.invsee.item.durability', { currentDurability: (durabilityComponent.maxDurability - durabilityComponent.damage).toString(), maxDurability: durabilityComponent.maxDurability.toString() });
                 }
-            } catch (e) { /* Component might not exist, ignore */ }
+            } catch (e) { }
 
             let loreText = '';
-            const lore = itemStack.getLore(); // Returns string[]
+            const lore = itemStack.getLore();
             if (lore && lore.length > 0) {
                 loreText = getString('command.invsee.item.lore', { loreEntries: lore.join("', '") });
             }
 
             let enchantsText = '';
             try {
-                // mc.ItemComponentTypes.Enchantable is correct
                 const enchantableComponent = itemStack.getComponent(mc.ItemComponentTypes.Enchantable);
                 if (enchantableComponent) {
-                    const enchantments = enchantableComponent.getEnchantments(); // Returns Enchantment[]
+                    const enchantments = enchantableComponent.getEnchantments();
                     if (enchantments.length > 0) {
                         const enchStrings = enchantments.map(ench => `${ench.type.id.replace('minecraft:', '')} ${ench.level}`);
                         enchantsText = getString('command.invsee.item.enchants', { enchantEntries: enchStrings.join(', ') });
                     }
                 }
-            } catch (e) { /* Component might not exist or item not enchantable, ignore */ }
+            } catch (e) { }
 
             inventoryDetails += getString('ui.invsee.slotEntry', {
                 slotNum: i.toString(),
@@ -116,7 +114,7 @@ export async function execute(player, args, dependencies) {
     try {
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'inventoryViewed', // Standardized camelCase
+            actionType: 'inventoryViewed',
             targetName: foundPlayer.nameTag,
             targetId: foundPlayer.id,
             details: `Viewed inventory of ${foundPlayer.nameTag}`,
@@ -125,11 +123,10 @@ export async function execute(player, args, dependencies) {
         const invForm = new MessageFormData();
         invForm.title(getString('ui.invsee.title', { playerName: foundPlayer.nameTag }));
         invForm.body(inventoryDetails.trim());
-        invForm.button1(getString('common.button.close')); // Changed from OK to Close for consistency
+        invForm.button1(getString('common.button.close'));
 
         playerUtils?.playSoundForEvent(player, "uiFormOpen", dependencies);
         await invForm.show(player);
-        // No specific success sound for just viewing, form open sound is enough.
 
     } catch (e) {
         playerUtils?.debugLog(`[InvSeeCommand CRITICAL] Error showing invsee form for ${adminName}: ${e.message}`, adminName, dependencies);

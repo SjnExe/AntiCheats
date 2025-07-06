@@ -41,8 +41,7 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
                 z: eventData.block.location.z.toString(),
                 playerName: player.nameTag,
             };
-            // Ensure actionProfileKey is camelCase, standardizing from config
-            const rawActionProfileKey = config.instaBreakUnbreakableActionProfileName ?? 'worldInstaBreakUnbreakable'; // Default is already camelCase
+            const rawActionProfileKey = config.instaBreakUnbreakableActionProfileName ?? 'worldInstaBreakUnbreakable';
             const actionProfileKey = rawActionProfileKey
                 .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -121,8 +120,7 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
                 z: blockLocation.z.toString(),
                 toolUsed: pData.toolUsedForBreakAttempt ?? 'unknown',
             };
-            // Ensure actionProfileKey is camelCase, standardizing from config
-            const rawActionProfileKey = config.instaBreakSpeedActionProfileName ?? 'worldInstaBreakSpeed'; // Default is already camelCase
+            const rawActionProfileKey = config.instaBreakSpeedActionProfileName ?? 'worldInstaBreakSpeed';
             const actionProfileKey = rawActionProfileKey
                 .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());

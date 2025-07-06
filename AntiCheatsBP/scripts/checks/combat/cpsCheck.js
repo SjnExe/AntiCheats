@@ -47,8 +47,7 @@ export async function checkCps(player, pData, dependencies) {
     }
 
     const maxThreshold = config.maxCpsThreshold ?? 20;
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh'; // Default is already camelCase
+    const rawActionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());

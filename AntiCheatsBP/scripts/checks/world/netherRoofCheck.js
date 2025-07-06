@@ -48,8 +48,7 @@ export async function checkNetherRoof(player, pData, dependencies) {
             detailsString: `Player on Nether roof (Y: ${detectedYValue} >= ${thresholdValue})`,
         };
 
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.netherRoofActionProfileName ?? 'movementNetherRoof'; // Default is already camelCase
+        const rawActionProfileKey = config.netherRoofActionProfileName ?? 'movementNetherRoof';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
