@@ -132,6 +132,6 @@ export async function execute(player, args, dependencies) {
         actionType: 'commandViewReports',
         adminName: adminName,
         details: `Viewed reports. Filter: ${filterType}, Value: ${filterValue}, Page: ${pageNumber}`,
-        context: 'ViewReportsCommand',
+        context: 'ViewReportsCommand.execute', // Consistent casing and context
     }, dependencies);
 }

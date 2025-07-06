@@ -68,7 +68,7 @@ export async function execute(player, args, dependencies) {
 
             mc.system.run(() => {
                 try {
-                    target.onScreenDisplay.setActionBar(`§e${player.nameTag} has requested you to teleport to them. Use ${prefix}tpaccept ${player.nameTag} or ${prefix}tpacancel ${player.nameTag}.`);
+                    target.onScreenDisplay.setActionBar(getString('tpa.notify.actionBar.requestYouToThem', { requestingPlayerName: player.nameTag, prefix: prefix }));
                     // Play sound for the target player
                     playerUtils.playSoundForEvent(null, "tpaRequestReceived", dependencies, target);
                 } catch (e) {

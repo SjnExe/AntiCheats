@@ -149,6 +149,7 @@ export async function execute(
             console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`); // Log for system/AutoMod
         }
 
+        if (player) playerUtils.playSoundForEvent(player, "commandSuccess", dependencies); // Play success sound for issuer
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id); // For admin notification context
         // Standardized message, relying on notifyAdmins for prefix and potential admin player context
         const baseAdminNotifyMsg = getString('command.ban.notify.banned', { bannedBy: actualBannedBy, targetName: foundPlayer.nameTag, durationDisplay: durationDisplay, reason: actualReason });
@@ -171,10 +172,7 @@ export async function execute(
             player.sendMessage(failureMessage);
         } else {
             console.warn(`[BanCommand.execute] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${invokedBy})`);
-            if (player) playerUtils.playSoundForEvent(player, "commandError", dependencies);
         }
-        // If banAdded was true, it implies success from player's perspective of command execution
-        if (player && banAdded) playerUtils.playSoundForEvent(player, "commandSuccess", dependencies);
 
     } catch (e) { // General catch for unexpected errors in the command's flow
         const genericErrorMsg = getString('command.ban.error.generic', { errorMessage: e.message });

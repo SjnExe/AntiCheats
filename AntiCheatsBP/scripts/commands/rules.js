@@ -21,7 +21,7 @@ export const definition = {
  * Executes the !rules command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} _args Command arguments (not used).
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, _args, dependencies) {
     const { playerUtils, config, logManager, getString } = dependencies;
@@ -49,9 +49,9 @@ export async function execute(player, _args, dependencies) {
         // or an unrecoverable server-side issue with UI.
         logManager.addLog({
             timestamp: Date.now(),
-            actionType: 'error',
-            context: 'RulesCommandShowForm',
-            playerName: player.nameTag, // Identify player if possible
+            actionType: 'errorRulesCommandForm', // More specific
+            context: 'RulesCommand.showForm', // Consistent casing
+            adminName: player.nameTag, // Consistent field name for command issuer
             details: `Error showing rules form: ${error.stack || error}`,
         }, dependencies);
     }

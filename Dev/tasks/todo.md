@@ -3,6 +3,7 @@
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
 ## Documentation Tasks
+*Task moved to ongoing.md as part of a comprehensive review by Jules.*
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
 
 ## Code Refinement & Feature Enhancements

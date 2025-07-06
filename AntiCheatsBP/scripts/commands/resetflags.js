@@ -21,7 +21,7 @@ export const definition = {
  * Executes the resetflags command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName].
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
@@ -106,8 +106,8 @@ export async function execute(player, args, dependencies) {
         // Log this scenario as it might indicate an issue
         logManager.addLog({
             timestamp: Date.now(),
-            actionType: 'error',
-            context: 'ResetFlagsCommandExecute',
+            actionType: 'errorResetFlagsNoPData', // More specific
+            context: 'ResetFlagsCommand.execute', // Consistent casing
             details: `Attempted to reset flags for ${targetPlayer.nameTag}, but no player data was found. Issuer: ${player.nameTag}`,
         }, dependencies);
     }

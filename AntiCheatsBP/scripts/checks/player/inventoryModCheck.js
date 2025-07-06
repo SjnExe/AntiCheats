@@ -31,7 +31,11 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
         return;
     }
 
-    const actionProfileKey = config.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse'; // Default is already camelCase
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
@@ -92,7 +96,11 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             slotChanged: slotIdentifier,
             actionInProgress: lockingActionKey,
         };
-        const actionProfileKey = config.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         const watchedPrefix = pData.isWatched ? player.nameTag : null;

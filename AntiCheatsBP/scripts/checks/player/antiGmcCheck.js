@@ -25,7 +25,11 @@ import * as mc from '@minecraft/server';
 export async function checkAntiGmc(player, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
 
-    const actionProfileKey = config.antiGmcActionProfileName ?? 'playerAntigmc';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config.antiGmcActionProfileName ?? 'playerAntiGmc'; // Corrected default casing
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (!config.enableAntiGmcCheck || !pData) {
         return;

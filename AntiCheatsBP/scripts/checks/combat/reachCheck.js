@@ -75,7 +75,11 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
             targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
             playerGameMode: String(gameMode),
         };
-        const actionProfileKey = config.reachCheckActionProfileName ?? 'combatReachAttack';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.reachCheckActionProfileName ?? 'combatReachAttack'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
     }
 }

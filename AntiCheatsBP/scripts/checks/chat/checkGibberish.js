@@ -33,25 +33,28 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         playerUtils?.debugLog(`[GibberishCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const DEFAULT_MIN_MESSAGE_LENGTH = 10;
-    const DEFAULT_MIN_ALPHA_RATIO = 0.6;
-    const DEFAULT_VOWEL_RATIO_LOWER_BOUND = 0.15;
-    const DEFAULT_VOWEL_RATIO_UPPER_BOUND = 0.80;
-    const DEFAULT_MAX_CONSECUTIVE_CONSONANTS = 5;
-    const DEFAULT_ACTION_PROFILE_KEY = 'chatGibberish';
+    const defaultMinMessageLength = 10;
+    const defaultMinAlphaRatio = 0.6;
+    const defaultVowelRatioLowerBound = 0.15;
+    const defaultVowelRatioUpperBound = 0.80;
+    const defaultMaxConsecutiveConsonants = 5;
+    const defaultActionProfileKey = 'chatGibberish';
 
-    const minMessageLength = config?.gibberishMinMessageLength ?? DEFAULT_MIN_MESSAGE_LENGTH;
+    const minMessageLength = config?.gibberishMinMessageLength ?? defaultMinMessageLength;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    const minAlphaRatio = config?.gibberishMinAlphaRatio ?? DEFAULT_MIN_ALPHA_RATIO;
-    const vowelRatioLowerBound = config?.gibberishVowelRatioLowerBound ?? DEFAULT_VOWEL_RATIO_LOWER_BOUND;
-    const vowelRatioUpperBound = config?.gibberishVowelRatioUpperBound ?? DEFAULT_VOWEL_RATIO_UPPER_BOUND;
-    const maxConsecutiveConsonants = config?.gibberishMaxConsecutiveConsonants ?? DEFAULT_MAX_CONSECUTIVE_CONSONANTS;
+    const minAlphaRatio = config?.gibberishMinAlphaRatio ?? defaultMinAlphaRatio;
+    const vowelRatioLowerBound = config?.gibberishVowelRatioLowerBound ?? defaultVowelRatioLowerBound;
+    const vowelRatioUpperBound = config?.gibberishVowelRatioUpperBound ?? defaultVowelRatioUpperBound;
+    const maxConsecutiveConsonants = config?.gibberishMaxConsecutiveConsonants ?? defaultMaxConsecutiveConsonants;
 
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.gibberishActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.gibberishActionProfileName ?? defaultActionProfileKey; // Use camelCase default
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?]/g, ''); // Remove common punctuation
 

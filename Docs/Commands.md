@@ -102,10 +102,6 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Syntax:** `!notify [on|off|toggle|status]`
     *   **Description:** Manages your AntiCheat system notification preferences.
     *   **Permission:** Admin
-*   **`!panel`** (Alias: `!ui`)
-    *   **Syntax:** `!panel`
-    *   **Description:** Opens the main AntiCheat Admin UI panel.
-    *   **Permission:** Member+ (Content dynamically shown based on permission)
 *   **`!purgeflags`** (Alias: `!pf`)
     *   **Syntax:** `!purgeflags <playername>`
     *   **Description:** Completely purges all flags, violation history, and AutoMod state for a player.

@@ -36,7 +36,11 @@ export async function checkAutoTool(player, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const switchToOptimalWindowTicks = config.autoToolSwitchToOptimalWindowTicks ?? 2;
     const switchBackWindowTicks = config.autoToolSwitchBackWindowTicks ?? 5;
-    const actionProfileKey = config.autoToolActionProfileName ?? 'worldAutotool';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config.autoToolActionProfileName ?? 'worldAutoTool'; // Corrected default casing
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (
         pData.isAttemptingBlockBreak &&

@@ -100,7 +100,11 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString(),
         };
-        const actionProfileKey = config.towerBuildActionProfileName ?? 'worldTowerBuild';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.towerBuildActionProfileName ?? 'worldTowerBuild'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[TowerCheck] Flagged ${player.nameTag} for tower height ${pData.consecutivePillarBlocks} with pitch ${pitch.toFixed(1)} (Threshold: >${maxPitchValue}).`, watchedPrefix, dependencies);
         pData.consecutivePillarBlocks = 0;
@@ -152,7 +156,11 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
             maxBlocks: maxBlocks.toString(),
             blockType: block.typeId ?? 'unknown',
         };
-        const actionProfileKey = config.fastPlaceActionProfileName ?? 'worldFastPlace';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.fastPlaceActionProfileName ?? 'worldFastPlace'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[FastPlaceCheck] Flagged ${player.nameTag}. Placed ${pData.recentPlaceTimestamps.length} blocks in ${windowMs}ms.`, pData.isWatched ? player.nameTag : null, dependencies);
     }
@@ -231,7 +239,11 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                 z: blockLocation.z.toString(),
                 targetFaceType: targetBlock.typeId,
             };
-            const actionProfileKey = config.airPlaceActionProfileName ?? 'worldAirPlace';
+            // Ensure actionProfileKey is camelCase, standardizing from config
+            const rawActionProfileKey = config.airPlaceActionProfileName ?? 'worldAirPlace'; // Default is already camelCase
+            const actionProfileKey = rawActionProfileKey
+                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+                .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}) without solid support.`, pData.isWatched ? player.nameTag : null, dependencies);
             if (config.checkActionProfiles[actionProfileKey]?.cancelEvent) {
@@ -301,7 +313,11 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString(),
         };
-        const actionProfileKey = config.downwardScaffoldActionProfileName ?? 'worldDownwardScaffold';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.downwardScaffoldActionProfileName ?? 'worldDownwardScaffold'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[DownwardScaffoldCheck] Flagged ${player.nameTag}. Blocks: ${pData.consecutiveDownwardBlocks}, Speed: ${horizontalSpeedBPS.toFixed(2)} BPS`, watchedPrefix, dependencies);
         pData.consecutiveDownwardBlocks = 0;
@@ -413,7 +429,11 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
             minPitchObserved: minObservedPitch.toFixed(1),
             maxPitchObserved: maxObservedPitch.toFixed(1),
         };
-        const actionProfileKey = config.flatRotationBuildingActionProfileName ?? 'worldFlatRotationBuilding';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.flatRotationBuildingActionProfileName ?? 'worldFlatRotationBuilding'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[FlatRotationCheck] Flagged ${player.nameTag} for ${detectionReasonString}. PitchVar: ${pitchVariance.toFixed(1)}, YawMaxDiff: ${maxIndividualYawDifference.toFixed(1)}, YawStatic: ${yawIsEffectivelyStatic}`, watchedPrefix, dependencies);
     }
@@ -471,7 +491,11 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             blockType: blockType,
             actionTaken: config.blockSpamAction,
         };
-        const actionProfileKey = config.blockSpamActionProfileName ?? 'worldAntiGriefBlockspam';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.blockSpamActionProfileName ?? 'worldAntiGriefBlockspam'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamCheck] Flagged ${player.nameTag}. Placed ${pData.recentBlockSpamTimestamps.length} monitored blocks (${blockType}) in ${windowMs}ms. Action: ${config.blockSpamAction}`, pData.isWatched ? player.nameTag : null, dependencies);
 
@@ -548,7 +572,11 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
             blockType: block.typeId,
             actionTaken: config.blockSpamDensityAction ?? 'warn',
         };
-        const actionProfileKey = config.blockSpamDensityActionProfileName ?? 'worldAntiGriefBlockspamDensity';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.blockSpamDensityActionProfileName ?? 'worldAntiGriefBlockspamDensity'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[BlockSpamDensityCheck] Flagged ${player.nameTag}. Density: ${densityPercentage.toFixed(1)}% in radius ${radius} (Count: ${playerPlacedBlocksInVolumeCount}/${totalVolumeBlocks}). Block: ${block.typeId}. Action: ${config.blockSpamDensityAction}`, pData.isWatched ? player.nameTag : null, dependencies);
     }

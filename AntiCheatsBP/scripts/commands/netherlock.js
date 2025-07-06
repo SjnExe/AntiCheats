@@ -79,8 +79,8 @@ export async function execute(player, args, dependencies) {
         console.error(`[NetherlockCommand] Error executing '${subCommand}' for ${player.nameTag}: ${error.stack || error}`);
         logManager.addLog({
             adminName: player.nameTag,
-            actionType: 'error',
-            context: `netherlockCommand.${subCommand}`,
+            actionType: 'errorNetherlockCommand', // More specific
+            context: `NetherlockCommand.${subCommand}`, // Consistent casing
             details: `Execution error: ${error.message}`,
         }, dependencies);
     }

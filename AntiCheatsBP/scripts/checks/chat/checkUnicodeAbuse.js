@@ -32,21 +32,24 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
         playerUtils?.debugLog(`[UnicodeAbuseCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const DEFAULT_MIN_MESSAGE_LENGTH = 5;
-    const DEFAULT_MAX_DIACRITIC_RATIO = 0.5;
-    const DEFAULT_ABSOLUTE_MAX_DIACRITICS = 10;
-    const DEFAULT_ACTION_PROFILE_KEY = 'chatUnicodeAbuse';
+    const defaultMinMessageLength = 5;
+    const defaultMaxDiacriticRatio = 0.5;
+    const defaultAbsoluteMaxDiacritics = 10;
+    const defaultActionProfileKey = 'chatUnicodeAbuse';
 
-    const minMessageLength = config?.unicodeAbuseMinMessageLength ?? DEFAULT_MIN_MESSAGE_LENGTH;
+    const minMessageLength = config?.unicodeAbuseMinMessageLength ?? defaultMinMessageLength;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
 
-    const maxDiacriticRatio = config?.unicodeAbuseMaxDiacriticRatio ?? DEFAULT_MAX_DIACRITIC_RATIO;
-    const absoluteMaxDiacritics = config?.unicodeAbuseAbsoluteMaxDiacritics ?? DEFAULT_ABSOLUTE_MAX_DIACRITICS;
+    const maxDiacriticRatio = config?.unicodeAbuseMaxDiacriticRatio ?? defaultMaxDiacriticRatio;
+    const absoluteMaxDiacritics = config?.unicodeAbuseAbsoluteMaxDiacritics ?? defaultAbsoluteMaxDiacritics;
 
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.unicodeAbuseActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.unicodeAbuseActionProfileName ?? defaultActionProfileKey; // Use camelCase default
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     let diacriticCount = 0;
     let otherCharCount = 0;

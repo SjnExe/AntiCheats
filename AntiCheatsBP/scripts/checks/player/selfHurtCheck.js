@@ -56,7 +56,11 @@ export async function checkSelfHurt(player, pData, dependencies, eventSpecificDa
             playerHealth: playerHealthString,
         };
 
-        const actionProfileKey = config.selfHurtActionProfileName ?? 'playerSelfHurt';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.selfHurtActionProfileName ?? 'playerSelfHurt'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
     } else if (pData.isWatched && damagingEntity && damagingEntity.id === player.id) {

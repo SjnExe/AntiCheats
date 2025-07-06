@@ -196,9 +196,9 @@ function getToolMaterial(itemTypeId) {
  * Calculates the relative breaking power of a player against a specific block with a given item.
  * Higher numbers mean faster breaking. Considers tool type, material, enchantments, and player effects.
  * @param {import('@minecraft/server').Player} player - The player breaking the block.
- * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block being broken.
- * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item stack used to break the block, or undefined if using hand.
- * @returns {number} The relative breaking power.
+ * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block.
+ * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item used, or undefined for hand.
+ * @returns {number} Relative breaking power.
  */
 export function calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack) {
     const blockTypeId = blockPermutation.type.id;

@@ -10,7 +10,7 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
 
 ### 1. Global AutoMod Toggle
 - **File:** `AntiCheatsBP/scripts/config.js`
-- **Setting:** Look for `enableAutoMod` (or a similarly named variable) within this file.
+- **Setting:** `enableAutoMod` (within `defaultConfigSettings`).
 - **Usage:** Set to `true` to enable the entire AutoMod system, or `false` to disable it globally.
   ```javascript
   // Example in config.js
@@ -19,7 +19,7 @@ AutoMod is configured through **`AntiCheatsBP/scripts/config.js`** (for the glob
   ```
 
 ### 2. Per-CheckType AutoMod Toggles
-- **File:** `AntiCheatsBP/scripts/core/automodConfig.js` (this whole object is then typically assigned to a key in `editableConfigValues` in `config.js`)
+- **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
 - **Setting:** `automodPerCheckTypeToggles`
 - **Usage:** This object allows you to enable or disable AutoMod for specific `checkType`s. `checkType`s should follow `camelCase` naming (e.g., `movementFlyHover`). If a `checkType` is not listed or is `true`, AutoMod will be active for it (if `enableAutoMod` is also `true`).
   ```javascript

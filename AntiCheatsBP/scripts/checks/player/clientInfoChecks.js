@@ -46,7 +46,11 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             maxAllowed: config.maxAllowedClientRenderDistance.toString(),
         };
 
-        const actionProfileKey = config.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(`[InvalidRenderDistanceCheck] Player ${player.nameTag} reported ${clientRenderDistance} chunks, max allowed is ${config.maxAllowedClientRenderDistance}. Flagged via profile '${actionProfileKey}'.`, watchedPrefix, dependencies);

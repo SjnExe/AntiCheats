@@ -112,8 +112,8 @@ export async function execute(player, args, dependencies) {
         console.error(`[NotifyCommand] Error setting tags for ${player.nameTag}: ${tagError.stack || tagError}`);
         logManager.addLog({
             adminName: player.nameTag,
-            actionType: 'error',
-            context: 'notifyCommand.setTags',
+            actionType: 'errorNotifyCommand', // More specific
+            context: 'NotifyCommand.setTags', // Consistent casing
             details: `Failed to set notification tags: ${tagError.message}`,
         }, dependencies);
     }

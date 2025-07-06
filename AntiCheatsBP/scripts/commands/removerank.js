@@ -3,7 +3,6 @@
  */
 
 import { permissionLevels } from '../core/rankManager.js';
-import { rankDefinitions } from '../core/ranksConfig.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -20,7 +19,7 @@ export const definition = {
  * Executes the removerank command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName, rankId].
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, rankManager: depRankManager, getString } = dependencies;
@@ -39,13 +38,13 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const rankDef = rankDefinitions.find(r => r.id.toLowerCase() === rankIdToRemove);
+    const rankDef = depRankManager.getRankById(rankIdToRemove); // Use rankManager for consistency
     if (!rankDef) {
         player.sendMessage(getString('command.removerank.rankIdInvalid', { rankId: rankIdToRemove }));
         return;
     }
 
-    const manualTagCondition = rankDef.conditions.find(c => c.type === 'manual_tag_prefix' && typeof c.prefix === 'string');
+    const manualTagCondition = rankDef.conditions.find(c => c.type === 'manualTagPrefix' && typeof c.prefix === 'string');
     if (!manualTagCondition) {
         player.sendMessage(getString('command.removerank.notManuallyManaged', { rankName: rankDef.name }));
         return;
@@ -90,8 +89,8 @@ export async function execute(player, args, dependencies) {
         console.error(`[RemoveRankCommand] Error removing rank ${rankDef.id} from ${targetPlayer.nameTag}: ${error.stack || error}`);
         logManager.addLog({
             adminName: player.nameTag,
-            actionType: 'error',
-            context: 'RemoveRankCommandExecute',
+            actionType: 'errorRemoveRankCommand', // More specific
+            context: 'RemoveRankCommand.execute', // Consistent casing
             details: `Failed to remove rank ${rankDef.id} from ${targetPlayer.nameTag}: ${error.message}`,
         }, dependencies);
     }

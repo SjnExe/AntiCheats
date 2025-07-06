@@ -35,7 +35,11 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
             targetEntityId: eventSpecificData?.targetEntity?.id,
             targetEntityType: eventSpecificData?.targetEntity?.typeId,
         };
-        const actionProfileKey = config.attackWhileSleepingActionProfileName ?? 'combatAttackWhileSleeping';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.attackWhileSleepingActionProfileName ?? 'combatAttackWhileSleeping'; // Default is already camelCase
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Sleeping.`, watchedPrefix, dependencies);
     }
@@ -72,7 +76,11 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             state: 'isUsingConsumable',
             itemCategory: 'consumable',
         };
-        const actionProfileKeyConsuming = config.attackWhileConsumingActionProfileName ?? 'combatAttackWhileConsuming';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKeyConsuming = config.attackWhileConsumingActionProfileName ?? 'combatAttackWhileConsuming';
+        const actionProfileKeyConsuming = rawActionProfileKeyConsuming
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKeyConsuming, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Consuming.`, watchedPrefix, dependencies);
     }
@@ -83,7 +91,11 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             state: 'isChargingBow',
             itemCategory: 'bow',
         };
-        const actionProfileKeyBow = config.attackWhileBowChargingActionProfileName ?? 'combatAttackWhileBowCharging';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKeyBow = config.attackWhileBowChargingActionProfileName ?? 'combatAttackWhileBowCharging';
+        const actionProfileKeyBow = rawActionProfileKeyBow
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKeyBow, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Charging Bow.`, watchedPrefix, dependencies);
     }
@@ -94,7 +106,11 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             state: 'isUsingShield',
             itemCategory: 'shield',
         };
-        const actionProfileKeyShield = config.attackWhileShieldingActionProfileName ?? 'combatAttackWhileShielding';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKeyShield = config.attackWhileShieldingActionProfileName ?? 'combatAttackWhileShielding';
+        const actionProfileKeyShield = rawActionProfileKeyShield
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKeyShield, violationDetails, dependencies);
         playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Shielding.`, watchedPrefix, dependencies);
     }

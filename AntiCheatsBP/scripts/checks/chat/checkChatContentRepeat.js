@@ -43,8 +43,11 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
     const rawMessageContent = eventData.message;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.chatContentRepeatActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatContentRepeat';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (!config?.enableChatContentRepeatCheck) {
         return;
@@ -62,7 +65,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         return;
     }
 
-    pData.chatMessageHistory = pData.chatMessageHistory || []; // Initialize if undefined
+    pData.chatMessageHistory ??= []; // Initialize if undefined
     pData.chatMessageHistory.push(normalizedMessage);
     pData.isDirtyForSave = true;
 

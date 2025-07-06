@@ -28,8 +28,11 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
     const message = eventData.message;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    // Ensure actionProfileName is camelCase
-    const actionProfileName = config?.antiAdvertisingActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? 'chatAdvertisingDetected';
+    // Ensure actionProfileName is camelCase, standardizing from config
+    const rawActionProfileName = config?.antiAdvertisingActionProfileName ?? 'chatAdvertisingDetected';
+    const actionProfileName = rawActionProfileName
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (!config?.enableAntiAdvertisingCheck) {
         return;

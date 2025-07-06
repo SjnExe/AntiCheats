@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  * Parses a dimension string and returns the corresponding Dimension object.
  * @param {string | undefined} dimStr The dimension string (e.g., "overworld", "nether", "end").
  * @param {import('../types.js').PlayerUtils} playerUtils For debug logging.
- * @param {import('../types.js').Dependencies} dependencies For debug logging context.
+ * @param {import('../types.js').CommandDependencies} dependencies For debug logging context.
  * @returns {mc.Dimension | null} The Dimension object or null if invalid.
  */
 function parseDimensionLocal(dimStr, playerUtils, dependencies) {
@@ -49,7 +49,7 @@ export const definition = {
  * Executes the tp (teleport) command.
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
@@ -195,8 +195,8 @@ export async function execute(player, args, dependencies) {
         logManager.addLog({
             timestamp: Date.now(),
             adminName: player.nameTag,
-            actionType: 'error',
-            context: 'TPCommandExecute',
+            actionType: 'errorTpCommand', // More specific
+            context: 'TPCommand.execute', // Consistent casing
             targetName: playerToMove.nameTag,
             details: `Teleport to ${destinationDescription} failed: ${error.stack || error}`,
         }, dependencies);

@@ -20,9 +20,12 @@ export const definition = {
 };
 /**
  * Executes the vanish command.
+ * @param {import('@minecraft/server').Player} player The player executing the command.
+ * @param {string[]} args Command arguments: [silent|notify].
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, playerDataManager, getString, mc: minecraft } = dependencies; // Added mc for consistency
+    const { playerUtils, logManager, playerDataManager, getString, mc: minecraft } = dependencies;
 
     let mode = args[0] ? args[0].toLowerCase() : 'silent';
     if (mode !== 'silent' && mode !== 'notify') {

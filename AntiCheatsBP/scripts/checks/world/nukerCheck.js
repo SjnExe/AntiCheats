@@ -27,7 +27,7 @@ export async function checkNuker(player, pData, dependencies) {
         return;
     }
 
-    pData.blockBreakEvents = pData.blockBreakEvents || [];
+    pData.blockBreakEvents ??= [];
     if (!Array.isArray(pData.blockBreakEvents)) {
         playerUtils.debugLog(`[NukerCheck] pData.blockBreakEvents for ${player.nameTag} is not an array. Resetting.`, player.nameTag, dependencies);
         pData.blockBreakEvents = [];
@@ -52,7 +52,11 @@ export async function checkNuker(player, pData, dependencies) {
     }
 
     const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4;
-    const actionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config.nukerActionProfileName ?? 'worldNuker'; // Default is already camelCase
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
     if (brokenBlocksInWindow > maxBreaks) {
         if (pData.isWatched || config.enableDebugLogging) {

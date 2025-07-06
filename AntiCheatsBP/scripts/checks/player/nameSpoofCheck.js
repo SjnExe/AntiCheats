@@ -81,7 +81,11 @@ export async function checkNameSpoof(player, pData, dependencies) {
             disallowedCharRegexConfig: config.nameSpoofDisallowedCharsRegex ?? 'N/A',
             minChangeIntervalConfig: (config.nameSpoofMinChangeIntervalTicks ?? 0).toString(),
         };
-        const actionProfileKey = config.nameSpoofActionProfileName || 'playerNamespoof';
+        // Ensure actionProfileKey is camelCase, standardizing from config
+        const rawActionProfileKey = config.nameSpoofActionProfileName || 'playerNameSpoof'; // Corrected default casing
+        const actionProfileKey = rawActionProfileKey
+            .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+            .replace(/^[A-Z]/, (match) => match.toLowerCase());
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils.debugLog(`[NameSpoofCheck] Flagged ${player.name} (current nameTag: '${currentNameTag}') for ${flaggedReasonForLog}`, watchedPrefix, dependencies);

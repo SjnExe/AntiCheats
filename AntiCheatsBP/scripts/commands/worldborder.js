@@ -33,6 +33,12 @@ export const definition = {
     enabled: true,
 };
 
+/**
+ * Executes the worldborder command.
+ * @param {import('@minecraft/server').Player} player The player executing the command.
+ * @param {string[]} args Command arguments.
+ * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
+ */
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, worldBorderManager, getString } = dependencies;
     const subCommand = args.shift()?.toLowerCase();
@@ -62,51 +68,82 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    switch (subCommand) {
-        case 'set':
-            await handleSetCommand(player, args, dependencies);
-            break;
-        case 'get':
-            await handleGetCommand(player, args, dependencies);
-            break;
-        case 'toggle':
-            await handleToggleCommand(player, args, dependencies);
-            break;
-        case 'remove':
-            await handleRemoveCommand(player, args, dependencies);
-            break;
-        case 'shrink':
-            await handleShrinkCommand(player, args, dependencies);
-            break;
-        case 'expand':
-            await handleExpandCommand(player, args, dependencies);
-            break;
-        case 'resizepause':
-            await handleResizePauseCommand(player, args, dependencies);
-            break;
-        case 'resizeresume':
-            await handleResizeResumeCommand(player, args, dependencies);
-            break;
-        case 'setglobalparticle':
-            await handleSetGlobalParticleCommand(player, args, dependencies);
-            break;
-        case 'setparticle':
-            await handleSetParticleCommand(player, args, dependencies);
-            break;
-        default: // Should be caught by validSubcommands check
-            playerUtils.warnPlayer(player, getString('command.worldborder.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
+    try {
+        switch (subCommand) {
+            case 'set':
+                await handleSetCommand(player, args, dependencies);
+                break;
+            case 'get':
+                await handleGetCommand(player, args, dependencies);
+                break;
+            case 'toggle':
+                await handleToggleCommand(player, args, dependencies);
+                break;
+            case 'remove':
+                await handleRemoveCommand(player, args, dependencies);
+                break;
+            case 'shrink':
+                await handleShrinkCommand(player, args, dependencies);
+                break;
+            case 'expand':
+                await handleExpandCommand(player, args, dependencies);
+                break;
+            case 'resizepause':
+                await handleResizePauseCommand(player, args, dependencies);
+                break;
+            case 'resizeresume':
+                await handleResizeResumeCommand(player, args, dependencies);
+                break;
+            case 'setglobalparticle':
+                await handleSetGlobalParticleCommand(player, args, dependencies);
+                break;
+            case 'setparticle':
+                await handleSetParticleCommand(player, args, dependencies);
+                break;
+            default: // Should be caught by validSubcommands check earlier
+                playerUtils.warnPlayer(player, getString('command.worldborder.invalidSubcommand', { subCommand: subCommand, prefix: cmdPrefix }));
+        }
+    } catch (error) {
+        playerUtils.warnPlayer(player, getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: error.message }));
+        console.error(`[WorldBorderCommand] Error executing '${subCommand}' for ${player.nameTag}: ${error.stack || error}`);
+        logManager.addLog({
+            adminName: player.nameTag,
+            actionType: 'errorWorldBorderCommand',
+            context: `WorldBorderCommand.execute.${subCommand}`,
+            details: `Execution error: ${error.message}`,
+            error: error.stack || error.message,
+        }, dependencies);
     }
 }
 
-function normalizeDimensionId(player, inputDimId) {
-    const currentPlayerDimensionId = player.dimension.id;
-    let normalized = inputDimId ? inputDimId.toLowerCase() : currentPlayerDimensionId;
-    if (normalized === 'overworld') return 'minecraft:overworld';
-    if (normalized === 'nether') return 'minecraft:the_nether';
-    if (normalized === 'the_end' || normalized === 'end') return 'minecraft:the_end';
-    if (normalized === 'minecraft:overworld' || normalized === 'minecraft:the_nether' || normalized === 'minecraft:the_end') return normalized;
-    return null;
+/**
+ * Parses a dimension string and returns the corresponding Dimension object.
+ * @param {string | undefined} dimStr The dimension string (e.g., "overworld", "nether", "end").
+ * @param {import('../types.js').PlayerUtils} playerUtils For debug logging.
+ * @param {import('../types.js').CommandDependencies} dependencies For debug logging context.
+ * @returns {mc.Dimension | null} The Dimension object or null if invalid.
+ */
+function parseDimensionLocal(dimStr, playerUtils, dependencies) {
+    if (!dimStr || typeof dimStr !== 'string') {
+        return null;
+    }
+    const lowerDimStr = dimStr.toLowerCase();
+    switch (lowerDimStr) {
+        case 'overworld':
+        case 'minecraft:overworld':
+            return mc.world.overworld;
+        case 'nether':
+        case 'minecraft:the_nether':
+            return mc.world.nether;
+        case 'end':
+        case 'minecraft:the_end':
+            return mc.world.theEnd;
+        default:
+            playerUtils.debugLog(`[TPCommand] Invalid dimension string: "${dimStr}".`, null, dependencies); // Note: Log context says TPCommand, should be WB
+            return null;
+    }
 }
+
 
 async function handleSetCommand(player, args, dependencies) {
     const { playerUtils, logManager, config: currentRunTimeConfig, worldBorderManager, getString } = dependencies;

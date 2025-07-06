@@ -101,7 +101,11 @@ export async function checkFly(player, pData, dependencies) {
                 hasSlowFalling: pData.hasSlowFalling?.toString() ?? 'false',
                 hasLevitation: pData.hasLevitation?.toString() ?? 'false',
             };
-            const highYVelocityActionProfileKey = config.highYVelocityActionProfileName ?? 'movementHighYVelocity';
+            // Ensure actionProfileKey is camelCase, standardizing from config
+            const rawHighYVelocityActionProfileKey = config.highYVelocityActionProfileName ?? 'movementHighYVelocity'; // Default is already camelCase
+            const highYVelocityActionProfileKey = rawHighYVelocityActionProfileKey
+                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+                .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager.executeCheckAction(player, highYVelocityActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Y-Velo] Flagged ${player.nameTag}. Velo: ${currentYVelocity.toFixed(3)}, Max: ${effectiveMaxYVelocity.toFixed(3)}`, watchedPrefix, dependencies);
         }
@@ -137,7 +141,11 @@ export async function checkFly(player, pData, dependencies) {
                 isInWater: player.isInWater.toString(),
                 hasLevitation: pData.hasLevitation?.toString() ?? 'false',
             };
-            const sustainedFlyActionProfileKey = config.sustainedFlyActionProfileName ?? 'movementSustainedFly';
+            // Ensure actionProfileKey is camelCase, standardizing from config
+            const rawSustainedFlyActionProfileKey = config.sustainedFlyActionProfileName ?? 'movementSustainedFly'; // Default is already camelCase
+            const sustainedFlyActionProfileKey = rawSustainedFlyActionProfileKey
+                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+                .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager.executeCheckAction(player, sustainedFlyActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Sustained] Flagged ${player.nameTag}. VSpeed: ${verticalSpeed.toFixed(2)}, OffGround: ${pData.consecutiveOffGroundTicks}t`, watchedPrefix, dependencies);
         }
@@ -172,7 +180,11 @@ export async function checkFly(player, pData, dependencies) {
                 hasLevitation: pData.hasLevitation?.toString() ?? 'false',
                 hasSlowFalling: pData.hasSlowFalling?.toString() ?? 'false',
             };
-            const hoverFlyActionProfileKey = config.hoverFlyActionProfileName ?? 'movementFlyHover';
+            // Ensure actionProfileKey is camelCase, standardizing from config
+            const rawHoverFlyActionProfileKey = config.hoverFlyActionProfileName ?? 'movementFlyHover'; // Default is already camelCase
+            const hoverFlyActionProfileKey = rawHoverFlyActionProfileKey
+                .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+                .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[FlyCheck][Hover] Flagged ${player.nameTag}. VSpeed: ${verticalSpeed.toFixed(2)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${player.fallDistance.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPrefix, dependencies);
         }

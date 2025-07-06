@@ -36,10 +36,10 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         playerUtils?.debugLog(`[SimpleImpersonationCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, playerName, dependencies);
     }
 
-    const DEFAULT_MIN_MESSAGE_LENGTH = 10;
-    const DEFAULT_ACTION_PROFILE_KEY = 'chatImpersonationAttempt';
+    const defaultMinMessageLength = 10;
+    const defaultActionProfileKey = 'chatImpersonationAttempt';
 
-    const minMessageLength = config?.impersonationMinMessageLengthForPatternMatch ?? DEFAULT_MIN_MESSAGE_LENGTH;
+    const minMessageLength = config?.impersonationMinMessageLengthForPatternMatch ?? defaultMinMessageLength;
     if (rawMessageContent.length < minMessageLength) {
         return;
     }
@@ -64,8 +64,11 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         return;
     }
 
-    // Ensure actionProfileKey is camelCase
-    const actionProfileKey = config?.impersonationActionProfileName?.replace(/[-_]([a-z])/g, (g) => g[1].toUpperCase()) ?? DEFAULT_ACTION_PROFILE_KEY;
+    // Ensure actionProfileKey is camelCase, standardizing from config
+    const rawActionProfileKey = config?.impersonationActionProfileName ?? defaultActionProfileKey; // Use camelCase default
+    const actionProfileKey = rawActionProfileKey
+        .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
+        .replace(/^[A-Z]/, (match) => match.toLowerCase());
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
     for (const patternString of serverMessagePatterns) {

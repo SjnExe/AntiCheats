@@ -32,6 +32,11 @@ const persistedPlayerDataKeys = [
     'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
     'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
+    'lastChatMessageTimestamp', // For messageRateCheck
+    'recentHits', // For multiTargetCheck
+    'lastUsedElytraTick', // For flyCheck grace period
+    'lastOnSlimeBlockTick', // For noFallCheck grace period
+    'recentEntitySpamTimestamps', // For entityChecks
     // Note: lastPosition, previousPosition, velocity, previousVelocity are typically transient.
     // lastOnGroundTick, lastOnGroundPosition are also often transient.
     // Review if any other fields like recentMessages, isTakingFallDamage, etc., need persistence.
@@ -327,6 +332,12 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastViolationDetailsMap: {}, // Persisted
         automodState: {}, // Persisted
         deathMessageToShowOnSpawn: null, // Persisted
+        // Added persisted fields from checks
+        lastChatMessageTimestamp: 0, // For messageRateCheck
+        recentHits: [], // For multiTargetCheck, already present from before but ensure it's here
+        lastUsedElytraTick: 0, // For flyCheck grace period
+        lastOnSlimeBlockTick: 0, // For noFallCheck grace period
+        recentEntitySpamTimestamps: {}, // For entityChecks
         // Persisted tick counters for interval checks
         lastCheckNameSpoofTick: 0,
         lastCheckAntiGmcTick: 0,
@@ -566,11 +577,6 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
 
 
     pData.flags[finalFlagType] ??= { count: 0, lastDetectionTime: 0 };
-    // This check is redundant if ??= works as expected, but good for robustness.
-    if (!pData.flags[finalFlagType]) {
-        playerUtils?.debugLog(`[PlayerDataManager.addFlag] New flagType '${finalFlagType}' for ${playerName}. Initializing structure.`, playerName, dependencies);
-        pData.flags[finalFlagType] = { count: 0, lastDetectionTime: 0 };
-    }
 
     pData.flags[finalFlagType].count++;
     pData.flags[finalFlagType].lastDetectionTime = Date.now();

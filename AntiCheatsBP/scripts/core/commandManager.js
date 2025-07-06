@@ -128,7 +128,7 @@ export async function handleChatCommand(eventData, dependencies) {
     playerUtils?.debugLog(`[CommandManager.handleChatCommand] Player ${playerName} command attempt: '${commandNameInput || ''}', Args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
 
     if (!commandNameInput) {
-        player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config?.prefix }));
+        player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config?.prefix ?? '!' })); // Provide default for prefix if somehow null
         eventData.cancel = true; // Cancel if it was a prefix-only message
         return;
     }
@@ -144,7 +144,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const commandExecute = dependencies.commandExecutionMap?.get(finalCommandName);
 
     if (!commandDef || !commandExecute) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config?.prefix, commandName: finalCommandName }));
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config?.prefix ?? '!', commandName: finalCommandName }));
         eventData.cancel = true;
         return;
     }
@@ -156,7 +156,7 @@ export async function handleChatCommand(eventData, dependencies) {
     }
 
     if (!isEffectivelyEnabled) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config?.prefix, commandName: finalCommandName })); // Treat as unknown if disabled
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config?.prefix ?? '!', commandName: finalCommandName })); // Treat as unknown if disabled
         eventData.cancel = true;
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Command '${finalCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
@@ -164,7 +164,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     const userPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (userPermissionLevel === undefined || userPermissionLevel === null || userPermissionLevel > commandDef.permissionLevel) {
-        playerUtils?.warnPlayer(player, getString('command.error.noPermission'));
+        playerUtils?.warnPlayer(player, getString('common.error.permissionDenied')); // Using existing common key
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Command '${commandDef.name}' denied for ${playerName}. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel}`, playerName, dependencies);
         eventData.cancel = true;
         return;
