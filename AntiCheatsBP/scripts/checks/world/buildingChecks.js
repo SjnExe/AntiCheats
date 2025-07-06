@@ -100,8 +100,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString(),
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.towerBuildActionProfileName ?? 'worldTowerBuild'; // Default is already camelCase
+        const rawActionProfileKey = config.towerBuildActionProfileName ?? 'worldTowerBuild';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -156,8 +155,7 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
             maxBlocks: maxBlocks.toString(),
             blockType: block.typeId ?? 'unknown',
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.fastPlaceActionProfileName ?? 'worldFastPlace'; // Default is already camelCase
+        const rawActionProfileKey = config.fastPlaceActionProfileName ?? 'worldFastPlace';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -239,8 +237,7 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                 z: blockLocation.z.toString(),
                 targetFaceType: targetBlock.typeId,
             };
-            // Ensure actionProfileKey is camelCase, standardizing from config
-            const rawActionProfileKey = config.airPlaceActionProfileName ?? 'worldAirPlace'; // Default is already camelCase
+            const rawActionProfileKey = config.airPlaceActionProfileName ?? 'worldAirPlace';
             const actionProfileKey = rawActionProfileKey
                 .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -313,8 +310,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
             y: blockLocation.y.toString(),
             z: blockLocation.z.toString(),
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.downwardScaffoldActionProfileName ?? 'worldDownwardScaffold'; // Default is already camelCase
+        const rawActionProfileKey = config.downwardScaffoldActionProfileName ?? 'worldDownwardScaffold';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -429,8 +425,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
             minPitchObserved: minObservedPitch.toFixed(1),
             maxPitchObserved: maxObservedPitch.toFixed(1),
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.flatRotationBuildingActionProfileName ?? 'worldFlatRotationBuilding'; // Default is already camelCase
+        const rawActionProfileKey = config.flatRotationBuildingActionProfileName ?? 'worldFlatRotationBuilding';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -491,8 +486,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             blockType: blockType,
             actionTaken: config.blockSpamAction,
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.blockSpamActionProfileName ?? 'worldAntiGriefBlockspam'; // Default is already camelCase
+        const rawActionProfileKey = config.blockSpamActionProfileName ?? 'worldAntiGriefBlockspam';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -572,8 +566,7 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
             blockType: block.typeId,
             actionTaken: config.blockSpamDensityAction ?? 'warn',
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.blockSpamDensityActionProfileName ?? 'worldAntiGriefBlockspamDensity'; // Default is already camelCase
+        const rawActionProfileKey = config.blockSpamDensityActionProfileName ?? 'worldAntiGriefBlockspamDensity';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());

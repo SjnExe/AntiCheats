@@ -1,7 +1,6 @@
 /**
  * @file Defines the !kick command for administrators to remove a player from the server.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,9 +8,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'kick',
-    syntax: '<playername> [reason]', // Prefix handled by commandManager
+    syntax: '<playername> [reason]',
     description: 'Kicks a player from the server.',
-    permissionLevel: permissionLevels.admin, // Default admin, can be adjusted
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -33,19 +32,16 @@ export async function execute(player, args, dependencies) {
     const targetPlayerName = parsedArgs.targetPlayerName;
     const reason = parsedArgs.reason;
 
-    if (!targetPlayerName) { // Should be caught by validateCommandTarget if player is not null, but good practice
+    if (!targetPlayerName) {
         player.sendMessage(getString('command.kick.usage', { prefix: prefix }));
         return;
     }
 
     const foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'kick' });
     if (!foundPlayer) {
-        return; // validateCommandTarget already sent a message
+        return;
     }
 
-    // Permission checks
-    // Note: validateCommandTarget already handles player == null for targetPlayerName check,
-    // and self-target check. So, foundPlayer here is valid and not self if player is not null.
     const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'kick', dependencies);
     if (!permCheck.allowed) {
         player.sendMessage(getString(permCheck.messageKey || 'command.kick.noPermission', permCheck.messageParams));
@@ -54,13 +50,12 @@ export async function execute(player, args, dependencies) {
 
     try {
         const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: adminName, reason: reason });
-        // The kick method itself is synchronous in the current Bedrock API, but wrapping in try/catch is good.
         foundPlayer.kick(kickMessageToTarget);
 
         player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason: reason }));
         playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
-        const targetPData = playerDataManager?.getPlayerData(foundPlayer.id); // For context if needed by notifyAdmins
+        const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
             const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: adminName, reason: reason });
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
@@ -68,7 +63,7 @@ export async function execute(player, args, dependencies) {
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'playerKicked', // Standardized camelCase
+            actionType: 'playerKicked',
             targetName: foundPlayer.nameTag,
             targetId: foundPlayer.id,
             reason: reason,
@@ -83,7 +78,7 @@ export async function execute(player, args, dependencies) {
             context: 'KickCommand.execute',
             adminName: adminName,
             targetName: targetPlayerName,
-            targetId: foundPlayer?.id, // Log ID if foundPlayer was resolved
+            targetId: foundPlayer?.id,
             details: { errorMessage: e.message, reasonAttempted: reason },
             errorStack: e.stack || e.toString(),
         }, dependencies);

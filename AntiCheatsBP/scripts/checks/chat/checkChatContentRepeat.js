@@ -9,9 +9,9 @@
  */
 
 const defaultHistoryLength = 5;
-const defaultRepeatThreshold = 3; // Number of times message must appear in history to trigger
-const defaultMinMessageLengthForRepeatCheck = 3; // Minimum length of a message to be considered for repeat check
-const maxSnippetLength = 50; // For violation details
+const defaultRepeatThreshold = 3;
+const defaultMinMessageLengthForRepeatCheck = 3;
+const maxSnippetLength = 50;
 
 /**
  * Normalizes a chat message for comparison by converting to lowercase,
@@ -23,8 +23,6 @@ function normalizeMessage(message) {
     if (typeof message !== 'string') {
         return '';
     }
-    // Further normalization: remove common punctuation that might be added to bypass
-    // This is a simple version; more complex normalization might be needed for advanced bypasses.
     return message.toLowerCase().trim().replace(/[.,!?"';:]/g, '').replace(/\s+/g, ' ');
 }
 
@@ -47,8 +45,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         return;
     }
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config?.chatContentRepeatActionProfileName ?? 'chatContentRepeat'; // Default is already camelCase
+    const rawActionProfileKey = config?.chatContentRepeatActionProfileName ?? 'chatContentRepeat';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -64,12 +61,10 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
 
     const normalizedMessage = normalizeMessage(rawMessageContent);
 
-    // Ignore very short or empty messages after normalization
     if (normalizedMessage.length < minMessageLength) {
-        // Still add to history if it's not purely whitespace, for context, but don't check for repeat.
         if (rawMessageContent.trim().length > 0) {
             pData.chatMessageHistory ??= [];
-            pData.chatMessageHistory.push(normalizedMessage); // Add normalized version for future comparisons
+            pData.chatMessageHistory.push(normalizedMessage);
              while (pData.chatMessageHistory.length > historyLength) {
                 pData.chatMessageHistory.shift();
             }
@@ -79,7 +74,6 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
     }
 
     pData.chatMessageHistory ??= [];
-    // Count occurrences of the current normalized message in the existing history *before* adding current one
     let matchCount = 0;
     for (const oldMessage of pData.chatMessageHistory) {
         if (oldMessage === normalizedMessage) {
@@ -87,21 +81,17 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         }
     }
 
-    // Add current message to history *after* checking against past messages
     pData.chatMessageHistory.push(normalizedMessage);
     while (pData.chatMessageHistory.length > historyLength) {
         pData.chatMessageHistory.shift();
     }
     pData.isDirtyForSave = true;
 
-
-    // The flag triggers if the message (already in history `matchCount` times) is now being sent again,
-    // meeting or exceeding the threshold. So, check `matchCount + 1`.
     if ((matchCount + 1) >= triggerThreshold) {
         const watchedPlayerName = pData.isWatched ? playerName : null;
         const violationDetails = {
             repeatedMessageSnippet: normalizedMessage.substring(0, maxSnippetLength) + (normalizedMessage.length > maxSnippetLength ? '...' : ''),
-            matchCountInHistory: (matchCount + 1).toString(), // Current attempt included
+            matchCountInHistory: (matchCount + 1).toString(),
             historyLookback: historyLength.toString(),
             triggerThreshold: triggerThreshold.toString(),
             originalMessage: rawMessageContent,

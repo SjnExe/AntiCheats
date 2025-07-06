@@ -3,12 +3,12 @@
  * Allows administrators to view player-submitted reports.
  */
 import { permissionLevels } from '../core/rankManager.js';
-import * as reportManager from '../core/reportManager.js'; // Import all from reportManager
+import * as reportManager from '../core/reportManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'viewreports',
-    syntax: '[player_name|report_id|page <number>]', // Prefix handled by commandManager
+    syntax: '[player_name|report_id|page <number>]',
     description: 'Views player reports. Can filter by player/ID or view paginated list.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -52,7 +52,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
     const reportsPerPage = config?.reportsViewPerPage ?? 5;
 
-    let reportsToShow = reportManager.getReports(); // Sorted newest first by default
+    let reportsToShow = reportManager.getReports();
     let pageNumber = 1;
     let totalPages = Math.max(1, Math.ceil(reportsToShow.length / reportsPerPage));
     let filterType = 'All';
@@ -63,13 +63,13 @@ export async function execute(player, args, dependencies) {
         if (firstArgLower === 'page' && args[1] && !isNaN(parseInt(args[1], 10))) {
             pageNumber = Math.max(1, parseInt(args[1], 10));
             filterType = 'All (Paginated)';
-        } else if (args[0].includes('-') && args[0].length > 10) { // Heuristic for report ID
+        } else if (args[0].includes('-') && args[0].length > 10) {
             const reportId = args[0];
             reportsToShow = reportsToShow.filter(r => r.id === reportId);
             filterType = 'Report ID';
             filterValue = reportId;
             totalPages = Math.max(1, Math.ceil(reportsToShow.length / reportsPerPage));
-        } else { // Assume player name filter
+        } else {
             const targetPlayerName = args[0];
             reportsToShow = reportsToShow.filter(r =>
                 r.reporterName.toLowerCase().includes(targetPlayerName.toLowerCase()) ||
@@ -80,7 +80,6 @@ export async function execute(player, args, dependencies) {
             totalPages = Math.max(1, Math.ceil(reportsToShow.length / reportsPerPage));
         }
     }
-     // Adjust pageNumber if it's out of bounds after filtering
     if (pageNumber > totalPages) pageNumber = totalPages;
 
 
@@ -96,7 +95,7 @@ export async function execute(player, args, dependencies) {
     if (paginatedReports.length === 0 && pageNumber > 1) {
         player.sendMessage(getString('command.viewreports.noReportsOnPage', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString() }));
         return;
-    } else if (paginatedReports.length === 0) { // Should be caught by reportsToShow.length === 0 earlier
+    } else if (paginatedReports.length === 0) {
         player.sendMessage(getString('command.viewreports.noReportsFound'));
         return;
     }
@@ -122,7 +121,7 @@ export async function execute(player, args, dependencies) {
 
     logManager?.addLog({
         adminName: adminName,
-        actionType: 'reportsViewed', // Standardized camelCase
+        actionType: 'reportsViewed',
         details: `Viewed reports. Filter: ${filterType}='${filterValue}', Page: ${pageNumber}/${totalPages}.`,
         context: 'ViewReportsCommand.execute',
     }, dependencies);

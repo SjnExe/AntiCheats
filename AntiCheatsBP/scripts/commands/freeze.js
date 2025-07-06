@@ -1,8 +1,8 @@
 /**
+/**
  * @file Defines the !freeze command for administrators to immobilize or release players.
  */
-import * as mc from '@minecraft/server'; // For mc.MinecraftEffectTypes
-// Assuming permissionLevels is a static export for now.
+import * as mc from '@minecraft/server';
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'freeze',
-    syntax: '<playername> [on|off|toggle|status]', // Prefix handled by commandManager
+    syntax: '<playername> [on|off|toggle|status]',
     description: 'Freezes or unfreezes a player, preventing movement by applying strong slowness and weakness.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -30,12 +30,11 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    // Configurable values for freeze effects
-    const frozenTagName = config?.frozenPlayerTag ?? 'frozen'; // Tag to apply
-    const effectDuration = 2000000; // Effectively infinite duration for game purposes
-    const slownessAmplifier = config?.freezeSlownessAmplifier ?? 255; // Max slowness
-    const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? 255; // Max weakness (prevents breaking blocks effectively)
-    const showParticles = config?.freezeShowParticles ?? false; // Whether effects show particles
+    const frozenTagName = config?.frozenPlayerTag ?? 'frozen';
+    const effectDuration = 2000000;
+    const slownessAmplifier = config?.freezeSlownessAmplifier ?? 255;
+    const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? 255;
+    const showParticles = config?.freezeShowParticles ?? false;
 
     if (args.length < 1) {
         player?.sendMessage(getString('command.freeze.usage', { prefix: prefix }));
@@ -43,11 +42,11 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    const subCommand = args[1]?.toLowerCase() || 'toggle'; // Default to 'toggle'
+    const subCommand = args[1]?.toLowerCase() || 'toggle';
 
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid check
+    if (!targetPlayer || !targetPlayer.isValid()) {
         player?.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
@@ -58,15 +57,15 @@ export async function execute(player, args, dependencies) {
     }
 
     const currentFreezeState = targetPlayer.hasTag(frozenTagName);
-    let targetFreezeState; // true to freeze, false to unfreeze
+    let targetFreezeState;
 
     switch (subCommand) {
         case 'on':
-        case 'lock': // Alias for 'on'
+        case 'lock':
             targetFreezeState = true;
             break;
         case 'off':
-        case 'unlock': // Alias for 'off'
+        case 'unlock':
             targetFreezeState = false;
             break;
         case 'toggle':
@@ -83,12 +82,11 @@ export async function execute(player, args, dependencies) {
             return;
     }
 
-    if (targetFreezeState === true && !currentFreezeState) { // Freeze action
+    if (targetFreezeState === true && !currentFreezeState) {
         try {
             targetPlayer.addTag(frozenTagName);
             targetPlayer.addEffect(mc.MinecraftEffectTypes.slowness, effectDuration, { amplifier: slownessAmplifier, showParticles: showParticles });
             targetPlayer.addEffect(mc.MinecraftEffectTypes.weakness, effectDuration, { amplifier: weaknessAmplifier, showParticles: showParticles });
-            // Optional: Could add Jump Boost with negative amplifier if API supports it for more immobility.
 
             targetPlayer.sendMessage(getString('command.freeze.targetFrozen'));
             player?.sendMessage(getString('command.freeze.success.frozen', { playerName: targetPlayer.nameTag }));
@@ -105,12 +103,11 @@ export async function execute(player, args, dependencies) {
             console.error(`[FreezeCommand CRITICAL] Error freezing ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
             playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         }
-    } else if (targetFreezeState === false && currentFreezeState) { // Unfreeze action
+    } else if (targetFreezeState === false && currentFreezeState) {
         try {
             targetPlayer.removeTag(frozenTagName);
             targetPlayer.removeEffect(mc.MinecraftEffectTypes.slowness);
             targetPlayer.removeEffect(mc.MinecraftEffectTypes.weakness);
-            // Remove other effects if added by freeze
 
             targetPlayer.sendMessage(getString('command.freeze.targetUnfrozen'));
             player?.sendMessage(getString('command.freeze.success.unfrozen', { playerName: targetPlayer.nameTag }));
@@ -127,7 +124,7 @@ export async function execute(player, args, dependencies) {
             console.error(`[FreezeCommand CRITICAL] Error unfreezing ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
             playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         }
-    } else { // No change in state
+    } else {
         player?.sendMessage(targetFreezeState ?
             getString('command.freeze.alreadyFrozen', { playerName: targetPlayer.nameTag }) :
             getString('command.freeze.alreadyUnfrozen', { playerName: targetPlayer.nameTag })

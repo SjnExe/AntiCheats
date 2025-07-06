@@ -27,8 +27,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         return;
     }
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config?.capsCheckActionProfileName ?? 'chatCapsAbuseDetected'; // Default is already camelCase
+    const rawActionProfileKey = config?.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -46,17 +45,15 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
-        // Check if character is a letter (has different upper and lower case versions)
         if (char.toLowerCase() !== char.toUpperCase()) {
             totalLetters++;
-            // Check if it's uppercase AND it's actually a letter (not a symbol that has no case)
             if (char === char.toUpperCase()) {
                 upperCaseLetters++;
             }
         }
     }
 
-    if (totalLetters === 0) { // No letters in the message, so caps check is not applicable
+    if (totalLetters === 0) {
         return;
     }
 
@@ -73,7 +70,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
         );
 
         const violationDetails = {
-            percentage: `${upperCasePercentage.toFixed(1)}%`, // Keep as string for consistency
+            percentage: `${upperCasePercentage.toFixed(1)}%`,
             threshold: `${percentageThreshold}%`,
             minLength: minLength.toString(),
             messageLength: message.length.toString(),

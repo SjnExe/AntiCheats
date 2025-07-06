@@ -1,7 +1,6 @@
 /**
  * @file Defines the !myflags command, allowing players to view their own AntiCheat flag status.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,9 +8,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'myflags',
-    syntax: '', // Prefix handled by commandManager
+    syntax: '',
     description: 'Allows players to view their own AntiCheat flag status.',
-    permissionLevel: permissionLevels.member, // Accessible by all members
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
@@ -43,7 +42,6 @@ export async function execute(player, _args, dependencies) {
         let message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n';
         let specificFlagsFound = false;
 
-        // Sort flag keys alphabetically for consistent display, excluding 'totalFlags'
         const flagKeys = Object.keys(pDataSelf.flags)
             .filter(key => key !== 'totalFlags' && typeof pDataSelf.flags[key] === 'object' && pDataSelf.flags[key] !== null && (pDataSelf.flags[key].count ?? 0) > 0)
             .sort();
@@ -51,7 +49,7 @@ export async function execute(player, _args, dependencies) {
         for (const key of flagKeys) {
             const flagDetail = pDataSelf.flags[key];
             const lastDetectionTime = flagDetail.lastDetectionTime ?
-                new Date(flagDetail.lastDetectionTime).toLocaleString() : // Use locale string for better readability
+                new Date(flagDetail.lastDetectionTime).toLocaleString() :
                 getString('common.value.notAvailable');
             message += getString('command.myflags.flagEntry', { key: key, count: (flagDetail.count ?? 0).toString(), lastDetectionTime: lastDetectionTime }) + '\n';
             specificFlagsFound = true;
@@ -60,7 +58,6 @@ export async function execute(player, _args, dependencies) {
         if (!specificFlagsFound && totalFlags === 0) {
             message = getString('command.myflags.noFlags');
         } else if (!specificFlagsFound && totalFlags > 0) {
-            // This case indicates totalFlags might be > 0 but no individual flag counts are, or they are not structured as expected.
             message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n' + getString('command.myflags.noSpecificFlags');
             playerUtils?.debugLog(`[MyFlagsCommand WARNING] Player ${playerName} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pDataSelf.flags)}`, playerName, dependencies);
         }
@@ -68,6 +65,4 @@ export async function execute(player, _args, dependencies) {
     } else {
         player?.sendMessage(getString('command.myflags.noData'));
     }
-    // No server-side logging for this command by default, as it's a self-check.
-    // playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies); // Optional sound
 }

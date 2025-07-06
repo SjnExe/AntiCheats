@@ -1,8 +1,8 @@
 /**
+/**
  * @file Defines the !gma command for administrators to set a player's gamemode to Adventure.
  */
 import * as mc from '@minecraft/server';
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'gma',
-    syntax: '[playername]', // Prefix handled by commandManager
+    syntax: '[playername]',
     description: 'Sets your gamemode or a target player\'s gamemode to Adventure.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -28,15 +28,15 @@ export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString, config } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const targetPlayerNameArg = args[0];
-    const gamemodeName = mc.GameMode[mc.GameMode.adventure]; // Get string "adventure"
+    const gamemodeName = mc.GameMode[mc.GameMode.adventure];
     const gamemodeMcEnum = mc.GameMode.adventure;
 
     try {
-        let targetPlayer = player; // Default to self if no targetPlayerNameArg
+        let targetPlayer = player;
 
         if (targetPlayerNameArg) {
             const foundTarget = playerUtils?.findPlayer(targetPlayerNameArg);
-            if (!foundTarget || !foundTarget.isValid()) { // Added isValid
+            if (!foundTarget || !foundTarget.isValid()) {
                 player?.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerNameArg }));
                 return;
             }
@@ -44,23 +44,23 @@ export async function execute(player, args, dependencies) {
         }
 
         targetPlayer.setGameMode(gamemodeMcEnum);
-        const successSound = "commandSuccess"; // Centralize sound event keys if needed
+        const successSound = "commandSuccess";
 
-        if (targetPlayer.id === player.id) { // Self change
+        if (targetPlayer.id === player.id) {
             player?.sendMessage(getString('command.gamemode.success.self', { gamemodeName: gamemodeName }));
             logManager?.addLog({
                 adminName: adminName,
-                actionType: 'gamemodeSetSelf', // More specific
-                targetName: adminName, // Target is self
+                actionType: 'gamemodeSetSelf',
+                targetName: adminName,
                 targetId: player.id,
                 details: `Set own gamemode to ${gamemodeName}`,
             }, dependencies);
-        } else { // Changed another player's gamemode
+        } else {
             player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName: gamemodeName }));
             targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName: gamemodeName }));
             logManager?.addLog({
                 adminName: adminName,
-                actionType: 'gamemodeSetOther', // More specific
+                actionType: 'gamemodeSetOther',
                 targetName: targetPlayer.nameTag,
                 targetId: targetPlayer.id,
                 details: `Set ${targetPlayer.nameTag}'s gamemode to ${gamemodeName} by ${adminName}`,
@@ -76,7 +76,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorGamemodeSet', // Standardized error
+            actionType: 'errorGamemodeSet',
             context: 'GMACommand.execute',
             targetName: targetNameForError,
             details: `Failed to set gamemode to ${gamemodeName}: ${error.message}`,

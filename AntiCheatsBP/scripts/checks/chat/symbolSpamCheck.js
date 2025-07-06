@@ -31,8 +31,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         return;
     }
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config?.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected'; // Default is already camelCase
+    const rawActionProfileKey = config?.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -42,24 +41,22 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         return;
     }
 
-    let totalCharsNonSpace = 0; // Count only non-space characters for the base
+    let totalCharsNonSpace = 0;
     let symbolChars = 0;
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
         if (char === ' ') {
-            continue; // Skip spaces for total character count relevant to symbol density
+            continue;
         }
         totalCharsNonSpace++;
 
-        // Check if the character is NOT alphanumeric (a-z, A-Z, 0-9)
-        // Using a regex for this is more robust than manual char code checks.
-        if (!/^[a-zA-Z0-9]$/.test(char)) { // Test if char is NOT alphanumeric
+        if (!/^[a-zA-Z0-9]$/.test(char)) {
             symbolChars++;
         }
     }
 
-    if (totalCharsNonSpace === 0) { // Message was only spaces or empty after space removal
+    if (totalCharsNonSpace === 0) {
         return;
     }
 

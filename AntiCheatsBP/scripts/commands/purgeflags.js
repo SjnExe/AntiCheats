@@ -3,10 +3,7 @@
  * This command allows administrators to completely clear all flags,
  * violation history, and AutoMod state for a specified player.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
-// Import specific functions if they are directly used and clear.
-// Otherwise, accessing via dependencies.playerDataManager is also fine.
 import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData } from '../core/playerDataManager.js';
 
 /**
@@ -14,9 +11,9 @@ import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData } from 
  */
 export const definition = {
     name: 'purgeflags',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Admin command to completely purge all flags, violation history, and AutoMod state for a player.',
-    permissionLevel: permissionLevels.admin, // Requires admin
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -37,17 +34,14 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    // FindPlayer can find online players. Purging flags for offline players would require
-    // a different mechanism to load/save their dynamic properties if not cached.
-    const targetPlayer = playerUtils?.findPlayer(targetPlayerName, dependencies); // Pass dependencies if needed by findPlayer
+    const targetPlayer = playerUtils?.findPlayer(targetPlayerName, dependencies);
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
+    if (!targetPlayer || !targetPlayer.isValid()) {
         playerUtils?.sendMessage(player, getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-        // Note: Offline player flag purging is not implemented here.
         return;
     }
 
-    const pData = getPlayerData(targetPlayer.id); // Use direct import or dependencies.playerDataManager.getPlayerData
+    const pData = getPlayerData(targetPlayer.id);
     if (!pData) {
         playerUtils?.sendMessage(player, getString('command.purgeflags.noData', { playerName: targetPlayer.nameTag }));
         return;
@@ -55,26 +49,16 @@ export async function execute(player, args, dependencies) {
 
     const oldTotalFlags = pData.flags?.totalFlags ?? 0;
 
-    // Re-initialize the flags part of pData to its default state.
-    // initializeDefaultPlayerData creates a whole new pData object. We only want to reset parts of the existing one.
     const defaultPlayerDataForFlags = initializeDefaultPlayerData(targetPlayer, currentTick, dependencies);
-    pData.flags = JSON.parse(JSON.stringify(defaultPlayerDataForFlags.flags)); // Deep copy default flags structure
+    pData.flags = JSON.parse(JSON.stringify(defaultPlayerDataForFlags.flags));
 
-    pData.lastFlagType = ''; // Reset last flag type
-    pData.lastViolationDetailsMap = {}; // Reset violation details
-    pData.automodState = {}; // Reset AutoMod state for this player
-
-    // Reset any other check-specific violation tracking fields if they are not covered by flags reset
-    // For example, if specific checks store their own counters or history in pData directly:
-    // pData.someCheckViolationCount = 0;
-    // pData.someCheckHistory = [];
-    // This needs to be comprehensive based on what checks actually store in pData.
-    // For now, focusing on the main flag structures.
+    pData.lastFlagType = '';
+    pData.lastViolationDetailsMap = {};
+    pData.automodState = {};
 
     pData.isDirtyForSave = true;
 
-    // Explicitly save the data now.
-    const saveSuccess = await saveDirtyPlayerData(targetPlayer, dependencies); // Use direct import or dependencies.playerDataManager
+    const saveSuccess = await saveDirtyPlayerData(targetPlayer, dependencies);
 
     if (saveSuccess) {
         const messageToAdmin = getString('command.purgeflags.success.admin', { playerName: targetPlayer.nameTag, oldTotalFlags: oldTotalFlags.toString() });
@@ -82,20 +66,20 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
         const messageToTarget = getString('command.purgeflags.success.target', { adminName: adminName });
-        playerUtils?.sendMessage(targetPlayer, messageToTarget); // Inform the target player
+        playerUtils?.sendMessage(targetPlayer, messageToTarget);
 
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
             const notifyMsg = getString('command.purgeflags.notify.purged', { adminName: adminName, targetPlayerName: targetPlayer.nameTag, oldTotalFlags: oldTotalFlags.toString() });
-            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData); // Pass admin as player context
+            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
 
         logManager?.addLog({
-            actionType: 'flagsPurged', // Standardized camelCase
+            actionType: 'flagsPurged',
             adminName: adminName,
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `All flags, violation details, and automod state purged. Old total flags: ${oldTotalFlags}.`,
-            context: 'PurgeFlagsCommand', // Consistent context
+            context: 'PurgeFlagsCommand',
         }, dependencies);
         playerUtils?.debugLog(`Admin ${adminName} purged flags for ${targetPlayer.nameTag}. Old total: ${oldTotalFlags}.`, adminName, dependencies);
 

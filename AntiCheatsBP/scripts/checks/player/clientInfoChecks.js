@@ -18,33 +18,28 @@
  * @returns {Promise<void>}
  */
 export async function checkInvalidRenderDistance(player, pData, dependencies) {
-    const { config, playerUtils, actionManager, logManager } = dependencies; // Added logManager
+    const { config, playerUtils, actionManager, logManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
     if (!config?.enableInvalidRenderDistanceCheck) {
         return;
     }
 
-    // pData might be null if called very early, but isWatched check is fine with ?.
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
-    if (!player.clientSystemInfo) { // clientSystemInfo might not be available immediately on join
+    if (!player.clientSystemInfo) {
         playerUtils?.debugLog(`[InvalidRenderDistanceCheck] clientSystemInfo not yet available for ${playerName}. Will check later.`, watchedPlayerName, dependencies);
         return;
     }
 
     const clientRenderDistance = player.clientSystemInfo.maxRenderDistance;
-    // Update pData with the last reported render distance if it's different
     if (pData && pData.lastReportedRenderDistance !== clientRenderDistance) {
         pData.lastReportedRenderDistance = clientRenderDistance;
-        // This field might not be persisted by default, but if it were:
-        // pData.isDirtyForSave = true;
     }
 
 
     if (typeof clientRenderDistance !== 'number' || clientRenderDistance < 0) {
         playerUtils?.debugLog(`[InvalidRenderDistanceCheck WARNING] Invalid or missing maxRenderDistance value (${clientRenderDistance}) for ${playerName}.`, watchedPlayerName, dependencies);
-        // Optionally log this as a minor system issue if it occurs often
         logManager?.addLog({
             actionType: 'warningClientInfo',
             context: 'InvalidRenderDistanceCheck.getValue',
@@ -54,17 +49,16 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         return;
     }
 
-    const maxAllowed = config?.maxAllowedClientRenderDistance ?? 64; // Default 64 chunks
+    const maxAllowed = config?.maxAllowedClientRenderDistance ?? 64;
 
     if (clientRenderDistance > maxAllowed) {
         const violationDetails = {
-            playerName: playerName, // Already have playerName
+            playerName: playerName,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: maxAllowed.toString(),
-            devicePlatform: player.clientSystemInfo.platformType?.toString() ?? 'Unknown', // Add platform for context
+            devicePlatform: player.clientSystemInfo.platformType?.toString() ?? 'Unknown',
         };
 
-        // Ensure actionProfileKey is camelCase, standardizing from config
         const rawActionProfileKey = config?.invalidRenderDistanceActionProfileName ?? 'playerInvalidRenderDistance';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))

@@ -1,8 +1,8 @@
 /**
+/**
  * @file Defines the !endlock command for administrators to manage End dimension access.
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'endlock',
-    syntax: '<on|off|status>', // Prefix handled by commandManager
+    syntax: '<on|off|status>',
     description: 'Manages End dimension access. "on" locks, "off" unlocks, "status" checks.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -27,19 +27,19 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
-    const subCommand = args[0]?.toLowerCase() || 'status'; // Default to 'status', ensure lowercase
+    const subCommand = args[0]?.toLowerCase() || 'status';
     const prefix = config?.prefix ?? '!';
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     let statusText;
     let success = false;
-    const dimensionNameForMsg = getString('dimensionLock.name.end'); // Get user-friendly name
+    const dimensionNameForMsg = getString('dimensionLock.name.end');
 
     try {
         switch (subCommand) {
             case 'on':
             case 'lock':
-                success = setEndLocked(true); // worldStateUtils functions are assumed synchronous
+                success = setEndLocked(true);
                 if (success) {
                     player?.sendMessage(getString('command.endlock.locked'));
                     logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'The End', details: 'The End dimension locked' }, dependencies);
@@ -70,7 +70,7 @@ export async function execute(player, args, dependencies) {
                 }
                 break;
             case 'status':
-                const locked = isEndLocked(); // Synchronous
+                const locked = isEndLocked();
                 statusText = locked ? getString('command.endlock.status.locked') : getString('command.endlock.status.unlocked');
                 player?.sendMessage(getString('command.endlock.status', { statusText }));
                 break;
@@ -84,7 +84,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorDimensionLockCommand', // Standardized
+            actionType: 'errorDimensionLockCommand',
             context: `EndlockCommand.execute.${subCommand}`,
             targetName: 'The End',
             details: `Execution error: ${error.message}`,

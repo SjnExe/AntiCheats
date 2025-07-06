@@ -10,7 +10,7 @@ export const definition = {
     name: 'report',
     syntax: '!report <playername> <reason...>',
     description: 'Reports a player for rule violations. Provide a clear reason.',
-    permissionLevel: permissionLevels.member, // Or a higher level if desired
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
@@ -47,7 +47,7 @@ export async function execute(player, args, dependencies) {
         playerUtils.sendMessage(reporterPlayer, getString('command.report.success', { reportedPlayerName: reportedPlayerName, reportId: newReport.id }));
         logManager.addLog({
             actionType: 'commandReportExecuted',
-            adminName: reporterPlayer.nameTag, // Using adminName field for reporter
+            adminName: reporterPlayer.nameTag,
             targetName: reportedPlayerName,
             details: `Report submitted. Reason: ${reason}. Report ID: ${newReport.id}`,
             context: 'ReportCommand',

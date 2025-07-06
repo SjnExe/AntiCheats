@@ -1,7 +1,6 @@
 /**
  * @file Defines the !inspect command for administrators to view a player's AntiCheat data.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,7 +8,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'inspect',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Views a player\'s AntiCheat data and status, including flags, mutes, and bans.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -35,26 +34,19 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    // Try to find online player first, then potentially load offline data if implemented
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
     let pData;
 
-    if (targetPlayer && targetPlayer.isValid()) { // Player is online
+    if (targetPlayer && targetPlayer.isValid()) {
         pData = playerDataManager?.getPlayerData(targetPlayer.id);
     } else {
-        // Attempt to load offline pData if findOfflinePlayerData is implemented
-        // For now, assume we only inspect online or recently online (cached) players effectively
-        // Or, if your playerDataManager can load purely from persisted properties without a Player object:
-        // pData = await playerDataManager.loadPersistedDataByName(targetPlayerName, dependencies);
-        // This part depends heavily on how playerDataManager handles offline data.
-        // Assuming for now it primarily works with Player objects or their IDs for cache.
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
 
     const messageLines = [];
-    const targetDisplayName = targetPlayer?.nameTag ?? targetPlayerName; // Use nameTag if online, else arg
+    const targetDisplayName = targetPlayer?.nameTag ?? targetPlayerName;
     messageLines.push(getString('command.inspect.header', { playerName: targetDisplayName }));
 
     if (pData) {
@@ -66,7 +58,6 @@ export async function execute(player, args, dependencies) {
         let specificFlagsFound = false;
         if (pData.flags) {
             messageLines.push(getString('command.inspect.flagsByTypeHeader'));
-            // Sort flag keys alphabetically for consistent display, excluding 'totalFlags'
             const flagKeys = Object.keys(pData.flags)
                 .filter(key => key !== 'totalFlags' && typeof pData.flags[key] === 'object' && pData.flags[key] !== null && (pData.flags[key].count ?? 0) > 0)
                 .sort();
@@ -108,9 +99,9 @@ export async function execute(player, args, dependencies) {
     try {
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'playerInspected', // Standardized camelCase
+            actionType: 'playerInspected',
             targetName: targetDisplayName,
-            targetId: targetPlayer?.id ?? pData?.id, // Log ID if available
+            targetId: targetPlayer?.id ?? pData?.id,
             details: `Inspected ${targetDisplayName}`,
         }, dependencies);
     } catch (logError) {

@@ -103,7 +103,6 @@ export function getBorderSettings(dimensionId, dependencies) {
         const settingsJson = mc.world.getDynamicProperty(propertyKey);
         if (typeof settingsJson === 'string') {
             const settings = JSON.parse(settingsJson);
-            // Corrected type checks
             if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
                 typeof settings.enabled !== 'boolean' || typeof settings.dimensionId !== 'string' || settings.dimensionId !== dimensionId) {
                 playerUtils.debugLog(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}. Settings: ${JSON.stringify(settings)}`, 'System', dependencies);
@@ -119,7 +118,7 @@ export function getBorderSettings(dimensionId, dependencies) {
                     playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}. Value: ${settings.radius}`, 'System', dependencies);
                     return null;
                 }
-            } else if (settings.shape !== undefined) { // Only log if shape is present but invalid
+            } else if (settings.shape !== undefined) {
                 playerUtils.debugLog(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`, 'System', dependencies);
                 return null;
             }
@@ -237,12 +236,11 @@ function easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
  */
 function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
     const minDimensionHeight = dimension.heightRange.min;
-    const maxDimensionHeight = dimension.heightRange.max - 2; // Leave space for player head
+    const maxDimensionHeight = dimension.heightRange.max - 2;
     let currentY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
     const maxSearchDepthDown = 10;
     const maxSearchDepthUp = 5;
 
-    // Search downwards for a 2-block air gap with solid ground below
     for (let i = 0; i < maxSearchDepthDown; i++) {
         const checkY = currentY - i;
         if (checkY < minDimensionHeight) break;
@@ -253,12 +251,11 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
                 if (blockBelowFeet?.isSolid) return checkY;
             }
-        } catch (e) { /* Ignored, block might be unloaded */ }
+        } catch (e) { }
     }
 
-    // Search upwards if no suitable spot found downwards
     let searchUpStartY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
-    for (let i = 1; i < maxSearchDepthUp; i++) { // Start 1 block above initialY if searching up
+    for (let i = 1; i < maxSearchDepthUp; i++) {
         const checkY = searchUpStartY + i;
         if (checkY > maxDimensionHeight) break;
         try {
@@ -268,9 +265,9 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
                 const blockBelowFeet = dimension.getBlock({ x: targetX, y: checkY - 1, z: targetZ });
                 if (blockBelowFeet?.isSolid) return checkY;
             }
-        } catch (e) { /* Ignored */ }
+        } catch (e) { }
     }
-    return Math.floor(initialY); // Fallback to initial Y if no safe spot found
+    return Math.floor(initialY);
 }
 
 /**
@@ -482,7 +479,7 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
                             try {
                                 const particleLoc = isXAxis ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
                                 player.dimension.spawnParticle(particleNameToUse, particleLoc);
-                            } catch (e) { /* ignore particle error */ }
+                            } catch (e) { }
                         }
                     }
                 };
@@ -505,7 +502,7 @@ export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
                         for (let h = 0; h < wallHeight; h++) {
                             try {
                                 player.dimension.spawnParticle(particleNameToUse, { x: pX, y: yBase + h, z: pZ });
-                            } catch (e) { /* ignore particle error */ }
+                            } catch (e) { }
                         }
                     }
                 }
@@ -528,7 +525,7 @@ export function clearBorderSettings(dimensionId, dependencies) {
     }
     const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.toLowerCase().replace('minecraft:', '');
     try {
-        mc.world.setDynamicProperty(propertyKey, undefined); // Setting to undefined removes the property
+        mc.world.setDynamicProperty(propertyKey, undefined);
         playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, 'System', dependencies);
         return true;
     } catch (error) {

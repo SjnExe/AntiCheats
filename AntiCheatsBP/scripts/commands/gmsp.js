@@ -1,8 +1,8 @@
 /**
+/**
  * @file Defines the !gmsp command for administrators to set a player's gamemode to Spectator.
  */
 import * as mc from '@minecraft/server';
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +10,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'gmsp',
-    syntax: '[playername]', // Prefix handled by commandManager
+    syntax: '[playername]',
     description: 'Sets your gamemode or a target player\'s gamemode to Spectator.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -28,15 +28,15 @@ export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const targetPlayerNameArg = args[0];
-    const gamemodeName = mc.GameMode[mc.GameMode.spectator]; // Get string "spectator"
+    const gamemodeName = mc.GameMode[mc.GameMode.spectator];
     const gamemodeMcEnum = mc.GameMode.spectator;
 
     try {
-        let targetPlayer = player; // Default to self
+        let targetPlayer = player;
 
         if (targetPlayerNameArg) {
             const foundTarget = playerUtils?.findPlayer(targetPlayerNameArg);
-            if (!foundTarget || !foundTarget.isValid()) { // Added isValid
+            if (!foundTarget || !foundTarget.isValid()) {
                 player?.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerNameArg }));
                 return;
             }

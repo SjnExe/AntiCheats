@@ -26,8 +26,7 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         return;
     }
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config?.charRepeatActionProfileName ?? 'chatCharRepeatDetected'; // Default is already camelCase
+    const rawActionProfileKey = config?.charRepeatActionProfileName ?? 'chatCharRepeatDetected';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -45,24 +44,21 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
     let maxRepeatCount = 0;
     let currentChar = '';
     let currentRepeatCount = 0;
-    let charThatRepeatedMost = ''; // Store the character that had the longest repeat sequence
+    let charThatRepeatedMost = '';
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
         if (char === currentChar) {
             currentRepeatCount++;
         } else {
-            // Check if the previous sequence was the longest so far
             if (currentRepeatCount > maxRepeatCount) {
                 maxRepeatCount = currentRepeatCount;
-                charThatRepeatedMost = currentChar; // Update which character repeated most
+                charThatRepeatedMost = currentChar;
             }
-            // Reset for the new character
             currentChar = char;
             currentRepeatCount = 1;
         }
     }
-    // Final check for the last sequence in the message
     if (currentRepeatCount > maxRepeatCount) {
         maxRepeatCount = currentRepeatCount;
         charThatRepeatedMost = currentChar;

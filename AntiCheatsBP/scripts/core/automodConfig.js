@@ -26,7 +26,7 @@ export const automodConfig = {
             checkType: 'movementFlyHover',
             enabled: false,
             description: 'Actions for persistent hovering/flying.',
-            resetFlagsAfterSeconds: 300, // 5 minutes
+            resetFlagsAfterSeconds: 300,
             tiers: [
                 { flagThreshold: 10, actionType: 'warn', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName}, persistent hovering detected (Flags: {flagCount}/{flagThreshold}). Please adhere to server rules.' }, resetFlagsAfterAction: false },
                 { flagThreshold: 20, actionType: 'kick', parameters: { messageTemplate: 'AutoMod [{actionType}|{checkType}]: Kicked {playerName} for continued hovering violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: false },
@@ -123,28 +123,22 @@ export const automodConfig = {
                 { flagThreshold: 5, actionType: 'tempBan', parameters: { duration: '1h', messageTemplate: 'AutoMod [{actionType}|{checkType}]: {playerName} temporarily banned for {duration} for persistent Nether roof violations (Flags: {flagCount}/{flagThreshold}).' }, resetFlagsAfterAction: true },
             ]
         },
-        // ... other checkType rule sets would follow the same structure ...
-        // Example for a checkType that only logs and doesn't escalate through typical punishment tiers:
         {
-            checkType: 'worldAntiGriefPistonLag', // Assuming this is a checkType
+            checkType: 'worldAntiGriefPistonLag',
             enabled: false,
             description: 'Logs potential piston-based lag machines. No direct player punishment via AutoMod tiers.',
-            resetFlagsAfterSeconds: 600, // Reset flag after 10 mins if no further incidents
+            resetFlagsAfterSeconds: 600,
             tiers: [
                 {
-                    flagThreshold: 1, // Log on first detection
-                    actionType: 'flagOnly', // This actionType in automodManager means it logs via actionManager's profile if configured, but doesn't execute further AutoMod actions from this rule.
+                    flagThreshold: 1,
+                    actionType: 'flagOnly',
                     parameters: {
                         messageTemplate: 'AutoMod Log: Potential piston lag activity recorded for {playerName} at coordinates {x},{y},{z}. Flag count: {flagCount}. Threshold for logging: {flagThreshold}.',
                         adminMessageTemplate: 'AutoMod Log: Potential piston lag activity recorded for {playerName} at {x},{y},{z}. Rate: {rate}/sec over {duration}s. Check logs for details.'
                     },
-                    resetFlagsAfterAction: true // Reset this specific "logging" flag so it can log again if it reoccurs.
+                    resetFlagsAfterAction: true
                 }
             ]
         }
     ],
-    // Note: The `automodPerCheckTypeToggles` object previously here has been integrated into
-    // each `AutoModRuleDef` as the `enabled` property for better organization.
-    // The `automodManager` will now iterate `automodRuleSets` and check the `enabled`
-    // property of each rule set.
 };

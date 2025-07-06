@@ -3,7 +3,6 @@
  * Also aliased as !ui.
  */
 
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -11,10 +10,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'panel',
-    syntax: '', // No arguments, prefix handled by commandManager
+    syntax: '',
     description: 'Opens the main AntiCheat Admin UI panel (or user panel if not admin).',
-    permissionLevel: permissionLevels.member, // Accessible by members, UI manager will show appropriate panel
-    // aliases: ['ui'], // Defined in config.js commandAliases
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
@@ -36,30 +34,24 @@ export async function execute(player, _args, dependencies) {
     }
 
     try {
-        // uiManager.showAdminPanelMain will internally check permissions and show
-        // the appropriate panel (admin or normal user).
-        // It requires playerDataManager and config for this logic.
         await uiManager?.showAdminPanelMain(player, playerDataManager, config, dependencies);
 
-        // Log panel access. Could be more specific if uiManager returned which panel was shown.
         logManager?.addLog({
-            adminName: playerName, // Using adminName field for the user who opened it
-            actionType: 'uiPanelOpened', // Standardized camelCase
-            targetName: playerName, // Target is self in this context
+            adminName: playerName,
+            actionType: 'uiPanelOpened',
+            targetName: playerName,
             targetId: player.id,
             details: 'Player opened a UI panel via command.',
         }, dependencies);
-        // No specific success sound here, as the UI opening itself is the feedback.
-        // playerUtils?.playSoundForEvent(player, "uiFormOpen", dependencies); // This is handled by uiManager now
 
     } catch (error) {
         console.error(`[PanelCommand CRITICAL] Error executing panel command for ${playerName}: ${error.stack || error}`);
         player.sendMessage(getString('command.panel.error.generic'));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies); // Sound on error
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
-            actionType: 'errorUiPanelCommand', // Standardized error actionType
+            actionType: 'errorUiPanelCommand',
             context: 'PanelCommand.execute',
-            adminName: playerName, // User who experienced the error
+            adminName: playerName,
             targetId: player.id,
             details: `Error opening panel: ${error.message}`,
             errorStack: error.stack || error.toString(),

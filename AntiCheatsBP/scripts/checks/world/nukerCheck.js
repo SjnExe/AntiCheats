@@ -52,8 +52,7 @@ export async function checkNuker(player, pData, dependencies) {
     }
 
     const maxBreaks = config.nukerMaxBreaksShortInterval ?? 4;
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config.nukerActionProfileName ?? 'worldNuker'; // Default is already camelCase
+    const rawActionProfileKey = config.nukerActionProfileName ?? 'worldNuker';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());

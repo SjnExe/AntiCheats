@@ -1,7 +1,6 @@
 /**
  * @file Defines the !unmute command for administrators to allow a muted player to chat again.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,7 +8,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'unmute',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Unmutes a player, allowing them to send chat messages again.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -29,8 +28,7 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    // unmute <playername> - reason is not applicable here.
-    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 1, '', dependencies); // Reason part is not used by unmute
+    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 1, '', dependencies);
     const targetPlayerName = parsedArgs.targetPlayerName;
 
     if (!targetPlayerName) {
@@ -40,18 +38,17 @@ export async function execute(player, args, dependencies) {
 
     const targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unmute' });
     if (!targetPlayer) {
-        return; // Message already sent by validateCommandTarget
+        return;
     }
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);
     if (!pData) {
-        // This case means the player is online but has no AntiCheat data, which is unusual.
         player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }) + " (No data)");
         playerUtils?.debugLog(`[UnmuteCommand] No pData found for online player ${targetPlayer.nameTag}. Cannot verify mute status or unmute.`, adminName, dependencies);
         return;
     }
 
-    const muteInfo = pData.muteInfo; // Mute info is on pData
+    const muteInfo = pData.muteInfo;
 
     if (!muteInfo) {
         player.sendMessage(getString('command.unmute.notMuted', { playerName: targetPlayer.nameTag }));
@@ -59,7 +56,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const wasAutoModMute = muteInfo.isAutoMod;
-    const autoModCheckType = muteInfo.triggeringCheckType; // Already camelCase or null
+    const autoModCheckType = muteInfo.triggeringCheckType;
 
     const unmuted = playerDataManager?.removeMute(targetPlayer, dependencies);
 
@@ -70,18 +67,13 @@ export async function execute(player, args, dependencies) {
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'playerUnmuted', // Standardized camelCase
+            actionType: 'playerUnmuted',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `Unmuted by ${adminName}. Previous reason: ${muteInfo.reason}`,
         }, dependencies);
 
-        // Optional: Clear flags if unmuted from an AutoMod action, similar to unban
-        if (wasAutoModMute && autoModCheckType && config?.unmuteClearsAutomodFlags) { // Example new config
-            // await playerDataManager.clearFlagsForCheckType(targetPlayer, autoModCheckType, dependencies);
-            // player.sendMessage(getString('command.unmute.flagsCleared', { checkType: autoModCheckType, playerName: targetPlayer.nameTag }));
-            // playerUtils?.debugLog(`[UnmuteCommand] Cleared flags for ${autoModCheckType} for ${targetPlayer.nameTag} due to unmute from AutoMod action.`, adminName, dependencies);
-            // For now, this logic is commented out as it depends on a new config and potentially more complex interaction.
+        if (wasAutoModMute && autoModCheckType && config?.unmuteClearsAutomodFlags) {
         }
 
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
@@ -90,7 +82,6 @@ export async function execute(player, args, dependencies) {
         }
 
     } else {
-        // This path might be hit if removeMute itself had an issue not related to player not being muted.
         player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }));
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
     }

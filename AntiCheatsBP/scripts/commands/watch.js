@@ -1,7 +1,6 @@
 /**
  * @file Defines the !watch command for administrators to enable detailed logging for a specific player.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,7 +8,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'watch',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Enables detailed logging for a specific player. Use with caution, can generate many logs.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -34,17 +33,16 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetPlayerName = args[0]; // Watch command doesn't have a "reason" part.
+    const targetPlayerName = args[0];
 
     const targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'watch' });
     if (!targetPlayer) {
-        return; // Message already sent by validateCommandTarget
+        return;
     }
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);
     if (!pData) {
         player.sendMessage(getString('command.watch.noData', { playerName: targetPlayer.nameTag }));
-        // Log this, as it's unusual for an online player.
         logManager?.addLog({
             actionType: 'errorWatchCommandNoPData',
             context: 'WatchCommand.execute',
@@ -62,9 +60,8 @@ export async function execute(player, args, dependencies) {
     }
 
     pData.isWatched = true;
-    pData.isDirtyForSave = true; // Mark for saving
+    pData.isDirtyForSave = true;
 
-    // Explicitly save the data now.
     await playerDataManager?.saveDirtyPlayerData(targetPlayer, dependencies);
 
     player.sendMessage(getString('command.watch.success.admin', { playerName: targetPlayer.nameTag }));
@@ -73,7 +70,7 @@ export async function execute(player, args, dependencies) {
 
     logManager?.addLog({
         adminName: adminName,
-        actionType: 'playerWatched', // Standardized camelCase
+        actionType: 'playerWatched',
         targetName: targetPlayer.nameTag,
         targetId: targetPlayer.id,
         details: `Player ${targetPlayer.nameTag} is now being watched by ${adminName}.`,

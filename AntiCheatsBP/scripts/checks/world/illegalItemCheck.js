@@ -59,8 +59,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
 
     if (actionType === 'place' && bannedItemsForPlace.includes(itemId)) {
         isBanned = true;
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawProfileKey = config.illegalItemPlaceActionProfileName ?? 'worldIllegalItemPlace'; // Default is already camelCase
+        const rawProfileKey = config.illegalItemPlaceActionProfileName ?? 'worldIllegalItemPlace';
         checkProfileKey = rawProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -69,8 +68,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
         violationDetails.blockLocationZ = eventData.block?.location?.z?.toString() ?? 'N/A';
     } else if (actionType === 'use' && bannedItemsForUse.includes(itemId)) {
         isBanned = true;
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawProfileKey = config.illegalItemUseActionProfileName ?? 'worldIllegalItemUse'; // Default is already camelCase
+        const rawProfileKey = config.illegalItemUseActionProfileName ?? 'worldIllegalItemUse';
         checkProfileKey = rawProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());

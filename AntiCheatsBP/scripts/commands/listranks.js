@@ -1,19 +1,17 @@
 /**
  * @file Defines the !listranks command to display available ranks and their properties.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
-// rankDefinitions is imported from ranksConfig, not rankManager directly
-import { rankDefinitions as allRankDefinitions } from '../core/ranksConfig.js'; // Renamed to avoid conflict
+import { rankDefinitions as allRankDefinitions } from '../core/ranksConfig.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'listranks',
-    syntax: '', // Prefix handled by commandManager
+    syntax: '',
     description: 'Lists all defined ranks and their basic properties.',
-    permissionLevel: permissionLevels.member, // Accessible by members
+    permissionLevel: permissionLevels.member,
     enabled: true,
 };
 
@@ -28,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { logManager, playerUtils, getString, rankManager } = dependencies; // Added rankManager for getRankById potentially
+    const { logManager, playerUtils, getString, rankManager } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     if (!allRankDefinitions || allRankDefinitions.length === 0) {
@@ -37,7 +35,6 @@ export async function execute(player, _args, dependencies) {
     }
 
     let message = getString('command.listranks.header') + '\n';
-    // Sort by priority for consistent display, then by name
     const sortedRanks = [...allRankDefinitions].sort((a, b) => {
         const priorityA = a.priority ?? Infinity;
         const priorityB = b.priority ?? Infinity;
@@ -45,7 +42,6 @@ export async function execute(player, _args, dependencies) {
         if (priorityDiff !== 0) {
             return priorityDiff;
         }
-        // Fallback to sorting by name if priorities are equal
         return (a.name || getString('common.value.unknown')).localeCompare(b.name || getString('common.value.unknown'));
     });
 
@@ -73,11 +69,9 @@ export async function execute(player, _args, dependencies) {
         }
         message += getString('command.listranks.rank.conditions', { conditions: conditionStrings.join(', ') }) + '\n';
 
-        // Display chat prefix (text part only for brevity)
         const chatPrefixText = rankDef.chatFormatting?.prefixText?.replace(/§[0-9a-fk-or]/gi, '') || getString('command.listranks.formatting.default');
         message += getString('command.listranks.rank.chatPrefix', { prefix: chatPrefixText.trim() || getString('common.value.notAvailable') }) + '\n';
 
-        // Display nametag prefix (text part, removing color codes and newlines for brevity)
         const nametagText = rankDef.nametagPrefix?.replace(/§[0-9a-fk-or]/gi, '').replace(/\\n/g, ' ').trim() || getString('command.listranks.formatting.default');
         message += getString('command.listranks.rank.nametag', { nametag: nametagText || getString('common.value.notAvailable') }) + '\n\n';
     }
@@ -87,8 +81,8 @@ export async function execute(player, _args, dependencies) {
 
     try {
         logManager?.addLog({
-            adminName: adminName, // Or player.nameTag if it's a general user command
-            actionType: 'ranksListed', // Standardized camelCase
+            adminName: adminName,
+            actionType: 'ranksListed',
             details: `Listed all ${sortedRanks.length} ranks.`,
         }, dependencies);
     } catch (logError) {

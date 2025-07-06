@@ -1,7 +1,6 @@
 /**
  * @file Defines the !tpaccept command for players to accept incoming TPA requests.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,10 +8,10 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'tpaccept',
-    syntax: '[playerName]', // Prefix handled by commandManager
+    syntax: '[playerName]',
     description: 'Accepts an incoming TPA request. If multiple, specify which player\'s request to accept.',
-    permissionLevel: permissionLevels.member, // Accessible by members
-    enabled: true, // Master toggle for this command, TPA system itself has a global toggle in config.js
+    permissionLevel: permissionLevels.member,
+    enabled: true,
 };
 
 /**
@@ -33,7 +32,7 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-    if (!dependencies.commandSettings?.tpaccept?.enabled) { // Check specific command toggle
+    if (!dependencies.commandSettings?.tpaccept?.enabled) {
         player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
         return;
     }
@@ -41,7 +40,7 @@ export async function execute(player, args, dependencies) {
     const targetRequesterNameArg = args[0];
     let requestToAccept = null;
 
-    const incomingRequests = (tpaManager?.findRequestsForPlayer(player.name) ?? []) // Use system name
+    const incomingRequests = (tpaManager?.findRequestsForPlayer(player.name) ?? [])
         .filter(r => r.targetName === player.name && r.status === 'pendingAcceptance');
 
     if (incomingRequests.length === 0) {
@@ -51,7 +50,6 @@ export async function execute(player, args, dependencies) {
 
     if (targetRequesterNameArg) {
         const lowerTargetRequesterName = targetRequesterNameArg.toLowerCase();
-        // Find by comparing nameTag if player is online, or system name from request
         requestToAccept = incomingRequests.find(r => {
             const requesterOnline = playerUtils?.findPlayer(r.requesterName);
             return (requesterOnline?.nameTag?.toLowerCase() === lowerTargetRequesterName) || (r.requesterName.toLowerCase() === lowerTargetRequesterName);
@@ -62,17 +60,17 @@ export async function execute(player, args, dependencies) {
         }
     } else if (incomingRequests.length === 1) {
         requestToAccept = incomingRequests[0];
-    } else { // Multiple pending requests, no specific player named
+    } else {
         const requesterNames = incomingRequests.map(r => {
             const reqOnline = playerUtils?.findPlayer(r.requesterName);
-            return reqOnline?.nameTag ?? r.requesterName; // Display nameTag if online
+            return reqOnline?.nameTag ?? r.requesterName;
         }).join(', ');
         player.sendMessage(getString('command.tpaccept.pendingFrom', { playerNames: requesterNames }));
-        player.sendMessage(getString('command.tpaccept.usage', { prefix: prefix })); // Remind usage
+        player.sendMessage(getString('command.tpaccept.usage', { prefix: prefix }));
         return;
     }
 
-    if (!requestToAccept) { // Should be caught by earlier checks, but as a safeguard
+    if (!requestToAccept) {
         player.sendMessage(getString('command.tpaccept.couldNotFind'));
         return;
     }
@@ -80,22 +78,16 @@ export async function execute(player, args, dependencies) {
     const success = await tpaManager?.acceptRequest(requestToAccept.requestId, dependencies);
 
     if (success) {
-        // Messages to players are handled by tpaManager.acceptRequest
-        // player.sendMessage(getString('command.tpaccept.success', { playerName: requestToAccept.requesterName, warmupSeconds: (config?.tpaTeleportWarmupSeconds ?? 5).toString() }));
-        // No specific success message needed here as tpaManager handles it.
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies); // Sound for successful accept
+        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
-        // Log for the command execution itself
         logManager?.addLog({
-            adminName: acceptorName, // Player who typed !tpaccept
+            adminName: acceptorName,
             actionType: 'commandTpaAcceptExecuted',
-            targetName: requestToAccept.requesterName, // The player whose request was accepted
+            targetName: requestToAccept.requesterName,
             details: `User accepted TPA request (ID: ${requestToAccept.requestId}) from ${requestToAccept.requesterName}.`,
             context: 'TpaAcceptCommand.execute',
         }, dependencies);
     } else {
-        // tpaManager.acceptRequest might have already sent a message if target went offline.
-        // This is a fallback if it returns false for other reasons.
         player.sendMessage(getString('command.tpaccept.failure', { playerName: requestToAccept.requesterName }));
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
     }

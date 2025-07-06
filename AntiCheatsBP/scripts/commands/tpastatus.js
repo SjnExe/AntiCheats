@@ -1,7 +1,6 @@
 /**
  * @file Defines the !tpastatus command for players to manage their TPA request availability.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,10 +8,10 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'tpastatus',
-    syntax: '[on|off|status]', // Prefix handled by commandManager
+    syntax: '[on|off|status]',
     description: 'Manages your TPA (Teleport Ask) request availability or checks current status.',
-    permissionLevel: permissionLevels.member, // Accessible by members
-    enabled: true, // Master toggle for this command, TPA system itself has a global toggle in config.js
+    permissionLevel: permissionLevels.member,
+    enabled: true,
 };
 
 /**
@@ -26,20 +25,20 @@ export const definition = {
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;
-    const playerName = player?.nameTag ?? 'UnknownPlayer'; // For messages
-    const playerSystemName = player.name; // For tpaManager map keys
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const playerSystemName = player.name;
     const prefix = config?.prefix ?? '!';
 
     if (!config?.enableTpaSystem) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-    if (!dependencies.commandSettings?.tpastatus?.enabled) { // Check specific command toggle
+    if (!dependencies.commandSettings?.tpastatus?.enabled) {
         player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
         return;
     }
 
-    const subCommand = args[0]?.toLowerCase() || 'status'; // Default to 'status'
+    const subCommand = args[0]?.toLowerCase() || 'status';
 
     const currentStatus = tpaManager?.getPlayerTpaStatus(playerSystemName, dependencies);
     let newAcceptsTpa;
@@ -56,13 +55,12 @@ export async function execute(player, args, dependencies) {
         case 'status':
             const statusMsgKey = currentStatus?.acceptsTpaRequests ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
             player.sendMessage(getString(statusMsgKey));
-            return; // Status check done
+            return;
         default:
             player.sendMessage(getString('command.tpastatus.invalidOption', { prefix: prefix }));
             return;
     }
 
-    // If state is already what they want to set it to
     if (newAcceptsTpa === currentStatus?.acceptsTpaRequests) {
         const alreadyMsgKey = newAcceptsTpa ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
         player.sendMessage(getString(alreadyMsgKey) + " (No change made)");
@@ -76,7 +74,6 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString('command.tpastatus.on'));
     } else {
         player.sendMessage(getString('command.tpastatus.off'));
-        // If turning off, automatically decline any pending incoming requests for this player
         const incomingRequests = (tpaManager?.findRequestsForPlayer(playerSystemName) ?? [])
             .filter(r => r.targetName === playerSystemName && r.status === 'pendingAcceptance');
         if (incomingRequests.length > 0) {
@@ -86,8 +83,8 @@ export async function execute(player, args, dependencies) {
     }
 
     logManager?.addLog({
-        actionType: 'tpaStatusChanged', // Standardized camelCase
-        targetName: playerName, // Target is self
+        actionType: 'tpaStatusChanged',
+        targetName: playerName,
         targetId: player.id,
         details: `Player set TPA acceptance to: ${newAcceptsTpa}.`,
         context: 'TpaStatusCommand.execute',

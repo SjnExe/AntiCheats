@@ -26,7 +26,7 @@ import * as uiManager from './core/uiManager.js';
 import * as worldBorderManager from './utils/worldBorderManager.js';
 
 let currentTick = 0;
-const mainModuleName = 'Main'; // For consistent log prefixes
+const mainModuleName = 'Main';
 
 /**
  * Assembles and returns the standard dependencies object used throughout the system.
@@ -73,9 +73,7 @@ function getStandardDependencies() {
                 unregisterCommand: commandManager.unregisterCommandInternal,
                 reloadCommands: commandManager.initializeCommands,
             },
-            editableConfig: configModule, // Full config module for updateConfigValue
-            // Full modules are implicitly available via imports if needed by a function passed these dependencies,
-            // but direct properties here are for convenience and common usage.
+            editableConfig: configModule,
         };
     } catch (error) {
         console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error: ${error.stack || error}`);
@@ -94,7 +92,6 @@ const initialRetryDelayTicks = 20;
 function checkEventAPIsReady(dependencies) {
     let overallAllReady = true;
     const errorLogger = console.error;
-    // Ensure playerUtils and debugLog are available before using them
     const useDebugLog = dependencies?.config?.enableDebugLogging && dependencies?.playerUtils?.debugLog;
 
     const logger = (msg) => {
@@ -108,7 +105,7 @@ function checkEventAPIsReady(dependencies) {
     if (!mc.world) {
         errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world: UNDEFINED - CRITICAL`);
         overallAllReady = false;
-        return overallAllReady; // Early exit if mc.world is missing
+        return overallAllReady;
     }
     logger(`[${mainModuleName}.checkEventAPIsReady] mc.world: DEFINED`);
 
@@ -116,7 +113,6 @@ function checkEventAPIsReady(dependencies) {
     if (!mc.world.beforeEvents) {
         errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents: UNDEFINED - CRITICAL`);
         overallAllReady = false;
-        // Log each missing sub-event for clarity, even if parent is missing
         requiredBeforeEvents.forEach(eventName => errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents.${eventName}: UNDEFINED (parent 'beforeEvents' is undefined)`));
     } else {
         logger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents: DEFINED`);
@@ -160,19 +156,18 @@ function checkEventAPIsReady(dependencies) {
  * This function is called by attemptInitializeSystem once APIs are deemed ready.
  */
 function performInitializations() {
-    const startupDependencies = getStandardDependencies(); // Get a fresh set of dependencies for startup
+    const startupDependencies = getStandardDependencies();
     startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
     startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', startupDependencies);
 
-    // Event Subscriptions
     if (mc.world?.beforeEvents?.chatSend) {
         mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
-            const dependencies = getStandardDependencies(); // Fresh dependencies for each event
+            const dependencies = getStandardDependencies();
             if (eventData.message.startsWith(dependencies.config.prefix)) {
                 const commandHandlingDependencies = {
                     ...dependencies,
-                    commandDefinitionMap: commandManager.commandDefinitionMap, // Specific for command handling
-                    commandExecutionMap: commandManager.commandExecutionMap,   // Specific for command handling
+                    commandDefinitionMap: commandManager.commandDefinitionMap,
+                    commandExecutionMap: commandManager.commandExecutionMap,
                 };
                 await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
             } else {
@@ -207,9 +202,6 @@ function performInitializations() {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for afterEvents.entityHurt: object undefined.`);
     }
 
-    // Note: The following warning seems to be a leftover comment about API limitations, not an error in this code.
-    console.warn(`[${mainModuleName}.performInitializations] Informational: TPA warmup damage cancellation relies on world.beforeEvents.entityHurt, which may not always be available or behave as expected in all script environments.`);
-
     if (mc.world?.beforeEvents?.playerBreakBlock) {
         mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
@@ -233,9 +225,6 @@ function performInitializations() {
     } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for itemUse (before): object undefined.`);
     }
-
-    // Note: Similar informational comment.
-    console.warn(`[${mainModuleName}.performInitializations] Informational: world.beforeEvents.itemUseOn event handler is not currently implemented or its API might be unstable/unavailable.`);
 
     if (mc.world?.beforeEvents?.playerPlaceBlock) {
         mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
@@ -305,7 +294,6 @@ function performInitializations() {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for pistonActivate (after): object undefined.`);
     }
 
-    // Initialize other core modules
     startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules (commands, logs, ranks, etc.)...`, 'System', startupDependencies);
     commandManager.initializeCommands(startupDependencies);
     logManager.initializeLogCache(startupDependencies);
@@ -315,7 +303,7 @@ function performInitializations() {
     if (startupDependencies.config.enableWorldBorderSystem) {
         const knownDims = startupDependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
         knownDims.forEach(dimId => {
-            worldBorderManager.getBorderSettings(dimId, startupDependencies); // Initialize/load border settings
+            worldBorderManager.getBorderSettings(dimId, startupDependencies);
         });
         startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] World border settings loaded/initialized for known dimensions.`, 'System', startupDependencies);
     }
@@ -326,11 +314,10 @@ function performInitializations() {
     }
 
 
-    // --- Main Tick Loop ---
     startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Starting main tick loop...`, 'System', startupDependencies);
     mc.system.runInterval(async () => {
         currentTick++;
-        const tickDependencies = getStandardDependencies(); // Fresh dependencies for each tick
+        const tickDependencies = getStandardDependencies();
 
         if (tickDependencies.config.enableWorldBorderSystem) {
             try {
@@ -351,7 +338,7 @@ function performInitializations() {
             if (mc.world && typeof mc.world.getAllPlayers === 'function') {
                 allPlayers = mc.world.getAllPlayers();
             } else {
-                if (currentTick === 1 || currentTick % 600 === 0) { // Log periodically if API is missing
+                if (currentTick === 1 || currentTick % 600 === 0) {
                     console.error(`[${mainModuleName}.TickLoop CRITICAL] mc.world or mc.world.getAllPlayers is not available! Cannot process player checks.`);
                 }
             }
@@ -367,7 +354,7 @@ function performInitializations() {
                     let playerIdInfo = 'unknown or invalid player object';
                     try {
                         playerIdInfo = player?.id || player?.nameTag || JSON.stringify(player);
-                    } catch (stringifyError) { /* ignore errors stringifying potentially odd objects */ }
+                    } catch (stringifyError) { }
                     console.warn(`[${mainModuleName}.TickLoop] Skipping invalid player object in loop: ${playerIdInfo}`);
                 }
                 continue;
@@ -379,7 +366,7 @@ function performInitializations() {
             } catch (e) {
                 console.error(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.stack || e}`);
                 tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, tickDependencies);
-                continue; // Skip this player for this tick if pData initialization fails
+                continue;
             }
 
             if (!pData) {
@@ -390,7 +377,6 @@ function performInitializations() {
             playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
             playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
 
-            // Player-specific periodic checks
             try {
                 if (tickDependencies.config.enableFlyCheck && checks.checkFly) await checks.checkFly(player, pData, tickDependencies);
                 if (tickDependencies.config.enableSpeedCheck && checks.checkSpeed) await checks.checkSpeed(player, pData, tickDependencies);
@@ -415,7 +401,7 @@ function performInitializations() {
                 }
                 if (tickDependencies.config.enableAutoToolCheck && checks.checkAutoTool &&
                     (currentTick - (pData.lastCheckAutoToolTick || 0) >= tickDependencies.config.autoToolCheckIntervalTicks)) {
-                    await checks.checkAutoTool(player, pData, tickDependencies, null); // Assuming eventSpecificData is null for tick-based
+                    await checks.checkAutoTool(player, pData, tickDependencies, null);
                     pData.lastCheckAutoToolTick = currentTick;
                 }
                 if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance &&
@@ -434,20 +420,19 @@ function performInitializations() {
                 }, tickDependencies);
             }
 
-            // Update fall distance
             if (!player.isOnGround) {
-                if ((pData.velocity?.y ?? 0) < -0.0784 && pData.previousPosition && pData.lastPosition) { // Vanilla threshold approx -0.0784 (falling)
+                if ((pData.velocity?.y ?? 0) < -0.0784 && pData.previousPosition && pData.lastPosition) {
                     const deltaY = pData.previousPosition.y - pData.lastPosition.y;
-                    if (deltaY > 0 && deltaY < 100) { // Sanity check for deltaY
+                    if (deltaY > 0 && deltaY < 100) {
                         pData.fallDistance = (pData.fallDistance || 0) + deltaY;
                     }
                 }
                 pData.consecutiveOffGroundTicks = (pData.consecutiveOffGroundTicks || 0) + 1;
             } else {
-                if (!pData.isTakingFallDamage) { // Only reset if not actively taking damage (handled by entityHurt)
+                if (!pData.isTakingFallDamage) {
                     pData.fallDistance = 0;
                 }
-                pData.isTakingFallDamage = false; // Reset this flag after potential damage event
+                pData.isTakingFallDamage = false;
                 pData.consecutiveOffGroundTicks = 0;
             }
 
@@ -467,11 +452,10 @@ function performInitializations() {
             }
         }
 
-        // Periodic Data Persistence (less frequent)
-        if (currentTick % 600 === 0) { // Every 30 seconds (20 ticks/sec * 30 sec = 600 ticks)
+        if (currentTick % 600 === 0) {
             tickDependencies.playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
-            allPlayers.forEach(async player => { // Use forEach for clarity, async operations inside are awaited
-                if (!player.isValid()) return; // Check validity again just in case
+            allPlayers.forEach(async player => {
+                if (!player.isValid()) return;
                 const pData = playerDataManager.getPlayerData(player.id);
                 if (pData?.isDirtyForSave) {
                     try {
@@ -491,18 +475,16 @@ function performInitializations() {
             });
             logManager.persistLogCacheToDisk(tickDependencies);
             reportManager.persistReportsToDisk(tickDependencies);
-            // World border settings are typically saved on modification, not necessarily on a global periodic timer.
         }
-    }, 1); // Main tick loop runs every game tick
+    }, 1);
 
-    // --- TPA System Tick Loop ---
     startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Starting TPA system tick loop...`, 'System', startupDependencies);
     mc.system.runInterval(() => {
         const tpaIntervalDependencies = getStandardDependencies();
         if (tpaIntervalDependencies.config.enableTpaSystem) {
             tpaManager.clearExpiredRequests(tpaIntervalDependencies);
             const requestsInWarmup = tpaManager.getRequestsInWarmup();
-            requestsInWarmup.forEach(request => { // Use forEach for iterating
+            requestsInWarmup.forEach(request => {
                 if (tpaIntervalDependencies.config.tpaCancelOnMoveDuringWarmup) {
                     tpaManager.checkPlayerMovementDuringWarmup(request, tpaIntervalDependencies);
                 }
@@ -511,7 +493,7 @@ function performInitializations() {
                 }
             });
         }
-    }, 20); // TPA loop runs every second (20 game ticks)
+    }, 20);
 }
 
 /**
@@ -519,20 +501,18 @@ function performInitializations() {
  * @param {number} [retryCount=0] - Current number of retry attempts.
  */
 function attemptInitializeSystem(retryCount = 0) {
-    // Get dependencies here to ensure they are available for checkEventAPIsReady
     const tempStartupDepsForLog = getStandardDependencies();
 
     if (checkEventAPIsReady(tempStartupDepsForLog)) {
         performInitializations();
     } else {
-        const delay = initialRetryDelayTicks * Math.pow(2, retryCount); // Exponential backoff
+        const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
         console.warn(`[${mainModuleName}.attemptInitializeSystem] API not fully ready. Retrying initialization in ${delay / 20} seconds (${delay} ticks). Attempt ${retryCount + 1}/${maxInitRetries}`);
 
         if (retryCount < maxInitRetries) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            // Final check after all retries
-            if (checkEventAPIsReady(tempStartupDepsForLog)) { // Re-check with fresh dependencies
+            if (checkEventAPIsReady(tempStartupDepsForLog)) {
                 console.warn(`[${mainModuleName}.attemptInitializeSystem] MAX RETRIES REACHED, but APIs appear to be ready now. Proceeding with initialization.`);
                 performInitializations();
             } else {
@@ -543,7 +523,6 @@ function attemptInitializeSystem(retryCount = 0) {
     }
 }
 
-// Initial call to start the initialization process after a short delay to allow other scripts to load.
 mc.system.runTimeout(() => {
     attemptInitializeSystem();
 }, initialRetryDelayTicks);

@@ -28,7 +28,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         return;
     }
 
-    const watchedPlayerName = pData?.isWatched ? playerName : null; // Get watched status early
+    const watchedPlayerName = pData?.isWatched ? playerName : null;
     if (!pData && config?.enableDebugLogging) {
         playerUtils?.debugLog(`[ExcessiveMentionsCheck] pData is null for ${playerName}. Watched player status might be unavailable for logging.`, watchedPlayerName, dependencies);
     }
@@ -36,7 +36,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     const defaultMinMessageLength = 10;
     const defaultMaxUniquePerMessage = 4;
     const defaultMaxRepeatedPerMessage = 3;
-    const defaultActionProfileKey = 'chatExcessiveMentions'; // Already camelCase
+    const defaultActionProfileKey = 'chatExcessiveMentions';
 
     const minMessageLength = config?.mentionsMinMessageLength ?? defaultMinMessageLength;
     if (rawMessageContent.length < minMessageLength) {
@@ -46,27 +46,24 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     const maxUniquePerMessage = config?.mentionsMaxUniquePerMessage ?? defaultMaxUniquePerMessage;
     const maxRepeatedPerMessage = config?.mentionsMaxRepeatedPerMessage ?? defaultMaxRepeatedPerMessage;
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
     const rawActionProfileKey = config?.mentionsActionProfileName ?? defaultActionProfileKey;
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-    // Regex to find @mentions. This pattern assumes names are 3-16 alphanumeric_ characters.
-    // It might need adjustment based on actual server username rules.
-    const mentionRegex = /@([A-Za-z0-9_]{3,24})/g; // Increased max length to 24 for typical Xbox Live Gamertags
+    const mentionRegex = /@([A-Za-z0-9_]{3,24})/g;
     const allMentions = [];
     let match;
 
     while ((match = mentionRegex.exec(rawMessageContent)) !== null) {
-        allMentions.push(match[1]); // Push the captured group (username without @)
+        allMentions.push(match[1]);
     }
 
     if (allMentions.length === 0) {
-        return; // No mentions found
+        return;
     }
 
-    const distinctMentionedUsers = new Set(allMentions.map(u => u.toLowerCase())); // Store lowercase for unique count
+    const distinctMentionedUsers = new Set(allMentions.map(u => u.toLowerCase()));
     const distinctMentionCount = distinctMentionedUsers.size;
 
     const mentionFrequency = {};
@@ -78,7 +75,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         mentionFrequency[lowerUser] = (mentionFrequency[lowerUser] || 0) + 1;
         if (mentionFrequency[lowerUser] > maxRepeatCount) {
             maxRepeatCount = mentionFrequency[lowerUser];
-            mostRepeatedUser = user; // Keep original case for display if needed
+            mostRepeatedUser = user;
         }
     }
 
@@ -97,7 +94,7 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
             totalMentionsFound: allMentions.length.toString(),
             uniqueMentionsCount: distinctMentionCount.toString(),
             maxRepeatedMentionCount: maxRepeatCount.toString(),
-            mostRepeatedUser: mostRepeatedUser, // Add most repeated user for context
+            mostRepeatedUser: mostRepeatedUser,
             distinctUsersSample: Array.from(distinctMentionedUsers).slice(0, 5).join(', '),
             triggerReasons: flagReasonTexts.join('; '),
             originalMessage: rawMessageContent,

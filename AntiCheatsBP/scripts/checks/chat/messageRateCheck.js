@@ -1,7 +1,7 @@
 /**
  * @file Implements a check to detect players sending chat messages too frequently (spamming).
  */
-import * as mc from '@minecraft/server'; // Not strictly needed here but good practice if using mc types directly
+import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -34,9 +34,8 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
 
     const watchedPlayerName = pData.isWatched ? playerName : null;
     const currentTime = Date.now();
-    const threshold = config?.fastMessageSpamThresholdMs ?? 500; // Default 500ms
+    const threshold = config?.fastMessageSpamThresholdMs ?? 500;
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
     const rawActionProfileKey = config?.fastMessageSpamActionProfileName ?? 'chatSpamFastMessage';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -53,7 +52,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
                 messageContent: eventData.message.length > messageSnippetLimit ? eventData.message.substring(0, messageSnippetLimit - 3) + '...' : eventData.message,
-                originalMessage: eventData.message, // Include full original message
+                originalMessage: eventData.message,
             };
             await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
@@ -65,5 +64,5 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     }
 
     pData.lastChatMessageTimestamp = currentTime;
-    pData.isDirtyForSave = true; // Mark pData as dirty since lastChatMessageTimestamp is persisted (as per playerDataManager's persistedKeys)
+    pData.isDirtyForSave = true;
 }

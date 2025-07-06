@@ -1,7 +1,6 @@
 /**
  * @file Defines the !testnotify command for administrators to send a test notification.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -9,9 +8,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'testnotify',
-    syntax: '[message...]', // Prefix handled by commandManager
+    syntax: '[message...]',
     description: 'Sends a test notification to all online administrators/owners.',
-    permissionLevel: permissionLevels.admin, // Or owner, depending on desired restriction
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -31,9 +30,6 @@ export async function execute(player, args, dependencies) {
     const messageToSend = args.length > 0 ? args.join(' ') : getString('command.testnotify.message', { playerName: adminName });
 
     try {
-        // playerUtils.notifyAdmins should handle checking individual admin notification preferences.
-        // The third argument to notifyAdmins is the 'relatedPlayer' (can be null if system message).
-        // The fourth argument is 'relatedPlayerData' (can be null).
         const notifiedCount = playerUtils?.notifyAdmins(messageToSend, dependencies, player, null);
 
         player.sendMessage(getString('command.testnotify.success'));
@@ -41,7 +37,7 @@ export async function execute(player, args, dependencies) {
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'testNotificationSent', // Standardized camelCase
+            actionType: 'testNotificationSent',
             details: `Sent test notification: "${messageToSend}". Notified count (approx): ${notifiedCount ?? 'N/A'}`,
         }, dependencies);
 
@@ -51,7 +47,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorTestNotification', // Standardized camelCase
+            actionType: 'errorTestNotification',
             context: 'TestNotifyCommand.execute',
             details: `Failed to send test notification: ${error.message}`,
             errorStack: error.stack || error.toString(),

@@ -1,8 +1,8 @@
 /**
+/**
  * @file Defines the !worldborder command (aliased as !wb) for managing per-dimension world borders.
  */
 import * as mc from '@minecraft/server';
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,9 +10,9 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'worldborder',
-    syntax: '<subcommand> [args...]', // Prefix handled by commandManager
+    syntax: '<subcommand> [args...]',
     description: 'Manages per-dimension world borders. Use "!wb help" for subcommands.',
-    aliases: ['wb'], // Aliases are managed in config.js commandAliases
+    aliases: ['wb'],
     permissionLevel: permissionLevels.admin,
     enabled: true,
 };
@@ -26,7 +26,7 @@ export const definition = {
  */
 function parseDimensionArgument(dimensionArg, player, dependencies) {
     const { getString } = dependencies;
-    let dimensionId = player.dimension.id; // Default to player's current dimension
+    let dimensionId = player.dimension.id;
     let dimensionName = player.dimension.id.replace('minecraft:', '');
 
     if (dimensionArg) {
@@ -67,7 +67,7 @@ export async function execute(player, args, dependencies) {
     const mainCommand = definition.name;
 
     if (!config?.enableWorldBorderSystem) {
-        player.sendMessage(getString('command.worldborder.systemDisabled', { commandName: mainCommand })); // Assuming a key like this exists
+        player.sendMessage(getString('command.worldborder.systemDisabled', { commandName: mainCommand }));
         return;
     }
     if (!wbManager) {
@@ -111,7 +111,7 @@ export async function execute(player, args, dependencies) {
                 const shape = subArgs[0].toLowerCase();
                 const centerX = parseFloat(subArgs[1]);
                 const centerZ = parseFloat(subArgs[2]);
-                const size = parseFloat(subArgs[3]); // halfSize for square, radius for circle
+                const size = parseFloat(subArgs[3]);
                 dimParseResult = parseDimensionArgument(subArgs[4], player, dependencies);
 
                 if (dimParseResult.error) { player.sendMessage(dimParseResult.error); return; }
@@ -124,13 +124,12 @@ export async function execute(player, args, dependencies) {
 
                 const newSettings = {
                     dimensionId: dimensionId,
-                    enabled: true, // Enable by default when setting
+                    enabled: true,
                     shape: shape,
                     centerX: centerX,
                     centerZ: centerZ,
-                    // Retain existing damage/particle settings or use defaults if not present
-                    ...(wbManager.getBorderSettings(dimensionId, dependencies) || {}), // Spread existing or empty
-                    isResizing: false, // Cancel any ongoing resize
+                    ...(wbManager.getBorderSettings(dimensionId, dependencies) || {}),
+                    isResizing: false,
                 };
                 if (shape === 'square') newSettings.halfSize = size;
                 else newSettings.radius = size;
@@ -160,7 +159,7 @@ export async function execute(player, args, dependencies) {
                 dimensionName = dimParseResult.dimensionName;
 
                 borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
-                if (!borderSettings || !borderSettings.enabled) { // Check if enabled explicitly
+                if (!borderSettings || !borderSettings.enabled) {
                     player.sendMessage(getString('command.worldborder.get.noBorder', { dimensionName: dimensionName, prefix: prefix }));
                     return;
                 }
@@ -176,10 +175,9 @@ export async function execute(player, args, dependencies) {
                     const minZ = borderSettings.centerZ - (borderSettings.halfSize ?? 0);
                     const maxZ = borderSettings.centerZ + (borderSettings.halfSize ?? 0);
                     getMsg += getString('command.worldborder.get.square.bounds', {minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString()}) + '\n';
-                } else { // circle
+                } else {
                     getMsg += getString('command.worldborder.get.circle.radius', { radius: (borderSettings.radius ?? 0).toString() }) + '\n';
                 }
-                // ... (add damage, particle, resize info similar to above) ...
                 player.sendMessage(getMsg.trim());
                 break;
             }
@@ -204,7 +202,7 @@ export async function execute(player, args, dependencies) {
                 }
                 borderSettings.enabled = newState;
                 let resizeCancelledMessage = '';
-                if (!newState && borderSettings.isResizing) { // Turning off border also cancels resize
+                if (!newState && borderSettings.isResizing) {
                     borderSettings.isResizing = false;
                     resizeCancelledMessage = ' ' + getString('command.worldborder.set.resizeCancelled');
                 }
@@ -220,7 +218,7 @@ export async function execute(player, args, dependencies) {
             }
             case 'remove': {
                 const confirmArg = subArgs[subArgs.length -1]?.toLowerCase();
-                const dimArgIndex = subArgs.length > 1 ? 0 : -1; // Dimension is first arg if confirm is present
+                const dimArgIndex = subArgs.length > 1 ? 0 : -1;
                 dimParseResult = parseDimensionArgument(dimArgIndex !== -1 ? subArgs[dimArgIndex] : undefined, player, dependencies);
 
                 if (dimParseResult.error) { player.sendMessage(dimParseResult.error); return; }
@@ -232,7 +230,7 @@ export async function execute(player, args, dependencies) {
                     player.sendMessage(getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimDisplay, confirmCommand: `${prefix}wb remove ${dimensionId === player.dimension.id ? '' : dimensionName + ' '}confirm` }));
                     return;
                 }
-                const removed = await wbManager.clearBorderSettings(dimensionId, dependencies); // clearBorderSettings should also handle resize cancellation.
+                const removed = await wbManager.clearBorderSettings(dimensionId, dependencies);
                 if (removed) {
                     player.sendMessage(getString('command.worldborder.remove.success', { dimensionName: dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.'}));
                     logManager?.addLog({ adminName, actionType: 'worldBorderRemoved', targetName: dimensionName, details: 'Border removed' }, dependencies);
@@ -241,15 +239,13 @@ export async function execute(player, args, dependencies) {
                 }
                 break;
             }
-            // ... other subcommands (resize, pause, resume, setglobalparticle, setparticle) would follow a similar pattern ...
-            // For brevity, only implementing 'set', 'get', 'toggle', 'remove' fully here.
             default:
                 player.sendMessage(getString('command.worldborder.invalidSubcommand', { subCommand: subCommand, prefix: prefix }));
                 break;
         }
-        if (success || ['get', 'status', 'help'].includes(subCommand)) { // Status and help don't modify
+        if (success || ['get', 'status', 'help'].includes(subCommand)) {
              playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-        } else if (!['get', 'status', 'help'].includes(subCommand)) { // If it was a modifying command that failed
+        } else if (!['get', 'status', 'help'].includes(subCommand)) {
              playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         }
 
@@ -259,7 +255,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorWorldBorderCommand', // Standardized
+            actionType: 'errorWorldBorderCommand',
             context: `WorldBorderCommand.execute.${subCommand}`,
             details: `Execution error: ${error.message}`,
             errorStack: error.stack || error.toString(),

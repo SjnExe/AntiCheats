@@ -295,7 +295,6 @@ export const stringDB = {
     'tpa.notify.actionBar.requestYouToThem': '§e{requestingPlayerName} has requested you to teleport to them. Use {prefix}tpaccept {requestingPlayerName} or {prefix}tpacancel {requestingPlayerName}.',
     'tpa.notify.actionBar.autoDeclined': '§e{playerName} is no longer accepting TPA requests; your request was automatically declined.',
 
-
     // --- Command Descriptions (for help command) ---
     'command.tpa.description': 'Requests to teleport to another player.',
     'command.tpacancel.description': 'Cancels or declines a TPA request.',

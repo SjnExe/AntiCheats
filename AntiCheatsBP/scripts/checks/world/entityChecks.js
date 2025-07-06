@@ -73,8 +73,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     }
 
     const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5;
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam'; // Default is already camelCase
+    const rawActionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());

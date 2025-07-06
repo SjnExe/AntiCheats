@@ -3,14 +3,14 @@
  */
 import { ModalFormData } from '@minecraft/server-ui';
 import { permissionLevels } from '../core/rankManager.js';
-import * as mc from '@minecraft/server'; // For mc.EntityComponentTypes and mc.FormCancelationReason
+import * as mc from '@minecraft/server';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'copyinv',
-    syntax: '<playername>', // Prefix handled by commandManager
+    syntax: '<playername>',
     description: 'Copies another player\'s inventory to your own. This overwrites your current inventory.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -39,7 +39,7 @@ export async function execute(player, args, dependencies) {
     const targetPlayerName = args[0];
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid check
+    if (!targetPlayer || !targetPlayer.isValid()) {
         player?.sendMessage(getString('command.copyinv.playerNotFound', { playerName: targetPlayerName }));
         return;
     }
@@ -75,10 +75,8 @@ export async function execute(player, args, dependencies) {
     try {
         response = await form.show(player);
     } catch (formError) {
-        // Handle cases where the form might not show (e.g., player disconnected, UI engine issue)
         playerUtils?.debugLog(`[CopyInvCommand CRITICAL] Confirmation form error for ${adminName}: ${formError.message}`, adminName, dependencies);
         console.error(`[CopyInvCommand CRITICAL] Confirmation form error for ${adminName}: ${formError.stack || formError}`);
-        // Don't send message to player if they are busy or disconnected
         if (formError.cancelationReason !== mc.FormCancelationReason.UserBusy && formError.cancelationReason !== mc.FormCancelationReason.UserClosed) {
             player?.sendMessage(getString('command.copyinv.error.form'));
         }
@@ -95,16 +93,15 @@ export async function execute(player, args, dependencies) {
 
 
     try {
-        // Clear admin's inventory first
         for (let i = 0; i < adminInvComp.container.size; i++) {
             adminInvComp.container.setItem(i, undefined);
         }
 
         let itemsCopied = 0;
         for (let i = 0; i < targetInvComp.container.size; i++) {
-            const item = targetInvComp.container.getItem(i); // This returns a new ItemStack instance or undefined
-            adminInvComp.container.setItem(i, item); // SetItem also takes ItemStack or undefined
-            if (item) { // An item was present in the target slot
+            const item = targetInvComp.container.getItem(i);
+            adminInvComp.container.setItem(i, item);
+            if (item) {
                 itemsCopied++;
             }
         }
@@ -114,14 +111,13 @@ export async function execute(player, args, dependencies) {
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'inventoryCopied', // Standardized camelCase
+            actionType: 'inventoryCopied',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `Copied ${itemsCopied} items/stacks from ${targetPlayer.nameTag} to ${adminName}.`,
         }, dependencies);
 
-        // Notify other admins if configured
-        const targetPData = playerDataManager?.getPlayerData(targetPlayer.id); // For context if needed
+        const targetPData = playerDataManager?.getPlayerData(targetPlayer.id);
         if (config?.notifyOnCopyInventory !== false) {
             const baseNotifyMsg = getString('command.copyinv.notify.copiedSimple', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, targetPData);

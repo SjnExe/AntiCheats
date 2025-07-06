@@ -1,8 +1,7 @@
 /**
  * @file Command to list all currently online players being watched by the AntiCheat system.
  */
-import * as mc from '@minecraft/server'; // For mc.world
-// Assuming permissionLevels is a static export for now.
+import * as mc from '@minecraft/server';
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,7 +9,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'listwatched',
-    syntax: '', // Prefix handled by commandManager
+    syntax: '',
     description: 'Lists all online players currently being watched.',
     aliases: ['lw', 'watchedlist'],
     permissionLevel: permissionLevels.admin,
@@ -31,7 +30,7 @@ export async function execute(player, _args, dependencies) {
     const { playerDataManager, playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
-    if (!mc?.world?.getAllPlayers) { // Check if API is available
+    if (!mc?.world?.getAllPlayers) {
         console.error("[ListWatchedCommand CRITICAL] mc.world.getAllPlayers is not available.");
         player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: "System error"}));
         return;
@@ -41,7 +40,7 @@ export async function execute(player, _args, dependencies) {
     const watchedPlayersNames = [];
 
     for (const p of onlinePlayers) {
-        if (!p.isValid()) continue; // Skip invalid players
+        if (!p.isValid()) continue;
         const pData = playerDataManager?.getPlayerData(p.id);
         if (pData && pData.isWatched) {
             watchedPlayersNames.push(p.nameTag);
@@ -52,7 +51,6 @@ export async function execute(player, _args, dependencies) {
         player.sendMessage(getString('command.listwatched.noPlayers'));
     } else {
         const header = getString('command.listwatched.header');
-        // Join with a comma and space for readability.
         player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
     }
     playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
@@ -60,7 +58,7 @@ export async function execute(player, _args, dependencies) {
     try {
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'watchedPlayersListed', // Standardized camelCase
+            actionType: 'watchedPlayersListed',
             details: `Listed watched players. Count: ${watchedPlayersNames.length}. List: [${watchedPlayersNames.join(', ')}]`,
         }, dependencies);
     } catch (logError) {

@@ -13,7 +13,7 @@ export const definition = {
     syntax: '!resetflags <playerName>',
     description: "Clears a player's AntiCheat flags and violation data.",
     permissionLevel: permissionLevels.admin,
-    aliases: ['clearwarnings'], // Added alias
+    aliases: ['clearwarnings'],
     enabled: true,
 };
 
@@ -81,13 +81,12 @@ export async function execute(player, args, dependencies) {
         pData.consecutiveDownwardBlocks = 0;
         pData.lastDownwardScaffoldTick = 0;
         pData.lastDownwardScaffoldBlockLocation = null;
-        // Add any other specific playerData fields that track violations here
 
         pData.isDirtyForSave = true;
         await playerDataManager.prepareAndSavePlayerData(targetPlayer, dependencies);
 
         player.sendMessage(getString('command.resetflags.success', { playerName: targetPlayer.nameTag }));
-        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
             const baseNotifyMsg = getString('command.resetflags.notify.reset', { adminName: player.nameTag, targetPlayerName: targetPlayer.nameTag });
             playerUtils.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
         }
@@ -103,11 +102,10 @@ export async function execute(player, args, dependencies) {
 
     } else {
         player.sendMessage(getString('command.resetflags.noData', { playerName: targetPlayer.nameTag }));
-        // Log this scenario as it might indicate an issue
         logManager.addLog({
             timestamp: Date.now(),
-            actionType: 'errorResetFlagsNoPData', // More specific
-            context: 'ResetFlagsCommand.execute', // Consistent casing
+            actionType: 'errorResetFlagsNoPData',
+            context: 'ResetFlagsCommand.execute',
             details: `Attempted to reset flags for ${targetPlayer.nameTag}, but no player data was found. Issuer: ${player.nameTag}`,
         }, dependencies);
     }

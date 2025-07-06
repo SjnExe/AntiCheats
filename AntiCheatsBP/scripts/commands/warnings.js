@@ -2,17 +2,16 @@
  * @file Defines the !warnings command for administrators to view a summary of a player's AntiCheat flags.
  * This is similar to !inspect but may offer a more concise summary focused on flags.
  */
-// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'warnings', // Already camelCase
-    syntax: '<playername>', // Prefix handled by commandManager
+    name: 'warnings',
+    syntax: '<playername>',
     description: 'Displays a summary of a player\'s AntiCheat flags (warnings).',
-    aliases: ['warns', 'flags'], // Aliases are managed in config.js commandAliases
+    aliases: ['warns', 'flags'],
     permissionLevel: permissionLevels.admin,
     enabled: true,
 };
@@ -37,10 +36,9 @@ export async function execute(player, args, dependencies) {
     }
 
     const targetPlayerName = args[0];
-    // Find online player. Viewing warnings for offline players might require different data access.
     const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
+    if (!targetPlayer || !targetPlayer.isValid()) {
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
@@ -58,7 +56,6 @@ export async function execute(player, args, dependencies) {
 
         let specificFlagsOutput = '';
         let specificFlagsFound = false;
-        // Sort flag keys alphabetically for consistent display, excluding 'totalFlags'
         const flagKeys = Object.keys(pData.flags)
             .filter(key => key !== 'totalFlags' && typeof pData.flags[key] === 'object' && pData.flags[key] !== null && (pData.flags[key].count ?? 0) > 0)
             .sort();
@@ -73,12 +70,10 @@ export async function execute(player, args, dependencies) {
         if (specificFlagsFound) {
             messageLines.push(getString('command.warnings.individualFlagsHeader') + specificFlagsOutput);
         } else if (totalFlags > 0) {
-            // This case means totalFlags > 0 but no individual flags with count > 0 were found.
-            // This could indicate an inconsistency if totalFlags isn't just a sum.
             messageLines.push(getString('command.warnings.noSpecific'));
             playerUtils?.debugLog(`[WarningsCommand WARNING] Player ${targetPlayer.nameTag} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pData.flags)}`, adminName, dependencies);
-        } else { // totalFlags is 0
-            messageLines.push(getString('command.myflags.noFlags')); // Reuse 'myflags' key as it's suitable
+        } else {
+            messageLines.push(getString('command.myflags.noFlags'));
         }
     } else {
         messageLines.push(getString('command.warnings.noData', { playerName: targetPlayer.nameTag }));
@@ -90,7 +85,7 @@ export async function execute(player, args, dependencies) {
     try {
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'warningsViewed', // Standardized camelCase
+            actionType: 'warningsViewed',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: `Viewed warnings for ${targetPlayer.nameTag}. Total flags: ${pData?.flags?.totalFlags ?? 'N/A'}.`,
