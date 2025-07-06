@@ -3,7 +3,6 @@
  */
 
 import { MessageFormData } from '@minecraft/server-ui';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +11,8 @@ export const definition = {
     name: 'rules',
     description: 'Displays the server rules.',
     syntax: '!rules',
-    aliases: ['rule'],
-    permissionLevel: permissionLevels.member,
+    aliases: ['rule', 'r'],
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

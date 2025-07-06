@@ -3,8 +3,6 @@
  * Also aliased as !ui.
  */
 
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -12,7 +10,8 @@ export const definition = {
     name: 'panel',
     syntax: '',
     description: 'Opens the main AntiCheat Admin UI panel (or user panel if not admin).',
-    permissionLevel: permissionLevels.member,
+    aliases: ['ui'],
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

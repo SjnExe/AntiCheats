@@ -3,7 +3,6 @@
  * @file Defines the !worldborder command (aliased as !wb) for managing per-dimension world borders.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,8 +11,8 @@ export const definition = {
     name: 'worldborder',
     syntax: '<subcommand> [args...]',
     description: 'Manages per-dimension world borders. Use "!wb help" for subcommands.',
-    aliases: ['wb'],
-    permissionLevel: permissionLevels.admin,
+    aliases: ['wb', 'worldb'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

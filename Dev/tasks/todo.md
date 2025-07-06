@@ -8,7 +8,6 @@ This list contains planned features, improvements, and areas for future investig
 ## Code Refinement & Feature Enhancements
 - **(Low) Linter Integration**: Explore setting up ESLint with a shared configuration (e.g., based on `StandardizationGuidelines.md`) to automatically enforce code style and catch common errors. This would improve consistency, especially with multiple contributors.
 - **(Medium) `worldBorderManager.js` Robustness**: Consider if `worldBorderManager.getBorderSettings` should be more robust if a dimension from `config.worldBorderKnownDimensions` is invalid or if the dynamic property for a specific dimension is corrupted.
-- **(Low) `tpaManager.js` `generateRequestId()`**: The current UUID-like generator is simple. For higher collision resistance if many TPAs occur, evaluate if a more robust UUID method is needed (current is likely fine).
 - **(Medium) Offline Player Flag Purging (`purgeflags` command)**: Implement the functionality to purge flags for offline players, likely by directly modifying their persisted data in dynamic properties. (Context: `AntiCheatsBP/scripts/commands/purgeflags.js:31`).
 
 ## New Feature Ideas (Examples - to be expanded by project owner)
@@ -26,5 +25,4 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) Command and Configuration Schema Definition**: Define formal schemas (e.g., using JSON Schema or TypeScript interfaces if applicable) for command definitions, `config.js` structure, and other complex configuration objects. This can aid in validation, documentation, and potentially tooling.
 - **(Low) Build/Tooling for Repetitive Code Generation**: For files with highly repetitive boilerplate (like `commandRegistry.js` or barrel files), explore using simple build scripts to auto-generate them, reducing manual effort and potential for errors.
 - **(Medium) Performance Profiling**: Periodically profile performance-critical areas, such as frequently executed checks or operations within the main tick loop, to identify and address potential bottlenecks.
-- **(Medium) Granular Permission System Exploration**: Evaluate if the current numeric permission levels are sufficient for all commands and features, or if a more granular, capability-based permission system (e.g., per-command permissions) would offer better flexibility.
 - **(Low) Dynamic Language/Text Resource Loading**: Investigate options for loading text strings from `textDatabase.js` (or a similar structure) dynamically, potentially from external JSON files, to simplify community translations or text modifications without direct script editing.

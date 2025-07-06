@@ -2,7 +2,6 @@
  * @file Defines the !report command.
  * Allows players to report other players for rule violations.
  */
-import { permissionLevels } from '../core/rankManager.js';
 import * as reportManager from '../core/reportManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */
@@ -10,7 +9,8 @@ export const definition = {
     name: 'report',
     syntax: '!report <playername> <reason...>',
     description: 'Reports a player for rule violations. Provide a clear reason.',
-    permissionLevel: permissionLevels.member,
+    aliases: ['rep'],
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

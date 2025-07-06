@@ -1,8 +1,6 @@
 /**
  * @file Defines the !myflags command, allowing players to view their own AntiCheat flag status.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'myflags',
     syntax: '',
     description: 'Allows players to view their own AntiCheat flag status.',
-    permissionLevel: permissionLevels.member,
+    aliases: ['mf'],
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

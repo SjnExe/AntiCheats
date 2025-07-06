@@ -24,9 +24,13 @@ export const commandExecutionMap = new Map();
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies, used for logging.
  */
 export function initializeCommands(dependencies) {
-    const { playerUtils, config } = dependencies; // config is needed for commandAliases
+    const { playerUtils } = dependencies; // config is no longer needed here for commandAliases
     commandDefinitionMap.clear();
     commandExecutionMap.clear();
+    // This map will store alias -> mainCommandName for resolution during command handling.
+    // It will be populated here and then used by handleChatCommand.
+    // We'll attach it to dependencies so handleChatCommand can access it.
+    dependencies.aliasToCommandMap = new Map();
 
     if (!Array.isArray(commandModules)) {
         console.error('[CommandManager.initializeCommands CRITICAL] commandModules is not an array or is undefined. No commands loaded.');
@@ -36,35 +40,35 @@ export function initializeCommands(dependencies) {
     for (const cmdModule of commandModules) {
         if (cmdModule?.definition?.name && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
             const cmdNameLower = cmdModule.definition.name.toLowerCase();
+
+            // Register main command
             if (commandDefinitionMap.has(cmdNameLower)) {
-                playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Duplicate command name detected and overwritten: ${cmdNameLower}`, null, dependencies);
+                playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Duplicate main command name detected and overwritten: ${cmdNameLower}`, null, dependencies);
             }
             commandDefinitionMap.set(cmdNameLower, cmdModule.definition);
             commandExecutionMap.set(cmdNameLower, cmdModule.execute);
 
-            // Process aliases defined directly in command definition (less common, config.commandAliases is primary)
+            // Process aliases defined directly in command definition
             if (Array.isArray(cmdModule.definition.aliases)) {
                 cmdModule.definition.aliases.forEach(alias => {
                     const aliasLower = alias.toLowerCase();
-                    // Check if this alias is already defined as a main command or in config.commandAliases
-                    // to prevent direct definition from overriding a primary command or a configured alias.
-                    if (commandDefinitionMap.has(aliasLower) && commandDefinitionMap.get(aliasLower)?.name.toLowerCase() === aliasLower) {
-                        playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' conflicts with an existing main command. Skipping direct alias definition.`, null, dependencies);
-                    } else if (config?.commandAliases && Object.values(config.commandAliases).includes(aliasLower)) {
-                         playerUtils?.debugLog(`[CommandManager.initializeCommands INFO] Alias '${aliasLower}' for command '${cmdNameLower}' is already managed by config.commandAliases. Skipping direct definition.`, null, dependencies);
-                    } else if (commandExecutionMap.has(aliasLower) && !config?.commandAliases?.[aliasLower]) {
-                        // If it's in commandExecutionMap but not as a configured alias, it might be from another command's direct alias.
-                        playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' conflicts with another directly defined alias. Skipping.`, null, dependencies);
+                    if (commandDefinitionMap.has(aliasLower)) {
+                        // Conflict: Alias is the same as another main command name
+                        playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' conflicts with an existing main command name. Alias NOT registered.`, null, dependencies);
+                    } else if (dependencies.aliasToCommandMap.has(aliasLower)) {
+                        // Conflict: Alias is already registered for another command
+                        const existingCmd = dependencies.aliasToCommandMap.get(aliasLower);
+                        playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' is already an alias for command '${existingCmd}'. Alias NOT registered for '${cmdNameLower}'.`, null, dependencies);
+                    } else {
+                        dependencies.aliasToCommandMap.set(aliasLower, cmdNameLower);
                     }
-                    // Direct definition of aliases here is generally discouraged in favor of central config.commandAliases
-                    // If needed, one might add them, but with warnings or clear precedence rules.
                 });
             }
         } else {
             playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Invalid command module structure encountered. Module: ${JSON.stringify(cmdModule)}`, null, dependencies);
         }
     }
-    playerUtils?.debugLog(`[CommandManager.initializeCommands] Initialized/Reloaded ${commandDefinitionMap.size} command definitions.`, null, dependencies);
+    playerUtils?.debugLog(`[CommandManager.initializeCommands] Initialized/Reloaded ${commandDefinitionMap.size} command definitions and ${dependencies.aliasToCommandMap.size} aliases.`, null, dependencies);
 }
 
 /**
@@ -98,18 +102,15 @@ export function unregisterCommandInternal(commandName, dependencies) {
 }
 
 // IIFE for initial command loading on script start
+// This IIFE needs to be adjusted as `config.commandAliases` is no longer the source.
+// For initial load, aliasToCommandMap will be empty or populated based on command files.
 (() => {
     const initialLoadDeps = {
         playerUtils: { debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`) },
-        config: { commandAliases: globalThis.loadedConfig?.commandAliases || {} } // Attempt to use loaded config if available
+        // config: {} // config.commandAliases is no longer used for alias resolution
+        // aliasToCommandMap will be initialized within initializeCommands
     };
     try {
-        // Assuming config.js might have loaded its commandAliases into a global or accessible scope.
-        // This is a best-effort for initial load before full dependencies are wired.
-        // A more robust system might delay command init until config is fully ready.
-        if (typeof globalThis.loadedConfig === 'undefined' && initialLoadDeps.playerUtils && typeof initialLoadDeps.playerUtils.debugLog === 'function') {
-            initialLoadDeps.playerUtils.debugLog('WARNING: globalThis.loadedConfig not found. Command alias conflict checks might be incomplete during initial load.');
-        }
         initializeCommands(initialLoadDeps);
     } catch (e) {
         console.error(`[CommandManagerInitialLoad CRITICAL] Error during initial command loading: ${e.stack || e}`);
@@ -153,11 +154,12 @@ export async function handleChatCommand(eventData, dependencies) {
         return;
     }
 
-    const aliasTarget = config?.commandAliases?.[commandNameInput];
-    const finalCommandName = aliasTarget ? aliasTarget.toLowerCase() : commandNameInput;
+    // Resolve alias using the new aliasToCommandMap from dependencies
+    const aliasTargetCommand = dependencies.aliasToCommandMap?.get(commandNameInput);
+    const finalCommandName = aliasTargetCommand ? aliasTargetCommand : commandNameInput; // No .toLowerCase() needed as keys in map are already lowercase
 
-    if (aliasTarget) {
-        playerUtils?.debugLog(`[CommandManager.handleChatCommand] Alias '${commandNameInput}' for ${playerName} resolved to '${finalCommandName}'.`, playerName, dependencies);
+    if (aliasTargetCommand) {
+        playerUtils?.debugLog(`[CommandManager.handleChatCommand] Alias '${commandNameInput}' for ${playerName} resolved to main command '${finalCommandName}'.`, playerName, dependencies);
     }
 
     // commandDefinitionMap and commandExecutionMap are now part of dependencies directly.

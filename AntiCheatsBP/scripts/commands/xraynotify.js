@@ -1,8 +1,6 @@
 /**
  * @file Defines the !xraynotify command for administrators to manage their X-Ray ore mining notification preferences.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'xraynotify',
     syntax: '[on|off|toggle|status]',
     description: 'Toggles your personal X-Ray ore mining notifications if the feature is enabled server-wide.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['xn'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

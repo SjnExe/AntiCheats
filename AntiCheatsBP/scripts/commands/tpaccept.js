@@ -1,8 +1,6 @@
 /**
  * @file Defines the !tpaccept command for players to accept incoming TPA requests.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'tpaccept',
     syntax: '[playerName]',
     description: 'Accepts an incoming TPA request. If multiple, specify which player\'s request to accept.',
-    permissionLevel: permissionLevels.member,
+    aliases: ['tpaa', 'tpaaccept'],
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

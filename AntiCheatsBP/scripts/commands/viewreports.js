@@ -2,7 +2,6 @@
  * @file Defines the !viewreports command.
  * Allows administrators to view player-submitted reports.
  */
-import { permissionLevels } from '../core/rankManager.js';
 import * as reportManager from '../core/reportManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */
@@ -10,7 +9,8 @@ export const definition = {
     name: 'viewreports',
     syntax: '[player_name|report_id|page <number>]',
     description: 'Views player reports. Can filter by player/ID or view paginated list.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['vr'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

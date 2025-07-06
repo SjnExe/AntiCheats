@@ -1,8 +1,6 @@
 /**
  * @file Defines the !testnotify command for administrators to send a test notification.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'testnotify',
     syntax: '[message...]',
     description: 'Sends a test notification to all online administrators/owners.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['tn'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

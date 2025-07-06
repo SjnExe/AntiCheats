@@ -1,8 +1,6 @@
 /**
  * @file Defines the !addrank command for server administrators to assign a manual rank to a player.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'addrank',
     syntax: '<playername> <rankId>',
     description: 'Assigns a manual rank to a player by adding the associated tag.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['ar'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

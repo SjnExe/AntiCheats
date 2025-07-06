@@ -3,7 +3,6 @@
  * This command allows administrators to completely clear all flags,
  * violation history, and AutoMod state for a specified player.
  */
-import { permissionLevels } from '../core/rankManager.js';
 import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData } from '../core/playerDataManager.js';
 
 /**
@@ -13,7 +12,8 @@ export const definition = {
     name: 'purgeflags',
     syntax: '<playername>',
     description: 'Admin command to completely purge all flags, violation history, and AutoMod state for a player.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['pf'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

@@ -2,7 +2,6 @@
  * @file Defines the !copyinv command for administrators to copy another player's inventory.
  */
 import { ModalFormData } from '@minecraft/server-ui';
-import { permissionLevels } from '../core/rankManager.js';
 import * as mc from '@minecraft/server';
 
 /**
@@ -12,7 +11,8 @@ export const definition = {
     name: 'copyinv',
     syntax: '<playername>',
     description: 'Copies another player\'s inventory to your own. This overwrites your current inventory.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['ci'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

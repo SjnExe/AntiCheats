@@ -1,8 +1,6 @@
 /**
  * @file Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'notify',
     syntax: '[on|off|toggle|status]',
     description: 'Manages your AntiCheat system notification preferences.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['noti', 'notifications'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

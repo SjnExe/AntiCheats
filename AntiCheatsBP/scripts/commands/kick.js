@@ -1,8 +1,6 @@
 /**
  * @file Defines the !kick command for administrators to remove a player from the server.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'kick',
     syntax: '<playername> [reason]',
     description: 'Kicks a player from the server.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['k'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

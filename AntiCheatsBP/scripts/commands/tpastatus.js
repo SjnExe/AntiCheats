@@ -1,8 +1,6 @@
 /**
  * @file Defines the !tpastatus command for players to manage their TPA request availability.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'tpastatus',
     syntax: '[on|off|status]',
     description: 'Manages your TPA (Teleport Ask) request availability or checks current status.',
-    permissionLevel: permissionLevels.member,
+    aliases: ['tps'],
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

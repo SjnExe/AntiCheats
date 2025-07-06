@@ -4,7 +4,6 @@
  * True vanish requires more complex server-side packet manipulation not available in Bedrock Scripting API.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -13,7 +12,8 @@ export const definition = {
     name: 'vanish',
     syntax: '[on|off|toggle] [silent|notify]',
     description: 'Makes you invisible to other players. Optional mode: silent (no join/leave msgs) or notify.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['vsh'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

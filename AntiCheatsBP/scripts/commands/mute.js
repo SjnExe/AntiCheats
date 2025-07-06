@@ -1,8 +1,6 @@
 /**
  * @file Defines the !mute command for administrators to prevent a player from sending chat messages.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,8 @@ export const definition = {
     name: 'mute',
     syntax: '<playername> [duration] [reason]',
     description: 'Mutes a player, preventing them from sending chat messages.',
-    permissionLevel: permissionLevels.admin,
+    aliases: ['m'],
+    permissionLevel: 1, // admin
     enabled: true,
 };
 
