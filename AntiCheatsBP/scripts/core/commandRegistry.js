@@ -3,56 +3,56 @@
  * files and exports them as an array to be used by the commandManager.
  */
 
-import * as addrankCmd from './addrank.js';
-import * as banCmd from './ban.js';
-import * as clearchatCmd from './clearchat.js';
-import * as clearreportsCmd from './clearreports.js';
-import * as copyinvCmd from './copyinv.js';
-import * as endlockCmd from './endlock.js';
-import * as freezeCmd from './freeze.js';
-import * as gmaCmd from './gma.js';
-import * as gmcCmd from './gmc.js';
-import * as gmsCmd from './gms.js';
-import * as gmspCmd from './gmsp.js';
-import * as helpCmd from './help.js';
-import * as inspectCmd from './inspect.js';
-import * as invseeCmd from './invsee.js';
-import * as kickCmd from './kick.js';
-import * as listranksCmd from './listranks.js';
-import * as listwatchedCmd from './listwatched.js';
-import * as muteCmd from './mute.js';
-import * as myflagsCmd from './myflags.js';
-import * as netherlockCmd from './netherlock.js';
-import * as notifyCmd from './notify.js';
-import * as panelCmd from './panel.js';
-import * as purgeflagsCmd from './purgeflags.js';
-import * as removerankCmd from './removerank.js';
-import * as reportCmd from './report.js';
-import * as resetflagsCmd from './resetflags.js';
-import * as rulesCmd from './rules.js';
-import * as testnotifyCmd from './testnotify.js';
-import * as tpCmd from './tp.js';
-import * as tpaCmd from './tpa.js';
-import * as tpacancelCmd from './tpacancel.js';
-import * as tpacceptCmd from './tpaccept.js';
-import * as tpahereCmd from './tpahere.js';
-import * as tpastatusCmd from './tpastatus.js';
-import * as uinfoCmd from './uinfo.js';
-import * as unbanCmd from './unban.js';
-import * as unmuteCmd from './unmute.js';
-import * as unwatchCmd from './unwatch.js';
-import * as vanishCmd from './vanish.js';
-import * as versionCmd from './version.js';
-import * as viewreportsCmd from './viewreports.js';
-import * as warningsCmd from './warnings.js';
-import * as watchCmd from './watch.js';
-import * as worldborderCmd from './worldborder.js';
-import * as xraynotifyCmd from './xraynotify.js';
+import * as addrankCmd from '../commands/addrank.js';
+import * as banCmd from '../commands/ban.js';
+import * as clearchatCmd from '../commands/clearchat.js';
+import * as clearreportsCmd from '../commands/clearreports.js';
+import * as copyinvCmd from '../commands/copyinv.js';
+import * as endlockCmd from '../commands/endlock.js';
+import * as freezeCmd from '../commands/freeze.js';
+import * as gmaCmd from '../commands/gma.js';
+import * as gmcCmd from '../commands/gmc.js';
+import * as gmsCmd from '../commands/gms.js';
+import * as gmspCmd from '../commands/gmsp.js';
+import * as helpCmd from '../commands/help.js';
+import * as inspectCmd from '../commands/inspect.js';
+import * as invseeCmd from '../commands/invsee.js';
+import * as kickCmd from '../commands/kick.js';
+import * as listranksCmd from '../commands/listranks.js';
+import * as listwatchedCmd from '../commands/listwatched.js';
+import * as muteCmd from '../commands/mute.js';
+import * as myflagsCmd from '../commands/myflags.js';
+import * as netherlockCmd from '../commands/netherlock.js';
+import * as notifyCmd from '../commands/notify.js';
+import * as panelCmd from '../commands/panel.js';
+import * as purgeflagsCmd from '../commands/purgeflags.js';
+import * as removerankCmd from '../commands/removerank.js';
+import * as reportCmd from '../commands/report.js';
+import * as resetflagsCmd from '../commands/resetflags.js';
+import * as rulesCmd from '../commands/rules.js';
+import * as testnotifyCmd from '../commands/testnotify.js';
+import * as tpCmd from '../commands/tp.js';
+import * as tpaCmd from '../commands/tpa.js';
+import * as tpacancelCmd from '../commands/tpacancel.js';
+import * as tpacceptCmd from '../commands/tpaccept.js';
+import * as tpahereCmd from '../commands/tpahere.js';
+import * as tpastatusCmd from '../commands/tpastatus.js';
+import * as uinfoCmd from '../commands/uinfo.js';
+import * as unbanCmd from '../commands/unban.js';
+import * as unmuteCmd from '../commands/unmute.js';
+import * as unwatchCmd from '../commands/unwatch.js';
+import * as vanishCmd from '../commands/vanish.js';
+import * as versionCmd from '../commands/version.js';
+import * as viewreportsCmd from '../commands/viewreports.js';
+import * as warningsCmd from '../commands/warnings.js';
+import * as watchCmd from '../commands/watch.js';
+import * as worldborderCmd from '../commands/worldborder.js';
+import * as xraynotifyCmd from '../commands/xraynotify.js';
 /**
  * Array containing all registered command modules.
  * Each module is expected to export a `definition` object (conforming to `CommandDefinition` type)
  * and an `execute` function.
- * @type {Array<import('../types.js').CommandModule>}
+ * @type {Array<import('../../types.js').CommandModule>}
  */
 export const commandModules = [
     addrankCmd,
