@@ -68,7 +68,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
 
                     if (isWhitelisted) {
                         playerUtils?.debugLog(`[AntiAdvertisingCheck] Whitelisted link '${detectedLink}' for ${playerName}. Continuing scan with other regex patterns.`, watchedPlayerName, dependencies);
-                        continue; // This link was whitelisted, but other regex patterns might find other non-whitelisted links.
+                        continue;
                     }
 
                     playerUtils?.debugLog(`[AntiAdvertisingCheck] ${playerName} triggered ADVANCED regex '${regexString}' with link: '${detectedLink}'. Message: '${message}'`, watchedPlayerName, dependencies);
@@ -101,9 +101,9 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
             if (Array.isArray(config.advertisingWhitelistPatterns) && config.advertisingWhitelistPatterns.length > 0) {
                 for (const wlPattern of config.advertisingWhitelistPatterns) {
                      if (typeof wlPattern !== 'string' || wlPattern.trim() === '') continue;
-                     // For simple patterns, usually, the whitelist check would be if the *pattern itself* is whitelisted,
-                     // or if the message segment that *matches* the pattern is covered by a broader whitelist rule.
-                     // Here, we'll check if the simple pattern *is contained within* any whitelist string, which is a basic form.
+
+
+
                      if (wlPattern.toLowerCase().includes(pattern.toLowerCase())) {
                          isSimplePatternWhitelisted = true;
                          playerUtils?.debugLog(`[AntiAdvertisingCheck] Simple pattern '${pattern}' considered whitelisted due to presence in whitelist entry '${wlPattern}'.`, watchedPlayerName, dependencies);
