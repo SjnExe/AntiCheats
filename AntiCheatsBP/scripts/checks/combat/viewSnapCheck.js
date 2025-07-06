@@ -5,37 +5,44 @@
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
  * Checks for invalid pitch (looking too far up or down) and for excessively rapid
  * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
- * Player's last pitch and yaw are updated in `updateTransientPlayerData` in `playerDataManager.js`.
- * Player's last attack tick is updated in `handleEntityHurt` in `eventHandlers.js`.
+ * Player's last pitch and yaw are updated by the game or via `playerDataManager.updateTransientPlayerData`.
+ * Player's last attack tick is updated in `eventHandlers.handleEntityHurt`.
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastAttackTick`, `lastPitch`, `lastYaw`.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, currentTick, etc.
+ * @param {Dependencies} dependencies - Object containing necessary dependencies like config, playerUtils, actionManager, currentTick, etc.
  * @returns {Promise<void>}
  */
 export async function checkViewSnap(player, pData, dependencies) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableViewSnapCheck || !pData) {
+    if (!config?.enableViewSnapCheck) {
+        return;
+    }
+    if (!pData) {
+        playerUtils?.debugLog(`[ViewSnapCheck] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
         return;
     }
 
     const currentRotation = player.getRotation();
-    const currentPitch = currentRotation.x;
-    const currentYaw = currentRotation.y;
-    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    const currentPitch = currentRotation.x; // Pitch
+    const currentYaw = currentRotation.y;   // Yaw
+    const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    const invalidPitchMin = config.invalidPitchThresholdMin ?? -90.5;
-    const invalidPitchMax = config.invalidPitchThresholdMax ?? 90.5;
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawInvalidPitchActionProfileKey = config.invalidPitchActionProfileName ?? 'combatInvalidPitch'; // Default is already camelCase
+    // Invalid Pitch Check (independent of attack)
+    const invalidPitchMin = config?.invalidPitchThresholdMin ?? -90.5;
+    const invalidPitchMax = config?.invalidPitchThresholdMax ?? 90.5;
+
+    // Ensure actionProfileKey is camelCase
+    const rawInvalidPitchActionProfileKey = config?.invalidPitchActionProfileName ?? 'combatInvalidPitch';
     const invalidPitchActionProfileKey = rawInvalidPitchActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -46,30 +53,33 @@ export async function checkViewSnap(player, pData, dependencies) {
             minLimit: invalidPitchMin.toFixed(2),
             maxLimit: invalidPitchMax.toFixed(2),
         };
-        await actionManager.executeCheckAction(player, invalidPitchActionProfileKey, violationDetails, dependencies);
-        playerUtils.debugLog(`[ViewSnapCheck] Flagged ${player.nameTag} for Invalid Pitch: ${currentPitch.toFixed(2)}°. Limits: ${invalidPitchMin}/${invalidPitchMax}`, watchedPrefix, dependencies);
+        await actionManager?.executeCheckAction(player, invalidPitchActionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[ViewSnapCheck] Flagged ${playerName} for Invalid Pitch: ${currentPitch.toFixed(2)}°. Limits: ${invalidPitchMin}/${invalidPitchMax}`, watchedPlayerName, dependencies);
     }
 
-    const viewSnapWindowTicks = config.viewSnapWindowTicks ?? 10;
+    // View Snap Check (related to recent attack)
+    const viewSnapWindowTicks = config?.viewSnapWindowTicks ?? 10; // How many ticks after an attack to monitor for snaps
     if (pData.lastAttackTick && (currentTick - pData.lastAttackTick < viewSnapWindowTicks)) {
-        const deltaPitch = Math.abs(currentPitch - pData.lastPitch);
-        let deltaYaw = Math.abs(currentYaw - pData.lastYaw);
+        const deltaPitch = Math.abs(currentPitch - (pData.lastPitch ?? currentPitch)); // Use current if lastPitch is undefined
+        let deltaYaw = Math.abs(currentYaw - (pData.lastYaw ?? currentYaw)); // Use current if lastYaw is undefined
 
+        // Normalize yaw difference (e.g., -170 to 170 is 20 deg change, not 340)
         if (deltaYaw > 180) {
             deltaYaw = 360 - deltaYaw;
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
+        // Minecraft ticks are 20 per second, so 1 tick = 50ms.
         const postAttackTimeMs = ticksSinceLastAttack * 50;
 
-        const maxPitchSnap = config.maxPitchSnapPerTick ?? 75;
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawPitchSnapActionProfileKey = config.pitchSnapActionProfileName ?? 'combatViewSnapPitch'; // Corrected default casing
+        // Pitch Snap Check
+        const maxPitchSnap = config?.maxPitchSnapPerTick ?? 75; // Degrees per tick
+        const rawPitchSnapActionProfileKey = config?.pitchSnapActionProfileName ?? 'combatViewSnapPitch';
         const pitchSnapActionProfileKey = rawPitchSnapActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-        if (deltaPitch > maxPitchSnap) {
+        if (deltaPitch > maxPitchSnap) { // If change in one tick is too large
             const violationDetails = {
                 type: 'pitch',
                 change: deltaPitch.toFixed(2),
@@ -77,18 +87,18 @@ export async function checkViewSnap(player, pData, dependencies) {
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString(),
             };
-            await actionManager.executeCheckAction(player, pitchSnapActionProfileKey, violationDetails, dependencies);
-            playerUtils.debugLog(`[ViewSnapCheck] (Pitch) for ${player.nameTag}: dP=${deltaPitch.toFixed(1)}° within ${ticksSinceLastAttack} ticks.`, watchedPrefix, dependencies);
+            await actionManager?.executeCheckAction(player, pitchSnapActionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[ViewSnapCheck] (Pitch Snap) for ${playerName}: dP=${deltaPitch.toFixed(1)}° within ${ticksSinceLastAttack} ticks of attack. Limit: ${maxPitchSnap}°/tick.`, watchedPlayerName, dependencies);
         }
 
-        const maxYawSnap = config.maxYawSnapPerTick ?? 100;
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawYawSnapActionProfileKey = config.yawSnapActionProfileName ?? 'combatViewSnapYaw'; // Corrected default casing
+        // Yaw Snap Check
+        const maxYawSnap = config?.maxYawSnapPerTick ?? 100; // Degrees per tick
+        const rawYawSnapActionProfileKey = config?.yawSnapActionProfileName ?? 'combatViewSnapYaw';
         const yawSnapActionProfileKey = rawYawSnapActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-        if (deltaYaw > maxYawSnap) {
+        if (deltaYaw > maxYawSnap) { // If change in one tick is too large
             const violationDetails = {
                 type: 'yaw',
                 change: deltaYaw.toFixed(2),
@@ -96,8 +106,14 @@ export async function checkViewSnap(player, pData, dependencies) {
                 ticksSinceAttack: ticksSinceLastAttack.toString(),
                 postAttackTimeMs: postAttackTimeMs.toString(),
             };
-            await actionManager.executeCheckAction(player, yawSnapActionProfileKey, violationDetails, dependencies);
-            playerUtils.debugLog(`[ViewSnapCheck] (Yaw) for ${player.nameTag}: dY=${deltaYaw.toFixed(1)}° within ${ticksSinceLastAttack} ticks.`, watchedPrefix, dependencies);
+            await actionManager?.executeCheckAction(player, yawSnapActionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[ViewSnapCheck] (Yaw Snap) for ${playerName}: dY=${deltaYaw.toFixed(1)}° within ${ticksSinceLastAttack} ticks of attack. Limit: ${maxYawSnap}°/tick.`, watchedPlayerName, dependencies);
         }
     }
+
+    // Update last known pitch/yaw for the next tick's comparison, if this check runs every tick for a player.
+    // However, pData.lastPitch and pData.lastYaw are primarily set by the entityHurt event handler
+    // to capture the rotation *at the moment of attack* for post-attack snap analysis.
+    // If this check itself needs to track rotation changes *between its own executions*,
+    // then it should update pData fields here. For now, assuming external update is sufficient.
 }

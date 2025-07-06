@@ -3,54 +3,64 @@
  * 1. Using an item in the same game tick as a hotbar slot change (Switch-Use).
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating, charging bow) (Move-Locked).
  */
+import * as mc from '@minecraft/server'; // For mc.ItemStack
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
- * @typedef {import('../../types.js').EventSpecificData} EventSpecificData containing `itemStack` or `inventoryChangeData`.
- * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').Dependencies} Dependencies
+ * @typedef {import('../../types.js').EventSpecificData} EventSpecificData containing `itemStack` (for switch-use) or `inventoryChangeDetails` (for move-locked).
  */
 
 /**
  * Checks for item usage occurring in the exact same game tick as a hotbar slot change.
  * This behavior can indicate client modification allowing faster-than-normal actions.
- * Relies on `pData.lastSelectedSlotChangeTick` being accurately updated by other systems (e.g., main tick loop).
+ * Relies on `pData.lastSelectedSlotChangeTick` being accurately updated by other systems
+ * (e.g., main tick loop processing `player.selectedSlotChanged` or similar event if available,
+ * or `playerDataManager.updateTransientPlayerData` which updates it if slot index changes).
+ * This check is typically called from an `ItemUseBeforeEvent` handler.
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `itemStack` (from ItemUse event).
+ * @param {Dependencies} dependencies - Object containing necessary dependencies.
+ * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `itemStack` (the item being used).
  * @returns {Promise<void>}
  */
 export async function checkSwitchAndUseInSameTick(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager, currentTick } = dependencies;
-    const itemStack = eventSpecificData?.itemStack;
+    const itemStack = eventSpecificData?.itemStack; // Item being used
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableInventoryModCheck || !pData || !itemStack) {
+    if (!config?.enableInventoryModCheck) { // General toggle for all inventory mod checks
+        return;
+    }
+    if (!pData || !(itemStack instanceof mc.ItemStack)) { // Ensure itemStack is valid
+        playerUtils?.debugLog(`[InventoryModCheck.SwitchUse] Skipping for ${playerName}: pData or itemStack invalid.`, playerName, dependencies);
         return;
     }
 
-    // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse'; // Default is already camelCase
+    // Ensure actionProfileKey is camelCase
+    const rawActionProfileKey = config?.inventoryModSwitchUseActionProfileName ?? 'playerInventoryModSwitchUse';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
+    // pData.lastSelectedSlotChangeTick is updated in playerDataManager.updateTransientPlayerData
     if (pData.lastSelectedSlotChangeTick === currentTick) {
         const violationDetails = {
             reasonDetail: 'Used item in the same tick as a hotbar slot change.',
             itemType: itemStack.typeId,
-            slot: player.selectedSlotIndex.toString(),
-            lastSlotChangeTick: pData.lastSelectedSlotChangeTick.toString(),
+            itemName: itemStack.nameTag ?? itemStack.typeId.replace('minecraft:', ''),
+            slot: player.selectedSlotIndex.toString(), // Current selected slot where item is being used
+            lastSlotChangeTick: (pData.lastSelectedSlotChangeTick ?? 'N/A').toString(),
             currentTick: currentTick.toString(),
         };
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const watchedPrefix = pData.isWatched ? player.nameTag : null;
-        playerUtils.debugLog(
-            `[InventoryModCheck](SwitchUse): Flagged ${player.nameTag} for using ${itemStack.typeId} in same tick as slot change (Tick: ${currentTick}).`,
-            watchedPrefix, dependencies
+        const watchedPlayerName = pData.isWatched ? playerName : null;
+        playerUtils?.debugLog(
+            `[InventoryModCheck.SwitchUse] Flagged ${playerName} for using ${itemStack.typeId} in same tick as slot change (Tick: ${currentTick}).`,
+            watchedPlayerName, dependencies
         );
     }
 }
@@ -60,20 +70,28 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
  * the inventory are in progress (e.g., eating, drawing a bow).
  * Relies on `pData` state flags like `isUsingConsumable` or `isChargingBow`,
  * which are expected to be managed by other parts of the system (e.g., eventHandlers.js).
+ * This check is typically called from an `PlayerInventoryItemChangeAfterEvent` handler.
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `inventoryChangeData`
- *                                                (which should mirror structure of `PlayerInventoryItemChangeAfterEvent`'s eventData like `newItemStack`, `oldItemStack`, `inventorySlot`).
+ * @param {Dependencies} dependencies - Object containing necessary dependencies.
+ * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `inventoryChangeDetails`
+ *                                                (which should mirror structure of `PlayerInventoryItemChangeAfterEvent`'s eventData
+ *                                                like `newItemStack`, `oldItemStack`, `inventorySlot`).
  * @returns {Promise<void>}
  */
 export async function checkInventoryMoveWhileActionLocked(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
-    const inventoryChangeDetails = eventSpecificData?.inventoryChangeDetails || eventSpecificData;
+    // Ensure eventSpecificData and its nested inventoryChangeDetails are correctly accessed
+    const inventoryChangeDetails = eventSpecificData?.inventoryChangeDetails ?? eventSpecificData;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableInventoryModCheck || !pData || !inventoryChangeDetails) {
+    if (!config?.enableInventoryModCheck) { // General toggle
+        return;
+    }
+    if (!pData || !inventoryChangeDetails) {
+        playerUtils?.debugLog(`[InventoryModCheck.MoveLocked] Skipping for ${playerName}: pData or inventoryChangeDetails invalid.`, playerName, dependencies);
         return;
     }
 
@@ -83,11 +101,13 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     } else if (pData.isChargingBow) {
         lockingActionKey = 'chargingBow';
     }
+    // Could add pData.isUsingShield here if shield use is meant to lock inventory actions.
 
     if (lockingActionKey) {
-        const newItem = inventoryChangeDetails.newItemStack || inventoryChangeDetails.newItem;
-        const oldItem = inventoryChangeDetails.oldItemStack || inventoryChangeDetails.oldItem;
-        const changedItemType = newItem?.typeId ?? oldItem?.typeId ?? 'unknown';
+        // Extract item details carefully, as newItemStack or oldItemStack can be undefined
+        const newItem = inventoryChangeDetails.newItemStack ?? inventoryChangeDetails.newItem;
+        const oldItem = inventoryChangeDetails.oldItemStack ?? inventoryChangeDetails.oldItem;
+        const changedItemType = newItem?.typeId ?? oldItem?.typeId ?? 'unknown_item';
         const slotIdentifier = inventoryChangeDetails.slotName ?? inventoryChangeDetails.inventorySlot?.toString() ?? inventoryChangeDetails.slot?.toString() ?? 'unknown_slot';
 
         const violationDetails = {
@@ -95,18 +115,21 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
             itemTypeInvolved: changedItemType,
             slotChanged: slotIdentifier,
             actionInProgress: lockingActionKey,
+            newItemAmount: newItem?.amount?.toString() ?? 'N/A',
+            oldItemAmount: oldItem?.amount?.toString() ?? 'N/A',
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked'; // Default is already camelCase
+        // Ensure actionProfileKey is camelCase
+        const rawActionProfileKey = config?.inventoryModMoveLockedActionProfileName ?? 'playerInventoryModMoveLocked';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const watchedPrefix = pData.isWatched ? player.nameTag : null;
-        playerUtils.debugLog(
-            `[InventoryModCheck](MoveLocked): Flagged ${player.nameTag} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${lockingActionKey}.`,
-            watchedPrefix, dependencies
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+
+        const watchedPlayerName = pData.isWatched ? playerName : null;
+        playerUtils?.debugLog(
+            `[InventoryModCheck.MoveLocked] Flagged ${playerName} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${lockingActionKey}.`,
+            watchedPlayerName, dependencies
         );
     }
 }

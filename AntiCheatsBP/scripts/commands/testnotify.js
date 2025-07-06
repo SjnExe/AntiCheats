@@ -1,8 +1,7 @@
 /**
- * @file Defines the !testnotify command for owners to send a test admin notification.
- * Useful for verifying that the admin notification system is working correctly.
+ * @file Defines the !testnotify command for administrators to send a test notification.
  */
-
+// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -10,43 +9,52 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'testnotify',
-    syntax: '!testnotify',
-    description: 'Sends a test admin notification to verify system functionality.',
-    permissionLevel: permissionLevels.owner,
+    syntax: '[message...]', // Prefix handled by commandManager
+    description: 'Sends a test notification to all online administrators/owners.',
+    permissionLevel: permissionLevels.admin, // Or owner, depending on desired restriction
     enabled: true,
 };
 
 /**
- * Executes the testnotify command.
- * @param {import('@minecraft/server').Player} player The player executing the command.
- * @param {string[]} _args Command arguments (not used).
- * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
+ * Executes the !testnotify command.
+ * Sends a test notification message to all online admins/owners.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} args - Command arguments (the message to send).
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
  */
-export async function execute(player, _args, dependencies) {
+export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
 
-    const notificationMessage = getString('command.testnotify.message', { playerName: player.nameTag });
+    const messageToSend = args.length > 0 ? args.join(' ') : getString('command.testnotify.message', { playerName: adminName });
 
     try {
-        playerUtils.notifyAdmins(notificationMessage, dependencies, player, null);
-        player.sendMessage(getString('command.testnotify.success'));
+        // playerUtils.notifyAdmins should handle checking individual admin notification preferences.
+        // The third argument to notifyAdmins is the 'relatedPlayer' (can be null if system message).
+        // The fourth argument is 'relatedPlayerData' (can be null).
+        const notifiedCount = playerUtils?.notifyAdmins(messageToSend, dependencies, player, null);
 
-        logManager.addLog({
-            timestamp: Date.now(),
-            adminName: player.nameTag,
-            actionType: 'commandTestNotify',
-            details: 'Successfully sent a test notification.',
+        player.sendMessage(getString('command.testnotify.success'));
+        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: 'testNotificationSent', // Standardized camelCase
+            details: `Sent test notification: "${messageToSend}". Notified count (approx): ${notifiedCount ?? 'N/A'}`,
         }, dependencies);
 
     } catch (error) {
-        console.error(`[TestNotifyCommand] Error sending test notification for ${player.nameTag}: ${error.stack || error}`);
         player.sendMessage(getString('command.testnotify.error'));
-        logManager.addLog({
-            timestamp: Date.now(),
-            adminName: player.nameTag,
-            actionType: 'errorTestNotifyCommand', // More specific
-            context: 'TestNotifyCommand.execute', // Consistent casing
-            details: `Failed to send test notification: ${error.stack || error}`,
+        console.error(`[TestNotifyCommand CRITICAL] Error sending test notification from ${adminName}: ${error.stack || error}`);
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: 'errorTestNotification', // Standardized camelCase
+            context: 'TestNotifyCommand.execute',
+            details: `Failed to send test notification: ${error.message}`,
+            errorStack: error.stack || error.toString(),
         }, dependencies);
     }
 }

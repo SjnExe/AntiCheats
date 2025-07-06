@@ -1,16 +1,17 @@
 /**
  * @file Defines the !kick command for administrators to remove a player from the server.
  */
-import { permissionLevels } from '../core/rankManager.js'; // Assuming permissionLevels is correctly populated
+// Assuming permissionLevels is a static export for now.
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'kick', // Already camelCase
-    syntax: '!kick <playername> [reason]',
+    name: 'kick',
+    syntax: '<playername> [reason]', // Prefix handled by commandManager
     description: 'Kicks a player from the server.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Default admin, can be adjusted
     enabled: true,
 };
 
@@ -20,24 +21,26 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [reason].
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, playerDataManager, permissionLevels: depPermLevels, rankManager, getString } = dependencies;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.kick.usage', { prefix: config.prefix }));
+        player.sendMessage(getString('command.kick.usage', { prefix: prefix }));
         return;
     }
 
     const targetPlayerName = args[0];
-    const reason = args.slice(1).join(' ') || getString('common.value.noReasonProvided'); // Default reason
+    const reason = args.slice(1).join(' ').trim() || getString('common.value.noReasonProvided');
 
-    const foundPlayer = playerUtils.findPlayer(targetPlayerName);
+    const foundPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!foundPlayer) {
-        player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
+    if (!foundPlayer || !foundPlayer.isValid()) { // Added isValid
+        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
@@ -46,54 +49,65 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetPermissionLevel = rankManager.getPlayerPermissionLevel(foundPlayer, dependencies);
-    const issuerPermissionLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
+    // Permission checks
+    const targetPermissionLevel = rankManager?.getPlayerPermissionLevel(foundPlayer, dependencies);
+    const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
+    const ownerPerm = depPermLevels?.owner ?? 0;
+    const adminPerm = depPermLevels?.admin ?? 1;
 
-    if (targetPermissionLevel <= depPermLevels.admin && issuerPermissionLevel > depPermLevels.owner) {
-        player.sendMessage(getString('command.kick.noPermission'));
-        return;
+
+    if (typeof targetPermissionLevel === 'number' && typeof issuerPermissionLevel === 'number') {
+        if (targetPermissionLevel <= ownerPerm && issuerPermissionLevel > ownerPerm) { // Target is Owner, issuer is not Owner
+             player.sendMessage(getString('command.kick.noPermissionOwner')); // Specific message for trying to kick owner
+             return;
+        }
+        // Admins (or higher) can kick other non-owner players.
+        // An Owner can kick anyone (except another Owner if that rule is desired - not strictly enforced here).
+        // This simplified check means if issuer is not Owner, they can't kick Admins or Owners.
+        // If issuer IS Owner, they can kick Admins.
+        if (targetPermissionLevel <= adminPerm && issuerPermissionLevel > adminPerm && issuerPermissionLevel > ownerPerm) { // Target is Admin or Owner, issuer is Mod or Member
+            player.sendMessage(getString('command.kick.noPermission')); // Generic no permission for this player
+            return;
+        }
+    } else {
+        playerUtils?.debugLog(`[KickCommand WARNING] Could not determine permission levels for kick check between ${adminName} and ${targetPlayerName}. Proceeding with caution.`, adminName, dependencies);
     }
-    if (targetPermissionLevel <= depPermLevels.owner && issuerPermissionLevel > depPermLevels.owner) {
-        player.sendMessage(getString('command.kick.noPermissionOwner'));
-        return;
-    }
+
 
     try {
-        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: player.nameTag, reason: reason });
+        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: adminName, reason: reason });
+        // The kick method itself is synchronous in the current Bedrock API, but wrapping in try/catch is good.
         foundPlayer.kick(kickMessageToTarget);
 
         player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason: reason }));
+        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
-        if (playerUtils.notifyAdmins) {
-            const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: player.nameTag, reason: reason });
-            playerUtils.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
+        const targetPData = playerDataManager?.getPlayerData(foundPlayer.id); // For context if needed by notifyAdmins
+        if (config?.notifyOnAdminUtilCommandUsage !== false) {
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: adminName, reason: reason });
+            playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         }
-        if (logManager?.addLog) {
-            logManager.addLog({
-                timestamp: Date.now(),
-                adminName: player.nameTag,
-                actionType: 'kick', // Standardized camelCase
-                targetName: foundPlayer.nameTag,
-                reason: reason,
-            }, dependencies);
-        }
-        playerUtils.playSoundForEvent(player, "commandSuccess", dependencies);
+
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: 'playerKicked', // Standardized camelCase
+            targetName: foundPlayer.nameTag,
+            targetId: foundPlayer.id,
+            reason: reason,
+        }, dependencies);
+
     } catch (e) {
         player.sendMessage(getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message }));
-        console.error(`[KickCommand] Error kicking player ${targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
-        playerUtils.playSoundForEvent(player, "commandError", dependencies);
-        if (logManager?.addLog) {
-            logManager.addLog({ // This is for system error logging, separate from commandError sound
-                actionType: 'errorKickCommand', // Standardized error actionType
-                context: 'KickCommand.execute',    // Consistent casing
-                adminName: player.nameTag,
-                details: {
-                    targetPlayerName: targetPlayerName,
-                    errorMessage: e.message,
-                    stack: e.stack
-                }
-            }, dependencies);
-        }
+        console.error(`[KickCommand CRITICAL] Error kicking player ${targetPlayerName} by ${adminName}: ${e.stack || e}`);
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        logManager?.addLog({
+            actionType: 'errorKickCommand',
+            context: 'KickCommand.execute',
+            adminName: adminName,
+            targetName: targetPlayerName,
+            targetId: foundPlayer?.id, // Log ID if foundPlayer was resolved
+            details: { errorMessage: e.message, reasonAttempted: reason },
+            errorStack: e.stack || e.toString(),
+        }, dependencies);
     }
 }

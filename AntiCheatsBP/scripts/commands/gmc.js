@@ -2,78 +2,85 @@
  * @file Defines the !gmc command for administrators to set a player's gamemode to Creative.
  */
 import * as mc from '@minecraft/server';
+// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'gmc', // Already camelCase
-    syntax: '!gmc [playername]',
-    description: 'Sets a player\'s gamemode to Creative.',
-    permissionLevel: permissionLevels.admin, // Assuming permissionLevels is correctly populated
+    name: 'gmc',
+    syntax: '[playername]', // Prefix handled by commandManager
+    description: 'Sets your gamemode or a target player\'s gamemode to Creative.',
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
 /**
  * Executes the !gmc (gamemode creative) command.
- * Sets the gamemode of the target player (or the command issuer if no target is specified) to Creative.
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const targetPlayerNameArg = args[0];
-    const gamemodeName = 'Creative'; // Standard term
-    const gamemodeMc = mc.GameMode.creative;
+    const gamemodeName = mc.GameMode[mc.GameMode.creative]; // Get string "creative"
+    const gamemodeMcEnum = mc.GameMode.creative;
 
     try {
-        let targetPlayer = player; // Default to self if no targetPlayerNameArg
+        let targetPlayer = player; // Default to self
 
         if (targetPlayerNameArg) {
             const foundTarget = playerUtils?.findPlayer(targetPlayerNameArg);
-            if (!foundTarget) {
-                player?.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerNameArg }));
+            if (!foundTarget || !foundTarget.isValid()) { // Added isValid
+                player?.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerNameArg }));
                 return;
             }
             targetPlayer = foundTarget;
         }
 
-        targetPlayer.setGameMode(gamemodeMc);
+        targetPlayer.setGameMode(gamemodeMcEnum);
+        const successSound = "commandSuccess";
 
-        if (targetPlayer.id === player.id) { // Self change
-            player?.sendMessage(getString('command.gamemode.success.self', { gamemodeName }));
+        if (targetPlayer.id === player.id) {
+            player?.sendMessage(getString('command.gamemode.success.self', { gamemodeName: gamemodeName }));
             logManager?.addLog({
                 adminName: adminName,
-                actionType: 'gamemodeChangeSelf', // camelCase
+                actionType: 'gamemodeSetSelf',
                 targetName: adminName,
-                details: `Set to ${gamemodeName}`,
+                targetId: player.id,
+                details: `Set own gamemode to ${gamemodeName}`,
             }, dependencies);
-        } else { // Changed another player's gamemode
-            player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName }));
-            targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName }));
+        } else {
+            player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName: gamemodeName }));
+            targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName: gamemodeName }));
             logManager?.addLog({
                 adminName: adminName,
-                actionType: 'gamemodeChangeOther', // camelCase
+                actionType: 'gamemodeSetOther',
                 targetName: targetPlayer.nameTag,
-                details: `Set to ${gamemodeName} by ${adminName}`,
+                targetId: targetPlayer.id,
+                details: `Set ${targetPlayer.nameTag}'s gamemode to ${gamemodeName} by ${adminName}`,
             }, dependencies);
         }
+        playerUtils?.playSoundForEvent(player, successSound, dependencies);
+
     } catch (error) {
         const targetNameForError = targetPlayerNameArg || adminName;
         player?.sendMessage(getString('command.gamemode.error.generic', { targetNameForError, gamemodeName, errorMessage: error.message }));
-        playerUtils?.debugLog(`[GMCCommand.execute] Error setting gamemode for ${targetNameForError} by ${adminName}: ${error.message}`, adminName, dependencies);
-        console.error(`[GMCCommand.execute] Error for ${adminName} target ${targetNameForError}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[GMCCommand CRITICAL] Error setting gamemode for ${targetNameForError} by ${adminName}: ${error.message}`, adminName, dependencies);
+        console.error(`[GMCCommand CRITICAL] Error for ${adminName} target ${targetNameForError}: ${error.stack || error}`);
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorGamemodeChange', // camelCase
+            actionType: 'errorGamemodeSet',
             context: 'GMCCommand.execute',
-            details: `Failed to set gamemode for ${targetNameForError} to ${gamemodeName}: ${error.message}`,
-            error: error.stack || error.message,
+            targetName: targetNameForError,
+            details: `Failed to set gamemode to ${gamemodeName}: ${error.message}`,
+            errorStack: error.stack || error.toString(),
         }, dependencies);
     }
 }

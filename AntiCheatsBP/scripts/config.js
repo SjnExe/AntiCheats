@@ -406,7 +406,7 @@ const defaultConfigSettings = {
     /** @type {boolean} If true, the Automated Moderation system (AutoMod) is active. This system uses `automodConfig.js` and `actionProfiles.js`. */
     enableAutoMod: false,
     /** @type {string} Default duration for mutes applied by AutoMod. */
-    automodDefaultMuteDuration: '10m',
+    // automodDefaultMuteDuration: '10m', // Duplicate, defined below
     /** @type {string} Default duration for mutes applied manually by admins if no duration is specified. */
     manualMuteDefaultDuration: '1h',
 
@@ -798,6 +798,36 @@ export const acVersion = 'v__VERSION_STRING__';
 export const commandAliases = {
     v: 'version',
     w: 'watch',
+    // Proposed new aliases from review - uncommented to activate
+    "ar": "addrank",
+    "b": "ban",
+    "cr": "clearreports",
+    "ci": "copyinv",
+    "el": "endlock",
+    "frz": "freeze",
+    "h": "help",
+    "is": "invsee",
+    "k": "kick",
+    "lr": "listranks",
+    "lsw": "listwatched",
+    "m": "mute",
+    "nl": "netherlock",
+    "noti": "notify", // Additional to 'notifications'
+    "rr": "removerank",
+    "rep": "report",
+    "r": "rules",
+    "tn": "testnotify",
+    "tpc": "tpacancel",
+    "tpaa": "tpaccept",
+    // "tph": "tpahere", // tpahere already has 'tph' in its own definition
+    "tps": "tpastatus",
+    "ub": "unban",
+    "um": "unmute",
+    "uw": "unwatch",
+    "vsh": "vanish",
+    "vr": "viewreports",
+    "warns": "warnings",
+    "wb": "worldborder", // Additional to 'worldb'
     i: 'inspect',
     rf: 'resetflags',
     pf: 'purgeflags',
@@ -852,7 +882,75 @@ export let editableConfigValues = { ...defaultConfigSettings };
 /**
  * Updates a configuration value at runtime.
  * Performs type checking and coercion for basic types (string, number, boolean) and simple arrays of these types.
- * @param {string} key - The configuration key to update (must exist in `editableConfigValues`).
+ * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
  * @param {any} value - The new value for the configuration key.
- * @returns {boolean} True if the update was successful, false otherwise (e.g., key not found, type mismatch if strict).
+ * @returns {{success: boolean, message: string, oldValue?: any, newValue?: any}} Object indicating success, a message, and optionally old/new values.
  */
+export function updateConfigValue(key, value) {
+    if (!Object.prototype.hasOwnProperty.call(defaultConfigSettings, key)) {
+        return { success: false, message: `Configuration key "${key}" does not exist in default settings.` };
+    }
+    if (!Object.prototype.hasOwnProperty.call(editableConfigValues, key)) {
+        // This case should ideally not happen if editableConfigValues is always a spread of defaultConfigSettings
+        return { success: false, message: `Configuration key "${key}" does not exist in editable runtime settings.` };
+    }
+
+    const oldValue = editableConfigValues[key];
+    const expectedType = typeof defaultConfigSettings[key];
+    let coercedValue = value;
+
+    if (expectedType === 'boolean') {
+        if (typeof value === 'string') {
+            if (value.toLowerCase() === 'true') coercedValue = true;
+            else if (value.toLowerCase() === 'false') coercedValue = false;
+            else return { success: false, message: `Invalid boolean string for key "${key}": "${value}". Use "true" or "false".`, oldValue };
+        } else if (typeof value !== 'boolean') {
+            return { success: false, message: `Invalid type for boolean key "${key}". Expected boolean, got ${typeof value}.`, oldValue };
+        }
+    } else if (expectedType === 'number') {
+        coercedValue = Number(value);
+        if (isNaN(coercedValue)) {
+            return { success: false, message: `Invalid number for key "${key}": "${value}".`, oldValue };
+        }
+    } else if (expectedType === 'string') {
+        if (typeof value !== 'string') {
+            coercedValue = String(value);
+        }
+    } else if (Array.isArray(defaultConfigSettings[key])) {
+        if (!Array.isArray(value)) {
+            // Attempt to parse if it's a string representation of an array
+            if (typeof value === 'string') {
+                try {
+                    coercedValue = JSON.parse(value);
+                    if (!Array.isArray(coercedValue)) {
+                        return { success: false, message: `Key "${key}" expects an array. Parsed string was not an array.`, oldValue };
+                    }
+                } catch (e) {
+                    return { success: false, message: `Key "${key}" expects an array. Could not parse string value: "${value}". Error: ${e.message}`, oldValue };
+                }
+            } else {
+                return { success: false, message: `Key "${key}" expects an array. Got type ${typeof value}.`, oldValue };
+            }
+        }
+        // Optional: Could add checks for element types within the array if defaultConfigSettings[key] has elements
+    } else if (expectedType === 'object' && defaultConfigSettings[key] !== null) {
+         if (typeof value === 'string') {
+            try {
+                coercedValue = JSON.parse(value);
+                 if (typeof coercedValue !== 'object' || coercedValue === null || Array.isArray(coercedValue)) {
+                    return { success: false, message: `Key "${key}" expects an object. Parsed string was not a valid object.`, oldValue };
+                }
+            } catch (e) {
+                return { success: false, message: `Key "${key}" expects an object. Could not parse string value: "${value}". Error: ${e.message}`, oldValue };
+            }
+        } else if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+             return { success: false, message: `Key "${key}" expects an object. Got type ${typeof value}.`, oldValue };
+        }
+        // Deep merge or type checking for objects could be complex and might be better handled by specific setters if needed.
+        // For now, we'll assign the new object directly if it's an object.
+    }
+
+
+    editableConfigValues[key] = coercedValue;
+    return { success: true, message: `Configuration "${key}" updated.`, oldValue, newValue: coercedValue };
+}

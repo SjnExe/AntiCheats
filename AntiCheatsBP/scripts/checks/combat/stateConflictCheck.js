@@ -5,7 +5,7 @@
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
@@ -16,32 +16,38 @@
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
+ * @param {Dependencies} dependencies - Object containing necessary dependencies.
  * @param {EventSpecificData} [eventSpecificData] - Optional event-specific data (e.g., targetEntity).
  * @returns {Promise<void>}
  */
 export async function checkAttackWhileSleeping(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableStateConflictCheck || !pData) {
+    if (!config?.enableStateConflictCheck) { // General toggle for all state conflict checks
+        return;
+    }
+    if (!pData) {
+        playerUtils?.debugLog(`[StateConflictCheck.Sleeping] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
         return;
     }
 
-    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    if (player.isSleeping) {
+    if (player.isSleeping) { // isSleeping is a direct property
         const violationDetails = {
             state: 'isSleeping',
-            targetEntityId: eventSpecificData?.targetEntity?.id,
-            targetEntityType: eventSpecificData?.targetEntity?.typeId,
+            targetEntityId: eventSpecificData?.targetEntity?.id, // Optional
+            targetEntityType: eventSpecificData?.targetEntity?.typeId, // Optional
         };
         // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.attackWhileSleepingActionProfileName ?? 'combatAttackWhileSleeping'; // Default is already camelCase
+        const rawActionProfileKey = config?.attackWhileSleepingActionProfileName ?? 'combatAttackWhileSleeping';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Sleeping.`, watchedPrefix, dependencies);
+
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[StateConflictCheck.Sleeping] Flagged ${playerName} for Attack While Sleeping.`, watchedPlayerName, dependencies);
     }
 }
 
@@ -53,18 +59,23 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
+ * @param {Dependencies} dependencies - Object containing necessary dependencies.
  * @param {EventSpecificData} [eventSpecificData] - Optional event-specific data (e.g., targetEntity).
  * @returns {Promise<void>}
  */
 export async function checkAttackWhileUsingItem(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableStateConflictCheck || !pData) {
+    if (!config?.enableStateConflictCheck) { // General toggle
+        return;
+    }
+    if (!pData) {
+        playerUtils?.debugLog(`[StateConflictCheck.ItemUse] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
         return;
     }
 
-    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+    const watchedPlayerName = pData.isWatched ? playerName : null;
     const targetDetails = {
         targetEntityId: eventSpecificData?.targetEntity?.id,
         targetEntityType: eventSpecificData?.targetEntity?.typeId,
@@ -74,30 +85,28 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
         const violationDetails = {
             ...targetDetails,
             state: 'isUsingConsumable',
-            itemCategory: 'consumable',
+            itemCategory: 'consumable', // Generic category
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKeyConsuming = config.attackWhileConsumingActionProfileName ?? 'combatAttackWhileConsuming';
+        const rawActionProfileKeyConsuming = config?.attackWhileConsumingActionProfileName ?? 'combatAttackWhileConsuming';
         const actionProfileKeyConsuming = rawActionProfileKeyConsuming
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        await actionManager.executeCheckAction(player, actionProfileKeyConsuming, violationDetails, dependencies);
-        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Consuming.`, watchedPrefix, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKeyConsuming, violationDetails, dependencies);
+        playerUtils?.debugLog(`[StateConflictCheck.ItemUse] Flagged ${playerName} for Attack While Consuming.`, watchedPlayerName, dependencies);
     }
 
     if (pData.isChargingBow) {
         const violationDetails = {
             ...targetDetails,
             state: 'isChargingBow',
-            itemCategory: 'bow',
+            itemCategory: 'bow', // Or 'crossbow' if distinguishable
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKeyBow = config.attackWhileBowChargingActionProfileName ?? 'combatAttackWhileBowCharging';
+        const rawActionProfileKeyBow = config?.attackWhileBowChargingActionProfileName ?? 'combatAttackWhileBowCharging';
         const actionProfileKeyBow = rawActionProfileKeyBow
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        await actionManager.executeCheckAction(player, actionProfileKeyBow, violationDetails, dependencies);
-        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Charging Bow.`, watchedPrefix, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKeyBow, violationDetails, dependencies);
+        playerUtils?.debugLog(`[StateConflictCheck.ItemUse] Flagged ${playerName} for Attack While Charging Bow.`, watchedPlayerName, dependencies);
     }
 
     if (pData.isUsingShield) {
@@ -106,12 +115,11 @@ export async function checkAttackWhileUsingItem(player, pData, dependencies, eve
             state: 'isUsingShield',
             itemCategory: 'shield',
         };
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKeyShield = config.attackWhileShieldingActionProfileName ?? 'combatAttackWhileShielding';
+        const rawActionProfileKeyShield = config?.attackWhileShieldingActionProfileName ?? 'combatAttackWhileShielding';
         const actionProfileKeyShield = rawActionProfileKeyShield
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        await actionManager.executeCheckAction(player, actionProfileKeyShield, violationDetails, dependencies);
-        playerUtils.debugLog(`[StateConflictCheck] Flagged ${player.nameTag} for Attack While Shielding.`, watchedPrefix, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKeyShield, violationDetails, dependencies);
+        playerUtils?.debugLog(`[StateConflictCheck.ItemUse] Flagged ${playerName} for Attack While Shielding.`, watchedPlayerName, dependencies);
     }
 }

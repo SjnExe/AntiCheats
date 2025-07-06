@@ -1,16 +1,18 @@
 /**
  * @file Defines the !addrank command for server administrators to assign a manual rank to a player.
  */
-import { permissionLevels } from '../core/rankManager.js'; // Assuming permissionLevels is still exported if needed here.
+// permissionLevels might be better accessed via dependencies.rankManager.permissionLevels if it's dynamic
+// For now, assuming a static import is acceptable as per original structure.
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'addrank', // camelCase name
-    syntax: '!addrank <playername> <rankId>',
+    name: 'addrank',
+    syntax: '<playername> <rankId>', // Prefix is handled by commandManager
     description: 'Assigns a manual rank to a player by adding the associated tag.',
-    permissionLevel: permissionLevels.admin, // Uses the direct export; ensure this is intended.
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -19,15 +21,16 @@ export const definition = {
  * Assigns a specified rank to a target player if the rank is assignable and the issuer has permission.
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> <rankId>.
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies like config, playerUtils, etc.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, rankManager, getString } = dependencies; // Use rankManager from dependencies
+    const { config, playerUtils, logManager, rankManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const prefix = config?.prefix ?? '!';
 
     if (args.length < 2) {
-        player?.sendMessage(getString('command.addrank.usage', { prefix: config?.prefix }));
+        player?.sendMessage(getString('command.addrank.usage', { prefix: prefix }));
         return;
     }
 
@@ -40,7 +43,6 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    // Use rankManager.getRankById for consistent rank lookup (handles lowercase automatically)
     const rankDef = rankManager?.getRankById(rankIdToAssign);
     if (!rankDef) {
         player?.sendMessage(getString('command.addrank.rankIdInvalid', { rankId: rankIdToAssign }));
@@ -48,19 +50,22 @@ export async function execute(player, args, dependencies) {
     }
 
     const manualTagCondition = rankDef.conditions.find(c => c.type === 'manualTagPrefix' && typeof c.prefix === 'string');
-    if (!manualTagCondition?.prefix) { // Check if prefix exists
+    if (!manualTagCondition?.prefix) {
         player?.sendMessage(getString('command.addrank.rankNotManuallyAssignable', { rankName: rankDef.name }));
         return;
     }
 
     const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-    if (typeof rankDef.assignableBy === 'number' && issuerPermissionLevel > rankDef.assignableBy) {
+    // Ensure assignableBy is a number, default to owner level (0) if not specified, meaning only owner can assign.
+    const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : permissionLevels.owner;
+
+    if (typeof issuerPermissionLevel !== 'number' || issuerPermissionLevel > assignableByPermission) {
         player?.sendMessage(getString('command.addrank.permissionDeniedAssign', { rankName: rankDef.name }));
-        playerUtils?.debugLog(`[AddRankCommand] ${adminName} (Level ${issuerPermissionLevel}) attempted to assign rank ${rankDef.id} (AssignableBy ${rankDef.assignableBy}) but lacked permission.`, adminName, dependencies);
+        playerUtils?.debugLog(`[AddRankCommand] ${adminName} (Level ${issuerPermissionLevel ?? 'N/A'}) attempted to assign rank ${rankDef.id} (AssignableBy ${assignableByPermission}) but lacked permission.`, adminName, dependencies);
         return;
     }
 
-    const rankTagToAdd = manualTagCondition.prefix + rankDef.id; // rankDef.id is already lowercase from getRankById
+    const rankTagToAdd = manualTagCondition.prefix + rankDef.id; // rankDef.id is already lowercase
 
     if (targetPlayer.hasTag(rankTagToAdd)) {
         player?.sendMessage(getString('command.addrank.alreadyHasRank', { playerName: targetPlayer.nameTag, rankName: rankDef.name }));
@@ -69,32 +74,40 @@ export async function execute(player, args, dependencies) {
 
     try {
         targetPlayer.addTag(rankTagToAdd);
-        await rankManager?.updatePlayerNametag(targetPlayer, dependencies); // Ensure await if it becomes async
+        // Updating nametag after rank change is crucial
+        if (rankManager?.updatePlayerNametag) { // Check if function exists on the passed rankManager
+            await rankManager.updatePlayerNametag(targetPlayer, dependencies);
+        }
+
 
         player?.sendMessage(getString('command.addrank.assignSuccessToIssuer', { rankName: rankDef.name, playerName: targetPlayer.nameTag }));
         targetPlayer.sendMessage(getString('command.addrank.assignSuccessToTarget', { rankName: rankDef.name }));
 
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'addRank', // camelCase
+            actionType: 'rankAssigned', // Standardized camelCase
             targetName: targetPlayer.nameTag,
+            targetId: targetPlayer.id,
             details: `Assigned rank: ${rankDef.name} (ID: ${rankDef.id}, Tag: ${rankTagToAdd})`,
         }, dependencies);
 
-        if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
+        // Notify admins if configured
+        if (config?.notifyOnAdminUtilCommandUsage !== false) {
             const baseNotifyMsg = getString('command.addrank.notify.assigned', { adminName: adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
-            playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null); // Passing admin player as 'player' for context
+            playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
     } catch (e) {
         player?.sendMessage(getString('command.addrank.errorAssign', { errorMessage: e.message }));
-        console.error(`[AddRankCommand] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
+        console.error(`[AddRankCommand CRITICAL] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         logManager?.addLog({
             adminName: adminName,
-            actionType: 'errorAddRank', // More specific error actionType
+            actionType: 'errorRankAssign', // Standardized camelCase
             context: 'AddRankCommand.execute',
+            targetName: targetPlayer.nameTag,
+            targetId: targetPlayer.id,
             details: `Failed to assign rank ${rankDef.id} to ${targetPlayer.nameTag}: ${e.message}`,
-            error: e.stack || e.message,
+            errorStack: e.stack || e.toString(), // Store stack
         }, dependencies);
     }
 }

@@ -1,91 +1,103 @@
 /**
- * Script for the !tpacancel command, allowing players to cancel or decline TPA requests.
+ * @file Defines the !tpacancel command for players to cancel their outgoing TPA requests
+ * or decline incoming TPA requests.
  */
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js';
+// Assuming permissionLevels is a static export for now.
+import { permissionLevels } from '../core/rankManager.js';
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpacancel',
-    description: "command.tpacancel.description",
-    aliases: ['tpadeny', 'tpcancel'],
-    permissionLevel: importedPermissionLevels.normal,
-    syntax: '!tpacancel [playerName]',
-    enabled: true,
+    syntax: '[playerName]', // Prefix handled by commandManager
+    description: 'Cancels your outgoing TPA request or declines an incoming one. If [playerName] is specified, cancels request with that player.',
+    permissionLevel: permissionLevels.member, // Accessible by members
+    enabled: true, // Master toggle for this command, TPA system itself has a global toggle in config.js
 };
+
 /**
  * Executes the !tpacancel command.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} args - Command arguments: [playerName].
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, tpaManager, logManager, getString } = dependencies;
+    const { config, playerUtils, tpaManager, getString, logManager } = dependencies;
+    const issuerName = player?.nameTag ?? 'UnknownPlayer'; // Player initiating the cancel/decline
+    const prefix = config?.prefix ?? '!';
 
-    if (!config.enableTPASystem) {
+    if (!config?.enableTpaSystem) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-
-    const commandUserName = player.name;
-    const specificPlayerName = args[0];
-    let cancelledRequestCount = 0;
-
-    try {
-        if (specificPlayerName) {
-            const request = tpaManager.findRequest(commandUserName, specificPlayerName);
-
-            if (request && (request.status === 'pending_acceptance' || request.status === 'pending_teleport_warmup')) {
-                const otherPlayerName = request.requesterName === commandUserName ? request.targetName : request.requesterName;
-                // Message sent by tpaManager.cancelTeleport usually, but if we want a specific one here:
-                // const reasonMsgPlayer = getString('tpa.manager.decline.otherCancelledRequester', { targetPlayerName: otherPlayerName });
-                // For now, tpaManager handles the notification based on who initiated cancel.
-                // Log reason needs to be constructed before cancelTeleport if it's specific to this command's context.
-                const reasonLog = `Request ${request.requestId} between ${request.requesterName} and ${request.targetName} cancelled by ${commandUserName} via command. Status was: ${request.status}.`;
-
-                // The player-facing message for cancellation is now handled by tpaManager.cancelTeleport or declineRequest
-                await tpaManager.cancelTeleport(request.requestId, `TPA request involving ${otherPlayerName} cancelled by ${player.nameTag}.`, reasonLog, dependencies);
-
-
-                player.sendMessage(getString('command.tpacancel.specific.success', { playerName: otherPlayerName }));
-                cancelledRequestCount++;
-            } else {
-                player.sendMessage(getString('command.tpacancel.specific.notFound', { playerName: specificPlayerName }));
-                return;
-            }
-        } else {
-            const allPlayerRequests = tpaManager.findRequestsForPlayer(commandUserName);
-            if (allPlayerRequests.length === 0) {
-                player.sendMessage(getString('command.tpacancel.all.noneFound'));
-                return;
-            }
-
-            for (const req of allPlayerRequests) {
-                if (req.status === 'pending_acceptance' || req.status === 'pending_teleport_warmup') {
-                    const otherPlayerName = req.requesterName === commandUserName ? req.targetName : req.requesterName;
-                    const reasonLog = `Request ${req.requestId} between ${req.requesterName} and ${req.targetName} cancelled by ${commandUserName} via command (all). Status was: ${req.status}.`;
-                    await tpaManager.cancelTeleport(req.requestId, `TPA request involving ${otherPlayerName} cancelled by ${player.nameTag}.`, reasonLog, dependencies);
-                    cancelledRequestCount++;
-                }
-            }
-
-            let summaryMessage;
-            if (cancelledRequestCount > 0) {
-                summaryMessage = getString('command.tpacancel.all.success', { count: cancelledRequestCount.toString() });
-            } else {
-                summaryMessage = getString('command.tpacancel.all.noneCancellable');
-            }
-            player.sendMessage(summaryMessage.trim());
-        }
-    } catch (error) {
-        console.error(`[TpaCancelCommand] Error for ${player.nameTag}: ${error.stack || error}`);
-        player.sendMessage(getString('command.tpacancel.error.generic'));
-        logManager.addLog({
-            actionType: 'errorTpaCancelCommand',
-            context: 'tpacancel.execute',
-            details: {
-                playerName: player.nameTag,
-                commandArgs: args,
-                errorMessage: error.message,
-                stack: error.stack
-            }
-        }, dependencies);
+     if (!dependencies.commandSettings?.tpacancel?.enabled) { // Check specific command toggle
+        player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
+        return;
     }
+
+    const targetPlayerNameArg = args[0];
+    let requestToCancel = null;
+    let specificPlayerTargeted = false;
+
+    if (targetPlayerNameArg) {
+        // User specified a player, try to find a request involving them.
+        // findRequest expects system names. playerUtils.findPlayer gets the online Player object.
+        const otherPlayerOnline = playerUtils?.findPlayer(targetPlayerNameArg);
+        if (otherPlayerOnline && otherPlayerOnline.isValid()) {
+            requestToCancel = tpaManager?.findRequest(player.name, otherPlayerOnline.name); // Use system names
+        } else {
+            // If player not online, findRequest can still work if tpaManager stores requests by name.
+            // Assuming findRequest can handle potentially offline targetPlayerNameArg if it's just a name.
+            requestToCancel = tpaManager?.findRequest(player.name, targetPlayerNameArg);
+        }
+        specificPlayerTargeted = true;
+    } else {
+        // No player specified, find any active request involving the issuer (outgoing or incoming).
+        // Prioritize outgoing if multiple exist.
+        const allRequests = tpaManager?.findRequestsForPlayer(player.name) ?? []; // Use system name
+        const outgoing = allRequests.find(r => r.requesterName === player.name && (r.status === 'pendingAcceptance' || r.status === 'pendingTeleportWarmup'));
+        const incoming = allRequests.find(r => r.targetName === player.name && r.status === 'pendingAcceptance');
+        requestToCancel = outgoing || incoming || null;
+    }
+
+    if (!requestToCancel) {
+        if (specificPlayerTargeted) {
+            player.sendMessage(getString('command.tpacancel.specific.notFound', { playerName: targetPlayerNameArg }));
+        } else {
+            player.sendMessage(getString('command.tpacancel.all.noneFound'));
+        }
+        return;
+    }
+
+    // Determine if this is a decline (target cancelling incoming) or cancel (requester cancelling outgoing)
+    const isDecline = requestToCancel.targetName === player.name && requestToCancel.status === 'pendingAcceptance';
+    const actionLogType = isDecline ? 'tpaRequestDeclinedByTarget' : 'tpaRequestCancelledByRequester';
+
+    // tpaManager.declineRequest or a more generic cancel function should handle notifying the other party.
+    // For simplicity, let's assume tpaManager.declineRequest handles both cases if status is appropriate.
+    // Or, we might need a tpaManager.cancelRequest if the semantics are different.
+    // Assuming declineRequest can be used for both scenarios or adapt tpaManager.
+    tpaManager?.declineRequest(requestToCancel.requestId, dependencies); // This should notify other player and log internally.
+
+    // Send confirmation to the issuer of !tpacancel
+    const otherPartyNameForMsg = requestToCancel.requesterName === player.name ? requestToCancel.targetName : requestToCancel.requesterName;
+    // If other party object is available, use nameTag, else system name from request.
+    const otherPlayerOnlineForNameTag = playerUtils?.findPlayer(otherPartyNameForMsg);
+    const otherPlayerDisplayName = otherPlayerOnlineForNameTag?.nameTag ?? otherPartyNameForMsg;
+
+    player.sendMessage(getString('command.tpacancel.specific.success', { playerName: otherPlayerDisplayName }));
+    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies); // Sound for successful cancel/decline
+
+    // External log for the command execution itself (tpaManager logs the actual TPA state change)
+    logManager?.addLog({
+        adminName: issuerName, // Player who typed !tpacancel
+        actionType: 'commandTpaCancelExecuted',
+        targetName: otherPlayerDisplayName, // The other player in the TPA
+        details: `User ${isDecline ? 'declined' : 'cancelled'} TPA request (ID: ${requestToCancel.requestId}) with ${otherPlayerDisplayName}.`,
+        context: 'TpaCancelCommand.execute',
+    }, dependencies);
+
 }

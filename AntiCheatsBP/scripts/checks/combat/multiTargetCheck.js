@@ -4,7 +4,7 @@
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
@@ -17,51 +17,61 @@
  * @async
  * @param {import('@minecraft/server').Player} player - The attacking player.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `recentHits`.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
+ * @param {Dependencies} dependencies - Object containing necessary dependencies.
  * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `targetEntity`.
  * @returns {Promise<void>}
  */
 export async function checkMultiTarget(player, pData, dependencies, eventSpecificData) {
     const { config, playerUtils, actionManager } = dependencies;
     const targetEntity = eventSpecificData?.targetEntity;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableMultiTargetCheck || !pData) {
+    if (!config?.enableMultiTargetCheck) {
+        return;
+    }
+    if (!pData) {
+        playerUtils?.debugLog(`[MultiTargetCheck] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
         return;
     }
 
-    const watchedPrefix = pData.isWatched ? player.nameTag : null;
+
+    const watchedPlayerName = pData.isWatched ? playerName : null;
     const now = Date.now();
 
-    if (!targetEntity || typeof targetEntity.id === 'undefined') {
-        playerUtils.debugLog(`[MultiTargetCheck] Invalid targetEntity or targetEntity.id for ${player.nameTag}.`, watchedPrefix, dependencies);
+    if (!targetEntity || typeof targetEntity.id === 'undefined' || !targetEntity.isValid()) { // Added isValid check
+        playerUtils?.debugLog(`[MultiTargetCheck] Invalid or undefined targetEntity for ${playerName}.`, watchedPlayerName, dependencies);
         return;
     }
 
     pData.recentHits ??= [];
 
     const newHit = {
-        entityId: targetEntity.id,
+        entityId: targetEntity.id, // Store the ID for reliable distinction
         timestamp: now,
+        entityType: targetEntity.typeId // Optional: for logging or more specific analysis
     };
     pData.recentHits.push(newHit);
     pData.isDirtyForSave = true;
 
-    const windowMs = config.multiTargetWindowMs ?? 1000;
-    const maxHistory = config.multiTargetMaxHistory ?? 20;
+    const windowMs = config?.multiTargetWindowMs ?? 1000; // Default 1 second window
+    const maxHistory = config?.multiTargetMaxHistory ?? 20; // Limit history size
 
+    // Filter out old hits
     const originalCountBeforeTimeFilter = pData.recentHits.length;
     pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= windowMs);
     if (pData.recentHits.length !== originalCountBeforeTimeFilter) {
         pData.isDirtyForSave = true;
     }
 
+    // Trim history to max size
     if (pData.recentHits.length > maxHistory) {
         pData.recentHits = pData.recentHits.slice(pData.recentHits.length - maxHistory);
-        pData.isDirtyForSave = true;
+        pData.isDirtyForSave = true; // Array was modified
     }
 
-    const threshold = config.multiTargetThreshold ?? 3;
+    const threshold = config?.multiTargetThreshold ?? 3; // Default 3 distinct targets
 
+    // Check only if there are enough hits to potentially meet the threshold
     if (pData.recentHits.length < threshold) {
         return;
     }
@@ -72,7 +82,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     }
 
     if (pData.isWatched) {
-        playerUtils.debugLog(`[MultiTargetCheck] Processing for ${player.nameTag}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}`, watchedPrefix, dependencies);
+        playerUtils?.debugLog(`[MultiTargetCheck] Processing for ${playerName}. HitsInWindow=${pData.recentHits.length}, DistinctTargets=${distinctTargets.size}, Threshold=${threshold}`, watchedPlayerName, dependencies);
     }
 
     if (distinctTargets.size >= threshold) {
@@ -80,17 +90,21 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
             targetsHit: distinctTargets.size.toString(),
             windowSeconds: (windowMs / 1000).toFixed(1),
             threshold: threshold.toString(),
-            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '),
+            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '), // Sample of target IDs
         };
         // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.multiTargetActionProfileName ?? 'combatMultiTargetAura'; // Corrected default casing
+        const rawActionProfileKey = config?.multiTargetActionProfileName ?? 'combatMultiTargetAura';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        playerUtils.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${player.nameTag} hit ${distinctTargets.size} targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPrefix, dependencies);
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
+        playerUtils?.debugLog(`[MultiTargetCheck] Multi-Aura Flag: ${playerName} hit ${distinctTargets.size} distinct targets in ${windowMs}ms. RecentHits IDs: ${JSON.stringify(pData.recentHits.map(h => h.entityId))}`, watchedPlayerName, dependencies);
+
+        // Optionally clear recentHits after a detection to prevent immediate re-flagging on the same set.
+        // Or rely on the time window to naturally phase them out.
+        // For now, let's clear to make subsequent detections require a new set of multi-hits.
         pData.recentHits = [];
         pData.isDirtyForSave = true;
     }

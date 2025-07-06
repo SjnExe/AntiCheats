@@ -1,5 +1,10 @@
-# Ongoing Tasks
+# Ongoing Development Tasks
 
-This file lists tasks that are currently being worked on. Once a task is completed, it should be moved to `Dev/tasks/completed.md`. If a task is paused or deprioritized, it can be moved back to `Dev/tasks/todo.md`.
+This file tracks tasks currently in progress.
 
-No tasks currently ongoing.
+*   **No tasks currently ongoing.** (Jules - Task "Full Codebase Syntax and Standards Review" completed)
+
+---
+
+_When starting a new task, please move it from `todo.md` (if applicable) to this file and describe your objectives._
+_When a task is completed, move its summary to `completed.md` and clear this entry or update it for the next task._

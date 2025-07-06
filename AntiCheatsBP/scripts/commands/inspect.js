@@ -1,6 +1,7 @@
 /**
  * @file Defines the !inspect command for administrators to view a player's AntiCheat data.
  */
+// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -8,7 +9,7 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'inspect',
-    syntax: '!inspect <playername>',
+    syntax: '<playername>', // Prefix handled by commandManager
     description: 'Views a player\'s AntiCheat data and status, including flags, mutes, and bans.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
@@ -20,31 +21,44 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.inspect.usage', { prefix: config.prefix }));
+        player.sendMessage(getString('command.inspect.usage', { prefix: prefix }));
         return;
     }
 
     const targetPlayerName = args[0];
-    const targetPlayer = playerUtils.findPlayer(targetPlayerName);
+    // Try to find online player first, then potentially load offline data if implemented
+    const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
+    let pData;
 
-    if (!targetPlayer) {
-        player.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
+    if (targetPlayer && targetPlayer.isValid()) { // Player is online
+        pData = playerDataManager?.getPlayerData(targetPlayer.id);
+    } else {
+        // Attempt to load offline pData if findOfflinePlayerData is implemented
+        // For now, assume we only inspect online or recently online (cached) players effectively
+        // Or, if your playerDataManager can load purely from persisted properties without a Player object:
+        // pData = await playerDataManager.loadPersistedDataByName(targetPlayerName, dependencies);
+        // This part depends heavily on how playerDataManager handles offline data.
+        // Assuming for now it primarily works with Player objects or their IDs for cache.
+        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
-    const pData = playerDataManager.getPlayerData(targetPlayer.id);
+
     const messageLines = [];
-    messageLines.push(getString('command.inspect.header', { playerName: targetPlayer.nameTag }));
+    const targetDisplayName = targetPlayer?.nameTag ?? targetPlayerName; // Use nameTag if online, else arg
+    messageLines.push(getString('command.inspect.header', { playerName: targetDisplayName }));
 
     if (pData) {
-        messageLines.push(getString('command.inspect.playerId', { playerId: targetPlayer.id }));
+        messageLines.push(getString('command.inspect.playerId', { playerId: targetPlayer?.id ?? pData.id ?? getString('common.value.unknown') }));
         messageLines.push(getString('command.inspect.watched', { isWatched: pData.isWatched ? getString('common.boolean.yes') : getString('common.boolean.no') }));
         messageLines.push(getString('command.inspect.totalFlags', { totalFlags: (pData.flags?.totalFlags ?? 0).toString() }));
         messageLines.push(getString('command.inspect.lastFlagType', { lastFlagType: pData.lastFlagType || getString('common.value.notAvailable') }));
@@ -52,20 +66,23 @@ export async function execute(player, args, dependencies) {
         let specificFlagsFound = false;
         if (pData.flags) {
             messageLines.push(getString('command.inspect.flagsByTypeHeader'));
-            for (const flagKey in pData.flags) {
-                if (flagKey !== 'totalFlags' && typeof pData.flags[flagKey] === 'object' && pData.flags[flagKey] !== null && pData.flags[flagKey].count > 0) {
-                    const flagData = pData.flags[flagKey];
-                    const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : getString('common.value.notAvailable');
-                    messageLines.push(getString('command.inspect.flagEntry', { flagKey: flagKey, count: flagData.count.toString(), timestamp: timestamp }));
-                    specificFlagsFound = true;
-                }
+            // Sort flag keys alphabetically for consistent display, excluding 'totalFlags'
+            const flagKeys = Object.keys(pData.flags)
+                .filter(key => key !== 'totalFlags' && typeof pData.flags[key] === 'object' && pData.flags[key] !== null && (pData.flags[key].count ?? 0) > 0)
+                .sort();
+
+            for (const flagKey of flagKeys) {
+                const flagData = pData.flags[flagKey];
+                const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleString() : getString('common.value.notAvailable');
+                messageLines.push(getString('command.inspect.flagEntry', { flagKey: flagKey, count: (flagData.count ?? 0).toString(), timestamp: timestamp }));
+                specificFlagsFound = true;
             }
             if (!specificFlagsFound) {
                 messageLines.push(getString('command.inspect.noSpecificFlags'));
             }
         }
 
-        const muteInfo = playerDataManager.getMuteInfo(targetPlayer, dependencies);
+        const muteInfo = targetPlayer ? playerDataManager?.getMuteInfo(targetPlayer, dependencies) : pData.muteInfo;
         if (muteInfo) {
             const expiry = muteInfo.unmuteTime === Infinity ? getString('ban.duration.permanent') : new Date(muteInfo.unmuteTime).toLocaleString();
             messageLines.push(getString('command.inspect.muted.yes', { expiry: expiry, reason: muteInfo.reason || getString('common.value.noReasonProvided') }));
@@ -73,7 +90,7 @@ export async function execute(player, args, dependencies) {
             messageLines.push(getString('command.inspect.muted.no'));
         }
 
-        const banInfo = playerDataManager.getBanInfo(targetPlayer, dependencies);
+        const banInfo = targetPlayer ? playerDataManager?.getBanInfo(targetPlayer, dependencies) : pData.banInfo;
         if (banInfo) {
             const expiry = banInfo.unbanTime === Infinity ? getString('ban.duration.permanent') : new Date(banInfo.unbanTime).toLocaleString();
             messageLines.push(getString('command.inspect.banned.yes', { expiry: expiry, reason: banInfo.reason || getString('common.value.noReasonProvided') }));
@@ -86,17 +103,18 @@ export async function execute(player, args, dependencies) {
     }
 
     player.sendMessage(messageLines.join('\n'));
+    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
     try {
-        logManager.addLog({
-            timestamp: Date.now(),
-            adminName: player.nameTag,
-            actionType: 'inspectPlayer',
-            targetName: targetPlayer.nameTag,
-            details: `Inspected ${targetPlayer.nameTag}`,
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: 'playerInspected', // Standardized camelCase
+            targetName: targetDisplayName,
+            targetId: targetPlayer?.id ?? pData?.id, // Log ID if available
+            details: `Inspected ${targetDisplayName}`,
         }, dependencies);
     } catch (logError) {
-        console.error(`[InspectCommand] Error logging inspect action: ${logError.stack || logError}`);
-        playerUtils.debugLog(`[InspectCommand] Logging error: ${logError.message}`, player.nameTag, dependencies);
+        console.error(`[InspectCommand CRITICAL] Error logging inspect action: ${logError.stack || logError}`);
+        playerUtils?.debugLog(`[InspectCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }
 }
