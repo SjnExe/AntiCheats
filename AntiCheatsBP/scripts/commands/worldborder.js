@@ -11,7 +11,7 @@ export const definition = {
     name: 'worldborder',
     syntax: '<subcommand> [args...]',
     description: 'Manages per-dimension world borders. Use "!wb help" for subcommands.',
-    aliases: ['wb'],
+    aliases: ['wb', 'worldb'],
     permissionLevel: 1, // admin
     enabled: true,
 };

@@ -8,6 +8,7 @@ export const definition = {
     name: 'tpastatus',
     syntax: '[on|off|status]',
     description: 'Manages your TPA (Teleport Ask) request availability or checks current status.',
+    aliases: ['tps'],
     permissionLevel: 1024, // member
     enabled: true,
 };

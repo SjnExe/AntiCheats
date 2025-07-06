@@ -8,6 +8,7 @@ export const definition = {
     name: 'mute',
     syntax: '<playername> [duration] [reason]',
     description: 'Mutes a player, preventing them from sending chat messages.',
+    aliases: ['m'],
     permissionLevel: 1, // admin
     enabled: true,
 };

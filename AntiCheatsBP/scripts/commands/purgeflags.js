@@ -12,6 +12,7 @@ export const definition = {
     name: 'purgeflags',
     syntax: '<playername>',
     description: 'Admin command to completely purge all flags, violation history, and AutoMod state for a player.',
+    aliases: ['pf'],
     permissionLevel: 1, // admin
     enabled: true,
 };

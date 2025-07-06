@@ -9,6 +9,7 @@ export const definition = {
     name: 'tpacancel',
     syntax: '[playerName]',
     description: 'Cancels your outgoing TPA request or declines an incoming one. If [playerName] is specified, cancels request with that player.',
+    aliases: ['tpc', 'tpadeny', 'tpcancel'],
     permissionLevel: 1024, // member
     enabled: true,
 };

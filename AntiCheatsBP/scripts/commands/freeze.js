@@ -11,6 +11,7 @@ export const definition = {
     name: 'freeze',
     syntax: '<playername> [on|off|toggle|status]',
     description: 'Freezes or unfreezes a player, preventing movement by applying strong slowness and weakness.',
+    aliases: ['frz'],
     permissionLevel: 1, // admin
     enabled: true,
 };

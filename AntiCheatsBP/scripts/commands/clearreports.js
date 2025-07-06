@@ -10,6 +10,7 @@ export const definition = {
     name: 'clearreports',
     syntax: '<report_id|player_name|all>',
     description: 'Admin command to clear player reports. Use "all" to clear all reports (use with caution).',
+    aliases: ['cr'],
     permissionLevel: 1, // admin
     enabled: true,
 };

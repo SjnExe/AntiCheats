@@ -8,6 +8,7 @@ export const definition = {
     name: 'removerank',
     syntax: '<playerName> <rankId>',
     description: 'Removes a manually assigned rank from a player by removing the associated tag.',
+    aliases: ['rr'],
     permissionLevel: 1, // admin
     enabled: true,
 };

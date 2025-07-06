@@ -8,6 +8,7 @@ export const definition = {
     name: 'kick',
     syntax: '<playername> [reason]',
     description: 'Kicks a player from the server.',
+    aliases: ['k'],
     permissionLevel: 1, // admin
     enabled: true,
 };

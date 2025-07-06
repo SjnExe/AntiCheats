@@ -11,7 +11,7 @@ export const definition = {
     name: 'rules',
     description: 'Displays the server rules.',
     syntax: '!rules',
-    aliases: ['rule'],
+    aliases: ['rule', 'r'],
     permissionLevel: 1024, // member
     enabled: true,
 };

@@ -8,6 +8,7 @@ export const definition = {
     name: 'ban',
     syntax: '<playername> [duration] [reason]',
     description: 'Bans a player for a specified duration (e.g., 7d, 2h, 30m, perm).',
+    aliases: ['b'],
     permissionLevel: 1, // admin
     enabled: true,
 };

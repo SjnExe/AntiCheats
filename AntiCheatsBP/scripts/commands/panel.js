@@ -10,6 +10,7 @@ export const definition = {
     name: 'panel',
     syntax: '',
     description: 'Opens the main AntiCheat Admin UI panel (or user panel if not admin).',
+    aliases: ['ui'],
     permissionLevel: 1024, // member
     enabled: true,
 };

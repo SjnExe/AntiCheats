@@ -8,6 +8,7 @@ export const definition = {
     name: 'clearchat',
     syntax: '',
     description: 'Clears the global chat for all players.',
+    aliases: ['clrchat'],
     permissionLevel: 1, // admin
     enabled: true,
 };

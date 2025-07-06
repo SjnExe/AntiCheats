@@ -8,6 +8,7 @@ export const definition = {
     name: 'unmute',
     syntax: '<playername>',
     description: 'Unmutes a player, allowing them to send chat messages again.',
+    aliases: ['um'],
     permissionLevel: 1, // admin
     enabled: true,
 };

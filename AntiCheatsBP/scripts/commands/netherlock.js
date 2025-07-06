@@ -11,6 +11,7 @@ export const definition = {
     name: 'netherlock',
     syntax: '<on|off|status>',
     description: 'Manages Nether dimension access. "on" locks, "off" unlocks, "status" checks.',
+    aliases: ['nl'],
     permissionLevel: 1, // admin
     enabled: true,
 };

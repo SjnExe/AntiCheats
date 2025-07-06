@@ -8,6 +8,7 @@ export const definition = {
     name: 'addrank',
     syntax: '<playername> <rankId>',
     description: 'Assigns a manual rank to a player by adding the associated tag.',
+    aliases: ['ar'],
     permissionLevel: 1, // admin
     enabled: true,
 };

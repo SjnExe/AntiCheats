@@ -789,81 +789,16 @@ Rule 6: Have fun and contribute to a positive community!`,
 export const acVersion = 'v__VERSION_STRING__';
 
 // --- Command Aliases (Not part of editableConfigValues by default) ---
-/** @type {Object.<string, string>} Defines aliases for commands. Key is alias, value is the actual command name. */
-export const commandAliases = {
-    v: 'version',
-    w: 'watch',
-    "ar": "addrank",
-    "b": "ban",
-    "cr": "clearreports",
-    "ci": "copyinv",
-    "el": "endlock",
-    "frz": "freeze",
-    "h": "help",
-    "is": "invsee",
-    "k": "kick",
-    "lr": "listranks",
-    "lsw": "listwatched",
-    "m": "mute",
-    "nl": "netherlock",
-    "noti": "notify", // Additional to 'notifications'
-    "rr": "removerank",
-    "rep": "report",
-    "r": "rules",
-    "tn": "testnotify",
-    "tpc": "tpacancel",
-    "tpaa": "tpaccept",
-    // "tph": "tpahere", // tpahere already has 'tph' in its own definition
-    "tps": "tpastatus",
-    "ub": "unban",
-    "um": "unmute",
-    "uw": "unwatch",
-    "vsh": "vanish",
-    "vr": "viewreports",
-    "warns": "warnings",
-    "wb": "worldborder", // Additional to 'worldb'
-    i: 'inspect',
-    rf: 'resetflags',
-    pf: 'purgeflags',
-    xn: 'xraynotify',
-    mf: 'myflags',
-    notifications: 'notify',
-    ui: 'panel',
-    cw: 'clearwarnings',
-    clrchat: 'clearchat',
-    playerinfo: 'uinfo',
-    userinfo: 'uinfo',
-    worldb: 'worldborder',
-    "ar": "addrank",
-    "b": "ban",
-    "cr": "clearreports",
-    "ci": "copyinv",
-    "el": "endlock",
-    "frz": "freeze",
-    "h": "help",
-    "is": "invsee",
-    "k": "kick",
-    "lr": "listranks",
-    "lsw": "listwatched",
-    "m": "mute",
-    "nl": "netherlock",
-    "noti": "notify", // Additional to 'notifications'
-    "rr": "removerank",
-    "rep": "report",
-    "r": "rules",
-    "tn": "testnotify",
-    "tpc": "tpacancel",
-    "tpaa": "tpaccept",
-    // "tph": "tpahere", // tpahere already has 'tph' in its own definition
-    "tps": "tpastatus",
-    "ub": "unban",
-    "um": "unmute",
-    "uw": "unwatch",
-    "vsh": "vanish",
-    "vr": "viewreports",
-    "warns": "warnings",
-    "wb": "worldborder", // Additional to 'worldb'
-};
+// Command aliases are now defined directly in each command's definition object
+// within its respective file in AntiCheatsBP/scripts/commands/.
+// This section is deprecated and can be removed in a future cleanup.
+// export const commandAliases = {
+//     v: 'version',
+//     w: 'watch',
+//     "ar": "addrank",
+//     "b": "ban",
+//     // ... and so on for all previous aliases
+// };
 
 // --- Editable Configuration Values ---
 // This object holds configurations that can be modified at runtime via commands (e.g., !acconfig).
