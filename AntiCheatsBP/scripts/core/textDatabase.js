@@ -68,7 +68,6 @@ export const stringDB = {
 
     // My Stats UI (Shared by Admin Panel > Inspect (conceptually) and UInfo)
     'ui.myStats.title': '§l§bYour Stats§r', // uinfo uses this directly
-    // 'ui.myStats.body': 'Session Playtime: {playtime}', // This was for a different My Stats, uinfo shows flags.
     'ui.myStats.labelLocation': 'Location: X: {x}, Y: {y}, Z: {z}',
     'ui.myStats.labelDimension': 'Dimension: {dimensionName}',
 
