@@ -3,7 +3,7 @@
  * It dynamically loads command modules and handles permission checking and alias resolution.
  * All command names and aliases are treated as case-insensitive (converted to lowerCase).
  */
-import { commandModules } from '../commands/commandRegistry.js';
+import { commandModules } from './commandRegistry.js';
 
 /**
  * @description Stores all command definitions, mapping command name (lowerCase) to its definition object.

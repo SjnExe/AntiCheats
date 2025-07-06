@@ -101,7 +101,7 @@ The AntiCheats addon is structured to be modular and configurable. Here's a high
     *   **`checks/`**: Contains all the individual cheat detection logic, categorized into subdirectories (e.g., `movement/`, `combat/`, `world/`, `player/`, `chat/`). Each check file typically exports one or more functions that perform specific violation detections.
         *   `checks/index.js`: A barrel file that re-exports all check modules for easy importing.
     *   **`commands/`**: Contains modules for each chat command. Each command module defines its name, syntax, permission level, and execution logic.
-        *   `commands/commandRegistry.js`: A barrel file that exports all command modules.
+        *   `core/commandRegistry.js`: A barrel file that exports all command modules, moved here as it's part of the command management system.
     *   **`utils/`**: Provides utility functions used across the addon (e.g., `playerUtils.js` for player-related helpers like `getString`, `notifyAdmins`, `findPlayer`; `worldUtils.js` for world-related helpers).
         *   `utils/index.js`: A barrel file for utility modules.
     *   **`types.js`**: Contains JSDoc `@typedef` definitions for complex object structures used throughout the addon, like `PlayerAntiCheatData`, `CommandDependencies`, etc.
