@@ -1,96 +1,95 @@
 /**
- * Script for the !tpastatus command, allowing players to manage their TPA request availability.
+ * @file Defines the !tpastatus command for players to manage their TPA request availability.
  */
-import * as mc from '@minecraft/server'; // Import mc for world and system
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js';
+// Assuming permissionLevels is a static export for now.
+import { permissionLevels } from '../core/rankManager.js';
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
     name: 'tpastatus',
-    description: "command.tpastatus.description",
-    aliases: ['tpatoggle'],
-    permissionLevel: importedPermissionLevels.normal,
-    syntax: '!tpastatus [on|off|status]',
-    enabled: true,
+    syntax: '[on|off|status]', // Prefix handled by commandManager
+    description: 'Manages your TPA (Teleport Ask) request availability or checks current status.',
+    permissionLevel: permissionLevels.member, // Accessible by members
+    enabled: true, // Master toggle for this command, TPA system itself has a global toggle in config.js
 };
+
 /**
  * Executes the !tpastatus command.
+ * Allows players to enable/disable receiving TPA requests, or check their current TPA status.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} args - Command arguments: [on|off|status].
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, config, tpaManager, logManager, getString } = dependencies;
-    const prefix = config.prefix;
+    const { config, playerUtils, tpaManager, getString, logManager } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer'; // For messages
+    const playerSystemName = player.name; // For tpaManager map keys
+    const prefix = config?.prefix ?? '!';
 
-    if (!config.enableTPASystem) {
+    if (!config?.enableTpaSystem) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-
-    const option = args[0] ? args[0].toLowerCase() : 'status';
-
-    try {
-        switch (option) {
-            case 'on':
-                tpaManager.setPlayerTpaStatus(player.name, true, dependencies);
-                player.sendMessage(getString('command.tpastatus.on'));
-                break;
-            case 'off':
-                tpaManager.setPlayerTpaStatus(player.name, false, dependencies);
-                player.sendMessage(getString('command.tpastatus.off'));
-
-                const incomingRequests = tpaManager.findRequestsForPlayer(player.name)
-                    .filter(req => req.targetName === player.name && Date.now() < req.expiryTimestamp);
-
-                if (incomingRequests.length > 0) {
-                    let declinedCount = 0;
-                    for (const req of incomingRequests) {
-                        await tpaManager.declineRequest(req.requestId, dependencies);
-                        const requesterPlayer = mc.world.getAllPlayers().find(p => p.name === req.requesterName);
-                        if (requesterPlayer?.isValid()) { // Check validity
-                            const declineMessage = getString('tpa.notify.actionBar.autoDeclined', { playerName: player.nameTag });
-                            mc.system.run(() => {
-                                try {
-                                    requesterPlayer.onScreenDisplay.setActionBar(declineMessage);
-                                } catch (e) {
-                                    if (config.enableDebugLogging) {
-                                        playerUtils.debugLog(`[TpaStatusCommand] Failed to set action bar for ${req.requesterName}: ${e.stack || e}`, player.nameTag, dependencies);
-                                    }
-                                }
-                            });
-                            requesterPlayer.sendMessage(declineMessage);
-                        }
-                        declinedCount++;
-                    }
-                    if (declinedCount > 0) {
-                        player.sendMessage(getString('command.tpastatus.off.declinedNotification', { count: declinedCount.toString() }));
-                    }
-                }
-                break;
-            case 'status':
-                const currentStatus = tpaManager.getPlayerTpaStatus(player.name, dependencies);
-                if (currentStatus.acceptsTpaRequests) {
-                    player.sendMessage(getString('command.tpastatus.status.accepting'));
-                } else {
-                    player.sendMessage(getString('command.tpastatus.status.notAccepting'));
-                }
-                break;
-            default:
-                player.sendMessage(getString('command.tpastatus.invalidOption', { prefix: prefix }));
-                break;
-        }
-    } catch (error) {
-        console.error(`[TpaStatusCommand] Error for ${player.nameTag} processing option ${option}: ${error.stack || error}`);
-        player.sendMessage(getString('command.tpacancel.error.generic')); // Reusing generic error
-        logManager.addLog({
-            actionType: 'errorTpaStatusCommand',
-            context: 'tpastatus.execute',
-            details: {
-                playerName: player.nameTag,
-                commandArgs: args,
-                option: option,
-                errorMessage: error.message,
-                stack: error.stack
-            }
-        }, dependencies);
+    if (!dependencies.commandSettings?.tpastatus?.enabled) { // Check specific command toggle
+        player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
+        return;
     }
+
+    const subCommand = args[0]?.toLowerCase() || 'status'; // Default to 'status'
+
+    const currentStatus = tpaManager?.getPlayerTpaStatus(playerSystemName, dependencies);
+    let newAcceptsTpa;
+
+    switch (subCommand) {
+        case 'on':
+        case 'enable':
+            newAcceptsTpa = true;
+            break;
+        case 'off':
+        case 'disable':
+            newAcceptsTpa = false;
+            break;
+        case 'status':
+            const statusMsgKey = currentStatus?.acceptsTpaRequests ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
+            player.sendMessage(getString(statusMsgKey));
+            return; // Status check done
+        default:
+            player.sendMessage(getString('command.tpastatus.invalidOption', { prefix: prefix }));
+            return;
+    }
+
+    // If state is already what they want to set it to
+    if (newAcceptsTpa === currentStatus?.acceptsTpaRequests) {
+        const alreadyMsgKey = newAcceptsTpa ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
+        player.sendMessage(getString(alreadyMsgKey) + " (No change made)");
+        return;
+    }
+
+    tpaManager?.setPlayerTpaStatus(playerSystemName, newAcceptsTpa, dependencies);
+    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+
+    if (newAcceptsTpa) {
+        player.sendMessage(getString('command.tpastatus.on'));
+    } else {
+        player.sendMessage(getString('command.tpastatus.off'));
+        // If turning off, automatically decline any pending incoming requests for this player
+        const incomingRequests = (tpaManager?.findRequestsForPlayer(playerSystemName) ?? [])
+            .filter(r => r.targetName === playerSystemName && r.status === 'pendingAcceptance');
+        if (incomingRequests.length > 0) {
+            incomingRequests.forEach(req => tpaManager?.declineRequest(req.requestId, dependencies));
+            player.sendMessage(getString('command.tpastatus.off.declinedNotification', { count: incomingRequests.length.toString() }));
+        }
+    }
+
+    logManager?.addLog({
+        actionType: 'tpaStatusChanged', // Standardized camelCase
+        targetName: playerName, // Target is self
+        targetId: player.id,
+        details: `Player set TPA acceptance to: ${newAcceptsTpa}.`,
+        context: 'TpaStatusCommand.execute',
+    }, dependencies);
 }

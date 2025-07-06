@@ -2,16 +2,17 @@
  * @file Defines the !endlock command for administrators to manage End dimension access.
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
+// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'endlock', // Already camelCase
-    syntax: '!endlock <on|off|status>',
-    description: 'Manages End dimension access.',
-    permissionLevel: permissionLevels.admin, // Assuming permissionLevels is correctly populated
+    name: 'endlock',
+    syntax: '<on|off|status>', // Prefix handled by commandManager
+    description: 'Manages End dimension access. "on" locks, "off" unlocks, "status" checks.',
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
@@ -21,32 +22,35 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const subCommand = args[0]?.toLowerCase() || 'status'; // Default to 'status', ensure lowercase
-    const prefix = config?.prefix;
+    const prefix = config?.prefix ?? '!';
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     let statusText;
     let success = false;
+    const dimensionNameForMsg = getString('dimensionLock.name.end'); // Get user-friendly name
 
     try {
         switch (subCommand) {
             case 'on':
             case 'lock':
-                success = setEndLocked(true); // worldStateUtils functions are synchronous
+                success = setEndLocked(true); // worldStateUtils functions are assumed synchronous
                 if (success) {
                     player?.sendMessage(getString('command.endlock.locked'));
-                    logManager?.addLog({ adminName, actionType: 'endLockEnabled', details: 'The End locked' }, dependencies);
-                    if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
-                        const baseNotifyMsg = getString('command.endlock.notify.locked', { adminName: adminName });
+                    logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'The End', details: 'The End dimension locked' }, dependencies);
+                    if (config?.notifyOnAdminUtilCommandUsage !== false) {
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
+                    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
                 } else {
                     player?.sendMessage(getString('command.endlock.failUpdate'));
+                    playerUtils?.playSoundForEvent(player, "commandError", dependencies);
                 }
                 break;
             case 'off':
@@ -54,13 +58,15 @@ export async function execute(player, args, dependencies) {
                 success = setEndLocked(false);
                 if (success) {
                     player?.sendMessage(getString('command.endlock.unlocked'));
-                    logManager?.addLog({ adminName, actionType: 'endLockDisabled', details: 'The End unlocked' }, dependencies);
-                    if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) {
-                        const baseNotifyMsg = getString('command.endlock.notify.unlocked', { adminName: adminName });
+                    logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'The End', details: 'The End dimension unlocked' }, dependencies);
+                    if (config?.notifyOnAdminUtilCommandUsage !== false) {
+                         const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
+                    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
                 } else {
                     player?.sendMessage(getString('command.endlock.failUpdate'));
+                    playerUtils?.playSoundForEvent(player, "commandError", dependencies);
                 }
                 break;
             case 'status':
@@ -74,13 +80,15 @@ export async function execute(player, args, dependencies) {
         }
     } catch (error) {
         player?.sendMessage(getString('command.endlock.error.generic', { commandName: definition.name, errorMessage: error.message }));
-        console.error(`[EndlockCommand.execute] Error for ${adminName} executing '${subCommand}': ${error.stack || error}`);
+        console.error(`[EndlockCommand CRITICAL] Error for ${adminName} executing '${subCommand}': ${error.stack || error}`);
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
         logManager?.addLog({
-            adminName,
-            actionType: 'errorEndlockCommand', // More specific error actionType
+            adminName: adminName,
+            actionType: 'errorDimensionLockCommand', // Standardized
             context: `EndlockCommand.execute.${subCommand}`,
+            targetName: 'The End',
             details: `Execution error: ${error.message}`,
-            error: error.stack || error.message,
+            errorStack: error.stack || error.toString(),
         }, dependencies);
     }
 }

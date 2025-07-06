@@ -5,9 +5,7 @@
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').ActionManager} ActionManager
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 const defaultMinLength = 10;
@@ -21,7 +19,7 @@ const defaultPercentageThreshold = 50;
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
  * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared command dependencies.
+ * @param {Dependencies} dependencies - Shared command dependencies.
  * @returns {Promise<void>}
  */
 export async function checkSymbolSpam(player, eventData, pData, dependencies) {
@@ -29,15 +27,15 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const message = eventData.message;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
+    if (!config?.enableSymbolSpamCheck) {
+        return;
+    }
+
     // Ensure actionProfileKey is camelCase, standardizing from config
     const rawActionProfileKey = config?.symbolSpamActionProfileName ?? 'chatSymbolSpamDetected'; // Default is already camelCase
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
-
-    if (!config?.enableSymbolSpamCheck) {
-        return;
-    }
 
     const minLength = config?.symbolSpamMinLength ?? defaultMinLength;
     if (message.length < minLength) {
@@ -55,7 +53,8 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         totalCharsNonSpace++;
 
         // Check if the character is NOT alphanumeric (a-z, A-Z, 0-9)
-        if (!char.match(/[a-zA-Z0-9]/i)) { // Case-insensitive match for letters/numbers
+        // Using a regex for this is more robust than manual char code checks.
+        if (!/^[a-zA-Z0-9]$/.test(char)) { // Test if char is NOT alphanumeric
             symbolChars++;
         }
     }
@@ -68,23 +67,26 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
     const percentageThreshold = config?.symbolSpamPercentage ?? defaultPercentageThreshold;
 
     if (symbolPercentage >= percentageThreshold) {
+        const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
-            `[SymbolSpamCheck.execute] Player ${playerName} triggered symbol spam. ` +
-            `Msg: '${message}', Symbols: ${symbolPercentage.toFixed(1)}% / ${totalCharsNonSpace} chars, ` +
-            `Threshold: ${percentageThreshold}%, MinLength: ${minLength}`,
-            pData?.isWatched ? playerName : null, dependencies
+            `[SymbolSpamCheck] Player ${playerName} triggered symbol spam. ` +
+            `Msg: '${message}', Symbols: ${symbolPercentage.toFixed(1)}% (${symbolChars}/${totalCharsNonSpace} non-space chars), ` +
+            `Threshold: ${percentageThreshold}%, MinMsgLength: ${minLength}`,
+            watchedPlayerName, dependencies
         );
 
         const violationDetails = {
             percentage: `${symbolPercentage.toFixed(1)}%`,
             threshold: `${percentageThreshold}%`,
-            minLength: minLength.toString(), // Ensure string for details
+            symbolCount: symbolChars.toString(),
+            totalNonSpaceChars: totalCharsNonSpace.toString(),
+            minLength: minLength.toString(),
             originalMessage: message,
         };
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const profile = config?.checkActionProfiles?.[actionProfileKey];
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         if (profile?.cancelMessage) {
             eventData.cancel = true;
         }

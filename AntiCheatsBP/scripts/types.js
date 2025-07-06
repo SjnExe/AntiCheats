@@ -23,18 +23,20 @@
  * @typedef {import('./config.js').editableConfigValues} ConfigEditable Current editable configuration values.
  * @typedef {import('./core/actionProfiles.js').checkActionProfiles} CheckActionProfiles All defined action profiles.
  * @typedef {import('./core/automodConfig.js').automodConfig} AutoModConfig The AutoMod rules and toggles.
- * @typedef {import('./utils/playerUtils.js')} PlayerUtils Utility functions for players.
- * @typedef {import('./core/playerDataManager.js')} PlayerDataManager Manager for player-specific AC data.
- * @typedef {import('./core/logManager.js')} LogManager Manager for logging AC events.
- * @typedef {import('./core/actionManager.js')} ActionManager Manager for executing actions based on checks.
- * @typedef {import('./core/uiManager.js')} UIManager Manager for creating and showing UI forms.
- * @typedef {import('./core/reportManager.js')} ReportManager Manager for player reports.
- * @typedef {import('./core/tpaManager.js')} TpaManager Manager for TPA system.
- * @property {typeof import('./core/commandManager.js')} CommandManagerFull Module for command management.
- * @typedef {import('./core/rankManager.js')} RankManagerFull Module for rank management.
- * @typedef {import('./core/chatProcessor.js')} ChatProcessor Module for processing chat messages.
- * @typedef {import('./utils/worldBorderManager.js')} WorldBorderManagerFull Module for world border.
- * @typedef {import('./checks/index.js')} AllChecks Object containing all check functions.
+ *
+ * Typedefs for full modules (primarily for JSDoc linking and clarity):
+ * @typedef {typeof import('./utils/playerUtils.js')} PlayerUtilsFull Module for player utility functions.
+ * @typedef {typeof import('./core/playerDataManager.js')} PlayerDataManagerFull Module for player-specific AC data.
+ * @typedef {typeof import('./core/logManager.js')} LogManagerFull Module for logging AC events.
+ * @typedef {typeof import('./core/actionManager.js')} ActionManagerFull Module for executing actions based on checks.
+ * @typedef {typeof import('./core/uiManager.js')} UIManagerFull Module for creating and showing UI forms.
+ * @typedef {typeof import('./core/reportManager.js')} ReportManagerFull Module for player reports.
+ * @typedef {typeof import('./core/tpaManager.js')} TpaManagerFull Module for TPA system.
+ * @typedef {typeof import('./core/commandManager.js')} CommandManagerFull Module for command management.
+ * @typedef {typeof import('./core/rankManager.js')} RankManagerFull Module for rank management.
+ * @typedef {typeof import('./core/chatProcessor.js')} ChatProcessorFull Module for processing chat messages.
+ * @typedef {typeof import('./utils/worldBorderManager.js')} WorldBorderManagerFull Module for world border.
+ * @typedef {typeof import('./checks/index.js')} AllChecksFull Object containing all check functions.
  */
 
 /**
@@ -116,8 +118,8 @@
  *
  * @property {PlayerFlagData} flags Accumulated violation flags.
  * @property {string} [lastFlagType] The `checkType` of the most recent flag.
- * @property {Object.<string, {itemTypeId: string, quantityFound?: number, timestamp: number, details?: string}>} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
- * @property {Object.<string, {lastActionThreshold: number, lastActionTimestamp: number, [key: string]: any}>} [automodState] State information for the AutoMod system related to this player. Persisted.
+ * @property {Object.<string, {itemTypeId?: string, quantityFound?: number, timestamp: number, details?: string, [key: string]: any}>} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
+ * @property {Object.<string, {lastActionThreshold?: number, lastActionTimestamp?: number, [key: string]: any}>} [automodState] State information for the AutoMod system related to this player. Persisted.
  *
  * @property {number} [lastLoginTime] Timestamp of the last login.
  * @property {number} [lastLogoutTime] Timestamp of the last logout.
@@ -141,12 +143,12 @@
  * @property {number} [consecutiveOnGroundSpeedingTicks=0] For speed check: consecutive ticks exceeding speed limits while on ground.
  *
  * Combat Related State:
- * @property {number[]} [attackEvents] Timestamps of recent attack actions.
- * @property {number} [lastAttackTime=0] Timestamp of the last attack action.
+ * @property {number[]} [attackEventsTimestamps] Timestamps of recent attack actions (for CPS).
+ * @property {number} [lastAttackTime=0] Timestamp of the last attack action (general).
  * @property {number} [lastAttackTick=0] Game tick of the last attack action.
  * @property {number} [lastTookDamageTick=0] Game tick when the player last took damage.
  * @property {number} [lastCombatInteractionTime=0] Timestamp of last combat event (dealt or received damage).
- * @property {Array<{entityId: string, timestamp: number, entityType?: string}>} [recentHits] History of entities hit by the player.
+ * @property {Array<{entityId: string, timestamp: number, entityType?: string}>} [recentHits] History of entities hit by the player (for MultiTarget).
  * @property {number} [lastPitch=0] Player's pitch rotation at the last relevant moment (e.g., attack).
  * @property {number} [lastYaw=0] Player's yaw rotation at the last relevant moment.
  * @property {boolean} [isUsingConsumable=false] True if currently using a consumable item (food, potion).
@@ -156,7 +158,7 @@
  * @property {Object.<string, number>} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check).
  *
  * World Interaction / Building State:
- * @property {number[]} [blockBreakEvents] Timestamps of recent block break actions.
+ * @property {number[]} [blockBreakEventsTimestamps] Timestamps of recent block break actions (for Nuker).
  * @property {Array<{x: number, y: number, z: number, blockTypeId: string, pitch: number, yaw: number, tick: number, dimensionId: string}>} [recentBlockPlacements] History of recent block placements.
  * @property {number[]} [recentPlaceTimestamps] Timestamps of recent block placements (for FastPlace check).
  * @property {boolean} [isAttemptingBlockBreak=false] True if player is currently holding break on a block.
@@ -193,7 +195,7 @@
  *
  * Check-Specific Tick Timers (to control frequency of less critical checks):
  * @property {number} [lastCheckNameSpoofTick=0]
- * @property {number} [lastCheckAntiGmcTick=0] // Corrected to Gmc standard
+ * @property {number} [lastCheckAntiGmcTick=0]
  * @property {number} [lastCheckNetherRoofTick=0]
  * @property {number} [lastCheckAutoToolTick=0]
  * @property {number} [lastCheckFlatRotationBuildingTick=0]
@@ -281,7 +283,7 @@
 /**
  * Structure for an AutoMod configuration rule defined in `automodConfig.js`.
  * Links a `checkType` to an `actionProfileName` and enables/disables it.
- * @typedef {object} AutoModRule
+ * @typedef {object} AutoModRuleDef
  * @property {string} checkType The type of check this rule applies to (e.g., "chatSpamFastMessage", "movementFlySustained").
  * @property {string} actionProfileName The name of the action profile (from `actionProfiles.js`) to use for this check.
  * @property {boolean} enabled Whether this AutoMod rule is currently active.
@@ -300,7 +302,7 @@
  * @property {string} [nametagPrefix=""] Prefix displayed in the player's nametag (above head).
  * @property {string} [nametagSuffix=""] Suffix displayed in the player's nametag.
  * @property {string} [defaultChatColor="§f"] Default Minecraft color code for chat messages from players with this rank.
- * @property {Array<{type: 'owner_name'|'admin_tag'|'manual_tag_prefix'|'tag'|'default', value?: string | number, prefix?: string}>} conditions Conditions for a player to obtain this rank.
+ * @property {Array<RankCondition>} conditions Conditions for a player to obtain this rank.
  * @property {boolean} [isDefault=false] If true, this is the default rank for new players or those not meeting other rank conditions.
  * @property {number} [assignableBy] Permission level required to manually assign/remove this rank (if applicable).
  */
@@ -312,25 +314,25 @@
  * @property {ConfigEditable} config The current editable configuration settings.
  * @property {CheckActionProfiles} checkActionProfiles All defined action profiles.
  * @property {AutoModConfig} automodConfig The AutoMod rules and toggles.
- * @property {PlayerUtils} playerUtils Utility functions for player interactions.
- * @property {PlayerDataManager} playerDataManager Manager for player-specific AntiCheat data.
- * @property {LogManager} logManager Manager for logging events.
- * @property {ActionManager} actionManager Manager for executing check actions.
- * @property {UIManager} uiManager Manager for handling user interface forms.
- * @property {ReportManager} reportManager Manager for player reports.
- * @property {TpaManager} tpaManager Manager for the TPA system.
- * @property {AllChecks} checks An object containing all check functions, keyed by check name.
+ * @property {PlayerUtilsFull} playerUtils Utility functions for player interactions.
+ * @property {PlayerDataManagerFull} playerDataManager Manager for player-specific AntiCheat data.
+ * @property {LogManagerFull} logManager Manager for logging events.
+ * @property {ActionManagerFull} actionManager Manager for executing check actions.
+ * @property {UIManagerFull} uiManager Manager for handling user interface forms.
+ * @property {ReportManagerFull} reportManager Manager for player reports.
+ * @property {TpaManagerFull} tpaManager Manager for the TPA system.
+ * @property {AllChecksFull} checks An object containing all check functions, keyed by check name.
  * @property {typeof import('@minecraft/server')} mc The raw `@minecraft/server` module.
  * @property {number} currentTick The current game tick count from the main loop.
  * @property {typeof import('./core/rankManager.js').permissionLevels} permissionLevels Enum-like object for permission levels.
- * @property {typeof import('@minecraft/server-ui').ActionFormData} ActionFormData Constructor for ActionForm.
- * @property {typeof import('@minecraft/server-ui').MessageFormData} MessageFormData Constructor for MessageForm.
- * @property {typeof import('@minecraft/server-ui').ModalFormData} ModalFormData Constructor for ModalForm.
- * @property {typeof import('@minecraft/server').ItemComponentTypes} ItemComponentTypes Enum for item component types.
- * @property {ChatProcessor} chatProcessor Module for processing and validating chat messages.
- * @property {function(string, Record<string, string | number>?): string} getString Localization function (currently simplified).
- * @property {{getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById?: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions. (getRankById is used in addrank/removerank but not passed in default main.js dependencies).
- * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder'], clearBorderSettings?: WorldBorderManagerFull['clearBorderSettings']}} worldBorderManager Subset of WorldBorderManager functions.
+ * @property {typeof ActionFormData} ActionFormData Constructor for ActionForm.
+ * @property {typeof MessageFormData} MessageFormData Constructor for MessageForm.
+ * @property {typeof ModalFormData} ModalFormData Constructor for ModalForm.
+ * @property {typeof ItemComponentTypes} ItemComponentTypes Enum for item component types.
+ * @property {ChatProcessorFull} chatProcessor Module for processing and validating chat messages.
+ * @property {function(string, Record<string, string | number>?): string} getString Localization function.
+ * @property {{getPlayerPermissionLevel: RankManagerFull['getPlayerPermissionLevel'], updatePlayerNametag: RankManagerFull['updatePlayerNametag'], getPlayerRankFormattedChatElements: RankManagerFull['getPlayerRankFormattedChatElements'], getRankById: RankManagerFull['getRankById']}} rankManager Subset of RankManager functions for convenience.
+ * @property {{getBorderSettings: WorldBorderManagerFull['getBorderSettings'], saveBorderSettings: WorldBorderManagerFull['saveBorderSettings'], processWorldBorderResizing: WorldBorderManagerFull['processWorldBorderResizing'], enforceWorldBorderForPlayer: WorldBorderManagerFull['enforceWorldBorderForPlayer'], isPlayerOutsideBorder: WorldBorderManagerFull['isPlayerOutsideBorder'], clearBorderSettings: WorldBorderManagerFull['clearBorderSettings']}} worldBorderManager Subset of WorldBorderManager functions for convenience.
  * @property {import('@minecraft/server').System} system The `system` object from `@minecraft/server`.
  * @property {{registerCommand: CommandManagerFull['registerCommandInternal'], unregisterCommand: CommandManagerFull['unregisterCommandInternal'], reloadCommands: CommandManagerFull['initializeCommands']}} commandManager Subset of CommandManager functions (for internal use by main.js etc.).
  * @property {typeof import('./config.js')} editableConfig The full config module, allowing access to `updateConfigValue`.
@@ -377,7 +379,7 @@
 
 /**
  * Defines parameters for a specific AutoMod action.
- * @typedef {object} AutoModRuleActionParameters
+ * @typedef {object} AutoModActionParameters
  * @property {string} [messageTemplate] - Template for messages to players or admins. Placeholders: {playerName}, {actionType}, {checkType}, {flagCount}, {flagThreshold}, {duration}, {itemTypeId}, {itemQuantity}, {teleportCoordinates}.
  * @property {string} [adminMessageTemplate] - Optional separate template for admin notifications. Same placeholders.
  * @property {string} [duration] - Duration string for tempBan or mute (e.g., '5m', '1h', 'perm'). Parsed by `playerUtils.parseDuration`.
@@ -386,11 +388,11 @@
  */
 
 /**
- * Defines a rule within the AutoMod system for a specific `checkType`.
- * @typedef {object} AutoModRule
+ * Defines a rule within an AutoMod tier for a specific `checkType`.
+ * @typedef {object} AutoModTierRule
  * @property {number} flagThreshold - The number of flags of a specific `checkType` (camelCase) to trigger this rule.
- * @property {('warn'|'kick'|'tempBan'|'permBan'|'mute'|'freezePlayer'|'removeIllegalItem'|'teleportSafe'|'flagOnly')} actionType - The type of action to take (camelCase). Note: `automodManager.js` handles `mute`; `freezePlayer` is conceptual.
- * @property {AutoModRuleActionParameters} parameters - Parameters specific to the actionType.
+ * @property {('warn'|'kick'|'tempBan'|'permBan'|'mute'|'freezePlayer'|'removeIllegalItem'|'teleportSafe'|'flagOnly')} actionType - The type of action to take (camelCase).
+ * @property {AutoModActionParameters} parameters - Parameters specific to the actionType.
  * @property {boolean} resetFlagsAfterAction - Whether to reset the specific `checkType` flags for the player after this action is taken.
  */
 

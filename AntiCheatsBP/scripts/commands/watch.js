@@ -1,67 +1,84 @@
 /**
- * @file Defines the !watch command.
- * This command allows administrators to add a player to the "watchlist",
- * enabling more detailed debug logging for that player.
+ * @file Defines the !watch command for administrators to enable detailed logging for a specific player.
  */
+// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
-import { getPlayerData, saveDirtyPlayerData } from '../core/playerDataManager.js';
 
-/** @type {import('../types.js').CommandDefinition} */
+/**
+ * @type {import('../types.js').CommandDefinition}
+ */
 export const definition = {
     name: 'watch',
-    syntax: '!watch <playername>',
-    description: 'Adds a player to the watchlist for detailed logging.',
+    syntax: '<playername>', // Prefix handled by commandManager
+    description: 'Enables detailed logging for a specific player. Use with caution, can generate many logs.',
     permissionLevel: permissionLevels.admin,
     enabled: true,
 };
 
+/**
+ * Executes the !watch command.
+ * Sets the `isWatched` flag to true for the target player's AntiCheat data.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} args - Command arguments: [playername].
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
+ */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, getString } = dependencies;
-    const adminName = player.nameTag;
+    const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        playerUtils.sendMessage(player, getString('command.watch.usage', { prefix: config?.prefix ?? '!', syntax: definition.syntax }));
+        player.sendMessage(getString('command.watch.usage', { prefix: prefix, syntax: definition.syntax }));
         return;
     }
 
     const targetPlayerName = args[0];
-    const targetPlayer = playerUtils.findPlayerByNameTag(targetPlayerName, dependencies.mc.world.getAllPlayers());
+    const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
 
-    if (!targetPlayer) {
-        playerUtils.sendMessage(player, getString('command.watch.playerNotFound', { playerName: targetPlayerName }));
+    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
+        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
-    const pData = getPlayerData(targetPlayer.id);
+    const pData = playerDataManager?.getPlayerData(targetPlayer.id);
     if (!pData) {
-        playerUtils.sendMessage(player, getString('command.watch.noData', { playerName: targetPlayer.nameTag }));
+        player.sendMessage(getString('command.watch.noData', { playerName: targetPlayer.nameTag }));
+        // Log this, as it's unusual for an online player.
+        logManager?.addLog({
+            actionType: 'errorWatchCommandNoPData',
+            context: 'WatchCommand.execute',
+            adminName: adminName,
+            targetName: targetPlayer.nameTag,
+            targetId: targetPlayer.id,
+            details: `Attempted to watch player, but no pData found.`,
+        }, dependencies);
         return;
     }
 
     if (pData.isWatched) {
-        playerUtils.sendMessage(player, getString('command.watch.alreadyWatched', { playerName: targetPlayer.nameTag }));
+        player.sendMessage(getString('command.watch.alreadyWatched', { playerName: targetPlayer.nameTag }));
         return;
     }
 
     pData.isWatched = true;
-    pData.isDirtyForSave = true;
+    pData.isDirtyForSave = true; // Mark for saving
 
-    await saveDirtyPlayerData(targetPlayer, dependencies);
+    // Explicitly save the data now.
+    await playerDataManager?.saveDirtyPlayerData(targetPlayer, dependencies);
 
-    const messageToAdmin = getString('command.watch.success.admin', { playerName: targetPlayer.nameTag });
-    playerUtils.sendMessage(player, messageToAdmin);
+    player.sendMessage(getString('command.watch.success.admin', { playerName: targetPlayer.nameTag }));
+    targetPlayer.sendMessage(getString('command.watch.success.target', { adminName: adminName }));
+    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
-    const messageToTarget = getString('command.watch.success.target', { adminName: adminName });
-    playerUtils.sendMessage(targetPlayer, messageToTarget);
-
-    logManager.addLog({
-        actionType: 'commandWatchPlayer',
+    logManager?.addLog({
         adminName: adminName,
+        actionType: 'playerWatched', // Standardized camelCase
         targetName: targetPlayer.nameTag,
         targetId: targetPlayer.id,
-        details: `Player added to watchlist.`,
-        context: 'WatchCommand.execute', // Consistent casing and context
+        details: `Player ${targetPlayer.nameTag} is now being watched by ${adminName}.`,
     }, dependencies);
 
-    playerUtils.debugLog(`Admin ${adminName} started watching ${targetPlayer.nameTag}.`, adminName, dependencies);
+    playerUtils?.debugLog(`Admin ${adminName} started watching player ${targetPlayer.nameTag}.`, adminName, dependencies);
 }

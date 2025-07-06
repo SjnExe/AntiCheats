@@ -1,6 +1,7 @@
 /**
  * @file Defines the !notify command for administrators to manage their AntiCheat system notification preferences.
  */
+// Assuming permissionLevels is a static export for now.
 import { permissionLevels } from '../core/rankManager.js';
 
 /**
@@ -8,47 +9,55 @@ import { permissionLevels } from '../core/rankManager.js';
  */
 export const definition = {
     name: 'notify',
-    syntax: '!notify [on|off|toggle|status]',
+    syntax: '[on|off|toggle|status]', // Prefix handled by commandManager
     description: 'Manages your AntiCheat system notification preferences.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: permissionLevels.admin, // Only admins can manage their notifications
     enabled: true,
 };
 
 /**
  * Executes the !notify command.
  * Allows administrators to toggle their AntiCheat notifications on/off or check their current status.
- * Preferences are stored using player tags ('ac_notifications_on', 'ac_notifications_off') and
- * a field in PlayerAntiCheatData (`pData.ac_notifications_enabled`).
+ * Preferences are stored using a field in PlayerAntiCheatData (`pData.notificationsEnabled`).
+ * Player tags are secondary and can be used for persistence if pData is not fully loaded/saved immediately.
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, playerDataManager, getString } = dependencies;
-    const notifEnabledPDataKey = 'ac_notifications_enabled';
-    const notificationsOffTag = 'ac_notifications_off';
-    const notificationsOnTag = 'ac_notifications_on';
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const prefix = config?.prefix ?? '!';
 
-    const subCommand = args[0] ? args[0].toLowerCase() : 'toggle';
+    // Key for storing notification preference in pData.
+    // This should align with how playerUtils.notifyAdmins checks preferences.
+    const pDataKeyForNotifications = 'notificationsEnabled'; // Example key, ensure it's used by notifyAdmins logic.
 
-    let pData = playerDataManager.getPlayerData(player.id);
+    const subCommand = args[0]?.toLowerCase() || 'toggle'; // Default to 'toggle'
+
+    let pData = playerDataManager?.getPlayerData(player.id);
     if (!pData) {
-        playerUtils.debugLog(`[NotifyCommand] pData not found for ${player.nameTag}. Creating temporary minimal pData for this command.`, player.nameTag, dependencies);
-        pData = { id: player.id, isWatched: false, [notifEnabledPDataKey]: config.acGlobalNotificationsDefaultOn };
+        // This should ideally not happen for an online admin. If it does, it's a problem.
+        playerUtils?.debugLog(`[NotifyCommand CRITICAL] pData not found for admin ${adminName}. Cannot reliably manage notifications.`, adminName, dependencies);
+        player.sendMessage(getString('common.error.playerDataNotFound')); // Generic error
+        return;
     }
 
+    // Determine current preference: pData is primary, then config default. Tags are not used as primary source.
     let currentPreference;
-    if (typeof pData[notifEnabledPDataKey] === 'boolean') {
-        currentPreference = pData[notifEnabledPDataKey];
-    } else if (player.hasTag(notificationsOnTag)) {
-        currentPreference = true;
-    } else if (player.hasTag(notificationsOffTag)) {
-        currentPreference = false;
+    if (typeof pData[pDataKeyForNotifications] === 'boolean') {
+        currentPreference = pData[pDataKeyForNotifications];
     } else {
-        currentPreference = config.acGlobalNotificationsDefaultOn;
+        // If not explicitly set in pData, fall back to the global default from config
+        currentPreference = config?.acGlobalNotificationsDefaultOn ?? true; // Default to true if config itself is missing
+        // Optionally, set it in pData now if it was undefined to establish an explicit state.
+        // pData[pDataKeyForNotifications] = currentPreference;
+        // pData.isDirtyForSave = true;
+        // playerUtils?.debugLog(`[NotifyCommand] Preference for ${adminName} was undefined, set to default: ${currentPreference}`, adminName, dependencies);
     }
+
 
     let newPreference;
     let responseMessageKey;
@@ -67,54 +76,54 @@ export async function execute(player, args, dependencies) {
             responseMessageKey = newPreference ? 'command.notify.enabled' : 'command.notify.disabled';
             break;
         case 'status':
-            const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase(); // Or specific "ENABLED"/"DISABLED" keys
-            let sourceTextKey = 'command.notify.status.source.default';
-            if (typeof pData[notifEnabledPDataKey] === 'boolean' || player.hasTag(notificationsOnTag) || player.hasTag(notificationsOffTag)) {
-                sourceTextKey = 'command.notify.status.source.explicit';
-            }
+            const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase();
+            // Determine if the status is based on an explicit setting in pData or the server default
+            const sourceTextKey = typeof pData[pDataKeyForNotifications] === 'boolean' ?
+                'command.notify.status.source.explicit' :
+                'command.notify.status.source.default';
             player.sendMessage(getString('command.notify.status', { statusText: statusText, sourceText: getString(sourceTextKey) }));
-            try {
-                logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: 'notifyStatusChecked', details: `Checked own notification status: ${statusText} ${getString(sourceTextKey)}` }, dependencies);
-            } catch (logError) {
-                console.error(`[NotifyCommand] Error logging status check: ${logError.stack || logError}`);
-            }
-            return;
+            logManager?.addLog({
+                adminName: adminName,
+                actionType: 'notifyStatusChecked', // Standardized
+                details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`
+            }, dependencies);
+            return; // Status check done.
         default:
-            player.sendMessage(getString('command.notify.usage', { prefix: config.prefix }));
+            player.sendMessage(getString('command.notify.usage', { prefix: prefix }));
             return;
     }
 
+    // Apply the new preference
     try {
-        if (newPreference) {
-            player.removeTag(notificationsOffTag);
-            player.addTag(notificationsOnTag);
-        } else {
-            player.removeTag(notificationsOnTag);
-            player.addTag(notificationsOffTag);
-        }
-
-        if (pData) {
-            pData[notifEnabledPDataKey] = newPreference;
-            pData.isDirtyForSave = true;
-        } else {
-            playerUtils.debugLog(`[NotifyCommand] Critical: pData was unexpectedly null/undefined when trying to set ${notifEnabledPDataKey} for ${player.nameTag}. Tags set, but pData not updated.`, player.nameTag, dependencies);
-        }
+        pData[pDataKeyForNotifications] = newPreference;
+        pData.isDirtyForSave = true;
+        // No tags needed if pData is the source of truth and saved reliably.
+        // If tags were used as primary:
+        // player.removeTag(newPreference ? 'ac_notifications_off' : 'ac_notifications_on');
+        // player.addTag(newPreference ? 'ac_notifications_on' : 'ac_notifications_off');
 
         player.sendMessage(getString(responseMessageKey));
+        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
-        const logActionType = newPreference ? 'notifyEnabled' : 'notifyDisabled';
-        playerUtils.debugLog(`[NotifyCommand] Admin ${player.nameTag} ${logMessageAction} AntiCheat notifications. New preference: ${newPreference}`, player.nameTag, dependencies);
-        logManager.addLog({ timestamp: Date.now(), adminName: player.nameTag, actionType: logActionType, details: `Notifications ${logMessageAction}` }, dependencies);
+        const logActionType = newPreference ? 'notifyEnabledUser' : 'notifyDisabledUser'; // User-specific action
+        playerUtils?.debugLog(`[NotifyCommand] Admin ${adminName} ${logMessageAction} AntiCheat notifications. New preference: ${newPreference}`, adminName, dependencies);
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: logActionType,
+            details: `User notifications ${logMessageAction}`
+        }, dependencies);
 
-    } catch (tagError) {
+    } catch (error) { // Catch errors from pData update or tag operations if they were used
         player.sendMessage(getString('command.notify.error.update'));
-        console.error(`[NotifyCommand] Error setting tags for ${player.nameTag}: ${tagError.stack || tagError}`);
-        logManager.addLog({
-            adminName: player.nameTag,
-            actionType: 'errorNotifyCommand', // More specific
-            context: 'NotifyCommand.setTags', // Consistent casing
-            details: `Failed to set notification tags: ${tagError.message}`,
+        console.error(`[NotifyCommand CRITICAL] Error setting notification preference for ${adminName}: ${error.stack || error}`);
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: 'errorNotifyCommand',
+            context: 'NotifyCommand.setPreference',
+            details: `Failed to set notification preference to ${newPreference}: ${error.message}`,
+            errorStack: error.stack || error.toString(),
         }, dependencies);
     }
 }

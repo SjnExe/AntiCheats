@@ -1,97 +1,96 @@
 /**
- * Defines the !unmute command for administrators to allow a previously muted player to chat again.
+ * @file Defines the !unmute command for administrators to allow a muted player to chat again.
  */
-import { permissionLevels as importedPermissionLevels } from '../core/rankManager.js'; // Import permissionLevels
+// Assuming permissionLevels is a static export for now.
+import { permissionLevels } from '../core/rankManager.js';
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: "unmute",
-    syntax: "!unmute <playername>",
-    description: "command.unmute.description",
-    permissionLevel: importedPermissionLevels.admin, // Set directly
+    name: 'unmute',
+    syntax: '<playername>', // Prefix handled by commandManager
+    description: 'Unmutes a player, allowing them to send chat messages again.',
+    permissionLevel: permissionLevels.admin,
     enabled: true,
 };
+
 /**
- * Executes the unmute command.
+ * Executes the !unmute command.
+ * Removes a mute from the specified player.
+ * @async
+ * @param {import('@minecraft/server').Player} player - The player issuing the command.
+ * @param {string[]} args - Command arguments: [playername].
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
-    const prefix = config.prefix;
+    const adminName = player?.nameTag ?? 'UnknownAdmin';
+    const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
         player.sendMessage(getString('command.unmute.usage', { prefix: prefix }));
         return;
     }
-    const targetPlayerName = args[0];
-    const foundPlayer = playerUtils.findPlayer(targetPlayerName);
 
-    if (!foundPlayer) {
+    const targetPlayerName = args[0];
+    const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
+
+    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
 
-    try {
-        const oldMuteInfo = playerDataManager.getMuteInfo(foundPlayer, dependencies);
+    const pData = playerDataManager?.getPlayerData(targetPlayer.id);
+    if (!pData) {
+        // This case means the player is online but has no AntiCheat data, which is unusual.
+        player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }) + " (No data)");
+        playerUtils?.debugLog(`[UnmuteCommand] No pData found for online player ${targetPlayer.nameTag}. Cannot verify mute status or unmute.`, adminName, dependencies);
+        return;
+    }
 
-        if (!oldMuteInfo) {
-            player.sendMessage(getString('command.unmute.notMuted', { playerName: foundPlayer.nameTag }));
-            return;
-        }
+    const muteInfo = pData.muteInfo; // Mute info is on pData
 
-        const unmuted = playerDataManager.removeMute(foundPlayer, dependencies);
+    if (!muteInfo) {
+        player.sendMessage(getString('command.unmute.notMuted', { playerName: targetPlayer.nameTag }));
+        return;
+    }
 
-        if (unmuted) {
-            try {
-                foundPlayer.onScreenDisplay.setActionBar(getString('command.unmute.targetNotification'));
-            } catch (e) {
-                if (config.enableDebugLogging) {
-                    playerUtils.debugLog(`[UnmuteCommand] Failed to set action bar for unmuted player ${foundPlayer.nameTag}: ${e.stack || e}`, player.nameTag, dependencies);
-                }
-            }
-            player.sendMessage(getString('command.unmute.success', { playerName: foundPlayer.nameTag }));
-            const targetPData = playerDataManager.getPlayerData(foundPlayer.id);
-            // Critical notification - no config check
-            const baseMainNotifyMsg = getString('command.unmute.notify.unmuted', { adminName: player.nameTag, targetName: foundPlayer.nameTag });
-            playerUtils.notifyAdmins(baseMainNotifyMsg, dependencies, player, targetPData);
-            logManager.addLog({
-                timestamp: Date.now(),
-                adminName: player.nameTag,
-                actionType: 'unmute',
-                targetName: foundPlayer.nameTag,
-                reason: oldMuteInfo.reason,
-                details: `Original mute by: ${oldMuteInfo.mutedBy}, AutoMod: ${oldMuteInfo.isAutoMod}, Check: ${oldMuteInfo.triggeringCheckType || getString('common.value.notAvailable')}`
-            }, dependencies);
+    const wasAutoModMute = muteInfo.isAutoMod;
+    const autoModCheckType = muteInfo.triggeringCheckType; // Already camelCase or null
 
-            if (oldMuteInfo.isAutoMod && oldMuteInfo.triggeringCheckType) {
-                await playerDataManager.clearFlagsForCheckType(foundPlayer, oldMuteInfo.triggeringCheckType, dependencies);
-                const message = getString('command.unmute.flagsCleared', { checkType: oldMuteInfo.triggeringCheckType, playerName: foundPlayer.nameTag });
-                player.sendMessage(message);
-                const targetPDataForFlagClearLog = playerDataManager.getPlayerData(foundPlayer.id);
-                if (config.enableDebugLogging) {
-                    playerUtils.debugLog(`[UnmuteCommand] ${message.replace(/§[a-f0-9]/g, '')}`, targetPDataForFlagClearLog?.isWatched ? foundPlayer.nameTag : null, dependencies);
-                }
-                if (dependencies.config.notifications?.notifyOnAdminUtilCommandUsage !== false) { // Default true
-                    const baseFlagClearNotifyMsg = getString('command.unmute.notify.flagsCleared', { checkType: oldMuteInfo.triggeringCheckType, targetName: foundPlayer.nameTag, adminName: player.nameTag });
-                    playerUtils.notifyAdmins(baseFlagClearNotifyMsg, dependencies, player, targetPDataForFlagClearLog);
-                }
-            }
-        } else {
-            player.sendMessage(getString('command.unmute.failure', { playerName: foundPlayer.nameTag }));
-        }
-    } catch (e) {
-        player.sendMessage(getString('command.unmute.error.generic', { errorMessage: e.message }));
-        console.error(`[UnmuteCommand] Unexpected error for ${foundPlayer?.nameTag || targetPlayerName} by ${player.nameTag}: ${e.stack || e}`);
-        logManager.addLog({
-            actionType: 'errorUnmuteCommand',
-            context: 'UnmuteCommand.execute', // Consistent casing
-            adminName: player.nameTag,
-            targetName: foundPlayer?.nameTag || targetPlayerName,
-            details: {
-                commandArgs: args,
-                errorMessage: e.message,
-                stack: e.stack
-            }
+    const unmuted = playerDataManager?.removeMute(targetPlayer, dependencies);
+
+    if (unmuted) {
+        targetPlayer.sendMessage(getString('command.unmute.targetNotification'));
+        player.sendMessage(getString('command.unmute.success', { playerName: targetPlayer.nameTag }));
+        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+
+        logManager?.addLog({
+            adminName: adminName,
+            actionType: 'playerUnmuted', // Standardized camelCase
+            targetName: targetPlayer.nameTag,
+            targetId: targetPlayer.id,
+            details: `Unmuted by ${adminName}. Previous reason: ${muteInfo.reason}`,
         }, dependencies);
+
+        // Optional: Clear flags if unmuted from an AutoMod action, similar to unban
+        if (wasAutoModMute && autoModCheckType && config?.unmuteClearsAutomodFlags) { // Example new config
+            // await playerDataManager.clearFlagsForCheckType(targetPlayer, autoModCheckType, dependencies);
+            // player.sendMessage(getString('command.unmute.flagsCleared', { checkType: autoModCheckType, playerName: targetPlayer.nameTag }));
+            // playerUtils?.debugLog(`[UnmuteCommand] Cleared flags for ${autoModCheckType} for ${targetPlayer.nameTag} due to unmute from AutoMod action.`, adminName, dependencies);
+            // For now, this logic is commented out as it depends on a new config and potentially more complex interaction.
+        }
+
+        if (config?.notifyOnAdminUtilCommandUsage !== false) {
+            const notifyMsg = getString('command.unmute.notify.unmuted', { adminName: adminName, targetName: targetPlayer.nameTag });
+            playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
+        }
+
+    } else {
+        // This path might be hit if removeMute itself had an issue not related to player not being muted.
+        player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }));
+        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
     }
 }

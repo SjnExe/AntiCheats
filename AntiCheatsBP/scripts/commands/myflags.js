@@ -1,16 +1,17 @@
 /**
  * @file Defines the !myflags command, allowing players to view their own AntiCheat flag status.
  */
-import { permissionLevels } from '../core/rankManager.js'; // Assuming permissionLevels is correctly populated
+// Assuming permissionLevels is a static export for now.
+import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
  */
 export const definition = {
-    name: 'myflags', // Already camelCase
-    syntax: '!myflags',
+    name: 'myflags',
+    syntax: '', // Prefix handled by commandManager
     description: 'Allows players to view their own AntiCheat flag status.',
-    permissionLevel: permissionLevels.member,
+    permissionLevel: permissionLevels.member, // Accessible by all members
     enabled: true,
 };
 
@@ -21,12 +22,17 @@ export const definition = {
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).
- * @param {import('../types.js').CommandDependencies} dependencies - Object containing dependencies.
+ * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { playerDataManager, getString, playerUtils } = dependencies; // Added playerUtils for debug
+    const { playerDataManager, getString, playerUtils } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
+
+    if (!player?.isValid()) {
+        console.warn('[MyFlagsCommand] Invalid player object.');
+        return;
+    }
 
     const pDataSelf = playerDataManager?.getPlayerData(player.id);
 
@@ -37,19 +43,18 @@ export async function execute(player, _args, dependencies) {
         let message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n';
         let specificFlagsFound = false;
 
-        for (const key in pDataSelf.flags) {
-            if (Object.prototype.hasOwnProperty.call(pDataSelf.flags, key)) {
-                // Ensure the flag entry is an object and has a count property
-                if (key !== 'totalFlags' && typeof pDataSelf.flags[key] === 'object' && pDataSelf.flags[key] !== null && typeof pDataSelf.flags[key].count === 'number' && pDataSelf.flags[key].count > 0) {
-                    const flagDetail = pDataSelf.flags[key];
-                    const lastDetectionTime = flagDetail.lastDetectionTime ?
-                        new Date(flagDetail.lastDetectionTime).toLocaleTimeString() : // Using toLocaleTimeString for brevity
-                        getString('common.value.notAvailable');
-                    // Key is already expected to be camelCase from pData structure
-                    message += getString('command.myflags.flagEntry', { key: key, count: flagDetail.count.toString(), lastDetectionTime: lastDetectionTime }) + '\n';
-                    specificFlagsFound = true;
-                }
-            }
+        // Sort flag keys alphabetically for consistent display, excluding 'totalFlags'
+        const flagKeys = Object.keys(pDataSelf.flags)
+            .filter(key => key !== 'totalFlags' && typeof pDataSelf.flags[key] === 'object' && pDataSelf.flags[key] !== null && (pDataSelf.flags[key].count ?? 0) > 0)
+            .sort();
+
+        for (const key of flagKeys) {
+            const flagDetail = pDataSelf.flags[key];
+            const lastDetectionTime = flagDetail.lastDetectionTime ?
+                new Date(flagDetail.lastDetectionTime).toLocaleString() : // Use locale string for better readability
+                getString('common.value.notAvailable');
+            message += getString('command.myflags.flagEntry', { key: key, count: (flagDetail.count ?? 0).toString(), lastDetectionTime: lastDetectionTime }) + '\n';
+            specificFlagsFound = true;
         }
 
         if (!specificFlagsFound && totalFlags === 0) {
@@ -57,12 +62,12 @@ export async function execute(player, _args, dependencies) {
         } else if (!specificFlagsFound && totalFlags > 0) {
             // This case indicates totalFlags might be > 0 but no individual flag counts are, or they are not structured as expected.
             message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n' + getString('command.myflags.noSpecificFlags');
-            playerUtils?.debugLog(`[MyFlagsCommand.execute] Player ${playerName} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pDataSelf.flags)}`, playerName, dependencies);
+            playerUtils?.debugLog(`[MyFlagsCommand WARNING] Player ${playerName} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pDataSelf.flags)}`, playerName, dependencies);
         }
         player?.sendMessage(message.trim());
     } else {
         player?.sendMessage(getString('command.myflags.noData'));
     }
     // No server-side logging for this command by default, as it's a self-check.
-    // playerUtils?.debugLog(`[MyFlagsCommand.execute] ${playerName} checked their flags.`, playerName, dependencies); // Optional debug log
+    // playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies); // Optional sound
 }

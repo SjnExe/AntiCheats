@@ -5,9 +5,7 @@
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').Config} Config
- * @typedef {import('../../types.js').ActionManager} ActionManager
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -17,7 +15,7 @@
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
  * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared command dependencies (includes config, actionManager, etc.).
+ * @param {Dependencies} dependencies - Shared command dependencies (includes config, actionManager, etc.).
  * @returns {Promise<void>}
  */
 export async function checkCapsAbuse(player, eventData, pData, dependencies) {
@@ -25,15 +23,15 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const message = eventData.message;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
+    if (!config?.enableCapsCheck) {
+        return;
+    }
+
     // Ensure actionProfileKey is camelCase, standardizing from config
-    const rawActionProfileKey = config?.capsCheckActionProfileName ?? 'chatCapsAbuseDetected';
+    const rawActionProfileKey = config?.capsCheckActionProfileName ?? 'chatCapsAbuseDetected'; // Default is already camelCase
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
-
-    if (!config?.enableCapsCheck) { // config itself is already checked by this point by ?.
-        return;
-    }
 
     const defaultMinLength = 10;
     const defaultPercentageThreshold = 70;
@@ -48,16 +46,17 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
 
     for (let i = 0; i < message.length; i++) {
         const char = message[i];
-        // More robust letter check (Unicode aware, though less critical for caps)
-        if (char.toLowerCase() !== char.toUpperCase()) { // Checks if it's a letter
+        // Check if character is a letter (has different upper and lower case versions)
+        if (char.toLowerCase() !== char.toUpperCase()) {
             totalLetters++;
-            if (char === char.toUpperCase() && char !== char.toLowerCase()) { // Is uppercase and not a non-alphabetic char that has no case
+            // Check if it's uppercase AND it's actually a letter (not a symbol that has no case)
+            if (char === char.toUpperCase()) {
                 upperCaseLetters++;
             }
         }
     }
 
-    if (totalLetters === 0) { // No letters in the message
+    if (totalLetters === 0) { // No letters in the message, so caps check is not applicable
         return;
     }
 
@@ -65,22 +64,26 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
     const percentageThreshold = config?.capsCheckUpperCasePercentage ?? defaultPercentageThreshold;
 
     if (upperCasePercentage >= percentageThreshold) {
+        const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
-            `[CapsAbuseCheck.execute] Player ${playerName} triggered CAPS abuse. ` +
+            `[CapsAbuseCheck] Player ${playerName} triggered CAPS abuse. ` +
             `Msg: '${message}', CAPS: ${upperCasePercentage.toFixed(1)}%, ` +
             `Threshold: ${percentageThreshold}%, MinLength: ${minLength}`,
-            pData?.isWatched ? playerName : null, dependencies
+            watchedPlayerName, dependencies
         );
 
         const violationDetails = {
-            percentage: `${upperCasePercentage.toFixed(1)}%`,
+            percentage: `${upperCasePercentage.toFixed(1)}%`, // Keep as string for consistency
             threshold: `${percentageThreshold}%`,
-            minLength: minLength,
+            minLength: minLength.toString(),
+            messageLength: message.length.toString(),
+            lettersCount: totalLetters.toString(),
+            upperCaseCount: upperCaseLetters.toString(),
             originalMessage: message,
         };
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const profile = dependencies.checkActionProfiles?.[actionProfileKey]; // Access checkActionProfiles from dependencies
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         if (profile?.cancelMessage) {
             eventData.cancel = true;
         }

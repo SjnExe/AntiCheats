@@ -5,12 +5,11 @@
  * assumes `pData` fields like `blindnessTicks`, `isUsingConsumable`, `isChargingBow`
  * are updated by `updateTransientPlayerData` or relevant event handlers.
  */
-import * as mc from '@minecraft/server';
+import * as mc from '@minecraft/server'; // For mc.EntityComponentTypes
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
- * @typedef {import('../../types.js').Config} Config
+ * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
 /**
@@ -20,13 +19,18 @@ import * as mc from '@minecraft/server';
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - The standard dependencies object.
+ * @param {Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkInvalidSprint(player, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config.enableInvalidSprintCheck || !pData) {
+    if (!config?.enableInvalidSprintCheck) {
+        return;
+    }
+    if (!pData) {
+        playerUtils?.debugLog(`[InvalidSprintCheck] Skipping for ${playerName}: pData is null.`, playerName, dependencies);
         return;
     }
 
@@ -35,24 +39,27 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         let conditionDetailsLog = '';
         let isHungerTooLow = false;
         let currentFoodLevel = 'N/A';
-        // Ensure actionProfileKey is camelCase, standardizing from config
-        const rawActionProfileKey = config.invalidSprintActionProfileName ?? 'movementInvalidSprint'; // Default is already camelCase
+
+        // Standardize actionProfileKey
+        const rawActionProfileKey = config?.invalidSprintActionProfileName ?? 'movementInvalidSprint';
         const actionProfileKey = rawActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
+        const watchedPlayerName = pData.isWatched ? playerName : null;
 
         try {
-            const foodComp = player.getComponent('minecraft:food');
+            // Ensure mc.EntityComponentTypes.Food is used correctly
+            const foodComp = player.getComponent(mc.EntityComponentTypes.Food);
             if (foodComp) {
                 currentFoodLevel = foodComp.foodLevel.toString();
-                if (foodComp.foodLevel <= (config.sprintHungerLimit ?? 6)) {
+                // Default sprintHungerLimit to 6 if not in config (vanilla is >6, meaning 7+)
+                if (foodComp.foodLevel <= (config?.sprintHungerLimit ?? 6)) {
                     isHungerTooLow = true;
                 }
             }
         } catch (e) {
-            if (playerUtils.debugLog && (pData.isWatched || config.enableDebugLogging)) {
-                playerUtils.debugLog(`[InvalidSprintCheck] Error getting food component for ${player.nameTag}: ${e.message}`, player.nameTag, dependencies);
-            }
+            // Log error if food component access fails, but don't let it crash the check
+            playerUtils?.debugLog(`[InvalidSprintCheck WARNING] Error getting food component for ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
         }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
@@ -61,19 +68,20 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         } else if (player.isSneaking) {
             resolvedConditionString = 'Sneaking';
             conditionDetailsLog = 'Player is sneaking';
-        } else if (player.isRiding) {
+        } else if (player.isRiding) { // player.isRiding is a direct boolean property
             resolvedConditionString = 'Riding Entity';
             conditionDetailsLog = 'Player is riding an entity';
         } else if (isHungerTooLow) {
             resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`;
-            conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config.sprintHungerLimit ?? 6})`;
+            conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config?.sprintHungerLimit ?? 6})`;
         } else if (pData.isUsingConsumable) {
-            resolvedConditionString = 'Using Item';
+            resolvedConditionString = 'Using Item (Consumable)';
             conditionDetailsLog = 'Player is using a consumable';
         } else if (pData.isChargingBow) {
             resolvedConditionString = 'Charging Bow';
             conditionDetailsLog = 'Player is charging a bow';
         }
+        // Add more conditions here if needed, e.g., swimming, gliding (though gliding often handled separately)
 
         if (resolvedConditionString) {
             const violationDetails = {
@@ -81,18 +89,17 @@ export async function checkInvalidSprint(player, pData, dependencies) {
                 details: conditionDetailsLog,
                 isSprinting: player.isSprinting.toString(),
                 isSneaking: player.isSneaking.toString(),
-                isRiding: player.isRiding.toString(),
+                isRiding: player.isRiding.toString(), // Ensure this is correct based on API
                 blindnessTicks: (pData.blindnessTicks ?? 0).toString(),
                 hungerLevel: currentFoodLevel,
                 isUsingConsumable: (pData.isUsingConsumable ?? false).toString(),
                 isChargingBow: (pData.isChargingBow ?? false).toString(),
             };
-            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-            const watchedPrefix = pData.isWatched ? player.nameTag : null;
-            playerUtils.debugLog(
-                `[InvalidSprintCheck] Flagged ${player.nameTag}. Condition: ${resolvedConditionString}. Details: ${conditionDetailsLog}`,
-                watchedPrefix, dependencies
+            playerUtils?.debugLog(
+                `[InvalidSprintCheck] Flagged ${playerName}. Condition: ${resolvedConditionString}. Details: ${conditionDetailsLog}`,
+                watchedPlayerName, dependencies
             );
         }
     }
