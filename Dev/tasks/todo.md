@@ -23,7 +23,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## General Code & System Improvements (Suggestions by Jules)
 - **(High) Enhanced Unit/Integration Testing**: Expand test coverage with more unit tests for individual functions/modules and integration tests for complex interactions between core systems (e.g., `actionManager`, `playerDataManager`, `automodManager`).
-- **(Medium) Configuration File Validation**: Implement a robust validation system at startup for `config.js`, `core/actionProfiles.js`, `core/automodConfig.js`, and `core/ranksConfig.js` to check for correct data types, required fields, and logical consistency (e.g., valid `checkType` references). This would help prevent runtime errors due to misconfiguration.
 - **(Low) Command and Configuration Schema Definition**: Define formal schemas (e.g., using JSON Schema or TypeScript interfaces if applicable) for command definitions, `config.js` structure, and other complex configuration objects. This can aid in validation, documentation, and potentially tooling.
 - **(Low) Build/Tooling for Repetitive Code Generation**: For files with highly repetitive boilerplate (like `commandRegistry.js` or barrel files), explore using simple build scripts to auto-generate them, reducing manual effort and potential for errors.
 - **(Medium) Performance Profiling**: Periodically profile performance-critical areas, such as frequently executed checks or operations within the main tick loop, to identify and address potential bottlenecks.
