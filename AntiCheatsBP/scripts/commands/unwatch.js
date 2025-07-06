@@ -34,12 +34,11 @@ export async function execute(player, args, dependencies) {
         return;
     }
 
-    const targetPlayerName = args[0];
-    const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
+    const targetPlayerName = args[0]; // Unwatch command doesn't have a "reason" part.
 
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
-        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-        return;
+    const targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unwatch' });
+    if (!targetPlayer) {
+        return; // Message already sent by validateCommandTarget
     }
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);

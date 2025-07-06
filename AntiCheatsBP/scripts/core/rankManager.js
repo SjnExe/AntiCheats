@@ -242,3 +242,80 @@ export function getRankById(rankId) {
     const lowerRankId = rankId.toLowerCase(); // Ensure lookup is case-insensitive
     return sortedRankDefinitions.find(rankDef => rankDef.id === lowerRankId); // rankDef.id is already lowercased
 }
+
+/**
+ * Checks if an issuer has permission to perform an administrative action on a target player.
+ * This considers rank hierarchy (e.g., Admins cannot action Owners).
+ *
+ * @param {import('@minecraft/server').Player} issuerPlayer - The player attempting the action.
+ * @param {import('@minecraft/server').Player} targetPlayer - The player being targeted by the action.
+ * @param {string} actionContext - A string describing the action (e.g., 'ban', 'kick', 'mute') for logging/messaging.
+ * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
+ * @returns {{allowed: boolean, messageKey?: string, messageParams?: Record<string, string>}}
+ *          `allowed` is true if permission is granted.
+ *          If false, `messageKey` provides a textDatabase key for the denial reason,
+ *          and `messageParams` provides parameters for that message.
+ */
+export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, dependencies) {
+    const { playerUtils, getString, permissionLevels: depPermLevels } = dependencies; // Assuming getString is part of playerUtils or top-level in dependencies
+    const issuerName = issuerPlayer?.nameTag ?? 'UnknownIssuer';
+    const targetName = targetPlayer?.nameTag ?? 'UnknownTarget';
+
+    if (!issuerPlayer?.isValid() || !targetPlayer?.isValid()) {
+        playerUtils?.debugLog(`[RankManager.canAdminActionTarget] Invalid player object(s) for ${actionContext} check between ${issuerName} and ${targetName}. Denying.`, null, dependencies);
+        return { allowed: false, messageKey: 'common.error.internal', messageParams: { operation: actionContext } };
+    }
+
+    if (issuerPlayer.id === targetPlayer.id) {
+        // This function is for actions on *other* players. Self-action checks (like !kick self) are usually handled in the command itself.
+        // However, if a command delegates its "cannot target self" here, we can provide a generic key.
+        // For now, assuming commands handle self-targeting directly. If not, a key like 'command.error.cannotTargetSelf' could be returned.
+        // This function primarily focuses on rank hierarchy.
+    }
+
+    const issuerPermissionLevel = getPlayerPermissionLevel(issuerPlayer, dependencies);
+    const targetPermissionLevel = getPlayerPermissionLevel(targetPlayer, dependencies);
+
+    const ownerPerm = depPermLevels?.owner ?? 0;
+    const adminPerm = depPermLevels?.admin ?? 1;
+    // const modPerm = depPermLevels?.moderator ?? 2; // Example if a moderator rank exists
+
+    // Rule 1: No one can action an Owner if the issuer is not an Owner themselves.
+    if (targetPermissionLevel <= ownerPerm && issuerPermissionLevel > ownerPerm) {
+        return {
+            allowed: false,
+            messageKey: `command.${actionContext}.permissionDeniedOwner`, // e.g., command.ban.permissionDeniedOwner
+            messageParams: { targetName: targetName }
+        };
+    }
+
+    // Rule 2: Non-Owners cannot action Admins. (Owners can action Admins).
+    // This also implies Admins cannot action other Admins unless one is an Owner.
+    // If issuer is an Admin (but not Owner) and target is also an Admin (but not Owner), deny.
+    // If issuer is an Admin (but not Owner) and target is an Owner, already covered by Rule 1.
+    if (targetPermissionLevel <= adminPerm && targetPermissionLevel > ownerPerm && /* Target is Admin (not Owner) */
+        issuerPermissionLevel > ownerPerm /* Issuer is not Owner (could be Admin, Mod, Member) */ ) {
+        // If issuer is also an Admin (perm level <= adminPerm), they cannot action another Admin.
+        if (issuerPermissionLevel <= adminPerm) {
+             return {
+                allowed: false,
+                messageKey: `command.${actionContext}.permissionDeniedAdminSameRank`, // e.g., command.ban.permissionDeniedAdminSameRank
+                messageParams: { targetName: targetName }
+            };
+        }
+        // If issuer is Mod/Member (perm level > adminPerm), they cannot action an Admin.
+        return {
+            allowed: false,
+            messageKey: `command.${actionContext}.permissionDeniedAdminHigherRank`, // e.g., command.ban.permissionDeniedAdminHigherRank
+            messageParams: { targetName: targetName }
+        };
+    }
+
+    // Add more specific rules if needed, e.g., Moderator vs Moderator.
+    // For now, if it passes the above, and the command's own base permissionLevel was met by the issuer, it's allowed.
+    // The command itself should check if issuerPlayer.permissionLevel >= commandDefinition.permissionLevel.
+    // This function focuses on hierarchical interactions.
+
+    playerUtils?.debugLog(`[RankManager.canAdminActionTarget] Permission check for ${actionContext}: ${issuerName} (Lvl ${issuerPermissionLevel}) vs ${targetName} (Lvl ${targetPermissionLevel}) - Allowed.`, null, dependencies);
+    return { allowed: true };
+}

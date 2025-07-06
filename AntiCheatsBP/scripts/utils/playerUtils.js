@@ -327,3 +327,84 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             break;
     }
 }
+
+/**
+ * Parses command arguments to extract a target player name and a reason string.
+ * @param {string[]} args - The array of command arguments.
+ * @param {number} [reasonStartIndex=1] - The index in `args` from which the reason string starts.
+ * @param {string} [defaultReasonKey='common.value.noReasonProvided'] - The key in `textDatabase.js` for the default reason if not provided.
+ * @param {import('../types.js').Dependencies} dependencies - For accessing `getString`.
+ * @returns {{targetPlayerName: string | undefined, reason: string}}
+ *          An object containing `targetPlayerName` (args[0]) and the parsed `reason`.
+ *          `targetPlayerName` will be undefined if `args` is empty.
+ */
+export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided', dependencies) {
+    const { getString } = dependencies.playerUtils; // Assuming getString is exported from playerUtils itself or accessible via dependencies.playerUtils.getString
+
+    const targetPlayerName = args[0]; // Might be undefined if args is empty
+    let reason = '';
+
+    if (args.length > reasonStartIndex) {
+        reason = args.slice(reasonStartIndex).join(' ').trim();
+    }
+
+    if (!reason) {
+        reason = getString(defaultReasonKey);
+    }
+
+    return { targetPlayerName, reason };
+}
+
+/**
+ * Validates the target of a command, checking if the player is found and if self-targeting is allowed.
+ * Sends appropriate messages to the issuer if validation fails.
+ *
+ * @param {import('@minecraft/server').Player} issuer - The player issuing the command.
+ * @param {string | undefined} targetPlayerName - The name of the target player from command arguments.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
+ * @param {object} [options={}] - Optional parameters.
+ * @param {boolean} [options.allowSelf=false] - Whether the issuer is allowed to target themselves.
+ * @param {string} [options.commandName='command'] - The name of the command for error messages (e.g., 'kick', 'ban').
+ * @param {boolean} [options.requireOnline=true] - Whether the target player must be online. (Currently, findPlayer only finds online players).
+ * @returns {import('@minecraft/server').Player | null} The target Player object if validation passes, otherwise null.
+ */
+export function validateCommandTarget(issuer, targetPlayerName, dependencies, options = {}) {
+    const { playerUtils, getString } = dependencies;
+    const { allowSelf = false, commandName = 'command', requireOnline = true } = options;
+
+    if (!targetPlayerName) {
+        // This case should ideally be caught by the command's initial argument length check.
+        // If parsePlayerAndReasonArgs returns undefined for targetPlayerName, the command should handle it.
+        // However, adding a safeguard here if a command directly passes undefined.
+        issuer.sendMessage(getString(`command.${commandName}.usage`, { prefix: dependencies.config?.prefix ?? '!' }));
+        return null;
+    }
+
+    const targetPlayer = findPlayer(targetPlayerName); // findPlayer is already in playerUtils
+
+    if (!targetPlayer || !targetPlayer.isValid()) {
+        if (requireOnline) {
+            issuer.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+        } else {
+            // If we were to support finding offline players, this message might change.
+            issuer.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
+        }
+        return null;
+    }
+
+    if (!allowSelf && targetPlayer.id === issuer.id) {
+        // Construct a generic self-target error key or use a specific one if provided.
+        // Example: command.kick.cannotSelf, command.ban.cannotSelf
+        // For a truly generic utility, it might need a specific message key passed in options.
+        // Using a more generic approach for now.
+        const selfTargetErrorKey = `command.${commandName}.cannotSelf`;
+        if (stringDB[selfTargetErrorKey]) { // Check if specific key exists
+             issuer.sendMessage(getString(selfTargetErrorKey));
+        } else {
+            issuer.sendMessage(getString('command.error.cannotTargetSelf', { commandName: commandName }));
+        }
+        return null;
+    }
+
+    return targetPlayer;
+}

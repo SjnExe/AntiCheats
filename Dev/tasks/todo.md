@@ -23,7 +23,7 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) Add GIF/Screenshot for World Border to README.md**: Create and add a visual of the World Border feature. (Context: `README.md:75`).
 
 ## General Code & System Improvements (Suggestions by Jules)
-- **(Medium) Code Deduplication/Refactoring Pass**: Conduct a dedicated review of the codebase to identify and refactor repeated logic patterns or utility functions to improve maintainability and reduce redundancy.
+*Task moved to ongoing.md by Jules.*
 - **(High) Enhanced Unit/Integration Testing**: Expand test coverage with more unit tests for individual functions/modules and integration tests for complex interactions between core systems (e.g., `actionManager`, `playerDataManager`, `automodManager`).
 - **(Medium) Configuration File Validation**: Implement a robust validation system at startup for `config.js`, `core/actionProfiles.js`, `core/automodConfig.js`, and `core/ranksConfig.js` to check for correct data types, required fields, and logical consistency (e.g., valid `checkType` references). This would help prevent runtime errors due to misconfiguration.
 - **(Low) Command and Configuration Schema Definition**: Define formal schemas (e.g., using JSON Schema or TypeScript interfaces if applicable) for command definitions, `config.js` structure, and other complex configuration objects. This can aid in validation, documentation, and potentially tooling.

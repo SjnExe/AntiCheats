@@ -52,6 +52,39 @@ export function getPlayerData(playerId) {
 }
 
 /**
+ * Centralized error handler for dynamic property operations.
+ * @param {string} callingFunction - The name of the function where the error occurred.
+ * @param {string} operation - The specific operation that failed (e.g., 'JSON.stringify', 'player.setDynamicProperty').
+ * @param {string} playerName - The name of the player involved.
+ * @param {Error} error - The error object.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {object} [additionalDetails={}] - Any additional details to include in the log.
+ */
+function _handleDynamicPropertyError(callingFunction, operation, playerName, error, dependencies, additionalDetails = {}) {
+    const { playerUtils, logManager } = dependencies;
+    const baseMessage = `[PlayerDataManager.${callingFunction}] Error during ${operation} for ${playerName}`;
+
+    console.error(`${baseMessage}: ${error.stack || error}`);
+    playerUtils?.debugLog(`${baseMessage}. Error: ${error.message}`, playerName, dependencies);
+
+    const logContext = `playerDataManager.${callingFunction}`;
+    // Construct a more specific actionType, e.g., errorPlayerDataManagerSaveSetProperty
+    const actionType = `errorPDM${callingFunction.replace('playerData', '')}${operation.replace('player.', '').replace('JSON.', '')}`;
+
+    logManager?.addLog({
+        actionType: actionType.charAt(0).toLowerCase() + actionType.slice(1), // Ensure camelCase
+        context: logContext,
+        targetName: playerName,
+        details: {
+            operation: operation,
+            errorMessage: error.message,
+            stack: error.stack,
+            ...additionalDetails
+        }
+    }, dependencies);
+}
+
+/**
  * Saves a subset of player data (persisted keys) to the player's dynamic properties.
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {object} pDataToSave - Data containing only keys to be persisted.
@@ -71,18 +104,14 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     try {
         jsonString = JSON.stringify(pDataToSave);
     } catch (error) {
-        console.error(`[PlayerDataManager.savePlayerDataToDynamicProperties] Error stringifying pData for ${playerName}: ${error.stack || error}`);
-        playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] Failed to stringify pData for ${playerName}. Error: ${error.message}`, playerName, dependencies);
-        logManager?.addLog({
-            actionType: 'errorPlayerDataManagerStringify', // Standardized
-            context: 'playerDataManager.savePlayerDataToDynamicProperties', // Standardized
-            targetName: playerName,
-            details: {
-                operation: 'JSON.stringify',
-                errorMessage: error.message,
-                stack: error.stack
-            }
-        }, dependencies);
+        _handleDynamicPropertyError(
+            'savePlayerDataToDynamicProperties',
+            'JSON.stringify',
+            playerName,
+            error,
+            dependencies,
+            { dataToSave: typeof pDataToSave } // Avoid logging potentially large pDataToSave
+        );
         return false;
     }
 
@@ -97,19 +126,14 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
         player.setDynamicProperty(dynamicPropertyKeyV1, jsonString);
         return true;
     } catch (error) {
-        console.error(`[PlayerDataManager.savePlayerDataToDynamicProperties] Error setting dynamic property for ${playerName}: ${error.stack || error}`);
-        playerUtils?.debugLog(`[PlayerDataManager.savePlayerDataToDynamicProperties] Failed to set dynamic property for ${playerName}. Error: ${error.message}`, playerName, dependencies);
-        logManager?.addLog({
-            actionType: 'errorPlayerDataManagerSetProperty', // Standardized
-            context: 'playerDataManager.savePlayerDataToDynamicProperties', // Standardized
-            targetName: playerName,
-            details: {
-                operation: 'player.setDynamicProperty',
-                propertyKey: dynamicPropertyKeyV1,
-                errorMessage: error.message,
-                stack: error.stack
-            }
-        }, dependencies);
+        _handleDynamicPropertyError(
+            'savePlayerDataToDynamicProperties',
+            'player.setDynamicProperty',
+            playerName,
+            error,
+            dependencies,
+            { propertyKey: dynamicPropertyKeyV1, jsonLength: jsonString.length }
+        );
         return false;
     }
 }
@@ -121,7 +145,7 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
  * @returns {Promise<object | null>} The loaded player data object, or null if not found or error.
  */
 export async function loadPlayerDataFromDynamicProperties(player, dependencies) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
@@ -133,19 +157,14 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
     try {
         jsonString = player.getDynamicProperty(dynamicPropertyKeyV1);
     } catch (error) {
-        console.error(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Error getting dynamic property for ${playerName}: ${error.stack || error}`);
-        playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Failed to get dynamic property for ${playerName}. Error: ${error.message}`, playerName, dependencies);
-        logManager?.addLog({
-            actionType: 'errorPlayerDataManagerGetProperty', // Standardized
-            context: 'playerDataManager.loadPlayerDataFromDynamicProperties', // Standardized
-            targetName: playerName,
-            details: {
-                operation: 'player.getDynamicProperty',
-                propertyKey: dynamicPropertyKeyV1,
-                errorMessage: error.message,
-                stack: error.stack
-            }
-        }, dependencies);
+        _handleDynamicPropertyError(
+            'loadPlayerDataFromDynamicProperties',
+            'player.getDynamicProperty',
+            playerName,
+            error,
+            dependencies,
+            { propertyKey: dynamicPropertyKeyV1 }
+        );
         return null;
     }
 
@@ -155,19 +174,14 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Loaded and parsed data for ${playerName}.`, playerName, dependencies);
             return parsedData;
         } catch (error) {
-            console.error(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Error parsing pData JSON for ${playerName}: ${error.stack || error}`);
-            playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Failed to parse JSON for ${playerName}. JSON (start): '${jsonString.substring(0, 200)}'. Error: ${error.message}`, playerName, dependencies);
-            logManager?.addLog({
-                actionType: 'errorPlayerDataManagerParse', // Standardized
-                context: 'playerDataManager.loadPlayerDataFromDynamicProperties', // Standardized
-                targetName: playerName,
-                details: {
-                    operation: 'JSON.parse',
-                    jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : ''),
-                    errorMessage: error.message,
-                    stack: error.stack
-                }
-            }, dependencies);
+            _handleDynamicPropertyError(
+                'loadPlayerDataFromDynamicProperties',
+                'JSON.parse',
+                playerName,
+                error,
+                dependencies,
+                { jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : '') }
+            );
             return null;
         }
     } else if (jsonString === undefined) { // Check for undefined explicitly
@@ -646,8 +660,119 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if mute was successfully added, false otherwise.
  */
-export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
+/**
+ * @typedef {'mute' | 'ban'} PlayerStateRestrictionType
+ */
+
+/**
+ * Internal helper to add a state restriction (mute or ban) to a player's data.
+ * @param {import('@minecraft/server').Player} player - The player to restrict.
+ * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
+ * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
+ * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
+ * @param {string} reason - The reason for the restriction.
+ * @param {string} restrictedBy - Name of the admin or system component.
+ * @param {boolean} isAutoMod - Whether this was applied by AutoMod.
+ * @param {string|null} triggeringCheckType - If by AutoMod, the check type that triggered it.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {boolean} True if restriction was successfully added, false otherwise.
+ */
+function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason, restrictedBy, isAutoMod, triggeringCheckType, dependencies) {
     const { playerUtils, getString } = dependencies;
+    const playerName = pData.playerNameTag; // pData is guaranteed to be valid here
+
+    const expiryTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
+    const actualReason = reason || getString(`playerData.${stateType}.defaultReason`);
+
+    const restrictionInfo = {
+        reason: actualReason,
+        [stateType === 'ban' ? 'bannedBy' : 'mutedBy']: restrictedBy, // Match existing property names
+        isAutoMod,
+        triggeringCheckType,
+        [stateType === 'ban' ? 'unbanTime' : 'unmuteTime']: expiryTime, // Match existing property names
+    };
+
+    if (stateType === 'ban') {
+        restrictionInfo.xuid = player.id;
+        restrictionInfo.playerName = playerName; // Persist current nameTag at time of ban
+        restrictionInfo.banTime = Date.now();
+    } else { // Mute specific fields (if any were different, currently not)
+        // restrictionInfo.muteTime = Date.now(); // Example if mute had a 'muteTime' field
+    }
+
+    pData[stateType === 'ban' ? 'banInfo' : 'muteInfo'] = restrictionInfo;
+    pData.isDirtyForSave = true;
+
+    let logMsg = `[PlayerDataManager._addPlayerStateRestriction] Player ${playerName}`;
+    if (stateType === 'ban') logMsg += ` (XUID: ${player.id})`;
+    logMsg += ` ${stateType}d by ${restrictedBy}. Reason: '${actualReason}'. AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType ?? 'N/A'}.`;
+    logMsg += (durationMs === Infinity) ? ' Duration: Permanent.' : ` Expiry time: ${new Date(expiryTime).toISOString()}.`;
+    playerUtils?.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
+    return true;
+}
+
+/**
+ * Internal helper to remove a state restriction (mute or ban) from a player's data.
+ * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
+ * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {boolean} True if restriction was removed, false if not found.
+ */
+function _removePlayerStateRestriction(pData, stateType, dependencies) {
+    const { playerUtils } = dependencies;
+    const playerName = pData.playerNameTag;
+    const infoKey = stateType === 'ban' ? 'banInfo' : 'muteInfo';
+
+    if (pData[infoKey]) {
+        pData[infoKey] = null;
+        pData.isDirtyForSave = true;
+        playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} un${stateType}d.`, pData.isWatched ? playerName : null, dependencies);
+        return true;
+    } else {
+        playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} was not ${stateType}d. No action.`, pData.isWatched ? playerName : null, dependencies);
+        return false;
+    }
+}
+
+/**
+ * Internal helper to retrieve a player's current state restriction information, clearing it if expired.
+ * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
+ * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {import('../types.js').PlayerMuteInfo | import('../types.js').PlayerBanInfo | null} The restriction info, or null.
+ */
+function _getPlayerStateRestriction(pData, stateType, dependencies) {
+    const { playerUtils } = dependencies;
+    const playerName = pData.playerNameTag;
+    const infoKey = stateType === 'ban' ? 'banInfo' : 'muteInfo';
+    const expiryKey = stateType === 'ban' ? 'unbanTime' : 'unmuteTime';
+
+    const restriction = pData[infoKey];
+    if (!restriction) return null;
+
+    if (restriction[expiryKey] !== Infinity && Date.now() >= restriction[expiryKey]) {
+        pData[infoKey] = null;
+        pData.isDirtyForSave = true;
+        playerUtils?.debugLog(`[PlayerDataManager._getPlayerStateRestriction] ${stateType.charAt(0).toUpperCase() + stateType.slice(1)} for ${playerName} expired and removed.`, pData.isWatched ? playerName : null, dependencies);
+        return null;
+    }
+    return restriction;
+}
+
+
+/**
+ * Adds a mute record to a player's data.
+ * @param {import('@minecraft/server').Player} player - The player to mute.
+ * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
+ * @param {string} reason - The reason for the mute.
+ * @param {string} [mutedBy='Unknown'] - Name of the admin or system component that issued the mute.
+ * @param {boolean} [isAutoMod=false] - Whether this mute was applied by AutoMod.
+ * @param {string|null} [triggeringCheckType=null] - If by AutoMod, the check type (camelCase) that triggered it.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {boolean} True if mute was successfully added, false otherwise.
+ */
+export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
+    const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!player?.isValid() || typeof durationMs !== 'number' || (durationMs <= 0 && durationMs !== Infinity) || typeof mutedBy !== 'string') {
@@ -659,23 +784,7 @@ export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoM
         playerUtils?.debugLog(`[PlayerDataManager.addMute] No pData for ${playerName}. Cannot apply mute.`, playerName, dependencies);
         return false;
     }
-
-    const unmuteTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
-    const muteReason = reason || getString('playerData.mute.defaultReason');
-
-    pData.muteInfo = {
-        unmuteTime,
-        reason: muteReason,
-        mutedBy,
-        isAutoMod,
-        triggeringCheckType, // Already expected to be camelCase or null
-    };
-    pData.isDirtyForSave = true;
-
-    let logMsg = `[PlayerDataManager.addMute] Player ${playerName} muted by ${mutedBy}. Reason: '${muteReason}'. AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType ?? 'N/A'}.`;
-    logMsg += (durationMs === Infinity) ? ' Duration: Permanent.' : ` Unmute time: ${new Date(unmuteTime).toISOString()}.`;
-    playerUtils?.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
-    return true;
+    return _addPlayerStateRestriction(player, pData, 'mute', durationMs, reason, mutedBy, isAutoMod, triggeringCheckType, dependencies);
 }
 
 /**
@@ -697,16 +806,7 @@ export function removeMute(player, dependencies) {
         playerUtils?.debugLog(`[PlayerDataManager.removeMute] No pData for ${playerName}. Cannot unmute.`, playerName, dependencies);
         return false;
     }
-
-    if (pData.muteInfo) {
-        pData.muteInfo = null;
-        pData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[PlayerDataManager.removeMute] Player ${playerName} unmuted.`, pData.isWatched ? playerName : null, dependencies);
-        return true;
-    } else {
-        playerUtils?.debugLog(`[PlayerDataManager.removeMute] Player ${playerName} was not muted. No action.`, pData.isWatched ? playerName : null, dependencies);
-        return false;
-    }
+    return _removePlayerStateRestriction(pData, 'mute', dependencies);
 }
 
 /**
@@ -716,22 +816,10 @@ export function removeMute(player, dependencies) {
  * @returns {import('../types.js').PlayerMuteInfo | null} The mute info, or null if not muted or expired.
  */
 export function getMuteInfo(player, dependencies) {
-    const { playerUtils } = dependencies;
-    const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
-
     if (!player?.isValid()) return null;
-
     const pData = getPlayerData(player.id);
-    if (!pData?.muteInfo) return null;
-
-    const mute = pData.muteInfo;
-    if (mute.unmuteTime !== Infinity && Date.now() >= mute.unmuteTime) {
-        pData.muteInfo = null;
-        pData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[PlayerDataManager.getMuteInfo] Mute for ${playerName} expired and removed.`, pData.isWatched ? playerName : null, dependencies);
-        return null;
-    }
-    return mute;
+    if (!pData) return null;
+    return _getPlayerStateRestriction(pData, 'mute', dependencies);
 }
 
 /**
@@ -756,7 +844,7 @@ export function isMuted(player, dependencies) {
  * @returns {boolean} True if ban was successfully added, false otherwise.
  */
 export function addBan(player, durationMs, reason, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
-    const { playerUtils, getString } = dependencies;
+    const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!player?.isValid() || typeof durationMs !== 'number' || (durationMs <= 0 && durationMs !== Infinity) || typeof bannedBy !== 'string') {
@@ -768,27 +856,7 @@ export function addBan(player, durationMs, reason, bannedBy = 'Unknown', isAutoM
         playerUtils?.debugLog(`[PlayerDataManager.addBan] No pData for ${playerName}. Cannot apply ban.`, playerName, dependencies);
         return false;
     }
-
-    const currentTime = Date.now();
-    const unbanTime = (durationMs === Infinity) ? Infinity : currentTime + durationMs;
-    const banReason = reason || getString('playerData.ban.defaultReason');
-
-    pData.banInfo = {
-        xuid: player.id, // Persist XUID if available
-        playerName: player.nameTag, // Persist current nameTag at time of ban
-        banTime: currentTime,
-        unbanTime,
-        reason: banReason,
-        bannedBy,
-        isAutoMod,
-        triggeringCheckType, // Already expected to be camelCase or null
-    };
-    pData.isDirtyForSave = true;
-
-    let logMsg = `[PlayerDataManager.addBan] Player ${playerName} (XUID: ${player.id}) banned by ${bannedBy}. Reason: '${banReason}'. AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType ?? 'N/A'}.`;
-    logMsg += (durationMs === Infinity) ? ' Duration: Permanent.' : ` Unban time: ${new Date(unbanTime).toISOString()}.`;
-    playerUtils?.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
-    return true;
+    return _addPlayerStateRestriction(player, pData, 'ban', durationMs, reason, bannedBy, isAutoMod, triggeringCheckType, dependencies);
 }
 
 /**
@@ -810,16 +878,7 @@ export function removeBan(player, dependencies) {
         playerUtils?.debugLog(`[PlayerDataManager.removeBan] No pData for ${playerName}. Cannot unban.`, playerName, dependencies);
         return false;
     }
-
-    if (pData.banInfo) {
-        pData.banInfo = null;
-        pData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[PlayerDataManager.removeBan] Player ${playerName} unbanned.`, pData.isWatched ? playerName : null, dependencies);
-        return true;
-    } else {
-        playerUtils?.debugLog(`[PlayerDataManager.removeBan] Player ${playerName} was not banned. No action.`, pData.isWatched ? playerName : null, dependencies);
-        return false;
-    }
+    return _removePlayerStateRestriction(pData, 'ban', dependencies);
 }
 
 /**
@@ -829,22 +888,10 @@ export function removeBan(player, dependencies) {
  * @returns {import('../types.js').PlayerBanInfo | null} The ban info, or null if not banned or expired.
  */
 export function getBanInfo(player, dependencies) {
-    const { playerUtils } = dependencies;
-    const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
-
     if (!player?.isValid()) return null;
-
     const pData = getPlayerData(player.id);
-    if (!pData?.banInfo) return null;
-
-    const currentBanInfo = pData.banInfo;
-    if (currentBanInfo.unbanTime !== Infinity && Date.now() >= currentBanInfo.unbanTime) {
-        pData.banInfo = null;
-        pData.isDirtyForSave = true;
-        playerUtils?.debugLog(`[PlayerDataManager.getBanInfo] Ban for ${playerName} expired and removed.`, pData.isWatched ? playerName : null, dependencies);
-        return null;
-    }
-    return currentBanInfo;
+    if (!pData) return null;
+    return _getPlayerStateRestriction(pData, 'ban', dependencies);
 }
 
 /**
