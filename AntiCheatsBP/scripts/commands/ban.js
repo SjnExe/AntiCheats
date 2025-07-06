@@ -36,11 +36,16 @@ export async function execute(
     autoModCheckType = null
 ) {
     const { config, playerUtils, playerDataManager, logManager, rankManager, getString } = dependencies;
-    // Use 'System' if player is null and invokedBy is not detailed enough (e.g. for AutoMod).
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
-    if (args.length < 1) {
+    // Args: <playername> [duration] [reason]
+    // Reason starts at index 2. Playername is args[0], duration is args[1].
+    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 2, 'command.ban.defaultReason', dependencies);
+    const targetPlayerName = parsedArgs.targetPlayerName;
+    let reason = parsedArgs.reason; // Default reason from parsePlayerAndReasonArgs
+
+    if (!targetPlayerName) { // Check if targetPlayerName is undefined (i.e. args[0] was missing)
         const usageMessage = getString('command.ban.usage', { prefix: prefix });
         if (player) {
             player.sendMessage(usageMessage);
@@ -51,69 +56,33 @@ export async function execute(
         return;
     }
 
-    const targetPlayerName = args[0];
     const durationString = args[1] || 'perm'; // Default to 'perm' if duration not specified
 
-    let reason;
+    // Override reason if invoked by AutoMod and specific conditions are met
     if (invokedBy === 'AutoMod') {
-        // AutoMod reason might be more structured or come from rule parameters.
-        // For now, using a generic template if specific reason isn't passed in args[2+].
-        reason = args.length > 2 ? args.slice(2).join(' ') : getString('command.ban.automodReason', { checkType: autoModCheckType || 'violations'});
-    } else {
-        reason = args.slice(2).join(' ') || getString('command.ban.defaultReason') || 'Banned by an administrator.';
-    }
-
-    // Find player can find online or offline if data exists, but for banning, typically target online.
-    // However, the command should support banning offline players if their data exists.
-    // For now, let's assume findOnlinePlayerOrOfflineData approach.
-    // const targetPlayer = playerUtils?.findPlayer(targetPlayerName, true); // true for allow offline if data exists
-    // For simplicity and to ensure we can kick, let's first try finding online player.
-    const targetOnlinePlayer = playerUtils?.findPlayer(targetPlayerName); // Finds online player
-
-    if (!targetOnlinePlayer) {
-        // TODO: Implement offline banning if desired, by fetching/creating pData for an offline player.
-        // For now, require player to be findable (usually online, or if findOfflineData is implemented).
-        const message = getString('command.ban.playerNotFound', { playerName: targetPlayerName });
-        if (player) {
-            player.sendMessage(message);
-        } else {
-            console.warn(`[BanCommand.execute] Target player '${targetPlayerName}' not found (Invoked by ${issuerName}).`);
+        if (args.length <= 2 || !args.slice(2).join(' ').trim()) { // If no explicit reason provided in args[2+] for automod
+            reason = getString('command.ban.automodReason', { checkType: autoModCheckType || 'violations' });
         }
-        return;
+        // If args.length > 2, parsedArgs.reason would have already captured it.
     }
+    // If not AutoMod, parsedArgs.reason (with its default) is already set correctly.
 
-    if (player && targetOnlinePlayer.id === player.id) {
-        player.sendMessage(getString('command.ban.cannotBanSelf'));
-        return;
+    const targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'ban' });
+    if (!targetOnlinePlayer) {
+        // If player is null (system invocation), validateCommandTarget doesn't send a message.
+        // We might need specific handling for system calls if target isn't found.
+        if (!player) {
+             console.warn(`[BanCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
+        }
+        return; // validateCommandTarget already sent a message to the player if applicable
     }
 
     // Permission checks
-    if (invokedBy === 'PlayerCommand' && player) {
-        const targetPermissionLevel = rankManager?.getPlayerPermissionLevel(targetOnlinePlayer, dependencies);
-        const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-        const ownerPerm = dependencies.permissionLevels?.owner ?? 0; // Use loaded permission levels
-        const adminPerm = dependencies.permissionLevels?.admin ?? 1;
-
-        // Admins cannot ban Owners. Only Owners can ban Admins (if not themselves).
-        if (typeof targetPermissionLevel === 'number' && typeof issuerPermissionLevel === 'number') {
-            if (targetPermissionLevel <= ownerPerm && issuerPermissionLevel > ownerPerm) { // Target is Owner, issuer is not Owner
-                 player.sendMessage(getString('command.ban.permissionDeniedOwner'));
-                 return;
-            }
-            if (targetPermissionLevel <= adminPerm && targetPermissionLevel > ownerPerm && /* Target is Admin but not Owner */
-                issuerPermissionLevel > ownerPerm /* Issuer is not Owner */ ) {
-                player.sendMessage(getString('command.ban.permissionDeniedAdminOwner')); // More generic "cannot ban admin/owner"
-                return;
-            }
-            if (targetPermissionLevel <= ownerPerm && issuerPermissionLevel <= ownerPerm && player.id !== targetOnlinePlayer.id) {
-                // This case might be complex: owner trying to ban another owner.
-                // For safety, one might disallow this via command and require manual DB edit or specific "super owner" logic.
-                // player.sendMessage(getString('command.ban.ownerCannotBanOwner'));
-                // return;
-                // Allowing for now, assuming owner vs owner is a rare case handled by server policy.
-            }
-        } else {
-            playerUtils?.debugLog(`[BanCommand.execute WARNING] Could not determine permission levels for ban check between ${issuerName} and ${targetOnlinePlayer.nameTag}. Proceeding with caution.`, issuerName, dependencies);
+    if (invokedBy === 'PlayerCommand' && player) { // Ensure player is not null for permission check
+        const permCheck = rankManager.canAdminActionTarget(player, targetOnlinePlayer, 'ban', dependencies);
+        if (!permCheck.allowed) {
+            player.sendMessage(getString(permCheck.messageKey || 'command.ban.noPermission', permCheck.messageParams));
+            return;
         }
     }
 

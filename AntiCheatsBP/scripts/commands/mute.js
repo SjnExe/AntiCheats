@@ -40,7 +40,13 @@ export async function execute(
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
-    if (args.length < 1) {
+    // Args: <playername> [duration] [reason]
+    // Reason starts at index 2. Playername is args[0], duration is args[1].
+    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 2, 'command.mute.defaultReason', dependencies);
+    const targetPlayerName = parsedArgs.targetPlayerName;
+    let reason = parsedArgs.reason; // Default reason from parsePlayerAndReasonArgs
+
+    if (!targetPlayerName) {
         const usageMessage = getString('command.mute.usage', { prefix: prefix });
         if (player) {
             player.sendMessage(usageMessage);
@@ -52,55 +58,39 @@ export async function execute(
         return;
     }
 
-    const targetPlayerName = args[0];
     // Determine default duration based on invoker
     const defaultDurationKey = invokedBy === 'AutoMod' ? 'automodDefaultMuteDuration' : 'manualMuteDefaultDuration';
     const fallbackDuration = invokedBy === 'AutoMod' ? '10m' : '1h';
     const defaultDuration = config?.[defaultDurationKey] ?? fallbackDuration;
     const durationString = args[1] || defaultDuration;
 
-    let reason;
-    if (invokedBy === 'AutoMod' && args.length <= 2 && autoModCheckType) {
-        // If AutoMod and no explicit reason provided in args, use a template.
-        reason = getString('command.mute.automodReason', { checkType: autoModCheckType });
-    } else {
-        reason = args.slice(2).join(' ').trim() ||
-                 (invokedBy === 'AutoMod' ? getString('command.mute.automodReason', { checkType: autoModCheckType || 'violations' })
-                                          : getString('command.mute.defaultReason'));
-    }
-
-
-    const foundPlayer = playerUtils?.findPlayer(targetPlayerName);
-
-    if (!foundPlayer || !foundPlayer.isValid()) { // Added isValid
-        const message = getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName });
-        if (player) {
-            player.sendMessage(message);
-        } else {
-            console.warn(`[MuteCommand WARNING] Target player '${targetPlayerName}' not found or invalid (Invoked by ${issuerName}).`);
+    // Override reason if invoked by AutoMod and specific conditions are met
+    if (invokedBy === 'AutoMod') {
+        if (args.length <= 2 || !args.slice(2).join(' ').trim()) { // If no explicit reason provided in args[2+] for automod
+            reason = getString('command.mute.automodReason', { checkType: autoModCheckType || 'violations' });
         }
-        return;
+        // If args.length > 2, parsedArgs.reason would have already captured it.
     }
+    // If not AutoMod, parsedArgs.reason (with its default) is already set correctly.
 
-    if (player && foundPlayer.id === player.id) {
-        player.sendMessage(getString('command.mute.cannotSelf'));
-        return;
+    const foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'mute' });
+    if (!foundPlayer) {
+        // If player is null (system invocation), validateCommandTarget doesn't send a message.
+        if (!player) {
+            console.warn(`[MuteCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
+        }
+        return; // validateCommandTarget already sent a message to the player if applicable
     }
 
     // Permission checks for player-invoked mutes
-    if (invokedBy === 'PlayerCommand' && player) {
-        const targetPermissionLevel = rankManager?.getPlayerPermissionLevel(foundPlayer, dependencies);
-        const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-        const adminPerm = depPermLevels?.admin ?? 1; // Fallback permission level
-
-        if (typeof targetPermissionLevel === 'number' && typeof issuerPermissionLevel === 'number') {
-            // Prevent lower-ranked staff from muting higher-ranked or equally-ranked staff
-            if (targetPermissionLevel <= issuerPermissionLevel && targetPermissionLevel <= adminPerm) {
-                player.sendMessage(getString('command.mute.noPermission'));
-                return;
-            }
-        } else {
-            playerUtils?.debugLog(`[MuteCommand WARNING] Could not determine permission levels for mute check between ${issuerName} and ${targetPlayerName}. Proceeding with caution.`, issuerName, dependencies);
+    if (invokedBy === 'PlayerCommand' && player) { // Ensure player is not null for permission check
+        const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'mute', dependencies);
+        if (!permCheck.allowed) {
+            // A more specific message for mute if target is same/higher rank (but not owner/admin, which canAdminActionTarget handles)
+            // For now, canAdminActionTarget provides generic keys. If more specific needed, enhance canAdminActionTarget or add logic here.
+            const messageKey = permCheck.messageKey || 'command.mute.noPermission';
+            player.sendMessage(getString(messageKey, permCheck.messageParams));
+            return;
         }
     }
 

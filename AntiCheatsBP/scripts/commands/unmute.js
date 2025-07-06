@@ -29,17 +29,18 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    if (args.length < 1) {
+    // unmute <playername> - reason is not applicable here.
+    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 1, '', dependencies); // Reason part is not used by unmute
+    const targetPlayerName = parsedArgs.targetPlayerName;
+
+    if (!targetPlayerName) {
         player.sendMessage(getString('command.unmute.usage', { prefix: prefix }));
         return;
     }
 
-    const targetPlayerName = args[0];
-    const targetPlayer = playerUtils?.findPlayer(targetPlayerName);
-
-    if (!targetPlayer || !targetPlayer.isValid()) { // Added isValid
-        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-        return;
+    const targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unmute' });
+    if (!targetPlayer) {
+        return; // Message already sent by validateCommandTarget
     }
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);

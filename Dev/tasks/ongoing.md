@@ -2,7 +2,10 @@
 
 This file tracks tasks currently in progress.
 
-*   **No tasks currently ongoing.** (Jules - Task "Full Codebase Syntax and Standards Review" completed)
+*   **(Medium) Code Deduplication/Refactoring Pass (Jules):**
+    *   **Objective:** Conduct a dedicated review of the codebase to identify and refactor repeated logic patterns or utility functions to improve maintainability and reduce redundancy.
+    *   **Current Focus:** Implementing centralized helper functions for player data management (mute/ban), dynamic property error handling, command argument parsing, and admin action permission checking.
+    *   **Status:** In progress.
 
 ---
 

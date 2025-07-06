@@ -29,50 +29,28 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    if (args.length < 1) {
+    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 1, 'common.value.noReasonProvided', dependencies);
+    const targetPlayerName = parsedArgs.targetPlayerName;
+    const reason = parsedArgs.reason;
+
+    if (!targetPlayerName) { // Should be caught by validateCommandTarget if player is not null, but good practice
         player.sendMessage(getString('command.kick.usage', { prefix: prefix }));
         return;
     }
 
-    const targetPlayerName = args[0];
-    const reason = args.slice(1).join(' ').trim() || getString('common.value.noReasonProvided');
-
-    const foundPlayer = playerUtils?.findPlayer(targetPlayerName);
-
-    if (!foundPlayer || !foundPlayer.isValid()) { // Added isValid
-        player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-        return;
-    }
-
-    if (foundPlayer.id === player.id) {
-        player.sendMessage(getString('command.kick.cannotSelf'));
-        return;
+    const foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'kick' });
+    if (!foundPlayer) {
+        return; // validateCommandTarget already sent a message
     }
 
     // Permission checks
-    const targetPermissionLevel = rankManager?.getPlayerPermissionLevel(foundPlayer, dependencies);
-    const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-    const ownerPerm = depPermLevels?.owner ?? 0;
-    const adminPerm = depPermLevels?.admin ?? 1;
-
-
-    if (typeof targetPermissionLevel === 'number' && typeof issuerPermissionLevel === 'number') {
-        if (targetPermissionLevel <= ownerPerm && issuerPermissionLevel > ownerPerm) { // Target is Owner, issuer is not Owner
-             player.sendMessage(getString('command.kick.noPermissionOwner')); // Specific message for trying to kick owner
-             return;
-        }
-        // Admins (or higher) can kick other non-owner players.
-        // An Owner can kick anyone (except another Owner if that rule is desired - not strictly enforced here).
-        // This simplified check means if issuer is not Owner, they can't kick Admins or Owners.
-        // If issuer IS Owner, they can kick Admins.
-        if (targetPermissionLevel <= adminPerm && issuerPermissionLevel > adminPerm && issuerPermissionLevel > ownerPerm) { // Target is Admin or Owner, issuer is Mod or Member
-            player.sendMessage(getString('command.kick.noPermission')); // Generic no permission for this player
-            return;
-        }
-    } else {
-        playerUtils?.debugLog(`[KickCommand WARNING] Could not determine permission levels for kick check between ${adminName} and ${targetPlayerName}. Proceeding with caution.`, adminName, dependencies);
+    // Note: validateCommandTarget already handles player == null for targetPlayerName check,
+    // and self-target check. So, foundPlayer here is valid and not self if player is not null.
+    const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'kick', dependencies);
+    if (!permCheck.allowed) {
+        player.sendMessage(getString(permCheck.messageKey || 'command.kick.noPermission', permCheck.messageParams));
+        return;
     }
-
 
     try {
         const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: adminName, reason: reason });

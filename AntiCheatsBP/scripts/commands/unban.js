@@ -30,36 +30,30 @@ export async function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
-    if (args.length < 1) {
+    // unban <playername> - reason is not applicable here.
+    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 1, '', dependencies); // Reason part is not used by unban
+    const targetPlayerName = parsedArgs.targetPlayerName;
+
+    if (!targetPlayerName) {
         player.sendMessage(getString('command.unban.usage', { prefix: prefix }));
         return;
     }
 
-    const targetPlayerName = args[0];
     // For unbanning, we often need to target players who are offline.
-    // findOnlinePlayerOrPersistedData is a conceptual function that would first try to find an online player,
-    // then attempt to load persisted data by name if not found online.
-    // For now, using findOnlinePlayer, and noting limitation.
-    const targetOnlinePlayer = playerUtils?.findPlayer(targetPlayerName);
+    // The current `validateCommandTarget` uses `findPlayer` which only finds online players.
+    // For unban, we might need a different approach or an enhanced `validateCommandTarget`
+    // that can accept offline player names if the action supports it (e.g., by modifying persisted data).
+    // For now, we'll use it with requireOnline: false, but note that `findPlayer` itself doesn't support offline.
+    // This means `unban` will effectively only work for online players until offline player data management is enhanced.
 
-    // If player is online, use their Player object. Otherwise, we'd need a way to act on offline data.
-    // This command, as written, will primarily work for unbanning players whose data is still cached
-    // or if playerDataManager.removeBan can operate on a name/ID basis for persisted data.
-    // For robust offline unbanning, playerDataManager would need a method like `removeBanByOfflineIdentifier(identifier)`.
-
+    // TODO: Enhance `validateCommandTarget` or `findPlayer` to support resolving offline players for commands like unban.
+    // The `requireOnline: false` here is more of a placeholder for future capability.
+    const targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unban', requireOnline: true }); // For now, still require online.
     if (!targetOnlinePlayer) {
-        // TODO: Add support for unbanning offline players by name/ID through direct dynamic property manipulation if required.
-        // This would involve fetching all player data keys, finding the matching player, modifying, and resaving.
-        // For now, this command might only effectively unban players who can be resolved to a Player object or whose data is cached.
-        player.sendMessage(getString('command.unban.offline', { playerName: targetPlayerName }));
-        playerUtils?.debugLog(`[UnbanCommand] Target player ${targetPlayerName} not found online. Offline unbanning not fully supported by this command version.`, adminName, dependencies);
+        // Message already sent by validateCommandTarget if player is the issuer.
+        // If system call and target not found, it's an issue (though unban is usually player-issued).
         return;
     }
-    if (!targetOnlinePlayer.isValid()) { // Should be caught by findPlayer ideally
-        player.sendMessage(getString('common.error.playerNotFound', {playerName: targetPlayerName}));
-        return;
-    }
-
 
     // Get pData to check current ban status and potentially clear AutoMod flags
     const pData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
