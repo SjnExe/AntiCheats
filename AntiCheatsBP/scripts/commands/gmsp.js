@@ -3,7 +3,6 @@
  * @file Defines the !gmsp command for administrators to set a player's gamemode to Spectator.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +11,7 @@ export const definition = {
     name: 'gmsp',
     syntax: '[playername]',
     description: 'Sets your gamemode or a target player\'s gamemode to Spectator.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

@@ -2,8 +2,6 @@
  * @file Defines the !warnings command for administrators to view a summary of a player's AntiCheat flags.
  * This is similar to !inspect but may offer a more concise summary focused on flags.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -12,7 +10,7 @@ export const definition = {
     syntax: '<playername>',
     description: 'Displays a summary of a player\'s AntiCheat flags (warnings).',
     aliases: ['warns', 'flags'],
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

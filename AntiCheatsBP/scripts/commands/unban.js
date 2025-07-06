@@ -1,8 +1,6 @@
 /**
  * @file Defines the !unban command for administrators to remove a ban from a player.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'unban',
     syntax: '<playername>',
     description: 'Unbans a player, allowing them to rejoin the server.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

@@ -3,7 +3,6 @@
  * @file Defines the !netherlock command for administrators to manage Nether dimension access.
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +11,7 @@ export const definition = {
     name: 'netherlock',
     syntax: '<on|off|status>',
     description: 'Manages Nether dimension access. "on" locks, "off" unlocks, "status" checks.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

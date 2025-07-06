@@ -3,7 +3,6 @@
  * @file Defines the !endlock command for administrators to manage End dimension access.
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +11,7 @@ export const definition = {
     name: 'endlock',
     syntax: '<on|off|status>',
     description: 'Manages End dimension access. "on" locks, "off" unlocks, "status" checks.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

@@ -2,7 +2,6 @@
  * @file Command to list all currently online players being watched by the AntiCheat system.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +11,7 @@ export const definition = {
     syntax: '',
     description: 'Lists all online players currently being watched.',
     aliases: ['lw', 'watchedlist'],
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

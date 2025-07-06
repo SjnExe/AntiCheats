@@ -2,8 +2,6 @@
  * @file Defines the !tpacancel command for players to cancel their outgoing TPA requests
  * or decline incoming TPA requests.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -11,7 +9,7 @@ export const definition = {
     name: 'tpacancel',
     syntax: '[playerName]',
     description: 'Cancels your outgoing TPA request or declines an incoming one. If [playerName] is specified, cancels request with that player.',
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

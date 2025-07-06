@@ -2,8 +2,6 @@
  * @file Defines the !help command, which provides players with a list of available commands
  * or detailed information about a specific command based on their permission level.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -11,7 +9,7 @@ export const definition = {
     name: 'help',
     syntax: '[command_name]',
     description: 'command.help.description',
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

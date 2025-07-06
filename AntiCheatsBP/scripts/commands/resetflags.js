@@ -3,8 +3,6 @@
  * and associated violation tracking data. Also aliased by !clearwarnings.
  */
 
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -12,7 +10,7 @@ export const definition = {
     name: 'resetflags',
     syntax: '!resetflags <playerName>',
     description: "Clears a player's AntiCheat flags and violation data.",
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     aliases: ['clearwarnings'],
     enabled: true,
 };

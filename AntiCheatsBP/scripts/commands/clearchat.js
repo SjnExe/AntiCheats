@@ -1,8 +1,6 @@
 /**
  * @file Defines the !clearchat command for administrators to clear the global chat.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'clearchat',
     syntax: '',
     description: 'Clears the global chat for all players.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

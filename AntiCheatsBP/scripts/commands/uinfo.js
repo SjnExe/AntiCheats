@@ -2,8 +2,6 @@
  * @file Defines the !uinfo command (User Info Panel), providing players with access to their stats, server rules, and helpful links.
  * This command serves as an entry point to a UI managed by uiManager.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -12,7 +10,7 @@ export const definition = {
     syntax: '',
     description: 'Opens the User Information Panel (stats, rules, links).',
     aliases: ['userinfo', 'playerpanel'],
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

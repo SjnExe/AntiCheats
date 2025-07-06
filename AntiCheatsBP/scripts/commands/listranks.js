@@ -1,7 +1,6 @@
 /**
  * @file Defines the !listranks command to display available ranks and their properties.
  */
-import { permissionLevels } from '../core/rankManager.js';
 import { rankDefinitions as allRankDefinitions } from '../core/ranksConfig.js';
 
 /**
@@ -11,7 +10,7 @@ export const definition = {
     name: 'listranks',
     syntax: '',
     description: 'Lists all defined ranks and their basic properties.',
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

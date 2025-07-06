@@ -3,7 +3,6 @@
  * @file Defines the !gma command for administrators to set a player's gamemode to Adventure.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +11,7 @@ export const definition = {
     name: 'gma',
     syntax: '[playername]',
     description: 'Sets your gamemode or a target player\'s gamemode to Adventure.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

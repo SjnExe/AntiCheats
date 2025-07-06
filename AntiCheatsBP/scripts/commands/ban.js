@@ -1,8 +1,6 @@
 /**
  * @file Defines the !ban command for administrators to ban players.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'ban',
     syntax: '<playername> [duration] [reason]',
     description: 'Bans a player for a specified duration (e.g., 7d, 2h, 30m, perm).',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

@@ -1,8 +1,6 @@
 /**
  * @file Defines the !tpa command for players to request teleporting to another player.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'tpa',
     syntax: '<playerName>',
     description: 'Requests to teleport to another player. They must accept with !tpaccept.',
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

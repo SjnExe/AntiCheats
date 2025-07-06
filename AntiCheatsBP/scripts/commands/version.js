@@ -2,7 +2,6 @@
 /**
  * @file Defines the !version command, which displays the current version of the AntiCheat addon.
  */
-import { permissionLevels } from '../core/rankManager.js';
 import { acVersion } from '../config.js';
 
 /**
@@ -13,7 +12,7 @@ export const definition = {
     syntax: '',
     description: 'Displays the current version of the AntiCheat addon.',
     aliases: ['ver', 'v'],
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

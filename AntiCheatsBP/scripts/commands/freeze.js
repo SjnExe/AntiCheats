@@ -3,7 +3,6 @@
  * @file Defines the !freeze command for administrators to immobilize or release players.
  */
 import * as mc from '@minecraft/server';
-import { permissionLevels } from '../core/rankManager.js';
 
 /**
  * @type {import('../types.js').CommandDefinition}
@@ -12,7 +11,7 @@ export const definition = {
     name: 'freeze',
     syntax: '<playername> [on|off|toggle|status]',
     description: 'Freezes or unfreezes a player, preventing movement by applying strong slowness and weakness.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

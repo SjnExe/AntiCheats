@@ -1,8 +1,6 @@
 /**
  * @file Defines the !watch command for administrators to enable detailed logging for a specific player.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'watch',
     syntax: '<playername>',
     description: 'Enables detailed logging for a specific player. Use with caution, can generate many logs.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

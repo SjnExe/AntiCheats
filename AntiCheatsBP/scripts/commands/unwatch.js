@@ -1,8 +1,6 @@
 /**
  * @file Defines the !unwatch command for administrators to stop watching a player.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'unwatch',
     syntax: '<playername>',
     description: 'Stops watching a player, reducing detailed logging for them.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

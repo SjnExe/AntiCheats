@@ -1,8 +1,6 @@
 /**
  * @file Defines the !removerank command for server administrators to remove a manual rank from a player.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'removerank',
     syntax: '<playerName> <rankId>',
     description: 'Removes a manually assigned rank from a player by removing the associated tag.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

@@ -3,7 +3,6 @@
  * Allows administrators to clear player-submitted reports.
  * All actionType strings should be camelCase.
  */
-import { permissionLevels } from '../core/rankManager.js';
 import { clearAllReports, clearReportById, clearReportsForPlayer } from '../core/reportManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */
@@ -11,7 +10,7 @@ export const definition = {
     name: 'clearreports',
     syntax: '<report_id|player_name|all>',
     description: 'Admin command to clear player reports. Use "all" to clear all reports (use with caution).',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 

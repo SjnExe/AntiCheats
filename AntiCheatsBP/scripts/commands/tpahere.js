@@ -1,8 +1,6 @@
 /**
  * @file Defines the !tpahere command for players to request another player to teleport to them.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'tpahere',
     syntax: '<playerName>',
     description: 'Requests another player to teleport to your location. They must accept with !tpaccept.',
-    permissionLevel: permissionLevels.member,
+    permissionLevel: 1024, // member
     enabled: true,
 };
 

@@ -1,8 +1,6 @@
 /**
  * @file Defines the !unmute command for administrators to allow a muted player to chat again.
  */
-import { permissionLevels } from '../core/rankManager.js';
-
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -10,7 +8,7 @@ export const definition = {
     name: 'unmute',
     syntax: '<playername>',
     description: 'Unmutes a player, allowing them to send chat messages again.',
-    permissionLevel: permissionLevels.admin,
+    permissionLevel: 1, // admin
     enabled: true,
 };
 
