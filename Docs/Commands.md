@@ -126,10 +126,6 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Syntax:** `!unmute <playername>`
     *   **Description:** Removes an active mute for a player.
     *   **Permission:** Admin
-*   **`!unwatch`** (Alias: `!uw`)
-    *   **Syntax:** `!unwatch <playername>`
-    *   **Description:** Removes a player from the watchlist.
-    *   **Permission:** Admin
 *   **`!vanish`** (Alias: `!vsh`)
     *   **Syntax:** `!vanish [silent|notify]`
     *   **Description:** Toggles your visibility and related effects (invisibility, no item pickup, etc.).
@@ -143,8 +139,8 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Description:** Views a player's AntiCheat flags (similar to inspect).
     *   **Permission:** Admin
 *   **`!watch`** (Alias: `!w`)
-    *   **Syntax:** `!watch <playername>`
-    *   **Description:** Adds a player to the watchlist for detailed logging.
+    *   **Syntax:** `!watch <playername> [on|off|toggle]`
+    *   **Description:** Manages watch status for a player. Toggles if no state [on|off] is specified.
     *   **Permission:** Admin
 *   **`!worldborder`** (Aliases: `!wb`, `!worldb`)
     *   **Syntax:** `!worldborder <subcommand> [options...]` (Use `!wb help` for subcommands)

@@ -41,7 +41,6 @@ import * as tpastatusCmd from '../commands/tpastatus.js';
 import * as uinfoCmd from '../commands/uinfo.js';
 import * as unbanCmd from '../commands/unban.js';
 import * as unmuteCmd from '../commands/unmute.js';
-import * as unwatchCmd from '../commands/unwatch.js';
 import * as vanishCmd from '../commands/vanish.js';
 import * as versionCmd from '../commands/version.js';
 import * as viewreportsCmd from '../commands/viewreports.js';
@@ -94,7 +93,6 @@ export const commandModules = [
     uinfoCmd,
     unbanCmd,
     unmuteCmd,
-    unwatchCmd,
     vanishCmd,
     versionCmd,
     viewreportsCmd,
