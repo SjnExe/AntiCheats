@@ -861,10 +861,8 @@ export const stringDB = {
     'command.unmute.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unmute).",
     'command.vanish.notify.enabled': "§e{adminName}§r has enabled vanish (§b{mode}§r mode).",
     'command.vanish.notify.disabled': "§e{adminName}§r has disabled vanish (§b{mode}§r mode).",
-    'command.worldborder.remove.confirmNeeded.currentDimension': 'current ({dimensionName})'
 
     // --- UI Manager specific (beyond what's in ui.*) ---
     // If uiManager constructs complex strings dynamically that aren't just titles/buttons, they could go here.
     // For now, most specific UI text is keyed under ui.*
 };
->>>>>>> REPLACE
