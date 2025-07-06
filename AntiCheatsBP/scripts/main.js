@@ -24,6 +24,8 @@ import * as reportManager from './core/reportManager.js';
 import * as tpaManager from './core/tpaManager.js';
 import * as uiManager from './core/uiManager.js';
 import * as worldBorderManager from './utils/worldBorderManager.js';
+import * as configValidator from './core/configValidator.js'; // Added for config validation
+import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './core/ranksConfig.js'; // For ranksConfig validation
 
 let currentTick = 0;
 const mainModuleName = 'Main';
@@ -313,6 +315,85 @@ function performInitializations() {
         mc.world.sendMessage(startupDependencies.getString('system.core.initialized', { version: configModule.acVersion }));
     }
 
+    // --- Configuration Validation ---
+    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', startupDependencies);
+    let allValidationErrors = [];
+    const knownCommands = commandManager.getAllRegisteredCommandNames(); // Get known commands for validation
+
+    // Validate main config (config.js)
+    // defaultConfigSettings is the object to validate from config.js
+    // TODO: Ensure commandManager.getAllRegisteredCommandNames() is implemented and returns an array of command name strings.
+    const mainConfigErrors = configValidator.validateMainConfig(
+        configModule.defaultConfigSettings, // Assuming this is the direct object with all settings
+        checkActionProfiles,
+        knownCommands,
+        configModule.commandAliases // Pass commandAliases separately
+    );
+    if (mainConfigErrors.length > 0) {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Main Config (config.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        mainConfigErrors.forEach(err => {
+            console.error(`[ConfigValidation|config.js] ${err}`);
+            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+        });
+        allValidationErrors.push(...mainConfigErrors.map(e => `[config.js] ${e}`));
+    }
+
+    // Validate actionProfiles.js
+    const actionProfileErrors = configValidator.validateActionProfiles(checkActionProfiles);
+    if (actionProfileErrors.length > 0) {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Action Profiles (actionProfiles.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        actionProfileErrors.forEach(err => {
+            console.error(`[ConfigValidation|actionProfiles.js] ${err}`);
+            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+        });
+        allValidationErrors.push(...actionProfileErrors.map(e => `[actionProfiles.js] ${e}`));
+    }
+
+    // Validate automodConfig.js
+    const autoModErrors = configValidator.validateAutoModConfig(automodConfig, checkActionProfiles);
+    if (autoModErrors.length > 0) {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] AutoMod Config (automodConfig.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        autoModErrors.forEach(err => {
+            console.error(`[ConfigValidation|automodConfig.js] ${err}`);
+            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+        });
+        allValidationErrors.push(...autoModErrors.map(e => `[automodConfig.js] ${e}`));
+    }
+
+    // Validate ranksConfig.js
+    // We need to pass the actual ranksConfig object, not just the manager
+    const ranksConfigForValidation = {
+        rankDefinitions, // Imported directly
+        defaultChatFormatting, // Imported directly
+        defaultNametagPrefix, // Imported directly
+        defaultPermissionLevel // Imported directly
+    };
+    const ranksConfigErrors = configValidator.validateRanksConfig(
+        ranksConfigForValidation,
+        startupDependencies.config.ownerPlayerName,
+        startupDependencies.config.adminTag
+    );
+    if (ranksConfigErrors.length > 0) {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Ranks Config (ranksConfig.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        ranksConfigErrors.forEach(err => {
+            console.error(`[ConfigValidation|ranksConfig.js] ${err}`);
+            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+        });
+        allValidationErrors.push(...ranksConfigErrors.map(e => `[ranksConfig.js] ${e}`));
+    }
+
+    if (allValidationErrors.length > 0) {
+        const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s). System may be unstable or not function correctly. Please check server logs for details.`;
+        console.error(`[${mainModuleName}.performInitializations] ${summaryMessage}`);
+        startupDependencies.playerUtils.notifyAdmins(summaryMessage, 'SystemCritical', startupDependencies, true); // Force notify even if default is off for this
+        // Depending on severity, could throw an error here to halt initialization,
+        // or allow it to continue in a potentially degraded state.
+        // For now, logging and notifying admins.
+    } else {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] All configurations validated successfully.`, 'System', startupDependencies);
+    }
+    // --- End Configuration Validation ---
+
 
     startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Starting main tick loop...`, 'System', startupDependencies);
     mc.system.runInterval(async () => {
@@ -525,4 +606,4 @@ function attemptInitializeSystem(retryCount = 0) {
 
 mc.system.runTimeout(() => {
     attemptInitializeSystem();
-}, initialRetryDelayTicks);
+    }, initialRetryDelayTicks * 2); // Slightly increased delay to ensure other scripts might load if there are ordering issues.
