@@ -68,7 +68,7 @@ export async function execute(player, args, dependencies) {
     let destinationPlayer = null;
     let x, y, z, targetDimension;
     let isTeleportToPlayer = false;
-    let isSelfTeleportToCoords = false;
+    // let isSelfTeleportToCoords = false; // Unused variable
 
     if (args.length === 1 || (args.length >= 3 && !isNaN(parseFloat(args[0])))) {
         if (args.length === 1 && isNaN(parseFloat(args[0]))) {
@@ -79,8 +79,9 @@ export async function execute(player, args, dependencies) {
                 return;
             }
             isTeleportToPlayer = true;
-        } else {
-            isSelfTeleportToCoords = true;
+        }
+        else {
+            // isSelfTeleportToCoords = true; // Part of unused variable logic
             playerToMove = player;
             x = parseFloat(args[0]);
             y = parseFloat(args[1]);
@@ -95,7 +96,8 @@ export async function execute(player, args, dependencies) {
                 return;
             }
         }
-    } else if (args.length >= 2) {
+    }
+    else if (args.length >= 2) {
         playerToMove = playerUtils?.findPlayer(args[0]);
         if (!playerToMove || !playerToMove.isValid()) {
             player.sendMessage(getString('command.tp.playerToMoveNotFound', { playerName: args[0] }));
@@ -109,7 +111,8 @@ export async function execute(player, args, dependencies) {
                 return;
             }
             isTeleportToPlayer = true;
-        } else if (args.length >= 4 && !isNaN(parseFloat(args[1]))) {
+        }
+        else if (args.length >= 4 && !isNaN(parseFloat(args[1]))) {
             x = parseFloat(args[1]);
             y = parseFloat(args[2]);
             z = parseFloat(args[3]);
@@ -122,11 +125,13 @@ export async function execute(player, args, dependencies) {
                 player.sendMessage(getString('command.tp.invalidCoordinatesForTarget'));
                 return;
             }
-        } else {
+        }
+        else {
             player.sendMessage(getString('command.tp.usage', { prefix: prefix }));
             return;
         }
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.tp.usage', { prefix: prefix }));
         return;
     }
@@ -152,7 +157,8 @@ export async function execute(player, args, dependencies) {
         finalLocation = destinationPlayer.location;
         finalDimension = destinationPlayer.dimension;
         destinationDescription = destinationPlayer.nameTag;
-    } else {
+    }
+    else {
         finalLocation = { x, y, z };
         finalDimension = targetDimension || playerToMove.dimension;
         destinationDescription = `${x.toFixed(1)}, ${y.toFixed(1)}, ${z.toFixed(1)} in ${finalDimension.id.replace('minecraft:', '')}`;
@@ -165,7 +171,7 @@ export async function execute(player, args, dependencies) {
             ? getString('command.tp.success.toPlayer', { playerToMoveName: playerToMove.nameTag, destinationPlayerName: destinationPlayer.nameTag })
             : getString('command.tp.success.toCoords', { playerToMoveName: playerToMove.nameTag, x: x.toFixed(1), y: y.toFixed(1), z: z.toFixed(1), dimensionInfo: (targetDimension ? ` in ${targetDimension.id.replace('minecraft:', '')}` : '') });
         player.sendMessage(successMessage);
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         if (playerToMove.id !== player.id) {
             playerToMove.sendMessage(getString('command.tp.targetNotification', { adminName: adminName, destinationDescription: destinationDescription }));
@@ -181,10 +187,11 @@ export async function execute(player, args, dependencies) {
             dimensionId: finalDimension.id,
         }, dependencies);
 
-    } catch (error) {
+    }
+    catch (error) {
         player.sendMessage(getString('command.tp.fail', { errorMessage: error.message }));
         console.error(`[TPCommand CRITICAL] Error teleporting ${playerToMove.nameTag} by ${adminName}: ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorTeleportCommand',

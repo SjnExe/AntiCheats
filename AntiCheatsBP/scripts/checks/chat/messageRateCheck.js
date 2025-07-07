@@ -1,7 +1,6 @@
 /**
  * @file Implements a check to detect players sending chat messages too frequently (spamming).
  */
-import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData

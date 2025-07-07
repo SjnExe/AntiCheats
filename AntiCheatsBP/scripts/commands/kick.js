@@ -23,7 +23,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager, permissionLevels: depPermLevels, rankManager, getString } = dependencies;
+    const { config, playerUtils, logManager, playerDataManager, rankManager, getString } = dependencies; // Removed permissionLevels: depPermLevels
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
@@ -52,7 +52,7 @@ export async function execute(player, args, dependencies) {
         foundPlayer.kick(kickMessageToTarget);
 
         player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason: reason }));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
@@ -68,10 +68,11 @@ export async function execute(player, args, dependencies) {
             reason: reason,
         }, dependencies);
 
-    } catch (e) {
+    }
+    catch (e) {
         player.sendMessage(getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message }));
         console.error(`[KickCommand CRITICAL] Error kicking player ${targetPlayerName} by ${adminName}: ${e.stack || e}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             actionType: 'errorKickCommand',
             context: 'KickCommand.execute',

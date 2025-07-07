@@ -55,7 +55,8 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     for (const char of rawMessageContent) {
         if (/\p{M}/u.test(char)) {
             diacriticCount++;
-        } else if (/\S/.test(char)) {
+        }
+        else if (/\S/.test(char)) {
             baseCharCount++;
         }
     }
@@ -75,11 +76,15 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
             await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (only diacritics). Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
             const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-            if (profile?.cancelMessage) eventData.cancel = true;
+            if (profile?.cancelMessage) {
+                eventData.cancel = true;
+            }
             return;
         }
     }
-    if (baseCharCount === 0) return;
+    if (baseCharCount === 0) {
+        return;
+    }
 
     const actualRatio = diacriticCount / baseCharCount;
     const flaggedByRatio = actualRatio >= maxDiacriticRatio;
@@ -88,9 +93,11 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
 
     if (flaggedByRatio && flaggedByAbsolute) {
         reason = 'ratio and absolute count';
-    } else if (flaggedByRatio) {
+    }
+    else if (flaggedByRatio) {
         reason = 'ratio';
-    } else if (flaggedByAbsolute) {
+    }
+    else if (flaggedByAbsolute) {
         reason = 'absolute count';
     }
 

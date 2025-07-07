@@ -24,6 +24,7 @@ import * as mc from '@minecraft/server';
 export async function checkAntiGmc(player, pData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, permissionLevels } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
+    const watchedPlayerName = pData?.isWatched ? playerName : null; // Define here
 
     if (!config?.enableAntiGmcCheck) {
         return;
@@ -44,7 +45,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
         const adminPermLevel = permissionLevels?.admin ?? 1;
 
         if (typeof playerPermLevel === 'number' && playerPermLevel > adminPermLevel) {
-            const watchedPlayerName = pData.isWatched ? playerName : null;
+            // watchedPlayerName is now defined in the outer scope
             let autoSwitchedGameMode = false;
             let targetGamemodeString = (config?.antiGmcSwitchToGameMode || 'survival').toLowerCase();
             let targetMcGameMode;
@@ -71,14 +72,15 @@ export async function checkAntiGmc(player, pData, dependencies) {
                     player.setGameMode(targetMcGameMode);
                     autoSwitchedGameMode = true;
                     playerUtils?.debugLog(`[AntiGmcCheck] Switched ${playerName} from Creative to ${targetGamemodeString}.`, watchedPlayerName, dependencies);
-                } catch (e) {
+                }
+                catch (e) {
                     playerUtils?.debugLog(`[AntiGmcCheck ERROR] Error switching ${playerName} from Creative: ${e.message}`, watchedPlayerName, dependencies);
                     dependencies.logManager?.addLog({
                         actionType: 'errorAntiGmcSwitchMode',
                         context: 'AntiGmcCheck.setGameMode',
                         targetName: playerName,
                         details: { targetMode: targetGamemodeString, error: e.message },
-                        errorStack: e.stack
+                        errorStack: e.stack,
                     }, dependencies);
                 }
             }
@@ -96,13 +98,16 @@ export async function checkAntiGmc(player, pData, dependencies) {
             if (pData.isWatched) {
                 if (!autoSwitchedGameMode && config?.antiGmcAutoSwitch) {
                     playerUtils?.debugLog(`[AntiGmcCheck] Flagged ${playerName} for unauthorized creative. Auto-switch was enabled but might have failed.`, watchedPlayerName, dependencies);
-                } else if (!config?.antiGmcAutoSwitch) {
+                }
+                else if (!config?.antiGmcAutoSwitch) {
                     playerUtils?.debugLog(`[AntiGmcCheck] Flagged ${playerName} for unauthorized creative. Auto-switch disabled in config.`, watchedPlayerName, dependencies);
                 }
             }
-        } else if (pData.isWatched && typeof playerPermLevel !== 'number') {
-             playerUtils?.debugLog(`[AntiGmcCheck] Could not determine permission level for ${playerName} (in Creative). Assuming authorized for now.`, watchedPlayerName, dependencies);
-        } else if (pData.isWatched) {
+        }
+        else if (pData.isWatched && typeof playerPermLevel !== 'number') {
+            playerUtils?.debugLog(`[AntiGmcCheck] Could not determine permission level for ${playerName} (in Creative). Assuming authorized for now.`, watchedPlayerName, dependencies);
+        }
+        else if (pData.isWatched) {
             playerUtils?.debugLog(`[AntiGmcCheck] Player ${playerName} is in Creative mode with sufficient permissions (Level: ${playerPermLevel}, Required: <=${adminPermLevel}). No action.`, watchedPlayerName, dependencies);
         }
     }

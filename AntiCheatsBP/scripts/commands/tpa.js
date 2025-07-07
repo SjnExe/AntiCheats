@@ -71,11 +71,13 @@ export async function execute(player, args, dependencies) {
     if (addResult && typeof addResult === 'object' && 'error' in addResult) {
         if (addResult.error === 'cooldown' && typeof addResult.remaining === 'number') {
             player.sendMessage(getString('command.tpa.cooldown', { remainingTime: addResult.remaining.toString() }));
-        } else {
+        }
+        else {
             player.sendMessage(getString('command.tpa.error.genericSend'));
             playerUtils?.debugLog(`[TpaCommand] Failed to add TPA request from ${requesterName} to ${targetPlayer.nameTag}. Result: ${JSON.stringify(addResult)}`, requesterName, dependencies);
         }
-    } else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
+    }
+    else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
         const request = /** @type {import('../types.js').TpaRequest} */ (addResult);
         const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? 60;
         player.sendMessage(getString('command.tpa.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix: prefix }));
@@ -83,11 +85,12 @@ export async function execute(player, args, dependencies) {
         const actionBarMessage = getString('tpa.notify.actionBar.requestToYou', { requestingPlayerName: requesterName, prefix: prefix });
         try {
             targetPlayer.onScreenDisplay.setActionBar(actionBarMessage);
-        } catch (e) {
+        }
+        catch (e) {
             playerUtils?.sendMessage(targetPlayer, actionBarMessage);
             playerUtils?.debugLog(`[TpaCommand INFO] Failed to set action bar for TPA target ${targetPlayer.nameTag}, sent chat message instead. Error: ${e.message}`, requesterName, dependencies);
         }
-        playerUtils?.playSoundForEvent(targetPlayer, "tpaRequestReceived", dependencies);
+        playerUtils?.playSoundForEvent(targetPlayer, 'tpaRequestReceived', dependencies);
 
         logManager?.addLog({
             actionType: 'tpaRequestSent',
@@ -98,7 +101,8 @@ export async function execute(player, args, dependencies) {
             details: `TPA request sent. ID: ${request.requestId}, Type: ${request.requestType}`,
             context: 'TpaCommand.execute',
         }, dependencies);
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.tpa.error.genericSend'));
         playerUtils?.debugLog(`[TpaCommand CRITICAL] Unknown error adding TPA request from ${requesterName} to ${targetPlayer.nameTag}. AddResult: ${JSON.stringify(addResult)}`, requesterName, dependencies);
     }

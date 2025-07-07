@@ -4,7 +4,6 @@
  * Relies on player state (effects, gliding status) being updated in `pData` by other systems
  * (e.g., `updateTransientPlayerData` for effects, event handlers for gliding).
  */
-import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -44,12 +43,16 @@ export async function checkFly(player, pData, dependencies) {
         pData.lastUsedElytraTick = currentTick;
         pData.isDirtyForSave = true;
         playerUtils?.debugLog(`[FlyCheck] ${playerName} is gliding. Standard fly checks bypassed. Fall distance reset.`, watchedPlayerName, dependencies);
-        if (pData.fallDistance > 0) { pData.fallDistance = 0; pData.isDirtyForSave = true; }
+        if (pData.fallDistance > 0) {
+            pData.fallDistance = 0; pData.isDirtyForSave = true;
+        }
         return;
     }
     if (player.isFlying) {
         playerUtils?.debugLog(`[FlyCheck] ${playerName} is legitimately flying (isFlying=true). Standard fly checks bypassed. Fall distance reset.`, watchedPlayerName, dependencies);
-        if (pData.fallDistance > 0) { pData.fallDistance = 0; pData.isDirtyForSave = true; }
+        if (pData.fallDistance > 0) {
+            pData.fallDistance = 0; pData.isDirtyForSave = true;
+        }
         return;
     }
 
@@ -77,10 +80,18 @@ export async function checkFly(player, pData, dependencies) {
 
         if (underGraceCondition && pData.isWatched) {
             const graceReasons = [];
-            if (ticksSinceLastDamage <= graceTicks) graceReasons.push(`recent damage (${ticksSinceLastDamage}t)`);
-            if (ticksSinceLastElytra <= graceTicks) graceReasons.push(`recent elytra (${ticksSinceLastElytra}t)`);
-            if (player.isClimbing) graceReasons.push('climbing');
-            if (pData.hasSlowFalling && currentYVelocity < 0) graceReasons.push('slow falling downwards');
+            if (ticksSinceLastDamage <= graceTicks) {
+                graceReasons.push(`recent damage (${ticksSinceLastDamage}t)`);
+            }
+            if (ticksSinceLastElytra <= graceTicks) {
+                graceReasons.push(`recent elytra (${ticksSinceLastElytra}t)`);
+            }
+            if (player.isClimbing) {
+                graceReasons.push('climbing');
+            }
+            if (pData.hasSlowFalling && currentYVelocity < 0) {
+                graceReasons.push('slow falling downwards');
+            }
             playerUtils?.debugLog(`[FlyCheck][Y-Velo] ${playerName}: Y-velocity check grace due to: ${graceReasons.join(', ')}.`, watchedPlayerName, dependencies);
         }
 
@@ -187,7 +198,8 @@ export async function checkFly(player, pData, dependencies) {
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
             playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(3)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${pData.fallDistance?.toFixed(2)}, Height: ${heightAboveLastGround.toFixed(2)}`, watchedPlayerName, dependencies);
-        } else if (pData.isWatched) {
+        }
+        else if (pData.isWatched) {
             playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover speed/tick criteria but height (${heightAboveLastGround.toFixed(2)}) not > min (${hoverMinHeight}). LastGroundY: ${lastGroundY}`, watchedPlayerName, dependencies);
         }
     }

@@ -869,7 +869,7 @@ export const checkActionProfiles = {
             actionType: 'antiGriefWitherSpawn',
             detailsPrefix: 'AntiGrief Wither: ',
         },
-         cancelEvent: true, // If action is 'prevent'
+        cancelEvent: true, // If action is 'prevent'
     },
     worldAntiGriefFire: {
         enabled: true,

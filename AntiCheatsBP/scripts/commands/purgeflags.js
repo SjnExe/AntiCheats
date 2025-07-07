@@ -24,7 +24,7 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, currentTick, getString, mc } = dependencies;
+    const { config, playerUtils, logManager, currentTick, getString } = dependencies; // Removed mc
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
 
@@ -63,7 +63,7 @@ export async function execute(player, args, dependencies) {
     if (saveSuccess) {
         const messageToAdmin = getString('command.purgeflags.success.admin', { playerName: targetPlayer.nameTag, oldTotalFlags: oldTotalFlags.toString() });
         playerUtils?.sendMessage(player, messageToAdmin);
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         const messageToTarget = getString('command.purgeflags.success.target', { adminName: adminName });
         playerUtils?.sendMessage(targetPlayer, messageToTarget);
@@ -83,9 +83,10 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
         playerUtils?.debugLog(`Admin ${adminName} purged flags for ${targetPlayer.nameTag}. Old total: ${oldTotalFlags}.`, adminName, dependencies);
 
-    } else {
-        playerUtils?.sendMessage(player, getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: "Failed to save purged data."}));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+    }
+    else {
+        playerUtils?.sendMessage(player, getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: 'Failed to save purged data.' }));
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         playerUtils?.debugLog(`[PurgeFlagsCommand CRITICAL] Failed to save purged data for ${targetPlayer.nameTag} by ${adminName}.`, adminName, dependencies);
     }
 }

@@ -43,7 +43,7 @@ export async function execute(player, args, dependencies) {
 
     const pData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
     if (!pData) {
-        player.sendMessage(getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag }) + " (No data)");
+        player.sendMessage(getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag }) + ' (No data)');
         playerUtils?.debugLog(`[UnbanCommand] No pData found for online player ${targetOnlinePlayer.nameTag}. Cannot verify ban status or unban.`, adminName, dependencies);
         return;
     }
@@ -62,7 +62,7 @@ export async function execute(player, args, dependencies) {
 
     if (unbanned) {
         player.sendMessage(getString('command.unban.success', { playerName: targetOnlinePlayer.nameTag }));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
             adminName: adminName,
@@ -80,8 +80,9 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
 
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag }));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }
 }

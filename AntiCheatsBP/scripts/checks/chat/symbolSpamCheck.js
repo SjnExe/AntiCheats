@@ -69,7 +69,7 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
             `[SymbolSpamCheck] Player ${playerName} triggered symbol spam. ` +
             `Msg: '${message}', Symbols: ${symbolPercentage.toFixed(1)}% (${symbolChars}/${totalCharsNonSpace} non-space chars), ` +
             `Threshold: ${percentageThreshold}%, MinMsgLength: ${minLength}`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
 
         const violationDetails = {

@@ -33,7 +33,7 @@ export async function execute(player, args, dependencies) {
 
     const subCommand = args[0]?.toLowerCase() || 'toggle';
 
-    let pData = playerDataManager?.getPlayerData(player.id);
+    const pData = playerDataManager?.getPlayerData(player.id);
     if (!pData) {
         playerUtils?.debugLog(`[NotifyCommand CRITICAL] pData not found for admin ${adminName}. Cannot reliably manage notifications.`, adminName, dependencies);
         player.sendMessage(getString('common.error.playerDataNotFound'));
@@ -43,7 +43,8 @@ export async function execute(player, args, dependencies) {
     let currentPreference;
     if (typeof pData[pDataKeyForNotifications] === 'boolean') {
         currentPreference = pData[pDataKeyForNotifications];
-    } else {
+    }
+    else {
         currentPreference = config?.acGlobalNotificationsDefaultOn ?? true;
     }
 
@@ -73,7 +74,7 @@ export async function execute(player, args, dependencies) {
             logManager?.addLog({
                 adminName: adminName,
                 actionType: 'notifyStatusChecked',
-                details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`
+                details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`,
             }, dependencies);
             return;
         default:
@@ -86,7 +87,7 @@ export async function execute(player, args, dependencies) {
         pData.isDirtyForSave = true;
 
         player.sendMessage(getString(responseMessageKey));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
         const logActionType = newPreference ? 'notifyEnabledUser' : 'notifyDisabledUser';
@@ -94,13 +95,14 @@ export async function execute(player, args, dependencies) {
         logManager?.addLog({
             adminName: adminName,
             actionType: logActionType,
-            details: `User notifications ${logMessageAction}`
+            details: `User notifications ${logMessageAction}`,
         }, dependencies);
 
-    } catch (error) {
+    }
+    catch (error) {
         player.sendMessage(getString('command.notify.error.update'));
         console.error(`[NotifyCommand CRITICAL] Error setting notification preference for ${adminName}: ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorNotifyCommand',

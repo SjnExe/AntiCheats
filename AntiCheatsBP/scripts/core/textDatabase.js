@@ -305,65 +305,65 @@ export const stringDB = {
 
     // Command specific: addrank
     'command.addrank.usage': '§cUsage: {prefix}addrank <playername> <rankId>',
-    'command.addrank.playerNotFound': "§cPlayer '{playerName}' not found.",
-    'command.addrank.rankIdInvalid': "§cRank ID '{rankId}' is not a valid rank.",
-    'command.addrank.rankNotManuallyAssignable': "§cRank '{rankName}' cannot be assigned using this command (not configured for manual tag assignment).",
-    'command.addrank.permissionDeniedAssign': "§cYou do not have permission to assign the rank '{rankName}'.",
-    'command.addrank.alreadyHasRank': "§ePlayer {playerName} already has the rank '{rankName}'.",
-    'command.addrank.assignSuccessToIssuer': "§aSuccessfully assigned rank '{rankName}' to {playerName}.",
-    'command.addrank.assignSuccessToTarget': "§aYou have been assigned the rank: {rankName}.",
-    'command.addrank.errorAssign': "§cAn error occurred while assigning the rank: {errorMessage}",
+    'command.addrank.playerNotFound': '§cPlayer \'{playerName}\' not found.',
+    'command.addrank.rankIdInvalid': '§cRank ID \'{rankId}\' is not a valid rank.',
+    'command.addrank.rankNotManuallyAssignable': '§cRank \'{rankName}\' cannot be assigned using this command (not configured for manual tag assignment).',
+    'command.addrank.permissionDeniedAssign': '§cYou do not have permission to assign the rank \'{rankName}\'.',
+    'command.addrank.alreadyHasRank': '§ePlayer {playerName} already has the rank \'{rankName}\'.',
+    'command.addrank.assignSuccessToIssuer': '§aSuccessfully assigned rank \'{rankName}\' to {playerName}.',
+    'command.addrank.assignSuccessToTarget': '§aYou have been assigned the rank: {rankName}.',
+    'command.addrank.errorAssign': '§cAn error occurred while assigning the rank: {errorMessage}',
 
     // Command specific: ban
-    'command.ban.usage': "§cUsage: {prefix}ban <playername> [duration] [reason]",
-    'command.ban.playerNotFound': "§cPlayer '{playerName}' not found.",
-    'command.ban.cannotBanSelf': "§cYou cannot ban yourself.",
-    'command.ban.permissionDeniedAdminOwner': "§cYou do not have permission to ban an admin or owner.",
-    'command.ban.permissionDeniedOwner': "§cYou do not have permission to ban an owner.",
-    'command.ban.ownerCannotBanOwner': "§cOwners cannot ban other owners through this command.",
-    'command.ban.invalidDuration': "§cInvalid duration format. Use: 7d, 2h, 30m, or perm.",
-    'command.ban.kickMessage.header': "§cYou have been banned from the server.",
-    'command.ban.kickMessage.reason': "§eReason: §f{reason}",
-    'command.ban.kickMessage.bannedBy': "§eBanned by: §f{bannedBy}",
-    'command.ban.kickMessage.duration': "§eDuration: §f{durationDisplay}",
-    'command.ban.kickMessage.appeal': "§eAppeal on Discord: §9{discordLink}",
-    'command.ban.success': "§aSuccessfully banned {playerName} for {durationString}. Reason: {reason}",
-    'command.ban.failure': "§cFailed to ban {playerName}. They might already be banned or an error occurred.",
+    'command.ban.usage': '§cUsage: {prefix}ban <playername> [duration] [reason]',
+    'command.ban.playerNotFound': '§cPlayer \'{playerName}\' not found.',
+    'command.ban.cannotBanSelf': '§cYou cannot ban yourself.',
+    'command.ban.permissionDeniedAdminOwner': '§cYou do not have permission to ban an admin or owner.',
+    'command.ban.permissionDeniedOwner': '§cYou do not have permission to ban an owner.',
+    'command.ban.ownerCannotBanOwner': '§cOwners cannot ban other owners through this command.',
+    'command.ban.invalidDuration': '§cInvalid duration format. Use: 7d, 2h, 30m, or perm.',
+    'command.ban.kickMessage.header': '§cYou have been banned from the server.',
+    'command.ban.kickMessage.reason': '§eReason: §f{reason}',
+    'command.ban.kickMessage.bannedBy': '§eBanned by: §f{bannedBy}',
+    'command.ban.kickMessage.duration': '§eDuration: §f{durationDisplay}',
+    'command.ban.kickMessage.appeal': '§eAppeal on Discord: §9{discordLink}',
+    'command.ban.success': '§aSuccessfully banned {playerName} for {durationString}. Reason: {reason}',
+    'command.ban.failure': '§cFailed to ban {playerName}. They might already be banned or an error occurred.',
 
     // Command specific: clearchat
-    'command.clearchat.failPartial': "§cChat clear failed partially. Some messages might remain.",
-    'command.clearchat.success': "§aChat cleared successfully.",
+    'command.clearchat.failPartial': '§cChat clear failed partially. Some messages might remain.',
+    'command.clearchat.success': '§aChat cleared successfully.',
 
     // Command specific: clearreports
-    'command.clearreports.usage': "§cUsage: {prefix}{syntax}",
-    'command.clearreports.example': "§cExample: {prefix}clearreports <report_id> OR {prefix}clearreports <player_name> OR {prefix}clearreports all",
-    'command.clearreports.allSuccess': "§aSuccessfully cleared all {count} reports.",
-    'command.clearreports.idSuccess': "§aReport with ID '{reportId}' has been cleared.",
-    'command.clearreports.idNotFound': "§cReport with ID '{reportId}' not found.",
-    'command.clearreports.playerSuccess': "§aCleared {count} reports associated with player '{playerName}'.",
-    'command.clearreports.playerNotFound': "§eNo reports found associated with player '{playerName}'.",
+    'command.clearreports.usage': '§cUsage: {prefix}{syntax}',
+    'command.clearreports.example': '§cExample: {prefix}clearreports <report_id> OR {prefix}clearreports <player_name> OR {prefix}clearreports all',
+    'command.clearreports.allSuccess': '§aSuccessfully cleared all {count} reports.',
+    'command.clearreports.idSuccess': '§aReport with ID \'{reportId}\' has been cleared.',
+    'command.clearreports.idNotFound': '§cReport with ID \'{reportId}\' not found.',
+    'command.clearreports.playerSuccess': '§aCleared {count} reports associated with player \'{playerName}\'.',
+    'command.clearreports.playerNotFound': '§eNo reports found associated with player \'{playerName}\'.',
 
     // Configurable value descriptions (for potential UI)
-    'config.key.chatClearLinesCount.title': "Chat Clear Lines Count",
-    'config.key.chatClearLinesCount.description': "Number of empty lines sent by !clearchat command to clear chat.",
-    'config.key.reportsViewPerPage.title': "Reports View Per Page",
-    'config.key.reportsViewPerPage.description': "Number of reports displayed per page in the !viewreports command.",
+    'config.key.chatClearLinesCount.title': 'Chat Clear Lines Count',
+    'config.key.chatClearLinesCount.description': 'Number of empty lines sent by !clearchat command to clear chat.',
+    'config.key.reportsViewPerPage.title': 'Reports View Per Page',
+    'config.key.reportsViewPerPage.description': 'Number of reports displayed per page in the !viewreports command.',
 
     // Add more string keys and their corresponding text here as needed.
     // Example: 'some.module.someMessage': 'This is a message for {placeholder}.',
 
     // --- copyinv.js ---
     'command.copyinv.usage': '§cUsage: {prefix}copyinv <playername>',
-    'command.copyinv.playerNotFound': "§cPlayer '{playerName}' not found.",
+    'command.copyinv.playerNotFound': '§cPlayer \'{playerName}\' not found.',
     'command.copyinv.cannotSelf': '§cYou cannot copy your own inventory.',
     'command.copyinv.noAccess': '§cCould not access inventories.',
     'ui.copyinv.confirm.title': 'Confirm Inventory Copy',
-    'ui.copyinv.confirm.body': "Type 'confirm' to copy {targetPlayerName}'s inventory. THIS WILL OVERWRITE YOUR CURRENT INVENTORY.",
-    'ui.copyinv.confirm.placeholder': "Type 'confirm' here",
+    'ui.copyinv.confirm.body': 'Type \'confirm\' to copy {targetPlayerName}\'s inventory. THIS WILL OVERWRITE YOUR CURRENT INVENTORY.',
+    'ui.copyinv.confirm.placeholder': 'Type \'confirm\' here',
     'ui.copyinv.confirm.toggle': 'Yes, I understand my inventory will be overwritten.',
     'command.copyinv.cancelled': '§eInventory copy cancelled.',
     'command.copyinv.error.form': '§cAn error occurred with the confirmation form.',
-    'command.copyinv.success': "§aSuccessfully copied {targetPlayerName}'s inventory ({itemsCopied} items/stacks).",
+    'command.copyinv.success': '§aSuccessfully copied {targetPlayerName}\'s inventory ({itemsCopied} items/stacks).',
     'command.copyinv.error.generic': '§cAn unexpected error occurred: {errorMessage}',
 
     // --- endlock.js ---
@@ -397,7 +397,7 @@ export const stringDB = {
     'command.gamemode.gmc.usage': '§cUsage: {prefix}gmc [playername]',
     'command.gamemode.gms.usage': '§cUsage: {prefix}gms [playername]',
     'command.gamemode.gmsp.usage': '§cUsage: {prefix}gmsp [playername]',
-    'command.gamemode.success.other': "§aSet {playerName}'s gamemode to {gamemodeName}.",
+    'command.gamemode.success.other': '§aSet {playerName}\'s gamemode to {gamemodeName}.',
     'command.gamemode.success.self': '§aYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.targetNotification': '§eYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.error.generic': '§cFailed to set gamemode for {targetNameForError} to {gamemodeName}: {errorMessage}',
@@ -436,7 +436,7 @@ export const stringDB = {
 
     // --- invsee.js ---
     'command.invsee.usage': '§cUsage: {prefix}invsee <playername>',
-    'command.invsee.noAccess': "§cCould not access {playerName}'s inventory.",
+    'command.invsee.noAccess': '§cCould not access {playerName}\'s inventory.',
     'ui.invsee.title': 'Inventory: {playerName}',
     'ui.invsee.header': '§6Inventory of {playerName}:§r',
     'ui.invsee.slotEntry': '§eSlot {slotNum}: §f{itemId} §7x{amount}{nameTagText}{durabilityText}{enchantsText}{loreText}',
@@ -445,7 +445,7 @@ export const stringDB = {
     // For item details within invsee:
     'command.invsee.item.nameTag': ' (Name: {nameTag})',
     'command.invsee.item.durability': ' (Dur: {currentDurability}/{maxDurability})',
-    'command.invsee.item.lore': " (Lore: ['{loreEntries}'])", // {loreEntries} will be pre-joined with ', '
+    'command.invsee.item.lore': ' (Lore: [\'{loreEntries}\'])', // {loreEntries} will be pre-joined with ', '
     'command.invsee.item.enchants': ' (Enchants: {enchantEntries})', // {enchantEntries} will be pre-joined
 
     // --- kick.js ---
@@ -484,7 +484,7 @@ export const stringDB = {
     'command.mute.usage': '§cUsage: {prefix}mute <playername> [duration] [reason]',
     'command.mute.systemNoArgs': '[MuteCommand] Mute command called by system without sufficient arguments.',
     'command.mute.systemNoTarget': '[MuteCommand] System call missing target player name.',
-    'command.mute.playerNotFound': "§cPlayer '{playerName}' not found.", // Reusable
+    'command.mute.playerNotFound': '§cPlayer \'{playerName}\' not found.', // Reusable
     'command.mute.cannotSelf': '§cYou cannot mute yourself.',
     'command.mute.noPermission': '§cYou do not have permission to mute this player.',
     'command.mute.invalidDuration': '§cInvalid duration. Example: 10m, 1h, 2d, perm. Default: {defaultDuration}',
@@ -586,17 +586,17 @@ export const stringDB = {
     'command.tpacancel.usage': '§cUsage: {prefix}tpacancel [playerName]',
     'command.tpastatus.usage': '§cUsage: {prefix}tpastatus [on|off|status]',
     // Specific messages not covered by tpa.manager:
-    'command.tpa.systemDisabled': "§cThe TPA system is currently disabled.", // Common for all TPA commands
-    'command.tpa.cannotSelf': "§cYou cannot send a TPA request to yourself.",
-    'command.tpahere.cannotSelf': "§cYou cannot send a TPA Here request to yourself.",
+    'command.tpa.systemDisabled': '§cThe TPA system is currently disabled.', // Common for all TPA commands
+    'command.tpa.cannotSelf': '§cYou cannot send a TPA request to yourself.',
+    'command.tpahere.cannotSelf': '§cYou cannot send a TPA Here request to yourself.',
     'command.tpa.targetNotAccepting': '§cPlayer "{playerName}" is not currently accepting TPA requests.',
     'command.tpa.alreadyActive': '§cYou already have an active TPA request with "{playerName}".',
     'command.tpa.cooldown': '§cYou must wait {remainingTime} more seconds before sending another TPA request.',
     'command.tpa.requestSent': '§aTPA request sent to "{playerName}". They have {timeoutSeconds} seconds to accept. Type {prefix}tpacancel to cancel.',
     'command.tpahere.requestSent': '§aTPA Here request sent to "{playerName}". They have {timeoutSeconds} seconds to accept. Type {prefix}tpacancel to cancel.',
-    'command.tpa.error.genericSend': "§cCould not send TPA request. There might be an existing request or other issue.",
-    'command.tpahere.error.genericSend': "§cCould not send TPA Here request. There might be an existing request or other issue.",
-    'command.tpaccept.noPending': "§cYou have no pending TPA requests.",
+    'command.tpa.error.genericSend': '§cCould not send TPA request. There might be an existing request or other issue.',
+    'command.tpahere.error.genericSend': '§cCould not send TPA Here request. There might be an existing request or other issue.',
+    'command.tpaccept.noPending': '§cYou have no pending TPA requests.',
     'command.tpaccept.noRequestFromPlayer': '§cNo pending TPA request found from "{playerName}".',
     'command.tpaccept.pendingFrom': '§7Pending requests are from: {playerNames}',
     'command.tpaccept.couldNotFind': '§cCould not find a suitable TPA request to accept. Type {prefix}tpastatus to see your requests.',
@@ -604,28 +604,28 @@ export const stringDB = {
     'command.tpaccept.failure': '§cCould not accept TPA request from "{playerName}". It might have expired or been cancelled.',
     'command.tpacancel.specific.success': '§aSuccessfully cancelled/declined TPA request involving "{playerName}".',
     'command.tpacancel.specific.notFound': '§cNo active or pending TPA request found with "{playerName}" that can be cancelled.',
-    'command.tpacancel.all.noneFound': "§cYou have no active TPA requests to cancel or decline.",
+    'command.tpacancel.all.noneFound': '§cYou have no active TPA requests to cancel or decline.',
     'command.tpacancel.all.success': '§aCancelled/declined {count} TPA request(s).',
-    'command.tpacancel.all.noneCancellable': "§cNo active requests were found in a state that could be cancelled/declined.",
-    'command.tpacancel.error.generic': "§cAn unexpected error occurred.",
-    'command.tpastatus.on': "§aYou are now accepting TPA requests.",
-    'command.tpastatus.off': "§cYou are no longer accepting TPA requests.",
-    'command.tpastatus.off.declinedNotification': "§e{count} pending incoming TPA request(s) were automatically declined.",
-    'command.tpastatus.status.accepting': "§aYou are currently accepting TPA requests.",
-    'command.tpastatus.status.notAccepting': "§cYou are currently not accepting TPA requests.",
+    'command.tpacancel.all.noneCancellable': '§cNo active requests were found in a state that could be cancelled/declined.',
+    'command.tpacancel.error.generic': '§cAn unexpected error occurred.',
+    'command.tpastatus.on': '§aYou are now accepting TPA requests.',
+    'command.tpastatus.off': '§cYou are no longer accepting TPA requests.',
+    'command.tpastatus.off.declinedNotification': '§e{count} pending incoming TPA request(s) were automatically declined.',
+    'command.tpastatus.status.accepting': '§aYou are currently accepting TPA requests.',
+    'command.tpastatus.status.notAccepting': '§cYou are currently not accepting TPA requests.',
     'command.tpastatus.invalidOption': '§cInvalid option. Usage: {prefix}tpastatus [on|off|status]',
 
     // --- uinfo.js (UI strings are mostly in ui.*, but some internal logic might generate text) ---
     // Many uinfo strings are already in ui.* sections.
-    'uinfo.myStats.noData': "No AntiCheat data found for you.", // Fallback if pData or pData.flags is null
-    'uinfo.myStats.noSpecificFlags': " (No specific flag details)", // If totalFlags > 0 but no specific types
+    'uinfo.myStats.noData': 'No AntiCheat data found for you.', // Fallback if pData or pData.flags is null
+    'uinfo.myStats.noSpecificFlags': ' (No specific flag details)', // If totalFlags > 0 but no specific types
 
     // --- unban.js ---
     'command.unban.usage': '§cUsage: {prefix}unban <playername>',
     'command.unban.offline': '§cCannot unban offline player "{playerName}". Player must be online or unbanned via console/external tool.',
     'command.unban.notBanned': '§ePlayer "{playerName}" is not currently banned.',
     'command.unban.success': '§aSuccessfully unbanned {playerName}.',
-    'command.unban.flagsCleared': "§7Flags for check type '{checkType}' were cleared for {playerName} due to unban from AutoMod action.",
+    'command.unban.flagsCleared': '§7Flags for check type \'{checkType}\' were cleared for {playerName} due to unban from AutoMod action.',
     'command.unban.failure': '§cFailed to unban {playerName}.',
     'command.unban.error.generic': '§cAn unexpected error occurred.: {errorMessage}',
 
@@ -634,7 +634,7 @@ export const stringDB = {
     'command.unmute.notMuted': '§ePlayer "{playerName}" is not currently muted.',
     'command.unmute.targetNotification': '§aYou have been unmuted.',
     'command.unmute.success': '§aSuccessfully unmuted {playerName}.',
-    'command.unmute.flagsCleared': "§7Flags for check type '{checkType}' were cleared for {playerName} due to unmute from AutoMod action.",
+    'command.unmute.flagsCleared': '§7Flags for check type \'{checkType}\' were cleared for {playerName} due to unmute from AutoMod action.',
     'command.unmute.failure': '§cFailed to unmute {playerName}.',
     'command.unmute.error.generic': '§cAn unexpected error occurred.: {errorMessage}',
 
@@ -710,10 +710,10 @@ export const stringDB = {
     'command.worldborder.help.setParticle': '{prefix}wb setparticle <particleName|reset> [dimension] - Sets particle for a specific border or resets to global.',
     'command.worldborder.help.dimensionNote': 'Dimension defaults to current if not specified (overworld, nether, end).',
     'command.worldborder.help.interpolationNote': 'Interpolation types: linear (default), easeoutquad, easeinoutquad.',
-    'command.worldborder.invalidSubcommand': "§cInvalid subcommand '{subCommand}'. Use {prefix}wb help.",
+    'command.worldborder.invalidSubcommand': '§cInvalid subcommand \'{subCommand}\'. Use {prefix}wb help.',
     'command.worldborder.set.usage': '§cUsage: {prefix}wb set <square|circle> <centerX> <centerZ> <size> [dimension]',
     'command.worldborder.set.noteSize': '§eNote: For square, size is half-length (e.g., 500 for 1000x1000). For circle, size is radius.',
-    'command.worldborder.set.invalidShape': "§cInvalid shape. Use 'square' or 'circle'.",
+    'command.worldborder.set.invalidShape': '§cInvalid shape. Use \'square\' or \'circle\'.',
     'command.worldborder.set.invalidNumbers': '§cInvalid numbers for centerX, centerZ, or size.',
     'command.worldborder.set.sizePositive': '§cSize must be a positive number.',
     'command.worldborder.invalidDimension': '§cInvalid dimension: {dimensionName}. Use overworld, nether, or end.',
@@ -746,7 +746,7 @@ export const stringDB = {
     'command.worldborder.get.particle.globalDefault': '  Particle: Global Default ({globalParticle})',
     'command.worldborder.get.noBorder': '§eNo world border configured for {dimensionName}. Use {prefix}wb set to create one.',
     'command.worldborder.toggle.usage': '§cUsage: {prefix}wb toggle <on|off> [dimension]',
-    'command.worldborder.toggle.invalidState': "§cInvalid state. Use 'on' or 'off'.",
+    'command.worldborder.toggle.invalidState': '§cInvalid state. Use \'on\' or \'off\'.',
     'command.worldborder.toggle.noBorder': '§cNo border configured for {dimensionName} to toggle.',
     'command.worldborder.toggle.alreadyState': '§eBorder for {dimensionName} is already {state}.',
     'command.worldborder.toggle.success': '§aBorder for {dimensionName} turned {state}.{resizeCancelledMessage}',
@@ -814,7 +814,7 @@ export const stringDB = {
 
     // --- AntiGrief specific (used by actionProfiles, but good to have keys if they are ever directly messaged) ---
     'antigrief.tntPlacementDenied': '§cTNT placement is restricted here.',
-    'antigrief.itemUseDenied': "§cUse of '{item}' is restricted here.",
+    'antigrief.itemUseDenied': '§cUse of \'{item}\' is restricted here.',
 
     // --- Ban/Mute duration formatting (used by getBanInfo/getMuteInfo potentially, or their callers) ---
     'ban.duration.permanent': 'Permanent',
@@ -826,35 +826,35 @@ export const stringDB = {
     'admin.notify.newPlayerJoined': '§e[AC] New player {playerName} has joined the server for the first time!',
 
     // --- System Messages & Errors ---
-    'system.core.initialized': "§a[AntiCheat] §2System Core Initialized. Version: {version}",
-    'error.system.criticalDeps': "§cAntiCheat Error: Critical issue (HPS_DEPS). Contact admin.",
+    'system.core.initialized': '§a[AntiCheat] §2System Core Initialized. Version: {version}',
+    'error.system.criticalDeps': '§cAntiCheat Error: Critical issue (HPS_DEPS). Contact admin.',
 
     // --- Player Data Notifications ---
-    'playerData.notify.flagged': "Flagged for §b{flagType}§r. Details: {details}",
+    'playerData.notify.flagged': 'Flagged for §b{flagType}§r. Details: {details}',
 
     // --- Report Notifications ---
-    'report.notify.newReport': "§b{reporterName}§r §7reported §b{reportedName}§r§7. Reason: §f{reason} §7(ID: {reportId})",
+    'report.notify.newReport': '§b{reporterName}§r §7reported §b{reportedName}§r§7. Reason: §f{reason} §7(ID: {reportId})',
 
     // --- Command Specific Admin Notifications (New Keys) ---
-    'command.addrank.notify.assigned': "§e{adminName}§r assigned rank §a{rankName}§r to §e{targetPlayerName}§r.",
-    'command.ban.notify.banned': "§e{bannedBy}§r banned §e{targetName}§r for §b{durationDisplay}§r. Reason: §f{reason}",
-    'command.clearchat.notify.cleared': "Chat cleared by §e{adminName}§r.",
-    'command.copyinv.notify.copiedSimple': "§e{adminName}§r copied the inventory of §e{targetPlayerName}§r.",
-    'command.dimensionLock.notify.locked': "The {dimensionNamePlaceholder} dimension was locked by §e{adminName}§r.",
-    'command.dimensionLock.notify.unlocked': "The {dimensionNamePlaceholder} dimension was unlocked by §e{adminName}§r.",
-    'command.freeze.notify.froze': "§e{adminName}§r froze player §e{targetPlayerName}§r.",
-    'command.freeze.notify.unfroze': "§e{adminName}§r unfroze player §e{targetPlayerName}§r.",
-    'command.kick.notify.kicked': "§e{targetName}§r was kicked by §e{adminName}§r. Reason: §f{reason}",
-    'command.mute.notify.muted': "§e{targetName}§r was muted by §e{mutedBy}§r for §b{duration}§r. Reason: §f{reason}",
-    'command.purgeflags.notify.purged': "§e{adminName}§r purged all flags and violation history for §e{targetPlayerName}§r. (Old total flags: {oldTotalFlags})",
-    'command.removerank.notify.removedRank': "§e{adminName}§r removed rank §a{rankName}§r from §e{targetPlayerName}§r.",
-    'command.resetflags.notify.reset': "§e{adminName}§r reset flags for §e{targetPlayerName}§r.",
-    'command.unban.notify.unbanned': "§e{adminName}§r unbanned player §e{targetName}§r.",
-    'command.unban.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unban).",
-    'command.unmute.notify.unmuted': "§e{adminName}§r unmuted player §e{targetName}§r.",
-    'command.unmute.notify.flagsCleared': "Flags for check type '§b{checkType}§r' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unmute).",
-    'command.vanish.notify.enabled': "§e{adminName}§r has enabled vanish (§b{mode}§r mode).",
-    'command.vanish.notify.disabled': "§e{adminName}§r has disabled vanish (§b{mode}§r mode).",
+    'command.addrank.notify.assigned': '§e{adminName}§r assigned rank §a{rankName}§r to §e{targetPlayerName}§r.',
+    'command.ban.notify.banned': '§e{bannedBy}§r banned §e{targetName}§r for §b{durationDisplay}§r. Reason: §f{reason}',
+    'command.clearchat.notify.cleared': 'Chat cleared by §e{adminName}§r.',
+    'command.copyinv.notify.copiedSimple': '§e{adminName}§r copied the inventory of §e{targetPlayerName}§r.',
+    'command.dimensionLock.notify.locked': 'The {dimensionNamePlaceholder} dimension was locked by §e{adminName}§r.',
+    'command.dimensionLock.notify.unlocked': 'The {dimensionNamePlaceholder} dimension was unlocked by §e{adminName}§r.',
+    'command.freeze.notify.froze': '§e{adminName}§r froze player §e{targetPlayerName}§r.',
+    'command.freeze.notify.unfroze': '§e{adminName}§r unfroze player §e{targetPlayerName}§r.',
+    'command.kick.notify.kicked': '§e{targetName}§r was kicked by §e{adminName}§r. Reason: §f{reason}',
+    'command.mute.notify.muted': '§e{targetName}§r was muted by §e{mutedBy}§r for §b{duration}§r. Reason: §f{reason}',
+    'command.purgeflags.notify.purged': '§e{adminName}§r purged all flags and violation history for §e{targetPlayerName}§r. (Old total flags: {oldTotalFlags})',
+    'command.removerank.notify.removedRank': '§e{adminName}§r removed rank §a{rankName}§r from §e{targetPlayerName}§r.',
+    'command.resetflags.notify.reset': '§e{adminName}§r reset flags for §e{targetPlayerName}§r.',
+    'command.unban.notify.unbanned': '§e{adminName}§r unbanned player §e{targetName}§r.',
+    'command.unban.notify.flagsCleared': 'Flags for check type \'§b{checkType}§r\' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unban).',
+    'command.unmute.notify.unmuted': '§e{adminName}§r unmuted player §e{targetName}§r.',
+    'command.unmute.notify.flagsCleared': 'Flags for check type \'§b{checkType}§r\' were cleared for §e{targetName}§r by §e{adminName}§r (AutoMod unmute).',
+    'command.vanish.notify.enabled': '§e{adminName}§r has enabled vanish (§b{mode}§r mode).',
+    'command.vanish.notify.disabled': '§e{adminName}§r has disabled vanish (§b{mode}§r mode).',
 
     // --- UI Manager specific (beyond what's in ui.*) ---
     // If uiManager constructs complex strings dynamically that aren't just titles/buttons, they could go here.

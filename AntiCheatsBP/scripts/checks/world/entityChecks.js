@@ -65,7 +65,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     const originalCount = pData.recentEntitySpamTimestamps[entityType].length;
 
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType].filter(
-        ts => (currentTime - ts) <= windowMs
+        ts => (currentTime - ts) <= windowMs,
     );
 
     if (pData.recentEntitySpamTimestamps[entityType].length !== originalCount) {

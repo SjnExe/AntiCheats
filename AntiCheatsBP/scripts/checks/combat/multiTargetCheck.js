@@ -48,7 +48,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     const newHit = {
         entityId: targetEntity.id,
         timestamp: now,
-        entityType: targetEntity.typeId
+        entityType: targetEntity.typeId,
     };
     pData.recentHits.push(newHit);
     pData.isDirtyForSave = true;

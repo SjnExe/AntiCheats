@@ -53,7 +53,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const issuerPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-    const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : permissionLevels.owner;
+    const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : dependencies.permissionLevels.owner;
 
     if (typeof issuerPermissionLevel !== 'number' || issuerPermissionLevel > assignableByPermission) {
         player?.sendMessage(getString('command.addrank.permissionDeniedAssign', { rankName: rankDef.name }));
@@ -91,7 +91,8 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
-    } catch (e) {
+    }
+    catch (e) {
         player?.sendMessage(getString('command.addrank.errorAssign', { errorMessage: e.message }));
         console.error(`[AddRankCommand CRITICAL] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         logManager?.addLog({

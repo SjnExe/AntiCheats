@@ -53,7 +53,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const issuerPermissionLevel = depRankManager?.getPlayerPermissionLevel(player, dependencies);
-    const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : permissionLevels.owner;
+    const assignableByPermission = typeof rankDef.assignableBy === 'number' ? rankDef.assignableBy : dependencies.permissionLevels.owner;
 
     if (typeof issuerPermissionLevel !== 'number' || issuerPermissionLevel > assignableByPermission) {
         player.sendMessage(getString('command.removerank.permissionDenied', { rankName: rankDef.name }));
@@ -75,13 +75,13 @@ export async function execute(player, args, dependencies) {
         }
 
         if (depRankManager?.updatePlayerNametag) {
-             await depRankManager.updatePlayerNametag(targetPlayer, dependencies);
+            await depRankManager.updatePlayerNametag(targetPlayer, dependencies);
         }
 
 
         player.sendMessage(getString('command.removerank.success.issuer', { rankName: rankDef.name, playerName: targetPlayer.nameTag }));
         targetPlayer.sendMessage(getString('command.removerank.success.target', { rankName: rankDef.name }));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
             adminName: adminName,
@@ -96,10 +96,11 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
-    } catch (error) {
+    }
+    catch (error) {
         player.sendMessage(getString('command.removerank.error.generic', { errorMessage: error.message }));
         console.error(`[RemoveRankCommand CRITICAL] Error removing rank ${rankDef.id} from ${targetPlayer.nameTag} by ${adminName}: ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorRankRemove',

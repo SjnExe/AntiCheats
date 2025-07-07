@@ -81,15 +81,18 @@ export async function execute(player, args, dependencies) {
                     getString('command.help.specific.header', { prefix: prefix, commandName: foundCmdDef.name }) + '\n' +
                     getString('command.help.specific.syntax', { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs || '' }) + '\n' +
                     getString('command.help.specific.description', { description: descriptionText }) + '\n' +
-                    getString('command.help.specific.permission', { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() })
+                    getString('command.help.specific.permission', { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() }),
                 );
-            } else {
+            }
+            else {
                 player.sendMessage(getString('command.help.noPermission', { prefix: prefix, commandName: specificCommandNameInput }));
             }
-        } else {
+        }
+        else {
             player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandNameInput }));
         }
-    } else {
+    }
+    else {
         let helpMessage = getString('command.help.header', { prefix: prefix }) + '\n';
         let commandsListed = 0;
 
@@ -121,7 +124,7 @@ export async function execute(player, args, dependencies) {
                        cmdDef.permissionLevel >= category.minPerm &&
                        (categories.findIndex(c => c.minPerm === cmdDef.permissionLevel) === categories.indexOf(category) ||
                         (cmdDef.permissionLevel < category.minPerm && category.minPerm === depPermLevels.member && cmdDef.permissionLevel >= depPermLevels.member));
-            }).sort((a,b) => a.name.localeCompare(b.name));
+            }).sort((a, b) => a.name.localeCompare(b.name));
 
 
             if (commandsInCategory.length > 0) {
@@ -140,7 +143,8 @@ export async function execute(player, args, dependencies) {
 
         if (commandsListed === 0) {
             helpMessage += getString('command.help.noCommandsAvailable');
-        } else {
+        }
+        else {
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);
             }

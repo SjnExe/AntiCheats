@@ -70,11 +70,13 @@ export async function execute(player, args, dependencies) {
     if (addResult && typeof addResult === 'object' && 'error' in addResult) {
         if (addResult.error === 'cooldown' && typeof addResult.remaining === 'number') {
             player.sendMessage(getString('command.tpa.cooldown', { remainingTime: addResult.remaining.toString() }));
-        } else {
+        }
+        else {
             player.sendMessage(getString('command.tpahere.error.genericSend'));
             playerUtils?.debugLog(`[TpaHereCommand] Failed to add TPAHere request from ${requesterName} to ${targetPlayer.nameTag}. Result: ${JSON.stringify(addResult)}`, requesterName, dependencies);
         }
-    } else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
+    }
+    else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
         const request = /** @type {import('../types.js').TpaRequest} */ (addResult);
         const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? 60;
         player.sendMessage(getString('command.tpahere.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix: prefix }));
@@ -82,11 +84,12 @@ export async function execute(player, args, dependencies) {
         const actionBarMessage = getString('tpa.notify.actionBar.requestYouToThem', { requestingPlayerName: requesterName, prefix: prefix });
         try {
             targetPlayer.onScreenDisplay.setActionBar(actionBarMessage);
-        } catch (e) {
+        }
+        catch (e) {
             playerUtils?.sendMessage(targetPlayer, actionBarMessage);
             playerUtils?.debugLog(`[TpaHereCommand INFO] Failed to set action bar for TPAHere target ${targetPlayer.nameTag}, sent chat message instead. Error: ${e.message}`, requesterName, dependencies);
         }
-        playerUtils?.playSoundForEvent(targetPlayer, "tpaRequestReceived", dependencies);
+        playerUtils?.playSoundForEvent(targetPlayer, 'tpaRequestReceived', dependencies);
 
         logManager?.addLog({
             actionType: 'tpaHereRequestSent',
@@ -97,7 +100,8 @@ export async function execute(player, args, dependencies) {
             details: `TPAHere request sent. ID: ${request.requestId}, Type: ${request.requestType}`,
             context: 'TpaHereCommand.execute',
         }, dependencies);
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.tpahere.error.genericSend'));
         playerUtils?.debugLog(`[TpaHereCommand CRITICAL] Unknown error adding TPAHere request from ${requesterName} to ${targetPlayer.nameTag}. AddResult: ${JSON.stringify(addResult)}`, requesterName, dependencies);
     }

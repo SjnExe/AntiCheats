@@ -47,10 +47,11 @@ export async function execute(player, args, dependencies) {
                         const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
-                    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-                } else {
+                    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+                }
+                else {
                     player?.sendMessage(getString('command.endlock.failUpdate'));
-                    playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+                    playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
                 break;
             case 'off':
@@ -60,13 +61,14 @@ export async function execute(player, args, dependencies) {
                     player?.sendMessage(getString('command.endlock.unlocked'));
                     logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'The End', details: 'The End dimension unlocked' }, dependencies);
                     if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                         const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
-                    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-                } else {
+                    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+                }
+                else {
                     player?.sendMessage(getString('command.endlock.failUpdate'));
-                    playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+                    playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
                 break;
             case 'status':
@@ -76,12 +78,13 @@ export async function execute(player, args, dependencies) {
                 break;
             default:
                 player?.sendMessage(getString('command.endlock.usage', { prefix }));
-                return;
+
         }
-    } catch (error) {
+    }
+    catch (error) {
         player?.sendMessage(getString('command.endlock.error.generic', { commandName: definition.name, errorMessage: error.message }));
         console.error(`[EndlockCommand CRITICAL] Error for ${adminName} executing '${subCommand}': ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorDimensionLockCommand',

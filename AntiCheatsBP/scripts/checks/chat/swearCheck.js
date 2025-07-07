@@ -29,20 +29,24 @@ function normalizeWordForSwearCheck(word, dependencies) {
     let normalized = word.toLowerCase();
 
     normalized = normalized.replace(/[\s._\-~`!@#$%^&*()+={}\[\]|\\:;"'<>,.?/0-9]+/g, '');
-    if (!normalized) return '';
+    if (!normalized) {
+        return '';
+    }
 
     normalized = normalized.replace(/(.)\1+/g, '$1');
-    if (!normalized) return '';
+    if (!normalized) {
+        return '';
+    }
 
     if (config?.swearCheckEnableLeetSpeak) {
         const leetMap = config?.swearCheckLeetSpeakMap ?? defaultLeetMap;
-        let chars = Array.from(normalized);
-        let resultChars = [];
+        const chars = Array.from(normalized);
+        const resultChars = [];
         let i = 0;
         while (i < chars.length) {
             let replaced = false;
             if (i + 1 < chars.length) {
-                const twoCharSeq = chars[i] + chars[i+1];
+                const twoCharSeq = chars[i] + chars[i + 1];
                 if (leetMap[twoCharSeq]) {
                     resultChars.push(leetMap[twoCharSeq]);
                     i += 2;
@@ -52,7 +56,8 @@ function normalizeWordForSwearCheck(word, dependencies) {
             if (!replaced) {
                 if (leetMap[chars[i]]) {
                     resultChars.push(leetMap[chars[i]]);
-                } else {
+                }
+                else {
                     resultChars.push(chars[i]);
                 }
                 i++;
@@ -61,7 +66,9 @@ function normalizeWordForSwearCheck(word, dependencies) {
         normalized = resultChars.join('');
 
         normalized = normalized.replace(/(.)\1+/g, '$1');
-        if (!normalized) return '';
+        if (!normalized) {
+            return '';
+        }
     }
     return normalized;
 }
@@ -111,10 +118,14 @@ export async function checkSwear(player, eventData, pData, dependencies) {
     const watchedPlayerName = pData?.isWatched ? playerName : null;
 
     for (const wordInMessage of wordsInMessage) {
-        if (wordInMessage.trim() === '') continue;
+        if (wordInMessage.trim() === '') {
+            continue;
+        }
 
         const normalizedInputWord = normalizeWordForSwearCheck(wordInMessage, dependencies);
-        if (normalizedInputWord.length === 0) continue;
+        if (normalizedInputWord.length === 0) {
+            continue;
+        }
 
         for (const swearItem of normalizedSwearWordList) {
             if (normalizedInputWord === swearItem.normalized) {
@@ -128,7 +139,7 @@ export async function checkSwear(player, eventData, pData, dependencies) {
                 };
                 playerUtils?.debugLog(
                     `[SwearCheck] ${playerName} triggered swear check. Word: '${wordInMessage}' (norm: '${normalizedInputWord}') matched '${swearItem.original}' (norm: '${swearItem.normalized}').`,
-                    watchedPlayerName, dependencies
+                    watchedPlayerName, dependencies,
                 );
 
                 await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);

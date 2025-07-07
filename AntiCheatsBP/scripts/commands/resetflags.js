@@ -9,7 +9,7 @@
 export const definition = {
     name: 'resetflags',
     syntax: '!resetflags <playerName>',
-    description: "Clears a player's AntiCheat flags and violation data.",
+    description: 'Clears a player\'s AntiCheat flags and violation data.',
     permissionLevel: 1, // admin
     aliases: ['clearwarnings', 'rf', 'cw'],
     enabled: true,
@@ -50,7 +50,8 @@ export async function execute(player, args, dependencies) {
                     pData.flags[flagKey].lastDetectionTime = 0;
                 }
             }
-        } else {
+        }
+        else {
             pData.flags = { totalFlags: 0 };
         }
         pData.lastFlagType = '';
@@ -98,7 +99,8 @@ export async function execute(player, args, dependencies) {
 
         playerUtils.debugLog(`[ResetFlagsCommand] Flags reset for ${targetPlayer.nameTag} by ${player.nameTag}.`, pData.isWatched ? targetPlayer.nameTag : null, dependencies);
 
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.resetflags.noData', { playerName: targetPlayer.nameTag }));
         logManager.addLog({
             timestamp: Date.now(),

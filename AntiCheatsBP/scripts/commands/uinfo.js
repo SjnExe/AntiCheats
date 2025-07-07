@@ -44,15 +44,17 @@ export async function execute(player, _args, dependencies) {
                 details: 'Player opened user info panel via command.',
                 context: 'UInfoCommand.execute',
             }, dependencies);
-        } else {
-            player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: "UI Panel unavailable"}));
+        }
+        else {
+            player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: 'UI Panel unavailable' }));
             playerUtils?.debugLog(`[UInfoCommand CRITICAL] uiManager.showNormalUserPanelMain is undefined for ${playerName}.`, playerName, dependencies);
         }
 
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[UInfoCommand CRITICAL] Error executing uinfo command for ${playerName}: ${error.stack || error}`);
         player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: error.message }));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             actionType: 'errorUiPanelCommand',
             context: 'UInfoCommand.execute',

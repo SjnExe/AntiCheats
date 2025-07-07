@@ -3,7 +3,6 @@
  * and significant system events. Logs are persisted using world dynamic properties with an
  * in-memory cache for performance. All `actionType` strings should be `camelCase`.
  */
-import * as mc from '@minecraft/server';
 
 /**
  * The dynamic property key used for storing action logs.
@@ -47,7 +46,8 @@ export function initializeLogCache(dependencies) {
             }
         }
         playerUtils?.debugLog('[LogManager.initializeLogCache] No valid logs found or property not set. Initializing empty cache.', null, dependencies);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[LogManager.initializeLogCache] Error reading/parsing logs: ${error.stack || error}`);
         playerUtils?.debugLog(`[LogManager.initializeLogCache] Exception: ${error.message}`, null, dependencies);
     }
@@ -71,7 +71,8 @@ export function persistLogCacheToDisk(dependencies) {
         logsAreDirty = false; // Reset dirty flag after successful persistence
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Persisted ${logsInMemory.length} logs.`, null, dependencies);
         return true;
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[LogManager.persistLogCacheToDisk] Error saving logs: ${error.stack || error}`);
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Exception: ${error.message}`, null, dependencies);
         return false;
@@ -96,7 +97,7 @@ export function addLog(logEntry, dependencies) {
 
     // Enforce camelCase for actionType as per guidelines
     const originalActionType = logEntry.actionType;
-    let standardizedActionType = originalActionType
+    const standardizedActionType = originalActionType
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', '')) // Convert snake_case and kebab-case parts
         .replace(/^[A-Z]/, (match) => match.toLowerCase()); // Ensure first letter is lowercase
 

@@ -4,7 +4,6 @@
  * with an in-memory cache for performance. This includes adding reports, retrieving them,
  * and clearing reports. All actionType strings should be camelCase.
  */
-import * as mc from '@minecraft/server';
 
 /**
  * @const {string} reportsPropertyKeyName - The dynamic property key for storing player reports.
@@ -55,7 +54,8 @@ export function initializeReportCache(dependencies) {
             }
         }
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKeyName}'. Initializing empty cache.`, 'System', dependencies);
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`);
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] Exception: ${error.message}`, 'System', dependencies);
     }
@@ -77,7 +77,8 @@ export function persistReportsToDisk(dependencies) {
         reportsAreDirty = false;
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Persisted ${reportsInMemory.length} reports.`, 'System', dependencies);
         return true;
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[ReportManager.persistReportsToDisk] Error saving reports: ${error.stack || error}`);
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Exception: ${error.message}`, 'System', dependencies);
         return false;
@@ -101,7 +102,7 @@ export function getReports() {
  * @returns {ReportEntry | null} The created report entry, or null if failed.
  */
 export function addReport(reporterPlayer, reportedPlayerName, reason, dependencies) {
-    const { playerUtils, logManager, config, mc: minecraftSystem } = dependencies;
+    const { playerUtils, logManager, getString } = dependencies; // Removed config, mc: minecraftSystem. Added getString (used later)
 
     if (!reporterPlayer?.isValid() || !reportedPlayerName || !reason) {
         playerUtils?.debugLog('[ReportManager.addReport] Invalid arguments for adding report.', reporterPlayer?.nameTag, dependencies);
@@ -207,7 +208,7 @@ export function clearReportById(reportId, dependencies) {
  * @returns {number} The number of reports cleared.
  */
 export function clearReportsForPlayer(playerNameOrId, dependencies) {
-    const { playerUtils, logManager, mc: minecraftSystem } = dependencies;
+    const { playerUtils, logManager } = dependencies; // Removed mc: minecraftSystem
     const initialLength = reportsInMemory.length;
     const lowerPlayerNameOrId = playerNameOrId.toLowerCase(); // For case-insensitive name matching
 
@@ -222,7 +223,7 @@ export function clearReportsForPlayer(playerNameOrId, dependencies) {
         report.reporterName.toLowerCase() !== lowerPlayerNameOrId &&
         report.reportedName.toLowerCase() !== lowerPlayerNameOrId &&
         report.reporterId !== resolvedPlayerId && // Check against resolved ID
-        report.reportedId !== resolvedPlayerId    // Check against resolved ID
+        report.reportedId !== resolvedPlayerId,    // Check against resolved ID
     );
 
     const clearedCount = initialLength - reportsInMemory.length;

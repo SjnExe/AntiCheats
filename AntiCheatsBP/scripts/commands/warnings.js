@@ -67,18 +67,21 @@ export async function execute(player, args, dependencies) {
 
         if (specificFlagsFound) {
             messageLines.push(getString('command.warnings.individualFlagsHeader') + specificFlagsOutput);
-        } else if (totalFlags > 0) {
+        }
+        else if (totalFlags > 0) {
             messageLines.push(getString('command.warnings.noSpecific'));
             playerUtils?.debugLog(`[WarningsCommand WARNING] Player ${targetPlayer.nameTag} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pData.flags)}`, adminName, dependencies);
-        } else {
+        }
+        else {
             messageLines.push(getString('command.myflags.noFlags'));
         }
-    } else {
+    }
+    else {
         messageLines.push(getString('command.warnings.noData', { playerName: targetPlayer.nameTag }));
     }
 
     player.sendMessage(messageLines.join('\n'));
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     try {
         logManager?.addLog({
@@ -88,7 +91,8 @@ export async function execute(player, args, dependencies) {
             targetId: targetPlayer.id,
             details: `Viewed warnings for ${targetPlayer.nameTag}. Total flags: ${pData?.flags?.totalFlags ?? 'N/A'}.`,
         }, dependencies);
-    } catch (logError) {
+    }
+    catch (logError) {
         console.error(`[WarningsCommand CRITICAL] Error logging warnings view: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[WarningsCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

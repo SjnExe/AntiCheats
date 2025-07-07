@@ -53,7 +53,7 @@ export function isAdmin(player, dependencies) {
 export function warnPlayer(player, reason, dependencies) {
     player?.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
     if (dependencies && player) {
-        playSoundForEvent(player, "playerWarningReceived", dependencies);
+        playSoundForEvent(player, 'playerWarningReceived', dependencies);
     }
 }
 
@@ -95,14 +95,15 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         console.warn('[PlayerUtils] notifyAdmins was called without the required dependencies object or dependencies.config.');
         return;
     }
-    const prefix = "§c[AC] §r";
+    const prefix = '§c[AC] §r';
     let fullMessage = prefix + baseMessage;
 
     if (player && pData && pData.flags && typeof pData.flags.totalFlags === 'number') {
         const flagType = pData.lastFlagType || 'N/A';
         const specificFlagCount = (flagType !== 'N/A' && pData.flags[flagType]) ? pData.flags[flagType].count : 0;
         fullMessage += ` §7(Player: §e${player.nameTag}§7, Flags: §b${pData.flags.totalFlags}§7, Last: §b${flagType}§7[§b${specificFlagCount}§7])§r`;
-    } else if (player) {
+    }
+    else if (player) {
         fullMessage += ` §7(Player: §e${player.nameTag}§7)§r`;
     }
 
@@ -118,8 +119,9 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
             if (shouldReceiveMessage) {
                 try {
                     p.sendMessage(fullMessage);
-                    playSoundForEvent(p, "adminNotificationReceived", dependencies, null);
-                } catch (e) {
+                    playSoundForEvent(p, 'adminNotificationReceived', dependencies, null);
+                }
+                catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
                     debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag, dependencies);
                 }
@@ -182,7 +184,8 @@ export function parseDuration(durationString) {
             case 'h': return value * 60 * 60 * 1000;
             case 'd': return value * 24 * 60 * 60 * 1000;
         }
-    } else if (/^\d+$/.test(lowerDurationString)) {
+    }
+    else if (/^\d+$/.test(lowerDurationString)) {
         const value = parseInt(lowerDurationString, 10);
         if (!isNaN(value)) {
             return value * 1000;
@@ -202,7 +205,7 @@ export function formatSessionDuration(ms) {
     }
     let seconds = Math.floor(ms / 1000);
     let minutes = Math.floor(seconds / 60);
-    let hours = Math.floor(minutes / 60);
+    const hours = Math.floor(minutes / 60);
     seconds %= 60;
     minutes %= 60;
 
@@ -290,7 +293,8 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
         if (playerInstance?.isValid()) {
             try {
                 playerInstance.playSound(soundConfig.soundId, soundOptions);
-            } catch (e) {
+            }
+            catch (e) {
                 console.warn(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.message}`);
                 // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.stack}`, playerInstance.nameTag, dependencies);
             }
@@ -299,7 +303,9 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
 
     switch (soundConfig.target) {
         case 'player':
-            if (primaryPlayer) playToPlayer(primaryPlayer);
+            if (primaryPlayer) {
+                playToPlayer(primaryPlayer);
+            }
             break;
         case 'admin':
             mc.world.getAllPlayers().forEach(p => {
@@ -309,14 +315,20 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
             });
             break;
         case 'targetPlayer':
-            if (targetPlayerContext) playToPlayer(targetPlayerContext);
-            else if (primaryPlayer) playToPlayer(primaryPlayer);
+            if (targetPlayerContext) {
+                playToPlayer(targetPlayerContext);
+            }
+            else if (primaryPlayer) {
+                playToPlayer(primaryPlayer);
+            }
             break;
         case 'global':
             mc.world.getAllPlayers().forEach(p => playToPlayer(p));
             break;
         default:
-            if (primaryPlayer) playToPlayer(primaryPlayer);
+            if (primaryPlayer) {
+                playToPlayer(primaryPlayer);
+            }
             break;
     }
 }
@@ -332,7 +344,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
  *          `targetPlayerName` will be undefined if `args` is empty.
  */
 export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided', dependencies) {
-    const { getString } = dependencies.playerUtils;
+    const { getString } = dependencies; // playerUtils was unused here, getString is directly on dependencies or via playerUtils from caller
 
     const targetPlayerName = args[0];
     let reason = '';
@@ -362,7 +374,7 @@ export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReas
  * @returns {import('@minecraft/server').Player | null} The target Player object if validation passes, otherwise null.
  */
 export function validateCommandTarget(issuer, targetPlayerName, dependencies, options = {}) {
-    const { playerUtils, getString } = dependencies;
+    const { getString } = dependencies; // Removed playerUtils
     const { allowSelf = false, commandName = 'command', requireOnline = true } = options;
 
     if (!targetPlayerName) {
@@ -375,7 +387,8 @@ export function validateCommandTarget(issuer, targetPlayerName, dependencies, op
     if (!targetPlayer || !targetPlayer.isValid()) {
         if (requireOnline) {
             issuer.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-        } else {
+        }
+        else {
             issuer.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         }
         return null;
@@ -384,8 +397,9 @@ export function validateCommandTarget(issuer, targetPlayerName, dependencies, op
     if (!allowSelf && targetPlayer.id === issuer.id) {
         const selfTargetErrorKey = `command.${commandName}.cannotSelf`;
         if (stringDB[selfTargetErrorKey]) {
-             issuer.sendMessage(getString(selfTargetErrorKey));
-        } else {
+            issuer.sendMessage(getString(selfTargetErrorKey));
+        }
+        else {
             issuer.sendMessage(getString('command.error.cannotTargetSelf', { commandName: commandName }));
         }
         return null;

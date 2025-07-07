@@ -30,8 +30,8 @@ export async function execute(player, _args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     if (!mc?.world?.getAllPlayers) {
-        console.error("[ListWatchedCommand CRITICAL] mc.world.getAllPlayers is not available.");
-        player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: "System error"}));
+        console.error('[ListWatchedCommand CRITICAL] mc.world.getAllPlayers is not available.');
+        player.sendMessage(getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: 'System error' }));
         return;
     }
 
@@ -39,7 +39,9 @@ export async function execute(player, _args, dependencies) {
     const watchedPlayersNames = [];
 
     for (const p of onlinePlayers) {
-        if (!p.isValid()) continue;
+        if (!p.isValid()) {
+            continue;
+        }
         const pData = playerDataManager?.getPlayerData(p.id);
         if (pData && pData.isWatched) {
             watchedPlayersNames.push(p.nameTag);
@@ -48,11 +50,12 @@ export async function execute(player, _args, dependencies) {
 
     if (watchedPlayersNames.length === 0) {
         player.sendMessage(getString('command.listwatched.noPlayers'));
-    } else {
+    }
+    else {
         const header = getString('command.listwatched.header');
         player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
     }
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     try {
         logManager?.addLog({
@@ -60,7 +63,8 @@ export async function execute(player, _args, dependencies) {
             actionType: 'watchedPlayersListed',
             details: `Listed watched players. Count: ${watchedPlayersNames.length}. List: [${watchedPlayersNames.join(', ')}]`,
         }, dependencies);
-    } catch (logError) {
+    }
+    catch (logError) {
         console.error(`[ListWatchedCommand CRITICAL] Error logging: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[ListWatchedCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

@@ -75,8 +75,8 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
             operation: operation,
             errorMessage: error.message,
             stack: error.stack,
-            ...additionalDetails
-        }
+            ...additionalDetails,
+        },
     }, dependencies);
 }
 
@@ -88,7 +88,7 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
  * @returns {Promise<boolean>} True if saving was successful, false otherwise.
  */
 export async function savePlayerDataToDynamicProperties(player, pDataToSave, dependencies) {
-    const { playerUtils, logManager } = dependencies;
+    const { playerUtils } = dependencies; // Removed logManager
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!player?.isValid() || !pDataToSave) {
@@ -99,14 +99,15 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     let jsonString;
     try {
         jsonString = JSON.stringify(pDataToSave);
-    } catch (error) {
+    }
+    catch (error) {
         _handleDynamicPropertyError(
             'savePlayerDataToDynamicProperties',
             'JSON.stringify',
             playerName,
             error,
             dependencies,
-            { dataToSave: typeof pDataToSave }
+            { dataToSave: typeof pDataToSave },
         );
         return false;
     }
@@ -120,14 +121,15 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
     try {
         player.setDynamicProperty(dynamicPropertyKeyV1, jsonString);
         return true;
-    } catch (error) {
+    }
+    catch (error) {
         _handleDynamicPropertyError(
             'savePlayerDataToDynamicProperties',
             'player.setDynamicProperty',
             playerName,
             error,
             dependencies,
-            { propertyKey: dynamicPropertyKeyV1, jsonLength: jsonString.length }
+            { propertyKey: dynamicPropertyKeyV1, jsonLength: jsonString.length },
         );
         return false;
     }
@@ -151,14 +153,15 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
     let jsonString;
     try {
         jsonString = player.getDynamicProperty(dynamicPropertyKeyV1);
-    } catch (error) {
+    }
+    catch (error) {
         _handleDynamicPropertyError(
             'loadPlayerDataFromDynamicProperties',
             'player.getDynamicProperty',
             playerName,
             error,
             dependencies,
-            { propertyKey: dynamicPropertyKeyV1 }
+            { propertyKey: dynamicPropertyKeyV1 },
         );
         return null;
     }
@@ -168,21 +171,24 @@ export async function loadPlayerDataFromDynamicProperties(player, dependencies) 
             const parsedData = JSON.parse(jsonString);
             playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Loaded and parsed data for ${playerName}.`, playerName, dependencies);
             return parsedData;
-        } catch (error) {
+        }
+        catch (error) {
             _handleDynamicPropertyError(
                 'loadPlayerDataFromDynamicProperties',
                 'JSON.parse',
                 playerName,
                 error,
                 dependencies,
-                { jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : '') }
+                { jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : '') },
             );
             return null;
         }
-    } else if (jsonString === undefined) {
+    }
+    else if (jsonString === undefined) {
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] No dynamic property '${dynamicPropertyKeyV1}' for ${playerName}.`, playerName, dependencies);
         return null;
-    } else {
+    }
+    else {
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Unexpected data type for '${dynamicPropertyKeyV1}' for ${playerName}: ${typeof jsonString}`, playerName, dependencies);
         return null;
     }
@@ -212,7 +218,8 @@ export async function prepareAndSavePlayerData(player, dependencies) {
             }
         }
         await savePlayerDataToDynamicProperties(player, persistedPData, dependencies);
-    } else {
+    }
+    else {
         playerUtils?.debugLog(`[PlayerDataManager.prepareAndSavePlayerData] No runtime pData for ${playerName}. Cannot save.`, playerName, dependencies);
     }
 }
@@ -228,7 +235,8 @@ for (const checkKey in checkActionProfiles) {
     if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
         if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
             dynamicallyGeneratedFlagTypes.add(profile.flag.type);
-        } else {
+        }
+        else {
             dynamicallyGeneratedFlagTypes.add(checkKey);
         }
     }
@@ -395,7 +403,8 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick;
         newPData.joinTime = loadedData.joinTime ?? Date.now();
         newPData.isDirtyForSave = false;
-    } else {
+    }
+    else {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data.`, playerName, dependencies);
     }
 
@@ -466,8 +475,9 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.consecutiveOffGroundTicks = 0;
         pData.lastOnGroundTick = currentTick;
         pData.lastOnGroundPosition = { ...player.location };
+        let feetPos = { x: 0, y: 0, z: 0 }; // Define feetPos in a higher scope
         try {
-            const feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
+            feetPos = { x: Math.floor(pData.lastPosition.x), y: Math.floor(pData.lastPosition.y), z: Math.floor(pData.lastPosition.z) };
             const blockBelowFeet = player.dimension?.getBlock(feetPos.offset(0, -1, 0));
             const blockAtFeet = player.dimension?.getBlock(feetPos);
 
@@ -477,7 +487,8 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                     playerUtils?.debugLog(`[PlayerDataManager.updateTransientPlayerData] Player ${playerName} on slime block at tick ${currentTick}.`, playerName, dependencies);
                 }
             }
-        } catch (e) {
+        }
+        catch (e) {
             if (!pData.slimeCheckErrorLogged) {
                 console.warn(`[PlayerDataManager.updateTransientPlayerData] Error checking slime block for ${playerName}: ${e.stack || e}`);
                 logManager?.addLog({
@@ -487,13 +498,14 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                     details: {
                         errorMessage: e.message,
                         stack: e.stack,
-                        feetPos: feetPos
-                    }
+                        feetPos: feetPos,
+                    },
                 }, dependencies);
                 pData.slimeCheckErrorLogged = true;
             }
         }
-    } else {
+    }
+    else {
         pData.consecutiveOffGroundTicks++;
         pData.slimeCheckErrorLogged = false;
     }
@@ -538,7 +550,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export async function addFlag(player, flagType, reasonMessage, detailsForNotify = '', dependencies) {
-    const { playerUtils, config, logManager } = dependencies;
+    const { playerUtils, config, logManager, getString } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
@@ -598,7 +610,8 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
                 playerUtils?.debugLog(`[PlayerDataManager.addFlag] Calling processAutoModActions for ${playerName}, checkType: ${finalFlagType}`, playerName, dependencies);
             }
             await processAutoModActions(player, pData, finalFlagType, dependencies);
-        } catch (e) {
+        }
+        catch (e) {
             console.error(`[PlayerDataManager.addFlag] Error calling processAutoModActions for ${playerName} / ${finalFlagType}: ${e.stack || e}`);
             playerUtils?.debugLog(`[PlayerDataManager.addFlag] Error in processAutoModActions: ${e.stack || e}`, playerName, dependencies);
             logManager?.addLog({
@@ -608,11 +621,12 @@ export async function addFlag(player, flagType, reasonMessage, detailsForNotify 
                 details: {
                     checkType: finalFlagType,
                     errorMessage: e.message,
-                    stack: e.stack
-                }
+                    stack: e.stack,
+                },
             }, dependencies);
         }
-    } else if (pData.isWatched) {
+    }
+    else if (pData.isWatched) {
         const autoModEnabled = config ? config.enableAutoMod : 'N/A (config missing)';
         const autoModConfigPresent = !!config?.automodConfig;
         playerUtils?.debugLog(`[PlayerDataManager.addFlag] Skipping processAutoModActions for ${playerName} (checkType: ${finalFlagType}). enableAutoMod: ${autoModEnabled}, automodConfig: ${autoModConfigPresent}.`, playerName, dependencies);
@@ -666,14 +680,17 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
         restrictionInfo.xuid = player.id;
         restrictionInfo.playerName = playerName;
         restrictionInfo.banTime = Date.now();
-    } else {
+    }
+    else {
     }
 
     pData[stateType === 'ban' ? 'banInfo' : 'muteInfo'] = restrictionInfo;
     pData.isDirtyForSave = true;
 
     let logMsg = `[PlayerDataManager._addPlayerStateRestriction] Player ${playerName}`;
-    if (stateType === 'ban') logMsg += ` (XUID: ${player.id})`;
+    if (stateType === 'ban') {
+        logMsg += ` (XUID: ${player.id})`;
+    }
     logMsg += ` ${stateType}d by ${restrictedBy}. Reason: '${actualReason}'. AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType ?? 'N/A'}.`;
     logMsg += (durationMs === Infinity) ? ' Duration: Permanent.' : ` Expiry time: ${new Date(expiryTime).toISOString()}.`;
     playerUtils?.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
@@ -697,7 +714,8 @@ function _removePlayerStateRestriction(pData, stateType, dependencies) {
         pData.isDirtyForSave = true;
         playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} un${stateType}d.`, pData.isWatched ? playerName : null, dependencies);
         return true;
-    } else {
+    }
+    else {
         playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} was not ${stateType}d. No action.`, pData.isWatched ? playerName : null, dependencies);
         return false;
     }
@@ -717,7 +735,9 @@ function _getPlayerStateRestriction(pData, stateType, dependencies) {
     const expiryKey = stateType === 'ban' ? 'unbanTime' : 'unmuteTime';
 
     const restriction = pData[infoKey];
-    if (!restriction) return null;
+    if (!restriction) {
+        return null;
+    }
 
     if (restriction[expiryKey] !== Infinity && Date.now() >= restriction[expiryKey]) {
         pData[infoKey] = null;
@@ -785,9 +805,13 @@ export function removeMute(player, dependencies) {
  * @returns {import('../types.js').PlayerMuteInfo | null} The mute info, or null if not muted or expired.
  */
 export function getMuteInfo(player, dependencies) {
-    if (!player?.isValid()) return null;
+    if (!player?.isValid()) {
+        return null;
+    }
     const pData = getPlayerData(player.id);
-    if (!pData) return null;
+    if (!pData) {
+        return null;
+    }
     return _getPlayerStateRestriction(pData, 'mute', dependencies);
 }
 
@@ -857,9 +881,13 @@ export function removeBan(player, dependencies) {
  * @returns {import('../types.js').PlayerBanInfo | null} The ban info, or null if not banned or expired.
  */
 export function getBanInfo(player, dependencies) {
-    if (!player?.isValid()) return null;
+    if (!player?.isValid()) {
+        return null;
+    }
     const pData = getPlayerData(player.id);
-    if (!pData) return null;
+    if (!pData) {
+        return null;
+    }
     return _getPlayerStateRestriction(pData, 'ban', dependencies);
 }
 
@@ -883,7 +911,9 @@ export async function saveDirtyPlayerData(player, dependencies) {
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
-    if (!player?.isValid()) return false;
+    if (!player?.isValid()) {
+        return false;
+    }
 
     const pData = playerData.get(player.id);
     if (pData?.isDirtyForSave) {
@@ -945,7 +975,9 @@ export function clearExpiredItemUseStates(pData, dependencies) {
     const { currentTick, config, playerUtils } = dependencies;
     const playerName = pData?.playerNameTag ?? 'UnknownPlayer'; // Use pData's nameTag if available
 
-    if (!pData || !config) return; // Guard against missing pData or config
+    if (!pData || !config) {
+        return;
+    } // Guard against missing pData or config
 
     const itemUseTimeoutTicks = config.itemUseStateClearTicks || 100; // Default to 100 ticks (5s) if not configured
 

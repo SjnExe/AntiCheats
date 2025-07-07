@@ -68,7 +68,8 @@ export async function handlePlayerLeave(eventData, dependencies) {
         try {
             await playerDataManager.prepareAndSavePlayerData(player, dependencies); // This should handle pData internally
             playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
-        } catch (error) {
+        }
+        catch (error) {
             console.error(`[EventHandler.handlePlayerLeave CRITICAL] Error in prepareAndSavePlayerData for ${playerName} on leave: ${error.stack || error}`);
             logManager?.addLog({
                 actionType: 'errorEventHandlersPdataSaveOnLeave', // More specific error type
@@ -76,7 +77,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
                 targetName: playerName,
                 targetId: player.id,
                 details: { errorMessage: error.message },
-                errorStack: error.stack // Store stack for debugging
+                errorStack: error.stack, // Store stack for debugging
             }, dependencies);
         }
     }
@@ -150,7 +151,14 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                 const welcomeMsgKey = config.welcomeMessageKey || 'welcome.joinMessage'; // Use a key for welcomer
                 const message = getString(welcomeMsgKey, { playerName: player.nameTag });
                 minecraftSystem.system.runTimeout(() => {
-                    try { if (player.isValid()) player.sendMessage(message); } catch (e) { console.warn(`[EventHandler.handlePlayerSpawn] Failed to send welcome to ${playerName}: ${e.message}`); }
+                    try {
+                        if (player.isValid()) {
+                            player.sendMessage(message);
+                        }
+                    }
+                    catch (e) {
+                        console.warn(`[EventHandler.handlePlayerSpawn] Failed to send welcome to ${playerName}: ${e.message}`);
+                    }
                 }, 20); // 1 second delay
             }
 
@@ -165,7 +173,8 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             if (config.notifyAdminOnNewPlayerJoin) { // Simpler config access
                 playerUtils.notifyAdmins(getString('admin.notify.newPlayerJoined', { playerName: player.nameTag }), dependencies, player, pData);
             }
-        } else { // Respawn
+        }
+        else { // Respawn
             logManager?.addLog({
                 actionType: 'playerRespawn',
                 targetName: playerName, targetId: player.id,
@@ -177,7 +186,14 @@ export async function handlePlayerSpawn(eventData, dependencies) {
 
         if (pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
             minecraftSystem.system.runTimeout(() => {
-                try { if (player.isValid()) player.sendMessage(pData.deathMessageToShowOnSpawn); } catch (e) { console.warn(`[EventHandler.handlePlayerSpawn] Failed to send death coords to ${playerName}: ${e.message}`); }
+                try {
+                    if (player.isValid()) {
+                        player.sendMessage(pData.deathMessageToShowOnSpawn);
+                    }
+                }
+                catch (e) {
+                    console.warn(`[EventHandler.handlePlayerSpawn] Failed to send death coords to ${playerName}: ${e.message}`);
+                }
             }, 5);
             playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] DeathCoords: Displayed to ${playerName}: '${pData.deathMessageToShowOnSpawn}'`, pData.isWatched ? playerName : null, dependencies);
             pData.deathMessageToShowOnSpawn = null;
@@ -187,7 +203,9 @@ export async function handlePlayerSpawn(eventData, dependencies) {
         if (checks?.checkInvalidRenderDistance && config.enableInvalidRenderDistanceCheck) {
             // Initial render distance check might be useful on spawn
             minecraftSystem.system.runTimeout(async () => {
-                 if (player.isValid()) await checks.checkInvalidRenderDistance(player, pData, dependencies);
+                if (player.isValid()) {
+                    await checks.checkInvalidRenderDistance(player, pData, dependencies);
+                }
             }, 100); // Delay slightly to allow client to fully connect
         }
 
@@ -197,15 +215,16 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             console.warn(`[JoinLog] Player: ${playerName} (ID: ${player.id}, Device: ${deviceType}, Mode: ${spawnGameMode}) ${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`);
         }
 
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[EventHandler.handlePlayerSpawn CRITICAL] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[EventHandler.handlePlayerSpawn CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
             actionType: 'errorEventHandlersPlayerSpawn',
             context: 'eventHandlers.handlePlayerSpawn',
             targetName: playerName, targetId: player?.id,
-            details: { initialSpawn: initialSpawn, errorMessage: error.message, },
-            errorStack: error.stack
+            details: { initialSpawn: initialSpawn, errorMessage: error.message },
+            errorStack: error.stack,
         }, dependencies);
     }
 }
@@ -217,7 +236,9 @@ export async function handlePlayerSpawn(eventData, dependencies) {
  */
 export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, checks } = dependencies;
-    if (!config?.enablePistonLagCheck) return;
+    if (!config?.enablePistonLagCheck) {
+        return;
+    }
 
     const { pistonBlock, dimension, isExpanding } = eventData; // isExpanding might be useful
     if (!pistonBlock?.isValid() || !dimension) { // Check piston validity
@@ -227,7 +248,8 @@ export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
 
     if (checks?.checkPistonLag) {
         await checks.checkPistonLag(pistonBlock, dimension.id, dependencies, isExpanding);
-    } else {
+    }
+    else {
         playerUtils?.debugLog('[EventHandler.handlePistonActivate_AntiGrief CRITICAL] checkPistonLag function unavailable.', null, dependencies);
     }
 }
@@ -255,21 +277,25 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
             try {
                 entity.kill();
                 playerUtils?.debugLog(`[EventHandler.handleEntitySpawnEvent_AntiGrief] Wither (ID: ${entity.id}) killed.`, null, dependencies);
-            } catch (e) {
+            }
+            catch (e) {
                 console.warn(`[EventHandler.handleEntitySpawnEvent_AntiGrief CRITICAL] Failed to kill wither: ${e.message}`);
                 logManager?.addLog({
                     actionType: 'errorEventHandlersKillWither', context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief',
-                    details: { entityId: entity.id, entityType: entity.typeId, errorMessage: e.message, },
-                    errorStack: e.stack
+                    details: { entityId: entity.id, entityType: entity.typeId, errorMessage: e.message },
+                    errorStack: e.stack,
                 }, dependencies);
             }
         }
-    } else if (config?.enableEntitySpamAntiGrief && (entity.typeId === mc.MinecraftEntityTypes.snowGolem.id || entity.typeId === mc.MinecraftEntityTypes.ironGolem.id)) {
+    }
+    else if (config?.enableEntitySpamAntiGrief && (entity.typeId === mc.MinecraftEntityTypes.snowGolem.id || entity.typeId === mc.MinecraftEntityTypes.ironGolem.id)) {
         playerUtils?.debugLog(`[EventHandler.handleEntitySpawnEvent_AntiGrief] ${entityName} spawned. Checking attribution. Tick: ${minecraftSystem?.system?.currentTick}`, null, dependencies);
         // Iterate over players to find who might have constructed it
         const players = minecraftSystem.world.getAllPlayers();
         for (const player of players) {
-            if (!player.isValid()) continue;
+            if (!player.isValid()) {
+                continue;
+            }
             const pData = playerDataManager?.getPlayerData(player.id);
             if (pData?.expectingConstructedEntity?.type === entity.typeId &&
                 Math.abs((pData.expectingConstructedEntity.tick ?? 0) - (minecraftSystem?.system?.currentTick ?? 0)) < 10) { // Default ticks to 0 if undefined
@@ -281,12 +307,13 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
                         try {
                             entity.kill();
                             playerUtils?.debugLog(`[EventHandler.handleEntitySpawnEvent_AntiGrief] ${entityName} (ID: ${entity.id}) killed (spam by ${playerName}).`, playerName, dependencies);
-                        } catch (e) {
+                        }
+                        catch (e) {
                             console.warn(`[EventHandler.handleEntitySpawnEvent_AntiGrief CRITICAL] Failed to kill ${entityName}: ${e.message}`);
                             logManager?.addLog({
                                 actionType: 'errorEventHandlersKillRestrictedEntity', context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief.spamKill',
-                                details: { entityId: entity.id, entityType: entityName, attributedPlayer: playerName, errorMessage: e.message, },
-                                errorStack: e.stack
+                                details: { entityId: entity.id, entityType: entityName, attributedPlayer: playerName, errorMessage: e.message },
+                                errorStack: e.stack,
                             }, dependencies);
                         }
                     }
@@ -311,22 +338,26 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
     const { player, itemStack, block } = eventData; // block is the location where itemStack would be placed
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!player?.isValid() || !itemStack?.typeId || !block) return;
+    if (!player?.isValid() || !itemStack?.typeId || !block) {
+        return;
+    }
 
     let checkType = null;
     let actionConfigKey = null;
     let defaultMessageKey = '';
-    let cancelByDefault = true; // Most AntiGrief place checks should cancel by default
+    const cancelByDefault = true; // Most AntiGrief place checks should cancel by default
 
     if (itemStack.typeId === 'minecraft:tnt' && config?.enableTntAntiGrief) {
         checkType = 'worldAntiGriefTntPlace';
         actionConfigKey = 'tntPlacementAction';
         defaultMessageKey = 'antigrief.tntPlacementDenied';
-    } else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.enableLavaAntiGrief) {
+    }
+    else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.enableLavaAntiGrief) {
         checkType = 'worldAntiGriefLava';
         actionConfigKey = 'lavaPlacementAction';
         defaultMessageKey = 'antigrief.lavaPlacementDenied';
-    } else if (itemStack.typeId === 'minecraft:water_bucket' && config?.enableWaterAntiGrief) {
+    }
+    else if (itemStack.typeId === 'minecraft:water_bucket' && config?.enableWaterAntiGrief) {
         checkType = 'worldAntiGriefWater';
         actionConfigKey = 'waterPlacementAction';
         defaultMessageKey = 'antigrief.waterPlacementDenied';
@@ -364,9 +395,11 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         let shouldCancel = cancelByDefault; // Start with default
         if (profile && typeof profile.cancelEvent === 'boolean') {
             shouldCancel = profile.cancelEvent;
-        } else if (actionTaken === 'remove' || actionTaken === 'prevent') {
+        }
+        else if (actionTaken === 'remove' || actionTaken === 'prevent') {
             shouldCancel = true;
-        } else { // e.g. 'warn', 'flag_only'
+        }
+        else { // e.g. 'warn', 'flag_only'
             shouldCancel = false;
         }
 
@@ -385,15 +418,21 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
  */
 export async function handleEntityDieForDeathEffects(eventData, dependencies) {
     const { config, playerUtils, logManager } = dependencies;
-    if (!config?.enableDeathEffects) return;
+    if (!config?.enableDeathEffects) {
+        return;
+    }
 
     const { deadEntity } = eventData;
-    if (!deadEntity?.isValid()) return; // Ensure entity is valid
+    if (!deadEntity?.isValid()) {
+        return;
+    } // Ensure entity is valid
 
     const entityName = deadEntity.nameTag ?? deadEntity.typeId ?? 'UnknownEntity';
 
     // Currently, only applying to players, but could be expanded.
-    if (!(deadEntity instanceof mc.Player)) return;
+    if (!(deadEntity instanceof mc.Player)) {
+        return;
+    }
 
     playerUtils?.debugLog(`[EventHandler.handleEntityDieForDeathEffects] Player ${entityName} died. Processing effects.`, entityName, dependencies);
     try {
@@ -406,13 +445,14 @@ export async function handleEntityDieForDeathEffects(eventData, dependencies) {
         if (config.deathEffectSoundId) {
             dimension.playSound(config.deathEffectSoundId, location);
         }
-    } catch (e) {
+    }
+    catch (e) {
         console.warn(`[EventHandler.handleEntityDieForDeathEffects CRITICAL] Error applying death effect for ${entityName}: ${e.message}`);
         logManager?.addLog({
             actionType: 'errorEventHandlersDeathEffect', context: 'eventHandlers.handleEntityDieForDeathEffects',
             targetName: entityName, targetId: deadEntity.id,
-            details: { particleName: config.deathEffectParticleName, soundId: config.deathEffectSoundId, errorMessage: e.message, },
-            errorStack: e.stack
+            details: { particleName: config.deathEffectParticleName, soundId: config.deathEffectSoundId, errorMessage: e.message },
+            errorStack: e.stack,
         }, dependencies);
     }
 }
@@ -426,7 +466,9 @@ export async function handleEntityHurt(eventData, dependencies) {
     const { playerDataManager, checks, config, currentTick } = dependencies;
     const { hurtEntity, damageSource, damagingEntity: directDamagingEntity } = eventData;
 
-    if (!hurtEntity?.isValid()) return;
+    if (!hurtEntity?.isValid()) {
+        return;
+    }
 
     if (hurtEntity.typeId === mc.MinecraftEntityTypes.player.id) {
         const victimPlayer = /** @type {import('@minecraft/server').Player} */ (hurtEntity);
@@ -442,7 +484,9 @@ export async function handleEntityHurt(eventData, dependencies) {
             // If attacker is also a player
             if (directDamagingEntity?.typeId === mc.MinecraftEntityTypes.player.id && directDamagingEntity.id !== victimPlayer.id) {
                 const attackerPlayer = /** @type {import('@minecraft/server').Player} */ (directDamagingEntity);
-                 if (!attackerPlayer.isValid()) return;
+                if (!attackerPlayer.isValid()) {
+                    return;
+                }
 
                 victimPData.lastCombatInteractionTime = Date.now();
 
@@ -471,7 +515,7 @@ export async function handleEntityHurt(eventData, dependencies) {
                     if (checks?.checkAttackWhileUsingItem && config?.enableStateConflictCheck) {
                         await checks.checkAttackWhileUsingItem(attackerPlayer, attackerPData, dependencies, eventSpecificData);
                     }
-                     if (checks?.checkViewSnap && config?.enableViewSnapCheck) { // General ViewSnap check
+                    if (checks?.checkViewSnap && config?.enableViewSnapCheck) { // General ViewSnap check
                         await checks.checkViewSnap(attackerPlayer, attackerPData, dependencies, eventSpecificData);
                     }
                     if (checks?.checkCps && config?.enableCpsCheck) {
@@ -539,7 +583,9 @@ export async function handlePlayerDeath(eventData, dependencies) {
  */
 export function subscribeToCombatLogEvents(dependencies) {
     const { config, playerDataManager, mc: minecraftSystem } = dependencies;
-    if (!config?.enableCombatLogDetection) return;
+    if (!config?.enableCombatLogDetection) {
+        return;
+    }
 
     if (!minecraftSystem?.world?.afterEvents?.entityHurt) {
         console.warn('[EventHandler.subscribeToCombatLogEvents] mc.world.afterEvents.entityHurt is not available. CombatLog detection disabled.');
@@ -551,7 +597,9 @@ export function subscribeToCombatLogEvents(dependencies) {
         const damagingEntity = damageSource?.damagingEntity;
 
         if (hurtEntity?.typeId === mc.MinecraftEntityTypes.player.id && damagingEntity?.typeId === mc.MinecraftEntityTypes.player.id) {
-            if (hurtEntity.id === damagingEntity.id) return; // Ignore self-harm
+            if (hurtEntity.id === damagingEntity.id) {
+                return;
+            } // Ignore self-harm
 
             const victimPData = playerDataManager?.getPlayerData(hurtEntity.id);
             const attackerPData = playerDataManager?.getPlayerData(damagingEntity.id);
@@ -580,16 +628,22 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
     const { checks, config, playerDataManager, currentTick } = dependencies;
     const { player, block, itemStack } = eventData; // itemStack is the tool being used
 
-    if (!player?.isValid() || !block?.isValid()) return;
+    if (!player?.isValid() || !block?.isValid()) {
+        return;
+    }
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) return;
+    if (!pData) {
+        return;
+    }
 
     // Check for breaking unbreakable blocks first
     if (checks?.checkBreakUnbreakable && config?.enableInstaBreakUnbreakableCheck) {
         // Pass eventData directly as it might be cancelled by the check
         await checks.checkBreakUnbreakable(player, pData, eventData, dependencies);
-        if (eventData.cancel) return; // Stop if cancelled
+        if (eventData.cancel) {
+            return;
+        } // Stop if cancelled
     }
 
     // If not cancelled, set up for speed check
@@ -613,10 +667,14 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
     const { config, playerDataManager, checks } = dependencies;
     const { player, block, brokenBlockPermutation } = eventData; // 'block' is now air, 'brokenBlockPermutation' is what was destroyed.
 
-    if (!player?.isValid() || !brokenBlockPermutation?.type) return; // Check type on permutation
+    if (!player?.isValid() || !brokenBlockPermutation?.type) {
+        return;
+    } // Check type on permutation
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) return;
+    if (!pData) {
+        return;
+    }
 
     // XRay Check: Use the type of the block that was actually broken
     if (checks?.checkXray && config?.xrayDetectionNotifyOnOreMineEnabled) {
@@ -658,22 +716,30 @@ export async function handleItemUse(eventData, dependencies) {
     const { checks, config, getString, playerUtils, playerDataManager, mc: minecraftSystem, currentTick, actionManager } = dependencies;
     const { source: player, itemStack } = eventData;
 
-    if (!player?.isValid() || !itemStack?.typeId) return; // Ensure itemStack and its typeId are valid
+    if (!player?.isValid() || !itemStack?.typeId) {
+        return;
+    } // Ensure itemStack and its typeId are valid
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) return;
+    if (!pData) {
+        return;
+    }
 
     pData.lastItemUseTick = currentTick; // Update last item use tick
     pData.isDirtyForSave = true;
 
     if (checks?.checkSwitchAndUseInSameTick && config?.enableInventoryModCheck) {
         await checks.checkSwitchAndUseInSameTick(player, pData, dependencies, { itemStack }); // Pass itemStack in eventSpecificData
-        if (eventData.cancel) return;
+        if (eventData.cancel) {
+            return;
+        }
     }
 
     if (checks?.checkFastUse && config?.enableFastUseCheck) {
         await checks.checkFastUse(player, pData, dependencies, { itemStack }); // Pass itemStack
-        if (eventData.cancel) return;
+        if (eventData.cancel) {
+            return;
+        }
     }
 
     const itemFoodComponent = itemStack.type?.getComponent(mc.ItemComponentTypes.Food);
@@ -706,7 +772,7 @@ export async function handleItemUse(eventData, dependencies) {
         eventData.cancel = true;
         // Ensure 'worldIllegalItemUse' is a defined checkType in actionProfiles
         await actionManager?.executeCheckAction(player, 'worldIllegalItemUse', { itemTypeId: itemStack.typeId, action: 'use' }, dependencies);
-        return;
+
     }
 }
 
@@ -735,10 +801,14 @@ export async function handleItemUseOn(eventData, dependencies) {
  */
 export async function handleInventoryItemChange(player, newItemStack, oldItemStack, slot, dependencies) {
     const { checks, config, playerDataManager, currentTick } = dependencies;
-    if (!player?.isValid()) return;
+    if (!player?.isValid()) {
+        return;
+    }
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) return;
+    if (!pData) {
+        return;
+    }
 
     // Store previous slot for switch-use checks
     if (typeof slot === 'string' && slot.toLowerCase() === 'mainhand') {
@@ -765,7 +835,9 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     const { checks, config, playerDataManager } = dependencies;
     const { player, block, itemStack } = eventData; // block is location, itemStack is item being placed
 
-    if (!player?.isValid() || !block || !itemStack?.typeId) return;
+    if (!player?.isValid() || !block || !itemStack?.typeId) {
+        return;
+    }
 
     const pData = playerDataManager?.getPlayerData(player.id);
     if (!pData) {
@@ -777,7 +849,9 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     // Run general placement checks first
     if (checks?.checkAirPlace && config?.enableAirPlaceCheck) {
         await checks.checkAirPlace(player, pData, dependencies, eventData); // Pass eventData for cancellation
-        if (eventData.cancel) return;
+        if (eventData.cancel) {
+            return;
+        }
     }
 
     // Then run AntiGrief specific placement checks
@@ -793,10 +867,12 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
 async function _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies) {
-    const { config, playerUtils, checks, currentTick, mc: minecraftSystem } = dependencies;
+    const { config, playerUtils, checks, currentTick } = dependencies; // Removed mc: minecraftSystem
     const eventSpecificBlockData = { block };
 
-    if (!player?.isValid() || !pData || !block?.isValid()) return;
+    if (!player?.isValid() || !pData || !block?.isValid()) {
+        return;
+    }
 
     // Record placement for checks that analyze patterns over time
     pData.recentBlockPlacements ??= [];
@@ -805,7 +881,7 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
         blockTypeId: block.typeId,
         pitch: player.getRotation().pitch, yaw: player.getRotation().yaw,
         tick: currentTick,
-        dimensionId: player.dimension.id
+        dimensionId: player.dimension.id,
     });
     if (pData.recentBlockPlacements.length > (config?.towerPlacementHistoryLength ?? 20)) {
         pData.recentBlockPlacements.shift();
@@ -828,7 +904,7 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
     if (checks?.checkBlockSpamDensity && config?.enableBlockSpamDensityCheck) { // Density-based
         await checks.checkBlockSpamDensity(player, pData, dependencies, eventSpecificBlockData);
     }
-     if (checks?.checkFlatRotationBuilding && config?.enableFlatRotationCheck) {
+    if (checks?.checkFlatRotationBuilding && config?.enableFlatRotationCheck) {
         await checks.checkFlatRotationBuilding(player, pData, dependencies, eventSpecificBlockData);
     }
 
@@ -842,7 +918,8 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
 
         if (blockBelow?.typeId === mc.MinecraftBlockTypes.ironBlock.id && blockTwoBelow?.typeId === mc.MinecraftBlockTypes.ironBlock.id) {
             potentialGolemType = mc.MinecraftEntityTypes.ironGolem.id;
-        } else if (blockBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id && blockTwoBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id) {
+        }
+        else if (blockBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id && blockTwoBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id) {
             potentialGolemType = mc.MinecraftEntityTypes.snowGolem.id;
         }
 
@@ -850,7 +927,7 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
             pData.expectingConstructedEntity = {
                 type: potentialGolemType,
                 location: { x: block.location.x, y: block.location.y, z: block.location.z },
-                tick: currentTick,
+                tick: currentTick, // Use currentTick from dependencies
             };
             pData.isDirtyForSave = true;
             playerUtils?.debugLog(`[EventHandler._processPlayerPlaceBlockAfterEffects] Player ${player?.nameTag} placed pumpkin for ${potentialGolemType}. Expecting entity.`, player?.nameTag, dependencies);
@@ -867,10 +944,14 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
     const { playerDataManager } = dependencies;
     const { player, block } = eventData; // block is the one that was placed
 
-    if (!player?.isValid() || !block?.isValid()) return;
+    if (!player?.isValid() || !block?.isValid()) {
+        return;
+    }
 
     const pData = playerDataManager?.getPlayerData(player.id);
-    if (!pData) return;
+    if (!pData) {
+        return;
+    }
 
     await _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies);
 }
@@ -918,10 +999,10 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     const { playerUtils, getString, rankManager, permissionLevels, logManager, config } = dependencies;
 
     if (!player?.isValid() || !toDimension || !fromDimension || !fromLocation) {
-        playerUtils?.debugLog(`[EventHandler.handlePlayerDimensionChangeAfterEvent] Incomplete event data for player.`, player?.nameTag, dependencies);
+        playerUtils?.debugLog('[EventHandler.handlePlayerDimensionChangeAfterEvent] Incomplete event data for player.', player?.nameTag, dependencies);
         return;
     }
-    const playerName = player.nameTag;
+    const _playerName = player.nameTag; // Prefixed as mainly used for logging
 
     // Update pData with new dimension
     const pData = dependencies.playerDataManager?.getPlayerData(player.id);
@@ -932,7 +1013,7 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
 
     const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (typeof playerPermission === 'number' && permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin) {
-        playerUtils?.debugLog(`[EventHandler.handlePlayerDimensionChangeAfterEvent] Player ${playerName} (Admin) bypassing dimension locks.`, playerName, dependencies);
+        playerUtils?.debugLog(`[EventHandler.handlePlayerDimensionChangeAfterEvent] Player ${_playerName} (Admin) bypassing dimension locks.`, _playerName, dependencies);
         return;
     }
 
@@ -943,7 +1024,8 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     if (toDimensionIdClean === 'nether' && isNetherLocked()) {
         dimensionIsLocked = true;
         lockedDimensionName = getString('dimensionLock.name.nether');
-    } else if (toDimensionIdClean === 'the_end' && isEndLocked()) {
+    }
+    else if (toDimensionIdClean === 'the_end' && isEndLocked()) {
         dimensionIsLocked = true;
         lockedDimensionName = getString('dimensionLock.name.end');
     }
@@ -955,22 +1037,23 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
             playerUtils?.warnPlayer(player, getString('dimensionLock.teleportMessage', { lockedDimensionName: lockedDimensionName }));
 
             if (config.notifyOnDimensionLockAttempt !== false) {
-                playerUtils?.notifyAdmins(getString('admin.notify.dimensionLockAttempt', { playerName: playerName, dimensionName: lockedDimensionName }), dependencies, player, pData);
+                playerUtils?.notifyAdmins(getString('admin.notify.dimensionLockAttempt', { playerName: _playerName, dimensionName: lockedDimensionName }), dependencies, player, pData);
             }
             logManager?.addLog({
                 actionType: 'dimensionLockEnforced',
-                targetName: playerName, targetId: player.id,
+                targetName: _playerName, targetId: player.id,
                 details: `Attempted to enter locked dimension: ${toDimension.id}. Teleported back to ${fromDimension.id}.`,
                 fromDimensionId: fromDimension.id, toDimensionId: toDimension.id,
             }, dependencies);
 
-        } catch (e) {
-            console.error(`[EventHandler.handlePlayerDimensionChangeAfterEvent CRITICAL] Failed to teleport ${playerName} from locked ${toDimensionIdClean}: ${e.stack || e}`);
+        }
+        catch (e) {
+            console.error(`[EventHandler.handlePlayerDimensionChangeAfterEvent CRITICAL] Failed to teleport ${_playerName} from locked ${toDimensionIdClean}: ${e.stack || e}`);
             logManager?.addLog({
                 actionType: 'errorEventHandlersDimensionLockTeleport', context: 'eventHandlers.handlePlayerDimensionChangeAfterEvent',
-                targetName: playerName, targetId: player.id,
-                details: { fromDimensionId: fromDimension.id, toDimensionId: toDimension.id, lockedDimensionName: lockedDimensionName, errorMessage: e.message, },
-                errorStack: e.stack
+                targetName: _playerName, targetId: player.id,
+                details: { fromDimensionId: fromDimension.id, toDimensionId: toDimension.id, lockedDimensionName: lockedDimensionName, errorMessage: e.message },
+                errorStack: e.stack,
             }, dependencies);
         }
     }

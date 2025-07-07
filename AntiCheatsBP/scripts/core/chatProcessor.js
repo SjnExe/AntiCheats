@@ -38,7 +38,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             const reason = muteInfo?.reason ?? getString('common.value.noReasonProvided');
             const formattedMuteMessage = getString('chat.error.mutedDetailed', {
                 reason: reason,
-                duration: muteInfo?.unmuteTime === Infinity ? getString('common.value.permanent') : playerUtils.formatDurationFriendly(muteInfo?.unmuteTime - Date.now())
+                duration: muteInfo?.unmuteTime === Infinity ? getString('common.value.permanent') : playerUtils.formatDurationFriendly(muteInfo?.unmuteTime - Date.now()),
             });
             playerUtils?.warnPlayer(player, formattedMuteMessage);
             eventData.cancel = true;
@@ -50,9 +50,11 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         if (config?.enableChatDuringCombatCheck && pData.lastCombatInteractionTime) {
             const timeSinceCombat = (Date.now() - pData.lastCombatInteractionTime) / 1000;
             if (timeSinceCombat < (config.chatDuringCombatCooldownSeconds ?? 4)) {
-                const profile = dependencies.checkActionProfiles?.['playerChatDuringCombat'];
+                const profile = dependencies.checkActionProfiles?.playerChatDuringCombat;
                 if (profile?.enabled) {
-                    if (profile.cancelMessage !== false) eventData.cancel = true;
+                    if (profile.cancelMessage !== false) {
+                        eventData.cancel = true;
+                    }
                     playerUtils?.warnPlayer(player, getString(profile.messageKey || 'chat.error.combatCooldown', { seconds: config.chatDuringCombatCooldownSeconds ?? 4 }));
                     await actionManager?.executeCheckAction(player, 'playerChatDuringCombat', { timeSinceCombat: timeSinceCombat.toFixed(1) }, dependencies);
                     if (eventData.cancel) {
@@ -65,9 +67,11 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
         if (!eventData.cancel && config?.enableChatDuringItemUseCheck && (pData.isUsingConsumable || pData.isChargingBow)) {
             const itemUseState = pData.isUsingConsumable ? getString('check.inventoryMod.action.usingConsumable') : getString('check.inventoryMod.action.chargingBow');
-            const profile = dependencies.checkActionProfiles?.['playerChatDuringItemUse'];
+            const profile = dependencies.checkActionProfiles?.playerChatDuringItemUse;
             if (profile?.enabled) {
-                if (profile.cancelMessage !== false) eventData.cancel = true;
+                if (profile.cancelMessage !== false) {
+                    eventData.cancel = true;
+                }
                 playerUtils?.warnPlayer(player, getString(profile.messageKey || 'chat.error.itemUse', { itemUseState: itemUseState }));
                 await actionManager?.executeCheckAction(player, 'playerChatDuringItemUse', { itemUseState }, dependencies);
                 if (eventData.cancel) {
@@ -98,7 +102,9 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
         ];
 
         for (const check of chatCheckFunctions) {
-            if (eventData.cancel) break;
+            if (eventData.cancel) {
+                break;
+            }
             if (check.fn && check.enabled) {
                 await check.fn(player, eventData, pData, dependencies);
                 if (eventData.cancel) {
@@ -115,7 +121,9 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 if (config.flagOnNewline) {
                     await actionManager?.executeCheckAction(player, 'chatNewline', { message: messageSnippet }, dependencies);
                 }
-                if (config.cancelMessageOnNewline !== false) eventData.cancel = true;
+                if (config.cancelMessageOnNewline !== false) {
+                    eventData.cancel = true;
+                }
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by NewlineCheck.`, playerName, dependencies);
                     return;
@@ -130,7 +138,9 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 if (config.flagOnMaxMessageLength) {
                     await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? 256, messageSnippet }, dependencies);
                 }
-                if (config.cancelOnMaxMessageLength !== false) eventData.cancel = true;
+                if (config.cancelOnMaxMessageLength !== false) {
+                    eventData.cancel = true;
+                }
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by MaxMessageLengthCheck.`, playerName, dependencies);
                     return;
@@ -146,12 +156,14 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 eventData.cancel = true;
                 logManager?.addLog({ actionType: 'chatMessageSent', targetName: playerName, targetId: player.id, details: originalMessage }, dependencies);
                 playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Sent formatted message for ${playerName}. Original event cancelled.`, playerName, dependencies);
-            } else {
+            }
+            else {
                 playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Rank elements not available for ${playerName}. Vanilla message will proceed if not cancelled by other checks.`, playerName, dependencies);
                 logManager?.addLog({ actionType: 'chatMessageSentUnformatted', targetName: playerName, targetId: player.id, details: originalMessage }, dependencies);
             }
         }
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[ChatProcessor.processChatMessage CRITICAL] Error processing chat for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[ChatProcessor.processChatMessage CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({ actionType: 'errorChatProcessing', context: 'chatProcessor.processChatMessage', targetName: playerName, targetId: player?.id, details: `Player: ${playerName}, Error: ${error.message}`, errorStack: error.stack || error.toString() }, dependencies);

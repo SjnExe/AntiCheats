@@ -43,10 +43,11 @@ export async function execute(player, _args, dependencies) {
             details: 'Player opened a UI panel via command.',
         }, dependencies);
 
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[PanelCommand CRITICAL] Error executing panel command for ${playerName}: ${error.stack || error}`);
         player.sendMessage(getString('command.panel.error.generic'));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             actionType: 'errorUiPanelCommand',
             context: 'PanelCommand.execute',
