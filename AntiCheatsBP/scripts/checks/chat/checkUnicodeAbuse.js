@@ -7,6 +7,11 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const MESSAGE_SNIPPET_LIMIT_UNICODE = 50;
+const LOCAL_ELLIPSIS_LENGTH_UNICODE = 3;
+const DEBUG_LOG_UNICODE_SNIPPET_LENGTH = 20;
+
 /**
  * Checks a message for Unicode abuse, specifically excessive combining diacritical marks.
  *
@@ -62,9 +67,9 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     }
 
     if (baseCharCount === 0 && diacriticCount > 0) {
-        if (diacriticCount >= absoluteMaxDiacritics || (maxDiacriticRatio <= 1.0 && diacriticCount > 0)) {
+        if (diacriticCount >= absoluteMaxDiacritics || (maxDiacriticRatio <= 1.0 && diacriticCount > 0)) { // 1.0 is not magic
             const violationDetails = {
-                messageSnippet: rawMessageContent.length > 50 ? rawMessageContent.substring(0, 47) + '...' : rawMessageContent,
+                messageSnippet: rawMessageContent.length > MESSAGE_SNIPPET_LIMIT_UNICODE ? rawMessageContent.substring(0, MESSAGE_SNIPPET_LIMIT_UNICODE - LOCAL_ELLIPSIS_LENGTH_UNICODE) + '...' : rawMessageContent,
                 diacriticCount: diacriticCount.toString(),
                 baseCharCount: baseCharCount.toString(),
                 calculatedRatio: 'Infinity (or 1.0 if base is 0)',
@@ -81,7 +86,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
             }
 
             await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (only diacritics). Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
+            playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (only diacritics). Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_UNICODE_SNIPPET_LENGTH)}...'`, watchedPlayerName, dependencies);
             return;
         }
     }
@@ -105,9 +110,9 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     }
 
     if (reason) {
-        const messageSnippetLimit = 50;
+        const messageSnippetLimit = 50; // This is okay as it's a const
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - 3) + '...' : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_UNICODE) + '...' : rawMessageContent,
             diacriticCount: diacriticCount.toString(),
             baseCharCount: baseCharCount.toString(),
             calculatedRatio: actualRatio.toFixed(2),
@@ -125,6 +130,6 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
         }
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_UNICODE_SNIPPET_LENGTH)}...'`, watchedPlayerName, dependencies);
     }
 }

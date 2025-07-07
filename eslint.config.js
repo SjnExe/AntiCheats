@@ -60,12 +60,17 @@ export default [
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
       'max-len': ['warn', {
-        code: 180, // Increased from 150
+        code: 200, // Increased to 200 as per user request
         ignoreComments: true,
         ignoreUrls: true,
         ignoreStrings: true,
         ignoreTemplateLiterals: true,
         ignoreRegExpLiterals: true,
+      }],
+      'no-magic-numbers': ['warn', {
+        'ignore': [-1, 0, 1, 2, 10, 100, 1000], // Common small numbers often not "magic"
+        'ignoreArrayIndexes': true,
+        'enforceConst': true, // Ensure numbers declared as const are not considered magic
       }],
 
       // == ESLint Recommended Rules (Manually Transcribed - from previous research step) ==

@@ -9,6 +9,11 @@
  * @typedef {import('../../types.js').Config} Config;
  */
 
+// Constants for magic numbers
+const DEFAULT_NUKER_CHECK_INTERVAL_MS = 200;
+const DEFAULT_NUKER_MAX_BREAKS_SHORT_INTERVAL = 4;
+const NUKER_DEBUG_EVENT_SUMMARY_COUNT = 5; // Number of recent events to show in debug log
+
 /**
  * Checks for Nuker-like behavior by analyzing the rate of block breaking.
  * It filters `pData.blockBreakEvents` to a configured time window and flags if the count exceeds a threshold.

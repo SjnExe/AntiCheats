@@ -7,6 +7,9 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const DEFAULT_MAX_ALLOWED_CLIENT_RENDER_DISTANCE = 64;
+
 /**
  * Checks if a player's reported maximum render distance exceeds the configured allowed limit.
  * This check is typically run periodically (e.g., via main tick loop) or on player spawn/join.
@@ -49,7 +52,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         return;
     }
 
-    const maxAllowed = config?.maxAllowedClientRenderDistance ?? 64;
+    const maxAllowed = config?.maxAllowedClientRenderDistance ?? DEFAULT_MAX_ALLOWED_CLIENT_RENDER_DISTANCE;
 
     if (clientRenderDistance > maxAllowed) {
         const violationDetails = {

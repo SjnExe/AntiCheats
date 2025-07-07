@@ -8,6 +8,14 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const DEFAULT_INVALID_PITCH_MIN = -90.5;
+const DEFAULT_INVALID_PITCH_MAX = 90.5;
+const YAW_FLIP_THRESHOLD = 180; // Degrees
+const DEGREES_IN_CIRCLE = 360; // Degrees
+const MS_PER_TICK = 50;
+const DEFAULT_MAX_PITCH_SNAP_PER_TICK = 75; // Degrees per tick
+
 /**
  * Checks for invalid pitch (looking too far up or down) and for excessively rapid
  * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
@@ -37,8 +45,8 @@ export async function checkViewSnap(player, pData, dependencies) {
     const currentYaw = currentRotation.y;
     const watchedPlayerName = pData.isWatched ? playerName : null;
 
-    const invalidPitchMin = config?.invalidPitchThresholdMin ?? -90.5;
-    const invalidPitchMax = config?.invalidPitchThresholdMax ?? 90.5;
+    const invalidPitchMin = config?.invalidPitchThresholdMin ?? DEFAULT_INVALID_PITCH_MIN;
+    const invalidPitchMax = config?.invalidPitchThresholdMax ?? DEFAULT_INVALID_PITCH_MAX;
 
     const rawInvalidPitchActionProfileKey = config?.invalidPitchActionProfileName ?? 'combatInvalidPitch';
     const invalidPitchActionProfileKey = rawInvalidPitchActionProfileKey
@@ -60,14 +68,14 @@ export async function checkViewSnap(player, pData, dependencies) {
         const deltaPitch = Math.abs(currentPitch - (pData.lastPitch ?? currentPitch));
         let deltaYaw = Math.abs(currentYaw - (pData.lastYaw ?? currentYaw));
 
-        if (deltaYaw > 180) {
-            deltaYaw = 360 - deltaYaw;
+        if (deltaYaw > YAW_FLIP_THRESHOLD) {
+            deltaYaw = DEGREES_IN_CIRCLE - deltaYaw;
         }
 
         const ticksSinceLastAttack = currentTick - pData.lastAttackTick;
-        const postAttackTimeMs = ticksSinceLastAttack * 50;
+        const postAttackTimeMs = ticksSinceLastAttack * MS_PER_TICK;
 
-        const maxPitchSnap = config?.maxPitchSnapPerTick ?? 75;
+        const maxPitchSnap = config?.maxPitchSnapPerTick ?? DEFAULT_MAX_PITCH_SNAP_PER_TICK;
         const rawPitchSnapActionProfileKey = config?.pitchSnapActionProfileName ?? 'combatViewSnapPitch';
         const pitchSnapActionProfileKey = rawPitchSnapActionProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))

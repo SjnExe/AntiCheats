@@ -12,6 +12,7 @@ const defaultHistoryLength = 5;
 const defaultRepeatThreshold = 3;
 const defaultMinMessageLengthForRepeatCheck = 3;
 const maxSnippetLength = 50;
+const debugLogMessageSnippetLength = 20;
 
 /**
  * Normalizes a chat message for comparison by converting to lowercase,
@@ -108,7 +109,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils?.debugLog(
-            `[ChatContentRepeatCheck] Flagged ${playerName} for repeating '${normalizedMessage.substring(0, 20)}...'. ` +
+            `[ChatContentRepeatCheck] Flagged ${playerName} for repeating '${normalizedMessage.substring(0, debugLogMessageSnippetLength)}...'. ` +
             `Count: ${matchCount + 1} in last ${pData.chatMessageHistory.length} (lookback: ${historyLength}, threshold: ${triggerThreshold}).`,
             watchedPlayerName, dependencies,
         );

@@ -12,6 +12,14 @@ import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../
  * @typedef {import('../../types.js').Config} Config;
  */
 
+// Constants for magic numbers
+const DEFAULT_AUTO_TOOL_SWITCH_TO_OPTIMAL_WINDOW_TICKS = 2; // Not a magic number in use, but good for context
+const DEFAULT_AUTO_TOOL_SWITCH_BACK_WINDOW_TICKS = 5;
+const SIGNIFICANT_POWER_INCREASE_MULTIPLIER = 1.5;
+const HIGH_POWER_THRESHOLD = 5; // For newPower > 5 when old power is very low
+const DEFAULT_AUTO_TOOL_BREAK_ATTEMPT_TIMEOUT_TICKS = 200;
+const SWITCH_BACK_STATE_ADDITIONAL_TIMEOUT_TICKS = 20;
+
 /**
  * Checks for AutoTool behavior by analyzing tool switches around block break events.
  * This involves two parts:
@@ -34,8 +42,8 @@ export async function checkAutoTool(player, pData, dependencies) {
     }
 
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
-    const switchToOptimalWindowTicks = config.autoToolSwitchToOptimalWindowTicks ?? 2;
-    const switchBackWindowTicks = config.autoToolSwitchBackWindowTicks ?? 5;
+    const switchToOptimalWindowTicks = config.autoToolSwitchToOptimalWindowTicks ?? DEFAULT_AUTO_TOOL_SWITCH_TO_OPTIMAL_WINDOW_TICKS;
+    const switchBackWindowTicks = config.autoToolSwitchBackWindowTicks ?? DEFAULT_AUTO_TOOL_SWITCH_BACK_WINDOW_TICKS;
     const rawActionProfileKey = config.autoToolActionProfileName ?? 'worldAutoTool';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -65,9 +73,9 @@ export async function checkAutoTool(player, pData, dependencies) {
                         const initialPower = calculateRelativeBlockBreakingPower(player, blockPermutation, initialToolStack);
                         const newPower = optimalToolInfo.speed;
 
-                        const isSignificantlyBetter = (newPower > initialPower * 1.5) ||
-                                                    (newPower === Infinity && initialPower < 1000) ||
-                                                    (newPower > 5 && initialPower < 1);
+                        const isSignificantlyBetter = (newPower > initialPower * SIGNIFICANT_POWER_INCREASE_MULTIPLIER) ||
+                                                    (newPower === Infinity && initialPower < 1000) || // 1000 is fine
+                                                    (newPower > HIGH_POWER_THRESHOLD && initialPower < 1); // 1 is fine
 
                         if (isSignificantlyBetter) {
                             pData.switchedToOptimalToolForBreak = true;
@@ -123,8 +131,8 @@ export async function checkAutoTool(player, pData, dependencies) {
         }
     }
 
-    const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? 200;
-    if (pData.isAttemptingBlockBreak && (currentTick - (pData.breakAttemptStartTick ?? 0) > timeoutForBreakAttempt)) {
+    const timeoutForBreakAttempt = config.autoToolBreakAttemptTimeoutTicks ?? DEFAULT_AUTO_TOOL_BREAK_ATTEMPT_TIMEOUT_TICKS;
+    if (pData.isAttemptingBlockBreak && (currentTick - (pData.breakAttemptStartTick ?? 0) > timeoutForBreakAttempt)) { // 0 is fine
         playerUtils.debugLog(`[AutoToolCheck] Stale break attempt timed out for ${player.nameTag}. Block: ${pData.breakingBlockTypeId ?? 'N/A'}`, watchedPrefix, dependencies);
         pData.isAttemptingBlockBreak = false;
         pData.switchedToOptimalToolForBreak = false;
@@ -133,10 +141,10 @@ export async function checkAutoTool(player, pData, dependencies) {
         pData.isDirtyForSave = true;
     }
 
-    const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? 5) + 20;
+    const timeoutForSwitchBackState = (config.autoToolSwitchBackWindowTicks ?? DEFAULT_AUTO_TOOL_SWITCH_BACK_WINDOW_TICKS) + SWITCH_BACK_STATE_ADDITIONAL_TIMEOUT_TICKS;
     if (
         pData.optimalToolSlotForLastBreak !== null &&
-        (pData.lastBreakCompleteTick ?? 0) > 0 &&
+        (pData.lastBreakCompleteTick ?? 0) > 0 && // 0 is fine
         (currentTick - (pData.lastBreakCompleteTick ?? 0) > timeoutForSwitchBackState)
     ) {
         playerUtils.debugLog(`[AutoToolCheck] Stale optimalToolSlotForLastBreak state timed out for ${player.nameTag}. Slot: ${pData.optimalToolSlotForLastBreak}`, watchedPrefix, dependencies);

@@ -3,6 +3,10 @@
  */
 import * as mc from '@minecraft/server';
 
+// Constants for magic numbers
+const DEFAULT_ENTITY_SPAM_TIME_WINDOW_MS = 2000;
+const DEFAULT_ENTITY_SPAM_MAX_SPAWNS_IN_WINDOW = 5;
+
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
