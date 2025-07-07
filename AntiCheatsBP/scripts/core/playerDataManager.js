@@ -619,14 +619,14 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null) ?
         (detailsForNotify.originalDetailsForNotify || `Item: ${String(detailsForNotify.itemTypeId || 'N/A')}`) :
         String(detailsForNotify);
-    const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim();
+    // const fullReasonForLog = `${reasonMessage} ${notifyString}`.trim(); // Removed as it's unused below
 
     playerUtils?.warnPlayer(player, reasonMessage, dependencies);
     if (dependencies.config.notifications?.notifyOnPlayerFlagged !== false) {
         const baseNotifyMsg = getString('playerData.notify.flagged', { flagType: finalFlagType, details: notifyString });
         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, pData);
     }
-    playerUtils?.debugLog(`[PlayerDataManager.addFlag] FLAG: ${playerName} for ${finalFlagType}. Reason: '${fullReasonForLog}'. Total: ${pData.flags.totalFlags}. Count[${finalFlagType}]: ${pData.flags[finalFlagType].count}`, playerName, dependencies);
+    playerUtils?.debugLog(`[PlayerDataManager.addFlag] ${playerName} flagged for ${finalFlagType}. Total: ${pData.flags.totalFlags}`, playerName, dependencies);
 
     if (config?.enableAutoMod && config?.automodConfig) {
         try {

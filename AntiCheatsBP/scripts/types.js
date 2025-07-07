@@ -1,5 +1,5 @@
 /**
- * @fileoverview Defines common JSDoc typedefs used throughout the AntiCheat system.
+ * @file Defines common JSDoc typedefs used throughout the AntiCheat system.
  * These types provide static analysis benefits and improve code readability.
  * @module types
  */
@@ -503,6 +503,7 @@
  */
 
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
+
 /**
  * @ignore
  */

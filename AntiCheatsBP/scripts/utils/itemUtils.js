@@ -1,5 +1,5 @@
 /**
- * @fileoverview Provides utility functions related to items, blocks, and their interactions,
+ * @file Provides utility functions related to items, blocks, and their interactions,
  * primarily for calculating block breaking speeds and determining optimal tools.
  * Includes simplified models for game mechanics like block hardness and tool effectiveness.
  * @module utils/itemUtils

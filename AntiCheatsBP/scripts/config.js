@@ -6,6 +6,14 @@
  */
 
 /**
+ * @typedef {object} UpdateConfigValueResult
+ * @property {boolean} success - Whether the update was successful.
+ * @property {string} message - A message describing the result.
+ * @property {any} [oldValue] - The old value of the configuration key.
+ * @property {any} [newValue] - The new value of the configuration key.
+ */
+
+/**
  * @description Defines all default configuration values that are potentially runtime-editable.
  * JSDoc comments for each setting are placed here.
  * Other modules import `editableConfigValues` for the current runtime state,
@@ -803,7 +811,7 @@ export const editableConfigValues = { ...defaultConfigSettings };
  *
  * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
  * @param {any} value - The new value for the configuration key.
- * @returns {{success: boolean, message: string, oldValue?: any, newValue?: any}} Object indicating success, a message, and optionally old/new values.
+ * @returns {UpdateConfigValueResult} Object indicating success, a message, and optionally old/new values.
  */
 export function updateConfigValue(key, value) {
     if (!Object.prototype.hasOwnProperty.call(defaultConfigSettings, key)) {

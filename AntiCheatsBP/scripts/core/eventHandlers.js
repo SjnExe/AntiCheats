@@ -1082,8 +1082,8 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 /**
  * Handles chat messages before they are sent, dispatching to chatProcessor.
  *
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat send event data.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - Data for the 'beforeChatSend' event, including the player sending the message and the message itself. This object can be modified to cancel the event.
+ * @param {import('../types.js').Dependencies} dependencies - Collection of shared modules and utilities required by the chat processor, such as configuration, logging, and player data access.
  */
 export async function handleBeforeChatSend(eventData, dependencies) {
     const { playerDataManager, playerUtils, getString, chatProcessor } = dependencies;
@@ -1116,8 +1116,8 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 /**
  * Handles player dimension change after events (e.g., dimension lock enforcement).
  *
- * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The data associated with the player dimension change event.
- * @param {import('../types.js').Dependencies} dependencies - The standard dependencies object.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The data associated with the player dimension change event, including player, from/to dimensions, and original location.
+ * @param {import('../types.js').Dependencies} dependencies - The standard dependencies object containing shared modules and utilities like configuration, logging, and player data management.
  */
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;

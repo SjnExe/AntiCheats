@@ -1,5 +1,5 @@
 /**
- * @fileoverview Manages the storage and retrieval of world border settings using world dynamic properties.
+ * @file Manages the storage and retrieval of world border settings using world dynamic properties.
  * Also handles the logic for enforcing the border on players and processing border resizing.
  * @module utils/worldBorderManager
  */
