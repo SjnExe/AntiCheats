@@ -1,5 +1,5 @@
 /**
- * @fileoverview Barrel file for exporting all utility modules.
+ * @file Barrel file for exporting all utility modules.
  * This allows other parts of the system to import utilities from a single, consolidated source.
  * @module utils/index
  */

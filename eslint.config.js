@@ -186,7 +186,7 @@ export default [
         // Rule for file overview
         'jsdoc/require-file-overview': ['warn', {
             tags: {
-                fileoverview: {
+                file: { // Changed from fileoverview to file
                     mustExist: true,
                     preventDuplicates: true,
                 },
@@ -214,7 +214,7 @@ export default [
         // - Specific types (no-undefined-types, check-types, valid-types)
 
         // Turned off or kept as warn based on previous config and common sense
-        'jsdoc/require-description': 'off', // require-jsdoc implies a description is needed. This one is more specific about the description *content*.
+        'jsdoc/require-description': 'warn', // require-jsdoc implies a description is needed. This one is more specific about the description *content*.
         'jsdoc/require-description-complete-sentence': 'off',
         'jsdoc/match-description': 'off',
         'jsdoc/no-defaults': 'warn',

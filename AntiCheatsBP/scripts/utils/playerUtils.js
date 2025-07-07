@@ -1,5 +1,5 @@
 /**
- * @fileoverview Provides utility functions for common player-related operations such as permission checks,
+ * @file Provides utility functions for common player-related operations such as permission checks,
  * debug logging, admin notifications, player searching, and duration parsing.
  * @module utils/playerUtils
  */
@@ -315,6 +315,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
         volume: typeof soundConfig.volume === 'number' ? soundConfig.volume : 1.0,
         pitch: typeof soundConfig.pitch === 'number' ? soundConfig.pitch : 1.0,
     };
+
 
     /**
      * Helper function to play a configured sound to a specific player instance.

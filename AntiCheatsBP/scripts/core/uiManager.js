@@ -1,5 +1,5 @@
 /**
- * @fileoverview Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
+ * @file Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
  * actions and player information within the AntiCheat system.
  * All actionType strings used for logging should be camelCase.
  * @module core/uiManager

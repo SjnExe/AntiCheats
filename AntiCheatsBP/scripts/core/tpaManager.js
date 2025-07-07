@@ -1,5 +1,5 @@
 /**
- * @fileoverview Manages TPA (teleport request) operations, including creating, tracking, and processing requests.
+ * @file Manages TPA (teleport request) operations, including creating, tracking, and processing requests.
  * All actionType strings used for logging should be camelCase.
  * @module core/tpaManager
  */
