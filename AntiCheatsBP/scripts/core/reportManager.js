@@ -60,8 +60,7 @@ export function initializeReportCache(dependencies) {
             }
         }
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKeyName}'. Initializing empty cache.`, 'System', dependencies);
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`);
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] Exception: ${error.message}`, 'System', dependencies);
     }
@@ -84,8 +83,7 @@ export function persistReportsToDisk(dependencies) {
         reportsAreDirty = false;
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Persisted ${reportsInMemory.length} reports.`, 'System', dependencies);
         return true;
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[ReportManager.persistReportsToDisk] Error saving reports: ${error.stack || error}`);
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Exception: ${error.message}`, 'System', dependencies);
         return false;

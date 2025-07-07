@@ -54,8 +54,7 @@ export async function execute(player, args, dependencies) {
     try {
         targetInvComp = targetPlayer.getComponent(mc.EntityComponentTypes.Inventory);
         adminInvComp = player.getComponent(mc.EntityComponentTypes.Inventory);
-    }
-    catch (e) {
+    } catch (e) {
         player?.sendMessage(getString('command.copyinv.noAccess'));
         playerUtils?.debugLog(`[CopyInvCommand CRITICAL] Error getting inventory components: ${e.message}`, adminName, dependencies);
         console.error(`[CopyInvCommand CRITICAL] Error getting inventory components: ${e.stack || e}`);
@@ -76,8 +75,7 @@ export async function execute(player, args, dependencies) {
     let response;
     try {
         response = await form.show(player);
-    }
-    catch (formError) {
+    } catch (formError) {
         playerUtils?.debugLog(`[CopyInvCommand CRITICAL] Confirmation form error for ${adminName}: ${formError.message}`, adminName, dependencies);
         console.error(`[CopyInvCommand CRITICAL] Confirmation form error for ${adminName}: ${formError.stack || formError}`);
         if (formError.cancelationReason !== mc.FormCancelationReason.UserBusy && formError.cancelationReason !== mc.FormCancelationReason.UserClosed) {
@@ -126,8 +124,7 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, targetPData);
         }
 
-    }
-    catch (e) {
+    } catch (e) {
         player?.sendMessage(getString('command.copyinv.error.generic', { errorMessage: e.message }));
         playerUtils?.debugLog(`[CopyInvCommand CRITICAL] Error for ${adminName} copying from ${targetPlayer.nameTag}: ${e.message}`, adminName, dependencies);
         console.error(`[CopyInvCommand CRITICAL] Error for ${adminName} copying from ${targetPlayer.nameTag}: ${e.stack || e}`);

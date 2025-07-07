@@ -58,8 +58,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
         violationDetails.blockLocationX = eventData.block?.location?.x?.toString() ?? 'N/A';
         violationDetails.blockLocationY = eventData.block?.location?.y?.toString() ?? 'N/A';
         violationDetails.blockLocationZ = eventData.block?.location?.z?.toString() ?? 'N/A';
-    }
-    else if (actionType === 'use' && bannedItemsForUse.includes(itemId)) {
+    } else if (actionType === 'use' && bannedItemsForUse.includes(itemId)) {
         isBanned = true;
         const rawProfileKey = config.illegalItemUseActionProfileName ?? 'worldIllegalItemUse';
         checkProfileKey = rawProfileKey
@@ -71,8 +70,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
     if (isBanned && checkProfileKey) {
         if (typeof eventData.cancel === 'boolean') {
             eventData.cancel = true;
-        }
-        else {
+        } else {
             playerUtils.debugLog(`[IllegalItemCheck] EventData for ${actionType} does not support cancellation. Item: ${itemId}.`, watchedPrefix, dependencies);
         }
 

@@ -32,8 +32,7 @@ export async function execute(player, _args, dependencies) {
     if (config.serverRules && config.serverRules.trim() !== '') {
         const rulesText = Array.isArray(config.serverRules) ? config.serverRules.join('\n') : config.serverRules;
         form.body(rulesText);
-    }
-    else {
+    } else {
         form.body(getString('ui.serverRules.noRulesDefined'));
     }
 
@@ -41,8 +40,7 @@ export async function execute(player, _args, dependencies) {
 
     try {
         await form.show(player);
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.stack || error}`);
         playerUtils.debugLog(`[RulesCommand] Error showing rules form to ${player.nameTag || player.name}: ${error.message}`, player.nameTag, dependencies);
         logManager.addLog({

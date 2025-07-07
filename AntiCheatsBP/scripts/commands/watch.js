@@ -96,8 +96,7 @@ export async function execute(player, args, dependencies) {
             details: `Player ${targetPlayer.nameTag} is now being watched by ${adminName}.`,
         }, dependencies);
         playerUtils?.debugLog(`Admin ${adminName} started watching player ${targetPlayer.nameTag}.`, adminName, dependencies);
-    }
-    else {
+    } else {
         player.sendMessage(getString('command.unwatch.success.admin', { playerName: targetPlayer.nameTag })); // Reusing unwatch string
         targetPlayer.sendMessage(getString('command.unwatch.success.target', { adminName: adminName })); // Reusing unwatch string
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);

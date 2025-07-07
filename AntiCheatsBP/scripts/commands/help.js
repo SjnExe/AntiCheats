@@ -84,16 +84,13 @@ export function execute(player, args, dependencies) {
                     getString('command.help.specific.description', { description: descriptionText }) + '\n' +
                     getString('command.help.specific.permission', { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() }),
                 );
-            }
-            else {
+            } else {
                 player.sendMessage(getString('command.help.noPermission', { prefix: prefix, commandName: specificCommandNameInput }));
             }
-        }
-        else {
+        } else {
             player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandNameInput }));
         }
-    }
-    else {
+    } else {
         let helpMessage = getString('command.help.header', { prefix: prefix }) + '\n';
         let commandsListed = 0;
 
@@ -149,8 +146,7 @@ export function execute(player, args, dependencies) {
 
         if (commandsListed === 0) {
             helpMessage += getString('command.help.noCommandsAvailable');
-        }
-        else {
+        } else {
             if (helpMessage.endsWith('\n')) {
                 helpMessage = helpMessage.slice(0, -1);
             }

@@ -73,8 +73,7 @@ export function execute(player, args, dependencies) {
 
     if (newAcceptsTpa) {
         player.sendMessage(getString('command.tpastatus.on'));
-    }
-    else {
+    } else {
         player.sendMessage(getString('command.tpastatus.off'));
         const incomingRequests = (tpaManager?.findRequestsForPlayer(playerSystemName) ?? [])
             .filter(r => r.targetName === playerSystemName && r.status === 'pendingAcceptance');

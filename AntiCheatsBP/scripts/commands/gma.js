@@ -56,8 +56,7 @@ export function execute(player, args, dependencies) {
                 targetId: player.id,
                 details: `Set own gamemode to ${gamemodeName}`,
             }, dependencies);
-        }
-        else {
+        } else {
             player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName: gamemodeName }));
             targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName: gamemodeName }));
             logManager?.addLog({
@@ -70,8 +69,7 @@ export function execute(player, args, dependencies) {
         }
         playerUtils?.playSoundForEvent(player, successSound, dependencies);
 
-    }
-    catch (error) {
+    } catch (error) {
         const targetNameForError = targetPlayerNameArg || adminName;
         player?.sendMessage(getString('command.gamemode.error.generic', { targetNameForError, gamemodeName, errorMessage: error.message }));
         playerUtils?.debugLog(`[GMACommand CRITICAL] Error setting gamemode for ${targetNameForError} by ${adminName}: ${error.message}`, adminName, dependencies);

@@ -230,8 +230,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
                 if (!elementMatch) {
                     errors.push(`${elementPath}: Invalid array element type. Expected ${field.arrayElementType}, but got ${typeof element}.`);
                     allFieldsValidOverall = false;
-                }
-                else if (field.arrayElementType === 'object' && field.objectProperties) {
+                } else if (field.arrayElementType === 'object' && field.objectProperties) {
                     if (!ensureFields(element, field.objectProperties, elementPath, errors)) {
                         allFieldsValidOverall = false;
                     }
@@ -365,8 +364,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 val.forEach((regex, index) => {
                     try {
                         RegExp(regex); // Changed from new RegExp(regex)
-                    }
-                    catch (e) {
+                    } catch (e) {
                         errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`);
                     }
                 });
@@ -701,16 +699,13 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 const originalCommand = commandAliasesMap[alias];
                 if (!isString(originalCommand)) {
                     errors.push(`${aliasContext}.${alias}: Original command name for alias must be a string. Got ${typeof originalCommand}.`);
-                }
-                else if (knownCommands && !knownCommands.includes(originalCommand)) { // Check knownCommands exists
+                } else if (knownCommands && !knownCommands.includes(originalCommand)) { // Check knownCommands exists
                     errors.push(`${aliasContext}.${alias}: Alias maps to unknown command "${originalCommand}".`);
-                }
-                else if (!knownCommands) {
+                } else if (!knownCommands) {
                     errors.push(`${aliasContext}.${alias}: Cannot validate alias target command "${originalCommand}" as knownCommands list was not provided.`);
                 }
             }
-        }
-        else {
+        } else {
             errors.push(`config.commandAliases: Expected an object, but got ${typeof commandAliasesMap}.`);
         }
     }
@@ -795,8 +790,7 @@ export function validateActionProfiles(actionProfiles) {
             if (!isObject(profile.flag)) {
                 // This case should be caught by ensureFields's type check, but as a fallback:
                 errors.push(`${profileContext}.flag: Expected an object, but got ${typeof profile.flag}.`);
-            }
-            else {
+            } else {
                 if (!Object.prototype.hasOwnProperty.call(profile.flag, 'increment') || !isNumber(profile.flag.increment)) {
                     errors.push(`${profileContext}.flag.increment: Required field 'increment' is missing or not a number.`);
                 }
@@ -812,8 +806,7 @@ export function validateActionProfiles(actionProfiles) {
         if (profile.log) {
             if (!isObject(profile.log)) {
                 errors.push(`${profileContext}.log: Expected an object, but got ${typeof profile.log}.`);
-            }
-            else {
+            } else {
                 if (!Object.prototype.hasOwnProperty.call(profile.log, 'actionType') || !isValidCamelCase(profile.log.actionType)) {
                     errors.push(`${profileContext}.log.actionType: Required field 'actionType' is missing or not a camelCase string.`);
                 }
@@ -931,8 +924,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     if (tier.actionType === 'teleportSafe') {
                         if (tier.parameters.coordinates && !isObject(tier.parameters.coordinates)) {
                             errors.push(`${paramsContext}.coordinates: If present, must be an object for actionType 'teleportSafe'.`);
-                        }
-                        else if (tier.parameters.coordinates) {
+                        } else if (tier.parameters.coordinates) {
                             const coordFields = [
                                 { name: 'x', type: 'number', optional: true },
                                 { name: 'y', type: 'number', optional: true },
@@ -947,8 +939,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     if (Object.prototype.hasOwnProperty.call(tier.parameters, 'adminMessageTemplate') && !isString(tier.parameters.adminMessageTemplate)) {
                         errors.push(`${paramsContext}.adminMessageTemplate: If present, must be a string.`);
                     }
-                }
-                else if (tier.actionType !== 'flagOnly' && tier.actionType !== 'kick' && tier.actionType !== 'warn' && tier.actionType !== 'ban') {
+                } else if (tier.actionType !== 'flagOnly' && tier.actionType !== 'kick' && tier.actionType !== 'warn' && tier.actionType !== 'ban') {
                     // Some actions like kick/warn/ban might not always require parameters beyond a message template
                     // flagOnly definitely doesn't.
                     // For others, parameters object is usually expected.
@@ -957,8 +948,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     }
                 }
             });
-        }
-        else {
+        } else {
             // This error would be caught by ensureFields if 'tiers' is mandatory and not an array.
             // errors.push(`${ruleSetContext}.tiers: Required field 'tiers' is missing or not an array.`);
         }
@@ -990,8 +980,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
     const dcfContext = `${context}.defaultChatFormatting`;
     if (!Object.prototype.hasOwnProperty.call(ranksConfig, 'defaultChatFormatting') || !isObject(ranksConfig.defaultChatFormatting)) {
         errors.push(`${dcfContext}: Required field is missing or not an object.`);
-    }
-    else {
+    } else {
         const chatFormatFields = [
             { name: 'prefixText', type: 'string', optional: true }, // Defaults exist
             { name: 'prefixColor', type: 'colorCode', optional: true },
@@ -1123,8 +1112,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                     }
                 }
             });
-        }
-        else {
+        } else {
             // ensureFields would catch this if 'conditions' is not optional and not an array
             errors.push(`${rankDefContext}.conditions: Required field 'conditions' is missing or not an array.`);
         }

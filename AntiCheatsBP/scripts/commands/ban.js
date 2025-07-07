@@ -45,8 +45,7 @@ export function execute(
         const usageMessage = getString('command.ban.usage', { prefix: prefix });
         if (player) {
             player.sendMessage(usageMessage);
-        }
-        else {
+        } else {
             console.warn(`[BanCommand.execute] System call missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
             playerUtils?.debugLog('[BanCommand.execute] System call missing target player name.', null, dependencies);
         }
@@ -82,8 +81,7 @@ export function execute(
         const message = getString('command.ban.invalidDuration');
         if (player) {
             player.sendMessage(message);
-        }
-        else {
+        } else {
             console.warn(`[BanCommand.execute] Invalid duration '${durationString}' (Invoked by ${issuerName}).`);
         }
         return;
@@ -122,8 +120,7 @@ export function execute(
 
         try {
             targetOnlinePlayer.kick(kickMessage);
-        }
-        catch (e) {
+        } catch (e) {
             playerUtils?.debugLog(`[BanCommand.execute WARNING] Failed to kick ${targetOnlinePlayer.nameTag} after ban (may have disconnected): ${e.message}`, issuerName, dependencies);
         }
 
@@ -131,8 +128,7 @@ export function execute(
         if (player) {
             player.sendMessage(successMessage);
             playerUtils.playSoundForEvent(player, 'commandSuccess', dependencies);
-        }
-        else {
+        } else {
             console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
         }
 
@@ -153,14 +149,12 @@ export function execute(
             checkType: autoModCheckType,
         }, dependencies);
 
-    }
-    else {
+    } else {
         const failureMessage = getString('command.ban.failure', { playerName: targetOnlinePlayer.nameTag });
         if (player) {
             player.sendMessage(failureMessage);
             playerUtils.playSoundForEvent(player, 'commandError', dependencies);
-        }
-        else {
+        } else {
             console.warn(`[BanCommand.execute] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${issuerName})`);
         }
     }

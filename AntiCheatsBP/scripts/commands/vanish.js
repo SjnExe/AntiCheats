@@ -44,8 +44,7 @@ export async function execute(player, args, dependencies) {
         const lowerArg = arg.toLowerCase();
         if (lowerArg === 'on' || lowerArg === 'off' || lowerArg === 'toggle') {
             action = lowerArg;
-        }
-        else if (lowerArg === 'silent' || lowerArg === 'notify') {
+        } else if (lowerArg === 'silent' || lowerArg === 'notify') {
             mode = lowerArg;
         }
     });
@@ -92,8 +91,7 @@ export async function execute(player, args, dependencies) {
         player.onScreenDisplay.setActionBar(getString(mode === 'silent' ? 'command.vanish.actionBar.on.silent' : 'command.vanish.actionBar.on.notify'));
         logManager?.addLog({ adminName, actionType: 'vanishEnabled', details: `Mode: ${mode}` }, dependencies);
 
-    }
-    else {
+    } else {
         if (!isCurrentlyVanished && !pData.vanishTagApplied) {
             player.sendMessage('§eYou are already unvanished.');
             return;

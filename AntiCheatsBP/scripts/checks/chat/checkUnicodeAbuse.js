@@ -60,8 +60,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     for (const char of rawMessageContent) {
         if (/\p{M}/u.test(char)) {
             diacriticCount++;
-        }
-        else if (/\S/.test(char)) {
+        } else if (/\S/.test(char)) {
             baseCharCount++;
         }
     }
@@ -101,11 +100,9 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
 
     if (flaggedByRatio && flaggedByAbsolute) {
         reason = 'ratio and absolute count';
-    }
-    else if (flaggedByRatio) {
+    } else if (flaggedByRatio) {
         reason = 'ratio';
-    }
-    else if (flaggedByAbsolute) {
+    } else if (flaggedByAbsolute) {
         reason = 'absolute count';
     }
 

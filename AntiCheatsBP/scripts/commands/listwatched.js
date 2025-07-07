@@ -51,8 +51,7 @@ export function execute(player, _args, dependencies) {
 
     if (watchedPlayersNames.length === 0) {
         player.sendMessage(getString('command.listwatched.noPlayers'));
-    }
-    else {
+    } else {
         const header = getString('command.listwatched.header');
         player.sendMessage(`${header}${watchedPlayersNames.join(', ')}`);
     }
@@ -64,8 +63,7 @@ export function execute(player, _args, dependencies) {
             actionType: 'watchedPlayersListed',
             details: `Listed watched players. Count: ${watchedPlayersNames.length}. List: [${watchedPlayersNames.join(', ')}]`,
         }, dependencies);
-    }
-    catch (logError) {
+    } catch (logError) {
         console.error(`[ListWatchedCommand CRITICAL] Error logging: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[ListWatchedCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

@@ -9,8 +9,8 @@
  * @typedef {object} UpdateConfigValueResult
  * @property {boolean} success - Whether the update was successful.
  * @property {string} message - A message describing the result.
- * @property {any} [oldValue] - The old value of the configuration key.
- * @property {any} [newValue] - The new value of the configuration key.
+ * @property {unknown} [oldValue] - The old value of the configuration key.
+ * @property {unknown} [newValue] - The new value of the configuration key.
  */
 
 /**
@@ -280,6 +280,7 @@ const defaultConfigSettings = {
 
     // --- Sound Event Configuration ---
     /**
+     * @type {{[key: string]: {enabled: boolean, soundId: string, volume?: number, pitch?: number, target?: string, description: string}}}
      * @description Configuration for sound events triggered by the AntiCheat system.
      * Each key represents a specific event.
      * `enabled`: (boolean) Whether this sound event is active.
@@ -810,7 +811,7 @@ export const editableConfigValues = { ...defaultConfigSettings };
  * Performs type checking and coercion for basic types (string, number, boolean) and simple arrays of these types.
  *
  * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
- * @param {any} value - The new value for the configuration key.
+ * @param {unknown} value - The new value for the configuration key.
  * @returns {UpdateConfigValueResult} Object indicating success, a message, and optionally old/new values.
  */
 export function updateConfigValue(key, value) {
@@ -829,30 +830,24 @@ export function updateConfigValue(key, value) {
         if (typeof value === 'string') {
             if (value.toLowerCase() === 'true') {
                 coercedValue = true;
-            }
-            else if (value.toLowerCase() === 'false') {
+            } else if (value.toLowerCase() === 'false') {
                 coercedValue = false;
-            }
-            else {
+            } else {
                 return { success: false, message: `Invalid boolean string for key "${key}": "${value}". Use "true" or "false".`, oldValue };
             }
-        }
-        else if (typeof value !== 'boolean') {
+        } else if (typeof value !== 'boolean') {
             return { success: false, message: `Invalid type for boolean key "${key}". Expected boolean, got ${typeof value}.`, oldValue };
         }
-    }
-    else if (expectedType === 'number') {
+    } else if (expectedType === 'number') {
         coercedValue = Number(value);
         if (isNaN(coercedValue)) {
             return { success: false, message: `Invalid number for key "${key}": "${value}".`, oldValue };
         }
-    }
-    else if (expectedType === 'string') {
+    } else if (expectedType === 'string') {
         if (typeof value !== 'string') {
             coercedValue = String(value);
         }
-    }
-    else if (Array.isArray(defaultConfigSettings[key])) {
+    } else if (Array.isArray(defaultConfigSettings[key])) {
         if (!Array.isArray(value)) {
             if (typeof value === 'string') {
                 try {
@@ -860,29 +855,24 @@ export function updateConfigValue(key, value) {
                     if (!Array.isArray(coercedValue)) {
                         return { success: false, message: `Key "${key}" expects an array. Parsed string was not an array.`, oldValue };
                     }
-                }
-                catch (e) {
+                } catch (e) {
                     return { success: false, message: `Key "${key}" expects an array. Could not parse string value: "${value}". Error: ${e.message}`, oldValue };
                 }
-            }
-            else {
+            } else {
                 return { success: false, message: `Key "${key}" expects an array. Got type ${typeof value}.`, oldValue };
             }
         }
-    }
-    else if (expectedType === 'object' && defaultConfigSettings[key] !== null) {
+    } else if (expectedType === 'object' && defaultConfigSettings[key] !== null) {
         if (typeof value === 'string') {
             try {
                 coercedValue = JSON.parse(value);
                 if (typeof coercedValue !== 'object' || coercedValue === null || Array.isArray(coercedValue)) {
                     return { success: false, message: `Key "${key}" expects an object. Parsed string was not a valid object.`, oldValue };
                 }
-            }
-            catch (e) {
+            } catch (e) {
                 return { success: false, message: `Key "${key}" expects an object. Could not parse string value: "${value}". Error: ${e.message}`, oldValue };
             }
-        }
-        else if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+        } else if (typeof value !== 'object' || value === null || Array.isArray(value)) {
             return { success: false, message: `Key "${key}" expects an object. Got type ${typeof value}.`, oldValue };
         }
     }

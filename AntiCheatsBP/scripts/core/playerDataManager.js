@@ -109,8 +109,7 @@ export function savePlayerDataToDynamicProperties(player, pDataToSave, dependenc
     let jsonString;
     try {
         jsonString = JSON.stringify(pDataToSave);
-    }
-    catch (error) {
+    } catch (error) {
         _handleDynamicPropertyError(
             'savePlayerDataToDynamicProperties',
             'JSON.stringify',
@@ -131,8 +130,7 @@ export function savePlayerDataToDynamicProperties(player, pDataToSave, dependenc
     try {
         player.setDynamicProperty(dynamicPropertyKeyV1, jsonString);
         return true;
-    }
-    catch (error) {
+    } catch (error) {
         _handleDynamicPropertyError(
             'savePlayerDataToDynamicProperties',
             'player.setDynamicProperty',
@@ -164,8 +162,7 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
     let jsonString;
     try {
         jsonString = player.getDynamicProperty(dynamicPropertyKeyV1);
-    }
-    catch (error) {
+    } catch (error) {
         _handleDynamicPropertyError(
             'loadPlayerDataFromDynamicProperties',
             'player.getDynamicProperty',
@@ -182,8 +179,7 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
             const parsedData = JSON.parse(jsonString);
             playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Loaded and parsed data for ${playerName}.`, playerName, dependencies);
             return parsedData;
-        }
-        catch (error) {
+        } catch (error) {
             _handleDynamicPropertyError(
                 'loadPlayerDataFromDynamicProperties',
                 'JSON.parse',
@@ -194,12 +190,10 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
             );
             return null;
         }
-    }
-    else if (jsonString === undefined) {
+    } else if (jsonString === undefined) {
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] No dynamic property '${dynamicPropertyKeyV1}' for ${playerName}.`, playerName, dependencies);
         return null;
-    }
-    else {
+    } else {
         playerUtils?.debugLog(`[PlayerDataManager.loadPlayerDataFromDynamicProperties] Unexpected data type for '${dynamicPropertyKeyV1}' for ${playerName}: ${typeof jsonString}`, playerName, dependencies);
         return null;
     }
@@ -230,8 +224,7 @@ export async function prepareAndSavePlayerData(player, dependencies) {
             }
         }
         await savePlayerDataToDynamicProperties(player, persistedPData, dependencies);
-    }
-    else {
+    } else {
         playerUtils?.debugLog(`[PlayerDataManager.prepareAndSavePlayerData] No runtime pData for ${playerName}. Cannot save.`, playerName, dependencies);
     }
 }
@@ -248,8 +241,7 @@ for (const checkKey in checkActionProfiles) {
         if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
             if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
                 dynamicallyGeneratedFlagTypes.add(profile.flag.type);
-            }
-            else {
+            } else {
                 dynamicallyGeneratedFlagTypes.add(checkKey);
             }
         } // Closing brace for: if (profile && typeof profile.flag === 'object' && profile.flag !== null)
@@ -421,8 +413,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick;
         newPData.joinTime = loadedData.joinTime ?? Date.now();
         newPData.isDirtyForSave = false;
-    }
-    else {
+    } else {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data.`, playerName, dependencies);
     }
 
@@ -507,8 +498,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                     playerUtils?.debugLog(`[PlayerDataManager.updateTransientPlayerData] Player ${playerName} on slime block at tick ${currentTick}.`, playerName, dependencies);
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             if (!pData.slimeCheckErrorLogged) {
                 console.warn(`[PlayerDataManager.updateTransientPlayerData] Error checking slime block for ${playerName}: ${e.stack || e}`);
                 logManager?.addLog({
@@ -524,8 +514,7 @@ export function updateTransientPlayerData(player, pData, dependencies) {
                 pData.slimeCheckErrorLogged = true;
             }
         }
-    }
-    else {
+    } else {
         pData.consecutiveOffGroundTicks++;
         pData.slimeCheckErrorLogged = false;
     }
@@ -634,8 +623,7 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
                 playerUtils?.debugLog(`[PlayerDataManager.addFlag] Calling processAutoModActions for ${playerName}, checkType: ${finalFlagType}`, playerName, dependencies);
             }
             await processAutoModActions(player, pData, finalFlagType, dependencies);
-        }
-        catch (e) {
+        } catch (e) {
             console.error(`[PlayerDataManager.addFlag] Error calling processAutoModActions for ${playerName} / ${finalFlagType}: ${e.stack || e}`);
             playerUtils?.debugLog(`[PlayerDataManager.addFlag] Error in processAutoModActions: ${e.stack || e}`, playerName, dependencies);
             logManager?.addLog({
@@ -649,8 +637,7 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
                 },
             }, dependencies);
         }
-    }
-    else if (pData.isWatched) {
+    } else if (pData.isWatched) {
         const autoModEnabled = config ? config.enableAutoMod : 'N/A (config missing)';
         const autoModConfigPresent = !!config?.automodConfig;
         playerUtils?.debugLog(`[PlayerDataManager.addFlag] Skipping processAutoModActions for ${playerName} (checkType: ${finalFlagType}). enableAutoMod: ${autoModEnabled}, automodConfig: ${autoModConfigPresent}.`, playerName, dependencies);
@@ -721,8 +708,7 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
 
     if (durationMs === Infinity) {
         logMsg += ' Duration: Permanent.';
-    } //
-    else {
+    } else {
         logMsg += ` Expiry time: ${new Date(expiryTime).toISOString()}.`;
     }
     playerUtils?.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
@@ -747,8 +733,7 @@ function _removePlayerStateRestriction(pData, stateType, dependencies) {
         pData.isDirtyForSave = true;
         playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} un${stateType}d.`, pData.isWatched ? playerName : null, dependencies);
         return true;
-    }
-    else {
+    } else {
         playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} was not ${stateType}d. No action.`, pData.isWatched ? playerName : null, dependencies);
         return false;
     }

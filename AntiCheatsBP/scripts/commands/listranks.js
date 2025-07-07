@@ -86,8 +86,7 @@ export function execute(player, _args, dependencies) {
             actionType: 'ranksListed',
             details: `Listed all ${sortedRanks.length} ranks.`,
         }, dependencies);
-    }
-    catch (logError) {
+    } catch (logError) {
         console.error(`[ListRanksCommand CRITICAL] Error logging: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[ListRanksCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

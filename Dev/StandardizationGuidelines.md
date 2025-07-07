@@ -33,7 +33,7 @@ This document outlines the consolidated standardization guidelines for the AntiC
     *   Space between control flow keywords and their parentheses (e.g., `if (condition)`).
     *   Space before opening curly braces (e.g., `if (condition) {`).
 *   **Indentation:** Use 4 spaces. No tabs.
-*   **Line Breaks & Length:** Max 200 characters. This has been increased from 120 to better accommodate long descriptive strings (e.g., in log messages or detailed comments) without excessive fragmentation. However, complex logical statements should still be broken thoughtfully, often before operators, to maintain readability.
+*   **Line Breaks & Length:** Max 256 characters. This has been increased to better accommodate long descriptive strings (e.g., in log messages or detailed comments) and complex conditions without excessive fragmentation. However, complex logical statements should still be broken thoughtfully, often before operators, to maintain readability.
 *   **Braces (Curly Braces `{}`):**
     *   Egyptian (K&R variant) style: opening brace on the same line. `else`, `catch`, `finally` on the same line as the preceding closing brace.
     *   Always use braces for blocks (`if`, `for`, `while`, etc.), even single-line ones.

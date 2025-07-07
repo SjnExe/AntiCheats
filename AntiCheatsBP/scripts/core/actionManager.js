@@ -107,8 +107,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             await playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails);
         }
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Flagged ${playerNameForLog} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player?.nameTag, dependencies);
-    }
-    else if (!player && profile.flag) {
+    } else if (!player && profile.flag) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping flagging for checkType '${checkType}' (player is null).`, null, dependencies);
     }
 
@@ -157,12 +156,10 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             };
             pData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored itemTypeId '${violationDetails.itemTypeId}' and details for check '${checkType}' for ${playerNameForLog}.`, player?.nameTag, dependencies);
-        }
-        else {
+        } else {
             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store itemTypeId for '${checkType}' (pData not found for ${playerNameForLog}).`, player?.nameTag, dependencies);
         }
-    }
-    else if (!player && violationDetails?.itemTypeId) {
+    } else if (!player && violationDetails?.itemTypeId) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping itemTypeId storage for '${checkType}' (player is null).`, null, dependencies);
     }
 }

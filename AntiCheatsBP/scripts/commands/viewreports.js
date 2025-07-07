@@ -68,15 +68,13 @@ export function execute(player, args, dependencies) {
         if (firstArgLower === 'page' && args[1] && !isNaN(parseInt(args[1], 10))) {
             pageNumber = Math.max(1, parseInt(args[1], 10));
             filterType = 'All (Paginated)';
-        }
-        else if (args[0].includes('-') && args[0].length > 10) {
+        } else if (args[0].includes('-') && args[0].length > 10) {
             const reportId = args[0];
             reportsToShow = reportsToShow.filter(r => r.id === reportId);
             filterType = 'Report ID';
             filterValue = reportId;
             totalPages = Math.max(1, Math.ceil(reportsToShow.length / reportsPerPage));
-        }
-        else {
+        } else {
             const targetPlayerName = args[0];
             reportsToShow = reportsToShow.filter(r =>
                 r.reporterName.toLowerCase().includes(targetPlayerName.toLowerCase()) ||
@@ -104,8 +102,7 @@ export function execute(player, args, dependencies) {
     if (paginatedReports.length === 0 && pageNumber > 1) {
         player.sendMessage(getString('command.viewreports.noReportsOnPage', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString() }));
         return;
-    }
-    else if (paginatedReports.length === 0) {
+    } else if (paginatedReports.length === 0) {
         player.sendMessage(getString('command.viewreports.noReportsFound'));
         return;
     }

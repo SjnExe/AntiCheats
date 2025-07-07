@@ -88,8 +88,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
         try {
             await playerDataManager.prepareAndSavePlayerData(player, dependencies); // This should handle pData internally
             playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
-        }
-        catch (error) {
+        } catch (error) {
             console.error(`[EventHandler.handlePlayerLeave CRITICAL] Error in prepareAndSavePlayerData for ${playerName} on leave: ${error.stack || error}`);
             logManager?.addLog({
                 actionType: 'errorEventHandlersPdataSaveOnLeave', // More specific error type
@@ -189,8 +188,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                         if (player.isValid()) {
                             player.sendMessage(message);
                         }
-                    }
-                    catch (e) {
+                    } catch (e) {
                         console.warn(`[EventHandler.handlePlayerSpawn] Failed to send welcome to ${playerName}: ${e.message}`);
                     }
                 }, WELCOME_MESSAGE_DELAY_TICKS);
@@ -211,8 +209,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                     dependencies, player, pData,
                 );
             }
-        }
-        else { // Respawn
+        } else { // Respawn
             logManager?.addLog({
                 actionType: 'playerRespawn',
                 targetName: playerName, targetId: player.id,
@@ -229,8 +226,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
                     if (player.isValid()) {
                         player.sendMessage(pData.deathMessageToShowOnSpawn);
                     }
-                }
-                catch (e) {
+                } catch (e) {
                     console.warn(`[EventHandler.handlePlayerSpawn] Failed to send death coords to ${playerName}: ${e.message}`);
                 }
             }, DEATH_COORDS_MESSAGE_DELAY_TICKS);
@@ -257,8 +253,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
             );
         }
 
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
@@ -291,8 +286,7 @@ export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
 
     if (checks?.checkPistonLag) {
         await checks.checkPistonLag(pistonBlock, dimension.id, dependencies, isExpanding);
-    }
-    else {
+    } else {
         playerUtils?.debugLog('[EvtHdlr.Piston CRITICAL] checkPistonLag function unavailable.', null, dependencies);
     }
 }
@@ -327,8 +321,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
             try {
                 entity.kill();
                 playerUtils?.debugLog(`[EvtHdlr.EntSpawn] Wither (ID: ${entity.id}) killed.`, null, dependencies);
-            }
-            catch (e) {
+            } catch (e) {
                 console.warn(`[EvtHdlr.EntSpawn CRITICAL] Failed to kill wither: ${e.message}`);
                 logManager?.addLog({
                     actionType: 'errorEventHandlersKillWither', context: 'eventHandlers.handleEntitySpawnEvent_AntiGrief',
@@ -337,8 +330,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
                 }, dependencies);
             }
         }
-    }
-    else if (config?.enableEntitySpamAntiGrief && (entity.typeId === mc.MinecraftEntityTypes.snowGolem.id || entity.typeId === mc.MinecraftEntityTypes.ironGolem.id)) {
+    } else if (config?.enableEntitySpamAntiGrief && (entity.typeId === mc.MinecraftEntityTypes.snowGolem.id || entity.typeId === mc.MinecraftEntityTypes.ironGolem.id)) {
         playerUtils?.debugLog(
             `[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${minecraftSystem?.system?.currentTick}`,
             null, dependencies,
@@ -369,8 +361,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
                                 `[EvtHdlr.EntSpawn] ${entityName} (ID: ${entity.id}) killed (spam by ${playerName}).`,
                                 playerName, dependencies,
                             );
-                        }
-                        catch (e) {
+                        } catch (e) {
                             console.warn(`[EvtHdlr.EntSpawn CRITICAL] Failed to kill ${entityName}: ${e.message}`);
                             logManager?.addLog({
                                 actionType: 'errorEventHandlersKillRestrictedEntity',
@@ -415,13 +406,11 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         checkType = 'worldAntiGriefTntPlace';
         actionConfigKey = 'tntPlacementAction';
         defaultMessageKey = 'antigrief.tntPlacementDenied';
-    }
-    else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.enableLavaAntiGrief) {
+    } else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.enableLavaAntiGrief) {
         checkType = 'worldAntiGriefLava';
         actionConfigKey = 'lavaPlacementAction';
         defaultMessageKey = 'antigrief.lavaPlacementDenied';
-    }
-    else if (itemStack.typeId === 'minecraft:water_bucket' && config?.enableWaterAntiGrief) {
+    } else if (itemStack.typeId === 'minecraft:water_bucket' && config?.enableWaterAntiGrief) {
         checkType = 'worldAntiGriefWater';
         actionConfigKey = 'waterPlacementAction';
         defaultMessageKey = 'antigrief.waterPlacementDenied';
@@ -458,11 +447,9 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         let shouldCancelEvent = cancelByDefault; // Start with default
         if (profile && typeof profile.cancelEvent === 'boolean') {
             shouldCancelEvent = profile.cancelEvent;
-        }
-        else if (actionTaken === 'remove' || actionTaken === 'prevent') {
+        } else if (actionTaken === 'remove' || actionTaken === 'prevent') {
             shouldCancelEvent = true;
-        }
-        else { // e.g. 'warn', 'flagOnly'
+        } else { // e.g. 'warn', 'flagOnly'
             shouldCancelEvent = false;
         }
         const messageToWarn = getString(profile?.messageKey || defaultMessageKey);
@@ -521,8 +508,7 @@ export function handleEntityDieForDeathEffects(eventData, dependencies) {
         if (config.deathEffectSoundId) {
             dimension.playSound(config.deathEffectSoundId, location);
         }
-    }
-    catch (e) {
+    } catch (e) {
         console.warn(`[EvtHdlr.DeathFx CRITICAL] Error applying death effect for ${entityName}: ${e.message}`);
         logManager?.addLog({
             actionType: 'errorEventHandlersDeathEffect', context: 'eventHandlers.handleEntityDieForDeathEffects',
@@ -1035,8 +1021,7 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
             blockTwoBelow?.typeId === mc.MinecraftBlockTypes.ironBlock.id
         ) {
             potentialGolemType = mc.MinecraftEntityTypes.ironGolem.id;
-        }
-        else if (blockBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id &&
+        } else if (blockBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id &&
                  blockTwoBelow?.typeId === mc.MinecraftBlockTypes.snowBlock.id
         ) {
             potentialGolemType = mc.MinecraftEntityTypes.snowGolem.id;
@@ -1116,8 +1101,8 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 /**
  * Handles player dimension change after events (e.g., dimension lock enforcement).
  *
- * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The data associated with the player dimension change event, including player, from/to dimensions, and original location.
- * @param {import('../types.js').Dependencies} dependencies - The standard dependencies object containing shared modules and utilities like configuration, logging, and player data management.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData The event data.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
@@ -1152,8 +1137,7 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
     if (toDimensionIdClean === 'nether' && isNetherLocked()) {
         dimensionIsLocked = true;
         lockedDimensionName = getString('dimensionLock.name.nether');
-    }
-    else if (toDimensionIdClean === 'the_end' && isEndLocked()) {
+    } else if (toDimensionIdClean === 'the_end' && isEndLocked()) {
         dimensionIsLocked = true;
         lockedDimensionName = getString('dimensionLock.name.end');
     }
@@ -1177,8 +1161,7 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
                 fromDimensionId: fromDimension.id, toDimensionId: toDimension.id,
             }, dependencies);
 
-        }
-        catch (e) {
+        } catch (e) {
             console.error(`[EvtHdlr.DimChange CRITICAL] Failed to teleport ${player.nameTag} from locked ${toDimensionIdClean}: ${e.stack || e}`);
             logManager?.addLog({
                 actionType: 'errorEventHandlersDimensionLockTeleport', context: 'eventHandlers.handlePlayerDimensionChangeAfterEvent',

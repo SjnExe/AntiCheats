@@ -49,8 +49,7 @@ export async function execute(player, args, dependencies) {
     let inventoryComponent;
     try {
         inventoryComponent = foundPlayer.getComponent(mc.EntityComponentTypes.Inventory);
-    }
-    catch (e) {
+    } catch (e) {
         player.sendMessage(getString('command.invsee.noAccess', { playerName: foundPlayer.nameTag }));
         playerUtils?.debugLog(`[InvSeeCommand CRITICAL] Error getting inventory component for ${foundPlayer.nameTag}: ${e.message}`, adminName, dependencies);
         console.error(`[InvSeeCommand CRITICAL] Error getting inventory component for ${foundPlayer.nameTag}: ${e.stack || e}`);
@@ -78,8 +77,7 @@ export async function execute(player, args, dependencies) {
                 if (durabilityComponent) {
                     durabilityText = getString('command.invsee.item.durability', { currentDurability: (durabilityComponent.maxDurability - durabilityComponent.damage).toString(), maxDurability: durabilityComponent.maxDurability.toString() });
                 }
-            }
-            catch (_e) { }
+            } catch (_e) { /* Component may not exist, or error fetching; text remains empty */ }
 
             let loreText = '';
             const lore = itemStack.getLore();
@@ -97,8 +95,7 @@ export async function execute(player, args, dependencies) {
                         enchantsText = getString('command.invsee.item.enchants', { enchantEntries: enchStrings.join(', ') });
                     }
                 }
-            }
-            catch (_e) { }
+            } catch (_e) { /* Component may not exist, or error fetching; text remains empty */ }
 
             inventoryDetails += getString('ui.invsee.slotEntry', {
                 slotNum: i.toString(),
@@ -133,8 +130,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
         await invForm.show(player);
 
-    }
-    catch (e) {
+    } catch (e) {
         playerUtils?.debugLog(`[InvSeeCommand CRITICAL] Error showing invsee form for ${adminName}: ${e.message}`, adminName, dependencies);
         console.error(`[InvSeeCommand CRITICAL] Error showing invsee form for ${adminName}: ${e.stack || e}`);
         player.sendMessage(getString('command.invsee.error.display'));

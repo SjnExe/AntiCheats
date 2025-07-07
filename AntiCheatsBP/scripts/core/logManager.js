@@ -51,8 +51,7 @@ export function initializeLogCache(dependencies) {
             }
         }
         playerUtils?.debugLog('[LogManager.initializeLogCache] No valid logs found or property not set. Initializing empty cache.', null, dependencies);
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[LogManager.initializeLogCache] Error reading/parsing logs: ${error.stack || error}`);
         playerUtils?.debugLog(`[LogManager.initializeLogCache] Exception: ${error.message}`, null, dependencies);
     }
@@ -77,8 +76,7 @@ export function persistLogCacheToDisk(dependencies) {
         logsAreDirty = false; // Reset dirty flag after successful persistence
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Persisted ${logsInMemory.length} logs.`, null, dependencies);
         return true;
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[LogManager.persistLogCacheToDisk] Error saving logs: ${error.stack || error}`);
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Exception: ${error.message}`, null, dependencies);
         return false;

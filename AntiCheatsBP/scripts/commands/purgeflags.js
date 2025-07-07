@@ -84,8 +84,7 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
         playerUtils?.debugLog(`Admin ${adminName} purged flags for ${targetPlayer.nameTag}. Old total: ${oldTotalFlags}.`, adminName, dependencies);
 
-    }
-    else {
+    } else {
         playerUtils?.sendMessage(player, getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: 'Failed to save purged data.' }));
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         playerUtils?.debugLog(`[PurgeFlagsCommand CRITICAL] Failed to save purged data for ${targetPlayer.nameTag} by ${adminName}.`, adminName, dependencies);

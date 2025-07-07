@@ -60,8 +60,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                                     playerUtils?.debugLog(`[AntiAdv] Link '${detectedLink}' for ${playerName} whitelisted by regex: '${wlPattern}'.`, watchedPlayerName, dependencies);
                                     break;
                                 }
-                            }
-                            catch (eRegexWl) {
+                            } catch (eRegexWl) {
                                 if (detectedLink.toLowerCase().includes(wlPattern.toLowerCase())) {
                                     isWhitelisted = true;
                                     playerUtils?.debugLog(`[AntiAdv] Link '${detectedLink}' for ${playerName} whitelisted by include: '${wlPattern}'. (Invalid regex: ${eRegexWl.message})`, watchedPlayerName, dependencies);
@@ -90,8 +89,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                     }
                     return;
                 }
-            }
-            catch (eRegexMain) {
+            } catch (eRegexMain) {
                 console.error(`[AntiAdvertisingCheck CRITICAL] Invalid regex pattern in config.advancedLinkRegexList: '${regexString}'. Error: ${eRegexMain.stack || eRegexMain.message}`);
                 playerUtils?.debugLog(`[AntiAdvertisingCheck CRITICAL] Error with regex '${regexString}' for ${playerName}: ${eRegexMain.message}`, watchedPlayerName, dependencies);
             }
@@ -140,8 +138,7 @@ export async function checkAntiAdvertising(player, eventData, pData, dependencie
                 return;
             }
         }
-    }
-    else if (!config?.enableAdvancedLinkDetection && (!config?.antiAdvertisingPatterns || config.antiAdvertisingPatterns.length === 0)) {
+    } else if (!config?.enableAdvancedLinkDetection && (!config?.antiAdvertisingPatterns || config.antiAdvertisingPatterns.length === 0)) {
         playerUtils?.debugLog('[AntiAdv] Adv/Simple checks disabled or no patterns. Skipping.', watchedPlayerName, dependencies);
     }
 }

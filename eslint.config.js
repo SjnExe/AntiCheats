@@ -58,7 +58,8 @@ export default [
       'eqeqeq': ['error', 'always'],
       'no-var': 'error',
       'no-console': 'off', // Project specific decision to allow console
-      'brace-style': ['error', 'stroustrup', { 'allowSingleLine': false }],
+      'brace-style': ['error', '1tbs', { 'allowSingleLine': false }],
+      'func-call-spacing': ['error', 'never'],
       'comma-dangle': ['error', 'always-multiline'],
       'comma-spacing': ['error', { 'before': false, 'after': true }],
       'keyword-spacing': ['error', { 'before': true, 'after': true }],
@@ -70,7 +71,7 @@ export default [
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
       'max-len': ['warn', {
-        code: 200,
+        code: 256,
         ignoreComments: true,
         ignoreUrls: true,
         ignoreStrings: true,
@@ -85,7 +86,7 @@ export default [
       // Override specific eslint:recommended rules if necessary
       'no-prototype-builtins': 'warn', // Might be too strict for some Minecraft API patterns if not careful
       // 'no-undef': 'error', // This is in eslint:recommended, ensure globals are well-defined
-      'no-empty': ['error', { 'allowEmptyCatch': true }], // Keep custom preference for empty catch blocks
+      'no-empty': ['error', { 'allowEmptyCatch': false }], // Guideline: "Avoid silent catches"
       'no-invalid-this': 'warn', // 'this' can be tricky in callbacks, 'warn' is safer
       'no-unused-vars': ['warn', { // Already defined above, but ensure it overrides recommended if different
         'argsIgnorePattern': '^_',

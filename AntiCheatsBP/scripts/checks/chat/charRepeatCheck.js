@@ -50,8 +50,7 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         const char = message[i];
         if (char === currentChar) {
             currentRepeatCount++;
-        }
-        else {
+        } else {
             if (currentRepeatCount > maxRepeatCount) {
                 maxRepeatCount = currentRepeatCount;
                 charThatRepeatedMost = currentChar;

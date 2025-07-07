@@ -45,13 +45,11 @@ export function execute(player, args, dependencies) {
         const otherPlayerOnline = playerUtils?.findPlayer(targetPlayerNameArg);
         if (otherPlayerOnline && otherPlayerOnline.isValid()) {
             requestToCancel = tpaManager?.findRequest(player.name, otherPlayerOnline.name);
-        }
-        else {
+        } else {
             requestToCancel = tpaManager?.findRequest(player.name, targetPlayerNameArg);
         }
         specificPlayerTargeted = true;
-    }
-    else {
+    } else {
         const allRequests = tpaManager?.findRequestsForPlayer(player.name) ?? [];
         const outgoing = allRequests.find(r => r.requesterName === player.name && (r.status === 'pendingAcceptance' || r.status === 'pendingTeleportWarmup'));
         const incoming = allRequests.find(r => r.targetName === player.name && r.status === 'pendingAcceptance');
@@ -61,8 +59,7 @@ export function execute(player, args, dependencies) {
     if (!requestToCancel) {
         if (specificPlayerTargeted) {
             player.sendMessage(getString('command.tpacancel.specific.notFound', { playerName: targetPlayerNameArg }));
-        }
-        else {
+        } else {
             player.sendMessage(getString('command.tpacancel.all.noneFound'));
         }
         return;

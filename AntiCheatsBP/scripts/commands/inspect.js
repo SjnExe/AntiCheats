@@ -39,8 +39,7 @@ export function execute(player, args, dependencies) {
 
     if (targetPlayer && targetPlayer.isValid()) {
         pData = playerDataManager?.getPlayerData(targetPlayer.id);
-    }
-    else {
+    } else {
         player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
         return;
     }
@@ -78,8 +77,7 @@ export function execute(player, args, dependencies) {
         if (muteInfo) {
             const expiry = muteInfo.unmuteTime === Infinity ? getString('ban.duration.permanent') : new Date(muteInfo.unmuteTime).toLocaleString();
             messageLines.push(getString('command.inspect.muted.yes', { expiry: expiry, reason: muteInfo.reason || getString('common.value.noReasonProvided') }));
-        }
-        else {
+        } else {
             messageLines.push(getString('command.inspect.muted.no'));
         }
 
@@ -87,13 +85,11 @@ export function execute(player, args, dependencies) {
         if (banInfo) {
             const expiry = banInfo.unbanTime === Infinity ? getString('ban.duration.permanent') : new Date(banInfo.unbanTime).toLocaleString();
             messageLines.push(getString('command.inspect.banned.yes', { expiry: expiry, reason: banInfo.reason || getString('common.value.noReasonProvided') }));
-        }
-        else {
+        } else {
             messageLines.push(getString('command.inspect.banned.no'));
         }
 
-    }
-    else {
+    } else {
         messageLines.push(getString('command.inspect.noData'));
     }
 
@@ -108,8 +104,7 @@ export function execute(player, args, dependencies) {
             targetId: targetPlayer?.id ?? pData?.id,
             details: `Inspected ${targetDisplayName}`,
         }, dependencies);
-    }
-    catch (logError) {
+    } catch (logError) {
         console.error(`[InspectCommand CRITICAL] Error logging inspect action: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[InspectCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

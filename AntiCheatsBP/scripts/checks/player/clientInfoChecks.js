@@ -70,8 +70,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils?.debugLog(`[InvalidRenderDistanceCheck] Player ${playerName} reported ${clientRenderDistance} chunks, max allowed is ${maxAllowed}. Flagged via profile '${actionProfileKey}'.`, watchedPlayerName, dependencies);
-    }
-    else if (pData?.isWatched && config?.enableDebugLogging) {
+    } else if (pData?.isWatched && config?.enableDebugLogging) {
         playerUtils?.debugLog(`[InvalidRenderDistanceCheck] Player ${playerName} reported valid render distance: ${clientRenderDistance} (Max: ${maxAllowed}).`, watchedPlayerName, dependencies);
     }
 }

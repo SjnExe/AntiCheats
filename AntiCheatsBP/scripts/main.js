@@ -79,8 +79,7 @@ function getStandardDependencies() {
             },
             editableConfig: configModule,
         };
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error: ${error.stack || error}`);
         throw error;
     }
@@ -128,14 +127,12 @@ function checkEventAPIsReady(dependencies) {
         errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents: UNDEFINED - CRITICAL`);
         overallAllReady = false;
         requiredBeforeEvents.forEach(eventName => errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents.${eventName}: UNDEFINED (parent 'beforeEvents' is undefined)`));
-    }
-    else {
+    } else {
         logger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents: DEFINED`);
         requiredBeforeEvents.forEach(eventName => {
             if (mc.world.beforeEvents[eventName]) {
                 logger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents.${eventName}: DEFINED (type: ${typeof mc.world.beforeEvents[eventName]})`);
-            }
-            else {
+            } else {
                 errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.beforeEvents.${eventName}: UNDEFINED - CRITICAL`);
                 overallAllReady = false;
             }
@@ -147,14 +144,12 @@ function checkEventAPIsReady(dependencies) {
         errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.afterEvents: UNDEFINED - CRITICAL`);
         overallAllReady = false;
         requiredAfterEvents.forEach(eventName => errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.afterEvents.${eventName}: UNDEFINED (parent 'afterEvents' is undefined)`));
-    }
-    else {
+    } else {
         logger(`[${mainModuleName}.checkEventAPIsReady] mc.world.afterEvents: DEFINED`);
         requiredAfterEvents.forEach(eventName => {
             if (mc.world.afterEvents[eventName]) {
                 logger(`[${mainModuleName}.checkEventAPIsReady] mc.world.afterEvents.${eventName}: DEFINED (type: ${typeof mc.world.afterEvents[eventName]})`);
-            }
-            else {
+            } else {
                 errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.world.afterEvents.${eventName}: UNDEFINED - CRITICAL`);
                 overallAllReady = false;
             }
@@ -163,8 +158,7 @@ function checkEventAPIsReady(dependencies) {
 
     if (overallAllReady) {
         logger(`[${mainModuleName}.checkEventAPIsReady] All checked Minecraft event APIs appear to be available.`);
-    }
-    else {
+    } else {
         errorLogger(`[${mainModuleName}.checkEventAPIsReady] Not all required Minecraft event APIs are available. See details above.`);
     }
     return overallAllReady;
@@ -189,13 +183,11 @@ function performInitializations() {
                     commandExecutionMap: commandManager.commandExecutionMap,
                 };
                 await commandManager.handleChatCommand(eventData, commandHandlingDependencies);
-            }
-            else {
+            } else {
                 await eventHandlers.handleBeforeChatSend(eventData, dependencies);
             }
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for chatSend: mc.world.beforeEvents.chatSend is undefined.`);
     }
 
@@ -203,8 +195,7 @@ function performInitializations() {
         mc.world.afterEvents.playerSpawn.subscribe((eventData) => {
             eventHandlers.handlePlayerSpawn(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerSpawn: mc.world.afterEvents.playerSpawn is undefined.`);
     }
 
@@ -212,8 +203,7 @@ function performInitializations() {
         mc.world.beforeEvents.playerLeave.subscribe((eventData) => {
             eventHandlers.handlePlayerLeave(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerLeave: mc.world.beforeEvents.playerLeave is undefined.`);
     }
 
@@ -221,8 +211,7 @@ function performInitializations() {
         mc.world.afterEvents.entityHurt.subscribe((eventData) => {
             eventHandlers.handleEntityHurt(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for afterEvents.entityHurt: object undefined.`);
     }
 
@@ -230,8 +219,7 @@ function performInitializations() {
         mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerBreakBlock (before): object undefined.`);
     }
 
@@ -239,8 +227,7 @@ function performInitializations() {
         mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerBreakBlock (after): object undefined.`);
     }
 
@@ -248,8 +235,7 @@ function performInitializations() {
         mc.world.beforeEvents.itemUse.subscribe(async (eventData) => {
             await eventHandlers.handleItemUse(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for itemUse (before): object undefined.`);
     }
 
@@ -257,8 +243,7 @@ function performInitializations() {
         mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerPlaceBlockBefore(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerPlaceBlock (before): object undefined.`);
     }
 
@@ -266,8 +251,7 @@ function performInitializations() {
         mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => {
             await eventHandlers.handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerPlaceBlock (after): object undefined.`);
     }
 
@@ -281,8 +265,7 @@ function performInitializations() {
                 getStandardDependencies(),
             );
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerInventoryItemChange (after): object undefined.`);
     }
 
@@ -290,8 +273,7 @@ function performInitializations() {
         mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => {
             eventHandlers.handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for playerDimensionChange (after): object undefined.`);
     }
 
@@ -305,8 +287,7 @@ function performInitializations() {
                 eventHandlers.handleEntityDieForDeathEffects(eventData, dependencies);
             }
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for entityDie (after): object undefined.`);
     }
 
@@ -314,8 +295,7 @@ function performInitializations() {
         mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
             await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for entitySpawn (after): object undefined.`);
     }
 
@@ -323,8 +303,7 @@ function performInitializations() {
         mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
             await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
         });
-    }
-    else {
+    } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for pistonActivate (after): object undefined.`);
     }
 
@@ -421,8 +400,7 @@ function performInitializations() {
         // Depending on severity, could throw an error here to halt initialization,
         // or allow it to continue in a potentially degraded state.
         // For now, logging and notifying admins.
-    }
-    else {
+    } else {
         startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] All configurations validated successfully.`, 'System', startupDependencies);
     }
     // --- End Configuration Validation ---
@@ -436,8 +414,7 @@ function performInitializations() {
         if (tickDependencies.config.enableWorldBorderSystem) {
             try {
                 worldBorderManager.processWorldBorderResizing(tickDependencies);
-            }
-            catch (e) {
+            } catch (e) {
                 console.error(`[${mainModuleName}.TickLoop] Error processing world border resizing: ${e.stack || e.message}`);
                 tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
                 logManager.addLog({
@@ -452,14 +429,12 @@ function performInitializations() {
         try {
             if (mc.world && typeof mc.world.getAllPlayers === 'function') {
                 allPlayers = mc.world.getAllPlayers();
-            }
-            else {
+            } else {
                 if (currentTick === 1 || currentTick % 600 === 0) {
                     console.error(`[${mainModuleName}.TickLoop CRITICAL] mc.world or mc.world.getAllPlayers is not available! Cannot process player checks.`);
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             console.error(`[${mainModuleName}.TickLoop] Error calling mc.world.getAllPlayers(): ${e.stack || e}`);
         }
 
@@ -471,8 +446,7 @@ function performInitializations() {
                     let playerIdInfo = 'unknown or invalid player object';
                     try {
                         playerIdInfo = player?.id || player?.nameTag || JSON.stringify(player);
-                    }
-                    catch (_stringifyError) { }
+                    } catch (_stringifyError) { /* Error suppressed for debug message, default info will be used */ }
                     console.warn(`[${mainModuleName}.TickLoop] Skipping invalid player object in loop: ${playerIdInfo}`);
                 }
                 continue;
@@ -481,8 +455,7 @@ function performInitializations() {
             let pData;
             try {
                 pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
-            }
-            catch (e) {
+            } catch (e) {
                 console.error(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.stack || e}`);
                 tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, tickDependencies);
                 continue;
@@ -538,8 +511,7 @@ function performInitializations() {
                     await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
                     pData.lastRenderDistanceCheckTick = currentTick;
                 }
-            }
-            catch (checkError) {
+            } catch (checkError) {
                 console.error(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.stack || checkError}`);
                 tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
                 logManager.addLog({
@@ -558,8 +530,7 @@ function performInitializations() {
                     }
                 }
                 pData.consecutiveOffGroundTicks = (pData.consecutiveOffGroundTicks || 0) + 1;
-            }
-            else {
+            } else {
                 if (!pData.isTakingFallDamage) {
                     pData.fallDistance = 0;
                 }
@@ -570,8 +541,7 @@ function performInitializations() {
             if (tickDependencies.config.enableWorldBorderSystem) {
                 try {
                     worldBorderManager.enforceWorldBorderForPlayer(player, pData, tickDependencies);
-                }
-                catch (e) {
+                } catch (e) {
                     console.error(`[${mainModuleName}.TickLoop] Error enforcing world border for player ${player.nameTag}: ${e.stack || e.message}`);
                     tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
                     logManager.addLog({
@@ -597,8 +567,7 @@ function performInitializations() {
                         if (pData.isWatched) {
                             tickDependencies.playerUtils.debugLog(`Periodic save executed for watched player ${player.nameTag}.`, player.nameTag, tickDependencies);
                         }
-                    }
-                    catch (error) {
+                    } catch (error) {
                         console.error(`Error during periodic save for ${player.nameTag}: ${error.stack || error.message}`);
                         logManager.addLog({
                             actionType: 'errorMainPeriodicSave',
@@ -641,20 +610,17 @@ function attemptInitializeSystem(retryCount = 0) {
 
     if (checkEventAPIsReady(tempStartupDepsForLog)) {
         performInitializations();
-    }
-    else {
+    } else {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
         console.warn(`[${mainModuleName}.attemptInitializeSystem] API not fully ready. Retrying initialization in ${delay / 20} seconds (${delay} ticks). Attempt ${retryCount + 1}/${maxInitRetries}`);
 
         if (retryCount < maxInitRetries) {
             mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
-        }
-        else {
+        } else {
             if (checkEventAPIsReady(tempStartupDepsForLog)) {
                 console.warn(`[${mainModuleName}.attemptInitializeSystem] MAX RETRIES REACHED, but APIs appear to be ready now. Proceeding with initialization.`);
                 performInitializations();
-            }
-            else {
+            } else {
                 console.error(`[${mainModuleName}.attemptInitializeSystem CRITICAL] MAX RETRIES REACHED and critical APIs are STILL MISSING. AntiCheat system will NOT initialize.`);
                 console.error(`[${mainModuleName}.attemptInitializeSystem CRITICAL] Please check Minecraft version, experimental toggles ('Beta APIs' MUST be enabled), and for conflicting addons or script engine errors in the Content Log.`);
             }
