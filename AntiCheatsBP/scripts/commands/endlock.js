@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !endlock command for administrators to manage End dimension access.
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';

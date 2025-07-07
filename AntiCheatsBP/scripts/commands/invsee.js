@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !invsee command for administrators to view a player's inventory.
  */
 import { MessageFormData } from '@minecraft/server-ui';

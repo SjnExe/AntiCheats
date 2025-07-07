@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !netherlock command for administrators to manage Nether dimension access.
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';

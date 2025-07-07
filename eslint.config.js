@@ -123,86 +123,103 @@ export default [
         // and these settings will merge with/override them.
 
         'jsdoc/require-jsdoc': [
-            'warn', // Warn for now, can be 'error' later. Set to warn to avoid too many initial errors.
+            'error', // Enforce JSDoc for exports as per guidelines
             {
                 require: {
                     FunctionDeclaration: true,
                     MethodDefinition: true,
                     ClassDeclaration: true,
-                    ArrowFunctionExpression: true, // Enforce for exported arrow functions if they act as module functions
+                    ArrowFunctionExpression: true,
                     FunctionExpression: true,
                 },
                 contexts: [
-                    // Require JSDoc for all exports
                     'ExportDefaultDeclaration',
                     'ExportNamedDeclaration',
-                    // Add other specific contexts if necessary
+                    // Consider adding 'VariableDeclaration' if exported consts with types need full JSDoc blocks
+                    // For now, @type inline or above is often used for consts.
+                    // Guidelines: "Mandatory for all exported functions, classes, and significant constants."
+                    // For exported constants, a separate rule or manual check might be better if they only need @type.
+                    // This rule will enforce a full JSDoc block for them if they are ArrowFunctionExpression etc.
                 ],
-                publicOnly: false, // Check all, not just exported with @public
+                publicOnly: false,
                 checkConstructors: true,
-                checkGetters: true,
+                checkGetters: true, // Guidelines don't specify JSDoc for getters/setters, but it's good practice.
                 checkSetters: true,
             },
         ],
-        'jsdoc/require-param': ['error', { checkDestructuredRoots: false }], // checkDestructuredRoots: false to avoid issues with complex destructuring
+        'jsdoc/require-param': ['error', { checkDestructuredRoots: false }],
         'jsdoc/require-param-type': 'error',
         'jsdoc/require-param-name': 'error',
-        'jsdoc/require-param-description': 'warn', // Warn for now, good to have but can be verbose
+        'jsdoc/require-param-description': 'error', // Enforce param descriptions
 
-        'jsdoc/require-returns': ['error', { checkGetters: false }], // Getters implicitly return
+        'jsdoc/require-returns': ['error', { checkGetters: false }],
         'jsdoc/require-returns-type': 'error',
-        'jsdoc/require-returns-description': 'warn', // Warn for now
+        'jsdoc/require-returns-description': 'error', // Enforce return descriptions
 
-        'jsdoc/no-undefined-types': ['error', { disableReporting: false }], // Crucial for type correctness
-        'jsdoc/check-types': ['error', { unifyParentAndChildTypeChecks: true, exemptTagContexts: [{tag: 'typedef', types: true}] }], // check types in @param, @returns etc.
-        'jsdoc/valid-types': 'error', // Validates type names
+        'jsdoc/no-undefined-types': ['error', { disableReporting: false }],
+        'jsdoc/check-types': ['error', { unifyParentAndChildTypeChecks: true, exemptTagContexts: [{tag: 'typedef', types: true}] }],
+        'jsdoc/valid-types': 'error',
 
-        'jsdoc/tag-lines': ['warn', 'never', { startLines: 1 }], // Adds a blank line after the description and before tags. 'never' means no blank line. Let's try 'always' for readability.
-                                                              // Update: 'always' adds blank line between block and first tag, 'never' for between tags.
-                                                              // The provided config in print-config was 'tag-lines': [1], which is 'warn'.
-                                                              // Let's set to warn, with one line before tags.
-        // 'jsdoc/tag-lines': ['warn', 'any', { startLines: 1, endLines: 0, tags: {} }], // More flexible, allows single line for simple cases.
-
-        'jsdoc/check-alignment': 'warn', // Default is warn
-        'jsdoc/check-indentation': 'warn',
-        'jsdoc/check-tag-names': [ // Ensure this is set correctly based on StandardizationGuidelines
+        // 'jsdoc/tag-lines': ['warn', 'always', { startLines: 1, applyToEndTag: false, tags: { 'fileoverview': { lines: 'never' }} }], // Ensure a line after description, no line between tags. fileoverview is special. Temporarily disabled due to affecting too many files for auto-fix.
+        'jsdoc/check-alignment': 'warn',
+        'jsdoc/check-indentation': ['warn', { "excludeTags": ["example"] } ], // Exclude example tags from indentation checks
+        'jsdoc/check-tag-names': [
             'error',
             {
-                definedTags: ['async', 'throws', 'deprecated', 'see', 'example', 'typedef', 'callback', 'property', 'template', 'borrows', 'memberof', 'ignore', 'fileoverview', 'license', 'author'],
-                jsxTags: false, // No JSX in this project
+                definedTags: ['async', 'throws', 'deprecated', 'see', 'example', 'typedef', 'callback', 'property', 'template', 'borrows', 'memberof', 'ignore', 'fileoverview', 'license', 'author', 'type', 'module', 'param', 'returns'], // Added 'type', 'module', 'param', 'returns' to be safe
+                jsxTags: false,
             }
         ],
-        'jsdoc/multiline-blocks': ['warn', { // Default is warn
+        'jsdoc/multiline-blocks': ['warn', {
             noZeroLineText: true,
             noFinalLineText: true,
-            noSingleLineBlocks: false, // Allow single line for brief docs e.g. /** @type {string} */
+            noSingleLineBlocks: false, // Allow /** @type {string} */
         }],
-        'jsdoc/no-multi-asterisks': ['warn', { preventAtEnd: true, preventAtMiddleLines: true }], // Default is warn
-        // 'jsdoc/empty-tags': ['warn', { tags: ['typedef', 'param', 'returns'] }], // Temporarily disabled to reduce noise
-        // Default is warn, but error for some makes sense. Let's keep warn.
+        'jsdoc/no-multi-asterisks': ['warn', { preventAtEnd: true, preventAtMiddleLines: true }],
+        'jsdoc/require-asterisk-prefix': ['warn', 'always'],
+        'jsdoc/no-bad-blocks': ['warn'],
 
-        // Rules to consider making errors if they are warnings by default:
+
         'jsdoc/check-param-names': ['error', { checkDestructured: false, enableFixer: true }],
         'jsdoc/check-property-names': ['error', { enableFixer: true }],
 
+        // Rule for file overview
+        'jsdoc/require-file-overview': ['warn', {
+            tags: {
+                fileoverview: {
+                    mustExist: true,
+                    preventDuplicates: true,
+                },
+                author: { // Optional, but good to have
+                    mustExist: false,
+                    preventDuplicates: true,
+                },
+                license: { // Optional
+                    mustExist: false,
+                    preventDuplicates: true,
+                }
+            },
+        }],
+
+        // Discourage @type in JSDoc comments where @param or @returns is more appropriate.
+        // This does NOT forbid /** @type {SomeType} */ for variable type annotations.
+        // It targets JSDoc blocks for functions primarily.
+        // 'jsdoc/no-types': 'warn', // Can be noisy if @type is used for complex param/return structures before full typedefs
 
         // Rules from StandardizationGuidelines.md
         // - JSDoc mandatory for exported functions, classes, significant constants. (covered by require-jsdoc contexts)
-        // - Concise summary (enforced by require-description, though that can be broad)
-        // - @param {type} name - description (require-param, require-param-type, require-param-name, require-param-description)
-        // - @returns {type} description (require-returns, require-returns-type, require-returns-description)
+        // - Concise summary (partially covered by rules requiring descriptions)
+        // - @param {type} name - description (covered)
+        // - @returns {type} description (covered)
         // - Specific types (no-undefined-types, check-types, valid-types)
-        // - Optional tags: @async, @throws, @deprecated, @see, @example (check-tag-names covers these as known)
-        // - @typedef in types.js (This is more of a structural convention, but no-undefined-types helps ensure they are defined)
 
-        // Turn off some verbose or overly strict rules from recommended if needed, or keep them as warnings.
-        'jsdoc/require-description-complete-sentence': 'off', // Can be too pedantic
-        'jsdoc/match-description': 'off', // Regex matching for description can be too complex to maintain
-        'jsdoc/no-defaults': 'warn', // Default is warn, it's okay for params to have defaults documented.
-        'jsdoc/require-example': 'off', // Examples are good but not always necessary for every function.
-
-        // Customization for 'max-len' for JSDoc comments if needed, though ESLint's global max-len ignores comments by default.
-        // 'jsdoc/text-escaping': 'warn', // For escaping characters in descriptions
+        // Turned off or kept as warn based on previous config and common sense
+        'jsdoc/require-description': 'off', // require-jsdoc implies a description is needed. This one is more specific about the description *content*.
+        'jsdoc/require-description-complete-sentence': 'off',
+        'jsdoc/match-description': 'off',
+        'jsdoc/no-defaults': 'warn',
+        'jsdoc/require-example': 'off',
+        'jsdoc/empty-tags': 'warn', // Default is warn, keep it
     }
   }
 ];

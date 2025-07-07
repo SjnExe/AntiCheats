@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !version command, which displays the current version of the AntiCheat addon.
  */
 import { acVersion } from '../config.js';

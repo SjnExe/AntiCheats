@@ -1094,7 +1094,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
         eventData.cancel = true;
         return;
     }
-    const playerName = player.nameTag; // Safe to use after isValid check
+    // const playerName = player.nameTag; // playerName was unused
 
     const pData = playerDataManager?.getPlayerData(player.id);
     if (!pData) {
@@ -1116,8 +1116,8 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 /**
  * Handles player dimension change after events (e.g., dimension lock enforcement).
  *
- * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The player dimension change event data.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The data associated with the player dimension change event.
+ * @param {import('../types.js').Dependencies} dependencies - The standard dependencies object.
  */
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;

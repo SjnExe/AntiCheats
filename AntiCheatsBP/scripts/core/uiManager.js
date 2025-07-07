@@ -1,7 +1,8 @@
 /**
- * Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
+ * @fileoverview Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
  * actions and player information within the AntiCheat system.
  * All actionType strings used for logging should be camelCase.
+ * @module core/uiManager
  */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui'; // Direct imports, Removed MessageFormData

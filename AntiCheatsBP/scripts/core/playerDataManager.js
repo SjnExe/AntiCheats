@@ -558,7 +558,9 @@ export function updateTransientPlayerData(player, pData, dependencies) {
             jumpBoost: pData.jumpBoostAmplifier, slowFall: pData.hasSlowFalling, lev: pData.hasLevitation, speedAmp: pData.speedAmplifier,
         };
         const logMsg = `${playerName} (Tick: ${currentTick}) Snapshot: `; // Shortened prefix
-        playerUtils?.debugLog(logMsg + JSON.stringify(transientSnapshot), playerName, dependencies);
+        const snapshotString = JSON.stringify(transientSnapshot);
+        const fullDebugMessage = logMsg + snapshotString;
+        playerUtils?.debugLog(fullDebugMessage, playerName, dependencies);
     }
 }
 

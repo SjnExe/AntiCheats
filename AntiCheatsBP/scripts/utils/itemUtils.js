@@ -1,7 +1,8 @@
 /**
- * Provides utility functions related to items, blocks, and their interactions,
+ * @fileoverview Provides utility functions related to items, blocks, and their interactions,
  * primarily for calculating block breaking speeds and determining optimal tools.
  * Includes simplified models for game mechanics like block hardness and tool effectiveness.
+ * @module utils/itemUtils
  */
 import * as mc from '@minecraft/server';
 

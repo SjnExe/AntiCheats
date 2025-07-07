@@ -99,9 +99,11 @@ export function execute(player, args, dependencies) {
 
         const categories = [
             { nameStringKey: 'command.help.category.general', minPerm: depPermLevels.member },
-            { nameStringKey: 'command.help.category.teleport', minPerm: depPermLevels.member, /**
-                                                                                               *
-                                                                                               */
+            { nameStringKey: 'command.help.category.teleport', minPerm: depPermLevels.member,
+                /**
+                 * Condition to check if TPA system is enabled.
+                 * @returns {boolean} True if TPA is enabled, otherwise false.
+                 */
                 condition: () => config?.enableTpaSystem === true },
             { nameStringKey: 'command.help.category.moderation', minPerm: depPermLevels.moderator },
             { nameStringKey: 'command.help.category.admin', minPerm: depPermLevels.admin },
@@ -155,5 +157,5 @@ export function execute(player, args, dependencies) {
         }
         player.sendMessage(helpMessage);
     }
-    return;
+
 }

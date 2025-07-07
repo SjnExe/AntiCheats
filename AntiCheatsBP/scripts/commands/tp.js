@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !tp command for administrators to teleport players or themselves.
  */
 import * as mc from '@minecraft/server';
