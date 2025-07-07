@@ -17,6 +17,7 @@ const PLAYER_HEIGHT_BLOCKS = 2;
 
 /**
  * Calculates the current effective size (halfSize or radius) of the border, accounting for resizing.
+ *
  * @param {object} borderSettings - The border settings for the dimension.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {{currentSize: number | null, shape: string | null}} Object with currentSize and shape, or nulls if invalid.
@@ -70,6 +71,7 @@ function getCurrentEffectiveBorderSize(borderSettings, dependencies) {
 /**
  * Checks if a player is currently outside the configured world border for their dimension.
  * Takes into account active resizing operations for accurate border size.
+ *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the player is outside the border, false otherwise or if no border is active/valid.
@@ -105,6 +107,7 @@ export function isPlayerOutsideBorder(player, dependencies) {
 
 /**
  * Retrieves the world border settings for a specific dimension.
+ *
  * @param {string} dimensionId - The ID of the dimension (e.g., 'minecraft:overworld').
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {object | null} The border settings object or null if not found or invalid.
@@ -156,6 +159,7 @@ export function getBorderSettings(dimensionId, dependencies) {
 
 /**
  * Saves the world border settings for a specific dimension.
+ *
  * @param {string} dimensionId - The ID of the dimension.
  * @param {object} settingsToSave - The border settings object to save.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -239,6 +243,7 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
 
 /**
  * Quadratic easing out function. Provides a smooth deceleration.
+ *
  * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
  * @returns {number} Eased value.
  */
@@ -248,6 +253,7 @@ function easeOutQuad(t) {
 
 /**
  * Quadratic easing in and out function. Provides acceleration until halfway, then deceleration.
+ *
  * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
  * @returns {number} Eased value.
  */
@@ -258,6 +264,7 @@ function easeInOutQuad(t) {
 /**
  * Finds a safe Y-coordinate for teleportation near a target X, Z.
  * Searches downwards first, then upwards from the initial Y to find a 2-block high air gap with solid ground.
+ *
  * @param {import('@minecraft/server').Dimension} dimension - The dimension object to search within.
  * @param {number} targetX - The target X-coordinate for the safe location.
  * @param {number} initialY - The initial Y-coordinate to begin searching from.
@@ -310,6 +317,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
 
 /**
  * Processes active world border resizing operations. Called periodically (e.g., every tick).
+ *
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function processWorldBorderResizing(dependencies) {
@@ -379,6 +387,7 @@ export function processWorldBorderResizing(dependencies) {
 
 /**
  * Enforces the world border for a given player. Called periodically (e.g., every tick).
+ *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -540,6 +549,14 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 const { centerX, centerZ } = borderSettings;
                 const minX = centerX - currentEffectiveSize, maxX = centerX + currentEffectiveSize;
                 const minZ = centerZ - currentEffectiveSize, maxZ = centerZ + currentEffectiveSize;
+                /**
+                 *
+                 * @param isXAxis
+                 * @param fixedCoord
+                 * @param startDyn
+                 * @param endDyn
+                 * @param playerDynamicCoord
+                 */
                 const spawnLine = (isXAxis, fixedCoord, startDyn, endDyn, playerDynamicCoord) => {
                     const lineLength = Math.min(segmentLength, Math.abs(endDyn - startDyn));
                     let actualStartDyn = playerDynamicCoord - lineLength / 2;
@@ -601,6 +618,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
 
 /**
  * Clears the world border settings for a specific dimension from persistent storage.
+ *
  * @param {string} dimensionId - The ID of the dimension.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if clearing was successful or property didn't exist, false on error.

@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !tpastatus command.
  * Allows players to enable/disable receiving TPA requests, or check their current TPA status.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].

@@ -9,6 +9,7 @@ const endLockedPropertyKey = 'anticheat:endLocked';
 
 /**
  * Checks if the Nether dimension is currently locked.
+ *
  * @returns {boolean} True if the Nether is locked, false otherwise.
  */
 export function isNetherLocked() {
@@ -24,6 +25,7 @@ export function isNetherLocked() {
 
 /**
  * Sets the lock state for the Nether dimension.
+ *
  * @param {boolean} newLockState - True to lock the Nether, false to unlock.
  * @returns {boolean} True if the state was set successfully, false otherwise.
  */
@@ -44,6 +46,7 @@ export function setNetherLocked(newLockState) {
 
 /**
  * Checks if The End dimension is currently locked.
+ *
  * @returns {boolean} True if The End is locked, false otherwise.
  */
 export function isEndLocked() {
@@ -59,6 +62,7 @@ export function isEndLocked() {
 
 /**
  * Sets the lock state for The End dimension.
+ *
  * @param {boolean} newLockState - True to lock The End, false to unlock.
  * @returns {boolean} True if the state was set successfully, false otherwise.
  */

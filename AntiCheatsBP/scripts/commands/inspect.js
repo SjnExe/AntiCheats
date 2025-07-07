@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !inspect command.
  * Displays detailed AntiCheat information about a target player to the command issuer.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.

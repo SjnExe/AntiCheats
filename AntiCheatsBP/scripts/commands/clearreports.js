@@ -17,6 +17,7 @@ export const definition = {
 
 /**
  * Executes the !clearreports command.
+ *
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
  * @param {import('../types.js').Dependencies} dependencies - Command dependencies.

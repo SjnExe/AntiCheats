@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !gms command for administrators to set a player's gamemode to Survival.
  */
 import * as mc from '@minecraft/server';
@@ -17,6 +18,7 @@ export const definition = {
 
 /**
  * Executes the !gms (gamemode survival) command.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].

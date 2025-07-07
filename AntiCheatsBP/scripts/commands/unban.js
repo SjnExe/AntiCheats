@@ -17,6 +17,7 @@ export const definition = {
  * Executes the !unban command.
  * Removes a ban from the specified player. If the ban was due to an AutoMod action
  * that also reset flags, this command might not automatically restore those flags.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].

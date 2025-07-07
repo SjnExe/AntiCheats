@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !tpaccept command.
  * Allows a player to accept a pending TPA request made to them.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command (the one accepting).
  * @param {string[]} args - Command arguments: [playerName] (optional, name of player whose request to accept).

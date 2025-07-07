@@ -19,6 +19,7 @@ export const definition = {
 
 /**
  * Executes the !purgeflags command.
+ *
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName].
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.

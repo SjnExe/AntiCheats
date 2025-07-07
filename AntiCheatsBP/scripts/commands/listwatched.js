@@ -19,6 +19,7 @@ export const definition = {
  * Executes the !listwatched command.
  * Iterates through all online players, checks their 'isWatched' status via playerDataManager,
  * and reports the list of watched players to the command issuer.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).

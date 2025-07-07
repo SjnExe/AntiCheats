@@ -21,6 +21,7 @@ export const definition = {
 /**
  * Executes the !clearchat command.
  * Sends a large number of empty messages to effectively clear the chat screen for all players.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).

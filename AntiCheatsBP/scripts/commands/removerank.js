@@ -15,6 +15,7 @@ export const definition = {
 
 /**
  * Executes the removerank command.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName, rankId].

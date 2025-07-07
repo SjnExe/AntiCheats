@@ -17,6 +17,7 @@ export const definition = {
  * Executes the !xraynotify command.
  * Allows administrators to toggle their personal X-Ray ore mining notifications.
  * Preferences are stored using a player tag.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].

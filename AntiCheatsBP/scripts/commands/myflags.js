@@ -17,6 +17,7 @@ export const definition = {
  * Executes the !myflags command.
  * Displays the command issuer's current AntiCheat flags, including total count, last flag type,
  * and a breakdown of specific flag counts with their last detection times.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).

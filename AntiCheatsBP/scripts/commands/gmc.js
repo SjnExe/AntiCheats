@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !gmc command for administrators to set a player's gamemode to Creative.
  */
 import * as mc from '@minecraft/server';
@@ -17,6 +18,7 @@ export const definition = {
 
 /**
  * Executes the !gmc (gamemode creative) command.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].

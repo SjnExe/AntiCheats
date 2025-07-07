@@ -16,6 +16,7 @@ const DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT = 3;
 
 /**
  * In-memory cache for player data.
+ *
  * @type {Map<string, import('../types.js').PlayerAntiCheatData>}
  */
 const playerData = new Map();
@@ -47,6 +48,7 @@ const persistedPlayerDataKeys = [
 
 /**
  * Retrieves the runtime AntiCheat data for a given player ID.
+ *
  * @param {string} playerId The ID of the player.
  * @returns {import('../types.js').PlayerAntiCheatData | undefined} The player's data, or undefined if not found.
  */
@@ -56,12 +58,13 @@ export function getPlayerData(playerId) {
 
 /**
  * Centralized error handler for dynamic property operations.
+ *
  * @param {string} callingFunction - The name of the function where the error occurred.
  * @param {string} operation - The specific operation that failed (e.g., 'JSON.stringify', 'player.setDynamicProperty').
  * @param {string} playerName - The name of the player involved.
  * @param {Error} error - The error object.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @param {object} [additionalDetails={}] - Any additional details to include in the log.
+ * @param {object} [additionalDetails] - Any additional details to include in the log.
  */
 function _handleDynamicPropertyError(callingFunction, operation, playerName, error, dependencies, additionalDetails = {}) {
     const { playerUtils, logManager } = dependencies;
@@ -88,6 +91,7 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
 
 /**
  * Saves a subset of player data (persisted keys) to the player's dynamic properties.
+ *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {object} pDataToSave - Data containing only keys to be persisted.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -143,6 +147,7 @@ export function savePlayerDataToDynamicProperties(player, pDataToSave, dependenc
 
 /**
  * Loads player data from dynamic properties.
+ *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {object | null} The loaded player data object, or null if not found or error.
@@ -202,6 +207,7 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
 
 /**
  * Prepares and saves the persistable parts of a player's AntiCheat data.
+ *
  * @param {import('@minecraft/server').Player} player - The player whose data to save.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {Promise<void>}
@@ -256,6 +262,7 @@ if (allKnownFlagTypes.length === 0) {
 
 /**
  * Initializes a new default PlayerAntiCheatData object for a player.
+ *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {number} currentTick - The current game tick.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -366,6 +373,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
 /**
  * Ensures that a player's data is initialized, loading from persistence if available,
  * or creating default data otherwise. Merges loaded data with defaults for transient fields.
+ *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {number} currentTick - Current game tick, used if initializing default data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -434,6 +442,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
 
 /**
  * Removes runtime data for players who are no longer online.
+ *
  * @param {Array<import('@minecraft/server').Player>} activePlayers - An array of currently online players.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
@@ -458,6 +467,7 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
 
 /**
  * Updates transient (per-tick) player data fields.
+ *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data object.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -554,11 +564,12 @@ export function updateTransientPlayerData(player, pData, dependencies) {
 
 /**
  * Adds a flag to a player's data and triggers AutoMod processing.
+ *
  * @param {import('@minecraft/server').Player} player - The player to flag.
  * @param {string} flagType - Standardized camelCase flag type (e.g., 'movementFlyHover').
  * @param {string} reasonMessage - Base reason message for the flag.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @param {string | object} [detailsForNotify=''] - Additional details for notification or structured data.
+ * @param {string | object} [detailsForNotify] - Additional details for notification or structured data.
  */
 export async function addFlag(player, flagType, reasonMessage, dependencies, detailsForNotify = '') {
     const { playerUtils, config, logManager, getString } = dependencies;
@@ -646,6 +657,7 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
 
 /**
  * Adds a mute record to a player's data.
+ *
  * @param {import('@minecraft/server').Player} player - The player to mute.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the mute.
@@ -661,6 +673,7 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
 
 /**
  * Internal helper to add a state restriction (mute or ban) to a player's data.
+ *
  * @param {import('@minecraft/server').Player} player - The player to restrict.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
@@ -709,6 +722,7 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
 
 /**
  * Internal helper to remove a state restriction (mute or ban) from a player's data.
+ *
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -733,6 +747,7 @@ function _removePlayerStateRestriction(pData, stateType, dependencies) {
 
 /**
  * Internal helper to retrieve a player's current state restriction information, clearing it if expired.
+ *
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -761,13 +776,14 @@ function _getPlayerStateRestriction(pData, stateType, dependencies) {
 
 /**
  * Adds a mute record to a player's data.
+ *
  * @param {import('@minecraft/server').Player} player - The player to mute.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the mute.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @param {string} [mutedBy='Unknown'] - Name of the admin or system component that issued the mute.
- * @param {boolean} [isAutoMod=false] - Whether this mute was applied by AutoMod.
- * @param {string|null} [triggeringCheckType=null] - If by AutoMod, the check type (camelCase) that triggered it.
+ * @param {string} [mutedBy] - Name of the admin or system component that issued the mute.
+ * @param {boolean} [isAutoMod] - Whether this mute was applied by AutoMod.
+ * @param {string|null} [triggeringCheckType] - If by AutoMod, the check type (camelCase) that triggered it.
  * @returns {boolean} True if mute was successfully added, false otherwise.
  */
 export function addMute(player, durationMs, reason, dependencies, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) {
@@ -788,6 +804,7 @@ export function addMute(player, durationMs, reason, dependencies, mutedBy = 'Unk
 
 /**
  * Removes a mute record from a player's data.
+ *
  * @param {import('@minecraft/server').Player} player - The player to unmute.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if player was unmuted, false otherwise.
@@ -810,6 +827,7 @@ export function removeMute(player, dependencies) {
 
 /**
  * Retrieves a player's current mute information, clearing it if expired.
+ *
  * @param {import('@minecraft/server').Player} player - The player whose mute info to get.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {import('../types.js').PlayerMuteInfo | null} The mute info, or null if not muted or expired.
@@ -827,6 +845,7 @@ export function getMuteInfo(player, dependencies) {
 
 /**
  * Checks if a player is currently muted.
+ *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the player is muted, false otherwise.
@@ -837,13 +856,14 @@ export function isMuted(player, dependencies) {
 
 /**
  * Adds a ban record to a player's data.
+ *
  * @param {import('@minecraft/server').Player} player - The player to ban.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the ban.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @param {string} [bannedBy='Unknown'] - Name of the admin or system component that issued the ban.
- * @param {boolean} [isAutoMod=false] - Whether this ban was applied by AutoMod.
- * @param {string|null} [triggeringCheckType=null] - If by AutoMod, the check type (camelCase) that triggered it.
+ * @param {string} [bannedBy] - Name of the admin or system component that issued the ban.
+ * @param {boolean} [isAutoMod] - Whether this ban was applied by AutoMod.
+ * @param {string|null} [triggeringCheckType] - If by AutoMod, the check type (camelCase) that triggered it.
  * @returns {boolean} True if ban was successfully added, false otherwise.
  */
 export function addBan(player, durationMs, reason, dependencies, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) {
@@ -864,6 +884,7 @@ export function addBan(player, durationMs, reason, dependencies, bannedBy = 'Unk
 
 /**
  * Removes a ban record from a player's data.
+ *
  * @param {import('@minecraft/server').Player} player - The player to unban.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if player was unbanned, false otherwise.
@@ -886,6 +907,7 @@ export function removeBan(player, dependencies) {
 
 /**
  * Retrieves a player's current ban information, clearing it if expired.
+ *
  * @param {import('@minecraft/server').Player} player - The player whose ban info to get.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {import('../types.js').PlayerBanInfo | null} The ban info, or null if not banned or expired.
@@ -903,6 +925,7 @@ export function getBanInfo(player, dependencies) {
 
 /**
  * Checks if a player is currently banned.
+ *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the player is banned, false otherwise.
@@ -913,6 +936,7 @@ export function isBanned(player, dependencies) {
 
 /**
  * Saves player data if it has been marked as dirty.
+ *
  * @param {import('@minecraft/server').Player} player - The player whose data to potentially save.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {Promise<boolean>} True if data was saved or not dirty, false on save error.
@@ -939,6 +963,7 @@ export async function saveDirtyPlayerData(player, dependencies) {
 
 /**
  * Clears all flags and resets AutoMod state for a specific check type for a player.
+ *
  * @param {import('@minecraft/server').Player} player - The player whose flags to clear.
  * @param {string} checkType - The check type (camelCase) whose flags to clear.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -978,6 +1003,7 @@ export function clearFlagsForCheckType(player, checkType, dependencies) {
 
 /**
  * Clears transient item use state flags if they persist beyond a configured timeout.
+ *
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */

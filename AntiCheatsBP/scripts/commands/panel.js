@@ -17,6 +17,7 @@ export const definition = {
 
 /**
  * Executes the panel command.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} _args Command arguments (not used in this command).

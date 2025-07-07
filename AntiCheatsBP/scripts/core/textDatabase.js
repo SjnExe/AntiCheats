@@ -5,6 +5,9 @@
  * All keys should be camelCase or dot.case for structure.
  */
 
+/**
+ *
+ */
 export const stringDB = {
     // Common UI elements
     'common.button.back': '§l§cBack§r',

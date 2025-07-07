@@ -18,6 +18,12 @@ export const definition = {
     enabled: true,
 };
 
+/**
+ *
+ * @param player
+ * @param args
+ * @param dependencies
+ */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const reporterPlayer = player;

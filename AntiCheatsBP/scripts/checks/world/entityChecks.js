@@ -8,20 +8,14 @@ const DEFAULT_ENTITY_SPAM_TIME_WINDOW_MS = 2000;
 const DEFAULT_ENTITY_SPAM_MAX_SPAWNS_IN_WINDOW = 5;
 
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- */
-
-/**
  * Checks for entity spamming based on spawn rate of monitored entity types by a player.
  * This is typically called when an entity is spawned, and the potential spawner is identified.
  *
  * @async
  * @param {mc.Player | null} potentialPlayer - The player suspected of spawning the entity, if known.
  * @param {string} entityType - The typeId of the spawned entity (e.g., 'minecraft:boat').
- * @param {PlayerAntiCheatData | null} pData - Player-specific anti-cheat data for the `potentialPlayer`.
- * @param {CommandDependencies} dependencies - The standard dependencies object.
+ * @param {import('../../types.js').PlayerAntiCheatData | null} pData - Player-specific anti-cheat data for the `potentialPlayer`.
+ * @param {import('../../types.js').Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<boolean>} True if spam was detected and an action (like entity removal) might be needed, false otherwise.
  */
 export async function checkEntitySpam(potentialPlayer, entityType, pData, dependencies) {

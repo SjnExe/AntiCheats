@@ -6,24 +6,28 @@
 
 /**
  * The dynamic property key used for storing action logs.
+ *
  * @type {string}
  */
 const logPropertyKeyName = 'anticheat:action_logs_v1'; // Using _v1 suffix for potential future format changes.
 
 /**
  * Maximum number of log entries to keep in memory and persisted storage.
+ *
  * @type {number}
  */
 const maxLogEntriesCount = 200; // Guideline: Keep this reasonable to avoid large dynamic property sizes.
 
 /**
  * In-memory cache for log entries. Initialized on script load.
+ *
  * @type {Array<import('../types.js').LogEntry>}
  */
 let logsInMemory = [];
 
 /**
  * Flag indicating if the in-memory logs have changed and need to be persisted.
+ *
  * @type {boolean}
  */
 let logsAreDirty = false;
@@ -31,6 +35,7 @@ let logsAreDirty = false;
 /**
  * Loads logs from the dynamic property into the in-memory cache.
  * Must be called once during script initialization.
+ *
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function initializeLogCache(dependencies) {
@@ -57,6 +62,7 @@ export function initializeLogCache(dependencies) {
 /**
  * Persists the current in-memory log cache to dynamic properties if `logsAreDirty` is true,
  * or if the dynamic property doesn't exist yet (first save).
+ *
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if successful or not needed, false on error.
  */
@@ -83,6 +89,7 @@ export function persistLogCacheToDisk(dependencies) {
  * Adds a new log entry to the in-memory cache and marks logs as dirty.
  * Manages log rotation to stay within `maxLogEntriesCount`.
  * Ensures `actionType` uses `camelCase`.
+ *
  * @param {import('../types.js').LogEntry} logEntry - The log entry object. Must contain `actionType`. `timestamp` and `adminName` default if not provided.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
@@ -126,6 +133,7 @@ export function addLog(logEntry, dependencies) {
 
 /**
  * Retrieves logs from the in-memory cache.
+ *
  * @param {number} [count] - Optional. The number of most recent logs to retrieve. If not provided or invalid, all logs are returned.
  * @returns {Array<import('../types.js').LogEntry>} An array of log objects (a copy of the cache or a slice of it).
  */

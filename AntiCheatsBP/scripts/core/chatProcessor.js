@@ -12,6 +12,7 @@ const DEFAULT_MAX_MESSAGE_LENGTH = 256;
 /**
  * Processes an incoming chat message, performing various checks and formatting.
  * This function is typically called from a `beforeChatSend` event handler.
+ *
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The AntiCheat data for the player.
  * @param {string} originalMessage - The original raw message content.

@@ -19,6 +19,7 @@ export const definition = {
 /**
  * Executes the !tpahere command.
  * Initiates a teleport request from the command issuer, asking a target player to teleport to the issuer's location.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command (requester).
  * @param {string[]} args - Command arguments: [playerName].

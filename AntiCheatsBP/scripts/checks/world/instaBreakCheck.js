@@ -5,21 +5,15 @@
 import * as mc from '@minecraft/server';
 
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- */
-
-/**
  * Checks if a player is attempting to break an "unbreakable" block (e.g., bedrock)
  * when not in Creative mode.
  * This function should be called from a `PlayerBreakBlockBeforeEvent` handler.
  *
  * @async
  * @param {mc.Player} player - The player instance.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {mc.PlayerBreakBlockBeforeEvent} eventData - The event data from `PlayerBreakBlockBeforeEvent`.
- * @param {CommandDependencies} dependencies - The standard dependencies object.
+ * @param {import('../../types.js').Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkBreakUnbreakable(player, pData, eventData, dependencies) {
@@ -76,9 +70,9 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
  *
  * @async
  * @param {mc.Player} player - The player instance.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {mc.PlayerBreakBlockAfterEvent} eventData - The event data from `PlayerBreakBlockAfterEvent`.
- * @param {CommandDependencies} dependencies - The standard dependencies object.
+ * @param {import('../../types.js').Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkBreakSpeed(player, pData, eventData, dependencies) {

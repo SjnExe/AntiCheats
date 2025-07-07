@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !watch command.
  * Sets the `isWatched` flag for the target player's AntiCheat data based on the provided action or toggles it.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [on|off|toggle].

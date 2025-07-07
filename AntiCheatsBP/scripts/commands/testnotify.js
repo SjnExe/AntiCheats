@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !testnotify command.
  * Sends a test notification message to all online admins/owners.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments (the message to send).

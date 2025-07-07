@@ -6,7 +6,7 @@
  */
 
 /**
- * @const {string} reportsPropertyKeyName - The dynamic property key for storing player reports.
+ * @constant {string} reportsPropertyKeyName - The dynamic property key for storing player reports.
  */
 const reportsPropertyKeyName = 'anticheat:reports_v1';
 
@@ -33,6 +33,7 @@ let reportsAreDirty = false;
 
 /**
  * Generates a unique ID for a new report.
+ *
  * @returns {string} A unique report ID.
  */
 function generateReportId() {
@@ -43,6 +44,7 @@ function generateReportId() {
 /**
  * Loads reports from dynamic properties into the in-memory cache.
  * Called once during script initialization.
+ *
  * @param {CommandDependencies} dependencies - Standard dependencies object.
  */
 export function initializeReportCache(dependencies) {
@@ -68,6 +70,7 @@ export function initializeReportCache(dependencies) {
 
 /**
  * Persists the in-memory report cache to dynamic properties if changes exist.
+ *
  * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if successful or no changes needed, false on error.
  */
@@ -91,6 +94,7 @@ export function persistReportsToDisk(dependencies) {
 
 /**
  * Retrieves reports from the in-memory cache, sorted newest first.
+ *
  * @returns {ReportEntry[]} A new array of report objects, sorted by timestamp descending.
  */
 export function getReports() {
@@ -99,6 +103,7 @@ export function getReports() {
 
 /**
  * Adds a new report to the system.
+ *
  * @param {import('@minecraft/server').Player} reporterPlayer - The player making the report.
  * @param {string} reportedPlayerName - The name of the player being reported.
  * @param {string} reason - The reason for the report.
@@ -161,6 +166,7 @@ export function addReport(reporterPlayer, reportedPlayerName, reason, dependenci
 
 /**
  * Clears all reports from the system.
+ *
  * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {number} The number of reports cleared.
  */
@@ -182,6 +188,7 @@ export function clearAllReports(dependencies) {
 
 /**
  * Clears a specific report by its ID.
+ *
  * @param {string} reportId - The ID of the report to clear.
  * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the report was found and cleared, false otherwise.
@@ -207,6 +214,7 @@ export function clearReportById(reportId, dependencies) {
 
 /**
  * Clears all reports associated with a specific player (either as reporter or reported).
+ *
  * @param {string} playerNameOrId - The nameTag or ID of the player whose reports to clear.
  * @param {CommandDependencies} dependencies - Standard dependencies object.
  * @returns {number} The number of reports cleared.

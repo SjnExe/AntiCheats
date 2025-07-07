@@ -18,6 +18,7 @@ export const definition = {
  * Executes the !help command.
  * Displays a list of available commands filtered by the user's permission level,
  * or detailed information if a specific command name is provided.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [command_name].
@@ -98,7 +99,10 @@ export function execute(player, args, dependencies) {
 
         const categories = [
             { nameStringKey: 'command.help.category.general', minPerm: depPermLevels.member },
-            { nameStringKey: 'command.help.category.teleport', minPerm: depPermLevels.member, condition: () => config?.enableTpaSystem === true },
+            { nameStringKey: 'command.help.category.teleport', minPerm: depPermLevels.member, /**
+                                                                                               *
+                                                                                               */
+                condition: () => config?.enableTpaSystem === true },
             { nameStringKey: 'command.help.category.moderation', minPerm: depPermLevels.moderator },
             { nameStringKey: 'command.help.category.admin', minPerm: depPermLevels.admin },
             { nameStringKey: 'command.help.category.owner', minPerm: depPermLevels.owner },

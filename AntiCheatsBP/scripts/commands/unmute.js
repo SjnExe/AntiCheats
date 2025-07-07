@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !unmute command.
  * Removes a mute from the specified player.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
