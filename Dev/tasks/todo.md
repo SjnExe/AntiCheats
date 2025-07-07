@@ -4,6 +4,30 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Documentation Tasks
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
+- **(High) Update Documentation for Compact Comments**: Modify `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md` to reflect new guidelines for compact JSDoc comments, emphasizing conciseness and avoiding overly verbose descriptions where code is self-explanatory. Document when single-line JSDoc comments are preferred.
+
+## Linting & Code Style Tasks
+- **(High) Enhance ESLint JSDoc Rules for Compactness**:
+    - Review and update JSDoc rules in `eslint.config.js` to encourage or enforce more compact comments.
+    - Adjust rules like `jsdoc/require-description-complete-sentence` (potentially disable or make less strict).
+    - Modify `jsdoc/multiline-blocks` to better support compact styles, possibly allowing more single-line JSDoc blocks for simple cases (e.g., `/** @type {string} */` or `/** Short description. */`).
+    - Discourage overly verbose descriptions if the code itself is clear.
+- **(High) Add ESLint Rules for Code Optimization**:
+    - Identify and add ESLint rules to `eslint.config.js` to help detect and reduce redundant code, unused variables/functions, and other "unnecessary stuff."
+    - Consider rules like:
+        - `no-useless-rename`
+        - `no-useless-computed-key`
+        - `no-extra-boolean-cast`
+        - `no-extra-semi`
+        - `no-lone-blocks`
+        - `no-useless-constructor`
+        - `no-unneeded-ternary`
+        - `prefer-arrow-callback` (if applicable to project style)
+        - `dot-notation` (for consistency)
+        - `yoda` (to prevent common condition mistakes)
+- **(Medium) Apply Updated Linting Rules**: After the ESLint configuration is updated, run `npm run lint:fix` (or similar) across the entire codebase to apply the new rules and formatting. Manually address any issues that cannot be auto-fixed. (This is a placeholder for a subsequent task).
+- **(High) Linting: Review and fix `camelCase` violations**: Across the codebase, identify and correct violations flagged by the new ESLint `camelcase` rule. This involves renaming variables, function parameters, and object properties where `snake_case` (upper or lower) was used, ensuring adherence to the project's `camelCase` standard.
+- **(Medium) JSDoc: Review and Compact `@type` Annotations**: Go through the codebase to find verbose `/** @type {...} */` annotations, especially for variables. Simplify them based on the updated guidelines in `Dev/StandardizationGuidelines.md`. Prefer single-line JSDoc blocks (e.g., `/** @type {string} */`) or remove the annotation if the variable's type is unambiguously obvious from its initial assignment.
 
 ## Code Refinement & Feature Enhancements
 - **(Medium) `worldBorderManager.js` Robustness**: Consider if `worldBorderManager.getBorderSettings` should be more robust if a dimension from `config.worldBorderKnownDimensions` is invalid or if the dynamic property for a specific dimension is corrupted.

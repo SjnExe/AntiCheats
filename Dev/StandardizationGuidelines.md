@@ -15,11 +15,12 @@ This document outlines the consolidated standardization guidelines for the AntiC
 ## 2. Coding Style and Conventions
 
 *   **Naming:**
-    *   **Variables, Function Names, Configuration Variables (`config.js`), Constants (General):** Use `camelCase` (e.g., `let myVariable; function processData() {}; export const exampleConfigValue = true; const internalMaxRetries = 3;`). This aligns with `Dev/CodingStyle.md`.
-    *   **Acronyms in JS Identifiers:** Acronyms within `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerTpsData`, not `enableAntiGMCCheck`). This clarifies the previous contradiction with `CodingStyle.md`.
+    *   **Variables, Function Names, Configuration Variables (`config.js`), Constants (General), Object Properties:** Use `camelCase` (e.g., `let myVariable; function processData() {}; export const exampleConfigValue = true; const internalMaxRetries = 3; const obj = { myProperty: 1 };`). This aligns with `Dev/CodingStyle.md` and is now enforced by ESLint's `camelcase` rule.
+    *   **Acronyms in JS Identifiers:** Acronyms within `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerTpsData`, not `enableAntiGMCCheck`).
     *   **Class Names:** `PascalCase` (e.g., `class PlayerManager {}`). (Currently not prevalent).
-    *   **`checkType` String Identifiers:** Must use `camelCase` (e.g., `playerAntiGmc`, `movementFlyHover`). This is critical for linking detections in check scripts to `actionProfiles.js` and `automodConfig.js`. Acronyms are lowercased as part of the camel casing. This aligns with `Dev/CodingStyle.md`.
-    *   **`actionType` String Literals:** Must use `camelCase` (e.g., `warn`, `kick`, `detectedFlyHover`). This applies to `log.actionType` in `actionProfiles.js` and rule `actionType` in `automodConfig.js`. This consistency is crucial for the system to correctly interpret and process these actions.
+    *   **`checkType` String Identifiers:** Must use `camelCase` (e.g., `playerAntiGmc`, `movementFlyHover`). This is critical for linking detections in check scripts to `actionProfiles.js` and `automodConfig.js`. Acronyms are lowercased as part of the camel casing.
+    *   **`actionType` String Literals:** Must use `camelCase` (e.g., `warn`, `kick`, `detectedFlyHover`). This applies to `log.actionType` in `actionProfiles.js` and rule `actionType` in `automodConfig.js`.
+    *   **ESLint Enforcement**: The `camelcase` ESLint rule is active to help maintain these naming conventions. Exceptions for specific patterns (e.g. `error_code` in external data) are configured in `eslint.config.js`.
 *   **Quotes:**
     *   Prefer **single quotes (`'`)** for string literals.
     *   Use **double quotes (`"`)** if the string contains single quotes (e.g., `"Player's data"`) or for JSON objects.
@@ -68,17 +69,31 @@ This document outlines the consolidated standardization guidelines for the AntiC
 *   **JSDoc (`/** ... */`):**
     *   **Target:** Mandatory for all exported functions, classes, and significant constants. Recommended for complex internal functions.
     *   **Content (Functions):**
-        *   Concise summary.
-        *   `@param {type} name - description` for all parameters. Strive to use specific types from `@minecraft/server`, custom typedefs from `types.js` (e.g., `import('../types.js').PlayerAntiCheatData`), or primitive types (e.g., `string`, `number`, `boolean`) rather than generic `object` or `any` where possible.
-        *   `@returns {type} description` if applicable, with specific typing.
+        *   **Concise Summary**: The main description should be brief and to the point. If the function's purpose is clear from its name and parameters, an overly detailed summary is not needed. Focus on *why* it does something or any non-obvious behaviors.
+        *   **Compactness**:
+            *   Single-line JSDoc comments (e.g., `/** @type {string} */` or `/** @returns {boolean} True if action was successful. */`) are encouraged for simple type annotations or very short descriptions.
+            *   Minimize empty lines within JSDoc blocks. Tags should ideally follow the main description or each other without unnecessary blank lines, as configured in ESLint.
+        *   `@param {type} name - description`: Descriptions for parameters should also be concise. If the parameter's role is evident from its name and type, a very brief or even omitted description (if ESLint allows) might be acceptable for internal/simple functions.
+        *   `@returns {type} description`: Similar to params, keep return descriptions brief.
+        *   Strive to use specific types from `@minecraft/server`, custom typedefs from `types.js` (e.g., `import('../types.js').PlayerAntiCheatData`), or primitive types. Avoid generic `object` or `any` where possible.
         *   Optional: `@async` if the function is asynchronous, `@throws {ErrorType} description`, `@deprecated message`, `@see reference`, `@example code`.
-    *   **Content (Constants):** Brief description and `@type {type}`.
-    *   **`@typedef`:** Centralize in `types.js` for widely used types, or file-local if specific. (Current practice is good).
+    *   **Content (Constants):** Brief description and `@type {type}`. Single-line JSDoc is often sufficient: `/** @type {number} Maximum retry attempts. */`.
+    *   **`@typedef`:** Centralize in `types.js` for widely used types, or file-local if specific. Descriptions for properties within `@typedef` should also be concise.
 *   **Inline Comments (`//`):**
-    *   Clarify complex or non-obvious logic. Place on a line before the code or at line-end for short comments.
-    *   Avoid commenting obvious code.
-    *   Use `// TODO:` and `// FIXME:` for tracking. When using these, briefly include context, the issue to be addressed, and optionally a name/date if it's a significant item.
-*   **File Header Comments:** Maintain brief JSDoc-style file purpose descriptions at the top.
+    *   **Purpose**: Clarify complex, non-obvious logic, or the *reason* behind a piece of code if it's not immediately clear. Do not explain *what* the code is doing if it's self-evident.
+        *   Example (Good): `// Offset by 1 to align with the legacy system's 1-based indexing.`
+        *   Example (Bad): `// Increment counter` followed by `counter++;`
+    *   **Conciseness**: Keep inline comments brief and to the point.
+    *   Avoid obvious or redundant comments.
+    *   Use `// TODO:` and `// FIXME:` for tracking. Briefly include context, the issue, and optionally a name/date.
+*   **File Header Comments:**
+    *   Maintain brief JSDoc-style file purpose descriptions at the top (`@file`).
+    *   This can be a single line for simple files: `/** @file Utility functions for array manipulation. */`
+    *   The `@author` and `@license` tags are optional but good practice.
+    *   **Variable Type Annotation with `@type`**:
+        *   For annotating variable types using JSDoc, prefer the most compact form. Single-line `/** @type {TypeName} */ let myVar;` is ideal when no further description is needed.
+        *   If a variable's type is unambiguously clear from its initial assignment (e.g., `const name = "John";`, `const isValid = true;`, `const count = 0;`), consider omitting the `/** @type {...} */` annotation to reduce verbosity, unless it's a complex type or explicitly initialized to `null` or `undefined` where the type context is critical.
+        *   The goal is to maintain clarity while minimizing clutter from overly verbose type comments.
 
 ## 5. API Usage Standards (Minecraft Server API)
 
