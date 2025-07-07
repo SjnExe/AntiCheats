@@ -8,6 +8,12 @@ import * as mc from '@minecraft/server';
 import { processAutoModActions } from './automodManager.js';
 import { checkActionProfiles } from './actionProfiles.js';
 
+// Constants
+const JSON_SAMPLE_LOG_LENGTH = 200;
+const TICKS_PER_SECOND = 20;
+const DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT = 3;
+
+
 /**
  * In-memory cache for player data.
  * @type {Map<string, import('../types.js').PlayerAntiCheatData>}
@@ -179,7 +185,7 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
                 playerName,
                 error,
                 dependencies,
-                { jsonSample: jsonString.substring(0, 200) + (jsonString.length > 200 ? '...' : '') },
+                { jsonSample: jsonString.substring(0, JSON_SAMPLE_LOG_LENGTH) + (jsonString.length > JSON_SAMPLE_LOG_LENGTH ? '...' : '') },
             );
             return null;
         }
@@ -533,15 +539,16 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     pData.speedAmplifier = effects?.find(eff => eff.typeId === mc.MinecraftEffectTypes.speed.id)?.amplifier ?? -1;
     pData.blindnessTicks = effects?.find(eff => eff.typeId === mc.MinecraftEffectTypes.blindness.id)?.duration ?? 0;
 
-    if (pData.isWatched && config?.enableDebugLogging && (currentTick % 20 === 0)) {
+    if (pData.isWatched && config?.enableDebugLogging && (currentTick % TICKS_PER_SECOND === 0)) {
         const transientSnapshot = {
-            vx: pData.velocity.x.toFixed(3), vy: pData.velocity.y.toFixed(3), vz: pData.velocity.z.toFixed(3),
-            pitch: pData.lastPitch.toFixed(3), yaw: pData.lastYaw.toFixed(3),
+            vx: pData.velocity.x.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT), vy: pData.velocity.y.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT), vz: pData.velocity.z.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT),
+            pitch: pData.lastPitch.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT), yaw: pData.lastYaw.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT),
             sprinting: player.isSprinting, sneaking: player.isSneaking, onGround: player.isOnGround,
-            fallDist: player.fallDistance.toFixed(3),
+            fallDist: player.fallDistance.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT),
             jumpBoost: pData.jumpBoostAmplifier, slowFall: pData.hasSlowFalling, lev: pData.hasLevitation, speedAmp: pData.speedAmplifier,
         };
-        playerUtils?.debugLog(`[PlayerDataManager.updateTransientPlayerData] Watched ${playerName} (Tick: ${currentTick}): ${JSON.stringify(transientSnapshot)}`, playerName, dependencies);
+        const logMsg = `${playerName} (Tick: ${currentTick}) Snapshot: `; // Shortened prefix
+        playerUtils?.debugLog(logMsg + JSON.stringify(transientSnapshot), playerName, dependencies);
     }
 }
 
@@ -757,13 +764,13 @@ function _getPlayerStateRestriction(pData, stateType, dependencies) {
  * @param {import('@minecraft/server').Player} player - The player to mute.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the mute.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @param {string} [mutedBy='Unknown'] - Name of the admin or system component that issued the mute.
  * @param {boolean} [isAutoMod=false] - Whether this mute was applied by AutoMod.
  * @param {string|null} [triggeringCheckType=null] - If by AutoMod, the check type (camelCase) that triggered it.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if mute was successfully added, false otherwise.
  */
-export function addMute(player, durationMs, reason, dependencies, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) { // Correct order: dependencies before optionals
+export function addMute(player, durationMs, reason, dependencies, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) {
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
@@ -833,13 +840,13 @@ export function isMuted(player, dependencies) {
  * @param {import('@minecraft/server').Player} player - The player to ban.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the ban.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @param {string} [bannedBy='Unknown'] - Name of the admin or system component that issued the ban.
  * @param {boolean} [isAutoMod=false] - Whether this ban was applied by AutoMod.
  * @param {string|null} [triggeringCheckType=null] - If by AutoMod, the check type (camelCase) that triggered it.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if ban was successfully added, false otherwise.
  */
-export function addBan(player, durationMs, reason, dependencies, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) { // Correct order: dependencies before optionals
+export function addBan(player, durationMs, reason, dependencies, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) {
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 

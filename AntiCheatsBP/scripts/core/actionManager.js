@@ -3,6 +3,9 @@
  * This module is responsible for interpreting check results and applying configured consequences.
  */
 
+// Constants
+const DECIMAL_PLACES_FOR_VIOLATION_DETAILS = 3;
+
 /**
  * Formats violation details into a readable string.
  * @param {import('../types.js').ViolationDetails | undefined} violationDetails - An object containing details of the violation.
@@ -15,7 +18,7 @@ function formatViolationDetails(violationDetails) {
     return Object.entries(violationDetails)
         .map(([key, value]) => {
             if (typeof value === 'number' && !Number.isInteger(value)) {
-                return `${key}: ${value.toFixed(3)}`;
+                return `${key}: ${value.toFixed(DECIMAL_PLACES_FOR_VIOLATION_DETAILS)}`;
             }
             return `${key}: ${String(value)}`;
         })
@@ -46,7 +49,7 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
                 const placeholderRegex = new RegExp(`{${escapedKey}}`, 'g');
                 let valueStr = String(violationDetails[key]);
                 if (typeof violationDetails[key] === 'number' && !Number.isInteger(violationDetails[key])) {
-                    valueStr = violationDetails[key].toFixed(3);
+                    valueStr = violationDetails[key].toFixed(DECIMAL_PLACES_FOR_VIOLATION_DETAILS);
                 }
                 message = message.replace(placeholderRegex, valueStr);
             }

@@ -5,6 +5,9 @@
  */
 import * as mc from '@minecraft/server';
 
+// Default configuration values
+const VERY_LONG_EFFECT_DURATION = 2000000; // Effectively infinite duration for effects like invisibility
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -31,7 +34,6 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString, rankManager } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
-    // const prefix = config?.prefix ?? '!'; // Unused variable
     const vanishedPlayerTagName = config?.vanishedPlayerTag ?? 'vanished';
 
     let mode = 'notify';
@@ -81,7 +83,7 @@ export async function execute(player, args, dependencies) {
         pData.vanishTagApplied = true;
         pData.isDirtyForSave = true;
 
-        player.addEffect(mc.MinecraftEffectTypes.invisibility, 2000000, { amplifier: 1, showParticles: false });
+        player.addEffect(mc.MinecraftEffectTypes.invisibility, VERY_LONG_EFFECT_DURATION, { amplifier: 1, showParticles: false });
 
         if (mode === 'notify') {
             mc.world.sendMessage(getString('command.vanish.notify.leftGame', { playerName: adminName }));

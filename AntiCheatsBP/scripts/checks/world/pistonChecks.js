@@ -10,6 +10,11 @@
  * @typedef {import('@minecraft/server').Dimension} Dimension;
  */
 
+// Default configuration values
+const DEFAULT_PISTON_ACTIVITY_MAP_MAX_SIZE = 2000;
+const DEFAULT_PISTON_ACTIVITY_ENTRY_TIMEOUT_SECONDS = 300;
+const MILLISECONDS_PER_SECOND = 1000;
+
 /**
  * Stores activity data for pistons.
  * Key: string representation of piston location and dimension.
@@ -86,8 +91,8 @@ export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
 
     pistonActivityData.set(pistonKey, data);
 
-    const maxMapSize = config.pistonActivityMapMaxSize ?? 2000;
-    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? 300) * 1000;
+    const maxMapSize = config.pistonActivityMapMaxSize ?? DEFAULT_PISTON_ACTIVITY_MAP_MAX_SIZE;
+    const entryTimeoutMs = (config.pistonActivityEntryTimeoutSeconds ?? DEFAULT_PISTON_ACTIVITY_ENTRY_TIMEOUT_SECONDS) * MILLISECONDS_PER_SECOND;
 
     if (pistonActivityData.size > maxMapSize) {
         const cleanupCutoffTime = currentTime - entryTimeoutMs;

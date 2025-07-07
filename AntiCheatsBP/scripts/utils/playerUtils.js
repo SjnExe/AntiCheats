@@ -5,6 +5,16 @@
 import * as mc from '@minecraft/server';
 import { stringDB } from '../core/textDatabase.js';
 
+// Time constants
+const MILLISECONDS_PER_SECOND = 1000;
+const SECONDS_PER_MINUTE = 60;
+const MINUTES_PER_HOUR = 60;
+const HOURS_PER_DAY = 24;
+const DAYS_PER_WEEK = 7;
+const AVG_DAYS_PER_MONTH = 30.4375; // Average days in a month for time difference formatting
+const AVG_DAYS_PER_YEAR = 365.25;   // Average days in a year for time difference formatting
+
+
 /**
  * Retrieves a string from the text database and formats it with parameters.
  * @param {string} key - The key of the string to retrieve (e.g., 'ui.adminPanel.title').
@@ -123,7 +133,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
                 }
                 catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
-                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, p.nameTag, dependencies);
+                    debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, dependencies, p.nameTag);
                 }
             }
         }
@@ -179,10 +189,10 @@ export function parseDuration(durationString) {
         const value = parseInt(match[1], 10);
         const unit = match[2];
         switch (unit) {
-            case 's': return value * 1000;
-            case 'm': return value * 60 * 1000;
-            case 'h': return value * 60 * 60 * 1000;
-            case 'd': return value * 24 * 60 * 60 * 1000;
+            case 's': return value * MILLISECONDS_PER_SECOND;
+            case 'm': return value * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+            case 'h': return value * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+            case 'd': return value * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
             default:
                 // This case should ideally not be reached if the regex is correct.
                 // If it is reached, it implies an unexpected unit.
@@ -208,11 +218,11 @@ export function formatSessionDuration(ms) {
     if (ms <= 0 || typeof ms !== 'number' || isNaN(ms)) {
         return 'N/A';
     }
-    let seconds = Math.floor(ms / 1000);
-    let minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    seconds %= 60;
-    minutes %= 60;
+    let seconds = Math.floor(ms / MILLISECONDS_PER_SECOND);
+    let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
+    const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+    seconds %= SECONDS_PER_MINUTE;
+    minutes %= MINUTES_PER_HOUR;
 
     const parts = [];
     if (hours > 0) {
@@ -240,13 +250,13 @@ export function formatTimeDifference(msDifference) {
         return 'just now';
     }
 
-    const seconds = Math.floor(msDifference / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const weeks = Math.floor(days / 7);
-    const months = Math.floor(days / 30.4375);
-    const years = Math.floor(days / 365.25);
+    const seconds = Math.floor(msDifference / MILLISECONDS_PER_SECOND);
+    const minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
+    const hours = Math.floor(minutes / MINUTES_PER_HOUR);
+    const days = Math.floor(hours / HOURS_PER_DAY);
+    const weeks = Math.floor(days / DAYS_PER_WEEK);
+    const months = Math.floor(days / AVG_DAYS_PER_MONTH);
+    const years = Math.floor(days / AVG_DAYS_PER_YEAR);
 
     if (years > 0) {
         return `${years}y ago`;
@@ -341,7 +351,6 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
 /**
  * Parses command arguments to extract a target player name and a reason string.
  * @param {string[]} args - The array of command arguments.
- * @param {number} [reasonStartIndex=1] - The index in `args` from which the reason string starts.
  * @param {import('../types.js').CommandDependencies} dependencies - For accessing `getString`.
  * @param {number} [reasonStartIndex=1] - The index in `args` from which the reason string starts.
  * @param {string} [defaultReasonKey='common.value.noReasonProvided'] - The key in `textDatabase.js` for the default reason if not provided.

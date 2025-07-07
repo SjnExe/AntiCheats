@@ -408,7 +408,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         // AntiGrief
         { name: 'enableTntAntiGrief', type: 'boolean' },
         { name: 'tntPlacementAction', type: 'string', validator: (val, path, errs) => {
-            const valid = ['remove', 'warn', 'flag_only'];
+            const valid = ['remove', 'warn', 'flagOnly'];
             if (!valid.includes(val)) {
                 errs.push(`${path}: Invalid action. Expected one of ${valid.join(', ')}. Got ${val}.`);
             }

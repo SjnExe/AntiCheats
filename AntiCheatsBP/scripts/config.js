@@ -144,31 +144,31 @@ const defaultConfigSettings = {
     enableTntAntiGrief: false,
     /** @type {boolean} If true, admins (identified by `adminTag`) can place TNT without restriction. */
     allowAdminTntPlacement: true,
-    /** @type {string} Action to take when unauthorized TNT placement is detected ("remove", "warn", "flag_only"). */
+    /** @type {string} Action to take when unauthorized TNT placement is detected ("remove", "warn", "flagOnly"). */
     tntPlacementAction: 'remove',
     /** @type {boolean} If true, enables anti-grief measures for Wither spawning. */
     enableWitherAntiGrief: false,
     /** @type {boolean} If true, admins can spawn Withers without restriction. */
     allowAdminWitherSpawn: true,
-    /** @type {string} Action for unauthorized Wither spawn ("prevent", "kill", "warn", "flag_only"). */
+    /** @type {string} Action for unauthorized Wither spawn ("prevent", "kill", "warn", "flagOnly"). */
     witherSpawnAction: 'prevent',
     /** @type {boolean} If true, enables anti-grief measures for fire spread/placement. */
     enableFireAntiGrief: false,
     /** @type {boolean} If true, admins can create fire without restriction. */
     allowAdminFire: true,
-    /** @type {string} Action for unauthorized fire ("extinguish", "warn", "flag_only"). */
+    /** @type {string} Action for unauthorized fire ("extinguish", "warn", "flagOnly"). */
     fireControlAction: 'extinguish',
     /** @type {boolean} If true, enables anti-grief measures for lava placement. */
     enableLavaAntiGrief: false,
     /** @type {boolean} If true, admins can place lava without restriction. */
     allowAdminLava: true,
-    /** @type {string} Action for unauthorized lava placement ("remove", "warn", "flag_only"). */
+    /** @type {string} Action for unauthorized lava placement ("remove", "warn", "flagOnly"). */
     lavaPlacementAction: 'remove',
     /** @type {boolean} If true, enables anti-grief measures for water placement. */
     enableWaterAntiGrief: false,
     /** @type {boolean} If true, admins can place water without restriction. */
     allowAdminWater: true,
-    /** @type {string} Action for unauthorized water placement ("remove", "warn", "flag_only"). */
+    /** @type {string} Action for unauthorized water placement ("remove", "warn", "flagOnly"). */
     waterPlacementAction: 'remove',
     /** @type {boolean} If true, enables detection of rapid block placement (block spam by rate). */
     enableBlockSpamAntiGrief: false,
@@ -180,7 +180,7 @@ const defaultConfigSettings = {
     blockSpamMaxBlocksInWindow: 8,
     /** @type {string[]} Specific block types to monitor for rate-based spam. Empty array means all blocks. */
     blockSpamMonitoredBlockTypes: ['minecraft:dirt', 'minecraft:cobblestone', 'minecraft:netherrack', 'minecraft:sand', 'minecraft:gravel'],
-    /** @type {string} Action for block spam (rate) violation ("warn", "flag_only", "kick"). */
+    /** @type {string} Action for block spam (rate) violation ("warn", "flagOnly", "kick"). */
     blockSpamAction: 'warn',
     /** @type {boolean} If true, enables detection of rapid entity spawning (e.g., boats, armor stands). */
     enableEntitySpamAntiGrief: false,
@@ -192,13 +192,13 @@ const defaultConfigSettings = {
     entitySpamMaxSpawnsInWindow: 5,
     /** @type {string[]} Specific entity types to monitor for spam. */
     entitySpamMonitoredEntityTypes: ['minecraft:boat', 'minecraft:armor_stand', 'minecraft:item_frame', 'minecraft:minecart', 'minecraft:snow_golem', 'minecraft:iron_golem'],
-    /** @type {string} Action for entity spam violation ("kill", "warn", "flag_only"). "kill" attempts to remove the spawned entities. */
+    /** @type {string} Action for entity spam violation ("kill", "warn", "flagOnly"). "kill" attempts to remove the spawned entities. */
     entitySpamAction: 'kill',
     /** @type {boolean} If true, enables detection of high-density block placement within a small area. */
     enableBlockSpamDensityCheck: false,
     /** @type {string[]} Specific block types to monitor for density-based spam. Empty array means all blocks. */
     blockSpamDensityMonitoredBlockTypes: ['minecraft:dirt', 'minecraft:cobblestone', 'minecraft:netherrack', 'minecraft:sand', 'minecraft:gravel'],
-    /** @type {string} Action for block spam (density) violation ("warn", "flag_only"). */
+    /** @type {string} Action for block spam (density) violation ("warn", "flagOnly"). */
     blockSpamDensityAction: 'warn',
     /** @type {number} Radius for the density check cube (e.g., 1 means a 3x3x3 cube centered on the new block). */
     blockSpamDensityCheckRadius: 1,

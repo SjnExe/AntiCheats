@@ -5,6 +5,23 @@
  */
 import * as mc from '@minecraft/server';
 
+// Constants for calculations
+const HAND_BREAK_HARDNESS_FACTOR_1 = 1.5;
+const HAND_BREAK_HARDNESS_FACTOR_2 = 0.2; // Multiplied together, this is 0.3
+const SWORD_COBWEB_SPEED_MULTIPLIER = 5;
+const INCORRECT_TOOL_PENALTY_FACTOR = 5.0; // For breaking with hand when a tool is required
+const CORRECT_TOOL_TIME_FACTOR = 1.5;
+const INCORRECT_TOOL_TIME_FACTOR = 5.0; // For baseTimeFactor when tool is incorrect
+const HASTE_EFFECT_MULTIPLIER_BASE = 0.2;
+const MINING_FATIGUE_EFFECT_POWER_BASE = 0.3;
+const NOT_ON_GROUND_BREAK_SPEED_PENALTY = 5;
+const IN_WATER_NO_AQUA_AFFINITY_PENALTY = 5;
+const MIN_BREAK_TIME_SECONDS = 0.05;
+const TICKS_PER_SECOND = 20;
+const DEFAULT_BLOCK_HARDNESS = 50.0; // Default hardness if block not in map
+const HOTBAR_SIZE = 9;
+
+
 const blockHardnessMap = {
     'minecraft:stone': 1.5,
     'minecraft:cobblestone': 2.0,
@@ -223,9 +240,10 @@ function getToolMaterial(itemTypeId) {
  */
 export function calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack) {
     const blockTypeId = blockPermutation.type.id;
-    const blockHardness = blockHardnessMap[blockTypeId] || 50;
+    const blockHardness = blockHardnessMap[blockTypeId] || DEFAULT_BLOCK_HARDNESS;
     if (!itemStack) {
-        return 1 / (blockHardness * 1.5 * 0.2);
+        // Breaking with hand
+        return 1 / (blockHardness * HAND_BREAK_HARDNESS_FACTOR_1 * HAND_BREAK_HARDNESS_FACTOR_2);
     }
 
     const itemTypeId = itemStack.typeId;
@@ -236,7 +254,7 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
         return Infinity;
     }
     if (toolType === 'sword' && blockTypeId === 'minecraft:cobweb') {
-        return (toolMaterialMultipliersMap[toolMaterial] || 1) * 5;
+        return (toolMaterialMultipliersMap[toolMaterial] || 1) * SWORD_COBWEB_SPEED_MULTIPLIER;
     }
 
     let speed = toolMaterialMultipliersMap[toolMaterial] || 1;
@@ -244,14 +262,14 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
     const requiredTool = correctToolForBlockMap[blockTypeId];
 
     if (requiredTool && toolType === requiredTool) {
-        correctToolMultiplier = 1.5;
+        correctToolMultiplier = CORRECT_TOOL_TIME_FACTOR; // Using this as it represents the 1.5 factor
     }
     else if (requiredTool && toolType !== requiredTool && toolType !== null) {
-        speed = 1;
-        correctToolMultiplier = 1;
+        speed = 1; // No material bonus if wrong tool type for block needing a specific tool
+        correctToolMultiplier = 1; // No penalty beyond losing material bonus for now
     }
-    else if (toolType === null && requiredTool) {
-        return 1 / (blockHardness * 5 * 0.2);
+    else if (toolType === null && requiredTool) { // Hand breaking a block that needs a tool
+        return 1 / (blockHardness * INCORRECT_TOOL_PENALTY_FACTOR * HAND_BREAK_HARDNESS_FACTOR_2);
     }
 
     let efficiencyLevel = 0;
@@ -271,19 +289,19 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
 
     const hasteEffect = player.getEffects()?.find(eff => eff.typeId === 'haste');
     if (hasteEffect) {
-        speed *= (1 + 0.2 * (hasteEffect.amplifier + 1));
+        speed *= (1 + HASTE_EFFECT_MULTIPLIER_BASE * (hasteEffect.amplifier + 1));
     }
     const fatigueEffect = player.getEffects()?.find(eff => eff.typeId === 'mining_fatigue');
     if (fatigueEffect) {
-        speed *= Math.pow(0.3, fatigueEffect.amplifier + 1);
+        speed *= Math.pow(MINING_FATIGUE_EFFECT_POWER_BASE, fatigueEffect.amplifier + 1);
     }
 
     if (!player.isOnGround) {
-        speed /= 5;
+        speed /= NOT_ON_GROUND_BREAK_SPEED_PENALTY;
     }
 
     const damage = speed * correctToolMultiplier / blockHardness;
-    return damage < 0 ? 0 : damage * 20;
+    return damage < 0 ? 0 : damage * TICKS_PER_SECOND; // Convert damage per second to damage per tick effectively
 }
 
 /**
@@ -302,7 +320,7 @@ export function getOptimalToolForBlock(player, blockPermutation) {
     let maxPower = 0;
     let bestToolStack = undefined;
 
-    for (let i = 0; i < 9; i++) {
+    for (let i = 0; i < HOTBAR_SIZE; i++) {
         const itemStack = inventory.container.getItem(i);
         const currentPower = calculateRelativeBlockBreakingPower(player, blockPermutation, itemStack);
         if (currentPower > maxPower) {
@@ -395,21 +413,21 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
         toolSpeed = 1;
     }
 
-    const baseTimeFactor = isCorrectToolTypeAndMaterial ? 1.5 : 5.0;
+    const baseTimeFactor = isCorrectToolTypeAndMaterial ? CORRECT_TOOL_TIME_FACTOR : INCORRECT_TOOL_TIME_FACTOR;
     let breakTimeSeconds = (blockHardness * baseTimeFactor) / toolSpeed;
 
     const effects = player.getEffects();
     const haste = effects?.find(e => e.typeId === 'haste');
     if (haste) {
-        breakTimeSeconds /= (1 + 0.2 * (haste.amplifier + 1));
+        breakTimeSeconds /= (1 + HASTE_EFFECT_MULTIPLIER_BASE * (haste.amplifier + 1));
     }
     const fatigue = effects?.find(e => e.typeId === 'mining_fatigue');
     if (fatigue) {
-        breakTimeSeconds /= Math.pow(0.3, fatigue.amplifier + 1);
+        breakTimeSeconds /= Math.pow(MINING_FATIGUE_EFFECT_POWER_BASE, fatigue.amplifier + 1);
     }
 
     if (!player.isOnGround) {
-        breakTimeSeconds *= 5;
+        breakTimeSeconds *= NOT_ON_GROUND_BREAK_SPEED_PENALTY;
     }
 
     let hasAquaAffinity = false;
@@ -424,13 +442,13 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
         catch (_e) { }
     }
     if (player.isInWater && !hasAquaAffinity) {
-        breakTimeSeconds *= 5;
+        breakTimeSeconds *= IN_WATER_NO_AQUA_AFFINITY_PENALTY;
     }
 
-    if (breakTimeSeconds < 0.05) {
-        breakTimeSeconds = 0.05;
+    if (breakTimeSeconds < MIN_BREAK_TIME_SECONDS) {
+        breakTimeSeconds = MIN_BREAK_TIME_SECONDS;
     }
 
-    const ticks = Math.ceil(breakTimeSeconds * 20);
+    const ticks = Math.ceil(breakTimeSeconds * TICKS_PER_SECOND);
     return ticks < 1 ? 1 : ticks;
 }

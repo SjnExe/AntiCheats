@@ -4,6 +4,16 @@
  */
 import * as mc from '@minecraft/server';
 
+// Argument count/index constants for command parsing
+const MIN_ARGS_SELF_TP_COORDS = 3;
+const ARGS_INDEX_SELF_TP_DIMENSION = 3;
+const MIN_ARGS_SELF_TP_COORDS_WITH_DIM = 4;
+
+const MIN_ARGS_PLAYER_TP_COORDS = 4;
+const ARGS_INDEX_PLAYER_TP_DIMENSION = 4;
+const MIN_ARGS_PLAYER_TP_COORDS_WITH_DIM = 5;
+
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -68,9 +78,8 @@ export async function execute(player, args, dependencies) {
     let destinationPlayer = null;
     let x, y, z, targetDimension;
     let isTeleportToPlayer = false;
-    // let isSelfTeleportToCoords = false; // Unused variable
 
-    if (args.length === 1 || (args.length >= 3 && !isNaN(parseFloat(args[0])))) {
+    if (args.length === 1 || (args.length >= MIN_ARGS_SELF_TP_COORDS && !isNaN(parseFloat(args[0])))) {
         if (args.length === 1 && isNaN(parseFloat(args[0]))) {
             playerToMove = player;
             destinationPlayer = playerUtils?.findPlayer(args[0]);
@@ -81,14 +90,13 @@ export async function execute(player, args, dependencies) {
             isTeleportToPlayer = true;
         }
         else {
-            // isSelfTeleportToCoords = true; // Part of unused variable logic
             playerToMove = player;
             x = parseFloat(args[0]);
             y = parseFloat(args[1]);
             z = parseFloat(args[2]);
-            targetDimension = parseDimension(args[3], player, dependencies);
-            if (args.length >= 4 && !targetDimension) {
-                player.sendMessage(getString('command.tp.invalidDimension', { dimensionName: args[3] }));
+            targetDimension = parseDimension(args[ARGS_INDEX_SELF_TP_DIMENSION], player, dependencies);
+            if (args.length >= MIN_ARGS_SELF_TP_COORDS_WITH_DIM && !targetDimension) {
+                player.sendMessage(getString('command.tp.invalidDimension', { dimensionName: args[ARGS_INDEX_SELF_TP_DIMENSION] }));
                 return;
             }
             if (isNaN(x) || isNaN(y) || isNaN(z)) {
@@ -112,13 +120,13 @@ export async function execute(player, args, dependencies) {
             }
             isTeleportToPlayer = true;
         }
-        else if (args.length >= 4 && !isNaN(parseFloat(args[1]))) {
+        else if (args.length >= MIN_ARGS_PLAYER_TP_COORDS && !isNaN(parseFloat(args[1]))) {
             x = parseFloat(args[1]);
             y = parseFloat(args[2]);
             z = parseFloat(args[3]);
-            targetDimension = parseDimension(args[4], playerToMove, dependencies);
-            if (args.length >= 5 && !targetDimension) {
-                player.sendMessage(getString('command.tp.invalidDimension', { dimensionName: args[4] }));
+            targetDimension = parseDimension(args[ARGS_INDEX_PLAYER_TP_DIMENSION], playerToMove, dependencies);
+            if (args.length >= MIN_ARGS_PLAYER_TP_COORDS_WITH_DIM && !targetDimension) {
+                player.sendMessage(getString('command.tp.invalidDimension', { dimensionName: args[ARGS_INDEX_PLAYER_TP_DIMENSION] }));
                 return;
             }
             if (isNaN(x) || isNaN(y) || isNaN(z)) {

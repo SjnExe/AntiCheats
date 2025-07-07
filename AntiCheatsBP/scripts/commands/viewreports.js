@@ -4,6 +4,9 @@
  */
 import * as reportManager from '../core/reportManager.js';
 
+// Default configuration values
+const DEFAULT_REPORTS_VIEW_PER_PAGE = 5;
+
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'viewreports',
@@ -50,7 +53,7 @@ export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
-    const reportsPerPage = config?.reportsViewPerPage ?? 5;
+    const reportsPerPage = config?.reportsViewPerPage ?? DEFAULT_REPORTS_VIEW_PER_PAGE;
 
     let reportsToShow = reportManager.getReports();
     let pageNumber = 1;

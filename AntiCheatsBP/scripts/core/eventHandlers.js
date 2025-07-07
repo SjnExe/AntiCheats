@@ -457,7 +457,7 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         else if (actionTaken === 'remove' || actionTaken === 'prevent') {
             shouldCancelEvent = true;
         }
-        else { // e.g. 'warn', 'flag_only'
+        else { // e.g. 'warn', 'flagOnly'
             shouldCancelEvent = false;
         }
         const messageToWarn = getString(profile?.messageKey || defaultMessageKey);
@@ -1103,6 +1103,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
     const { playerUtils, getString, rankManager, permissionLevels, logManager, config, playerDataManager: pdm } = dependencies; // Renamed for brevity
+    // const playerName = player?.nameTag ?? 'UnknownPlayer'; // This variable was unused
 
     if (!player?.isValid() || !toDimension || !fromDimension || !fromLocation) {
         playerUtils?.debugLog('[EvtHdlr.DimChange] Incomplete event data for player.', player?.nameTag, dependencies);

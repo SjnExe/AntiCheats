@@ -3,6 +3,18 @@
  * All actionType strings used for logging should be camelCase.
  */
 
+// Constants for UUID generation
+const UUID_RANDOM_MULTIPLIER = 16;
+const UUID_VARIANT_MASK = 0x3;
+const UUID_VARIANT_SET = 0x8;
+const UUID_TO_STRING_RADIX = 16;
+
+// Default configuration values
+const DEFAULT_TPA_REQUEST_COOLDOWN_SECONDS = 60;
+const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
+const DEFAULT_TPA_TELEPORT_WARMUP_SECONDS = 5;
+const DEFAULT_TPA_MOVEMENT_TOLERANCE = 0.5;
+
 /**
  * @typedef {import('../types.js').TpaRequest} TpaRequest
  * @typedef {import('../types.js').CommandDependencies} CommandDependencies
@@ -23,9 +35,9 @@ const playerTpaStatuses = new Map(); // Stores player TPA acceptance status, key
 function generateRequestId() {
     // Simple UUID v4 like generator
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : ((r & 0x3) | 0x8);
-        return v.toString(16);
+        const r = Math.random() * UUID_RANDOM_MULTIPLIER | 0;
+        const v = c === 'x' ? r : ((r & UUID_VARIANT_MASK) | UUID_VARIANT_SET);
+        return v.toString(UUID_TO_STRING_RADIX);
     });
 }
 
@@ -45,7 +57,7 @@ export function addRequest(requester, target, type, dependencies) {
 
     if (lastPlayerRequestTimestamp.has(requester.name)) { // Use player.name as key for consistency with other maps
         const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.name) ?? 0);
-        const cooldownMs = (config?.tpaRequestCooldownSeconds ?? 60) * 1000;
+        const cooldownMs = (config?.tpaRequestCooldownSeconds ?? DEFAULT_TPA_REQUEST_COOLDOWN_SECONDS) * 1000;
         if (elapsedTime < cooldownMs) {
             const remainingSeconds = Math.ceil((cooldownMs - elapsedTime) / 1000);
             playerUtils?.debugLog(`[TpaManager.addRequest] Cooldown for ${requesterName}. Remaining: ${remainingSeconds}s`, requesterName, dependencies);
@@ -66,7 +78,7 @@ export function addRequest(requester, target, type, dependencies) {
         requestType: type, // 'tpa' or 'tpahere'
         status: 'pendingAcceptance', // Standardized status string
         creationTimestamp: now,
-        expiryTimestamp: now + ((config?.tpaRequestTimeoutSeconds ?? 60) * 1000),
+        expiryTimestamp: now + ((config?.tpaRequestTimeoutSeconds ?? DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS) * 1000),
         warmupExpiryTimestamp: 0,
         teleportingPlayerInitialLocation: undefined,
     };
@@ -171,9 +183,9 @@ export function acceptRequest(requestId, dependencies) {
 
     const requestToUpdate = request;
     requestToUpdate.status = 'pendingTeleportWarmup'; // Standardized status string
-    requestToUpdate.warmupExpiryTimestamp = Date.now() + ((config?.tpaTeleportWarmupSeconds ?? 5) * 1000);
+    requestToUpdate.warmupExpiryTimestamp = Date.now() + ((config?.tpaTeleportWarmupSeconds ?? DEFAULT_TPA_TELEPORT_WARMUP_SECONDS) * 1000);
 
-    const warmupSeconds = config?.tpaTeleportWarmupSeconds ?? 5;
+    const warmupSeconds = config?.tpaTeleportWarmupSeconds ?? DEFAULT_TPA_TELEPORT_WARMUP_SECONDS;
     const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: warmupSeconds.toString() });
 
     if (request.requestType === 'tpa') {
@@ -292,7 +304,7 @@ export async function executeTeleport(requestId, dependencies) {
  * @param {CommandDependencies} dependencies - Standard dependencies object.
  */
 export function cancelTeleport(requestId, reasonMessagePlayer, reasonMessageLog, dependencies) {
-    const { playerUtils, logManager, getString, mc: minecraftSystem } = dependencies;
+    const { playerUtils, logManager, getString, mc: minecraftSystem } = dependencies; // getString was already in dependencies, no need to re-destructure
     const request = activeRequests.get(requestId);
 
     if (!request || request.status === 'cancelled' || request.status === 'completed') {
@@ -455,26 +467,23 @@ export function checkPlayerMovementDuringWarmup(request, dependencies) {
     }
 
     let teleportingPlayer;
-    // let otherPlayerNameForMessage; // Unused variable
 
     if (request.requestType === 'tpa') { // Requester is teleporting
         teleportingPlayer = minecraftSystem?.world?.getAllPlayers().find(p => p.name === request.requesterName);
-        // otherPlayerNameForMessage = request.targetName;
     }
     else { // 'tpahere', Target is teleporting
         teleportingPlayer = minecraftSystem?.world?.getAllPlayers().find(p => p.name === request.targetName);
-        // otherPlayerNameForMessage = request.requesterName;
     }
 
     if (!teleportingPlayer?.isValid()) {
         const invalidPlayerName = request.requestType === 'tpa' ? request.requesterName : request.targetName;
-        const reasonMsg = getString('tpa.manager.error.teleportWarmupTargetInvalid', { otherPlayerName: invalidPlayerName }); // getString was not destructured, using dependencies.getString
+        const reasonMsg = getString('tpa.manager.error.teleportWarmupTargetInvalid', { otherPlayerName: invalidPlayerName });
         const reasonLog = `Teleporting player ${invalidPlayerName} invalid during warmup for request ${request.requestId}.`;
         cancelTeleport(request.requestId, reasonMsg, reasonLog, dependencies);
         return;
     }
 
-    const movementTolerance = config?.tpaMovementTolerance ?? 0.5; // Default tolerance if not in config
+    const movementTolerance = config?.tpaMovementTolerance ?? DEFAULT_TPA_MOVEMENT_TOLERANCE;
     const initialLoc = request.teleportingPlayerInitialLocation;
     const currentLoc = teleportingPlayer.location;
 

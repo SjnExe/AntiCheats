@@ -65,7 +65,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     pData.recentEntitySpamTimestamps[entityType].push(currentTime);
     pData.isDirtyForSave = true;
 
-    const windowMs = config.entitySpamTimeWindowMs || 2000;
+    const windowMs = config.entitySpamTimeWindowMs || DEFAULT_ENTITY_SPAM_TIME_WINDOW_MS;
     const originalCount = pData.recentEntitySpamTimestamps[entityType].length;
 
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType].filter(
@@ -76,7 +76,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
         pData.isDirtyForSave = true;
     }
 
-    const maxSpawns = config.entitySpamMaxSpawnsInWindow || 5;
+    const maxSpawns = config.entitySpamMaxSpawnsInWindow || DEFAULT_ENTITY_SPAM_MAX_SPAWNS_IN_WINDOW;
     const rawActionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
@@ -89,7 +89,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
             count: pData.recentEntitySpamTimestamps[entityType].length.toString(),
             maxSpawns: maxSpawns.toString(),
             windowMs: windowMs.toString(),
-            actionTaken: config.entitySpamAction ?? 'flag_only',
+            actionTaken: config.entitySpamAction ?? 'flagOnly',
         };
 
         await actionManager.executeCheckAction(potentialPlayer, actionProfileKey, violationDetails, dependencies);

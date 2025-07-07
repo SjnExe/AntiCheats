@@ -4,6 +4,10 @@
  */
 import * as reportManager from '../core/reportManager.js';
 
+// Constants
+const MIN_REPORT_REASON_LENGTH = 10;
+const MAX_REPORT_REASON_LENGTH = 256;
+
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'report',
@@ -31,11 +35,11 @@ export function execute(player, args, dependencies) {
         return;
     }
 
-    if (reason.length < 10) {
+    if (reason.length < MIN_REPORT_REASON_LENGTH) {
         playerUtils.sendMessage(reporterPlayer, getString('command.report.reasonTooShort'));
         return;
     }
-    if (reason.length > 256) {
+    if (reason.length > MAX_REPORT_REASON_LENGTH) {
         playerUtils.sendMessage(reporterPlayer, getString('command.report.reasonTooLong'));
         return;
     }

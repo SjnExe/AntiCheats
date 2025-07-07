@@ -127,6 +127,20 @@ async function showInspectPlayerForm(adminPlayer, dependencies) {
 // - Robust error handling with .catch and .finally where appropriate for UI navigation.
 
 // --- Player Actions Form (Example of applying pattern) ---
+
+// Button indices for showPlayerActionsForm
+const PLAYER_ACTIONS_BTN_VIEW_FLAGS = 0;
+const PLAYER_ACTIONS_BTN_VIEW_INV = 1;
+const PLAYER_ACTIONS_BTN_TP_TO = 2;
+const PLAYER_ACTIONS_BTN_TP_HERE = 3;
+const PLAYER_ACTIONS_BTN_KICK = 4;
+const PLAYER_ACTIONS_BTN_FREEZE_TOGGLE = 5;
+const PLAYER_ACTIONS_BTN_MUTE_TOGGLE = 6;
+const PLAYER_ACTIONS_BTN_BAN = 7;
+const PLAYER_ACTIONS_BTN_RESET_FLAGS = 8;
+const PLAYER_ACTIONS_BTN_CLEAR_INV = 9;
+const PLAYER_ACTIONS_BTN_BACK_TO_LIST = 10;
+
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     const { config, playerUtils, logManager, getString, commandExecutionMap } = dependencies; // Removed permissionLevels
     const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
@@ -184,14 +198,14 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         const cmdExec = (cmd) => commandExecutionMap?.get(cmd);
 
         switch (response.selection) {
-            case 0: await showDetailedFlagsForm(adminPlayer, targetPlayer, dependencies); shouldReturnToPlayerActions = false; break;
-            case 1: if (cmdExec('invsee')) {
+            case PLAYER_ACTIONS_BTN_VIEW_FLAGS: await showDetailedFlagsForm(adminPlayer, targetPlayer, dependencies); shouldReturnToPlayerActions = false; break;
+            case PLAYER_ACTIONS_BTN_VIEW_INV: if (cmdExec('invsee')) {
                 await cmdExec('invsee')(adminPlayer, [targetName], dependencies);
             }
             else {
                 adminPlayer?.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'invsee' }));
             } break;
-            case 2: /* Teleport To Player */
+            case PLAYER_ACTIONS_BTN_TP_TO: /* Teleport To Player */
                 try {
                     if (targetPlayer?.location && targetPlayer?.dimension) {
                         await adminPlayer?.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
@@ -213,7 +227,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     }, dependencies);
                 }
                 break;
-            case 3: /* Teleport Player Here */
+            case PLAYER_ACTIONS_BTN_TP_HERE: /* Teleport Player Here */
                 try {
                     if (adminPlayer?.location && adminPlayer?.dimension) {
                         await targetPlayer?.teleport(adminPlayer.location, { dimension: adminPlayer.dimension });
@@ -236,14 +250,14 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     }, dependencies);
                 }
                 break;
-            case 4: /* await _showModalAndExecuteWithTransform('kick', 'ui.playerActions.kick.title', [{ type: 'textField', labelKey: 'ui.playerActions.kick.reasonPrompt', placeholderKey: 'ui.playerActions.kick.reasonPlaceholder' }], (vals) => [targetName, vals?.[0]], dependencies, adminPlayer, { targetPlayerName: targetName }); */ adminPlayer?.sendMessage('Kick modal temporarily disabled.'); shouldReturnToPlayerList = true; break;
-            case 5: if (cmdExec('freeze')) {
+            case PLAYER_ACTIONS_BTN_KICK: /* await _showModalAndExecuteWithTransform('kick', 'ui.playerActions.kick.title', [{ type: 'textField', labelKey: 'ui.playerActions.kick.reasonPrompt', placeholderKey: 'ui.playerActions.kick.reasonPlaceholder' }], (vals) => [targetName, vals?.[0]], dependencies, adminPlayer, { targetPlayerName: targetName }); */ adminPlayer?.sendMessage('Kick modal temporarily disabled.'); shouldReturnToPlayerList = true; break;
+            case PLAYER_ACTIONS_BTN_FREEZE_TOGGLE: if (cmdExec('freeze')) {
                 await cmdExec('freeze')(adminPlayer, [targetName, 'toggle'], dependencies);
             }
             else {
                 adminPlayer?.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'freeze' }));
             } break; // Assume 'toggle' is default
-            case 6: if (isTargetMuted) {
+            case PLAYER_ACTIONS_BTN_MUTE_TOGGLE: if (isTargetMuted) {
                 if (cmdExec('unmute')) {
                     await cmdExec('unmute')(adminPlayer, [targetName], dependencies);
                 }
@@ -251,14 +265,14 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
             else {
                 /* await _showModalAndExecuteWithTransform('mute', 'ui.playerActions.mute.title', [{ type: 'textField', labelKey: 'ui.playerActions.mute.durationPrompt', placeholderKey: 'ui.playerActions.mute.durationPlaceholder' }, { type: 'textField', labelKey: 'ui.playerActions.mute.reasonPrompt', placeholderKey: 'ui.playerActions.mute.reasonPlaceholder' }], (vals) => [targetName, vals?.[0], vals?.[1]], dependencies, adminPlayer, { targetPlayerName: targetName }); */ adminPlayer?.sendMessage('Mute modal temporarily disabled.');
             } break;
-            case 7: /* await _showModalAndExecuteWithTransform('ban', 'ui.playerActions.ban.title', [{ type: 'textField', labelKey: 'ui.playerActions.ban.durationPrompt', placeholderKey: 'ui.playerActions.ban.durationPlaceholder' }, { type: 'textField', labelKey: 'ui.playerActions.ban.reasonPrompt', placeholderKey: 'ui.playerActions.ban.reasonPlaceholder' }], (vals) => [targetName, vals?.[0], vals?.[1]], dependencies, adminPlayer, { targetPlayerName: targetName }); */ adminPlayer?.sendMessage('Ban modal temporarily disabled.'); shouldReturnToPlayerList = true; break;
-            case 8: if (cmdExec('resetflags')) {
+            case PLAYER_ACTIONS_BTN_BAN: /* await _showModalAndExecuteWithTransform('ban', 'ui.playerActions.ban.title', [{ type: 'textField', labelKey: 'ui.playerActions.ban.durationPrompt', placeholderKey: 'ui.playerActions.ban.durationPlaceholder' }, { type: 'textField', labelKey: 'ui.playerActions.ban.reasonPrompt', placeholderKey: 'ui.playerActions.ban.reasonPlaceholder' }], (vals) => [targetName, vals?.[0], vals?.[1]], dependencies, adminPlayer, { targetPlayerName: targetName }); */ adminPlayer?.sendMessage('Ban modal temporarily disabled.'); shouldReturnToPlayerList = true; break;
+            case PLAYER_ACTIONS_BTN_RESET_FLAGS: if (cmdExec('resetflags')) {
                 await cmdExec('resetflags')(adminPlayer, [targetName], dependencies);
             }
             else {
                 adminPlayer?.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'resetflags' }));
             } break;
-            case 9: await _showConfirmationModal(adminPlayer, 'ui.playerActions.clearInventory.confirmTitle', 'ui.playerActions.clearInventory.confirmBody', 'ui.playerActions.clearInventory.confirmToggle', () => { // Removed async
+            case PLAYER_ACTIONS_BTN_CLEAR_INV: await _showConfirmationModal(adminPlayer, 'ui.playerActions.clearInventory.confirmTitle', 'ui.playerActions.clearInventory.confirmBody', 'ui.playerActions.clearInventory.confirmToggle', () => { // Removed async
                 const invComp = targetPlayer?.getComponent(mc.EntityComponentTypes.Inventory); if (invComp?.container) {
                     for (let i = 0; i < invComp.container.size; i++) {
                         invComp.container.setItem(i);
@@ -268,7 +282,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     adminPlayer?.sendMessage(getString('ui.playerActions.clearInventory.fail', { targetPlayerName: targetName }));
                 }
             }, dependencies, { targetPlayerName: targetName }); break;
-            case 10: shouldReturnToPlayerList = true; shouldReturnToPlayerActions = false; break;
+            case PLAYER_ACTIONS_BTN_BACK_TO_LIST: shouldReturnToPlayerList = true; shouldReturnToPlayerActions = false; break;
             default: adminPlayer?.sendMessage(getString('ui.playerActions.error.invalidSelection')); break;
         }
 
@@ -302,6 +316,18 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
 
 
 // Assign other functions similarly ensure dependencies are passed correctly, and use optional chaining.
+
+// Button indices for showAdminPanelMain
+const ADMIN_PANEL_BTN_VIEW_PLAYERS = 0;
+const ADMIN_PANEL_BTN_INSPECT_TEXT = 1;
+const ADMIN_PANEL_BTN_RESET_FLAGS_TEXT = 2;
+const ADMIN_PANEL_BTN_LIST_WATCHED = 3;
+const ADMIN_PANEL_BTN_SERVER_MGMT = 4;
+const ADMIN_PANEL_BTN_EDIT_CONFIG_OWNER = 5; // Only if owner
+const ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON = 5; // Index of close if owner button not present
+const ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON = 6; // Index of close if owner button is present
+
+
 async function showAdminPanelMain(player, playerDataManager, dependencies) {
     const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // uiManager removed as functions are called directly
     const playerName = player?.nameTag ?? 'UnknownPlayer';
@@ -340,21 +366,21 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
 
         const selection = response.selection;
         switch (selection) {
-            case 0: await showOnlinePlayersList(player, dependencies); break;
-            case 1: await showInspectPlayerForm(player, dependencies); break;
-            case 2: await showResetFlagsForm(player, dependencies); break;
-            case 3: await showWatchedPlayersList(player, dependencies); break;
-            case 4: await showServerManagementForm(player, dependencies); break;
-            case 5:
+            case ADMIN_PANEL_BTN_VIEW_PLAYERS: await showOnlinePlayersList(player, dependencies); break;
+            case ADMIN_PANEL_BTN_INSPECT_TEXT: await showInspectPlayerForm(player, dependencies); break;
+            case ADMIN_PANEL_BTN_RESET_FLAGS_TEXT: await showResetFlagsForm(player, dependencies); break;
+            case ADMIN_PANEL_BTN_LIST_WATCHED: await showWatchedPlayersList(player, dependencies); break;
+            case ADMIN_PANEL_BTN_SERVER_MGMT: await showServerManagementForm(player, dependencies); break;
+            case ADMIN_PANEL_BTN_EDIT_CONFIG_OWNER: // This is also the index for ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON
                 if (userPermLevel === permissionLevels.owner) {
                     await showEditConfigForm(player, dependencies);
                 }
-                else if (selection === 5) { // Index for close if owner button wasn't shown
+                else if (selection === ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON) { // Explicitly check if it's the close button for non-owners
                     playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
                 }
                 break;
-            case 6: // This would be the close button if owner button was shown
-                if (userPermLevel === permissionLevels.owner) {
+            case ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON: // This would be the close button if owner button was shown
+                if (userPermLevel === permissionLevels.owner) { // Ensure this case is only hit if owner button was present
                     playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
                 }
                 break;
