@@ -425,8 +425,7 @@ export function clearExpiredRequests(dependencies) {
  * Gets a player's TPA status (whether they accept TPA requests).
  *
  * @param {string} playerName - The system name of the player.
- * @param {CommandDependencies} dependencies - Standard dependencies object.
- * @param _dependencies
+ * @param {import('../types.js').CommandDependencies} _dependencies - Standard command dependencies, currently unused.
  * @returns {PlayerTpaStatus} The player's TPA status.
  */
 export function getPlayerTpaStatus(playerName, _dependencies) { // Added dependencies for future use if needed, prefixed with _

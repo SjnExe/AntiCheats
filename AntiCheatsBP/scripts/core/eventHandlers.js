@@ -394,8 +394,8 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
  * Handles player block placement before events for AntiGrief (e.g., TNT).
  * This specific handler focuses on AntiGrief related cancellations. General placement checks are in handlePlayerPlaceBlockBefore.
  *
- * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The player place block event data.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
+ * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The data associated with the player place block before event.
+ * @param {import('../types.js').Dependencies} dependencies - The standard dependencies object containing shared modules and utilities.
  */
 export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies;
@@ -1122,7 +1122,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 export async function handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
     const { playerUtils, getString, rankManager, permissionLevels, logManager, config, playerDataManager: pdm } = dependencies; // Renamed for brevity
-    // const playerName = player?.nameTag ?? 'UnknownPlayer'; // This variable was unused
+    const _playerName = player?.nameTag ?? 'UnknownPlayer'; // Ensured this variable is correctly prefixed
 
     if (!player?.isValid() || !toDimension || !fromDimension || !fromLocation) {
         playerUtils?.debugLog('[EvtHdlr.DimChange] Incomplete event data for player.', player?.nameTag, dependencies);

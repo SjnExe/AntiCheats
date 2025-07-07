@@ -493,8 +493,16 @@
  * @property {number} pitch
  */
 
+/**
+ * @typedef {object} UpdateConfigValueResult
+ * @property {boolean} success - Whether the update was successful.
+ * @property {string} message - A message describing the result.
+ * @property {unknown} [oldValue] - The old value of the configuration key.
+ * @property {unknown} [newValue] - The new value of the configuration key.
+ */
+
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
 /**
- *
+ * @ignore // Ensures JSDoc requirements are met for this module-defining export.
  */
 export {};

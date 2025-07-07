@@ -550,12 +550,13 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 const minX = centerX - currentEffectiveSize, maxX = centerX + currentEffectiveSize;
                 const minZ = centerZ - currentEffectiveSize, maxZ = centerZ + currentEffectiveSize;
                 /**
+                 * Spawns particles along a line segment for the world border visual.
                  *
-                 * @param isXAxis
-                 * @param fixedCoord
-                 * @param startDyn
-                 * @param endDyn
-                 * @param playerDynamicCoord
+                 * @param {boolean} isXAxis - True if the line is parallel to the X-axis (fixed X), false for Z-axis.
+                 * @param {number} fixedCoord - The fixed coordinate value (X if isXAxis, Z otherwise).
+                 * @param {number} startDyn - The starting dynamic coordinate value (Z if isXAxis, X otherwise).
+                 * @param {number} endDyn - The ending dynamic coordinate value.
+                 * @param {number} playerDynamicCoord - The player's current dynamic coordinate, used for centering the segment.
                  */
                 const spawnLine = (isXAxis, fixedCoord, startDyn, endDyn, playerDynamicCoord) => {
                     const lineLength = Math.min(segmentLength, Math.abs(endDyn - startDyn));
