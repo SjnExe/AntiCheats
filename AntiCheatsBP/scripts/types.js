@@ -1,6 +1,7 @@
 /**
- * @file Defines common JSDoc typedefs used throughout the AntiCheat system.
+ * @fileoverview Defines common JSDoc typedefs used throughout the AntiCheat system.
  * These types provide static analysis benefits and improve code readability.
+ * @module types
  */
 
 // --- Core Minecraft Server & UI Types (for reference, often imported directly) ---
@@ -503,6 +504,6 @@
 
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
 /**
- * @ignore // Ensures JSDoc requirements are met for this module-defining export.
+ * @ignore
  */
 export {};

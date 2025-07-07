@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !worldborder command (aliased as !wb) for managing per-dimension world borders.
  */
 import * as mc from '@minecraft/server';

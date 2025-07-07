@@ -1,6 +1,6 @@
 /**
-/**
-
+ * /**
+ *
  * @file Defines the !gmsp command for administrators to set a player's gamemode to Spectator.
  */
 import * as mc from '@minecraft/server';
