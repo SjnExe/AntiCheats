@@ -231,14 +231,16 @@ export async function prepareAndSavePlayerData(player, dependencies) {
  */
 const dynamicallyGeneratedFlagTypes = new Set();
 for (const checkKey in checkActionProfiles) {
-    const profile = checkActionProfiles[checkKey];
-    if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
-        if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
-            dynamicallyGeneratedFlagTypes.add(profile.flag.type);
-        }
-        else {
-            dynamicallyGeneratedFlagTypes.add(checkKey);
-        }
+    if (Object.prototype.hasOwnProperty.call(checkActionProfiles, checkKey)) {
+        const profile = checkActionProfiles[checkKey];
+        if (profile && typeof profile.flag === 'object' && profile.flag !== null) {
+            if (typeof profile.flag.type === 'string' && profile.flag.type.length > 0) {
+                dynamicallyGeneratedFlagTypes.add(profile.flag.type);
+            }
+            else {
+                dynamicallyGeneratedFlagTypes.add(checkKey);
+            }
+        } // Closing brace for: if (profile && typeof profile.flag === 'object' && profile.flag !== null)
     }
 }
 const allKnownFlagTypes = Array.from(dynamicallyGeneratedFlagTypes);
@@ -390,7 +392,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         if (typeof newPData.flags.totalFlags !== 'number' || isNaN(newPData.flags.totalFlags)) {
             newPData.flags.totalFlags = 0;
             for (const flagKey in newPData.flags) {
-                if (Object.prototype.hasOwnProperty.call(newPData.flags, flagKey)) {
+                if (Object.prototype.hasOwnProperty.call(newPData.flags, flagKey)) { // Added guard
                     if (flagKey !== 'totalFlags' && newPData.flags[flagKey] && typeof newPData.flags[flagKey].count === 'number') {
                         newPData.flags.totalFlags += newPData.flags[flagKey].count;
                     }
@@ -548,10 +550,10 @@ export function updateTransientPlayerData(player, pData, dependencies) {
  * @param {import('@minecraft/server').Player} player - The player to flag.
  * @param {string} flagType - Standardized camelCase flag type (e.g., 'movementFlyHover').
  * @param {string} reasonMessage - Base reason message for the flag.
- * @param {string | object} [detailsForNotify=''] - Additional details for notification or structured data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {string | object} [detailsForNotify=''] - Additional details for notification or structured data.
  */
-export async function addFlag(player, flagType, reasonMessage, detailsForNotify = '', dependencies) {
+export async function addFlag(player, flagType, reasonMessage, dependencies, detailsForNotify = '') {
     const { playerUtils, config, logManager, getString } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 

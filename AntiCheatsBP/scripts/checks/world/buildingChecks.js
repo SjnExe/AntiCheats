@@ -246,14 +246,15 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                 .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-            const shouldCancelEvent = config.checkActionProfiles[actionProfileKey]?.cancelEvent;
-
-            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-            playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}) without solid support.`, pData.isWatched ? player.nameTag : null, dependencies);
+            const profile = dependencies.checkActionProfiles?.[actionProfileKey]; // Use dependencies.checkActionProfiles
+            const shouldCancelEvent = profile?.cancelEvent;
 
             if (shouldCancelEvent) {
                 eventData.cancel = true;
             }
+
+            await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            playerUtils.debugLog(`[AirPlaceCheck] Flagged ${player.nameTag} for placing ${placedBlockTypeId} against ${targetBlock.typeId} at (${blockLocation.x},${blockLocation.y},${blockLocation.z}) without solid support.`, pData.isWatched ? player.nameTag : null, dependencies);
         }
     }
 }

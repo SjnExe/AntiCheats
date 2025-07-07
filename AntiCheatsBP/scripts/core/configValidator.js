@@ -111,22 +111,27 @@ function isValidDurationString(durationStr) {
  * @param {Array<{name: string, type?: string | string[], validator?: Function, optional?: boolean, arrayElementType?: string, objectProperties?: any}>} fieldDefs - Array of field definitions.
  * @param {string} context - A string describing the context of the validation (e.g., "config.soundEvents").
  * @param {string[]} errors - An array to push error messages into.
+ * @returns {boolean} True if all fields are valid, false otherwise.
  */
 function ensureFields(obj, fieldDefs, context, errors) {
     if (!isObject(obj)) {
         errors.push(`${context}: Expected an object, but got ${typeof obj}.`);
-        return;
+        return false; // Indicate failure
     }
 
-    fieldDefs.forEach(field => {
+    let allFieldsValidOverall = true;
+
+    for (const field of fieldDefs) {
         const value = obj[field.name];
         const fieldPath = `${context}.${field.name}`;
+        let currentFieldInitialCheckPassed = true; // Tracks if the field itself (not sub-properties) is valid so far
 
         if (!Object.prototype.hasOwnProperty.call(obj, field.name)) {
             if (!field.optional) {
                 errors.push(`${fieldPath}: Required field is missing.`);
+                allFieldsValidOverall = false;
             }
-            return; // Skip further checks if field is missing (and optional or error already logged)
+            continue; // Next field
         }
 
         // Type checking
@@ -165,11 +170,10 @@ function ensureFields(obj, fieldDefs, context, errors) {
                     case 'camelCaseString': if (isValidCamelCase(value)) {
                         typeMatch = true;
                     } break;
-                    // Allow 'any' type for fields that don't need strict type validation or are complex
                     case 'any': typeMatch = true; break;
                     default:
-                        // This case should ideally not be reached if field.type is always valid
                         errors.push(`${fieldPath}: Unknown expected type '${type}' in field definition.`);
+                        allFieldsValidOverall = false; // Should not happen if defs are correct
                         break;
                 }
                 if (typeMatch) {
@@ -178,20 +182,24 @@ function ensureFields(obj, fieldDefs, context, errors) {
             }
             if (!typeMatch) {
                 errors.push(`${fieldPath}: Invalid type. Expected ${expectedTypes.join(' or ')}, but got ${typeof value}.`);
-                return; // Stop further validation for this field if type is wrong
+                allFieldsValidOverall = false;
+                currentFieldInitialCheckPassed = false;
             }
         }
 
         // Custom validator
-        if (field.validator && !field.validator(value, fieldPath, errors)) {
-            // errors.push(`${fieldPath}: Custom validation failed.`); // Validator should push specific errors
-            return;
+        if (currentFieldInitialCheckPassed && field.validator) {
+            if (!field.validator(value, fieldPath, errors)) {
+                allFieldsValidOverall = false;
+                // currentFieldInitialCheckPassed = false; // Validator might invalidate the field for further checks if needed
+            }
         }
 
         // Array element type validation
-        if (field.type === 'array' && field.arrayElementType && isArray(value)) {
-            value.forEach((element, index) => {
-                const elementPath = `${fieldPath}[${index}]`;
+        if (currentFieldInitialCheckPassed && field.type === 'array' && field.arrayElementType && isArray(value)) {
+            for (let i = 0; i < value.length; i++) {
+                const element = value[i];
+                const elementPath = `${fieldPath}[${i}]`;
                 let elementMatch = false;
                 switch (field.arrayElementType) {
                     case 'string': if (isString(element)) {
@@ -203,27 +211,31 @@ function ensureFields(obj, fieldDefs, context, errors) {
                     case 'object': if (isObject(element)) {
                         elementMatch = true;
                     } break;
-                    // Add more types as needed
                     default:
-                        // This case implies an unsupported arrayElementType was specified in fieldDefs
                         errors.push(`${elementPath}: Unknown expected array element type '${field.arrayElementType}' in field definition.`);
+                        allFieldsValidOverall = false; // Definition error
                         break;
                 }
                 if (!elementMatch) {
                     errors.push(`${elementPath}: Invalid array element type. Expected ${field.arrayElementType}, but got ${typeof element}.`);
+                    allFieldsValidOverall = false;
                 }
                 else if (field.arrayElementType === 'object' && field.objectProperties) {
-                    // If elements are objects, validate their properties
-                    ensureFields(element, field.objectProperties, elementPath, errors);
+                    if (!ensureFields(element, field.objectProperties, elementPath, errors)) {
+                        allFieldsValidOverall = false;
+                    }
                 }
-            });
+            }
         }
 
         // Object properties validation (for nested objects)
-        if (field.type === 'object' && field.objectProperties && isObject(value)) {
-            ensureFields(value, field.objectProperties, fieldPath, errors);
+        if (currentFieldInitialCheckPassed && field.type === 'object' && field.objectProperties && isObject(value)) {
+            if (!ensureFields(value, field.objectProperties, fieldPath, errors)) {
+                allFieldsValidOverall = false;
+            }
         }
-    });
+    }
+    return allFieldsValidOverall;
 }
 
 
@@ -406,7 +418,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
 
         // Sound Events
         { name: 'soundEvents', type: 'object', validator: (soundEventsObj, sePath, seErrs) => {
-            let allValid = true;
+            let overallSoundEventsValid = true;
             for (const eventName in soundEventsObj) {
                 if (!Object.prototype.hasOwnProperty.call(soundEventsObj, eventName)) {
                     continue;
@@ -416,25 +428,30 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 const soundFieldDefs = [
                     { name: 'enabled', type: 'boolean' },
                     { name: 'soundId', type: 'string', optional: true }, // Can be empty for no sound
-                    { name: 'volume', type: 'number', optional: true },
+                    { name: 'volume', type: 'number', optional: true }, // Specific range check below
                     { name: 'pitch', type: 'number', optional: true },
                     { name: 'target', type: 'string', optional: true, validator: (val, p, e) => {
                         const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
                         if (val && !validTargets.includes(val)) {
                             e.push(`${p}: Invalid sound event target "${val}". Expected one of ${validTargets.join(', ')}.`);
-                            allValid = false;
+                            return false; // Indicate validation failure
                         }
-                        return true; // Validator pushes error
+                        return true; // Indicate validation success
                     } },
                     { name: 'description', type: 'string' },
                 ];
-                ensureFields(eventDef, soundFieldDefs, eventPath, seErrs);
-                if (eventDef.volume !== undefined && (eventDef.volume < 0 || eventDef.volume > 1.0) && isNumber(eventDef.volume)) {
+
+                if (!ensureFields(eventDef, soundFieldDefs, eventPath, seErrs)) {
+                    overallSoundEventsValid = false;
+                }
+
+                // Specific check for volume range, if volume is defined and is a number
+                if (eventDef.volume !== undefined && isNumber(eventDef.volume) && (eventDef.volume < 0 || eventDef.volume > 1.0)) {
                     seErrs.push(`${eventPath}.volume: Must be between 0.0 and 1.0. Got ${eventDef.volume}.`);
-                    allValid = false;
+                    overallSoundEventsValid = false;
                 }
             }
-            return allValid;
+            return overallSoundEventsValid;
         } },
 
         // Command Settings

@@ -85,10 +85,10 @@ export async function checkSymbolSpam(player, eventData, pData, dependencies) {
         const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         const shouldCancelMessage = profile?.cancelMessage;
 
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-
         if (shouldCancelMessage) {
             eventData.cancel = true;
         }
+
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
     }
 }

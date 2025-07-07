@@ -76,12 +76,12 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
             const profile = dependencies.checkActionProfiles?.[actionProfileKey];
             const shouldCancelMessage = profile?.cancelMessage;
 
-            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-            playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (only diacritics). Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
-
             if (shouldCancelMessage) {
                 eventData.cancel = true;
             }
+
+            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (only diacritics). Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
             return;
         }
     }
@@ -120,11 +120,11 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
         const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         const shouldCancelMessage = profile?.cancelMessage;
 
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
-
         if (shouldCancelMessage) {
             eventData.cancel = true;
         }
+
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[UnicodeAbuseCheck] Flagged ${playerName} for Unicode abuse (${reason}). Ratio: ${actualRatio.toFixed(2)}, Diacritics: ${diacriticCount}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
     }
 }

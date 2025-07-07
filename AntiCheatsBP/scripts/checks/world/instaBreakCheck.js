@@ -49,13 +49,14 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
             // For this specific check, cancellation is intrinsic to the detection of breaking an unbreakable block.
             // The actionManager.executeCheckAction is primarily for logging/flagging this event.
             // The decision to cancel is made here, not based on a profile.
-            const shouldCancel = true;
+            // For this specific check, cancellation is intrinsic.
+            // Set cancel before await to satisfy linter.
+            eventData.cancel = true;
 
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-            if (shouldCancel) {
-                eventData.cancel = true;
-            }
+            // The if(shouldCancel) is now redundant as eventData.cancel is already set.
+            // const shouldCancel = true; // This variable is no longer strictly needed here.
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): ${player.nameTag} attempt to break '${blockTypeId}' cancelled.`, watchedPrefix, dependencies);
