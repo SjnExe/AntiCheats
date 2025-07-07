@@ -68,17 +68,27 @@ This document outlines the consolidated standardization guidelines for the AntiC
 *   **JSDoc (`/** ... */`):**
     *   **Target:** Mandatory for all exported functions, classes, and significant constants. Recommended for complex internal functions.
     *   **Content (Functions):**
-        *   Concise summary.
-        *   `@param {type} name - description` for all parameters. Strive to use specific types from `@minecraft/server`, custom typedefs from `types.js` (e.g., `import('../types.js').PlayerAntiCheatData`), or primitive types (e.g., `string`, `number`, `boolean`) rather than generic `object` or `any` where possible.
-        *   `@returns {type} description` if applicable, with specific typing.
+        *   **Concise Summary**: The main description should be brief and to the point. If the function's purpose is clear from its name and parameters, an overly detailed summary is not needed. Focus on *why* it does something or any non-obvious behaviors.
+        *   **Compactness**:
+            *   Single-line JSDoc comments (e.g., `/** @type {string} */` or `/** @returns {boolean} True if action was successful. */`) are encouraged for simple type annotations or very short descriptions.
+            *   Minimize empty lines within JSDoc blocks. Tags should ideally follow the main description or each other without unnecessary blank lines, as configured in ESLint.
+        *   `@param {type} name - description`: Descriptions for parameters should also be concise. If the parameter's role is evident from its name and type, a very brief or even omitted description (if ESLint allows) might be acceptable for internal/simple functions.
+        *   `@returns {type} description`: Similar to params, keep return descriptions brief.
+        *   Strive to use specific types from `@minecraft/server`, custom typedefs from `types.js` (e.g., `import('../types.js').PlayerAntiCheatData`), or primitive types. Avoid generic `object` or `any` where possible.
         *   Optional: `@async` if the function is asynchronous, `@throws {ErrorType} description`, `@deprecated message`, `@see reference`, `@example code`.
-    *   **Content (Constants):** Brief description and `@type {type}`.
-    *   **`@typedef`:** Centralize in `types.js` for widely used types, or file-local if specific. (Current practice is good).
+    *   **Content (Constants):** Brief description and `@type {type}`. Single-line JSDoc is often sufficient: `/** @type {number} Maximum retry attempts. */`.
+    *   **`@typedef`:** Centralize in `types.js` for widely used types, or file-local if specific. Descriptions for properties within `@typedef` should also be concise.
 *   **Inline Comments (`//`):**
-    *   Clarify complex or non-obvious logic. Place on a line before the code or at line-end for short comments.
-    *   Avoid commenting obvious code.
-    *   Use `// TODO:` and `// FIXME:` for tracking. When using these, briefly include context, the issue to be addressed, and optionally a name/date if it's a significant item.
-*   **File Header Comments:** Maintain brief JSDoc-style file purpose descriptions at the top.
+    *   **Purpose**: Clarify complex, non-obvious logic, or the *reason* behind a piece of code if it's not immediately clear. Do not explain *what* the code is doing if it's self-evident.
+        *   Example (Good): `// Offset by 1 to align with the legacy system's 1-based indexing.`
+        *   Example (Bad): `// Increment counter` followed by `counter++;`
+    *   **Conciseness**: Keep inline comments brief and to the point.
+    *   Avoid obvious or redundant comments.
+    *   Use `// TODO:` and `// FIXME:` for tracking. Briefly include context, the issue, and optionally a name/date.
+*   **File Header Comments:**
+    *   Maintain brief JSDoc-style file purpose descriptions at the top (`@file`).
+    *   This can be a single line for simple files: `/** @file Utility functions for array manipulation. */`
+    *   The `@author` and `@license` tags are optional but good practice.
 
 ## 5. API Usage Standards (Minecraft Server API)
 

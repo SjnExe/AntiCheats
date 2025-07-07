@@ -216,11 +216,47 @@ export default [
 
         // Turned off or kept as warn based on previous config and common sense
         'jsdoc/require-description': 'warn', // require-jsdoc implies a description is needed. This one is more specific about the description *content*.
-        'jsdoc/require-description-complete-sentence': 'off',
+        'jsdoc/require-description-complete-sentence': ['warn', { abbreviations: ["e.g.", "i.e."] }], // Keep sentences, but allow common abbreviations.
         'jsdoc/match-description': 'off',
         'jsdoc/no-defaults': 'warn',
         'jsdoc/require-example': 'off',
         'jsdoc/empty-tags': 'warn', // Default is warn, keep it
+
+        // Rules for compactness
+        'jsdoc/multiline-blocks': ['warn', { // Adjusted for more flexibility
+            noZeroLineText: true,
+            noFinalLineText: true,
+            singleLineTags: ['type', 'typedef', 'param', 'returns', 'default', 'deprecated', 'async', 'see', 'ignore', 'license', 'author', 'module'], // Allow single line for these common tags
+            noSingleLineBlocks: false, // Allow /** @type {string} */ and /** Short desc. */
+            allowFinalAlignment: false, // Don't require final asterisk alignment for single line blocks
+        }],
+        'jsdoc/tag-lines': ['warn', 'never', { // No extra lines between tags for compactness
+            // startLines: 1, // Removed to allow tags immediately after description
+            // applyToEndTag: false, // Default
+            // count: 0, // Ensure no blank lines between tags.
+            tags: {
+                'file': { lines: 'never' }, // for @file, no lines around it
+                'example': { lines: 'any' }, // Allow space within examples
+                'description': { lines: 'never' } // No blank line after main description before first tag
+            }
+        }],
+
+        // Additional general ESLint rules for code optimization and consistency
+        'no-useless-rename': 'warn',
+        'no-useless-computed-key': 'warn',
+        'no-extra-boolean-cast': 'error',
+        'no-extra-semi': 'error',
+        'no-lone-blocks': 'warn',
+        'no-useless-constructor': 'warn',
+        'no-unneeded-ternary': ['warn', { defaultAssignment: false }],
+        'prefer-arrow-callback': 'warn',
+        'dot-notation': ['warn', { allowKeywords: true }],
+        'yoda': ['warn', 'never', { exceptRange: true }],
+        'no-else-return': ['warn', { allowElseIf: false }],
+        'prefer-template': 'warn',
+        'object-shorthand': ['warn', 'properties'], // Prefer {x} over {x: x}
+        'no-useless-concat': 'warn',
+        'prefer-object-spread': 'warn',
     }
   }
 ];

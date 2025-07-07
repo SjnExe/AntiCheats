@@ -53,9 +53,14 @@ String literals used for `actionType` values (e.g., in `automodConfig.js` for Au
     - Examples for `log.actionType` in action profiles: `detectedFlyHover`, `antigriefTntPlacement`, `detectedSpeedGround`.
 
 ## JSDoc
-*   Use JSDoc comments for all functions, especially exported ones, detailing their purpose, parameters, and return values.
-*   Use JSDoc typedefs for complex object structures (e.g., `PlayerAntiCheatData`) and consider placing these in a central `types.js` file to avoid circular dependencies. (This is already done).
-*   Refer to `Dev/StandardizationGuidelines.md` for more detailed JSDoc type usage.
+*   Use JSDoc comments for all functions, especially exported ones.
+    *   **Conciseness is Key**: Comments should be clear and informative but also concise. Avoid overly verbose descriptions, especially if the function's purpose is clear from its name and parameters.
+    *   **Compact JSDoc**:
+        *   For simple type annotations or very short descriptions, single-line JSDoc comments are encouraged (e.g., `/** @type {string} */` or `/** @returns {boolean} True if successful. */`).
+        *   Minimize empty lines within JSDoc blocks. Tags should follow the main description or each other without unnecessary blank lines.
+    *   Detail purpose, parameters (`@param`), and return values (`@returns`) as needed.
+*   Use JSDoc typedefs (`@typedef`) for complex object structures (e.g., `PlayerAntiCheatData`). These are typically centralized in `types.js`.
+*   Refer to `Dev/StandardizationGuidelines.md` for more detailed JSDoc type usage and specific formatting.
 
 ## General Formatting
 *   Follow existing code formatting for indentation (e.g., 4 spaces), spacing, and brace style.
