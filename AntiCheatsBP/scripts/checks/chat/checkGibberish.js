@@ -129,11 +129,11 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         const shouldCancelMessage = profile?.cancelMessage;
 
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[GibberishCheck] Flagged ${playerName} for ${flagReasons.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
-
         if (shouldCancelMessage) {
             eventData.cancel = true;
         }
+
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[GibberishCheck] Flagged ${playerName} for ${flagReasons.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
     }
 }

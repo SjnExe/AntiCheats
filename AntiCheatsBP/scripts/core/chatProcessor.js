@@ -121,13 +121,15 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
                 const shouldCancelForNewline = config.cancelMessageOnNewline !== false;
 
+                if (shouldCancelForNewline) {
+                    eventData.cancel = true; // Set cancel before await if condition met
+                }
+
                 if (config.flagOnNewline) {
                     await actionManager?.executeCheckAction(player, 'chatNewline', { message: messageSnippet }, dependencies);
                 }
 
-                if (shouldCancelForNewline) {
-                    eventData.cancel = true;
-                }
+                // Final check on eventData.cancel (which might have been set before await) handles the return
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by NewlineCheck.`, playerName, dependencies);
                     return;
@@ -142,13 +144,15 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
 
                 const shouldCancelForMaxLength = config.cancelOnMaxMessageLength !== false;
 
+                if (shouldCancelForMaxLength) {
+                    eventData.cancel = true; // Set cancel before await if condition met
+                }
+
                 if (config.flagOnMaxMessageLength) {
                     await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? 256, messageSnippet }, dependencies);
                 }
 
-                if (shouldCancelForMaxLength) {
-                    eventData.cancel = true;
-                }
+                // Final check on eventData.cancel (which might have been set before await) handles the return
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Chat cancelled for ${playerName} by MaxMessageLengthCheck.`, playerName, dependencies);
                     return;

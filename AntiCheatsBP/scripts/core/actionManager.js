@@ -98,7 +98,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         const increment = typeof profile.flag.increment === 'number' ? profile.flag.increment : 1;
 
         for (let i = 0; i < increment; i++) {
-            await playerDataManager?.addFlag(player, flagType, flagReasonMessage, violationDetails, dependencies);
+            await playerDataManager?.addFlag(player, flagType, flagReasonMessage, dependencies, violationDetails);
         }
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Flagged ${playerNameForLog} for ${flagType} (x${increment}). Reason: '${flagReasonMessage}'`, player?.nameTag, dependencies);
     }

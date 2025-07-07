@@ -101,6 +101,10 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         const shouldCancelMessage = profile?.cancelMessage;
 
+        if (shouldCancelMessage) {
+            eventData.cancel = true;
+        }
+
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils?.debugLog(
@@ -108,9 +112,5 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
             `Count: ${matchCount + 1} in last ${pData.chatMessageHistory.length} (lookback: ${historyLength}, threshold: ${triggerThreshold}).`,
             watchedPlayerName, dependencies,
         );
-
-        if (shouldCancelMessage) {
-            eventData.cancel = true;
-        }
     }
 }

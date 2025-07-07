@@ -104,11 +104,11 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         const profile = dependencies.checkActionProfiles?.[actionProfileKey];
         const shouldCancelMessage = profile?.cancelMessage;
 
-        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
-
         if (shouldCancelMessage) {
             eventData.cancel = true;
         }
+
+        await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
     }
 }

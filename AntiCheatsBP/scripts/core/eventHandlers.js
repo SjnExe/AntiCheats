@@ -400,10 +400,19 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
         }
         const messageToWarn = getString(profile?.messageKey || defaultMessageKey);
 
-        await actionManager?.executeCheckAction(player, checkType, violationDetails, dependencies);
-
         if (shouldCancelEvent) {
             eventData.cancel = true;
+            // Warning can also be moved before await if it's tied to cancellation
+            // but typically warnings are fine after an action if the event is cancelled.
+            // For this rule, the primary concern is eventData.cancel.
+        }
+
+        await actionManager?.executeCheckAction(player, checkType, violationDetails, dependencies);
+
+        // If cancellation was determined and set, and the action didn't un-cancel it,
+        // the warning will be sent. If actionManager could un-cancel, this warning might be misplaced.
+        // However, the eventData.cancel = true assignment is now before the await.
+        if (eventData.cancel) { // Re-check eventData.cancel if it could have been modified by await
             playerUtils?.warnPlayer(player, messageToWarn);
         }
     }
@@ -712,7 +721,7 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
 export async function handleItemUse(eventData, dependencies) {
-    const { checks, config, getString, playerUtils, playerDataManager, mc: minecraftSystem, currentTick: _currentTick, actionManager } = dependencies; // Renamed currentTick
+    const { checks, config, getString, playerUtils, playerDataManager, mc: minecraftSystem, actionManager } = dependencies;
     const { source: player, itemStack } = eventData;
 
     if (!player?.isValid() || !itemStack?.typeId) {
@@ -724,7 +733,9 @@ export async function handleItemUse(eventData, dependencies) {
         return;
     }
 
-    pData.lastItemUseTick = _currentTick; // Update last item use tick
+
+    const _currentTick = dependencies.currentTick;
+    pData.lastItemUseTick = _currentTick;
     pData.isDirtyForSave = true;
 
     if (checks?.checkSwitchAndUseInSameTick && config?.enableInventoryModCheck) {
@@ -1018,6 +1029,7 @@ export async function handlePlayerDimensionChangeAfterEvent(eventData, dependenc
         playerUtils?.debugLog('[EventHandler.handlePlayerDimensionChangeAfterEvent] Incomplete event data for player.', player?.nameTag, dependencies);
         return;
     }
+
     const _playerName = player.nameTag; // Prefixed as mainly used for logging
 
     // Update pData with new dimension
