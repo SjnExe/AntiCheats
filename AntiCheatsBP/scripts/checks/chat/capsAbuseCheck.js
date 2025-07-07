@@ -78,10 +78,14 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
             upperCaseCount: upperCaseLetters.toString(),
             originalMessage: message,
         };
+
+        // Determine if message should be cancelled before awaiting actionManager
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+        const shouldCancelMessage = profile?.cancelMessage;
+
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-        if (profile?.cancelMessage) {
+        if (shouldCancelMessage) {
             eventData.cancel = true;
         }
     }

@@ -100,11 +100,14 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
             originalMessage: rawMessageContent,
         };
 
+        // Determine if message should be cancelled before awaiting actionManager
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+        const shouldCancelMessage = profile?.cancelMessage;
+
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
 
-        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-        if (profile?.cancelMessage) {
+        if (shouldCancelMessage) {
             eventData.cancel = true;
         }
     }

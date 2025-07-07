@@ -81,10 +81,14 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
             messageLength: message.length.toString(),
             originalMessage: message,
         };
+
+        // Determine if message should be cancelled before awaiting actionManager
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+        const shouldCancelMessage = profile?.cancelMessage;
+
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-        if (profile?.cancelMessage) {
+        if (shouldCancelMessage) {
             eventData.cancel = true;
         }
     }

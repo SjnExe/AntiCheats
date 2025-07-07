@@ -70,7 +70,8 @@ export async function checkNuker(player, pData, dependencies) {
 
         await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-        pData.blockBreakEvents = [];
-        pData.isDirtyForSave = true;
+        const pDataToUpdate = pData; // Re-affirm pData reference
+        pDataToUpdate.blockBreakEvents = [];
+        pDataToUpdate.isDirtyForSave = true;
     }
 }

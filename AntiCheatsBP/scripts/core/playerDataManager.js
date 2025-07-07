@@ -85,9 +85,9 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {object} pDataToSave - Data containing only keys to be persisted.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if saving was successful, false otherwise.
+ * @returns {boolean} True if saving was successful, false otherwise.
  */
-export async function savePlayerDataToDynamicProperties(player, pDataToSave, dependencies) {
+export function savePlayerDataToDynamicProperties(player, pDataToSave, dependencies) {
     const { playerUtils } = dependencies; // Removed logManager
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
@@ -139,9 +139,9 @@ export async function savePlayerDataToDynamicProperties(player, pDataToSave, dep
  * Loads player data from dynamic properties.
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<object | null>} The loaded player data object, or null if not found or error.
+ * @returns {object | null} The loaded player data object, or null if not found or error.
  */
-export async function loadPlayerDataFromDynamicProperties(player, dependencies) {
+export function loadPlayerDataFromDynamicProperties(player, dependencies) {
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
@@ -213,7 +213,7 @@ export async function prepareAndSavePlayerData(player, dependencies) {
     if (pData) {
         const persistedPData = {};
         for (const key of persistedPlayerDataKeys) {
-            if (Object.prototype.hasOwnProperty.call(pData, key)) {
+            if (Object.prototype.hasOwnProperty.call(pData, key) && pData[key] !== undefined) { // Added hasOwnProperty check
                 persistedPData[key] = pData[key];
             }
         }
@@ -340,10 +340,10 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
         lastViolationDetailsMap: {},
         automodState: {},
         deathMessageToShowOnSpawn: null,
-        lastChatMessageTimestamp: 0,
-        recentHits: [], // already present from before but ensure it's here
-        lastUsedElytraTick: 0,
-        lastOnSlimeBlockTick: 0,
+        // lastChatMessageTimestamp: 0, // Duplicate removed
+        // recentHits: [], // Duplicate removed
+        // lastUsedElytraTick: 0, // Duplicate removed
+        // lastOnSlimeBlockTick: 0, // Duplicate removed
         recentEntitySpamTimestamps: {},
         lastCheckNameSpoofTick: 0,
         lastCheckAntiGmcTick: 0,
@@ -390,8 +390,10 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         if (typeof newPData.flags.totalFlags !== 'number' || isNaN(newPData.flags.totalFlags)) {
             newPData.flags.totalFlags = 0;
             for (const flagKey in newPData.flags) {
-                if (flagKey !== 'totalFlags' && newPData.flags[flagKey] && typeof newPData.flags[flagKey].count === 'number') {
-                    newPData.flags.totalFlags += newPData.flags[flagKey].count;
+                if (Object.prototype.hasOwnProperty.call(newPData.flags, flagKey)) {
+                    if (flagKey !== 'totalFlags' && newPData.flags[flagKey] && typeof newPData.flags[flagKey].count === 'number') {
+                        newPData.flags.totalFlags += newPData.flags[flagKey].count;
+                    }
                 }
             }
         }
@@ -681,8 +683,7 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
         restrictionInfo.playerName = playerName;
         restrictionInfo.banTime = Date.now();
     }
-    else {
-    }
+    // No specific 'else' logic needed for mute here as common fields are already set
 
     pData[stateType === 'ban' ? 'banInfo' : 'muteInfo'] = restrictionInfo;
     pData.isDirtyForSave = true;
@@ -760,7 +761,7 @@ function _getPlayerStateRestriction(pData, stateType, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if mute was successfully added, false otherwise.
  */
-export function addMute(player, durationMs, reason, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
+export function addMute(player, durationMs, reason, dependencies, mutedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) { // Correct order: dependencies before optionals
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
@@ -836,7 +837,7 @@ export function isMuted(player, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if ban was successfully added, false otherwise.
  */
-export function addBan(player, durationMs, reason, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null, dependencies) {
+export function addBan(player, durationMs, reason, dependencies, bannedBy = 'Unknown', isAutoMod = false, triggeringCheckType = null) { // Correct order: dependencies before optionals
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
@@ -932,9 +933,9 @@ export async function saveDirtyPlayerData(player, dependencies) {
  * @param {import('@minecraft/server').Player} player - The player whose flags to clear.
  * @param {string} checkType - The check type (camelCase) whose flags to clear.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function clearFlagsForCheckType(player, checkType, dependencies) {
+export function clearFlagsForCheckType(player, checkType, dependencies) {
     const { playerUtils } = dependencies;
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 

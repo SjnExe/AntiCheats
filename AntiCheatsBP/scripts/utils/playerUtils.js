@@ -134,10 +134,10 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
  * Logs a debug message to the console if debug logging is enabled.
  * Prefixes messages with context if a watched player's name is provided.
  * @param {string} message - The message to log.
- * @param {string | null} contextPlayerNameIfWatched - The name of the player if they are being watched, for contextual prefixing.
  * @param {import('../types.js').CommandDependencies} dependencies - Access to config for `enableDebugLogging`.
+ * @param {string | null} [contextPlayerNameIfWatched=null] - The name of the player if they are being watched, for contextual prefixing.
  */
-export function debugLog(message, contextPlayerNameIfWatched = null, dependencies) {
+export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
     if (dependencies?.config?.enableDebugLogging) {
         const prefix = contextPlayerNameIfWatched ? `[AC Watch - ${contextPlayerNameIfWatched}]` : '[AC Debug]';
         console.warn(`${prefix} ${message}`);
@@ -183,6 +183,11 @@ export function parseDuration(durationString) {
             case 'm': return value * 60 * 1000;
             case 'h': return value * 60 * 60 * 1000;
             case 'd': return value * 24 * 60 * 60 * 1000;
+            default:
+                // This case should ideally not be reached if the regex is correct.
+                // If it is reached, it implies an unexpected unit.
+                console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
+                return null;
         }
     }
     else if (/^\d+$/.test(lowerDurationString)) {
@@ -337,13 +342,14 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
  * Parses command arguments to extract a target player name and a reason string.
  * @param {string[]} args - The array of command arguments.
  * @param {number} [reasonStartIndex=1] - The index in `args` from which the reason string starts.
+ * @param {import('../types.js').CommandDependencies} dependencies - For accessing `getString`.
+ * @param {number} [reasonStartIndex=1] - The index in `args` from which the reason string starts.
  * @param {string} [defaultReasonKey='common.value.noReasonProvided'] - The key in `textDatabase.js` for the default reason if not provided.
- * @param {import('../types.js').Dependencies} dependencies - For accessing `getString`.
  * @returns {{targetPlayerName: string | undefined, reason: string}}
  *          An object containing `targetPlayerName` (args[0]) and the parsed `reason`.
  *          `targetPlayerName` will be undefined if `args` is empty.
  */
-export function parsePlayerAndReasonArgs(args, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided', dependencies) {
+export function parsePlayerAndReasonArgs(args, dependencies, reasonStartIndex = 1, defaultReasonKey = 'common.value.noReasonProvided') {
     const { getString } = dependencies; // playerUtils was unused here, getString is directly on dependencies or via playerUtils from caller
 
     const targetPlayerName = args[0];

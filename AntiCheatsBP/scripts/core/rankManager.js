@@ -115,6 +115,10 @@ function getPlayerRankAndPermissions(player, dependencies) {
                     case 'default': // Fallback condition
                         match = true;
                         break;
+                    default:
+                        // Unknown condition type, log if necessary or treat as no match
+                        playerUtils?.debugLog(`[RankManager] Unknown rank condition type '${condition.type}' for rank '${rankDef.id}' player '${playerName}'.`, playerName, dependencies);
+                        break;
                 }
                 if (match) {
                     return { rankDefinition: rankDef, permissionLevel: rankDef.permissionLevel, rankId: rankDef.id };

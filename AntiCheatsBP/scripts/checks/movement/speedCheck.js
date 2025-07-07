@@ -96,8 +96,10 @@ export async function checkSpeed(player, pData, dependencies) {
                 };
                 await actionManager?.executeCheckAction(player, groundActionProfileKey, violationDetails, dependencies);
                 playerUtils?.debugLog(`[SpeedCheck] Flagged ${playerName} for ground speed. Speed: ${hSpeedBPS.toFixed(3)} > ${maxAllowedSpeedBPS.toFixed(3)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
-                pData.consecutiveOnGroundSpeedingTicks = 0;
-                pData.isDirtyForSave = true;
+
+                const pDataToUpdate = pData; // Re-affirm pData reference
+                pDataToUpdate.consecutiveOnGroundSpeedingTicks = 0;
+                pDataToUpdate.isDirtyForSave = true;
             }
         }
         else {

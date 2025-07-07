@@ -28,7 +28,7 @@ function normalizeWordForSwearCheck(word, dependencies) {
     }
     let normalized = word.toLowerCase();
 
-    normalized = normalized.replace(/[\s._\-~`!@#$%^&*()+={}\[\]|\\:;"'<>,.?/0-9]+/g, '');
+    normalized = normalized.replace(/[\s._\-~`!@#$%^&*()+={}[\]|\\:;"'<>,.?/0-9]+/g, '');
     if (!normalized) {
         return '';
     }

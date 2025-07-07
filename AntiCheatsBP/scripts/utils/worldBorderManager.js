@@ -376,8 +376,8 @@ export function processWorldBorderResizing(dependencies) {
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
-export async function enforceWorldBorderForPlayer(player, pData, dependencies) {
-    const { config, playerUtils, logManager, getString, rankManager, permissionLevels, currentTick } = dependencies;
+export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Removed async
+    const { config, playerUtils, logManager: _logManager, getString, rankManager, permissionLevels, currentTick } = dependencies; // Renamed logManager
     if (!config.enableWorldBorderSystem) {
         return;
     }

@@ -23,9 +23,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const subCommand = args[0]?.toLowerCase() || 'status';
     const prefix = config?.prefix ?? '!';
@@ -38,7 +38,7 @@ export async function execute(player, args, dependencies) {
     try {
         switch (subCommand) {
             case 'on':
-            case 'lock':
+            case 'lock': {
                 success = setEndLocked(true);
                 if (success) {
                     player?.sendMessage(getString('command.endlock.locked'));
@@ -54,8 +54,9 @@ export async function execute(player, args, dependencies) {
                     playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
                 break;
+            }
             case 'off':
-            case 'unlock':
+            case 'unlock': {
                 success = setEndLocked(false);
                 if (success) {
                     player?.sendMessage(getString('command.endlock.unlocked'));
@@ -71,11 +72,13 @@ export async function execute(player, args, dependencies) {
                     playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
                 break;
-            case 'status':
+            }
+            case 'status': {
                 const locked = isEndLocked();
                 statusText = locked ? getString('command.endlock.status.locked') : getString('command.endlock.status.unlocked');
                 player?.sendMessage(getString('command.endlock.status', { statusText }));
                 break;
+            }
             default:
                 player?.sendMessage(getString('command.endlock.usage', { prefix }));
 

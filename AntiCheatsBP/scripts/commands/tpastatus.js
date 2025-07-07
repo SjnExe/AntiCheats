@@ -20,9 +20,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { config, playerUtils, tpaManager, getString, logManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
     const playerSystemName = player.name;
@@ -51,10 +51,11 @@ export async function execute(player, args, dependencies) {
         case 'disable':
             newAcceptsTpa = false;
             break;
-        case 'status':
+        case 'status': {
             const statusMsgKey = currentStatus?.acceptsTpaRequests ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
             player.sendMessage(getString(statusMsgKey));
             return;
+        }
         default:
             player.sendMessage(getString('command.tpastatus.invalidOption', { prefix: prefix }));
             return;

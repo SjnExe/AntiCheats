@@ -139,9 +139,9 @@ export function removeRequest(requestId, dependencies) {
  * Accepts a TPA request.
  * @param {string} requestId - The ID of the request to accept.
  * @param {CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if accepted, false otherwise.
+ * @returns {boolean} True if accepted, false otherwise.
  */
-export async function acceptRequest(requestId, dependencies) {
+export function acceptRequest(requestId, dependencies) {
     const { config, playerUtils, getString, logManager, mc: minecraftSystem } = dependencies;
     const request = activeRequests.get(requestId);
 
@@ -169,8 +169,9 @@ export async function acceptRequest(requestId, dependencies) {
         return false;
     }
 
-    request.status = 'pendingTeleportWarmup'; // Standardized status string
-    request.warmupExpiryTimestamp = Date.now() + ((config?.tpaTeleportWarmupSeconds ?? 5) * 1000);
+    const requestToUpdate = request;
+    requestToUpdate.status = 'pendingTeleportWarmup'; // Standardized status string
+    requestToUpdate.warmupExpiryTimestamp = Date.now() + ((config?.tpaTeleportWarmupSeconds ?? 5) * 1000);
 
     const warmupSeconds = config?.tpaTeleportWarmupSeconds ?? 5;
     const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: warmupSeconds.toString() });
@@ -254,11 +255,16 @@ export async function executeTeleport(requestId, dependencies) {
         else {
             playerUtils?.debugLog(`[TpaManager.executeTeleport] Unknown type: ${request.requestType} for request ${requestId}`, request.requesterName, dependencies);
         }
-        request.status = teleportSuccessful ? 'completed' : 'cancelled';
-        playerUtils?.debugLog(`[TpaManager.executeTeleport] Request ${requestId} status: ${request.status}. Type: ${request.requestType}`, request.requesterName, dependencies);
+
+        const requestToUpdateStatus = request; // Re-affirm request reference
+        requestToUpdateStatus.status = teleportSuccessful ? 'completed' : 'cancelled';
+        playerUtils?.debugLog(`[TpaManager.executeTeleport] Request ${requestId} status: ${requestToUpdateStatus.status}. Type: ${requestToUpdateStatus.requestType}`, requestToUpdateStatus.requesterName, dependencies);
     }
     catch (e) {
-        request.status = 'cancelled';
+        const requestToCancelOnError = activeRequests.get(requestId); // Re-fetch or use original if confident
+        if (requestToCancelOnError) {
+            requestToCancelOnError.status = 'cancelled';
+        }
         console.error(`[TpaManager.executeTeleport] Error for request ${requestId}: ${e.stack || e}`);
         try {
             if (requesterPlayer?.isValid()) {

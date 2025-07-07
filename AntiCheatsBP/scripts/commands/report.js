@@ -14,7 +14,7 @@ export const definition = {
     enabled: true,
 };
 
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const reporterPlayer = player;
 

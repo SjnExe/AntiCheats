@@ -118,10 +118,14 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             if (originalMessage.includes('\n') || originalMessage.includes('\r')) {
                 playerUtils?.warnPlayer(player, getString('chat.error.newline'));
                 const messageSnippet = originalMessage.substring(0, maxMessageSnippetLength) + (originalMessage.length > maxMessageSnippetLength ? '...' : '');
+
+                const shouldCancelForNewline = config.cancelMessageOnNewline !== false;
+
                 if (config.flagOnNewline) {
                     await actionManager?.executeCheckAction(player, 'chatNewline', { message: messageSnippet }, dependencies);
                 }
-                if (config.cancelMessageOnNewline !== false) {
+
+                if (shouldCancelForNewline) {
                     eventData.cancel = true;
                 }
                 if (eventData.cancel) {
@@ -135,10 +139,14 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             if (originalMessage.length > (config.maxMessageLength ?? 256)) {
                 playerUtils?.warnPlayer(player, getString('chat.error.maxLength', { maxLength: config.maxMessageLength ?? 256 }));
                 const messageSnippet = originalMessage.substring(0, maxMessageSnippetLength) + (originalMessage.length > maxMessageSnippetLength ? '...' : '');
+
+                const shouldCancelForMaxLength = config.cancelOnMaxMessageLength !== false;
+
                 if (config.flagOnMaxMessageLength) {
                     await actionManager?.executeCheckAction(player, 'chatMaxLength', { messageLength: originalMessage.length, maxLength: config.maxMessageLength ?? 256, messageSnippet }, dependencies);
                 }
-                if (config.cancelOnMaxMessageLength !== false) {
+
+                if (shouldCancelForMaxLength) {
                     eventData.cancel = true;
                 }
                 if (eventData.cancel) {

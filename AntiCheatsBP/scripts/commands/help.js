@@ -22,9 +22,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [command_name].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { commandDefinitionMap, config, permissionLevels: depPermLevels, rankManager, getString, playerUtils } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
