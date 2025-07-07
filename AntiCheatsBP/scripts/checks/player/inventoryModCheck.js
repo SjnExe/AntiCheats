@@ -75,8 +75,8 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
  * @param {Dependencies} dependencies - Object containing necessary dependencies.
  * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `inventoryChangeDetails`
- *                                                (which should mirror structure of `PlayerInventoryItemChangeAfterEvent`'s eventData
- *                                                like `newItemStack`, `oldItemStack`, `inventorySlot`).
+ * (which should mirror structure of `PlayerInventoryItemChangeAfterEvent`'s eventData
+ * like `newItemStack`, `oldItemStack`, `inventorySlot`).
  * @returns {Promise<void>}
  */
 export async function checkInventoryMoveWhileActionLocked(player, pData, dependencies, eventSpecificData) {

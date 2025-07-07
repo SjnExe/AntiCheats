@@ -24,7 +24,7 @@ const DEFAULT_MIN_FALL_DISTANCE_FOR_DAMAGE = 3.5;
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data. Expected to contain `fallDistance`,
- *                                     `isTakingFallDamage`, `hasSlowFalling`, `lastOnSlimeBlockTick`, etc.
+ * `isTakingFallDamage`, `hasSlowFalling`, `lastOnSlimeBlockTick`, etc.
  * @param {Dependencies} dependencies - The standard dependencies object, including `currentTick`.
  * @returns {Promise<void>}
  */

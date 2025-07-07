@@ -279,10 +279,10 @@ const defaultConfigSettings = {
      * `volume`: (number, optional) Sound volume, typically 0.0 to 1.0. Defaults to 1.0.
      * `pitch`: (number, optional) Sound pitch. Defaults to 1.0.
      * `target`: (string, optional) Who hears the sound:
-     *           - "player": The player directly involved in or causing the event.
-     *           - "admin": All online administrators who have notifications enabled.
-     *           - "targetPlayer": A specific target player of an action (e.g., for TPA).
-     *           - "global": All online players (use with extreme caution).
+     * - "player": The player directly involved in or causing the event.
+     * - "admin": All online administrators who have notifications enabled.
+     * - "targetPlayer": A specific target player of an action (e.g., for TPA).
+     * - "global": All online players (use with extreme caution).
      * `description`: (string) A human-readable description of when this sound plays.
      */
     soundEvents: {
@@ -345,7 +345,7 @@ const defaultConfigSettings = {
     },
 
     // --- Command Specific Toggles & Values ---
-    /** @type {Object.<string, {enabled: boolean}>} Allows toggling individual commands on or off. */
+    /** @type {{[key: string]: {enabled: boolean}}} Allows toggling individual commands on or off. */
     commandSettings: {
         version: { enabled: true },
         myflags: { enabled: true },
@@ -741,7 +741,7 @@ Rule 6: Have fun and contribute to a positive community!`,
     deathEffectParticleName: 'minecraft:totem_particle',
     /** @type {string} The sound ID to play when a player dies (e.g., "mob.ghast.scream"). */
     deathEffectSoundId: 'mob.ghast.scream',
-    /** @type {object} Defines the default cosmetic effect shown when a player dies (legacy, can be expanded). */
+    /** @type {{soundId: string, particleCommand: string, soundOptions: {volume: number, pitch: number}}} Defines the default cosmetic effect shown when a player dies (legacy, can be expanded). */
     defaultDeathEffect: {
         soundId: 'ambient.weather.lightning.impact',
         particleCommand: 'particle minecraft:large_explosion ~ ~1 ~',
@@ -792,7 +792,8 @@ export const acVersion = 'v__VERSION_STRING__';
 // Complex objects like `automodConfig` or `checkActionProfiles` are imported and managed by their own modules
 // and are not part of this editableConfigValues structure directly.
 /**
- *
+ * @description Holds all configuration settings that can be modified at runtime.
+ * Initialized with values from `defaultConfigSettings`.
  */
 export const editableConfigValues = { ...defaultConfigSettings };
 

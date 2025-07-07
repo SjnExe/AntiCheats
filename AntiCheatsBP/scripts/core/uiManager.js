@@ -144,11 +144,12 @@ const PLAYER_ACTIONS_BTN_CLEAR_INV = 9;
 const PLAYER_ACTIONS_BTN_BACK_TO_LIST = 10;
 
 /**
+ * Displays a form with various actions that can be taken on a specific player.
  *
- * @param adminPlayer
- * @param targetPlayer
- * @param playerDataManager
- * @param dependencies
+ * @param {import('@minecraft/server').Player} adminPlayer - The admin player using the form.
+ * @param {import('@minecraft/server').Player} targetPlayer - The player being targeted by the actions.
+ * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     const { config, playerUtils, logManager, getString, commandExecutionMap } = dependencies; // Removed permissionLevels
@@ -205,8 +206,10 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         let shouldReturnToPlayerList = false;
         let shouldReturnToPlayerActions = true; // Default to re-showing this form
         /**
+         * Retrieves a command execution function from the command map.
          *
-         * @param cmd
+         * @param {string} cmd - The name of the command to retrieve.
+         * @returns {((player: import('@minecraft/server').Player, args: string[], dependencies: import('../types.js').Dependencies) => Promise<void>) | undefined} The command's execute function or undefined if not found.
          */
         const cmdExec = (cmd) => commandExecutionMap?.get(cmd);
 
@@ -342,10 +345,12 @@ const ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON = 6; // Index of close if owner bu
 
 
 /**
+ * Shows the main admin panel form.
+ * Displays different options based on the admin's permission level.
  *
- * @param player
- * @param playerDataManager
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The player (admin) viewing the panel.
+ * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showAdminPanelMain(player, playerDataManager, dependencies) {
     const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // uiManager removed as functions are called directly
@@ -423,9 +428,11 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
 };
 
 /**
+ * Shows a form listing all currently online players.
+ * Allows selecting a player to view further actions.
  *
- * @param adminPlayer
- * @param dependencies
+ * @param {import('@minecraft/server').Player} adminPlayer - The admin player viewing the list.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showOnlinePlayersList(adminPlayer, dependencies) {
     const { playerUtils, logManager, playerDataManager, getString, mc: minecraft } = dependencies; // Removed uiManager
@@ -494,10 +501,11 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
 // async function showServerManagementForm (_adminPlayer, _playerDataManager_unused, _config_unused, _dependencies) { /* ... */ };
 // async function showModLogTypeSelectionForm (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
 /**
+ * Shows a form displaying detailed flags for a specific target player. (Currently a stub)
  *
- * @param adminPlayer
- * @param targetPlayer
- * @param dependencies
+ * @param {import('@minecraft/server').Player} adminPlayer - The admin player viewing the flags.
+ * @param {import('@minecraft/server').Player} targetPlayer - The player whose flags are being viewed.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showDetailedFlagsForm (adminPlayer, targetPlayer, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
@@ -509,9 +517,10 @@ async function showDetailedFlagsForm (adminPlayer, targetPlayer, dependencies) {
 };
 
 /**
+ * Shows a form for resetting flags for a player. (Currently a stub)
  *
- * @param player
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The admin player initiating the action.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showResetFlagsForm(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
@@ -521,9 +530,10 @@ async function showResetFlagsForm(player, dependencies) {
 }
 
 /**
+ * Shows a list of watched players. (Currently a stub)
  *
- * @param player
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The admin player viewing the list.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showWatchedPlayersList(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
@@ -533,9 +543,10 @@ async function showWatchedPlayersList(player, dependencies) {
 }
 
 /**
+ * Shows a server management form. (Currently a stub)
  *
- * @param player
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The admin player using the form.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showServerManagementForm(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
@@ -545,9 +556,10 @@ async function showServerManagementForm(player, dependencies) {
 }
 
 /**
+ * Shows a form for editing configuration values. (Currently a stub)
  *
- * @param player
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The admin player (owner) using the form.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 async function showEditConfigForm(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
@@ -557,9 +569,10 @@ async function showEditConfigForm(player, dependencies) {
 }
 
 /**
+ * Shows the main panel for normal users. (Currently a stub)
  *
- * @param player
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The player viewing the panel.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
 function showNormalUserPanelMain(player, dependencies) { // Removed async
     const { playerUtils, getString, playerDataManager: _playerDataManager } = dependencies; // Prefixed playerDataManager

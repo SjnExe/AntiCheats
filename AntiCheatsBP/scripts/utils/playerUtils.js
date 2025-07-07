@@ -316,8 +316,10 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
     };
 
     /**
+     * Helper function to play a configured sound to a specific player instance.
+     * Includes error handling for `playSound`.
      *
-     * @param playerInstance
+     * @param {import('@minecraft/server').Player} playerInstance - The player to play the sound for.
      */
     const playToPlayer = (playerInstance) => {
         if (playerInstance?.isValid()) {
