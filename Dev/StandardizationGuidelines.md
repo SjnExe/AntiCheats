@@ -15,11 +15,12 @@ This document outlines the consolidated standardization guidelines for the AntiC
 ## 2. Coding Style and Conventions
 
 *   **Naming:**
-    *   **Variables, Function Names, Configuration Variables (`config.js`), Constants (General):** Use `camelCase` (e.g., `let myVariable; function processData() {}; export const exampleConfigValue = true; const internalMaxRetries = 3;`). This aligns with `Dev/CodingStyle.md`.
-    *   **Acronyms in JS Identifiers:** Acronyms within `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerTpsData`, not `enableAntiGMCCheck`). This clarifies the previous contradiction with `CodingStyle.md`.
+    *   **Variables, Function Names, Configuration Variables (`config.js`), Constants (General), Object Properties:** Use `camelCase` (e.g., `let myVariable; function processData() {}; export const exampleConfigValue = true; const internalMaxRetries = 3; const obj = { myProperty: 1 };`). This aligns with `Dev/CodingStyle.md` and is now enforced by ESLint's `camelcase` rule.
+    *   **Acronyms in JS Identifiers:** Acronyms within `camelCase` identifiers should follow standard camel casing rules (e.g., `enableAntiGmcCheck`, `tpaManager`, `playerTpsData`, not `enableAntiGMCCheck`).
     *   **Class Names:** `PascalCase` (e.g., `class PlayerManager {}`). (Currently not prevalent).
-    *   **`checkType` String Identifiers:** Must use `camelCase` (e.g., `playerAntiGmc`, `movementFlyHover`). This is critical for linking detections in check scripts to `actionProfiles.js` and `automodConfig.js`. Acronyms are lowercased as part of the camel casing. This aligns with `Dev/CodingStyle.md`.
-    *   **`actionType` String Literals:** Must use `camelCase` (e.g., `warn`, `kick`, `detectedFlyHover`). This applies to `log.actionType` in `actionProfiles.js` and rule `actionType` in `automodConfig.js`. This consistency is crucial for the system to correctly interpret and process these actions.
+    *   **`checkType` String Identifiers:** Must use `camelCase` (e.g., `playerAntiGmc`, `movementFlyHover`). This is critical for linking detections in check scripts to `actionProfiles.js` and `automodConfig.js`. Acronyms are lowercased as part of the camel casing.
+    *   **`actionType` String Literals:** Must use `camelCase` (e.g., `warn`, `kick`, `detectedFlyHover`). This applies to `log.actionType` in `actionProfiles.js` and rule `actionType` in `automodConfig.js`.
+    *   **ESLint Enforcement**: The `camelcase` ESLint rule is active to help maintain these naming conventions. Exceptions for specific patterns (e.g. `error_code` in external data) are configured in `eslint.config.js`.
 *   **Quotes:**
     *   Prefer **single quotes (`'`)** for string literals.
     *   Use **double quotes (`"`)** if the string contains single quotes (e.g., `"Player's data"`) or for JSON objects.
@@ -89,6 +90,10 @@ This document outlines the consolidated standardization guidelines for the AntiC
     *   Maintain brief JSDoc-style file purpose descriptions at the top (`@file`).
     *   This can be a single line for simple files: `/** @file Utility functions for array manipulation. */`
     *   The `@author` and `@license` tags are optional but good practice.
+    *   **Variable Type Annotation with `@type`**:
+        *   For annotating variable types using JSDoc, prefer the most compact form. Single-line `/** @type {TypeName} */ let myVar;` is ideal when no further description is needed.
+        *   If a variable's type is unambiguously clear from its initial assignment (e.g., `const name = "John";`, `const isValid = true;`, `const count = 0;`), consider omitting the `/** @type {...} */` annotation to reduce verbosity, unless it's a complex type or explicitly initialized to `null` or `undefined` where the type context is critical.
+        *   The goal is to maintain clarity while minimizing clutter from overly verbose type comments.
 
 ## 5. API Usage Standards (Minecraft Server API)
 

@@ -257,6 +257,15 @@ export default [
         'object-shorthand': ['warn', 'properties'], // Prefer {x} over {x: x}
         'no-useless-concat': 'warn',
         'prefer-object-spread': 'warn',
+
+        // Rule to enforce camelCase naming convention
+        'camelcase': ['error', {
+          properties: 'always', // Enforce camelCase for property names as well
+          ignoreDestructuring: false,
+          ignoreImports: false,
+          ignoreGlobals: false, // Check globals too; if any globals ARE snake_case and cannot be changed, they'd need to be added to 'allow'.
+          allow: ['error_code', 'error_message', 'stack_trace'], // Allow common snake_case properties often found in error objects or external data.
+        }],
     }
   }
 ];
