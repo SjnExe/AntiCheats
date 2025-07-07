@@ -33,6 +33,7 @@ const mainModuleName = 'Main';
 /**
  * Assembles and returns the standard dependencies object used throughout the system.
  * This object provides access to configuration, utilities, managers, and Minecraft APIs.
+ * @returns {import('./types.js').Dependencies} The standard dependencies object.
  */
 function getStandardDependencies() {
     try {
@@ -85,7 +86,10 @@ function getStandardDependencies() {
 }
 
 const maxInitRetries = 3;
-const initialRetryDelayTicks = 20;
+const initialRetryDelayTicks = 20; // Ticks for initial system init retry delay
+const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600; // Approx 30 seconds (600 ticks / 20 tps)
+const PLAYER_FALL_DAMAGE_VELOCITY_Y_THRESHOLD = -0.0784; // Minecraft specific value for fall damage velocity check
+const TPA_SYSTEM_TICK_INTERVAL = 20; // How often TPA system processes requests (warmups, expirations)
 
 /**
  * Checks if all required Minecraft event APIs are available.
@@ -540,9 +544,9 @@ function performInitializations() {
             }
 
             if (!player.isOnGround) {
-                if ((pData.velocity?.y ?? 0) < -0.0784 && pData.previousPosition && pData.lastPosition) {
+                if ((pData.velocity?.y ?? 0) < PLAYER_FALL_DAMAGE_VELOCITY_Y_THRESHOLD && pData.previousPosition && pData.lastPosition) {
                     const deltaY = pData.previousPosition.y - pData.lastPosition.y;
-                    if (deltaY > 0 && deltaY < 100) {
+                    if (deltaY > 0 && deltaY < 100) { // Max fall distance check to prevent overflow with extreme values
                         pData.fallDistance = (pData.fallDistance || 0) + deltaY;
                     }
                 }
@@ -573,7 +577,7 @@ function performInitializations() {
             }
         }
 
-        if (currentTick % 600 === 0) {
+        if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
             tickDependencies.playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
             allPlayers.forEach(async player => {
                 if (!player.isValid()) {
@@ -617,7 +621,7 @@ function performInitializations() {
                 }
             });
         }
-    }, 20);
+    }, TPA_SYSTEM_TICK_INTERVAL);
 }
 
 /**

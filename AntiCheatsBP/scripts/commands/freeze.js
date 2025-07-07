@@ -4,6 +4,11 @@
  */
 import * as mc from '@minecraft/server';
 
+// Default configuration values
+const DEFAULT_FREEZE_EFFECT_DURATION = 2000000; // Very long duration for effects
+const DEFAULT_FREEZE_SLOWNESS_AMPLIFIER = 255; // Max amplifier for slowness
+const DEFAULT_FREEZE_WEAKNESS_AMPLIFIER = 255; // Max amplifier for weakness
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -31,9 +36,9 @@ export function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     const frozenTagName = config?.frozenPlayerTag ?? 'frozen';
-    const effectDuration = 2000000;
-    const slownessAmplifier = config?.freezeSlownessAmplifier ?? 255;
-    const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? 255;
+    const effectDuration = DEFAULT_FREEZE_EFFECT_DURATION;
+    const slownessAmplifier = config?.freezeSlownessAmplifier ?? DEFAULT_FREEZE_SLOWNESS_AMPLIFIER;
+    const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? DEFAULT_FREEZE_WEAKNESS_AMPLIFIER;
     const showParticles = config?.freezeShowParticles ?? false;
 
     if (args.length < 1) {

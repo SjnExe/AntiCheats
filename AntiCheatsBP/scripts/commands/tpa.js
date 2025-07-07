@@ -1,6 +1,10 @@
 /**
  * @file Defines the !tpa command for players to request teleporting to another player.
  */
+
+// Default configuration values
+const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -79,7 +83,7 @@ export function execute(player, args, dependencies) {
     }
     else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
         const request = /** @type {import('../types.js').TpaRequest} */ (addResult);
-        const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? 60;
+        const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS;
         player.sendMessage(getString('command.tpa.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix: prefix }));
 
         const actionBarMessage = getString('tpa.notify.actionBar.requestToYou', { requestingPlayerName: requesterName, prefix: prefix });

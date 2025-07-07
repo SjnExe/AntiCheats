@@ -4,6 +4,12 @@
  */
 import * as mc from '@minecraft/server';
 
+// Default configuration values and argument counts
+const MIN_ARGS_WB_SET = 4;
+const DEFAULT_WB_DAMAGE_AMOUNT = 0.5;
+const DEFAULT_WB_DAMAGE_INTERVAL_TICKS = 20;
+const DEFAULT_WB_TELEPORT_AFTER_DAMAGE_EVENTS = 30;
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -103,7 +109,7 @@ export async function execute(player, args, dependencies) {
     try {
         switch (subCommand) {
             case 'set': {
-                if (subArgs.length < 4) {
+                if (subArgs.length < MIN_ARGS_WB_SET) {
                     player.sendMessage(getString('command.worldborder.set.usage', { prefix: prefix }));
                     player.sendMessage(getString('command.worldborder.set.noteSize'));
                     return;
@@ -152,7 +158,7 @@ export async function execute(player, args, dependencies) {
                     const sizeDisplay = shape === 'square' ? `${size} (Diameter: ${size * 2})` : `${size}`;
                     message += getString('command.worldborder.set.successDetails', { shape: shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay: sizeDisplay }) + '\n';
                     const damageStatus = newSettings.enableDamage
-                        ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? 0.5).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? 20).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? 30).toString() })
+                        ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? DEFAULT_WB_DAMAGE_AMOUNT).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? DEFAULT_WB_DAMAGE_INTERVAL_TICKS).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? DEFAULT_WB_TELEPORT_AFTER_DAMAGE_EVENTS).toString() })
                         : getString('command.worldborder.set.damage.off');
                     message += getString('command.worldborder.set.successDamage', { damageStatus: damageStatus });
                     if (newSettings.wasResizing) {

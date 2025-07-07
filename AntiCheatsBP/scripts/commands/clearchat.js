@@ -1,6 +1,11 @@
 /**
  * @file Defines the !clearchat command for administrators to clear the global chat.
  */
+
+// Default configuration values
+const DEFAULT_CHAT_CLEAR_LINES_COUNT = 150;
+const CLEAR_CHAT_FAILURE_THRESHOLD_MESSAGES = 5;
+
 /**
  * @type {import('../types.js').CommandDefinition}
  */
@@ -26,7 +31,7 @@ export function execute(player, _args, dependencies) {
     const { playerUtils, logManager, getString, config, mc } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
-    const linesToClear = config?.chatClearLinesCount ?? 150;
+    const linesToClear = config?.chatClearLinesCount ?? DEFAULT_CHAT_CLEAR_LINES_COUNT;
     let allMessagesSent = true;
     let messagesAttempted = 0;
 
@@ -43,7 +48,7 @@ export function execute(player, _args, dependencies) {
         }
         catch (error) {
             console.warn(`[ClearChatCommand.execute WARNING] Error sending empty message line ${i + 1} for ${adminName}: ${error.stack || error}`);
-            if (i > 5) {
+            if (i > CLEAR_CHAT_FAILURE_THRESHOLD_MESSAGES) {
                 player?.sendMessage(getString('command.clearchat.failPartial'));
                 allMessagesSent = false;
                 break;

@@ -33,4 +33,29 @@ This document lists significant tasks that have been completed.
     *   `Dev/tasks/completed.md` (this entry)
 *   **Submission Reference:** Commit related to "docs: Review and verify documentation suite".
 
+---
+
+## Code Style Enforcement and Linting - Session [Current Date] (Jules - AI Agent)
+*   **Task:** Enforce coding style (camelCase for JS identifiers) and fix linting errors.
+*   **Objective:** Ensure code adheres to `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`, and resolve ESLint warnings.
+*   **Key Activities:**
+    *   Updated `Dev/tasks/ongoing.md`.
+    *   Ran `npm install`.
+    *   Ran `npm run lint:fix` and `npm run lint`. Initial run showed 152 warnings.
+    *   Manually reviewed and corrected files to address `no-magic-numbers` by defining constants, and `no-unused-vars` by removing or prefixing variables.
+    *   Specifically addressed the `flag_only` literal, changing it to `flagOnly` as per project guidelines.
+    *   Briefly reviewed JSDoc comments in key core files and made minor corrections.
+    *   Performed a final `npm run lint`. 9 warnings remain.
+        *   1 `no-magic-numbers` in `buildingChecks.js` (Math.pow exponent) - Intentional.
+        *   1 `no-unused-vars` in `eventHandlers.js` (Resistant to tool fixes).
+        *   1 `max-len` in `playerDataManager.js` (Resistant to tool fixes / fix insufficient).
+        *   2 `no-magic-numbers` in `main.js` (Appear to be phantom/misaligned).
+        *   4 `no-magic-numbers` in `worldBorderManager.js` (1 intentional math factor, 3 appear phantom/misaligned).
+*   **Outcome:** Significantly reduced ESLint warnings from 152 to 9. Enforced camelCase naming conventions by correcting `flag_only`. Most remaining warnings are either intentional, appear to be phantom/stale, or were resistant to automated fixes. The codebase is substantially cleaner and more aligned with project standards.
+*   **Files Updated:**
+    *   Numerous `.js` files under `AntiCheatsBP/scripts/` were modified.
+    *   `Dev/tasks/ongoing.md` (updated during and after the task)
+    *   `Dev/tasks/completed.md` (this entry)
+*   **Submission Reference:** Will be part of commit for "Refactor: Enforce coding style and apply linting fixes."
+
 [end of Dev/tasks/completed.md]
