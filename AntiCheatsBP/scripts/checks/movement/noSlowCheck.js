@@ -10,6 +10,14 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const TICKS_PER_SECOND_NOSLOW = 20;
+const DEFAULT_NOSLOW_MAX_SPEED_SHIELD = 4.4;
+const DEFAULT_NOSLOW_MAX_SPEED_SNEAKING = 1.5;
+const DEFAULT_NOSLOW_SPEED_EFFECT_MULTIPLIER_PER_LEVEL = 0.20;
+const DEFAULT_NOSLOW_SPEED_EFFECT_TOLERANCE_PERCENT = 0.10;
+const DEFAULT_NOSLOW_GENERAL_TOLERANCE_PERCENT = 0.05;
+
 /**
  * Checks if a player is moving faster than allowed for actions that should slow them down.
  * Slowing actions considered: Eating/Drinking, Charging Bow, Using Shield, Sneaking.
@@ -37,7 +45,7 @@ export async function checkNoSlow(player, pData, dependencies) {
     const watchedPlayerName = pData.isWatched ? playerName : null; // Define watchedPlayerName at a higher scope
 
     const velocity = pData.velocity ?? player.getVelocity();
-    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
+    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * TICKS_PER_SECOND_NOSLOW;
 
     let resolvedSlowingActionString = null;
     let maxAllowedBaseSpeedBPS = Infinity;
@@ -52,24 +60,24 @@ export async function checkNoSlow(player, pData, dependencies) {
     }
     else if (pData.isUsingShield) {
         resolvedSlowingActionString = 'Using Shield';
-        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedUsingShield ?? 4.4;
+        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedUsingShield ?? DEFAULT_NOSLOW_MAX_SPEED_SHIELD;
     }
     else if (player.isSneaking) {
         resolvedSlowingActionString = 'Sneaking';
-        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedSneaking ?? 1.5;
+        maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedSneaking ?? DEFAULT_NOSLOW_MAX_SPEED_SNEAKING;
     }
 
     if (resolvedSlowingActionString) {
         let effectiveMaxAllowedSpeedBPS = maxAllowedBaseSpeedBPS;
-        const speedAmplifier = pData.speedAmplifier ?? -1;
+        const speedAmplifier = pData.speedAmplifier ?? -1; // -1 is fine
 
-        if (speedAmplifier >= 0) {
-            const speedEffectMultiplier = 1 + ((speedAmplifier + 1) * (config?.noSlowSpeedEffectMultiplierPerLevel ?? 0.20));
+        if (speedAmplifier >= 0) { // 0 is fine
+            const speedEffectMultiplier = 1 + ((speedAmplifier + 1) * (config?.noSlowSpeedEffectMultiplierPerLevel ?? DEFAULT_NOSLOW_SPEED_EFFECT_MULTIPLIER_PER_LEVEL)); // 1 is fine
             effectiveMaxAllowedSpeedBPS *= speedEffectMultiplier;
-            effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowSpeedEffectTolerancePercent ?? 0.10));
+            effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowSpeedEffectTolerancePercent ?? DEFAULT_NOSLOW_SPEED_EFFECT_TOLERANCE_PERCENT)); // 1 is fine
         }
         else {
-            effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowGeneralTolerancePercent ?? 0.05));
+            effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowGeneralTolerancePercent ?? DEFAULT_NOSLOW_GENERAL_TOLERANCE_PERCENT)); // 1 is fine
         }
 
         if (horizontalSpeedBPS > effectiveMaxAllowedSpeedBPS) {

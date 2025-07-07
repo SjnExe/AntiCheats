@@ -12,6 +12,9 @@ import * as mc from '@minecraft/server';
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const DEFAULT_SPRINT_HUNGER_LIMIT = 6;
+
 /**
  * Checks if a player is sprinting under invalid conditions.
  * Conditions checked: Blindness, Sneaking, Riding, Low Hunger, Using Consumable, Charging Bow.
@@ -50,7 +53,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
             const foodComp = player.getComponent(mc.EntityComponentTypes.Food);
             if (foodComp) {
                 currentFoodLevel = foodComp.foodLevel.toString();
-                if (foodComp.foodLevel <= (config?.sprintHungerLimit ?? 6)) {
+                if (foodComp.foodLevel <= (config?.sprintHungerLimit ?? DEFAULT_SPRINT_HUNGER_LIMIT)) {
                     isHungerTooLow = true;
                 }
             }
@@ -73,7 +76,7 @@ export async function checkInvalidSprint(player, pData, dependencies) {
         }
         else if (isHungerTooLow) {
             resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`;
-            conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config?.sprintHungerLimit ?? 6})`;
+            conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config?.sprintHungerLimit ?? DEFAULT_SPRINT_HUNGER_LIMIT})`;
         }
         else if (pData.isUsingConsumable) {
             resolvedConditionString = 'Using Item (Consumable)';

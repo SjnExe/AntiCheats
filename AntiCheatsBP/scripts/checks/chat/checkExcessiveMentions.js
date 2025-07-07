@@ -7,6 +7,11 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const DISTINCT_USERS_SAMPLE_LIMIT = 5;
+const ELLIPSIS_LENGTH = 3;
+const DEBUG_LOG_SNIPPET_LENGTH_MENTIONS = 20;
+
 /**
  * Checks a message for excessive user mentions (e.g., @PlayerName).
  * Considers both the number of unique users mentioned and the frequency of mentions for a single user.
@@ -88,14 +93,14 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     }
 
     if (flagReasonTexts.length > 0) {
-        const messageSnippetLimit = 75;
+        const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - 3) + '...' : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - ELLIPSIS_LENGTH) + '...' : rawMessageContent,
             totalMentionsFound: allMentions.length.toString(),
             uniqueMentionsCount: distinctMentionCount.toString(),
             maxRepeatedMentionCount: maxRepeatCount.toString(),
             mostRepeatedUser: mostRepeatedUser,
-            distinctUsersSample: Array.from(distinctMentionedUsers).slice(0, 5).join(', '),
+            distinctUsersSample: Array.from(distinctMentionedUsers).slice(0, DISTINCT_USERS_SAMPLE_LIMIT).join(', '),
             triggerReasons: flagReasonTexts.join('; '),
             originalMessage: rawMessageContent,
         };
@@ -109,6 +114,6 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
         }
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ExcessiveMentionsCheck] Flagged ${playerName} for ${flagReasonTexts.join('; ')}. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_SNIPPET_LENGTH_MENTIONS)}...'`, watchedPlayerName, dependencies);
     }
 }

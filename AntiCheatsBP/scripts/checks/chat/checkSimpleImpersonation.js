@@ -8,6 +8,10 @@
  * @typedef {import('../../types.js').Dependencies} Dependencies
  */
 
+// Constants for magic numbers
+const LOCAL_ELLIPSIS_LENGTH_SIMP_IMP = 3;
+const DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH = 50;
+
 /**
  * Checks a message for simple impersonation patterns (e.g., mimicking server announcements).
  * Exempts players with a permission level at or below `config.impersonationExemptPermissionLevel`.
@@ -73,9 +77,9 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
         try {
             const regex = new RegExp(patternString, 'i');
             if (regex.test(rawMessageContent)) {
-                const messageSnippetLimit = 75;
+                const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
                 const violationDetails = {
-                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - 3) + '...' : rawMessageContent,
+                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_SIMP_IMP) + '...' : rawMessageContent,
                     matchedPattern: patternString,
                     playerPermissionLevel: typeof playerPermission === 'number' ? playerPermission.toString() : 'Unknown',
                     exemptPermissionLevelRequired: exemptPermissionLevel.toString(),
@@ -83,7 +87,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
                 };
 
                 await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, 50)}...'`, watchedPlayerName, dependencies);
+                playerUtils?.debugLog(`[SimpleImpersonationCheck] Flagged ${playerName} for impersonation attempt. Pattern: '${patternString}'. Msg: '${rawMessageContent.substring(0, DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH)}...'`, watchedPlayerName, dependencies);
 
                 const profile = dependencies.checkActionProfiles?.[actionProfileKey];
                 if (profile?.cancelMessage) {

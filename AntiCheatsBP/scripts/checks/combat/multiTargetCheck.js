@@ -8,6 +8,11 @@
  * @typedef {import('../../types.js').EventSpecificData} EventSpecificData
  */
 
+// Constants for magic numbers
+const DEFAULT_MULTI_TARGET_MAX_HISTORY = 20;
+const DEFAULT_MULTI_TARGET_THRESHOLD = 3;
+const DISTINCT_TARGETS_SAMPLE_LIMIT_MULTI = 5;
+
 /**
  * Checks for Multi-Target Killaura by analyzing recent hit entity patterns.
  * It tracks entities hit by the player within a configured time window and flags
@@ -53,8 +58,8 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     pData.recentHits.push(newHit);
     pData.isDirtyForSave = true;
 
-    const windowMs = config?.multiTargetWindowMs ?? 1000;
-    const maxHistory = config?.multiTargetMaxHistory ?? 20;
+    const windowMs = config?.multiTargetWindowMs ?? 1000; // 1000 is fine (in ignore list)
+    const maxHistory = config?.multiTargetMaxHistory ?? DEFAULT_MULTI_TARGET_MAX_HISTORY;
 
     const originalCountBeforeTimeFilter = pData.recentHits.length;
     pData.recentHits = pData.recentHits.filter(hit => (now - hit.timestamp) <= windowMs);
@@ -67,7 +72,7 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
         pData.isDirtyForSave = true;
     }
 
-    const threshold = config?.multiTargetThreshold ?? 3;
+    const threshold = config?.multiTargetThreshold ?? DEFAULT_MULTI_TARGET_THRESHOLD;
 
     if (pData.recentHits.length < threshold) {
         return;
@@ -85,9 +90,9 @@ export async function checkMultiTarget(player, pData, dependencies, eventSpecifi
     if (distinctTargets.size >= threshold) {
         const violationDetails = {
             targetsHit: distinctTargets.size.toString(),
-            windowSeconds: (windowMs / 1000).toFixed(1),
+            windowSeconds: (windowMs / 1000).toFixed(1), // 1000 is fine
             threshold: threshold.toString(),
-            targetIdsSample: Array.from(distinctTargets).slice(0, 5).join(', '),
+            targetIdsSample: Array.from(distinctTargets).slice(0, DISTINCT_TARGETS_SAMPLE_LIMIT_MULTI).join(', '),
         };
         const rawActionProfileKey = config?.multiTargetActionProfileName ?? 'combatMultiTargetAura';
         const actionProfileKey = rawActionProfileKey

@@ -7,6 +7,9 @@
  * @typedef {import('../../types.js').CommandDependencies} CommandDependencies
  */
 
+// Constants for magic numbers
+const DEFAULT_MAX_CPS_THRESHOLD = 20;
+
 /**
  * Checks if a player is clicking or attacking at an abnormally high rate (CPS).
  *
@@ -46,7 +49,7 @@ export async function checkCps(player, pData, dependencies) {
         playerUtils.debugLog(`[CpsCheck] Processing for ${player.nameTag}. EventsInWindow=${eventsInWindow}. WindowMs=${calculationWindowMs}`, watchedPrefix, dependencies);
     }
 
-    const maxThreshold = config.maxCpsThreshold ?? 20;
+    const maxThreshold = config.maxCpsThreshold ?? DEFAULT_MAX_CPS_THRESHOLD;
     const rawActionProfileKey = config.cpsHighActionProfileName ?? 'combatCpsHigh';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
