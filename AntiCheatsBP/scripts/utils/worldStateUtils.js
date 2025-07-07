@@ -16,8 +16,7 @@ export function isNetherLocked() {
     try {
         const locked = mc.world.getDynamicProperty(netherLockedPropertyKey);
         return typeof locked === 'boolean' ? locked : false;
-    }
-    catch (e) {
+    } catch (e) {
         console.error(`[WorldStateUtils.isNetherLocked] Error reading Nether lock state: ${e.stack || e}. Defaulting to false.`);
         return false;
     }
@@ -37,8 +36,7 @@ export function setNetherLocked(newLockState) {
     try {
         mc.world.setDynamicProperty(netherLockedPropertyKey, newLockState);
         return true;
-    }
-    catch (e) {
+    } catch (e) {
         console.error(`[WorldStateUtils.setNetherLocked] Error setting Nether lock state: ${e.stack || e}`);
         return false;
     }
@@ -53,8 +51,7 @@ export function isEndLocked() {
     try {
         const locked = mc.world.getDynamicProperty(endLockedPropertyKey);
         return typeof locked === 'boolean' ? locked : false;
-    }
-    catch (e) {
+    } catch (e) {
         console.error(`[WorldStateUtils.isEndLocked] Error reading End lock state: ${e.stack || e}. Defaulting to false.`);
         return false;
     }
@@ -74,8 +71,7 @@ export function setEndLocked(newLockState) {
     try {
         mc.world.setDynamicProperty(endLockedPropertyKey, newLockState);
         return true;
-    }
-    catch (e) {
+    } catch (e) {
         console.error(`[WorldStateUtils.setEndLocked] Error setting End lock state: ${e.stack || e}`);
         return false;
     }

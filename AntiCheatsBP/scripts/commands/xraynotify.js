@@ -45,8 +45,7 @@ export function execute(player, args, dependencies) {
     let currentPreference;
     if (typeof pData.xrayNotificationsEnabled === 'boolean') {
         currentPreference = pData.xrayNotificationsEnabled;
-    }
-    else {
+    } else {
         currentPreference = config?.xrayDetectionAdminNotifyByDefault ?? true;
     }
 
@@ -70,8 +69,7 @@ export function execute(player, args, dependencies) {
             let statusKey;
             if (typeof pData.xrayNotificationsEnabled === 'boolean') {
                 statusKey = currentPreference ? 'command.xraynotify.status.onExplicit' : 'command.xraynotify.status.offExplicit';
-            }
-            else {
+            } else {
                 statusKey = currentPreference ? 'command.xraynotify.status.onDefault' : 'command.xraynotify.status.offDefault';
             }
             player.sendMessage(getString(statusKey));
@@ -103,8 +101,7 @@ export function execute(player, args, dependencies) {
             details: `X-Ray notifications ${logMessageAction}`,
         }, dependencies);
 
-    }
-    catch (error) {
+    } catch (error) {
         player.sendMessage(getString('command.xraynotify.error.update'));
         console.error(`[XrayNotifyCommand CRITICAL] Error setting X-Ray notification preference for ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);

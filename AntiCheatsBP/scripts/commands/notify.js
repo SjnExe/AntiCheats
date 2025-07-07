@@ -44,8 +44,7 @@ export function execute(player, args, dependencies) {
     let currentPreference;
     if (typeof pData[pDataKeyForNotifications] === 'boolean') {
         currentPreference = pData[pDataKeyForNotifications];
-    }
-    else {
+    } else {
         currentPreference = config?.acGlobalNotificationsDefaultOn ?? true;
     }
 
@@ -100,8 +99,7 @@ export function execute(player, args, dependencies) {
             details: `User notifications ${logMessageAction}`,
         }, dependencies);
 
-    }
-    catch (error) {
+    } catch (error) {
         player.sendMessage(getString('command.notify.error.update'));
         console.error(`[NotifyCommand CRITICAL] Error setting notification preference for ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);

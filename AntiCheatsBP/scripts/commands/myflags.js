@@ -57,14 +57,12 @@ export function execute(player, _args, dependencies) {
 
         if (!specificFlagsFound && totalFlags === 0) {
             message = getString('command.myflags.noFlags');
-        }
-        else if (!specificFlagsFound && totalFlags > 0) {
+        } else if (!specificFlagsFound && totalFlags > 0) {
             message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n' + getString('command.myflags.noSpecificFlags');
             playerUtils?.debugLog(`[MyFlagsCommand WARNING] Player ${playerName} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pDataSelf.flags)}`, playerName, dependencies);
         }
         player?.sendMessage(message.trim());
-    }
-    else {
+    } else {
         player?.sendMessage(getString('command.myflags.noData'));
     }
 }

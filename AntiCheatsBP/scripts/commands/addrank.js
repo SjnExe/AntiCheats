@@ -92,8 +92,7 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
-    }
-    catch (e) {
+    } catch (e) {
         player?.sendMessage(getString('command.addrank.errorAssign', { errorMessage: e.message }));
         console.error(`[AddRankCommand CRITICAL] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         logManager?.addLog({

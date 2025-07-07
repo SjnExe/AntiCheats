@@ -50,8 +50,7 @@ export function execute(player, args, dependencies) {
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
                     playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-                }
-                else {
+                } else {
                     player?.sendMessage(getString('command.endlock.failUpdate'));
                     playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
@@ -68,8 +67,7 @@ export function execute(player, args, dependencies) {
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
                     playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-                }
-                else {
+                } else {
                     player?.sendMessage(getString('command.endlock.failUpdate'));
                     playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
                 }
@@ -85,8 +83,7 @@ export function execute(player, args, dependencies) {
                 player?.sendMessage(getString('command.endlock.usage', { prefix }));
 
         }
-    }
-    catch (error) {
+    } catch (error) {
         player?.sendMessage(getString('command.endlock.error.generic', { commandName: definition.name, errorMessage: error.message }));
         console.error(`[EndlockCommand CRITICAL] Error for ${adminName} executing '${subCommand}': ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);

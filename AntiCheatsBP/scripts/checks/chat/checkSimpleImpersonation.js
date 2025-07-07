@@ -52,8 +52,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
     const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (typeof playerPermission !== 'number') {
         playerUtils?.debugLog(`[SimpleImpersonationCheck] Could not determine permission level for ${playerName}. Assuming not exempt for safety.`, watchedPlayerName, dependencies);
-    }
-    else if (playerPermission <= exemptPermissionLevel) {
+    } else if (playerPermission <= exemptPermissionLevel) {
         playerUtils?.debugLog(`[SimpleImpersonationCheck] Player ${playerName} (perm: ${playerPermission}) is exempt (threshold: ${exemptPermissionLevel}).`, watchedPlayerName, dependencies);
         return;
     }
@@ -95,8 +94,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
                 }
                 return;
             }
-        }
-        catch (e) {
+        } catch (e) {
             playerUtils?.debugLog(`[SimpleImpersonationCheck CRITICAL] Invalid regex pattern '${patternString}' in config for ${playerName}. Error: ${e.message}`, watchedPlayerName, dependencies);
             console.error(`[SimpleImpersonationCheck CRITICAL] Regex pattern error for pattern '${patternString}': ${e.stack || e.message || String(e)}`);
             dependencies.logManager?.addLog({

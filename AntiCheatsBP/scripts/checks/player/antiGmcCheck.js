@@ -72,8 +72,7 @@ export async function checkAntiGmc(player, pData, dependencies) {
                     player.setGameMode(targetMcGameMode);
                     autoSwitchedGameMode = true;
                     playerUtils?.debugLog(`[AntiGmcCheck] Switched ${playerName} from Creative to ${targetGamemodeString}.`, watchedPlayerName, dependencies);
-                }
-                catch (e) {
+                } catch (e) {
                     playerUtils?.debugLog(`[AntiGmcCheck ERROR] Error switching ${playerName} from Creative: ${e.message}`, watchedPlayerName, dependencies);
                     dependencies.logManager?.addLog({
                         actionType: 'errorAntiGmcSwitchMode',
@@ -98,16 +97,13 @@ export async function checkAntiGmc(player, pData, dependencies) {
             if (pData.isWatched) {
                 if (!autoSwitchedGameMode && config?.antiGmcAutoSwitch) {
                     playerUtils?.debugLog(`[AntiGmcCheck] Flagged ${playerName} for unauthorized creative. Auto-switch was enabled but might have failed.`, watchedPlayerName, dependencies);
-                }
-                else if (!config?.antiGmcAutoSwitch) {
+                } else if (!config?.antiGmcAutoSwitch) {
                     playerUtils?.debugLog(`[AntiGmcCheck] Flagged ${playerName} for unauthorized creative. Auto-switch disabled in config.`, watchedPlayerName, dependencies);
                 }
             }
-        }
-        else if (pData.isWatched && typeof playerPermLevel !== 'number') {
+        } else if (pData.isWatched && typeof playerPermLevel !== 'number') {
             playerUtils?.debugLog(`[AntiGmcCheck] Could not determine permission level for ${playerName} (in Creative). Assuming authorized for now.`, watchedPlayerName, dependencies);
-        }
-        else if (pData.isWatched) {
+        } else if (pData.isWatched) {
             playerUtils?.debugLog(`[AntiGmcCheck] Player ${playerName} is in Creative mode with sufficient permissions (Level: ${playerPermLevel}, Required: <=${adminPermLevel}). No action.`, watchedPlayerName, dependencies);
         }
     }

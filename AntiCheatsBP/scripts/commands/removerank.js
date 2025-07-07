@@ -97,8 +97,7 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
-    }
-    catch (error) {
+    } catch (error) {
         player.sendMessage(getString('command.removerank.error.generic', { errorMessage: error.message }));
         console.error(`[RemoveRankCommand CRITICAL] Error removing rank ${rankDef.id} from ${targetPlayer.nameTag} by ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);

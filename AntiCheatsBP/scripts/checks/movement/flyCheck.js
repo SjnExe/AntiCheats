@@ -213,8 +213,7 @@ export async function checkFly(player, pData, dependencies) {
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());
             await actionManager?.executeCheckAction(player, hoverFlyActionProfileKey, violationDetails, dependencies);
             playerUtils?.debugLog(`[FlyCheck][Hover] Flagged ${playerName}. VSpeed: ${verticalSpeed.toFixed(LOGGING_DECIMAL_PLACES_FLY)}, OffGround: ${pData.consecutiveOffGroundTicks}t, FallDist: ${pData.fallDistance?.toFixed(GENERIC_DECIMAL_PLACES_FLY)}, Height: ${heightAboveLastGround.toFixed(GENERIC_DECIMAL_PLACES_FLY)}`, watchedPlayerName, dependencies);
-        }
-        else if (pData.isWatched) {
+        } else if (pData.isWatched) {
             playerUtils?.debugLog(`[FlyCheck][Hover] ${playerName} met hover speed/tick criteria but height (${heightAboveLastGround.toFixed(GENERIC_DECIMAL_PLACES_FLY)}) not > min (${hoverMinHeight}). LastGroundY: ${lastGroundY}`, watchedPlayerName, dependencies);
         }
     }

@@ -82,8 +82,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
     ) {
         pData.consecutivePillarBlocks = (pData.consecutivePillarBlocks ?? 0) + 1;
         pData.lastPillarTick = currentTick;
-    }
-    else {
+    } else {
         const playerFeetY = Math.floor(player.location.y);
         const playerFeetX = Math.floor(player.location.x);
         const playerFeetZ = Math.floor(player.location.z);
@@ -100,8 +99,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
             if (pData.isWatched) {
                 playerUtils.debugLog(`[TowerCheck] Started new pillar for ${player.nameTag} at ${blockLocation.x},${blockLocation.y},${blockLocation.z}. Pitch: ${pitch.toFixed(1)}`, watchedPrefix, dependencies);
             }
-        }
-        else {
+        } else {
             pData.consecutivePillarBlocks = 0;
             pData.lastPillarTick = 0;
             pData.currentPillarX = null;
@@ -135,8 +133,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
         pData.currentPillarZ = null;
         pData.lastPillarBaseY = -Infinity;
         pData.isDirtyForSave = true;
-    }
-    else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight) {
+    } else if (pData.isWatched && (pData.consecutivePillarBlocks ?? 0) >= minHeight) {
         playerUtils.debugLog(`[TowerCheck] Tower for ${player.nameTag} (height ${pData.consecutivePillarBlocks}), pitch ${pitch.toFixed(1)} OK (Threshold: >${maxPitchValue}).`, watchedPrefix, dependencies);
     }
 }
@@ -252,8 +249,7 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
                     hasSolidSupport = true;
                     break;
                 }
-            }
-            catch (_e) { }
+            } catch (_e) { /* Error suppressed, continue checking other neighbors */ }
         }
 
         if (!hasSolidSupport) {
@@ -423,8 +419,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
                 yawIsEffectivelyStatic = false;
             }
         }
-    }
-    else {
+    } else {
         yawIsEffectivelyStatic = (consecutiveBlocksToAnalyze === 1);
     }
 
@@ -435,20 +430,16 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     if (pitchIsStatic && yawIsEffectivelyStatic) {
         detectionReasonKey = 'check.flatRotation.reason.staticPitchYaw';
         shouldFlag = true;
-    }
-    else if (pitchIsStatic) {
+    } else if (pitchIsStatic) {
         detectionReasonKey = 'check.flatRotation.reason.staticPitch';
         shouldFlag = true;
-    }
-    else if (yawIsEffectivelyStatic) {
+    } else if (yawIsEffectivelyStatic) {
         detectionReasonKey = 'check.flatRotation.reason.staticYaw';
         shouldFlag = true;
-    }
-    else if (allPitchesInHorizontalRange) {
+    } else if (allPitchesInHorizontalRange) {
         detectionReasonKey = 'check.flatRotation.reason.flatHorizontal';
         shouldFlag = true;
-    }
-    else if (allPitchesInDownwardRange) {
+    } else if (allPitchesInDownwardRange) {
         detectionReasonKey = 'check.flatRotation.reason.flatDownward';
         shouldFlag = true;
     }

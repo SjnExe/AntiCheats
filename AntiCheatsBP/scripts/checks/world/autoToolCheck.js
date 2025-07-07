@@ -80,8 +80,7 @@ export async function checkAutoTool(player, pData, dependencies) {
                         }
                     }
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 playerUtils.debugLog(`[AutoToolCheck] Error during optimal tool switch detection for ${player.nameTag}: ${error.message}`, watchedPrefix, dependencies);
             }
         }

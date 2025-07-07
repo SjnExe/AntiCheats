@@ -81,8 +81,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
     if (pDataForUpdate) {
         pDataForUpdate.lastChatMessageTimestamp = initialTime;
         pDataForUpdate.isDirtyForSave = true;
-    }
-    else if (actionWasAwaited) {
+    } else if (actionWasAwaited) {
         // pData became null after await, log this potential issue
         playerUtils?.debugLog(`[MessageRateCheck] pData for ${playerName} became null after await. Cannot update timestamps.`, watchedPlayerName, dependencies);
     }

@@ -188,8 +188,7 @@ export function updatePlayerNametag(player, dependencies) {
             if (player.isValid()) {
                 player.nameTag = String(player.nameTag || player.name || '');
             }
-        }
-        catch (_e) { /* ignore */ }
+        } catch (_e) { /* ignore */ }
         return;
     }
 
@@ -238,16 +237,14 @@ export function updatePlayerNametag(player, dependencies) {
         if (config.enableDebugLogging && playerUtils) {
             playerUtils.debugLog(`[RankManager.updatePlayerNametag] Updated nametag for ${playerNameForLog} (Original: '${currentNameTag}') to '${player.nameTag}' (Rank: ${rankDefinition?.id ?? 'default'})`, playerNameForLog, dependencies);
         }
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[RankManager.updatePlayerNametag] Error for '${playerNameForLog}': ${error.stack || error}`);
         playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Error for ${playerNameForLog}: ${error.message}`, playerNameForLog, dependencies);
         try {
             if (player.isValid()) {
                 player.nameTag = String(player.name ?? dependencies.getString('common.value.player'));
             }
-        }
-        catch (_e) { /* ignore */ } // Used dependencies.getString directly
+        } catch (_e) { /* ignore */ } // Used dependencies.getString directly
     }
 }
 

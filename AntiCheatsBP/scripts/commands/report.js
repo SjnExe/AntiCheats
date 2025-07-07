@@ -63,8 +63,7 @@ export function execute(player, args, dependencies) {
             details: `Report submitted. Reason: ${reason}. Report ID: ${newReport.id}`,
             context: 'ReportCommand',
         }, dependencies);
-    }
-    else {
+    } else {
         playerUtils.sendMessage(reporterPlayer, getString('command.report.failure'));
     }
 }

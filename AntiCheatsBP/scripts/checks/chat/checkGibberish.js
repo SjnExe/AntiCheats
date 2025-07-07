@@ -77,16 +77,14 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
             if (vowels.includes(char)) {
                 totalVowels++;
                 currentConsecutiveConsonants = 0;
-            }
-            else {
+            } else {
                 totalConsonants++;
                 currentConsecutiveConsonants++;
                 if (currentConsecutiveConsonants > overallMaxConsecutiveConsonants) {
                     overallMaxConsecutiveConsonants = currentConsecutiveConsonants;
                 }
             }
-        }
-        else {
+        } else {
             currentConsecutiveConsonants = 0;
         }
     }

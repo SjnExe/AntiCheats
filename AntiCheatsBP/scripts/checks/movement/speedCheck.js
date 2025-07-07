@@ -92,8 +92,7 @@ export async function checkSpeed(player, pData, dependencies) {
                     if (effects.length > 0) {
                         activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
                     }
-                }
-                catch (_e) { }
+                } catch (_e) { /* Error suppressed, default value will be used */ }
 
                 const violationDetails = {
                     detectedSpeedBps: hSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES),
@@ -109,15 +108,13 @@ export async function checkSpeed(player, pData, dependencies) {
                 pDataToUpdate.consecutiveOnGroundSpeedingTicks = 0; // 0 is fine
                 pDataToUpdate.isDirtyForSave = true;
             }
-        }
-        else {
+        } else {
             if (pData.consecutiveOnGroundSpeedingTicks > 0) { // 0 is fine
                 pData.consecutiveOnGroundSpeedingTicks = 0; // 0 is fine
                 pData.isDirtyForSave = true;
             }
         }
-    }
-    else {
+    } else {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) { // 0 is fine
             pData.consecutiveOnGroundSpeedingTicks = 0; // 0 is fine
             pData.isDirtyForSave = true;

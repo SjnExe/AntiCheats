@@ -82,8 +82,7 @@ export function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
 
-    }
-    else {
+    } else {
         player.sendMessage(getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag }));
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }

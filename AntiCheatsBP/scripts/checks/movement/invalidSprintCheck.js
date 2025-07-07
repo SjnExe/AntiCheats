@@ -57,32 +57,26 @@ export async function checkInvalidSprint(player, pData, dependencies) {
                     isHungerTooLow = true;
                 }
             }
-        }
-        catch (e) {
+        } catch (e) {
             playerUtils?.debugLog(`[InvalidSprintCheck WARNING] Error getting food component for ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
         }
 
         if ((pData.blindnessTicks ?? 0) > 0) {
             resolvedConditionString = 'Blindness';
             conditionDetailsLog = `Blindness Ticks: ${pData.blindnessTicks}`;
-        }
-        else if (player.isSneaking) {
+        } else if (player.isSneaking) {
             resolvedConditionString = 'Sneaking';
             conditionDetailsLog = 'Player is sneaking';
-        }
-        else if (player.isRiding) {
+        } else if (player.isRiding) {
             resolvedConditionString = 'Riding Entity';
             conditionDetailsLog = 'Player is riding an entity';
-        }
-        else if (isHungerTooLow) {
+        } else if (isHungerTooLow) {
             resolvedConditionString = `Low Hunger (Food: ${currentFoodLevel})`;
             conditionDetailsLog = `Hunger level at ${currentFoodLevel} (Limit: <= ${config?.sprintHungerLimit ?? DEFAULT_SPRINT_HUNGER_LIMIT})`;
-        }
-        else if (pData.isUsingConsumable) {
+        } else if (pData.isUsingConsumable) {
             resolvedConditionString = 'Using Item (Consumable)';
             conditionDetailsLog = 'Player is using a consumable';
-        }
-        else if (pData.isChargingBow) {
+        } else if (pData.isChargingBow) {
             resolvedConditionString = 'Charging Bow';
             conditionDetailsLog = 'Player is charging a bow';
         }

@@ -48,19 +48,15 @@ function getCurrentEffectiveBorderSize(borderSettings, dependencies) {
         let easedProgress = rawProgress;
         if (borderSettings.resizeInterpolationType === 'easeOutQuad') {
             easedProgress = easeOutQuad(rawProgress);
-        }
-        else if (borderSettings.resizeInterpolationType === 'easeInOutQuad') {
+        } else if (borderSettings.resizeInterpolationType === 'easeInOutQuad') {
             easedProgress = easeInOutQuad(rawProgress);
         }
         currentSize = borderSettings.originalSize + (borderSettings.targetSize - borderSettings.originalSize) * easedProgress;
-    }
-    else if (shape === 'square' && typeof borderSettings.halfSize === 'number') {
+    } else if (shape === 'square' && typeof borderSettings.halfSize === 'number') {
         currentSize = borderSettings.halfSize;
-    }
-    else if (shape === 'circle' && typeof borderSettings.radius === 'number') {
+    } else if (shape === 'circle' && typeof borderSettings.radius === 'number') {
         currentSize = borderSettings.radius;
-    }
-    else if (borderSettings.isResizing && typeof borderSettings.targetSize === 'number') {
+    } else if (borderSettings.isResizing && typeof borderSettings.targetSize === 'number') {
         currentSize = borderSettings.targetSize;
         if (dependencies?.playerUtils && dependencies?.config?.enableDebugLogging) {
             dependencies.playerUtils.debugLog(`[WorldBorderManager] In-progress resize for dim ${borderSettings.dimensionId} has incomplete parameters. Using targetSize.`, 'System', dependencies);
@@ -94,8 +90,7 @@ export function isPlayerOutsideBorder(player, dependencies) {
         const minZ = centerZ - currentSize;
         const maxZ = centerZ + currentSize;
         return loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ;
-    }
-    else if (shape === 'circle') {
+    } else if (shape === 'circle') {
         const { centerX, centerZ } = borderSettings;
         const dx = loc.x - centerX;
         const dz = loc.z - centerZ;
@@ -134,14 +129,12 @@ export function getBorderSettings(dimensionId, dependencies) {
                     playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in ${dimensionId}. Value: ${settings.halfSize}`, 'System', dependencies);
                     return null;
                 }
-            }
-            else if (settings.shape === 'circle') {
+            } else if (settings.shape === 'circle') {
                 if (typeof settings.radius !== 'number' || settings.radius <= 0) {
                     playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}. Value: ${settings.radius}`, 'System', dependencies);
                     return null;
                 }
-            }
-            else if (settings.shape !== undefined) {
+            } else if (settings.shape !== undefined) {
                 playerUtils.debugLog(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`, 'System', dependencies);
                 return null;
             }
@@ -150,8 +143,7 @@ export function getBorderSettings(dimensionId, dependencies) {
             }
             return settings;
         }
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[WorldBorderManager] Error in getBorderSettings for ${dimensionId}: ${error.stack || error}`);
         playerUtils.debugLog(`[WorldBorderManager] Exception in getBorderSettings for ${dimensionId}: ${error.message}`, 'System', dependencies);
     }
@@ -180,19 +172,16 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
             return false;
         }
         fullSettings.radius = undefined;
-    }
-    else if (fullSettings.shape === 'circle') {
+    } else if (fullSettings.shape === 'circle') {
         if (typeof fullSettings.radius !== 'number' || fullSettings.radius <= 0) {
             playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Invalid or non-positive 'radius' for circle shape. Value: ${fullSettings.radius}`, 'System', dependencies);
             return false;
         }
         fullSettings.halfSize = undefined;
-    }
-    else if (fullSettings.shape) {
+    } else if (fullSettings.shape) {
         playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Unknown shape '${fullSettings.shape}' provided.`, 'System', dependencies);
         return false;
-    }
-    else {
+    } else {
         playerUtils.debugLog('[WorldBorderManager] saveBorderSettings: Shape is required.', 'System', dependencies);
         return false;
     }
@@ -211,8 +200,7 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
         fullSettings.resizeStartTimeMs = undefined; fullSettings.resizeDurationMs = undefined;
         fullSettings.isPaused = undefined; fullSettings.resizePausedTimeMs = undefined; fullSettings.resizeLastPauseStartTimeMs = undefined;
         fullSettings.resizeInterpolationType = undefined;
-    }
-    else {
+    } else {
         if (!fullSettings.isPaused) {
             fullSettings.resizeLastPauseStartTimeMs = undefined;
         }
@@ -225,8 +213,7 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
         const particleOverride = settingsToSave.particleNameOverride.trim();
         if (particleOverride === '' || particleOverride.toLowerCase() === 'reset' || particleOverride.toLowerCase() === 'default') {
             fullSettings.particleNameOverride = undefined;
-        }
-        else {
+        } else {
             fullSettings.particleNameOverride = particleOverride;
         }
     }
@@ -234,8 +221,7 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
         mc.world.setDynamicProperty(propertyKey, JSON.stringify(fullSettings));
         playerUtils.debugLog(`[WorldBorderManager] Successfully saved border settings for ${dimensionId}.`, 'System', dependencies);
         return true;
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[WorldBorderManager] Error saving border settings for ${dimensionId}: ${error.stack || error}`);
         playerUtils.debugLog(`[WorldBorderManager] Exception saving border settings for ${dimensionId}: ${error.message}`, 'System', dependencies);
         return false;
@@ -291,8 +277,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
                     return checkY;
                 }
             }
-        }
-        catch (_e) { }
+        } catch (_e) { /* Error getting block, continue search */ }
     }
 
     const searchUpStartY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
@@ -310,8 +295,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
                     return checkY;
                 }
             }
-        }
-        catch (_e) { }
+        } catch (_e) { /* Error getting block, continue search */ }
     }
     return Math.floor(initialY);
 }
@@ -328,8 +312,7 @@ export function processWorldBorderResizing(dependencies) {
         let dimBorderSettings = null;
         try {
             dimBorderSettings = getBorderSettings(dimId, dependencies);
-        }
-        catch (e) {
+        } catch (e) {
             console.error(`[WorldBorderManager-Resize] Error getting border settings for ${dimId} during resize check: ${e.stack || e}`);
             playerUtils.debugLog(`[WorldBorderManager-Resize] Error getting border settings for ${dimId}: ${e.message}`, 'System', dependencies);
             continue;
@@ -362,8 +345,7 @@ export function processWorldBorderResizing(dependencies) {
                 const targetSize = dimBorderSettings.targetSize;
                 if (dimBorderSettings.shape === 'square') {
                     dimBorderSettings.halfSize = targetSize;
-                }
-                else if (dimBorderSettings.shape === 'circle') {
+                } else if (dimBorderSettings.shape === 'circle') {
                     dimBorderSettings.radius = targetSize;
                 }
                 dimBorderSettings.isResizing = false;
@@ -377,8 +359,7 @@ export function processWorldBorderResizing(dependencies) {
                 if (saveBorderSettings(dimId, dimBorderSettings, dependencies)) {
                     playerUtils.debugLog(`[WorldBorderManager] Border resize in ${playerUtils.formatDimensionName(dimId)} completed. New size: ${targetSize}.`, 'System', dependencies);
                     logManager.addLog({ adminName: 'System', actionType: 'worldborder_resize_complete', targetName: dimId, details: `Resize to ${targetSize} complete.` }, dependencies);
-                }
-                else {
+                } else {
                     playerUtils.debugLog(`[WorldBorderManager] Failed to save completed border resize for ${dimId}.`, 'System', dependencies);
                 }
             }
@@ -430,18 +411,15 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 const maxZ = centerZ + currentSize;
                 if (loc.x < minX) {
                     targetX = minX + BORDER_TELEPORT_INWARD_OFFSET;
-                }
-                else if (loc.x > maxX) {
+                } else if (loc.x > maxX) {
                     targetX = maxX - BORDER_TELEPORT_INWARD_OFFSET;
                 }
                 if (loc.z < minZ) {
                     targetZ = minZ + BORDER_TELEPORT_INWARD_OFFSET;
-                }
-                else if (loc.z > maxZ) {
+                } else if (loc.z > maxZ) {
                     targetZ = maxZ - BORDER_TELEPORT_INWARD_OFFSET;
                 }
-            }
-            else if (shape === 'circle') {
+            } else if (shape === 'circle') {
                 const { centerX, centerZ } = borderSettings;
                 const dx = loc.x - centerX;
                 const dz = loc.z - centerZ;
@@ -450,8 +428,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 if (currentDist === 0 || currentSize <= BORDER_TELEPORT_INWARD_OFFSET) {
                     targetX = centerX + (currentSize > BORDER_TELEPORT_INWARD_OFFSET ? currentSize - BORDER_TELEPORT_INWARD_OFFSET : 0);
                     targetZ = centerZ;
-                }
-                else {
+                } else {
                     const scale = (currentSize - BORDER_TELEPORT_INWARD_OFFSET) / currentDist;
                     targetX = centerX + dx * scale;
                     targetZ = centerZ + dz * scale;
@@ -479,8 +456,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                             playerUtils.debugLog(`[WBM] ${player.nameTag} reached ${pData.borderDamageApplications} damage events. Triggering teleport.`, player.nameTag, dependencies);
                         }
                     }
-                }
-                catch (_e) {
+                } catch (_e) {
                     console.warn(`[WBM] Failed to apply damage to ${player.nameTag}: ${_e}`);
                     playerUtils.debugLog(`[WBM] Failed to apply damage to ${player.nameTag}: ${_e.message}`, player.nameTag, dependencies);
                 }
@@ -499,16 +475,14 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 pData.ticksOutsideBorder = 0;
                 pData.borderDamageApplications = 0;
                 pData.isDirtyForSave = true;
-            }
-            catch (e) {
+            } catch (e) {
                 console.warn(`[WBM] Failed to teleport player ${player.nameTag}: ${e}`);
                 if (pData.isWatched) {
                     playerUtils.debugLog(`[WBM] Teleport failed: ${e.message}`, player.nameTag, dependencies);
                 }
             }
         }
-    }
-    else {
+    } else {
         if (pData.ticksOutsideBorder > 0 || pData.borderDamageApplications > 0) {
             if (pData.isWatched) {
                 playerUtils.debugLog(`[WBM] Player ${player.nameTag} re-entered border. Resetting counters.`, player.nameTag, dependencies);
@@ -527,8 +501,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
             if (Array.isArray(particleSequence) && particleSequence.length > 0) {
                 const visualUpdateInterval = config.worldBorderVisualUpdateIntervalTicks > 0 ? config.worldBorderVisualUpdateIntervalTicks : TICKS_PER_SECOND;
                 particleNameToUse = particleSequence[Math.floor(currentTick / visualUpdateInterval) % particleSequence.length];
-            }
-            else {
+            } else {
                 particleNameToUse = borderSettings.particleNameOverride || config.worldBorderParticleName;
             }
             const visualRange = config.worldBorderVisualRange;
@@ -573,8 +546,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                             try {
                                 const particleLoc = isXAxis ? { x: fixedCoord, y: yBase + h, z: dyn } : { x: dyn, y: yBase + h, z: fixedCoord };
                                 player.dimension.spawnParticle(particleNameToUse, particleLoc);
-                            }
-                            catch (_e) { }
+                            } catch (_e) { /* Error spawning particle, suppress */ }
                         }
                     }
                 };
@@ -590,8 +562,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 if (Math.abs(playerLoc.z - maxZ) < visualRange) {
                     spawnLine(false, maxZ, minX, maxX, playerLoc.x);
                 }
-            }
-            else if (currentShape === 'circle' && typeof currentEffectiveSize === 'number' && currentEffectiveSize > 0) {
+            } else if (currentShape === 'circle' && typeof currentEffectiveSize === 'number' && currentEffectiveSize > 0) {
                 const { centerX, centerZ } = borderSettings;
                 const radiusToUse = currentEffectiveSize;
                 if (Math.abs(Math.sqrt(Math.pow(playerLoc.x - centerX, 2) + Math.pow(playerLoc.z - centerZ, 2)) - radiusToUse) < visualRange) {
@@ -608,8 +579,7 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                         for (let h = 0; h < wallHeight; h++) {
                             try {
                                 player.dimension.spawnParticle(particleNameToUse, { x: pX, y: yBase + h, z: pZ });
-                            }
-                            catch (_e) { }
+                            } catch (_e) { /* Error spawning particle, suppress */ }
                         }
                     }
                 }
@@ -636,8 +606,7 @@ export function clearBorderSettings(dimensionId, dependencies) {
         mc.world.setDynamicProperty(propertyKey, undefined);
         playerUtils.debugLog(`[WorldBorderManager] Successfully cleared border settings for ${dimensionId}.`, 'System', dependencies);
         return true;
-    }
-    catch (error) {
+    } catch (error) {
         console.error(`[WorldBorderManager] Error clearing border settings for ${dimensionId}: ${error.stack || error}`);
         playerUtils.debugLog(`[WorldBorderManager] Exception clearing border settings for ${dimensionId}: ${error.message}`, 'System', dependencies);
         return false;

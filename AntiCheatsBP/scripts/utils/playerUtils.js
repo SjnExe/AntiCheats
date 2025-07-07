@@ -118,8 +118,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
         const flagType = pData.lastFlagType || 'N/A';
         const specificFlagCount = (flagType !== 'N/A' && pData.flags[flagType]) ? pData.flags[flagType].count : 0;
         fullMessage += ` §7(Player: §e${player.nameTag}§7, Flags: §b${pData.flags.totalFlags}§7, Last: §b${flagType}§7[§b${specificFlagCount}§7])§r`;
-    }
-    else if (player) {
+    } else if (player) {
         fullMessage += ` §7(Player: §e${player.nameTag}§7)§r`;
     }
 
@@ -136,8 +135,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
                 try {
                     p.sendMessage(fullMessage);
                     playSoundForEvent(p, 'adminNotificationReceived', dependencies, null);
-                }
-                catch (e) {
+                } catch (e) {
                     console.error(`[playerUtils] Failed to send notification to admin ${p.nameTag}: ${e}`);
                     debugLog(`Failed to send AC notification to admin ${p.nameTag}: ${e}`, dependencies, p.nameTag);
                 }
@@ -208,8 +206,7 @@ export function parseDuration(durationString) {
                 console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
                 return null;
         }
-    }
-    else if (/^\d+$/.test(lowerDurationString)) {
+    } else if (/^\d+$/.test(lowerDurationString)) {
         const value = parseInt(lowerDurationString, 10);
         if (!isNaN(value)) {
             return value * 1000;
@@ -296,7 +293,8 @@ export function formatTimeDifference(msDifference) {
  * @param {import('@minecraft/server').Player | null} primaryPlayer - The primary player associated with the event (e.g., the one executing a command, or an admin receiving a notification). Can be null for global sounds.
  * @param {string} eventName - The key of the sound event in `config.soundEvents` (e.g., "tpaRequestReceived", "adminNotificationReceived").
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @param {import('@minecraft/server').Player | null} [targetPlayerContext] - An optional secondary player, used if `soundConfig.target` is "targetPlayer".
+ * @param {import('@minecraft/server').Player | null} [targetPlayerContext] - An optional secondary player, used if `soundConfig.target`
+ *                                                                       is "targetPlayer".
  */
 export function playSoundForEvent(primaryPlayer, eventName, dependencies, targetPlayerContext = null) {
     const { config, playerUtils } = dependencies; // playerUtils for isAdmin if needed
@@ -327,8 +325,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
         if (playerInstance?.isValid()) {
             try {
                 playerInstance.playSound(soundConfig.soundId, soundOptions);
-            }
-            catch (e) {
+            } catch (e) {
                 console.warn(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.message}`);
                 // playerUtils?.debugLog(`[PlayerUtils.playSoundForEvent] Error playing sound '${soundConfig.soundId}' for ${playerInstance.nameTag}: ${e.stack}`, playerInstance.nameTag, dependencies);
             }
@@ -351,8 +348,7 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
         case 'targetPlayer':
             if (targetPlayerContext) {
                 playToPlayer(targetPlayerContext);
-            }
-            else if (primaryPlayer) {
+            } else if (primaryPlayer) {
                 playToPlayer(primaryPlayer);
             }
             break;
@@ -422,8 +418,7 @@ export function validateCommandTarget(issuer, targetPlayerName, dependencies, op
     if (!targetPlayer || !targetPlayer.isValid()) {
         if (requireOnline) {
             issuer.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
-        }
-        else {
+        } else {
             issuer.sendMessage(getString('common.error.playerNotFound', { playerName: targetPlayerName }));
         }
         return null;
@@ -433,8 +428,7 @@ export function validateCommandTarget(issuer, targetPlayerName, dependencies, op
         const selfTargetErrorKey = `command.${commandName}.cannotSelf`;
         if (stringDB[selfTargetErrorKey]) {
             issuer.sendMessage(getString(selfTargetErrorKey));
-        }
-        else {
+        } else {
             issuer.sendMessage(getString('command.error.cannotTargetSelf', { commandName: commandName }));
         }
         return null;

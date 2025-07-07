@@ -53,16 +53,13 @@ export async function checkNoSlow(player, pData, dependencies) {
     if (pData.isUsingConsumable) {
         resolvedSlowingActionString = 'Eating/Drinking';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedEating ?? 1.0;
-    }
-    else if (pData.isChargingBow) {
+    } else if (pData.isChargingBow) {
         resolvedSlowingActionString = 'Charging Bow';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedChargingBow ?? 1.0;
-    }
-    else if (pData.isUsingShield) {
+    } else if (pData.isUsingShield) {
         resolvedSlowingActionString = 'Using Shield';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedUsingShield ?? DEFAULT_NOSLOW_MAX_SPEED_SHIELD;
-    }
-    else if (player.isSneaking) {
+    } else if (player.isSneaking) {
         resolvedSlowingActionString = 'Sneaking';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedSneaking ?? DEFAULT_NOSLOW_MAX_SPEED_SNEAKING;
     }
@@ -75,8 +72,7 @@ export async function checkNoSlow(player, pData, dependencies) {
             const speedEffectMultiplier = 1 + ((speedAmplifier + 1) * (config?.noSlowSpeedEffectMultiplierPerLevel ?? DEFAULT_NOSLOW_SPEED_EFFECT_MULTIPLIER_PER_LEVEL)); // 1 is fine
             effectiveMaxAllowedSpeedBPS *= speedEffectMultiplier;
             effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowSpeedEffectTolerancePercent ?? DEFAULT_NOSLOW_SPEED_EFFECT_TOLERANCE_PERCENT)); // 1 is fine
-        }
-        else {
+        } else {
             effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowGeneralTolerancePercent ?? DEFAULT_NOSLOW_GENERAL_TOLERANCE_PERCENT)); // 1 is fine
         }
 
@@ -101,8 +97,7 @@ export async function checkNoSlow(player, pData, dependencies) {
                 `[NoSlowCheck] Flagged ${playerName}. Action: ${resolvedSlowingActionString}, Speed: ${horizontalSpeedBPS.toFixed(2)}bps, EffectiveMax: ${effectiveMaxAllowedSpeedBPS.toFixed(2)}bps (BaseMax: ${maxAllowedBaseSpeedBPS.toFixed(2)})`,
                 watchedPlayerName, dependencies,
             );
-        }
-        else if (pData.isWatched && config?.enableDebugLogging) {
+        } else if (pData.isWatched && config?.enableDebugLogging) {
             playerUtils?.debugLog(
                 `[NoSlowCheck] ${playerName} valid speed. Action: ${resolvedSlowingActionString}, Speed: ${horizontalSpeedBPS.toFixed(2)}bps, EffectiveMax: ${effectiveMaxAllowedSpeedBPS.toFixed(2)}bps`,
                 watchedPlayerName, dependencies,

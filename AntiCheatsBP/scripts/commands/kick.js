@@ -69,8 +69,7 @@ export function execute(player, args, dependencies) {
             reason: reason,
         }, dependencies);
 
-    }
-    catch (e) {
+    } catch (e) {
         player.sendMessage(getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message }));
         console.error(`[KickCommand CRITICAL] Error kicking player ${targetPlayerName} by ${adminName}: ${e.stack || e}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);

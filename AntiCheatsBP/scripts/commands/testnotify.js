@@ -41,8 +41,7 @@ export function execute(player, args, dependencies) {
             details: `Sent test notification: "${messageToSend}". Notified count (approx): ${notifiedCount ?? 'N/A'}`,
         }, dependencies);
 
-    }
-    catch (error) {
+    } catch (error) {
         player.sendMessage(getString('command.testnotify.error'));
         console.error(`[TestNotifyCommand CRITICAL] Error sending test notification from ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);

@@ -267,12 +267,10 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
 
     if (requiredTool && toolType === requiredTool) {
         correctToolMultiplier = CORRECT_TOOL_TIME_FACTOR; // Using this as it represents the 1.5 factor
-    }
-    else if (requiredTool && toolType !== requiredTool && toolType !== null) {
+    } else if (requiredTool && toolType !== requiredTool && toolType !== null) {
         speed = 1; // No material bonus if wrong tool type for block needing a specific tool
         correctToolMultiplier = 1; // No penalty beyond losing material bonus for now
-    }
-    else if (toolType === null && requiredTool) { // Hand breaking a block that needs a tool
+    } else if (toolType === null && requiredTool) { // Hand breaking a block that needs a tool
         return 1 / (blockHardness * INCORRECT_TOOL_PENALTY_FACTOR * HAND_BREAK_HARDNESS_FACTOR_2);
     }
 
@@ -285,8 +283,7 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
                 efficiencyLevel = efficiency.level;
             }
         }
-    }
-    catch (_e) { }
+    } catch (_e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
     if (efficiencyLevel > 0) {
         speed += (efficiencyLevel * efficiencyLevel + 1);
     }
@@ -379,22 +376,17 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
             toolSpeed = toolMaterialMultipliersMap[toolMaterial];
             if (toolType === requiredToolClass) {
                 isCorrectToolTypeAndMaterial = true;
-            }
-            else if (requiredToolClass) {
+            } else if (requiredToolClass) {
                 toolSpeed = 1;
             }
-        }
-        else if (toolType === 'shears' && (blockTypeId.includes('leaves') || blockTypeId.includes('wool') || blockTypeId === 'minecraft:cobweb' || blockTypeId === 'minecraft:vine')) {
+        } else if (toolType === 'shears' && (blockTypeId.includes('leaves') || blockTypeId.includes('wool') || blockTypeId === 'minecraft:cobweb' || blockTypeId === 'minecraft:vine')) {
             return 1;
-        }
-        else if (toolType === 'sword' && blockTypeId === 'minecraft:cobweb') {
+        } else if (toolType === 'sword' && blockTypeId === 'minecraft:cobweb') {
             return 1;
-        }
-        else {
+        } else {
             toolSpeed = 1;
         }
-    }
-    else {
+    } else {
         isCorrectToolTypeAndMaterial = !requiredToolClass;
         toolSpeed = 1;
     }
@@ -409,8 +401,7 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
                     efficiencyLevel = eff.level;
                 }
             }
-        }
-        catch (_e) { }
+        } catch (_e) { /* Component may not exist or error fetching; efficiency remains 0 */ }
     }
     if (efficiencyLevel > 0) {
         toolSpeed += (efficiencyLevel * efficiencyLevel + 1);
@@ -444,8 +435,7 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
             if (enchantComp?.getEnchantment('aqua_affinity')) {
                 hasAquaAffinity = true;
             }
-        }
-        catch (_e) { }
+        } catch (_e) { /* Component may not exist or error fetching; aqua affinity remains false */ }
     }
     if (player.isInWater && !hasAquaAffinity) {
         breakTimeSeconds *= IN_WATER_NO_AQUA_AFFINITY_PENALTY;

@@ -46,8 +46,7 @@ export function execute(player, _args, dependencies) {
         messagesAttempted++;
         try {
             mc.world.sendMessage(' ');
-        }
-        catch (error) {
+        } catch (error) {
             console.warn(`[ClearChatCommand.execute WARNING] Error sending empty message line ${i + 1} for ${adminName}: ${error.stack || error}`);
             if (i > CLEAR_CHAT_FAILURE_THRESHOLD_MESSAGES) {
                 player?.sendMessage(getString('command.clearchat.failPartial'));
@@ -60,12 +59,10 @@ export function execute(player, _args, dependencies) {
     if (allMessagesSent && messagesAttempted > 0) {
         player?.sendMessage(getString('command.clearchat.success'));
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-    }
-    else if (messagesAttempted === 0) {
+    } else if (messagesAttempted === 0) {
         player?.sendMessage(getString('command.clearchat.failPartial'));
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
-    }
-    else {
+    } else {
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }
 
@@ -82,8 +79,7 @@ export function execute(player, _args, dependencies) {
             targetName: 'Global',
             details: `Chat cleared by ${adminName} (${linesToClear} lines attempted).`,
         }, dependencies);
-    }
-    catch (logError) {
+    } catch (logError) {
         console.error(`[ClearChatCommand.execute CRITICAL] Error during logging/notification for ${adminName}: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[ClearChatCommand.execute CRITICAL] Logging/Notify Error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

@@ -57,8 +57,7 @@ function normalizeWordForSwearCheck(word, dependencies) {
             if (!replaced) {
                 if (leetMap[chars[i]]) {
                     resultChars.push(leetMap[chars[i]]);
-                }
-                else {
+                } else {
                     resultChars.push(chars[i]);
                 }
                 i++;

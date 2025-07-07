@@ -58,8 +58,7 @@ export async function checkNameSpoof(player, pData, dependencies) {
                 reasonDetailString = `Name contains disallowed character: '${match[0]}'.`;
                 flaggedReasonForLog = `NameTag contains disallowed character(s) (e.g., '${match[0]}') matching regex. Name: '${currentNameTag}'`;
             }
-        }
-        catch (e) {
+        } catch (e) {
             playerUtils?.debugLog(`[NameSpoofCheck CRITICAL] Error compiling regex '${config.nameSpoofDisallowedCharsRegex}': ${e.message}`, watchedPlayerName, dependencies);
             console.error(`[NameSpoofCheck CRITICAL] Regex compilation error: ${e.stack || e}`);
             logManager?.addLog({
@@ -104,8 +103,7 @@ export async function checkNameSpoof(player, pData, dependencies) {
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils?.debugLog(`[NameSpoofCheck] Flagged ${player.name} (current nameTag: '${currentNameTag}') for NameSpoof. Reason: ${flaggedReasonForLog}`, watchedPlayerName, dependencies);
-    }
-    else if (pData.isWatched && config?.enableDebugLogging && currentNameTag !== previousNameTagForViolationDetails && previousNameTagForViolationDetails !== 'N/A') {
+    } else if (pData.isWatched && config?.enableDebugLogging && currentNameTag !== previousNameTagForViolationDetails && previousNameTagForViolationDetails !== 'N/A') {
         playerUtils?.debugLog(`[NameSpoofCheck] Name change detected for watched player ${player.name}: from '${previousNameTagForViolationDetails}' to '${currentNameTag}'. Not flagged this time.`, watchedPlayerName, dependencies);
     }
 }
