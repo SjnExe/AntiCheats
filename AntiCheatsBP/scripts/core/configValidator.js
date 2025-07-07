@@ -8,6 +8,7 @@
 
 /**
  * Checks if a value is a string.
+ *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is a string, false otherwise.
  */
@@ -17,6 +18,7 @@ function isString(value) {
 
 /**
  * Checks if a value is a number.
+ *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is a number, false otherwise.
  */
@@ -26,6 +28,7 @@ function isNumber(value) {
 
 /**
  * Checks if a value is a boolean.
+ *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is a boolean, false otherwise.
  */
@@ -35,6 +38,7 @@ function isBoolean(value) {
 
 /**
  * Checks if a value is an array.
+ *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is an array, false otherwise.
  */
@@ -44,6 +48,7 @@ function isArray(value) {
 
 /**
  * Checks if a value is an object (and not an array or null).
+ *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is an object, false otherwise.
  */
@@ -53,6 +58,7 @@ function isObject(value) {
 
 /**
  * Checks if a string is a valid Minecraft color code (e.g., §a, §0).
+ *
  * @param {string} colorCode - The string to check.
  * @returns {boolean} True if it's a valid color code.
  */
@@ -63,6 +69,7 @@ function isValidColorCode(colorCode) {
 /**
  * Checks if a string is in camelCase.
  * Simple check: starts with lowercase, no spaces or underscores.
+ *
  * @param {string} str - The string to check.
  * @returns {boolean} True if it appears to be camelCase.
  */
@@ -75,6 +82,7 @@ function isValidCamelCase(str) {
 
 /**
  * Checks if a value is a positive number (greater than 0).
+ *
  * @param {*} num - The value to check.
  * @returns {boolean} True if it's a positive number.
  */
@@ -84,6 +92,7 @@ function isPositiveNumber(num) {
 
 /**
  * Checks if a value is a non-negative number (0 or greater).
+ *
  * @param {*} num - The value to check.
  * @returns {boolean} True if it's a non-negative number.
  */
@@ -95,6 +104,7 @@ function isNonNegativeNumber(num) {
 /**
  * Checks if a string is a valid duration format (e.g., "5m", "1h", "30s").
  * This is a simplified check. Real parsing logic is in playerUtils.parseDuration.
+ *
  * @param {string} durationStr - The string to check.
  * @returns {boolean} True if it's a valid duration string format.
  */
@@ -107,6 +117,7 @@ function isValidDurationString(durationStr) {
 
 /**
  * Ensures an object contains all specified required fields and optionally validates their types.
+ *
  * @param {object} obj - The object to check.
  * @param {Array<{name: string, type?: string | string[], validator?: Function, optional?: boolean, arrayElementType?: string, objectProperties?: any}>} fieldDefs - Array of field definitions.
  * @param {string} context - A string describing the context of the validation (e.g., "config.soundEvents").
@@ -243,6 +254,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
 
 /**
  * Validates the main configuration object (from config.js).
+ *
  * @param {object} config - The `defaultConfigSettings` object from `config.js`.
  * @param {object} actionProfiles - The `checkActionProfiles` object from `actionProfiles.js`.
  * @param {string[]} knownCommands - An array of known command names from `commandRegistry.js`.
@@ -307,177 +319,285 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'enableSwearCheck', type: 'boolean' },
         { name: 'swearWordList', type: 'array', arrayElementType: 'string' },
         { name: 'swearCheckMuteDuration', type: 'durationString' },
-        { name: 'swearCheckActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
+        { name: 'swearCheckActionProfileName', type: 'string', /**
+                                                                *
+                                                                * @param val
+                                                                * @param path
+                                                                * @param errs
+                                                                */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
         { name: 'enableAntiAdvertisingCheck', type: 'boolean' },
         { name: 'antiAdvertisingPatterns', type: 'array', arrayElementType: 'string' },
-        { name: 'antiAdvertisingActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
+        { name: 'antiAdvertisingActionProfileName', type: 'string', /**
+                                                                     *
+                                                                     * @param val
+                                                                     * @param path
+                                                                     * @param errs
+                                                                     */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
         { name: 'enableAdvancedLinkDetection', type: 'boolean' },
-        { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string', validator: (val, path, errs) => {
-            val.forEach((regex, index) => {
-                try {
-                    RegExp(regex); // Changed from new RegExp(regex)
-                }
-                catch (e) {
-                    errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`);
-                }
-            });
-            return true; // Validator pushes errors directly
-        } },
+        { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string', /**
+                                                                                     *
+                                                                                     * @param val
+                                                                                     * @param path
+                                                                                     * @param errs
+                                                                                     */
+            validator: (val, path, errs) => {
+                val.forEach((regex, index) => {
+                    try {
+                        RegExp(regex); // Changed from new RegExp(regex)
+                    }
+                    catch (e) {
+                        errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`);
+                    }
+                });
+                return true; // Validator pushes errors directly
+            } },
         { name: 'advertisingWhitelistPatterns', type: 'array', arrayElementType: 'string' }, // Could also be regex
         { name: 'enableCapsCheck', type: 'boolean' },
         { name: 'capsCheckMinLength', type: 'nonNegativeNumber' },
-        { name: 'capsCheckUpperCasePercentage', type: 'number', validator: (val, path, errs) => {
-            if (val < 0 || val > 100) {
-                errs.push(`${path}: Must be between 0 and 100. Got ${val}.`);
-            }
-            return val >= 0 && val <= 100;
-        } },
-        { name: 'capsCheckActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
+        { name: 'capsCheckUpperCasePercentage', type: 'number', /**
+                                                                 *
+                                                                 * @param val
+                                                                 * @param path
+                                                                 * @param errs
+                                                                 */
+            validator: (val, path, errs) => {
+                if (val < 0 || val > 100) {
+                    errs.push(`${path}: Must be between 0 and 100. Got ${val}.`);
+                }
+                return val >= 0 && val <= 100;
+            } },
+        { name: 'capsCheckActionProfileName', type: 'string', /**
+                                                               *
+                                                               * @param val
+                                                               * @param path
+                                                               * @param errs
+                                                               */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
         // ... (add more chat check fields)
-        { name: 'charRepeatActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'symbolSpamActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'fastMessageSpamActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'maxWordsSpamActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'chatContentRepeatActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'unicodeAbuseActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'gibberishActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'mentionsActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
-        { name: 'impersonationActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) {
-                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
-            }
-            return actionProfileNames.includes(val);
-        } },
+        { name: 'charRepeatActionProfileName', type: 'string', /**
+                                                                *
+                                                                * @param val
+                                                                * @param path
+                                                                * @param errs
+                                                                */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'symbolSpamActionProfileName', type: 'string', /**
+                                                                *
+                                                                * @param val
+                                                                * @param path
+                                                                * @param errs
+                                                                */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'fastMessageSpamActionProfileName', type: 'string', /**
+                                                                     *
+                                                                     * @param val
+                                                                     * @param path
+                                                                     * @param errs
+                                                                     */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'maxWordsSpamActionProfileName', type: 'string', /**
+                                                                  *
+                                                                  * @param val
+                                                                  * @param path
+                                                                  * @param errs
+                                                                  */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'chatContentRepeatActionProfileName', type: 'string', /**
+                                                                       *
+                                                                       * @param val
+                                                                       * @param path
+                                                                       * @param errs
+                                                                       */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'unicodeAbuseActionProfileName', type: 'string', /**
+                                                                  *
+                                                                  * @param val
+                                                                  * @param path
+                                                                  * @param errs
+                                                                  */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'gibberishActionProfileName', type: 'string', /**
+                                                               *
+                                                               * @param val
+                                                               * @param path
+                                                               * @param errs
+                                                               */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'mentionsActionProfileName', type: 'string', /**
+                                                              *
+                                                              * @param val
+                                                              * @param path
+                                                              * @param errs
+                                                              */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
+        { name: 'impersonationActionProfileName', type: 'string', /**
+                                                                   *
+                                                                   * @param val
+                                                                   * @param path
+                                                                   * @param errs
+                                                                   */
+            validator: (val, path, errs) => {
+                if (!actionProfileNames.includes(val)) {
+                    errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+                }
+                return actionProfileNames.includes(val);
+            } },
 
 
         // AntiGrief
         { name: 'enableTntAntiGrief', type: 'boolean' },
-        { name: 'tntPlacementAction', type: 'string', validator: (val, path, errs) => {
-            const valid = ['remove', 'warn', 'flagOnly'];
-            if (!valid.includes(val)) {
-                errs.push(`${path}: Invalid action. Expected one of ${valid.join(', ')}. Got ${val}.`);
-            }
-            return valid.includes(val);
-        } },
+        { name: 'tntPlacementAction', type: 'string', /**
+                                                       *
+                                                       * @param val
+                                                       * @param path
+                                                       * @param errs
+                                                       */
+            validator: (val, path, errs) => {
+                const valid = ['remove', 'warn', 'flagOnly'];
+                if (!valid.includes(val)) {
+                    errs.push(`${path}: Invalid action. Expected one of ${valid.join(', ')}. Got ${val}.`);
+                }
+                return valid.includes(val);
+            } },
         // ... (add more AntiGrief fields)
 
         // Sound Events
-        { name: 'soundEvents', type: 'object', validator: (soundEventsObj, sePath, seErrs) => {
-            let overallSoundEventsValid = true;
-            for (const eventName in soundEventsObj) {
-                if (!Object.prototype.hasOwnProperty.call(soundEventsObj, eventName)) {
-                    continue;
-                }
-                const eventPath = `${sePath}.${eventName}`;
-                const eventDef = soundEventsObj[eventName];
-                const soundFieldDefs = [
-                    { name: 'enabled', type: 'boolean' },
-                    { name: 'soundId', type: 'string', optional: true }, // Can be empty for no sound
-                    { name: 'volume', type: 'number', optional: true }, // Specific range check below
-                    { name: 'pitch', type: 'number', optional: true },
-                    { name: 'target', type: 'string', optional: true, validator: (val, p, e) => {
-                        const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
-                        if (val && !validTargets.includes(val)) {
-                            e.push(`${p}: Invalid sound event target "${val}". Expected one of ${validTargets.join(', ')}.`);
-                            return false; // Indicate validation failure
-                        }
-                        return true; // Indicate validation success
-                    } },
-                    { name: 'description', type: 'string' },
-                ];
+        { name: 'soundEvents', type: 'object', /**
+                                                *
+                                                * @param soundEventsObj
+                                                * @param sePath
+                                                * @param seErrs
+                                                */
+            validator: (soundEventsObj, sePath, seErrs) => {
+                let overallSoundEventsValid = true;
+                for (const eventName in soundEventsObj) {
+                    if (!Object.prototype.hasOwnProperty.call(soundEventsObj, eventName)) {
+                        continue;
+                    }
+                    const eventPath = `${sePath}.${eventName}`;
+                    const eventDef = soundEventsObj[eventName];
+                    const soundFieldDefs = [
+                        { name: 'enabled', type: 'boolean' },
+                        { name: 'soundId', type: 'string', optional: true }, // Can be empty for no sound
+                        { name: 'volume', type: 'number', optional: true }, // Specific range check below
+                        { name: 'pitch', type: 'number', optional: true },
+                        { name: 'target', type: 'string', optional: true, /**
+                                                                           *
+                                                                           * @param val
+                                                                           * @param p
+                                                                           * @param e
+                                                                           */
+                            validator: (val, p, e) => {
+                                const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
+                                if (val && !validTargets.includes(val)) {
+                                    e.push(`${p}: Invalid sound event target "${val}". Expected one of ${validTargets.join(', ')}.`);
+                                    return false; // Indicate validation failure
+                                }
+                                return true; // Indicate validation success
+                            } },
+                        { name: 'description', type: 'string' },
+                    ];
 
-                if (!ensureFields(eventDef, soundFieldDefs, eventPath, seErrs)) {
-                    overallSoundEventsValid = false;
-                }
+                    if (!ensureFields(eventDef, soundFieldDefs, eventPath, seErrs)) {
+                        overallSoundEventsValid = false;
+                    }
 
-                // Specific check for volume range, if volume is defined and is a number
-                if (eventDef.volume !== undefined && isNumber(eventDef.volume) && (eventDef.volume < 0 || eventDef.volume > 1.0)) {
-                    seErrs.push(`${eventPath}.volume: Must be between 0.0 and 1.0. Got ${eventDef.volume}.`);
-                    overallSoundEventsValid = false;
+                    // Specific check for volume range, if volume is defined and is a number
+                    if (eventDef.volume !== undefined && isNumber(eventDef.volume) && (eventDef.volume < 0 || eventDef.volume > 1.0)) {
+                        seErrs.push(`${eventPath}.volume: Must be between 0.0 and 1.0. Got ${eventDef.volume}.`);
+                        overallSoundEventsValid = false;
+                    }
                 }
-            }
-            return overallSoundEventsValid;
-        } },
+                return overallSoundEventsValid;
+            } },
 
         // Command Settings
-        { name: 'commandSettings', type: 'object', validator: (cmdSettingsObj, csPath, csErrs) => {
-            let overallIsValid = true;
-            for (const cmdName of Object.keys(cmdSettingsObj)) {
-                let currentCmdLocalValid = true;
-                if (!knownCommands.includes(cmdName)) {
-                    csErrs.push(`${csPath}.${cmdName}: Unknown command "${cmdName}" listed in commandSettings.`);
-                    currentCmdLocalValid = false;
-                }
-                const cmdDef = cmdSettingsObj[cmdName];
-                const cmdFieldDefs = [{ name: 'enabled', type: 'boolean' }];
+        { name: 'commandSettings', type: 'object', /**
+                                                    *
+                                                    * @param cmdSettingsObj
+                                                    * @param csPath
+                                                    * @param csErrs
+                                                    */
+            validator: (cmdSettingsObj, csPath, csErrs) => {
+                let overallIsValid = true;
+                for (const cmdName of Object.keys(cmdSettingsObj)) {
+                    let currentCmdLocalValid = true;
+                    if (!knownCommands.includes(cmdName)) {
+                        csErrs.push(`${csPath}.${cmdName}: Unknown command "${cmdName}" listed in commandSettings.`);
+                        currentCmdLocalValid = false;
+                    }
+                    const cmdDef = cmdSettingsObj[cmdName];
+                    const cmdFieldDefs = [{ name: 'enabled', type: 'boolean' }];
 
-                const errorCountBeforeEnsureFields = csErrs.length;
-                ensureFields(cmdDef, cmdFieldDefs, `${csPath}.${cmdName}`, csErrs);
-                if (csErrs.length > errorCountBeforeEnsureFields) {
-                    currentCmdLocalValid = false;
-                }
+                    const errorCountBeforeEnsureFields = csErrs.length;
+                    ensureFields(cmdDef, cmdFieldDefs, `${csPath}.${cmdName}`, csErrs);
+                    if (csErrs.length > errorCountBeforeEnsureFields) {
+                        currentCmdLocalValid = false;
+                    }
 
-                if (!currentCmdLocalValid) {
-                    overallIsValid = false;
+                    if (!currentCmdLocalValid) {
+                        overallIsValid = false;
+                    }
                 }
-            }
-            return overallIsValid;
-        } },
+                return overallIsValid;
+            } },
         { name: 'chatClearLinesCount', type: 'positiveNumber' },
         { name: 'reportsViewPerPage', type: 'positiveNumber' },
 
@@ -549,6 +669,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
 
 /**
  * Validates the checkActionProfiles object from actionProfiles.js.
+ *
  * @param {object} actionProfiles - The `checkActionProfiles` object.
  * @returns {string[]} An array of error messages. Empty if no errors.
  */
@@ -596,12 +717,18 @@ export function validateActionProfiles(actionProfiles) {
             ] },
             { name: 'cancelMessage', type: 'boolean', optional: true },
             { name: 'cancelEvent', type: 'boolean', optional: true },
-            { name: 'customAction', type: 'string', optional: true, validator: (val, path, errs) => {
-                if (!validCustomActions.includes(val)) {
-                    errs.push(`${path}: Invalid customAction "${val}". Expected one of ${validCustomActions.join(', ')}.`);
-                }
-                return validCustomActions.includes(val);
-            } },
+            { name: 'customAction', type: 'string', optional: true, /**
+                                                                     *
+                                                                     * @param val
+                                                                     * @param path
+                                                                     * @param errs
+                                                                     */
+                validator: (val, path, errs) => {
+                    if (!validCustomActions.includes(val)) {
+                        errs.push(`${path}: Invalid customAction "${val}". Expected one of ${validCustomActions.join(', ')}.`);
+                    }
+                    return validCustomActions.includes(val);
+                } },
         ];
 
         ensureFields(profile, profileFieldDefs, profileContext, errors);
@@ -643,6 +770,7 @@ export function validateActionProfiles(actionProfiles) {
 
 /**
  * Validates the automodConfig object.
+ *
  * @param {object} autoModConfig - The `automodConfig` object.
  * @param {object} actionProfiles - The `checkActionProfiles` object from `actionProfiles.js` for cross-referencing checkTypes.
  * @returns {string[]} An array of error messages. Empty if no errors.
@@ -669,7 +797,13 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
         const ruleSetContext = `${context}.automodRuleSets[${index}]`;
 
         const ruleSetFieldDefs = [
-            { name: 'checkType', type: 'string', validator: (val, path, errs) => {
+            { name: 'checkType', type: 'string', /**
+                                                  *
+                                                  * @param val
+                                                  * @param path
+                                                  * @param errs
+                                                  */
+                validator: (val, path, errs) => {
                 // A checkType in automodConfig might not necessarily have a direct 1:1 actionProfile
                 // if it's a more abstract grouping or if actionProfiles are fine-grained.
                 // For now, we'll keep it as a string. If strict mapping is needed, uncomment below.
@@ -677,13 +811,13 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                 //     errs.push(`${path}: checkType "${val}" does not correspond to a known actionProfile name.`);
                 // }
                 // return knownActionProfileNames.includes(val);
-                if (!isValidCamelCase(val) && !knownActionProfileNames.includes(val)) {
+                    if (!isValidCamelCase(val) && !knownActionProfileNames.includes(val)) {
                     // Check if it's a known actionProfile name OR a generic camelCase string if not found in actionProfiles
                     // This allows for checkTypes that might be aggregations or special cases not directly in actionProfiles
-                    errs.push(`${path}: checkType "${val}" is not a valid camelCase string or a known actionProfile name.`);
-                }
-                return true; // Validator pushes error
-            } },
+                        errs.push(`${path}: checkType "${val}" is not a valid camelCase string or a known actionProfile name.`);
+                    }
+                    return true; // Validator pushes error
+                } },
             { name: 'enabled', type: 'boolean' },
             { name: 'description', type: 'string', optional: true },
             { name: 'resetFlagsAfterSeconds', type: 'positiveNumber', optional: true },
@@ -697,12 +831,18 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                 const tierContext = `${ruleSetContext}.tiers[${tierIndex}]`;
                 const tierFieldDefs = [
                     { name: 'flagThreshold', type: 'positiveNumber' },
-                    { name: 'actionType', type: 'string', validator: (val, path, errs) => {
-                        if (!validAutoModActions.includes(val)) {
-                            errs.push(`${path}: Invalid actionType "${val}". Expected one of ${validAutoModActions.join(', ')}.`);
-                        }
-                        return validAutoModActions.includes(val);
-                    } },
+                    { name: 'actionType', type: 'string', /**
+                                                           *
+                                                           * @param val
+                                                           * @param path
+                                                           * @param errs
+                                                           */
+                        validator: (val, path, errs) => {
+                            if (!validAutoModActions.includes(val)) {
+                                errs.push(`${path}: Invalid actionType "${val}". Expected one of ${validAutoModActions.join(', ')}.`);
+                            }
+                            return validAutoModActions.includes(val);
+                        } },
                     { name: 'parameters', type: 'object' }, // Parameters can vary, specific checks below
                     { name: 'resetFlagsAfterAction', type: 'boolean' },
                 ];
@@ -767,6 +907,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
 
 /**
  * Validates the ranksConfig object.
+ *
  * @param {object} ranksConfig - The object containing rank definitions and defaults from `ranksConfig.js`.
  * @param {string} mainConfigOwnerName - The `ownerPlayerName` from `config.js` for 'ownerName' condition validation.
  * @param {string} mainConfigAdminTag - The `adminTag` from `config.js` for 'adminTag' condition validation.
@@ -821,16 +962,22 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
         const rankDefContext = `${rdContext}[${index}]`;
 
         const rankDefFields = [
-            { name: 'id', type: 'string', validator: (val, path, errs) => {
-                if (val !== val.toLowerCase()) {
-                    errs.push(`${path}: Rank ID "${val}" must be lowercase.`);
-                }
-                if (rankIds.has(val)) {
-                    errs.push(`${path}: Duplicate rank ID "${val}" found.`);
-                }
-                rankIds.add(val);
-                return true; // Validator pushes errors
-            } },
+            { name: 'id', type: 'string', /**
+                                           *
+                                           * @param val
+                                           * @param path
+                                           * @param errs
+                                           */
+                validator: (val, path, errs) => {
+                    if (val !== val.toLowerCase()) {
+                        errs.push(`${path}: Rank ID "${val}" must be lowercase.`);
+                    }
+                    if (rankIds.has(val)) {
+                        errs.push(`${path}: Duplicate rank ID "${val}" found.`);
+                    }
+                    rankIds.add(val);
+                    return true; // Validator pushes errors
+                } },
             { name: 'name', type: 'string' },
             { name: 'permissionLevel', type: 'number' },
             { name: 'chatFormatting', type: 'object', optional: true, objectProperties: [ // Same as defaultChatFormatting structure
@@ -841,13 +988,19 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
             ] },
             { name: 'nametagPrefix', type: 'string', optional: true },
             { name: 'conditions', type: 'array' },
-            { name: 'priority', type: 'number', validator: (val, path, errs) => {
-                if (rankPriorities.has(val)) {
-                    errs.push(`${path}: Duplicate priority ${val} found. Priorities must be unique.`);
-                }
-                rankPriorities.add(val);
-                return true; // Validator pushes errors
-            } },
+            { name: 'priority', type: 'number', /**
+                                                 *
+                                                 * @param val
+                                                 * @param path
+                                                 * @param errs
+                                                 */
+                validator: (val, path, errs) => {
+                    if (rankPriorities.has(val)) {
+                        errs.push(`${path}: Duplicate priority ${val} found. Priorities must be unique.`);
+                    }
+                    rankPriorities.add(val);
+                    return true; // Validator pushes errors
+                } },
             { name: 'assignableBy', type: 'number', optional: true },
         ];
         ensureFields(rankDef, rankDefFields, rankDefContext, errors);
@@ -860,12 +1013,18 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 const condContext = `${rankDefContext}.conditions[${condIndex}]`;
                 const validConditionTypes = ['ownerName', 'adminTag', 'manualTagPrefix', 'tag', 'default'];
                 const conditionFieldDefs = [
-                    { name: 'type', type: 'string', validator: (val, path, errs) => {
-                        if (!validConditionTypes.includes(val)) {
-                            errs.push(`${path}: Invalid condition type "${val}". Expected one of ${validConditionTypes.join(', ')}.`);
-                        }
-                        return validConditionTypes.includes(val);
-                    } },
+                    { name: 'type', type: 'string', /**
+                                                     *
+                                                     * @param val
+                                                     * @param path
+                                                     * @param errs
+                                                     */
+                        validator: (val, path, errs) => {
+                            if (!validConditionTypes.includes(val)) {
+                                errs.push(`${path}: Invalid condition type "${val}". Expected one of ${validConditionTypes.join(', ')}.`);
+                            }
+                            return validConditionTypes.includes(val);
+                        } },
                     { name: 'prefix', type: 'string', optional: true }, // Required by specific types below
                     { name: 'tag', type: 'string', optional: true },    // Required by specific types below
                 ];

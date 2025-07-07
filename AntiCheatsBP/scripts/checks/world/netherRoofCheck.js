@@ -4,19 +4,13 @@
 import * as mc from '@minecraft/server';
 
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- */
-
-/**
  * Checks if a player is on top of the Nether roof based on their Y-coordinate.
  * This check is typically run periodically for players in the Nether dimension.
  *
  * @async This function is marked async due to potential call to actionManager.
  * @param {mc.Player} player - The player to check.
- * @param {PlayerAntiCheatData} pData - The player's anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - The player's anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
  * @returns {Promise<void>}
  */
 export async function checkNetherRoof(player, pData, dependencies) {

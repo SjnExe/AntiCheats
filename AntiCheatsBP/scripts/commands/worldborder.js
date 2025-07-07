@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !worldborder command (aliased as !wb) for managing per-dimension world borders.
  */
 import * as mc from '@minecraft/server';
@@ -24,6 +25,7 @@ export const definition = {
 
 /**
  * Helper to parse dimension ID from arguments or default to player's current dimension.
+ *
  * @param {string | undefined} dimensionArg - The dimension argument from the command.
  * @param {import('@minecraft/server').Player} player - The command issuer.
  * @param {import('../types.js').Dependencies} dependencies - For getString.
@@ -59,6 +61,7 @@ function parseDimensionArgument(dimensionArg, player, dependencies) {
 
 /**
  * Executes the !worldborder command and its subcommands.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.

@@ -12,13 +12,14 @@ import { ActionFormData, ModalFormData } from '@minecraft/server-ui'; // Direct 
 
 /**
  * Helper to show a confirmation modal.
+ *
  * @param {mc.Player} adminPlayer - Player to show modal to.
  * @param {string} titleKey - Localization key for title.
  * @param {string} bodyKey - Localization key for body.
  * @param {string} confirmToggleLabelKey - Localization key for confirm toggle.
  * @param {() => Promise<void>} onConfirmCallback - Async callback if confirmed.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies.
- * @param {object} [bodyParams={}] - Optional parameters for body string formatting.
+ * @param {object} [bodyParams] - Optional parameters for body string formatting.
  */
 async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmToggleLabelKey, onConfirmCallback, dependencies, bodyParams = {}) {
     const { playerUtils, logManager, getString } = dependencies;
@@ -59,6 +60,7 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
 
 /**
  * Shows a form to input a player name for inspection (text-based).
+ *
  * @param {mc.Player} adminPlayer - Admin using the form.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies.
  */
@@ -141,6 +143,13 @@ const PLAYER_ACTIONS_BTN_RESET_FLAGS = 8;
 const PLAYER_ACTIONS_BTN_CLEAR_INV = 9;
 const PLAYER_ACTIONS_BTN_BACK_TO_LIST = 10;
 
+/**
+ *
+ * @param adminPlayer
+ * @param targetPlayer
+ * @param playerDataManager
+ * @param dependencies
+ */
 async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     const { config, playerUtils, logManager, getString, commandExecutionMap } = dependencies; // Removed permissionLevels
     const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
@@ -195,6 +204,10 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
 
         let shouldReturnToPlayerList = false;
         let shouldReturnToPlayerActions = true; // Default to re-showing this form
+        /**
+         *
+         * @param cmd
+         */
         const cmdExec = (cmd) => commandExecutionMap?.get(cmd);
 
         switch (response.selection) {
@@ -328,6 +341,12 @@ const ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON = 5; // Index of close if owner butt
 const ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON = 6; // Index of close if owner button is present
 
 
+/**
+ *
+ * @param player
+ * @param playerDataManager
+ * @param dependencies
+ */
 async function showAdminPanelMain(player, playerDataManager, dependencies) {
     const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // uiManager removed as functions are called directly
     const playerName = player?.nameTag ?? 'UnknownPlayer';
@@ -403,6 +422,11 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
     }
 };
 
+/**
+ *
+ * @param adminPlayer
+ * @param dependencies
+ */
 async function showOnlinePlayersList(adminPlayer, dependencies) {
     const { playerUtils, logManager, playerDataManager, getString, mc: minecraft } = dependencies; // Removed uiManager
     const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
@@ -469,6 +493,12 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
 // Commenting out unused function assignments based on ESLint warnings
 // async function showServerManagementForm (_adminPlayer, _playerDataManager_unused, _config_unused, _dependencies) { /* ... */ };
 // async function showModLogTypeSelectionForm (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
+/**
+ *
+ * @param adminPlayer
+ * @param targetPlayer
+ * @param dependencies
+ */
 async function showDetailedFlagsForm (adminPlayer, targetPlayer, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
     const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
@@ -478,6 +508,11 @@ async function showDetailedFlagsForm (adminPlayer, targetPlayer, dependencies) {
     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
 };
 
+/**
+ *
+ * @param player
+ * @param dependencies
+ */
 async function showResetFlagsForm(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
     playerUtils?.debugLog(`[UiManager.showResetFlagsForm] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
@@ -485,6 +520,11 @@ async function showResetFlagsForm(player, dependencies) {
     await showAdminPanelMain(player, playerDataManager, dependencies);
 }
 
+/**
+ *
+ * @param player
+ * @param dependencies
+ */
 async function showWatchedPlayersList(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
     playerUtils?.debugLog(`[UiManager.showWatchedPlayersList] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
@@ -492,6 +532,11 @@ async function showWatchedPlayersList(player, dependencies) {
     await showAdminPanelMain(player, playerDataManager, dependencies);
 }
 
+/**
+ *
+ * @param player
+ * @param dependencies
+ */
 async function showServerManagementForm(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
     playerUtils?.debugLog(`[UiManager.showServerManagementForm] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
@@ -499,6 +544,11 @@ async function showServerManagementForm(player, dependencies) {
     await showAdminPanelMain(player, playerDataManager, dependencies);
 }
 
+/**
+ *
+ * @param player
+ * @param dependencies
+ */
 async function showEditConfigForm(player, dependencies) {
     const { playerUtils, getString, playerDataManager } = dependencies;
     playerUtils?.debugLog(`[UiManager.showEditConfigForm] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
@@ -506,6 +556,11 @@ async function showEditConfigForm(player, dependencies) {
     await showAdminPanelMain(player, playerDataManager, dependencies);
 }
 
+/**
+ *
+ * @param player
+ * @param dependencies
+ */
 function showNormalUserPanelMain(player, dependencies) { // Removed async
     const { playerUtils, getString, playerDataManager: _playerDataManager } = dependencies; // Prefixed playerDataManager
     playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
@@ -523,4 +578,7 @@ function showNormalUserPanelMain(player, dependencies) { // Removed async
 // async function showModLogTypeSelectionForm (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
 // async function showEditSingleConfigValueForm (_adminPlayer, _keyName, _keyType, _currentValue, _dependencies) { /* ... */ };
 
+/**
+ *
+ */
 export { showAdminPanelMain };

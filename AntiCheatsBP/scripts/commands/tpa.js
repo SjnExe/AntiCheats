@@ -19,6 +19,7 @@ export const definition = {
 /**
  * Executes the !tpa command.
  * Initiates a teleport request from the command issuer to a target player.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command (requester).
  * @param {string[]} args - Command arguments: [playerName].

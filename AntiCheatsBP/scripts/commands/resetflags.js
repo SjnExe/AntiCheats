@@ -17,6 +17,7 @@ export const definition = {
 
 /**
  * Executes the resetflags command.
+ *
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName].
  * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.

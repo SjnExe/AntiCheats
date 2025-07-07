@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !invsee command for administrators to view a player's inventory.
  */
 import { MessageFormData } from '@minecraft/server-ui';
@@ -20,6 +21,7 @@ export const definition = {
 /**
  * Executes the !invsee command.
  * Displays the target player's inventory in a message form to the command issuer.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.

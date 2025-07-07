@@ -20,6 +20,7 @@ export const definition = {
  * Executes the !copyinv command.
  * Allows an admin to overwrite their own inventory with a copy of a target player's inventory,
  * after a confirmation step.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The admin player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.

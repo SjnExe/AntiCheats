@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !kick command.
  * Removes a specified player from the server with an optional reason.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [reason].

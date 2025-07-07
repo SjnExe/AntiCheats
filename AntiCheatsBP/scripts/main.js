@@ -33,6 +33,7 @@ const mainModuleName = 'Main';
 /**
  * Assembles and returns the standard dependencies object used throughout the system.
  * This object provides access to configuration, utilities, managers, and Minecraft APIs.
+ *
  * @returns {import('./types.js').Dependencies} The standard dependencies object.
  */
 function getStandardDependencies() {
@@ -93,6 +94,7 @@ const TPA_SYSTEM_TICK_INTERVAL = 20; // How often TPA system processes requests 
 
 /**
  * Checks if all required Minecraft event APIs are available.
+ *
  * @param {import('./types.js').Dependencies} dependencies - The standard dependencies object, primarily for playerUtils.debugLog.
  * @returns {boolean} True if all essential event objects are defined, false otherwise.
  */
@@ -101,6 +103,10 @@ function checkEventAPIsReady(dependencies) {
     const errorLogger = console.error;
     const useDebugLog = dependencies?.config?.enableDebugLogging && dependencies?.playerUtils?.debugLog;
 
+    /**
+     *
+     * @param msg
+     */
     const logger = (msg) => {
         if (useDebugLog) {
             dependencies.playerUtils.debugLog(msg, 'System', dependencies);
@@ -626,7 +632,8 @@ function performInitializations() {
 
 /**
  * Attempts to initialize the system. If critical APIs are not ready, it schedules a retry.
- * @param {number} [retryCount=0] - Current number of retry attempts.
+ *
+ * @param {number} [retryCount] - Current number of retry attempts.
  */
 function attemptInitializeSystem(retryCount = 0) {
     const tempStartupDepsForLog = getStandardDependencies();

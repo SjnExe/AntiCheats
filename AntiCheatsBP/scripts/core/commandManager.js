@@ -21,6 +21,7 @@ export const commandExecutionMap = new Map();
 
 /**
  * Loads or reloads command definitions and execution functions from the commandRegistry.
+ *
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies, used for logging.
  */
 export function initializeCommands(dependencies) {
@@ -76,6 +77,7 @@ export function initializeCommands(dependencies) {
 
 /**
  * Registers a new command dynamically. (Currently a stub for future expansion)
+ *
  * @param {import('../types.js').CommandModule} commandModule - The command module to register.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
  */
@@ -92,6 +94,7 @@ export function registerCommandInternal(commandModule, dependencies) {
 
 /**
  * Unregisters a command dynamically. (Currently a stub for future expansion)
+ *
  * @param {string} commandName - The name of the command to unregister.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
  */
@@ -109,7 +112,11 @@ export function unregisterCommandInternal(commandName, dependencies) {
 // For initial load, aliasToCommandMap will be empty or populated based on command files.
 (() => {
     const initialLoadDeps = {
-        playerUtils: { debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`) },
+        playerUtils: { /**
+                        *
+                        * @param msg
+                        */
+            debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`) },
         // config: {} // config.commandAliases is no longer used for alias resolution
         // aliasToCommandMap will be initialized within initializeCommands
     };
@@ -124,6 +131,7 @@ export function unregisterCommandInternal(commandName, dependencies) {
 /**
  * Handles incoming chat messages to process potential commands.
  * This function is typically called from a `beforeChatSend` event listener in `main.js`.
+ *
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object, including command maps.
  * @returns {Promise<void>}

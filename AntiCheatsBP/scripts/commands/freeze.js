@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !freeze command for administrators to immobilize or release players.
  */
 import * as mc from '@minecraft/server';
@@ -24,6 +25,7 @@ export const definition = {
 /**
  * Executes the !freeze command.
  * Applies or removes a 'frozen' tag and strong slowness/weakness effects to the target player.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [on|off|toggle|status].

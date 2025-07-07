@@ -33,21 +33,14 @@ const DEFAULT_BLOCK_SPAM_DENSITY_THRESHOLD_PERCENTAGE = 70;
 
 
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').EventSpecificData} EventSpecificData;
- * @typedef {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} PlaceEventData;
- * @typedef {import('../../types.js').Config} Config;
- */
-
-/**
  * Checks for tower-like upward building (pillaring straight up with suspicious pitch).
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
+ *
  * @async
  * @param {mc.Player} player - The player who placed the block.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
- * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
  * @returns {Promise<void>}
  */
 export async function checkTower(player, pData, dependencies, eventSpecificData) {
@@ -151,11 +144,12 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
 /**
  * Checks for overly fast block placement rate.
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
+ *
  * @async
  * @param {mc.Player} player - The player who placed the block.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
- * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
  * @returns {Promise<void>}
  */
 export async function checkFastPlace(player, pData, dependencies, eventSpecificData) {
@@ -198,11 +192,12 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
 /**
  * Checks for blocks placed against air or liquid without proper solid adjacent support (Scaffold/AirPlace).
  * This function is typically called from a `PlayerPlaceBlockBeforeEvent` or `ItemUseOnBeforeEvent` handler.
+ *
  * @async
  * @param {mc.Player} player - The player placing the block.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
- * @param {PlaceEventData} eventData - The original block place/use event data.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
+ * @param {mc.PlayerPlaceBlockBeforeEvent | mc.ItemUseOnBeforeEvent} eventData - The original block place/use event data.
  * @returns {Promise<void>}
  */
 export async function checkAirPlace(player, pData, dependencies, eventData) {
@@ -290,11 +285,12 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
 /**
  * Checks for downward scaffolding behavior (placing blocks below while airborne and moving).
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
+ *
  * @async
  * @param {mc.Player} player - The player who placed the block.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
- * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
  * @returns {Promise<void>}
  */
 export async function checkDownwardScaffold(player, pData, dependencies, eventSpecificData) {
@@ -363,10 +359,11 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
  * Checks for building with flat or static camera rotation, which can indicate scaffold/tower cheats.
  * This check analyzes the pitch and yaw from `pData.recentBlockPlacements`.
  * This function is typically run on a tick-based interval.
+ *
  * @async
  * @param {mc.Player} player - The player instance.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
  * @returns {Promise<void>}
  */
 export async function checkFlatRotationBuilding(player, pData, dependencies) {
@@ -479,11 +476,12 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
 /**
  * Checks for block spamming based on placement rate for monitored block types.
  * Typically called from `PlayerPlaceBlockAfterEvent`.
+ *
  * @async
  * @param {mc.Player} player - The player who placed the block.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
- * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
  * @returns {Promise<void>}
  */
 export async function checkBlockSpam(player, pData, dependencies, eventSpecificData) {
@@ -543,11 +541,12 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
 /**
  * Checks for high-density block spam within a defined radius and time window.
  * Typically called from `PlayerPlaceBlockAfterEvent`.
+ *
  * @async
  * @param {mc.Player} player - The player who placed the block.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Shared dependencies.
- * @param {EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').EventSpecificData} eventSpecificData - Expects `block` (the placed mc.Block).
  * @returns {Promise<void>}
  */
 export async function checkBlockSpamDensity(player, pData, dependencies, eventSpecificData) {

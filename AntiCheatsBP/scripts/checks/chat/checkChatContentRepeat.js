@@ -17,6 +17,7 @@ const debugLogMessageSnippetLength = 20;
 /**
  * Normalizes a chat message for comparison by converting to lowercase,
  * trimming whitespace, and collapsing multiple spaces into single spaces.
+ *
  * @param {string} message - The message to normalize.
  * @returns {string} The normalized message, or an empty string if input is not a string.
  */

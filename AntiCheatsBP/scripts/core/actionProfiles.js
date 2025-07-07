@@ -3,12 +3,10 @@
  * These profiles determine the consequences (flagging, notifications, logging, etc.)
  * when a specific check is triggered. Used by the ActionManager.
  * All `checkType` keys and `actionType` string literals must be in `camelCase`.
- *
  * @typedef {import('../types.js').ActionProfileFlag} ActionProfileFlag
  * @typedef {import('../types.js').ActionProfileNotify} ActionProfileNotify
  * @typedef {import('../types.js').ActionProfileLog} ActionProfileLog
  * @typedef {import('../types.js').ActionProfileEntry} ActionProfileEntry
- *
  * @type {Object.<string, ActionProfileEntry>}
  */
 export const checkActionProfiles = {

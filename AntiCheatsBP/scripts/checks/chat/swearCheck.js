@@ -17,6 +17,7 @@ const defaultLeetMap = {
  * Normalizes a word for swear checking.
  * Converts to lowercase, removes common separators, collapses consecutive identical characters,
  * and optionally applies leet speak conversion.
+ *
  * @param {string} word - The word to normalize.
  * @param {Dependencies} dependencies - For accessing config.
  * @returns {string} Normalized word, or empty string if input is invalid/empty after normalization.
@@ -75,6 +76,7 @@ function normalizeWordForSwearCheck(word, dependencies) {
 
 /**
  * Checks a chat message for swear words.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player sending the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.

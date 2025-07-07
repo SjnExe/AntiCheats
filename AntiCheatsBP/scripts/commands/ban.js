@@ -15,13 +15,14 @@ export const definition = {
 
 /**
  * Executes the ban command.
+ *
  * @async
  * @param {import('@minecraft/server').Player | null} player - The player issuing the command, or null if system-invoked.
  * @param {string[]} args - The command arguments: <playername> [duration] [reason].
  * @param {import('../types.js').Dependencies} dependencies - Command dependencies.
- * @param {string} [invokedBy='PlayerCommand'] - How the command was invoked (e.g., 'PlayerCommand', 'AutoMod').
- * @param {boolean} [isAutoModAction=false] - Whether this ban is a direct result of an AutoMod action.
- * @param {string|null} [autoModCheckType=null] - If by AutoMod, the checkType (camelCase) that triggered it.
+ * @param {string} [invokedBy] - How the command was invoked (e.g., 'PlayerCommand', 'AutoMod').
+ * @param {boolean} [isAutoModAction] - Whether this ban is a direct result of an AutoMod action.
+ * @param {string|null} [autoModCheckType] - If by AutoMod, the checkType (camelCase) that triggered it.
  * @returns {void}
  */
 export function execute(

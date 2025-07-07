@@ -41,6 +41,7 @@
 
 /**
  * Represents the definition of a command.
+ *
  * @typedef {object} CommandDefinition
  * @property {string} name The primary name of the command (e.g., "kick").
  * @property {string} syntax A brief description of how to use the command (e.g., "!kick <player> [reason]").
@@ -54,6 +55,7 @@
 
 /**
  * Represents a module containing a command's definition and execution logic.
+ *
  * @typedef {object} CommandModule
  * @property {CommandDefinition} definition The definition of the command.
  * @property {function(Player, string[], Dependencies): Promise<void>} execute The function to run when the command is executed.
@@ -61,6 +63,7 @@
 
 /**
  * Represents detailed information about a specific flag type for a player.
+ *
  * @typedef {object} PlayerFlagDetail
  * @property {number} count The number of times this flag has been triggered.
  * @property {number} lastDetectionTime Unix timestamp (in milliseconds) of the last detection.
@@ -70,11 +73,13 @@
 /**
  * Represents the collection of all flags a player has accumulated.
  * Keys are typically `checkType` strings (e.g., "fly", "speed", "chatSpamFastMessage").
+ *
  * @typedef {{ totalFlags: number } & Record<string, PlayerFlagDetail | undefined>} PlayerFlagData
  */
 
 /**
  * Information about a player's mute status.
+ *
  * @typedef {object} PlayerMuteInfo
  * @property {number | Infinity} unmuteTime Unix timestamp (ms) when the mute expires, or Infinity for permanent.
  * @property {string} reason The reason for the mute.
@@ -85,6 +90,7 @@
 
 /**
  * Information about a player's ban status.
+ *
  * @typedef {object} PlayerBanInfo
  * @property {string} [xuid] The Xbox User ID of the banned player, if available.
  * @property {string} [playerName] The last known nameTag of the banned player.
@@ -99,6 +105,7 @@
 /**
  * Core data structure for tracking player-specific AntiCheat state and violations.
  * This data is typically managed by `playerDataManager.js` and can be persisted.
+ *
  * @typedef {object} PlayerAntiCheatData
  * @property {string} id Player's unique ID (e.g., `player.id`).
  * @property {string} playerNameTag Current nameTag of the player.
@@ -107,7 +114,6 @@
  * @property {Vector3} [velocity] Current calculated velocity.
  * @property {Vector3} [previousVelocity] Previous calculated velocity.
  * @property {number} [currentTick] The game tick when this data snapshot was last updated for checks.
- *
  * @property {boolean} [isOnline=false] Whether the player is currently online.
  * @property {boolean} [isDirtyForSave=false] Flag indicating if this data needs to be saved to persistent storage. Not persisted itself.
  * @property {boolean} [isWatched=false] If true, more detailed logging or specific actions might apply to this player.
@@ -115,12 +121,10 @@
  * @property {number} [lastNameTagChangeTick] Game tick of the last nameTag change.
  * @property {PlayerMuteInfo | null} [muteInfo] Current mute status. Persisted.
  * @property {PlayerBanInfo | null} [banInfo] Current ban status. Persisted.
- *
  * @property {PlayerFlagData} flags Accumulated violation flags.
  * @property {string} [lastFlagType] The `checkType` of the most recent flag.
  * @property {Object.<string, {itemTypeId?: string, quantityFound?: number, timestamp: number, details?: string, [key: string]: any}>} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
  * @property {Object.<string, {lastActionThreshold?: number, lastActionTimestamp?: number, [key: string]: any}>} [automodState] State information for the AutoMod system related to this player. Persisted.
- *
  * @property {number} [lastLoginTime] Timestamp of the last login.
  * @property {number} [lastLogoutTime] Timestamp of the last logout.
  * @property {number} [joinCount=0] Total number of times the player has joined.
@@ -175,7 +179,6 @@
  * @property {number} [breakStartTimeMs=0] System time (ms) when block breaking started (for InstaBreak).
  * @property {number} [breakStartTickGameTime=0] Game time (ticks) when block breaking started (for InstaBreak).
  * @property {number} [expectedBreakDurationTicks=0] Expected vanilla break duration for current block/tool (for InstaBreak).
- * @property {string | null} [toolUsedForBreakAttempt] Item type ID of the tool used when break attempt started.
  * @property {number} [lastPillarBaseY=0] For Tower check: Y-level of the base of the current pillar.
  * @property {number} [consecutivePillarBlocks=0] For Tower check: number of blocks in current pillar.
  * @property {number} [lastPillarTick=0] For Tower check: game tick of last pillar block placement.
@@ -213,6 +216,7 @@
 
 /**
  * Structure for a TPA (Teleport Ask) request.
+ *
  * @typedef {object} TpaRequest
  * @property {string} requestId Unique ID for this TPA request.
  * @property {string} requesterName Name of the player who initiated the request.
@@ -232,6 +236,7 @@
 
 /**
  * Represents a player's TPA system preferences.
+ *
  * @typedef {object} PlayerTpaStatus
  * @property {string} playerName Name of the player.
  * @property {boolean} acceptsTpaRequests True if the player is currently accepting TPA requests.
@@ -241,6 +246,7 @@
 
 /**
  * Structure for a log entry.
+ *
  * @typedef {object} LogEntry
  * @property {number} [timestamp=Date.now()] Unix timestamp (ms) of the log event.
  * @property {string} actionType Type of action being logged (e.g., "flag_added", "command_executed", "player_muted", "error").
@@ -257,6 +263,7 @@
 
 /**
  * Structure for a player report.
+ *
  * @typedef {object} ReportEntry
  * @property {string} reportId Unique ID for the report.
  * @property {number} timestamp Unix timestamp (ms) when the report was filed.
@@ -274,6 +281,7 @@
 /**
  * Structure for an action profile defined in `actionProfiles.js`.
  * Describes a sequence of actions to take based on flag counts for a `checkType`.
+ *
  * @typedef {object} ActionProfile
  * @property {string} profileName Unique name for this action profile.
  * @property {Array<{threshold: number, actions: Array<string | {type: string, params: any}>, messageToPlayer?: string, messageToAdmins?: string, duration?: string, reason?: string, priority?: number}>} tiers Ordered list of tiers.
@@ -284,6 +292,7 @@
 /**
  * Structure for an AutoMod configuration rule defined in `automodConfig.js`.
  * Links a `checkType` to an `actionProfileName` and enables/disables it.
+ *
  * @typedef {object} AutoModRuleDef
  * @property {string} checkType The type of check this rule applies to (e.g., "chatSpamFastMessage", "movementFlySustained").
  * @property {string} actionProfileName The name of the action profile (from `actionProfiles.js`) to use for this check.
@@ -294,6 +303,7 @@
 
 /**
  * Rank definition structure from `ranksConfig.js`.
+ *
  * @typedef {object} RankDefinition
  * @property {string} id Unique identifier for the rank (e.g., "member", "moderator", "admin").
  * @property {string} name Display name of the rank (e.g., "Member", "Moderator").
@@ -311,6 +321,7 @@
 /**
  * Represents the set of dependencies passed to most functions, particularly event handlers and checks.
  * This provides a consistent way to access shared modules and data.
+ *
  * @typedef {object} Dependencies
  * @property {ConfigEditable} config The current editable configuration settings.
  * @property {CheckActionProfiles} checkActionProfiles All defined action profiles.
@@ -343,6 +354,7 @@
 
 /**
  * Defines flagging behavior within an ActionProfile.
+ *
  * @typedef {object} ActionProfileFlag
  * @property {number} [increment=1] - How much to increment the flag count by.
  * @property {string} reason - Template for the flag reason. Placeholders: {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
@@ -351,12 +363,14 @@
 
 /**
  * Defines admin notification behavior within an ActionProfile.
+ *
  * @typedef {object} ActionProfileNotify
  * @property {string} message - Template for the admin notification message. Placeholders same as ActionProfileFlag.reason.
  */
 
 /**
  * Defines logging behavior within an ActionProfile.
+ *
  * @typedef {object} ActionProfileLog
  * @property {string} [actionType] - Specific actionType for logging (camelCase); defaults to `detected<CheckType>` (e.g., `detectedMovementFlyHover`).
  * @property {string} [detailsPrefix=''] - Prefix for the log details string.
@@ -366,6 +380,7 @@
 /**
  * Defines an entry in `checkActionProfiles`. It determines the immediate consequences
  * when a specific `checkType` is triggered.
+ *
  * @typedef {object} ActionProfileEntry
  * @property {boolean} enabled - Whether this action profile is active.
  * @property {ActionProfileFlag} [flag] - Configuration for flagging the player.
@@ -380,6 +395,7 @@
 
 /**
  * Defines parameters for a specific AutoMod action.
+ *
  * @typedef {object} AutoModActionParameters
  * @property {string} [messageTemplate] - Template for messages to players or admins. Placeholders: {playerName}, {actionType}, {checkType}, {flagCount}, {flagThreshold}, {duration}, {itemTypeId}, {itemQuantity}, {teleportCoordinates}.
  * @property {string} [adminMessageTemplate] - Optional separate template for admin notifications. Same placeholders.
@@ -390,6 +406,7 @@
 
 /**
  * Defines a rule within an AutoMod tier for a specific `checkType`.
+ *
  * @typedef {object} AutoModTierRule
  * @property {number} flagThreshold - The number of flags of a specific `checkType` (camelCase) to trigger this rule.
  * @property {('warn'|'kick'|'tempBan'|'permBan'|'mute'|'freezePlayer'|'removeIllegalItem'|'teleportSafe'|'flagOnly')} actionType - The type of action to take (camelCase).
@@ -401,6 +418,7 @@
 
 /**
  * Defines chat formatting for a rank.
+ *
  * @typedef {object} ChatFormatting
  * @property {string} [prefixText=''] - The text part of the rank prefix (e.g., "[Admin] ").
  * @property {string} [prefixColor='§7'] - Minecraft color code for the prefix text (e.g., "§c").
@@ -410,6 +428,7 @@
 
 /**
  * Defines a condition for a player to be assigned a rank.
+ *
  * @typedef {object} RankCondition
  * @property {('ownerName'|'adminTag'|'manualTagPrefix'|'tag'|'default')} type - The type of condition (camelCase).
  *      - `ownerName`: Matches if player's nameTag equals `config.ownerPlayerName`.
@@ -425,6 +444,7 @@
 
 /**
  * Defines the settings for a world border in a specific dimension.
+ *
  * @typedef {object} WorldBorderSettings
  * @property {string} dimensionId - The ID of the dimension these settings apply to (e.g., "minecraft:overworld").
  * @property {boolean} enabled - Whether the border is active in this dimension.
@@ -455,6 +475,7 @@
  * Generic type for `violationDetails` objects passed by check scripts.
  * Specific keys depend on the `checkType`. Common examples: `{value: number, threshold: number, itemTypeId: string}`.
  * Refer to individual check implementations or `actionProfiles.js` for expected placeholders.
+ *
  * @typedef {Object<string, any>} ViolationDetails
  */
 
@@ -462,9 +483,13 @@
  * Generic type for `eventSpecificData` objects passed to some check functions.
  * Contains context from the game event that triggered the check.
  * Specific keys depend on the event and check. Example: `{ targetEntity: Entity, gameMode: GameMode }` for `reachCheck`.
+ *
  * @typedef {object} EventSpecificData
  */
 
 
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
+/**
+ *
+ */
 export {};

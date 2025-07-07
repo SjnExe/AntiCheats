@@ -19,6 +19,7 @@ export const definition = {
 
 /**
  * Formats a single report entry for display.
+ *
  * @param {import('../types.js').ReportEntry} report - The report entry.
  * @param {import('../types.js').Dependencies} dependencies - For getString.
  * @returns {string} Formatted string for one report.
@@ -44,6 +45,7 @@ function formatReportEntry(report, dependencies) {
 
 /**
  * Executes the !viewreports command.
+ *
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
  * @param {import('../types.js').Dependencies} dependencies - Command dependencies.

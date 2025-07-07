@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !netherlock command for administrators to manage Nether dimension access.
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
@@ -19,6 +20,7 @@ export const definition = {
 /**
  * Executes the !netherlock command.
  * Allows administrators to lock, unlock, or check the status of the Nether dimension.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].

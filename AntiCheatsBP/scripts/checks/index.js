@@ -7,7 +7,13 @@
 export * from './movement/flyCheck.js';
 export * from './movement/speedCheck.js';
 export * from './movement/noFallCheck.js';
+/**
+ *
+ */
 export { checkNoSlow } from './movement/noSlowCheck.js';
+/**
+ *
+ */
 export { checkInvalidSprint } from './movement/invalidSprintCheck.js';
 
 // Combat Checks
@@ -20,6 +26,9 @@ export * from './combat/stateConflictCheck.js';
 // World Interaction Checks
 export * from './world/nukerCheck.js';
 export * from './world/illegalItemCheck.js';
+/**
+ *
+ */
 export {
     checkTower,
     checkFlatRotationBuilding,
@@ -29,21 +38,54 @@ export {
     checkBlockSpam,
     checkBlockSpamDensity,
 } from './world/buildingChecks.js';
+/**
+ *
+ */
 export { checkFastUse } from './world/fastUseCheck.js';
+/**
+ *
+ */
 export { checkAutoTool } from './world/autoToolCheck.js';
+/**
+ *
+ */
 export { checkBreakUnbreakable, checkBreakSpeed } from './world/instaBreakCheck.js';
+/**
+ *
+ */
 export { checkEntitySpam } from './world/entityChecks.js';
+/**
+ *
+ */
 export { checkPistonLag } from './world/pistonChecks.js';
 export * from './world/netherRoofCheck.js';
 
 // Player Behavior Checks
+/**
+ *
+ */
 export { checkSwitchAndUseInSameTick, checkInventoryMoveWhileActionLocked } from './player/inventoryModCheck.js';
+/**
+ *
+ */
 export { checkSelfHurt } from './player/selfHurtCheck.js';
+/**
+ *
+ */
 export { checkInvalidRenderDistance } from './player/clientInfoChecks.js';
+/**
+ *
+ */
 export { checkAntiGmc } from './player/antiGmcCheck.js';
+/**
+ *
+ */
 export { checkNameSpoof } from './player/nameSpoofCheck.js';
 
 // Chat Message Checks
+/**
+ *
+ */
 export { checkMessageRate } from './chat/messageRateCheck.js';
 export * from './chat/swearCheck.js';
 export * from './chat/antiAdvertisingCheck.js';

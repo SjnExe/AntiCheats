@@ -6,12 +6,6 @@
 import * as mc from '@minecraft/server';
 import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';
 
-/**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- */
-
 // Constants for magic numbers
 const DEFAULT_AUTO_TOOL_SWITCH_TO_OPTIMAL_WINDOW_TICKS = 2; // Not a magic number in use, but good for context
 const DEFAULT_AUTO_TOOL_SWITCH_BACK_WINDOW_TICKS = 5;
@@ -29,8 +23,8 @@ const SWITCH_BACK_STATE_ADDITIONAL_TIMEOUT_TICKS = 20;
  *
  * @async
  * @param {mc.Player} player - The player instance.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing necessary dependencies.
  * @returns {Promise<void>}
  */
 export async function checkAutoTool(player, pData, dependencies) {

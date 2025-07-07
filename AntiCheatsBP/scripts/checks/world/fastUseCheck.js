@@ -4,22 +4,15 @@
  */
 
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').EventSpecificData} EventSpecificData;
- * @typedef {import('../../types.js').Config} Config;
- */
-
-/**
  * Checks for overly fast item usage based on configured cooldowns for specific item types.
  * Timestamps of item usage are stored in `pData.itemUseTimestamps`.
  * This check is typically called from an `ItemUseBeforeEvent` or `ItemUseOnBeforeEvent` handler.
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance using the item.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
- * @param {EventSpecificData} eventSpecificData - Data specific to the event, expects `itemStack`.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing necessary dependencies.
+ * @param {import('../../types.js').EventSpecificData} eventSpecificData - Data specific to the event, expects `itemStack`.
  * @returns {Promise<void>}
  */
 export async function checkFastUse(player, pData, dependencies, eventSpecificData) {

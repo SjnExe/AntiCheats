@@ -3,12 +3,6 @@
  * Relies on `pData.blockBreakEvents` (an array of timestamps) being populated by block break event handlers.
  */
 
-/**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- */
-
 // Constants for magic numbers
 const DEFAULT_NUKER_CHECK_INTERVAL_MS = 200;
 const DEFAULT_NUKER_MAX_BREAKS_SHORT_INTERVAL = 4;
@@ -21,8 +15,8 @@ const NUKER_DEBUG_EVENT_SUMMARY_COUNT = 5; // Number of recent events to show in
  *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
- * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, expected to contain `blockBreakEvents`.
- * @param {CommandDependencies} dependencies - Object containing necessary dependencies.
+ * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data, expected to contain `blockBreakEvents`.
+ * @param {import('../../types.js').Dependencies} dependencies - Object containing necessary dependencies.
  * @returns {Promise<void>}
  */
 export async function checkNuker(player, pData, dependencies) {

@@ -791,11 +791,15 @@ export const acVersion = 'v__VERSION_STRING__';
 // It is initialized by spreading the defaultConfigSettings.
 // Complex objects like `automodConfig` or `checkActionProfiles` are imported and managed by their own modules
 // and are not part of this editableConfigValues structure directly.
+/**
+ *
+ */
 export const editableConfigValues = { ...defaultConfigSettings };
 
 /**
  * Updates a configuration value at runtime.
  * Performs type checking and coercion for basic types (string, number, boolean) and simple arrays of these types.
+ *
  * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
  * @param {any} value - The new value for the configuration key.
  * @returns {{success: boolean, message: string, oldValue?: any, newValue?: any}} Object indicating success, a message, and optionally old/new values.

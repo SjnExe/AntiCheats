@@ -17,6 +17,7 @@ export const definition = {
 /**
  * Executes the !warnings command.
  * Displays a summary of the target player's AntiCheat flags to the command issuer.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].

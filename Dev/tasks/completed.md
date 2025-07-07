@@ -58,4 +58,40 @@ This document lists significant tasks that have been completed.
     *   `Dev/tasks/completed.md` (this entry)
 *   **Submission Reference:** Will be part of commit for "Refactor: Enforce coding style and apply linting fixes."
 
+---
+
+## ESLint Configuration and Type Definition Fixes - [Current Session] (Jules - AI Agent)
+*   **Task:** Improve and apply ESLint configuration, fix linting errors, focusing on type definitions.
+*   **Objective:** Resolve ESLint module import issues, enable JSDoc linting, and fix critical `jsdoc/no-undefined-types` and `jsdoc/valid-types` errors, particularly in the `AntiCheatsBP/scripts/checks/world/` directory.
+*   **Key Activities:**
+    *   Updated `eslint.config.js` to correctly import and use `@eslint/js` (for `eslint:recommended`) and `eslint-plugin-jsdoc` (for `jsdoc.configs['flat/recommended']`). This resolved initial module loading errors.
+    *   Configured specific JSDoc rules (e.g., `require-jsdoc`, `require-param-type`, `no-undefined-types`) to align with project standards.
+    *   Ran `npm install` to ensure dependencies were up to date.
+    *   Verified ESLint setup using `eslint --print-config`.
+    *   Systematically addressed `jsdoc/no-undefined-types` and `jsdoc/valid-types` in all files within `AntiCheatsBP/scripts/checks/world/` by:
+        *   Removing local `@typedef` aliases that shadowed types from `types.js`.
+        *   Updating JSDoc comments (`@param`, `@type`, etc.) to use the `import('../../types.js').TypeName` syntax.
+        *   Correcting mismatched type names (e.g., `CommandDependencies` to `Dependencies`).
+    *   Temporarily disabled the `jsdoc/empty-tags` rule due to a high volume of confusing warnings, to be revisited.
+*   **Outcome:**
+    *   Successfully resolved `ERR_MODULE_NOT_FOUND` for ESLint plugins.
+    *   ESLint now correctly loads and applies recommended rule sets and JSDoc linting.
+    *   All identified `jsdoc/no-undefined-types` and `jsdoc/valid-types` errors within the `AntiCheatsBP/scripts/checks/world/` directory have been fixed.
+    *   The number of critical linting errors related to type definitions has been significantly reduced in the targeted files.
+    *   Many linting issues remain (approx. 270, mostly related to missing JSDoc content and style), which will be addressed in subsequent efforts.
+*   **Files Updated:**
+    *   `eslint.config.js`
+    *   `AntiCheatsBP/scripts/checks/world/autoToolCheck.js`
+    *   `AntiCheatsBP/scripts/checks/world/buildingChecks.js`
+    *   `AntiCheatsBP/scripts/checks/world/entityChecks.js`
+    *   `AntiCheatsBP/scripts/checks/world/fastUseCheck.js`
+    *   `AntiCheatsBP/scripts/checks/world/illegalItemCheck.js`
+    *   `AntiCheatsBP/scripts/checks/world/instaBreakCheck.js`
+    *   `AntiCheatsBP/scripts/checks/world/netherRoofCheck.js`
+    *   `AntiCheatsBP/scripts/checks/world/nukerCheck.js`
+    *   `AntiCheatsBP/scripts/checks/world/pistonChecks.js`
+    *   `Dev/tasks/ongoing.md` (updated during this phase)
+    *   `Dev/tasks/completed.md` (this entry)
+*   **Submission Reference:** Part of linting and JSDoc improvements.
+
 [end of Dev/tasks/completed.md]

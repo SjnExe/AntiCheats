@@ -41,6 +41,7 @@
 
 /**
  * Default chat formatting.
+ *
  * @type {Required<ChatFormatting>}
  */
 export const defaultChatFormatting = {
@@ -52,6 +53,7 @@ export const defaultChatFormatting = {
 
 /**
  * Default nametag prefix.
+ *
  * @type {string}
  */
 export const defaultNametagPrefix = '§7Member §f\n'; // Example: "§7Member §f\nPlayerName"
@@ -59,6 +61,7 @@ export const defaultNametagPrefix = '§7Member §f\n'; // Example: "§7Member §
 /**
  * Default permission level for players not matching any specific rank.
  * Convention: Higher number = less privilege.
+ *
  * @type {number}
  */
 export const defaultPermissionLevel = 1024;
@@ -67,6 +70,7 @@ export const defaultPermissionLevel = 1024;
  * Array of all rank definitions.
  * Ensure `id` properties are lowercase for consistent lookup by RankManager (which converts to lowercase).
  * `priority` is crucial: lower numbers are checked first and take precedence.
+ *
  * @type {RankDefinition[]}
  */
 export const rankDefinitions = [

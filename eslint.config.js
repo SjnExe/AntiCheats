@@ -1,23 +1,24 @@
 // eslint.config.js
 
-// Note: Attempts to import @eslint/js, eslint-plugin-jsdoc, and @eslint/eslintrc (for FlatCompat)
-// have failed in this environment due to ERR_MODULE_NOT_FOUND.
-// Reverting to a configuration with manually transcribed eslint:recommended rules
-// and custom style rules only. JSDoc specific linting will be omitted.
+import eslintJs from "@eslint/js";
+import jsdoc from "eslint-plugin-jsdoc";
+// import { FlatCompat } from "@eslint/eslintrc"; // Keep this commented for now, will use if jsdoc plugin needs it
+
+// Using @eslint/js and eslint-plugin-jsdoc.
 
 export default [
-  // Global ignores
+  // Global ignores - Keep this at the top and separate
   {
     ignores: [
       "node_modules/",
-      "eslint.config.js",
+      "eslint.config.js", // Ignoring self
       "package.json",
       "package-lock.json",
       ".gitignore"
     ],
   },
 
-  // Main configuration object
+  // Configuration for JavaScript files in AntiCheatsBP/scripts/
   {
     files: ["AntiCheatsBP/scripts/**/*.js"],
     languageOptions: {
@@ -32,10 +33,19 @@ export default [
         mc: "readonly",
         world: "readonly",
         system: "readonly",
+        // Consider adding other Minecraft API globals if used directly, e.g., Player, Entity, etc.
+        // However, it's common to import them via 'import * as mc from "@minecraft/server";'
       },
     },
+    plugins: {
+      jsdoc: jsdoc,
+    },
     rules: {
+      // Start with eslint:recommended rules
+      ...eslintJs.configs.recommended.rules,
+
       // == Custom Project Style Rules (from StandardizationGuidelines.md & previous setup) ==
+      // These will override any conflicting rules from eslint:recommended
       'semi': ['error', 'always'],
       'quotes': ['error', 'single', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
       'indent': ['error', 4, { 'SwitchCase': 1 }],
@@ -47,7 +57,7 @@ export default [
       'curly': ['error', 'all'],
       'eqeqeq': ['error', 'always'],
       'no-var': 'error',
-      'no-console': 'off',
+      'no-console': 'off', // Project specific decision to allow console
       'brace-style': ['error', 'stroustrup', { 'allowSingleLine': false }],
       'comma-dangle': ['error', 'always-multiline'],
       'comma-spacing': ['error', { 'before': false, 'after': true }],
@@ -60,7 +70,7 @@ export default [
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
       'max-len': ['warn', {
-        code: 200, // Increased to 200 as per user request
+        code: 200,
         ignoreComments: true,
         ignoreUrls: true,
         ignoreStrings: true,
@@ -68,129 +78,131 @@ export default [
         ignoreRegExpLiterals: true,
       }],
       'no-magic-numbers': ['warn', {
-        'ignore': [-1, 0, 1, 2, 10, 100, 1000], // Common small numbers often not "magic"
+        'ignore': [-1, 0, 1, 2, 10, 100, 1000],
         'ignoreArrayIndexes': true,
-        'enforceConst': true, // Ensure numbers declared as const are not considered magic
+        'enforceConst': true,
       }],
+      // Override specific eslint:recommended rules if necessary
+      'no-prototype-builtins': 'warn', // Might be too strict for some Minecraft API patterns if not careful
+      // 'no-undef': 'error', // This is in eslint:recommended, ensure globals are well-defined
+      'no-empty': ['error', { 'allowEmptyCatch': true }], // Keep custom preference for empty catch blocks
+      'no-invalid-this': 'warn', // 'this' can be tricky in callbacks, 'warn' is safer
+      'no-unused-vars': ['warn', { // Already defined above, but ensure it overrides recommended if different
+        'argsIgnorePattern': '^_',
+        'varsIgnorePattern': '^_',
+        'caughtErrorsIgnorePattern': '^_'
+      }],
+      'no-loss-of-precision': 'error', // Good to keep from recommended
+      'no-useless-catch': 'error',     // Good to keep
+      'no-useless-escape': 'error',    // Good to keep
+      'no-useless-return': 'error',    // Good to keep
+      'prefer-const': 'error',         // Good to keep
+      'require-await': 'warn',         // Good to keep as warn
 
-      // == ESLint Recommended Rules (Manually Transcribed - from previous research step) ==
-      // Possible Problems
-      'array-callback-return': 'error',
-      'constructor-super': 'error',
-      'for-direction': 'error',
-      'getter-return': 'error',
-      'no-async-promise-executor': 'error',
-      'no-class-assign': 'error',
-      'no-compare-neg-zero': 'error',
-      'no-cond-assign': 'error',
-      'no-const-assign': 'error',
-      'no-constant-binary-expression': 'error',
-      'no-constant-condition': 'error',
-      'no-control-regex': 'error',
-      'no-debugger': 'error',
-      'no-dupe-args': 'error',
-      'no-dupe-class-members': 'error',
-      'no-dupe-else-if': 'error',
-      'no-dupe-keys': 'error',
-      'no-duplicate-case': 'error',
-      'no-empty-character-class': 'error',
-      'no-empty-pattern': 'error',
-      'no-ex-assign': 'error',
-      'no-fallthrough': 'error',
-      'no-func-assign': 'error',
-      'no-import-assign': 'error',
-      'no-inner-declarations': 'error',
-      'no-invalid-regexp': 'error',
-      'no-irregular-whitespace': 'error',
-      'no-loss-of-precision': 'error',
-      'no-misleading-character-class': 'error',
-      'no-new-native-nonconstructor': 'error',
-      'no-obj-calls': 'error',
-      'no-prototype-builtins': 'error',
-      'no-self-assign': 'error',
-      'no-setter-return': 'error',
-      'no-sparse-arrays': 'error',
-      'no-template-curly-in-string': 'error',
-      'no-this-before-super': 'error',
-      'no-undef': 'error',
-      'no-unexpected-multiline': 'error',
-      'no-unmodified-loop-condition': 'error',
-      'no-unreachable': 'error',
-      'no-unsafe-finally': 'error',
-      'no-unsafe-negation': 'error',
-      'no-unsafe-optional-chaining': 'error',
-      'no-unused-private-class-members': 'error',
-      'no-use-before-define': ['error', { 'functions': false, 'classes': true, 'variables': true }],
-      'no-useless-backreference': 'error',
-      'require-atomic-updates': 'error',
-      'use-isnan': 'error',
-      'valid-typeof': 'error',
+      // Note: 'no-async-promise-executor', 'no-misleading-character-class',
+      // 'no-useless-backreference', 'require-atomic-updates' are part of eslint:recommended
+      // and should be active. No need to re-declare them unless changing their severity.
 
-      // Suggestions (from eslint:recommended)
-      'accessor-pairs': 'error',
-      'block-scoped-var': 'error',
-      'consistent-return': 'error',
-      'default-case': 'error',
-      'default-case-last': 'error',
-      'default-param-last': 'error',
-      'dot-notation': 'error',
-      'grouped-accessor-pairs': 'error',
-      'guard-for-in': 'error',
-      'no-array-constructor': 'error',
-      'no-caller': 'error',
-      'no-case-declarations': 'error',
-      'no-delete-var': 'error',
-      'no-empty': ['error', { 'allowEmptyCatch': true }],
-      'no-empty-function': 'error',
-      'no-empty-static-block': 'error',
-      'no-eq-null': 'error',
-      'no-eval': 'error',
-      'no-extend-native': 'error',
-      'no-extra-bind': 'error',
-      'no-extra-label': 'error',
-      'no-global-assign': 'error',
-      'no-implicit-globals': 'error',
-      'no-implied-eval': 'error',
-      'no-invalid-this': 'warn',
-      'no-iterator': 'error',
-      'no-label-var': 'error',
-      'no-labels': 'error',
-      'no-lone-blocks': 'error',
-      'no-loop-func': 'error',
-      'no-multi-assign': 'error',
-      'no-new': 'error',
-      'no-new-func': 'error',
-      'no-new-wrappers': 'error',
-      'no-nonoctal-decimal-escape': 'error',
-      'no-object-constructor': 'error',
-      'no-octal': 'error',
-      'no-octal-escape': 'error',
-      'no-proto': 'error',
-      'no-redeclare': 'error',
-      'no-regex-spaces': 'error',
-      'no-return-assign': 'error',
-      'no-script-url': 'error',
-      'no-sequences': 'error',
-      'no-shadow-restricted-names': 'error',
-      'no-throw-literal': 'error',
-      'no-unused-expressions': 'error',
-      'no-unused-labels': 'error',
-      'no-useless-call': 'error',
-      'no-useless-catch': 'error',
-      'no-useless-concat': 'error',
-      'no-useless-constructor': 'error',
-      'no-useless-escape': 'error',
-      'no-useless-rename': 'error',
-      'no-useless-return': 'error',
-      'no-with': 'error',
-      'prefer-const': 'error',
-      'prefer-promise-reject-errors': 'error',
-      'require-await': 'warn',
-      'require-yield': 'error',
-      'symbol-description': 'error',
-
-      // Layout & Formatting (from eslint:recommended)
-      'unicode-bom': ['error', 'never'],
+      // == JSDoc Rules (Initial basic setup - will be expanded in next step) ==
+      // The actual JSDoc rules will be populated here or by the plugin's recommended config below.
+      // Example: 'jsdoc/require-param-type': 'error',
     },
   },
+  // Configuration for JSDoc plugin.
+  // Start with jsdoc.configs['flat/recommended'] and then override/add specific rules.
+  {
+    // This ensures that the JSDoc rules are applied to the same files.
+    ...jsdoc.configs['flat/recommended'], // Spread the recommended config
+    files: ["AntiCheatsBP/scripts/**/*.js"], // Ensure it applies to the correct files
+    plugins: { // Ensure the plugin is explicitly mentioned here too if spreading configs that might not include it
+        jsdoc: jsdoc,
+    },
+    rules: {
+        // Override or add specific JSDoc rules here.
+        // Rules from jsdoc.configs['flat/recommended'] will be applied first,
+        // and these settings will merge with/override them.
+
+        'jsdoc/require-jsdoc': [
+            'warn', // Warn for now, can be 'error' later. Set to warn to avoid too many initial errors.
+            {
+                require: {
+                    FunctionDeclaration: true,
+                    MethodDefinition: true,
+                    ClassDeclaration: true,
+                    ArrowFunctionExpression: true, // Enforce for exported arrow functions if they act as module functions
+                    FunctionExpression: true,
+                },
+                contexts: [
+                    // Require JSDoc for all exports
+                    'ExportDefaultDeclaration',
+                    'ExportNamedDeclaration',
+                    // Add other specific contexts if necessary
+                ],
+                publicOnly: false, // Check all, not just exported with @public
+                checkConstructors: true,
+                checkGetters: true,
+                checkSetters: true,
+            },
+        ],
+        'jsdoc/require-param': ['error', { checkDestructuredRoots: false }], // checkDestructuredRoots: false to avoid issues with complex destructuring
+        'jsdoc/require-param-type': 'error',
+        'jsdoc/require-param-name': 'error',
+        'jsdoc/require-param-description': 'warn', // Warn for now, good to have but can be verbose
+
+        'jsdoc/require-returns': ['error', { checkGetters: false }], // Getters implicitly return
+        'jsdoc/require-returns-type': 'error',
+        'jsdoc/require-returns-description': 'warn', // Warn for now
+
+        'jsdoc/no-undefined-types': ['error', { disableReporting: false }], // Crucial for type correctness
+        'jsdoc/check-types': ['error', { unifyParentAndChildTypeChecks: true, exemptTagContexts: [{tag: 'typedef', types: true}] }], // check types in @param, @returns etc.
+        'jsdoc/valid-types': 'error', // Validates type names
+
+        'jsdoc/tag-lines': ['warn', 'never', { startLines: 1 }], // Adds a blank line after the description and before tags. 'never' means no blank line. Let's try 'always' for readability.
+                                                              // Update: 'always' adds blank line between block and first tag, 'never' for between tags.
+                                                              // The provided config in print-config was 'tag-lines': [1], which is 'warn'.
+                                                              // Let's set to warn, with one line before tags.
+        // 'jsdoc/tag-lines': ['warn', 'any', { startLines: 1, endLines: 0, tags: {} }], // More flexible, allows single line for simple cases.
+
+        'jsdoc/check-alignment': 'warn', // Default is warn
+        'jsdoc/check-indentation': 'warn',
+        'jsdoc/check-tag-names': [ // Ensure this is set correctly based on StandardizationGuidelines
+            'error',
+            {
+                definedTags: ['async', 'throws', 'deprecated', 'see', 'example', 'typedef', 'callback', 'property', 'template', 'borrows', 'memberof', 'ignore', 'fileoverview', 'license', 'author'],
+                jsxTags: false, // No JSX in this project
+            }
+        ],
+        'jsdoc/multiline-blocks': ['warn', { // Default is warn
+            noZeroLineText: true,
+            noFinalLineText: true,
+            noSingleLineBlocks: false, // Allow single line for brief docs e.g. /** @type {string} */
+        }],
+        'jsdoc/no-multi-asterisks': ['warn', { preventAtEnd: true, preventAtMiddleLines: true }], // Default is warn
+        // 'jsdoc/empty-tags': ['warn', { tags: ['typedef', 'param', 'returns'] }], // Temporarily disabled to reduce noise
+        // Default is warn, but error for some makes sense. Let's keep warn.
+
+        // Rules to consider making errors if they are warnings by default:
+        'jsdoc/check-param-names': ['error', { checkDestructured: false, enableFixer: true }],
+        'jsdoc/check-property-names': ['error', { enableFixer: true }],
+
+
+        // Rules from StandardizationGuidelines.md
+        // - JSDoc mandatory for exported functions, classes, significant constants. (covered by require-jsdoc contexts)
+        // - Concise summary (enforced by require-description, though that can be broad)
+        // - @param {type} name - description (require-param, require-param-type, require-param-name, require-param-description)
+        // - @returns {type} description (require-returns, require-returns-type, require-returns-description)
+        // - Specific types (no-undefined-types, check-types, valid-types)
+        // - Optional tags: @async, @throws, @deprecated, @see, @example (check-tag-names covers these as known)
+        // - @typedef in types.js (This is more of a structural convention, but no-undefined-types helps ensure they are defined)
+
+        // Turn off some verbose or overly strict rules from recommended if needed, or keep them as warnings.
+        'jsdoc/require-description-complete-sentence': 'off', // Can be too pedantic
+        'jsdoc/match-description': 'off', // Regex matching for description can be too complex to maintain
+        'jsdoc/no-defaults': 'warn', // Default is warn, it's okay for params to have defaults documented.
+        'jsdoc/require-example': 'off', // Examples are good but not always necessary for every function.
+
+        // Customization for 'max-len' for JSDoc comments if needed, though ESLint's global max-len ignores comments by default.
+        // 'jsdoc/text-escaping': 'warn', // For escaping characters in descriptions
+    }
+  }
 ];

@@ -16,6 +16,7 @@ export const definition = {
 /**
  * Executes the !addrank command.
  * Assigns a specified rank to a target player if the rank is assignable and the issuer has permission.
+ *
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> <rankId>.
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.

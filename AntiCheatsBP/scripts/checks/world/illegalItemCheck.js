@@ -4,13 +4,6 @@
  */
 
 /**
- * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- * @typedef {mc.ItemUseBeforeEvent | mc.ItemUseOnBeforeEvent | mc.PlayerPlaceBlockBeforeEvent} ItemRelatedEventData;
- */
-
-/**
  * Checks if a player is attempting to use or place an item that is on a configured ban list.
  * If a banned item action is detected, the event is cancelled, and configured actions are executed.
  * This check is typically called from `ItemUseBeforeEvent`, `ItemUseOnBeforeEvent`, or `PlayerPlaceBlockBeforeEvent` handlers.
@@ -18,11 +11,11 @@
  * @async
  * @param {mc.Player} player - The player performing the action.
  * @param {mc.ItemStack | undefined} itemStack - The ItemStack involved in the action. Can be undefined if player's hand is empty.
- * @param {ItemRelatedEventData & {cancel: boolean, block?: mc.Block, source?: mc.Entity}} eventData - The event data object.
+ * @param {(mc.ItemUseBeforeEvent | mc.ItemUseOnBeforeEvent | mc.PlayerPlaceBlockBeforeEvent) & {cancel: boolean, block?: mc.Block, source?: mc.Entity}} eventData - The event data object.
  *        Must have a `cancel` property. For 'place' actions, `eventData.block` is used. For 'use', `eventData.source` might be relevant.
  * @param {'use' | 'place' | 'inventory_change'} actionType - The type of action being performed.
- * @param {PlayerAntiCheatData | undefined} pData - Player-specific anti-cheat data (primarily for `isWatched` status).
- * @param {CommandDependencies} dependencies - The standard dependencies object.
+ * @param {import('../../types.js').PlayerAntiCheatData | undefined} pData - Player-specific anti-cheat data (primarily for `isWatched` status).
+ * @param {import('../../types.js').Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
  */
 export async function checkIllegalItems(player, itemStack, eventData, actionType, pData, dependencies) {

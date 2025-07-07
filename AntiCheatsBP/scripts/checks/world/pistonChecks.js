@@ -3,13 +3,6 @@
  * by monitoring rapid and sustained piston activations.
  */
 
-/**
- * @typedef {import('../../types.js').CommandDependencies} CommandDependencies;
- * @typedef {import('../../types.js').Config} Config;
- * @typedef {import('@minecraft/server').Block} Block;
- * @typedef {import('@minecraft/server').Dimension} Dimension;
- */
-
 // Default configuration values
 const DEFAULT_PISTON_ACTIVITY_MAP_MAX_SIZE = 2000;
 const DEFAULT_PISTON_ACTIVITY_ENTRY_TIMEOUT_SECONDS = 300;
@@ -19,6 +12,7 @@ const MILLISECONDS_PER_SECOND = 1000;
  * Stores activity data for pistons.
  * Key: string representation of piston location and dimension.
  * Value: { activations: number[], lastLogTime: number }
+ *
  * @type {Map<string, { activations: number[], lastLogTime: number }>}
  */
 const pistonActivityData = new Map();
@@ -28,9 +22,9 @@ const pistonActivityData = new Map();
  * This function is typically called from a `PistonActivateAfterEvent` handler.
  *
  * @async
- * @param {Block} pistonBlock - The piston block that activated.
+ * @param {import('@minecraft/server').Block} pistonBlock - The piston block that activated.
  * @param {string} dimensionId - The ID of the dimension where the piston activated.
- * @param {CommandDependencies} dependencies - Shared dependencies.
+ * @param {import('../../types.js').Dependencies} dependencies - Shared dependencies.
  * @returns {Promise<void>}
  */
 export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {

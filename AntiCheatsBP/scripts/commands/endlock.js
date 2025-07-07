@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !endlock command for administrators to manage End dimension access.
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
@@ -19,6 +20,7 @@ export const definition = {
 /**
  * Executes the !endlock command.
  * Allows administrators to lock, unlock, or check the status of The End dimension.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].

@@ -3,17 +3,14 @@
  * This includes rules for automated actions based on flag counts,
  * (with rule-specific message templates) and per-check type toggles for AutoMod.
  * All `checkType` keys and `actionType` string literals must be in `camelCase`.
- *
  * @typedef {import('../types.js').AutoModActionParameters} AutoModActionParameters
  * @typedef {import('../types.js').AutoModTierRule} AutoModTierRule - Note: Renamed from AutoModRule to AutoModTierRule for clarity if AutoModRuleDef is used below.
- *
  * @typedef {object} AutoModRuleDef - Defines a set of tiered rules for a specific checkType.
  * @property {string} checkType - The type of check this rule set applies to (camelCase).
  * @property {boolean} enabled - Whether AutoMod is enabled for this specific checkType.
  * @property {string} [description] - Optional description of this rule set.
  * @property {number} [resetFlagsAfterSeconds] - Optional: Cooldown in seconds after which flags for this specific check type are reset for a player if no new violations occur and no AutoMod action was taken from this rule set.
  * @property {AutoModTierRule[]} tiers - An array of AutoModTierRule objects, ordered by escalating severity.
- *
  * @type {{ automodRuleSets: AutoModRuleDef[] }}
  */
 export const automodConfig = {

@@ -1,5 +1,6 @@
 /**
 /**
+
  * @file Defines the !tp command for administrators to teleport players or themselves.
  */
 import * as mc from '@minecraft/server';
@@ -27,6 +28,7 @@ export const definition = {
 
 /**
  * Parses dimension ID string to a valid Minecraft Dimension object.
+ *
  * @param {string | undefined} dimensionIdString - The dimension ID string (e.g., "overworld", "nether", "the_end").
  * @param {import('@minecraft/server').Player} currentPlayer - The player whose dimension to use as default if string is invalid/undefined.
  * @param {import('../types.js').Dependencies} dependencies - For logging.
@@ -55,9 +57,10 @@ function parseDimension(dimensionIdString, currentPlayer, dependencies) {
  * Executes the !tp command.
  * Handles teleporting a player to another player or to specific coordinates.
  * Syntax examples:
- *  !tp PlayerToMove TargetPlayerDestination
- *  !tp PlayerToMove X Y Z [Dimension]
- *  !tp X Y Z [Dimension] (teleports self)
+ * !tp PlayerToMove TargetPlayerDestination
+ * !tp PlayerToMove X Y Z [Dimension]
+ * !tp X Y Z [Dimension] (teleports self)
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.

@@ -16,6 +16,7 @@ export const definition = {
 
 /**
  * Executes the !tpacancel command.
+ *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playerName].

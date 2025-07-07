@@ -178,6 +178,7 @@ const correctToolForBlockMap = {
 
 /**
  * Gets the generic tool type from an item's type ID.
+ *
  * @param {string} itemTypeId - The item's type ID (e.g., 'minecraft:diamond_pickaxe').
  * @returns {string | null} The tool type ('pickaxe', 'axe', 'shovel', 'hoe', 'shears', 'sword') or null if not a recognized tool.
  */
@@ -205,6 +206,7 @@ function getToolType(itemTypeId) {
 
 /**
  * Gets the material of a tool from an item's type ID.
+ *
  * @param {string} itemTypeId - The item's type ID (e.g., 'minecraft:diamond_pickaxe').
  * @returns {string | null} The tool material ('wooden', 'stone', 'iron', 'golden', 'diamond', 'netherite') or null if not a recognized material.
  */
@@ -233,6 +235,7 @@ function getToolMaterial(itemTypeId) {
 /**
  * Calculates the relative breaking power of a player against a specific block with a given item.
  * Higher numbers mean faster breaking. Considers tool type, material, enchantments, and player effects.
+ *
  * @param {import('@minecraft/server').Player} player - The player breaking the block.
  * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block.
  * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item used, or undefined for hand.
@@ -306,6 +309,7 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
 
 /**
  * Finds the optimal tool in the player's hotbar for breaking a given block.
+ *
  * @param {import('@minecraft/server').Player} player - The player.
  * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The block permutation to check against.
  * @returns {{slotIndex: number, itemStack: import('@minecraft/server').ItemStack, speed: number} | null} The optimal tool info or null if no suitable tool.
@@ -339,6 +343,7 @@ export function getOptimalToolForBlock(player, blockPermutation) {
 /**
  * Calculates the expected number of game ticks to break a block.
  * Considers player's tool, enchantments, effects, and block properties.
+ *
  * @param {import('@minecraft/server').Player} player - The player breaking the block.
  * @param {import('@minecraft/server').BlockPermutation} blockPermutation - The permutation of the block being broken.
  * @param {import('@minecraft/server').ItemStack | undefined} itemStack - The item stack used, or undefined if hand.

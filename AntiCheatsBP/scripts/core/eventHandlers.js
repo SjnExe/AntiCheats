@@ -21,6 +21,7 @@ const MIN_TIMEOUT_DELAY_TICKS = 1;
 
 /**
  * Handles player leave events.
+ *
  * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData - The player leave event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -109,6 +110,7 @@ export async function handlePlayerLeave(eventData, dependencies) {
 
 /**
  * Handles player spawn events (initial join and respawn).
+ *
  * @param {import('@minecraft/server').PlayerSpawnAfterEvent} eventData - The player spawn event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -271,6 +273,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
 
 /**
  * Handles piston activation events for AntiGrief (e.g., lag machine detection).
+ *
  * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData - The piston activation event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -296,6 +299,7 @@ export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
 
 /**
  * Handles entity spawn events for AntiGrief (e.g., Wither, Golem spam).
+ *
  * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData - The entity spawn event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -389,6 +393,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
 /**
  * Handles player block placement before events for AntiGrief (e.g., TNT).
  * This specific handler focuses on AntiGrief related cancellations. General placement checks are in handlePlayerPlaceBlockBefore.
+ *
  * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The player place block event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -483,6 +488,7 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
 
 /**
  * Handles entity death events for cosmetic death effects.
+ *
  * @param {import('@minecraft/server').EntityDieAfterEvent} eventData - The entity death event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -529,6 +535,7 @@ export function handleEntityDieForDeathEffects(eventData, dependencies) {
 
 /**
  * Handles entity hurt events for combat checks and state updates.
+ *
  * @param {import('@minecraft/server').EntityHurtAfterEvent} eventData - The entity hurt event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -612,6 +619,7 @@ export async function handleEntityHurt(eventData, dependencies) {
 
 /**
  * Handles player death events (e.g., logging, death coordinates).
+ *
  * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData - The player death event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -662,6 +670,7 @@ export function handlePlayerDeath(eventData, dependencies) {
 /**
  * Subscribes to entityHurt events for combat log detection.
  * This function sets up the event listener if combat log is enabled.
+ *
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
 export function subscribeToCombatLogEvents(dependencies) {
@@ -704,6 +713,7 @@ export function subscribeToCombatLogEvents(dependencies) {
 
 /**
  * Handles player block break before events (e.g., InstaBreak timing, unbreakable checks).
+ *
  * @param {import('@minecraft/server').PlayerBreakBlockBeforeEvent} eventData - The player break block event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -743,6 +753,7 @@ export async function handlePlayerBreakBlockBeforeEvent(eventData, dependencies)
 
 /**
  * Handles player block break after events (e.g., XRay, InstaBreak speed completion, AutoTool).
+ *
  * @param {import('@minecraft/server').PlayerBreakBlockAfterEvent} eventData - The player break block event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -792,6 +803,7 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
 
 /**
  * Handles item use events.
+ *
  * @param {import('@minecraft/server').ItemUseBeforeEvent} eventData - The item use event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -870,6 +882,7 @@ export async function handleItemUse(eventData, dependencies) {
  * Handles item use on block events.
  * Note: mc.world.beforeEvents.itemUseOn is often reported as unavailable or unstable.
  * This handler is provided for completeness but might not be reliably triggered.
+ *
  * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
@@ -883,6 +896,7 @@ export function handleItemUseOn(eventData, dependencies) {
 
 /**
  * Handles player inventory item change events.
+ *
  * @param {import('@minecraft/server').Player} player - The player whose inventory changed.
  * @param {import('@minecraft/server').ItemStack | undefined} newItemStack - The new item stack in the slot.
  * @param {import('@minecraft/server').ItemStack | undefined} oldItemStack - The old item stack that was in the slot.
@@ -918,6 +932,7 @@ export async function handleInventoryItemChange(player, newItemStack, oldItemSta
 /**
  * Handles player block placement before events (for checks and AntiGrief).
  * This is the primary handler for `playerPlaceBlock.before`.
+ *
  * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The player place block event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -951,6 +966,7 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
 
 /**
  * Internal helper to process effects and checks after a block is placed.
+ *
  * @param {import('@minecraft/server').Player} player - The player who placed the block.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {import('@minecraft/server').Block} block - The block that was placed.
@@ -1043,6 +1059,7 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
 
 /**
  * Handles player block placement after events.
+ *
  * @param {import('@minecraft/server').PlayerPlaceBlockAfterEvent} eventData - The player place block event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -1064,6 +1081,7 @@ export async function handlePlayerPlaceBlockAfterEvent(eventData, dependencies) 
 
 /**
  * Handles chat messages before they are sent, dispatching to chatProcessor.
+ *
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat send event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
@@ -1097,6 +1115,7 @@ export async function handleBeforeChatSend(eventData, dependencies) {
 
 /**
  * Handles player dimension change after events (e.g., dimension lock enforcement).
+ *
  * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData - The player dimension change event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
