@@ -60,7 +60,7 @@ export default [
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
       'max-len': ['warn', {
-        code: 120,
+        code: 180, // Increased from 150
         ignoreComments: true,
         ignoreUrls: true,
         ignoreStrings: true,

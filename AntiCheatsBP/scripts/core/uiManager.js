@@ -7,20 +7,8 @@ import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui'; // Direct imports, Removed MessageFormData
 // Removed formatSessionDuration, formatDimensionName from '../utils/index.js'
 
-// Forward declarations for UI functions
-let showAdminPanelMain;
-// let showEditConfigForm; // Unused
-let showOnlinePlayersList;
-let showPlayerActionsForm; // Implemented and used
-// let showServerManagementForm; // Unused
-// let showModLogTypeSelectionForm; // Unused
-let showDetailedFlagsForm; // Used (params might be unused, but function itself is referenced)
-// let showSystemInfo; // Unused
-// let showActionLogsForm; // Unused
-// let showResetFlagsForm; // Unused
-// let showWatchedPlayersList; // Unused
-// let showNormalUserPanelMain; // Unused
-// let showEditSingleConfigValueForm; // Unused
+// UI functions will be defined below using 'async function' for hoisting.
+// No separate forward declarations needed for them.
 
 /**
  * Helper to show a confirmation modal.
@@ -128,7 +116,7 @@ async function showInspectPlayerForm(adminPlayer, dependencies) {
 // showAdminPanelMain = async function(...) { ... };
 // This is done at the end of the file in the original code, which is a valid pattern.
 
-// Ensure all other UI functions (showPlayerActionsForm, showOnlinePlayersList, etc.)
+// Ensure all other UI functions (showPlayerActionsFormForward, showOnlinePlayersListForward, etc.)
 // are also updated with:
 // - Consistent use of playerName = player?.nameTag ?? 'UnknownPlayer';
 // - Optional chaining for all dependency sub-modules (playerUtils?, logManager?, config?, etc.)
@@ -139,7 +127,7 @@ async function showInspectPlayerForm(adminPlayer, dependencies) {
 // - Robust error handling with .catch and .finally where appropriate for UI navigation.
 
 // --- Player Actions Form (Example of applying pattern) ---
-showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataManager, dependencies) {
+async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies) {
     const { config, playerUtils, logManager, getString, commandExecutionMap } = dependencies; // Removed permissionLevels
     const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
     const targetName = targetPlayer?.nameTag ?? 'UnknownTarget'; // targetPlayer could be null if it disconnects
@@ -270,7 +258,7 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
             else {
                 adminPlayer?.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'resetflags' }));
             } break;
-            case 9: await _showConfirmationModal(adminPlayer, 'ui.playerActions.clearInventory.confirmTitle', 'ui.playerActions.clearInventory.confirmBody', 'ui.playerActions.clearInventory.confirmToggle', async () => {
+            case 9: await _showConfirmationModal(adminPlayer, 'ui.playerActions.clearInventory.confirmTitle', 'ui.playerActions.clearInventory.confirmBody', 'ui.playerActions.clearInventory.confirmToggle', () => { // Removed async
                 const invComp = targetPlayer?.getComponent(mc.EntityComponentTypes.Inventory); if (invComp?.container) {
                     for (let i = 0; i < invComp.container.size; i++) {
                         invComp.container.setItem(i);
@@ -314,8 +302,8 @@ showPlayerActionsForm = async function (adminPlayer, targetPlayer, playerDataMan
 
 
 // Assign other functions similarly ensure dependencies are passed correctly, and use optional chaining.
-showAdminPanelMain = async function (player, playerDataManager, dependencies) {
-    const { playerUtils, logManager, getString, permissionLevels, rankManager, uiManager } = dependencies; // uiManager for recursive calls
+async function showAdminPanelMain(player, playerDataManager, dependencies) {
+    const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // uiManager removed as functions are called directly
     const playerName = player?.nameTag ?? 'UnknownPlayer';
     playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Requested by ${playerName}`, playerName, dependencies);
 
@@ -323,7 +311,7 @@ showAdminPanelMain = async function (player, playerDataManager, dependencies) {
 
     if (userPermLevel > permissionLevels.admin) { // Assuming admin is the minimum to see any admin panel
         // If not at least admin, show normal user panel
-        await uiManager?.showNormalUserPanelMain(player, dependencies);
+        await showNormalUserPanelMain(player, dependencies); // Direct call
         return;
     }
 
@@ -352,14 +340,14 @@ showAdminPanelMain = async function (player, playerDataManager, dependencies) {
 
         const selection = response.selection;
         switch (selection) {
-            case 0: await uiManager?.showOnlinePlayersList(player, dependencies); break;
-            case 1: await uiManager?.showInspectPlayerForm(player, dependencies); break; // Assuming showInspectPlayerForm is part of uiManager
-            case 2: await uiManager?.showResetFlagsForm(player, dependencies); break; // Assuming showResetFlagsForm is part of uiManager
-            case 3: await uiManager?.showWatchedPlayersList(player, dependencies); break; // Assuming showWatchedPlayersList is part of uiManager
-            case 4: await uiManager?.showServerManagementForm(player, dependencies); break;
+            case 0: await showOnlinePlayersList(player, dependencies); break;
+            case 1: await showInspectPlayerForm(player, dependencies); break;
+            case 2: await showResetFlagsForm(player, dependencies); break;
+            case 3: await showWatchedPlayersList(player, dependencies); break;
+            case 4: await showServerManagementForm(player, dependencies); break;
             case 5:
                 if (userPermLevel === permissionLevels.owner) {
-                    await uiManager?.showEditConfigForm(player, dependencies);
+                    await showEditConfigForm(player, dependencies);
                 }
                 else if (selection === 5) { // Index for close if owner button wasn't shown
                     playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
@@ -389,8 +377,8 @@ showAdminPanelMain = async function (player, playerDataManager, dependencies) {
     }
 };
 
-showOnlinePlayersList = async function (adminPlayer, dependencies) {
-    const { playerUtils, logManager, playerDataManager, getString, mc: minecraft, uiManager } = dependencies;
+async function showOnlinePlayersList(adminPlayer, dependencies) {
+    const { playerUtils, logManager, playerDataManager, getString, mc: minecraft } = dependencies; // Removed uiManager
     const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
     playerUtils?.debugLog(`[UiManager.showOnlinePlayersList] Requested by ${adminName}`, adminName, dependencies);
 
@@ -421,15 +409,15 @@ showOnlinePlayersList = async function (adminPlayer, dependencies) {
         if (selection >= 0 && selection < onlinePlayers.length) {
             const targetPlayer = onlinePlayers[selection];
             if (targetPlayer?.isValid()) { // Check validity before passing
-                await uiManager?.showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
+                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
             }
             else {
                 adminPlayer?.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayer?.nameTag || 'Selected Player' }));
-                await uiManager?.showOnlinePlayersList(adminPlayer, dependencies); // Refresh list
+                await showOnlinePlayersList(adminPlayer, dependencies); // Refresh list
             }
         }
         else if (selection === onlinePlayers.length) { // Corresponds to the "Back" button
-            await uiManager?.showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies);
+            await showAdminPanelMain(adminPlayer, playerDataManager, dependencies); // Pass full dependencies
         }
     }
     catch (error) {
@@ -446,27 +434,67 @@ showOnlinePlayersList = async function (adminPlayer, dependencies) {
         }, dependencies);
         adminPlayer?.sendMessage(getString('ui.onlinePlayers.error.generic'));
         // Optionally, try to go back to admin panel on error
-        await uiManager?.showAdminPanelMain(adminPlayer, playerDataManager, dependencies.config, dependencies).catch(() => {});
+        await showAdminPanelMain(adminPlayer, playerDataManager, dependencies).catch((e) => {
+            console.warn(`[UiManager.showOnlinePlayersList] Error in fallback showAdminPanelMain: ${e}`);
+        }); // Pass full dependencies
     }
 };
 
 // Commenting out unused function assignments based on ESLint warnings
-// showServerManagementForm = async function (_adminPlayer, _playerDataManager_unused, _config_unused, _dependencies) { /* ... */ };
-// showModLogTypeSelectionForm = async function (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
-showDetailedFlagsForm = async function(_adminPlayer, _targetPlayer, _playerDataManager_unused, _dependencies) { /* ... */ }; // Parameters prefixed, function might be used
-// showSystemInfo = async function (_adminPlayer, _config_unused, _playerDataManager_unused, _dependencies) { /* ... */ };
-// showActionLogsForm = async function (_adminPlayer, _config_unused, _playerDataManager_unused, _dependencies) { /* ... */ };
-// showResetFlagsForm = async function (_adminPlayer, _playerDataManager_unused, _dependencies) { /* ... */ };
-// showWatchedPlayersList = async function (_adminPlayer, _playerDataManager_unused, _dependencies) { /* ... */ };
-// showNormalUserPanelMain = async function (_player, _dependencies) { /* ... */ };
-// showEditSingleConfigValueForm = async function (_adminPlayer, _keyName, _keyType, _currentValue, _dependencies) { /* ... */ };
+// async function showServerManagementForm (_adminPlayer, _playerDataManager_unused, _config_unused, _dependencies) { /* ... */ };
+// async function showModLogTypeSelectionForm (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
+async function showDetailedFlagsForm (adminPlayer, targetPlayer, dependencies) {
+    const { playerUtils, getString, playerDataManager } = dependencies;
+    const adminName = adminPlayer?.nameTag ?? 'UnknownAdmin';
+    const targetName = targetPlayer?.nameTag ?? 'UnknownTarget';
+    playerUtils?.debugLog(`[UiManager.showDetailedFlagsForm] Stub for ${targetName} by ${adminName}`, adminName, dependencies);
+    adminPlayer?.sendMessage(getString('common.error.notImplemented', { featureName: 'Detailed Flags View' }));
+    await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
+};
 
+async function showResetFlagsForm(player, dependencies) {
+    const { playerUtils, getString, playerDataManager } = dependencies;
+    playerUtils?.debugLog(`[UiManager.showResetFlagsForm] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
+    player?.sendMessage(getString('common.error.notImplemented', { featureName: 'Reset Flags Form' }));
+    await showAdminPanelMain(player, playerDataManager, dependencies);
+}
 
-// Re-assign the functions that were already defined to ensure they are using the updated forward declarations.
-// (This is mostly a conceptual step here as the full implementations were not in the SEARCH block)
-// Actual implementations would be here. For this exercise, I'm focusing on the structure and dependency handling.
+async function showWatchedPlayersList(player, dependencies) {
+    const { playerUtils, getString, playerDataManager } = dependencies;
+    playerUtils?.debugLog(`[UiManager.showWatchedPlayersList] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
+    player?.sendMessage(getString('common.error.notImplemented', { featureName: 'Watched Players List' }));
+    await showAdminPanelMain(player, playerDataManager, dependencies);
+}
 
-// The _showConfirmationModal and _showModalAndExecuteWithTransform helpers would also be defined here or imported.
-// Their internal logic would also need to be updated for robust dependency usage if they access dependencies.config etc.
+async function showServerManagementForm(player, dependencies) {
+    const { playerUtils, getString, playerDataManager } = dependencies;
+    playerUtils?.debugLog(`[UiManager.showServerManagementForm] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
+    player?.sendMessage(getString('common.error.notImplemented', { featureName: 'Server Management Form' }));
+    await showAdminPanelMain(player, playerDataManager, dependencies);
+}
+
+async function showEditConfigForm(player, dependencies) {
+    const { playerUtils, getString, playerDataManager } = dependencies;
+    playerUtils?.debugLog(`[UiManager.showEditConfigForm] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
+    player?.sendMessage(getString('common.error.notImplemented', { featureName: 'Edit Config Form' }));
+    await showAdminPanelMain(player, playerDataManager, dependencies);
+}
+
+function showNormalUserPanelMain(player, dependencies) { // Removed async
+    const { playerUtils, getString, playerDataManager: _playerDataManager } = dependencies; // Prefixed playerDataManager
+    playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
+    player?.sendMessage(getString('common.error.notImplemented', { featureName: 'User Panel' }));
+    // No automatic redirect to admin panel for normal users
+}
+
+// TODO: Define or remove these other potentially unused/stubbed functions if they cause lint errors:
+// async function showSystemInfo (_adminPlayer, _dependencies) { /* ... */ };
+// async function showActionLogsForm (_adminPlayer, _dependencies) { /* ... */ };
+// async function showModLogTypeSelectionForm (_adminPlayer, _dependencies) { /* ... */ };
+// async function showEditSingleConfigValueForm (_adminPlayer, _keyName, _keyType, _currentValue, _dependencies) { /* ... */ };
+// async function showSystemInfo (_adminPlayer, _config_unused, _playerDataManager_unused, _dependencies) { /* ... */ };
+// async function showActionLogsForm (_adminPlayer, _config_unused, _playerDataManager_unused, _dependencies) { /* ... */ };
+// async function showModLogTypeSelectionForm (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
+// async function showEditSingleConfigValueForm (_adminPlayer, _keyName, _keyType, _currentValue, _dependencies) { /* ... */ };
 
 export { showAdminPanelMain };

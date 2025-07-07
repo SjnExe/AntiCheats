@@ -22,9 +22,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { playerUtils, logManager, config, playerDataManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
@@ -65,7 +65,7 @@ export async function execute(player, args, dependencies) {
             newPreference = !currentPreference;
             responseMessageKey = newPreference ? 'command.notify.enabled' : 'command.notify.disabled';
             break;
-        case 'status':
+        case 'status': {
             const statusText = currentPreference ? getString('common.boolean.yes').toUpperCase() : getString('common.boolean.no').toUpperCase();
             const sourceTextKey = typeof pData[pDataKeyForNotifications] === 'boolean' ?
                 'command.notify.status.source.explicit' :
@@ -77,6 +77,7 @@ export async function execute(player, args, dependencies) {
                 details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`,
             }, dependencies);
             return;
+        }
         default:
             player.sendMessage(getString('command.notify.usage', { prefix: prefix }));
             return;

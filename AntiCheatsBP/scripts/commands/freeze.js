@@ -23,9 +23,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [on|off|toggle|status].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
@@ -71,12 +71,13 @@ export async function execute(player, args, dependencies) {
         case 'toggle':
             targetFreezeState = !currentFreezeState;
             break;
-        case 'status':
+        case 'status': {
             const statusMessage = currentFreezeState ?
                 getString('command.freeze.status.isFrozen', { playerName: targetPlayer.nameTag }) :
                 getString('command.freeze.status.notFrozen', { playerName: targetPlayer.nameTag });
             player?.sendMessage(statusMessage);
             return;
+        }
         default:
             player?.sendMessage(getString('command.freeze.invalidArg'));
             return;

@@ -24,9 +24,9 @@ export const definition = {
  * @param {string} [invokedBy='PlayerCommand'] - How the command was invoked (e.g., 'PlayerCommand', 'AutoMod').
  * @param {boolean} [isAutoModAction=false] - Whether this mute is a direct result of an AutoMod action.
  * @param {string|null} [autoModCheckType=null] - If AutoMod, the checkType (camelCase) that triggered it.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(
+export function execute(
     player,
     args,
     dependencies,

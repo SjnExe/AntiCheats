@@ -67,9 +67,9 @@ function formatAutomodMessage(template, context) {
  * @param {import('../types.js').AutoModActionParameters & { flagThresholdInternal?: number }} parameters - Parameters for the action, including flagThreshold.
  * @param {string} checkType - The check type that triggered this action (already standardized, e.g., 'playerAntiGmc').
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if the action was processed (even if it internally failed but was logged), false otherwise.
+ * @returns {boolean} True if the action was processed (even if it internally failed but was logged), false otherwise.
  */
-async function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
+function _executeAutomodAction(player, pData, actionType, parameters, checkType, dependencies) {
     const { playerUtils, logManager, config: globalConfig, playerDataManager } = dependencies;
     const flagThresholdForRule = parameters.flagThresholdInternal || 0;
 

@@ -45,9 +45,17 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
             const actionProfileKey = rawActionProfileKey
                 .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
                 .replace(/^[A-Z]/, (match) => match.toLowerCase());
+
+            // For this specific check, cancellation is intrinsic to the detection of breaking an unbreakable block.
+            // The actionManager.executeCheckAction is primarily for logging/flagging this event.
+            // The decision to cancel is made here, not based on a profile.
+            const shouldCancel = true;
+
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-            eventData.cancel = true;
+            if (shouldCancel) {
+                eventData.cancel = true;
+            }
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): ${player.nameTag} attempt to break '${blockTypeId}' cancelled.`, watchedPrefix, dependencies);

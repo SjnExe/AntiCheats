@@ -23,9 +23,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, _args, dependencies) {
+export function execute(player, _args, dependencies) {
     const { logManager, playerUtils, getString } = dependencies; // Removed rankManager
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 

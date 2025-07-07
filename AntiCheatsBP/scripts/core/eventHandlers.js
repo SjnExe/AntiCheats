@@ -386,26 +386,25 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
             x: block.location.x, y: block.location.y, z: block.location.z,
         };
 
-        await actionManager?.executeCheckAction(player, checkType, violationDetails, dependencies);
-
+        // Determine cancellation logic BEFORE the await
         const profile = dependencies.checkActionProfiles?.[checkType];
-        // Determine if event should be cancelled based on profile OR config action.
-        // If profile exists and explicitly sets cancelEvent = false, it won't cancel.
-        // Otherwise, if config action is 'remove' or 'prevent', it should cancel.
-        let shouldCancel = cancelByDefault; // Start with default
+        let shouldCancelEvent = cancelByDefault; // Start with default
         if (profile && typeof profile.cancelEvent === 'boolean') {
-            shouldCancel = profile.cancelEvent;
+            shouldCancelEvent = profile.cancelEvent;
         }
         else if (actionTaken === 'remove' || actionTaken === 'prevent') {
-            shouldCancel = true;
+            shouldCancelEvent = true;
         }
         else { // e.g. 'warn', 'flag_only'
-            shouldCancel = false;
+            shouldCancelEvent = false;
         }
+        const messageToWarn = getString(profile?.messageKey || defaultMessageKey);
 
-        if (shouldCancel) {
+        await actionManager?.executeCheckAction(player, checkType, violationDetails, dependencies);
+
+        if (shouldCancelEvent) {
             eventData.cancel = true;
-            playerUtils?.warnPlayer(player, getString(profile?.messageKey || defaultMessageKey));
+            playerUtils?.warnPlayer(player, messageToWarn);
         }
     }
 }
@@ -416,7 +415,7 @@ export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dep
  * @param {import('@minecraft/server').EntityDieAfterEvent} eventData - The entity death event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
-export async function handleEntityDieForDeathEffects(eventData, dependencies) {
+export function handleEntityDieForDeathEffects(eventData, dependencies) {
     const { config, playerUtils, logManager } = dependencies;
     if (!config?.enableDeathEffects) {
         return;
@@ -537,7 +536,7 @@ export async function handleEntityHurt(eventData, dependencies) {
  * @param {import('@minecraft/server').PlayerDeathAfterEvent} eventData - The player death event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
-export async function handlePlayerDeath(eventData, dependencies) {
+export function handlePlayerDeath(eventData, dependencies) {
     const { player } = eventData; // Player object is directly on PlayerDeathAfterEvent
     const { playerDataManager, config, logManager, getString } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
@@ -713,7 +712,7 @@ export async function handlePlayerBreakBlockAfterEvent(eventData, dependencies) 
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
 export async function handleItemUse(eventData, dependencies) {
-    const { checks, config, getString, playerUtils, playerDataManager, mc: minecraftSystem, currentTick, actionManager } = dependencies;
+    const { checks, config, getString, playerUtils, playerDataManager, mc: minecraftSystem, currentTick: _currentTick, actionManager } = dependencies; // Renamed currentTick
     const { source: player, itemStack } = eventData;
 
     if (!player?.isValid() || !itemStack?.typeId) {
@@ -725,7 +724,7 @@ export async function handleItemUse(eventData, dependencies) {
         return;
     }
 
-    pData.lastItemUseTick = currentTick; // Update last item use tick
+    pData.lastItemUseTick = _currentTick; // Update last item use tick
     pData.isDirtyForSave = true;
 
     if (checks?.checkSwitchAndUseInSameTick && config?.enableInventoryModCheck) {
@@ -783,7 +782,7 @@ export async function handleItemUse(eventData, dependencies) {
  * @param {import('@minecraft/server').ItemUseOnBeforeEvent} eventData
  * @param {import('../types.js').Dependencies} dependencies
  */
-export async function handleItemUseOn(eventData, dependencies) {
+export function handleItemUseOn(eventData, dependencies) {
     const { playerUtils } = dependencies;
     playerUtils?.debugLog('[EventHandler.handleItemUseOn] ItemUseOn event triggered. This event might be unstable.', eventData.source?.nameTag, dependencies);
     // Similar logic to handleItemUse could be placed here if specific item-on-block actions need checking.
@@ -867,47 +866,63 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
 async function _processPlayerPlaceBlockAfterEffects(player, pData, block, dependencies) {
-    const { config, playerUtils, checks, currentTick } = dependencies; // Removed mc: minecraftSystem
+    const { config, playerUtils, checks, currentTick, playerDataManager } = dependencies;
     const eventSpecificBlockData = { block };
+    let pDataInternal = pData; // Use an internal variable that can be updated
+    let anAwaitOccurred = false;
 
-    if (!player?.isValid() || !pData || !block?.isValid()) {
+    if (!player?.isValid() || !pDataInternal || !block?.isValid()) {
         return;
     }
 
     // Record placement for checks that analyze patterns over time
-    pData.recentBlockPlacements ??= [];
-    pData.recentBlockPlacements.push({
+    pDataInternal.recentBlockPlacements ??= [];
+    pDataInternal.recentBlockPlacements.push({
         x: block.location.x, y: block.location.y, z: block.location.z,
         blockTypeId: block.typeId,
         pitch: player.getRotation().pitch, yaw: player.getRotation().yaw,
         tick: currentTick,
         dimensionId: player.dimension.id,
     });
-    if (pData.recentBlockPlacements.length > (config?.towerPlacementHistoryLength ?? 20)) {
-        pData.recentBlockPlacements.shift();
+    if (pDataInternal.recentBlockPlacements.length > (config?.towerPlacementHistoryLength ?? 20)) {
+        pDataInternal.recentBlockPlacements.shift();
     }
-    pData.isDirtyForSave = true;
+    pDataInternal.isDirtyForSave = true;
 
 
     if (checks?.checkTower && config?.enableTowerCheck) {
-        await checks.checkTower(player, pData, dependencies, eventSpecificBlockData);
+        await checks.checkTower(player, pDataInternal, dependencies, eventSpecificBlockData);
+        anAwaitOccurred = true;
     }
     if (checks?.checkFastPlace && config?.enableFastPlaceCheck) {
-        await checks.checkFastPlace(player, pData, dependencies, eventSpecificBlockData);
+        await checks.checkFastPlace(player, pDataInternal, dependencies, eventSpecificBlockData);
+        anAwaitOccurred = true;
     }
     if (checks?.checkDownwardScaffold && config?.enableDownwardScaffoldCheck) {
-        await checks.checkDownwardScaffold(player, pData, dependencies, eventSpecificBlockData);
+        await checks.checkDownwardScaffold(player, pDataInternal, dependencies, eventSpecificBlockData);
+        anAwaitOccurred = true;
     }
     if (checks?.checkBlockSpam && config?.enableBlockSpamAntiGrief) { // Rate-based
-        await checks.checkBlockSpam(player, pData, dependencies, eventSpecificBlockData);
+        await checks.checkBlockSpam(player, pDataInternal, dependencies, eventSpecificBlockData);
+        anAwaitOccurred = true;
     }
     if (checks?.checkBlockSpamDensity && config?.enableBlockSpamDensityCheck) { // Density-based
-        await checks.checkBlockSpamDensity(player, pData, dependencies, eventSpecificBlockData);
+        await checks.checkBlockSpamDensity(player, pDataInternal, dependencies, eventSpecificBlockData);
+        anAwaitOccurred = true;
     }
     if (checks?.checkFlatRotationBuilding && config?.enableFlatRotationCheck) {
-        await checks.checkFlatRotationBuilding(player, pData, dependencies, eventSpecificBlockData);
+        await checks.checkFlatRotationBuilding(player, pDataInternal, dependencies, eventSpecificBlockData);
+        anAwaitOccurred = true;
     }
 
+    // If any await occurred, pDataInternal might be stale. Re-fetch it.
+    if (anAwaitOccurred) {
+        pDataInternal = playerDataManager.getPlayerData(player.id);
+        if (!pDataInternal) {
+            playerUtils.debugLog(`[EventHandler._ppbaEffects] pData became null for ${player.nameTag} after awaits. Skipping Golem check.`, player.nameTag, dependencies);
+            return;
+        }
+    }
 
     // Golem construction check
     if (config?.enableEntitySpamAntiGrief && block.typeId === mc.MinecraftBlockTypes.carvedPumpkin.id) {
@@ -924,12 +939,13 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
         }
 
         if (potentialGolemType) {
-            pData.expectingConstructedEntity = {
+            // pDataInternal is now the most up-to-date reference
+            pDataInternal.expectingConstructedEntity = {
                 type: potentialGolemType,
                 location: { x: block.location.x, y: block.location.y, z: block.location.z },
                 tick: currentTick, // Use currentTick from dependencies
             };
-            pData.isDirtyForSave = true;
+            pDataInternal.isDirtyForSave = true;
             playerUtils?.debugLog(`[EventHandler._processPlayerPlaceBlockAfterEffects] Player ${player?.nameTag} placed pumpkin for ${potentialGolemType}. Expecting entity.`, player?.nameTag, dependencies);
         }
     }

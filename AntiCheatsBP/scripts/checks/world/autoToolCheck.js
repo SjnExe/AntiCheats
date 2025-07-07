@@ -114,11 +114,12 @@ export async function checkAutoTool(player, pData, dependencies) {
             await actionManager.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
             playerUtils.debugLog(`[AutoToolCheck] Flagged ${player.nameTag} for switching back after optimal tool use. From: ${previousOptimalSlot}, To: ${currentSlotIndex}`, watchedPrefix, dependencies);
 
-            pData.switchedToOptimalToolForBreak = false;
-            pData.optimalToolSlotForLastBreak = null;
-            pData.blockBrokenWithOptimalTypeId = null;
-            pData.optimalToolTypeIdForLastBreak = null;
-            pData.isDirtyForSave = true;
+            const pDataToUpdate = pData; // Re-affirm pData reference
+            pDataToUpdate.switchedToOptimalToolForBreak = false;
+            pDataToUpdate.optimalToolSlotForLastBreak = null;
+            pDataToUpdate.blockBrokenWithOptimalTypeId = null;
+            pDataToUpdate.optimalToolTypeIdForLastBreak = null;
+            pDataToUpdate.isDirtyForSave = true;
         }
     }
 

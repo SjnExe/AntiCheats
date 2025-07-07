@@ -21,9 +21,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
- * @returns {Promise<void>}
+ * @returns {void}
  */
-export async function execute(player, args, dependencies) {
+export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
@@ -65,7 +65,7 @@ export async function execute(player, args, dependencies) {
             newPreference = !currentPreference;
             responseMessageKey = newPreference ? 'command.xraynotify.enabled' : 'command.xraynotify.disabled';
             break;
-        case 'status':
+        case 'status': {
             let statusKey;
             if (typeof pData.xrayNotificationsEnabled === 'boolean') {
                 statusKey = currentPreference ? 'command.xraynotify.status.onExplicit' : 'command.xraynotify.status.offExplicit';
@@ -80,6 +80,7 @@ export async function execute(player, args, dependencies) {
                 details: `Checked own X-Ray notification status: ${getString(statusKey)}`,
             }, dependencies);
             return;
+        }
         default:
             player.sendMessage(getString('command.xraynotify.usage', { prefix: prefix }));
             return;

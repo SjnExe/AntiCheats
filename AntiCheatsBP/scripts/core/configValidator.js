@@ -167,6 +167,10 @@ function ensureFields(obj, fieldDefs, context, errors) {
                     } break;
                     // Allow 'any' type for fields that don't need strict type validation or are complex
                     case 'any': typeMatch = true; break;
+                    default:
+                        // This case should ideally not be reached if field.type is always valid
+                        errors.push(`${fieldPath}: Unknown expected type '${type}' in field definition.`);
+                        break;
                 }
                 if (typeMatch) {
                     break;
@@ -200,6 +204,10 @@ function ensureFields(obj, fieldDefs, context, errors) {
                         elementMatch = true;
                     } break;
                     // Add more types as needed
+                    default:
+                        // This case implies an unsupported arrayElementType was specified in fieldDefs
+                        errors.push(`${elementPath}: Unknown expected array element type '${field.arrayElementType}' in field definition.`);
+                        break;
                 }
                 if (!elementMatch) {
                     errors.push(`${elementPath}: Invalid array element type. Expected ${field.arrayElementType}, but got ${typeof element}.`);
@@ -305,7 +313,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string', validator: (val, path, errs) => {
             val.forEach((regex, index) => {
                 try {
-                    new RegExp(regex);
+                    RegExp(regex); // Changed from new RegExp(regex)
                 }
                 catch (e) {
                     errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`);
@@ -400,6 +408,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'soundEvents', type: 'object', validator: (soundEventsObj, sePath, seErrs) => {
             let allValid = true;
             for (const eventName in soundEventsObj) {
+                if (!Object.prototype.hasOwnProperty.call(soundEventsObj, eventName)) {
+                    continue;
+                }
                 const eventPath = `${sePath}.${eventName}`;
                 const eventDef = soundEventsObj[eventName];
                 const soundFieldDefs = [
@@ -428,17 +439,27 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
 
         // Command Settings
         { name: 'commandSettings', type: 'object', validator: (cmdSettingsObj, csPath, csErrs) => {
-            let allValid = true;
-            for (const cmdName in cmdSettingsObj) {
+            let overallIsValid = true;
+            for (const cmdName of Object.keys(cmdSettingsObj)) {
+                let currentCmdLocalValid = true;
                 if (!knownCommands.includes(cmdName)) {
                     csErrs.push(`${csPath}.${cmdName}: Unknown command "${cmdName}" listed in commandSettings.`);
-                    allValid = false;
+                    currentCmdLocalValid = false;
                 }
                 const cmdDef = cmdSettingsObj[cmdName];
                 const cmdFieldDefs = [{ name: 'enabled', type: 'boolean' }];
+
+                const errorCountBeforeEnsureFields = csErrs.length;
                 ensureFields(cmdDef, cmdFieldDefs, `${csPath}.${cmdName}`, csErrs);
+                if (csErrs.length > errorCountBeforeEnsureFields) {
+                    currentCmdLocalValid = false;
+                }
+
+                if (!currentCmdLocalValid) {
+                    overallIsValid = false;
+                }
             }
-            return allValid;
+            return overallIsValid;
         } },
         { name: 'chatClearLinesCount', type: 'positiveNumber' },
         { name: 'reportsViewPerPage', type: 'positiveNumber' },
@@ -465,6 +486,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
     const manuallyHandledKeys = ['soundEvents', 'commandSettings']; // Add more if complex objects are validated primarily by custom logic
 
     for (const key in config) {
+        if (!Object.prototype.hasOwnProperty.call(config, key)) {
+            continue;
+        }
         if (!knownKeys.includes(key) && !manuallyHandledKeys.includes(key)) {
             // This check needs refinement if not all keys in config.js are covered by configFieldDefs
             // For now, we assume configFieldDefs will be comprehensive for primitive types.
@@ -480,6 +504,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         if (isObject(commandAliasesMap)) {
             const aliasContext = 'config.commandAliases'; // Keep context string consistent with file structure
             for (const alias in commandAliasesMap) {
+                if (!Object.prototype.hasOwnProperty.call(commandAliasesMap, alias)) {
+                    continue;
+                }
                 const originalCommand = commandAliasesMap[alias];
                 if (!isString(originalCommand)) {
                     errors.push(`${aliasContext}.${alias}: Original command name for alias must be a string. Got ${typeof originalCommand}.`);
@@ -520,6 +547,9 @@ export function validateActionProfiles(actionProfiles) {
     const validCustomActions = ['mutePlayer', 'teleportSafe']; // Add more as they are implemented
 
     for (const profileName in actionProfiles) {
+        if (!Object.prototype.hasOwnProperty.call(actionProfiles, profileName)) {
+            continue;
+        }
         const profileContext = `${context}.${profileName}`;
         const profile = actionProfiles[profileName];
 

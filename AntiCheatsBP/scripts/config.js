@@ -402,8 +402,7 @@ const defaultConfigSettings = {
     // --- Automated Moderation System ---
     /** @type {boolean} If true, the Automated Moderation system (AutoMod) is active. This system uses `automodConfig.js` and `actionProfiles.js`. */
     enableAutoMod: false,
-    /** @type {string} Default duration for mutes applied manually by admins if no duration is specified. */
-    manualMuteDefaultDuration: '1h',
+    // manualMuteDefaultDuration is (and should be) defined under "Moderation Defaults" section.
 
     // --- Server Rules ---
     /** @type {string} A single string containing all server rules, separated by newlines. Displayed by the `!rules` command. */
@@ -776,12 +775,6 @@ Rule 6: Have fun and contribute to a positive community!`,
     flatRotationCheckIntervalTicks: 10,
     /** @type {number} Interval in game ticks for InvalidRenderDistance check. */
     invalidRenderDistanceCheckIntervalTicks: 400,
-
-    // --- Command Specific Configs (Values) ---
-    /** @type {number} Number of empty lines sent by !clearchat command to clear chat. */
-    chatClearLinesCount: 150,
-    /** @type {number} Number of reports displayed per page in the !viewreports command. */
-    reportsViewPerPage: 5,
 };
 
 // --- System & Versioning (Not part of editableConfigValues by default) ---

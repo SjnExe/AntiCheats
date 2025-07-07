@@ -54,7 +54,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
-    const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?()"';:{}\[\]<>~`^\\]/g, '');
+    const cleanedMessage = rawMessageContent.toLowerCase().replace(/[.,!?()"';:{}[\]<>~`^\\]/g, '');
 
     let totalAlphaChars = 0;
     let totalNonSpaceCharsInCleaned = 0;
@@ -125,11 +125,14 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
             originalMessage: rawMessageContent,
         };
 
+        // Determine if message should be cancelled before awaiting actionManager
+        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+        const shouldCancelMessage = profile?.cancelMessage;
+
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
         playerUtils?.debugLog(`[GibberishCheck] Flagged ${playerName} for ${flagReasons.join('; ')}. Msg: '${rawMessageContent.substring(0, 20)}...'`, watchedPlayerName, dependencies);
 
-        const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-        if (profile?.cancelMessage) {
+        if (shouldCancelMessage) {
             eventData.cancel = true;
         }
     }
