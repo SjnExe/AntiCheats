@@ -31,7 +31,7 @@ export const definition = {
 export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString, rankManager } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
-    const prefix = config?.prefix ?? '!';
+    // const prefix = config?.prefix ?? '!'; // Unused variable
     const vanishedPlayerTagName = config?.vanishedPlayerTag ?? 'vanished';
 
     let mode = 'notify';
@@ -41,7 +41,8 @@ export async function execute(player, args, dependencies) {
         const lowerArg = arg.toLowerCase();
         if (lowerArg === 'on' || lowerArg === 'off' || lowerArg === 'toggle') {
             action = lowerArg;
-        } else if (lowerArg === 'silent' || lowerArg === 'notify') {
+        }
+        else if (lowerArg === 'silent' || lowerArg === 'notify') {
             mode = lowerArg;
         }
     });
@@ -73,8 +74,8 @@ export async function execute(player, args, dependencies) {
 
     if (targetVanishState) {
         if (isCurrentlyVanished && pData.vanishTagApplied) {
-             player.sendMessage(`§eYou are already vanished (Mode: ${pData.vanishMode ?? mode}).`);
-             return;
+            player.sendMessage(`§eYou are already vanished (Mode: ${pData.vanishMode ?? mode}).`);
+            return;
         }
         player.addTag(vanishedPlayerTagName);
         pData.vanishTagApplied = true;
@@ -88,9 +89,10 @@ export async function execute(player, args, dependencies) {
         player.onScreenDisplay.setActionBar(getString(mode === 'silent' ? 'command.vanish.actionBar.on.silent' : 'command.vanish.actionBar.on.notify'));
         logManager?.addLog({ adminName, actionType: 'vanishEnabled', details: `Mode: ${mode}` }, dependencies);
 
-    } else {
+    }
+    else {
         if (!isCurrentlyVanished && !pData.vanishTagApplied) {
-            player.sendMessage(`§eYou are already unvanished.`);
+            player.sendMessage('§eYou are already unvanished.');
             return;
         }
         player.removeTag(vanishedPlayerTagName);
@@ -105,7 +107,7 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString(mode === 'silent' ? 'command.vanish.message.off.silent' : 'command.vanish.message.off.notify'));
         logManager?.addLog({ adminName, actionType: 'vanishDisabled', details: `Mode: ${mode}` }, dependencies);
     }
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     if (rankManager?.updatePlayerNametag) {
         await rankManager.updatePlayerNametag(player, dependencies);

@@ -31,7 +31,7 @@ export async function execute(player, args, dependencies) {
         player.sendMessage(getString('command.tpa.systemDisabled'));
         return;
     }
-     if (!dependencies.commandSettings?.tpacancel?.enabled) {
+    if (!dependencies.commandSettings?.tpacancel?.enabled) {
         player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
         return;
     }
@@ -44,11 +44,13 @@ export async function execute(player, args, dependencies) {
         const otherPlayerOnline = playerUtils?.findPlayer(targetPlayerNameArg);
         if (otherPlayerOnline && otherPlayerOnline.isValid()) {
             requestToCancel = tpaManager?.findRequest(player.name, otherPlayerOnline.name);
-        } else {
+        }
+        else {
             requestToCancel = tpaManager?.findRequest(player.name, targetPlayerNameArg);
         }
         specificPlayerTargeted = true;
-    } else {
+    }
+    else {
         const allRequests = tpaManager?.findRequestsForPlayer(player.name) ?? [];
         const outgoing = allRequests.find(r => r.requesterName === player.name && (r.status === 'pendingAcceptance' || r.status === 'pendingTeleportWarmup'));
         const incoming = allRequests.find(r => r.targetName === player.name && r.status === 'pendingAcceptance');
@@ -58,14 +60,15 @@ export async function execute(player, args, dependencies) {
     if (!requestToCancel) {
         if (specificPlayerTargeted) {
             player.sendMessage(getString('command.tpacancel.specific.notFound', { playerName: targetPlayerNameArg }));
-        } else {
+        }
+        else {
             player.sendMessage(getString('command.tpacancel.all.noneFound'));
         }
         return;
     }
 
     const isDecline = requestToCancel.targetName === player.name && requestToCancel.status === 'pendingAcceptance';
-    const actionLogType = isDecline ? 'tpaRequestDeclinedByTarget' : 'tpaRequestCancelledByRequester';
+    // const actionLogType = isDecline ? 'tpaRequestDeclinedByTarget' : 'tpaRequestCancelledByRequester'; // Unused variable
 
     tpaManager?.declineRequest(requestToCancel.requestId, dependencies);
 
@@ -74,7 +77,7 @@ export async function execute(player, args, dependencies) {
     const otherPlayerDisplayName = otherPlayerOnlineForNameTag?.nameTag ?? otherPartyNameForMsg;
 
     player.sendMessage(getString('command.tpacancel.specific.success', { playerName: otherPlayerDisplayName }));
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     logManager?.addLog({
         adminName: issuerName,

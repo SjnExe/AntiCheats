@@ -70,7 +70,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
     if (!wbManager) {
-        player.sendMessage(getString('common.error.genericCommandError', { commandName: mainCommand, errorMessage: "World Border module unavailable."}));
+        player.sendMessage(getString('common.error.genericCommandError', { commandName: mainCommand, errorMessage: 'World Border module unavailable.' }));
         return;
     }
 
@@ -98,6 +98,7 @@ export async function execute(player, args, dependencies) {
     }
 
     let dimParseResult, dimensionId, dimensionName, borderSettings;
+    let success = false; // Initialize success flag
 
     try {
         switch (subCommand) {
@@ -113,13 +114,21 @@ export async function execute(player, args, dependencies) {
                 const size = parseFloat(subArgs[3]);
                 dimParseResult = parseDimensionArgument(subArgs[4], player, dependencies);
 
-                if (dimParseResult.error) { player.sendMessage(dimParseResult.error); return; }
+                if (dimParseResult.error) {
+                    player.sendMessage(dimParseResult.error); return;
+                }
                 dimensionId = dimParseResult.dimensionId;
                 dimensionName = dimParseResult.dimensionName;
 
-                if (shape !== 'square' && shape !== 'circle') { player.sendMessage(getString('command.worldborder.set.invalidShape')); return; }
-                if (isNaN(centerX) || isNaN(centerZ) || isNaN(size)) { player.sendMessage(getString('command.worldborder.set.invalidNumbers')); return; }
-                if (size <= 0) { player.sendMessage(getString('command.worldborder.set.sizePositive')); return; }
+                if (shape !== 'square' && shape !== 'circle') {
+                    player.sendMessage(getString('command.worldborder.set.invalidShape')); return;
+                }
+                if (isNaN(centerX) || isNaN(centerZ) || isNaN(size)) {
+                    player.sendMessage(getString('command.worldborder.set.invalidNumbers')); return;
+                }
+                if (size <= 0) {
+                    player.sendMessage(getString('command.worldborder.set.sizePositive')); return;
+                }
 
                 const newSettings = {
                     dimensionId: dimensionId,
@@ -130,11 +139,15 @@ export async function execute(player, args, dependencies) {
                     ...(wbManager.getBorderSettings(dimensionId, dependencies) || {}),
                     isResizing: false,
                 };
-                if (shape === 'square') newSettings.halfSize = size;
-                else newSettings.radius = size;
+                if (shape === 'square') {
+                    newSettings.halfSize = size;
+                }
+                else {
+                    newSettings.radius = size;
+                }
 
-                const saved = await wbManager.saveBorderSettings(dimensionId, newSettings, dependencies);
-                if (saved) {
+                success = await wbManager.saveBorderSettings(dimensionId, newSettings, dependencies); // Set success
+                if (success) {
                     let message = getString('command.worldborder.set.successHeader', { dimensionName: dimensionName }) + '\n';
                     const sizeDisplay = shape === 'square' ? `${size} (Diameter: ${size * 2})` : `${size}`;
                     message += getString('command.worldborder.set.successDetails', { shape: shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay: sizeDisplay }) + '\n';
@@ -142,18 +155,23 @@ export async function execute(player, args, dependencies) {
                         ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? 0.5).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? 20).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? 30).toString() })
                         : getString('command.worldborder.set.damage.off');
                     message += getString('command.worldborder.set.successDamage', { damageStatus: damageStatus });
-                    if (newSettings.wasResizing) message += '\n' + getString('command.worldborder.set.resizeCancelled');
+                    if (newSettings.wasResizing) {
+                        message += '\n' + getString('command.worldborder.set.resizeCancelled');
+                    }
 
                     player.sendMessage(message);
                     logManager?.addLog({ adminName, actionType: 'worldBorderSet', targetName: dimensionName, details: `Set to ${shape}, C:(${centerX},${centerZ}), Size:${size}` }, dependencies);
-                } else {
+                }
+                else {
                     player.sendMessage(getString('command.worldborder.set.failSave'));
                 }
                 break;
             }
             case 'get': {
                 dimParseResult = parseDimensionArgument(subArgs[0], player, dependencies);
-                if (dimParseResult.error) { player.sendMessage(dimParseResult.error); return; }
+                if (dimParseResult.error) {
+                    player.sendMessage(dimParseResult.error); return;
+                }
                 dimensionId = dimParseResult.dimensionId;
                 dimensionName = dimParseResult.dimensionName;
 
@@ -173,26 +191,35 @@ export async function execute(player, args, dependencies) {
                     const maxX = borderSettings.centerX + (borderSettings.halfSize ?? 0);
                     const minZ = borderSettings.centerZ - (borderSettings.halfSize ?? 0);
                     const maxZ = borderSettings.centerZ + (borderSettings.halfSize ?? 0);
-                    getMsg += getString('command.worldborder.get.square.bounds', {minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString()}) + '\n';
-                } else {
+                    getMsg += getString('command.worldborder.get.square.bounds', { minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString() }) + '\n';
+                }
+                else {
                     getMsg += getString('command.worldborder.get.circle.radius', { radius: (borderSettings.radius ?? 0).toString() }) + '\n';
                 }
                 player.sendMessage(getMsg.trim());
                 break;
             }
-             case 'toggle': {
-                if (subArgs.length < 1) { player.sendMessage(getString('command.worldborder.toggle.usage', { prefix: prefix })); return; }
+            case 'toggle': {
+                if (subArgs.length < 1) {
+                    player.sendMessage(getString('command.worldborder.toggle.usage', { prefix: prefix })); return;
+                }
                 const toggleState = subArgs[0].toLowerCase();
                 dimParseResult = parseDimensionArgument(subArgs[1], player, dependencies);
 
-                if (dimParseResult.error) { player.sendMessage(dimParseResult.error); return; }
+                if (dimParseResult.error) {
+                    player.sendMessage(dimParseResult.error); return;
+                }
                 dimensionId = dimParseResult.dimensionId;
                 dimensionName = dimParseResult.dimensionName;
 
-                if (toggleState !== 'on' && toggleState !== 'off') { player.sendMessage(getString('command.worldborder.toggle.invalidState')); return; }
+                if (toggleState !== 'on' && toggleState !== 'off') {
+                    player.sendMessage(getString('command.worldborder.toggle.invalidState')); return;
+                }
 
                 borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
-                if (!borderSettings) { player.sendMessage(getString('command.worldborder.toggle.noBorder', { dimensionName: dimensionName })); return; }
+                if (!borderSettings) {
+                    player.sendMessage(getString('command.worldborder.toggle.noBorder', { dimensionName: dimensionName })); return;
+                }
 
                 const newState = toggleState === 'on';
                 if (borderSettings.enabled === newState) {
@@ -206,34 +233,38 @@ export async function execute(player, args, dependencies) {
                     resizeCancelledMessage = ' ' + getString('command.worldborder.set.resizeCancelled');
                 }
 
-                const saved = await wbManager.saveBorderSettings(dimensionId, borderSettings, dependencies);
-                if (saved) {
+                success = await wbManager.saveBorderSettings(dimensionId, borderSettings, dependencies); // Set success
+                if (success) {
                     player.sendMessage(getString('command.worldborder.toggle.success', { dimensionName: dimensionName, state: toggleState, resizeCancelledMessage: resizeCancelledMessage }));
                     logManager?.addLog({ adminName, actionType: newState ? 'worldBorderEnabled' : 'worldBorderDisabled', targetName: dimensionName, details: `Border ${toggleState}` }, dependencies);
-                } else {
+                }
+                else {
                     player.sendMessage(getString('command.worldborder.toggle.fail'));
                 }
                 break;
             }
             case 'remove': {
-                const confirmArg = subArgs[subArgs.length -1]?.toLowerCase();
+                const confirmArg = subArgs[subArgs.length - 1]?.toLowerCase();
                 const dimArgIndex = subArgs.length > 1 ? 0 : -1;
                 dimParseResult = parseDimensionArgument(dimArgIndex !== -1 ? subArgs[dimArgIndex] : undefined, player, dependencies);
 
-                if (dimParseResult.error) { player.sendMessage(dimParseResult.error); return; }
+                if (dimParseResult.error) {
+                    player.sendMessage(dimParseResult.error); return;
+                }
                 dimensionId = dimParseResult.dimensionId;
                 dimensionName = dimParseResult.dimensionName;
 
                 if (confirmArg !== 'confirm') {
-                    const dimDisplay = dimensionId === player.dimension.id ? getString('command.worldborder.remove.confirmNeeded.currentDimension', {dimensionName: dimensionName}) : dimensionName;
+                    const dimDisplay = dimensionId === player.dimension.id ? getString('command.worldborder.remove.confirmNeeded.currentDimension', { dimensionName: dimensionName }) : dimensionName;
                     player.sendMessage(getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimDisplay, confirmCommand: `${prefix}wb remove ${dimensionId === player.dimension.id ? '' : dimensionName + ' '}confirm` }));
                     return;
                 }
-                const removed = await wbManager.clearBorderSettings(dimensionId, dependencies);
-                if (removed) {
-                    player.sendMessage(getString('command.worldborder.remove.success', { dimensionName: dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.'}));
+                success = await wbManager.clearBorderSettings(dimensionId, dependencies); // Set success
+                if (success) {
+                    player.sendMessage(getString('command.worldborder.remove.success', { dimensionName: dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.' }));
                     logManager?.addLog({ adminName, actionType: 'worldBorderRemoved', targetName: dimensionName, details: 'Border removed' }, dependencies);
-                } else {
+                }
+                else {
                     player.sendMessage(getString('command.worldborder.remove.fail', { dimensionName: dimensionName }));
                 }
                 break;
@@ -243,15 +274,17 @@ export async function execute(player, args, dependencies) {
                 break;
         }
         if (success || ['get', 'status', 'help'].includes(subCommand)) {
-             playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-        } else if (!['get', 'status', 'help'].includes(subCommand)) {
-             playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+        }
+        else if (!['get', 'status', 'help'].includes(subCommand)) {
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         }
 
-    } catch (error) {
+    }
+    catch (error) {
         player.sendMessage(getString('common.error.genericCommandError', { commandName: `${mainCommand} ${subCommand}`, errorMessage: error.message }));
         console.error(`[WorldBorderCommand CRITICAL] Error for ${adminName} command '${mainCommand} ${subCommand}': ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorWorldBorderCommand',

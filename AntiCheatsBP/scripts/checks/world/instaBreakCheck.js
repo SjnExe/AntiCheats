@@ -51,7 +51,8 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
 
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): ${player.nameTag} attempt to break '${blockTypeId}' cancelled.`, watchedPrefix, dependencies);
-        } else {
+        }
+        else {
             const watchedPrefix = pData.isWatched ? player.nameTag : null;
             playerUtils.debugLog(`[InstaBreakCheck](Unbreakable): Creative player ${player.nameTag} broke normally unbreakable block '${blockTypeId}'. Allowed.`, watchedPrefix, dependencies);
         }
@@ -98,14 +99,15 @@ export async function checkBreakSpeed(player, pData, eventData, dependencies) {
                 `[InstaBreakCheck](Speed Eval): Player ${player.nameTag} broke ${blockTypeId}. ` +
                 `Actual: ${actualDurationTicks}t, Expected: ${expectedTicks === Infinity ? 'Inf' : expectedTicks}t, Tolerance: ${tolerance}t, ` +
                 `Tool: ${pData.toolUsedForBreakAttempt ?? 'unknown'}`,
-                pData.isWatched ? player.nameTag : null, dependencies
+                pData.isWatched ? player.nameTag : null, dependencies,
             );
         }
 
         let flagged = false;
         if (expectedTicks === Infinity && actualDurationTicks < 1000) {
             flagged = true;
-        } else if (expectedTicks > 0 && expectedTicks !== Infinity && actualDurationTicks < (expectedTicks - tolerance)) {
+        }
+        else if (expectedTicks > 0 && expectedTicks !== Infinity && actualDurationTicks < (expectedTicks - tolerance)) {
             flagged = true;
         }
 

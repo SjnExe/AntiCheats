@@ -42,7 +42,7 @@ export async function execute(player, args, dependencies) {
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);
     if (!pData) {
-        player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }) + " (No data)");
+        player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }) + ' (No data)');
         playerUtils?.debugLog(`[UnmuteCommand] No pData found for online player ${targetPlayer.nameTag}. Cannot verify mute status or unmute.`, adminName, dependencies);
         return;
     }
@@ -62,7 +62,7 @@ export async function execute(player, args, dependencies) {
     if (unmuted) {
         targetPlayer.sendMessage(getString('command.unmute.targetNotification'));
         player.sendMessage(getString('command.unmute.success', { playerName: targetPlayer.nameTag }));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
             adminName: adminName,
@@ -80,8 +80,9 @@ export async function execute(player, args, dependencies) {
             playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
 
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }
 }

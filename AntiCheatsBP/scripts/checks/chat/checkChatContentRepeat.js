@@ -65,7 +65,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         if (rawMessageContent.trim().length > 0) {
             pData.chatMessageHistory ??= [];
             pData.chatMessageHistory.push(normalizedMessage);
-             while (pData.chatMessageHistory.length > historyLength) {
+            while (pData.chatMessageHistory.length > historyLength) {
                 pData.chatMessageHistory.shift();
             }
             pData.isDirtyForSave = true;
@@ -101,7 +101,7 @@ export async function checkChatContentRepeat(player, eventData, pData, dependenc
         playerUtils?.debugLog(
             `[ChatContentRepeatCheck] Flagged ${playerName} for repeating '${normalizedMessage.substring(0, 20)}...'. ` +
             `Count: ${matchCount + 1} in last ${pData.chatMessageHistory.length} (lookback: ${historyLength}, threshold: ${triggerThreshold}).`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
 
         const profile = dependencies.checkActionProfiles?.[actionProfileKey];

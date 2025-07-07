@@ -62,16 +62,17 @@ export async function execute(player, args, dependencies) {
 
     if (newAcceptsTpa === currentStatus?.acceptsTpaRequests) {
         const alreadyMsgKey = newAcceptsTpa ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
-        player.sendMessage(getString(alreadyMsgKey) + " (No change made)");
+        player.sendMessage(getString(alreadyMsgKey) + ' (No change made)');
         return;
     }
 
     tpaManager?.setPlayerTpaStatus(playerSystemName, newAcceptsTpa, dependencies);
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     if (newAcceptsTpa) {
         player.sendMessage(getString('command.tpastatus.on'));
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.tpastatus.off'));
         const incomingRequests = (tpaManager?.findRequestsForPlayer(playerSystemName) ?? [])
             .filter(r => r.targetName === playerSystemName && r.status === 'pendingAcceptance');

@@ -44,7 +44,8 @@ export async function execute(player, args, dependencies) {
     let currentPreference;
     if (typeof pData.xrayNotificationsEnabled === 'boolean') {
         currentPreference = pData.xrayNotificationsEnabled;
-    } else {
+    }
+    else {
         currentPreference = config?.xrayDetectionAdminNotifyByDefault ?? true;
     }
 
@@ -68,14 +69,15 @@ export async function execute(player, args, dependencies) {
             let statusKey;
             if (typeof pData.xrayNotificationsEnabled === 'boolean') {
                 statusKey = currentPreference ? 'command.xraynotify.status.onExplicit' : 'command.xraynotify.status.offExplicit';
-            } else {
+            }
+            else {
                 statusKey = currentPreference ? 'command.xraynotify.status.onDefault' : 'command.xraynotify.status.offDefault';
             }
             player.sendMessage(getString(statusKey));
             logManager?.addLog({
                 adminName: adminName,
                 actionType: 'xrayNotifyStatusChecked',
-                details: `Checked own X-Ray notification status: ${getString(statusKey)}`
+                details: `Checked own X-Ray notification status: ${getString(statusKey)}`,
             }, dependencies);
             return;
         default:
@@ -88,7 +90,7 @@ export async function execute(player, args, dependencies) {
         pData.isDirtyForSave = true;
 
         player.sendMessage(getString(responseMessageKey));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         const logMessageAction = newPreference ? 'enabled' : 'disabled';
         const logActionType = newPreference ? 'xrayNotifyEnabledUser' : 'xrayNotifyDisabledUser';
@@ -96,13 +98,14 @@ export async function execute(player, args, dependencies) {
         logManager?.addLog({
             adminName: adminName,
             actionType: logActionType,
-            details: `X-Ray notifications ${logMessageAction}`
+            details: `X-Ray notifications ${logMessageAction}`,
         }, dependencies);
 
-    } catch (error) {
+    }
+    catch (error) {
         player.sendMessage(getString('command.xraynotify.error.update'));
         console.error(`[XrayNotifyCommand CRITICAL] Error setting X-Ray notification preference for ${adminName}: ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorXrayNotifyCommand',

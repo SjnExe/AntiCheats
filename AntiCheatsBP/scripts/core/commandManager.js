@@ -55,16 +55,19 @@ export function initializeCommands(dependencies) {
                     if (commandDefinitionMap.has(aliasLower)) {
                         // Conflict: Alias is the same as another main command name
                         playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' conflicts with an existing main command name. Alias NOT registered.`, null, dependencies);
-                    } else if (dependencies.aliasToCommandMap.has(aliasLower)) {
+                    }
+                    else if (dependencies.aliasToCommandMap.has(aliasLower)) {
                         // Conflict: Alias is already registered for another command
                         const existingCmd = dependencies.aliasToCommandMap.get(aliasLower);
                         playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' is already an alias for command '${existingCmd}'. Alias NOT registered for '${cmdNameLower}'.`, null, dependencies);
-                    } else {
+                    }
+                    else {
                         dependencies.aliasToCommandMap.set(aliasLower, cmdNameLower);
                     }
                 });
             }
-        } else {
+        }
+        else {
             playerUtils?.debugLog(`[CommandManager.initializeCommands WARNING] Invalid command module structure encountered. Module: ${JSON.stringify(cmdModule)}`, null, dependencies);
         }
     }
@@ -112,7 +115,8 @@ export function unregisterCommandInternal(commandName, dependencies) {
     };
     try {
         initializeCommands(initialLoadDeps);
-    } catch (e) {
+    }
+    catch (e) {
         console.error(`[CommandManagerInitialLoad CRITICAL] Error during initial command loading: ${e.stack || e}`);
     }
 })();
@@ -207,7 +211,8 @@ export async function handleChatCommand(eventData, dependencies) {
         await commandExecute(player, args, dependencies);
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Successfully executed '${finalCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-    } catch (error) {
+    }
+    catch (error) {
         player?.sendMessage(getString('command.error.executionFailed', { commandName: finalCommandName }));
         const errorMessage = error?.message || String(error);
         const errorStack = error?.stack || 'N/A';

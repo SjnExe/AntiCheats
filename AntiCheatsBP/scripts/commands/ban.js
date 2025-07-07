@@ -30,7 +30,7 @@ export async function execute(
     dependencies,
     invokedBy = 'PlayerCommand',
     isAutoModAction = false,
-    autoModCheckType = null
+    autoModCheckType = null,
 ) {
     const { config, playerUtils, playerDataManager, logManager, rankManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
@@ -44,7 +44,8 @@ export async function execute(
         const usageMessage = getString('command.ban.usage', { prefix: prefix });
         if (player) {
             player.sendMessage(usageMessage);
-        } else {
+        }
+        else {
             console.warn(`[BanCommand.execute] System call missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
             playerUtils?.debugLog('[BanCommand.execute] System call missing target player name.', null, dependencies);
         }
@@ -62,7 +63,7 @@ export async function execute(
     const targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'ban' });
     if (!targetOnlinePlayer) {
         if (!player) {
-             console.warn(`[BanCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
+            console.warn(`[BanCommand.execute] System call: Target player '${targetPlayerName}' not found or invalid.`);
         }
         return;
     }
@@ -80,7 +81,8 @@ export async function execute(
         const message = getString('command.ban.invalidDuration');
         if (player) {
             player.sendMessage(message);
-        } else {
+        }
+        else {
             console.warn(`[BanCommand.execute] Invalid duration '${durationString}' (Invoked by ${issuerName}).`);
         }
         return;
@@ -95,7 +97,7 @@ export async function execute(
         bannedByForRecord,
         isAutoModAction,
         autoModCheckType,
-        dependencies
+        dependencies,
     );
 
     if (banAdded) {
@@ -119,15 +121,17 @@ export async function execute(
 
         try {
             targetOnlinePlayer.kick(kickMessage);
-        } catch (e) {
+        }
+        catch (e) {
             playerUtils?.debugLog(`[BanCommand.execute WARNING] Failed to kick ${targetOnlinePlayer.nameTag} after ban (may have disconnected): ${e.message}`, issuerName, dependencies);
         }
 
         const successMessage = getString('command.ban.success', { playerName: targetOnlinePlayer.nameTag, durationString: durationDisplay, reason: actualReason });
         if (player) {
             player.sendMessage(successMessage);
-            playerUtils.playSoundForEvent(player, "commandSuccess", dependencies);
-        } else {
+            playerUtils.playSoundForEvent(player, 'commandSuccess', dependencies);
+        }
+        else {
             console.log(`[BanCommand.execute] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
         }
 
@@ -148,12 +152,14 @@ export async function execute(
             checkType: autoModCheckType,
         }, dependencies);
 
-    } else {
+    }
+    else {
         const failureMessage = getString('command.ban.failure', { playerName: targetOnlinePlayer.nameTag });
         if (player) {
             player.sendMessage(failureMessage);
-            playerUtils.playSoundForEvent(player, "commandError", dependencies);
-        } else {
+            playerUtils.playSoundForEvent(player, 'commandError', dependencies);
+        }
+        else {
             console.warn(`[BanCommand.execute] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${issuerName})`);
         }
     }

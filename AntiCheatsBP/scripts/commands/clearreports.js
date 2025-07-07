@@ -44,8 +44,9 @@ export async function execute(player, args, dependencies) {
             details: `Cleared ${clearedCount} reports.`,
             context: 'ClearReportsCommand.execute.all',
         }, dependencies);
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-    } else if (subCommandOrTarget.includes('-') && subCommandOrTarget.length > 10) {
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+    }
+    else if (subCommandOrTarget.includes('-') && subCommandOrTarget.length > 10) {
         const reportId = subCommandOrTarget;
         const success = clearReportById(reportId, dependencies);
         if (success) {
@@ -56,12 +57,14 @@ export async function execute(player, args, dependencies) {
                 details: `Cleared report ID: ${reportId}.`,
                 context: 'ClearReportsCommand.execute.byId',
             }, dependencies);
-            playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-        } else {
-            playerUtils?.sendMessage(player, getString('command.clearreports.idNotFound', { reportId: reportId }));
-            playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         }
-    } else {
+        else {
+            playerUtils?.sendMessage(player, getString('command.clearreports.idNotFound', { reportId: reportId }));
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+        }
+    }
+    else {
         const targetPlayerName = subCommandOrTarget;
         const clearedCount = clearReportsForPlayer(targetPlayerName, dependencies);
         if (clearedCount > 0) {
@@ -73,8 +76,9 @@ export async function execute(player, args, dependencies) {
                 details: `Cleared ${clearedCount} reports for player.`,
                 context: 'ClearReportsCommand.execute.forPlayer',
             }, dependencies);
-            playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-        } else {
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+        }
+        else {
             playerUtils?.sendMessage(player, getString('command.clearreports.playerNotFound', { playerName: targetPlayerName }));
         }
     }

@@ -34,6 +34,8 @@ export async function checkNoSlow(player, pData, dependencies) {
         return;
     }
 
+    const watchedPlayerName = pData.isWatched ? playerName : null; // Define watchedPlayerName at a higher scope
+
     const velocity = pData.velocity ?? player.getVelocity();
     const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * 20;
 
@@ -43,13 +45,16 @@ export async function checkNoSlow(player, pData, dependencies) {
     if (pData.isUsingConsumable) {
         resolvedSlowingActionString = 'Eating/Drinking';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedEating ?? 1.0;
-    } else if (pData.isChargingBow) {
+    }
+    else if (pData.isChargingBow) {
         resolvedSlowingActionString = 'Charging Bow';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedChargingBow ?? 1.0;
-    } else if (pData.isUsingShield) {
+    }
+    else if (pData.isUsingShield) {
         resolvedSlowingActionString = 'Using Shield';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedUsingShield ?? 4.4;
-    } else if (player.isSneaking) {
+    }
+    else if (player.isSneaking) {
         resolvedSlowingActionString = 'Sneaking';
         maxAllowedBaseSpeedBPS = config?.noSlowMaxSpeedSneaking ?? 1.5;
     }
@@ -62,12 +67,13 @@ export async function checkNoSlow(player, pData, dependencies) {
             const speedEffectMultiplier = 1 + ((speedAmplifier + 1) * (config?.noSlowSpeedEffectMultiplierPerLevel ?? 0.20));
             effectiveMaxAllowedSpeedBPS *= speedEffectMultiplier;
             effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowSpeedEffectTolerancePercent ?? 0.10));
-        } else {
+        }
+        else {
             effectiveMaxAllowedSpeedBPS *= (1 + (config?.noSlowGeneralTolerancePercent ?? 0.05));
         }
 
         if (horizontalSpeedBPS > effectiveMaxAllowedSpeedBPS) {
-            const watchedPlayerName = pData.isWatched ? playerName : null;
+            // watchedPlayerName is now defined in the outer scope
             const violationDetails = {
                 action: resolvedSlowingActionString,
                 speed: horizontalSpeedBPS.toFixed(2),
@@ -85,12 +91,13 @@ export async function checkNoSlow(player, pData, dependencies) {
 
             playerUtils?.debugLog(
                 `[NoSlowCheck] Flagged ${playerName}. Action: ${resolvedSlowingActionString}, Speed: ${horizontalSpeedBPS.toFixed(2)}bps, EffectiveMax: ${effectiveMaxAllowedSpeedBPS.toFixed(2)}bps (BaseMax: ${maxAllowedBaseSpeedBPS.toFixed(2)})`,
-                watchedPlayerName, dependencies
+                watchedPlayerName, dependencies,
             );
-        } else if (pData.isWatched && config?.enableDebugLogging) {
-             playerUtils?.debugLog(
+        }
+        else if (pData.isWatched && config?.enableDebugLogging) {
+            playerUtils?.debugLog(
                 `[NoSlowCheck] ${playerName} valid speed. Action: ${resolvedSlowingActionString}, Speed: ${horizontalSpeedBPS.toFixed(2)}bps, EffectiveMax: ${effectiveMaxAllowedSpeedBPS.toFixed(2)}bps`,
-                watchedPlayerName, dependencies
+                watchedPlayerName, dependencies,
             );
         }
     }

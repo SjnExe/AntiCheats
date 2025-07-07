@@ -32,7 +32,7 @@ export async function execute(player, args, dependencies) {
         const notifiedCount = playerUtils?.notifyAdmins(messageToSend, dependencies, player, null);
 
         player.sendMessage(getString('command.testnotify.success'));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
             adminName: adminName,
@@ -40,10 +40,11 @@ export async function execute(player, args, dependencies) {
             details: `Sent test notification: "${messageToSend}". Notified count (approx): ${notifiedCount ?? 'N/A'}`,
         }, dependencies);
 
-    } catch (error) {
+    }
+    catch (error) {
         player.sendMessage(getString('command.testnotify.error'));
         console.error(`[TestNotifyCommand CRITICAL] Error sending test notification from ${adminName}: ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorTestNotification',

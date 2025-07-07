@@ -58,7 +58,7 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
         const watchedPlayerName = pData.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[InventoryModCheck.SwitchUse] Flagged ${playerName} for using ${itemStack.typeId} in same tick as slot change (Tick: ${currentTick}).`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
     }
 }
@@ -95,7 +95,8 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     let lockingActionKey = null;
     if (pData.isUsingConsumable) {
         lockingActionKey = 'usingConsumable';
-    } else if (pData.isChargingBow) {
+    }
+    else if (pData.isChargingBow) {
         lockingActionKey = 'chargingBow';
     }
 
@@ -123,7 +124,7 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
         const watchedPlayerName = pData.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[InventoryModCheck.MoveLocked] Flagged ${playerName} for inventory item change (Slot: ${slotIdentifier}, Item: ${changedItemType}) while ${lockingActionKey}.`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
     }
 }

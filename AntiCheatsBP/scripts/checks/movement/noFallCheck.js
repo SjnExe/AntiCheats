@@ -47,12 +47,24 @@ export async function checkNoFall(player, pData, dependencies) {
     ) {
         if (config?.enableDebugLogging && pData.isWatched) {
             const exemptReasons = [];
-            if (player.isFlying) exemptReasons.push('Flying');
-            if (player.isGliding) exemptReasons.push('Gliding');
-            if (player.isInWater) exemptReasons.push('InWater');
-            if (player.isClimbing) exemptReasons.push('Climbing');
-            if (pData.hasSlowFalling) exemptReasons.push('SlowFallingEffect');
-            if (player.hasComponent(mc.EntityComponentTypes.Rider)) exemptReasons.push('RidingEntity');
+            if (player.isFlying) {
+                exemptReasons.push('Flying');
+            }
+            if (player.isGliding) {
+                exemptReasons.push('Gliding');
+            }
+            if (player.isInWater) {
+                exemptReasons.push('InWater');
+            }
+            if (player.isClimbing) {
+                exemptReasons.push('Climbing');
+            }
+            if (pData.hasSlowFalling) {
+                exemptReasons.push('SlowFallingEffect');
+            }
+            if (player.hasComponent(mc.EntityComponentTypes.Rider)) {
+                exemptReasons.push('RidingEntity');
+            }
             playerUtils?.debugLog(`[NoFallCheck] ${playerName} in exempt state: ${exemptReasons.join(', ')}. FallDistance reset.`, watchedPlayerName, dependencies);
         }
         if (pData.fallDistance > 0) {
@@ -68,7 +80,9 @@ export async function checkNoFall(player, pData, dependencies) {
             if (pData.isWatched) {
                 playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently on slime block (LastSlimeTick: ${pData.lastOnSlimeBlockTick}, CurrentTick: ${currentTick}). Fall damage check modified/bypassed. FallDistance reset.`, watchedPlayerName, dependencies);
             }
-            if (pData.fallDistance > 0) { pData.fallDistance = 0; pData.isDirtyForSave = true; }
+            if (pData.fallDistance > 0) {
+                pData.fallDistance = 0; pData.isDirtyForSave = true;
+            }
             return;
         }
 
@@ -80,14 +94,17 @@ export async function checkNoFall(player, pData, dependencies) {
                 if (pData.isWatched) {
                     playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} landed on a configured fall damage mitigating block: ${blockBelow.typeId}. Check bypassed/modified. FallDistance reset.`, watchedPlayerName, dependencies);
                 }
-                if (pData.fallDistance > 0) { pData.fallDistance = 0; pData.isDirtyForSave = true; }
+                if (pData.fallDistance > 0) {
+                    pData.fallDistance = 0; pData.isDirtyForSave = true;
+                }
                 return;
             }
-        } catch (e) {
+        }
+        catch (e) {
             playerUtils?.debugLog(`[NoFallCheck WARNING] Error checking block below player ${playerName}: ${e.message}`, watchedPlayerName, dependencies);
             logManager?.addLog({
                 actionType: 'errorNoFallCheckBlockBelow', context: 'NoFallCheck.getBlockBelow',
-                targetName: playerName, details: { error: e.message }, errorStack: e.stack
+                targetName: playerName, details: { error: e.message }, errorStack: e.stack,
             }, dependencies);
         }
 
@@ -95,7 +112,7 @@ export async function checkNoFall(player, pData, dependencies) {
             playerUtils?.debugLog(
                 `[NoFallCheck] ${playerName} landed. FallDistance=${pData.fallDistance.toFixed(2)}, ` +
                 `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.previousVelocity?.y?.toFixed(3) ?? 'N/A'}`,
-                watchedPlayerName, dependencies
+                watchedPlayerName, dependencies,
             );
         }
 
@@ -105,16 +122,20 @@ export async function checkNoFall(player, pData, dependencies) {
             let currentHealth = 'N/A';
             try {
                 const healthComponent = player.getComponent(mc.EntityComponentTypes.Health);
-                if (healthComponent) currentHealth = healthComponent.currentValue.toString();
-            } catch (e) { }
+                if (healthComponent) {
+                    currentHealth = healthComponent.currentValue.toString();
+                }
+            }
+            catch (_e) { }
 
             let activeEffectsString = 'none';
             try {
                 const effects = player.getEffects();
                 if (effects.length > 0) {
-                    activeEffectsString = effects.map(e => `${e.typeId.replace('minecraft:', '')}(${e.amplifier})`).join(', ') || 'none';
+                    activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
                 }
-            } catch (e) { }
+            }
+            catch (_e) { }
 
             const violationDetails = {
                 fallDistance: pData.fallDistance.toFixed(2),

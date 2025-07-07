@@ -67,7 +67,9 @@ function isValidColorCode(colorCode) {
  * @returns {boolean} True if it appears to be camelCase.
  */
 function isValidCamelCase(str) {
-    if (!isString(str) || str.length === 0) return false;
+    if (!isString(str) || str.length === 0) {
+        return false;
+    }
     return /^[a-z]+([A-Z][a-z0-9]*)*$/.test(str);
 }
 
@@ -97,7 +99,9 @@ function isNonNegativeNumber(num) {
  * @returns {boolean} True if it's a valid duration string format.
  */
 function isValidDurationString(durationStr) {
-    if (!isString(durationStr)) return false;
+    if (!isString(durationStr)) {
+        return false;
+    }
     return /^\d+[smhd]$/.test(durationStr) || /^\d+$/.test(durationStr); // simple check, assumes number only is seconds
 }
 
@@ -131,20 +135,42 @@ function ensureFields(obj, fieldDefs, context, errors) {
             let typeMatch = false;
             for (const type of expectedTypes) {
                 switch (type) {
-                    case 'string': if (isString(value)) typeMatch = true; break;
-                    case 'number': if (isNumber(value)) typeMatch = true; break;
-                    case 'boolean': if (isBoolean(value)) typeMatch = true; break;
-                    case 'array': if (isArray(value)) typeMatch = true; break;
-                    case 'object': if (isObject(value)) typeMatch = true; break;
-                    case 'positiveNumber': if (isPositiveNumber(value)) typeMatch = true; break;
-                    case 'nonNegativeNumber': if (isNonNegativeNumber(value)) typeMatch = true; break;
-                    case 'durationString': if (isValidDurationString(value)) typeMatch = true; break;
-                    case 'colorCode': if (isValidColorCode(value)) typeMatch = true; break;
-                    case 'camelCaseString': if (isValidCamelCase(value)) typeMatch = true; break;
+                    case 'string': if (isString(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'number': if (isNumber(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'boolean': if (isBoolean(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'array': if (isArray(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'object': if (isObject(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'positiveNumber': if (isPositiveNumber(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'nonNegativeNumber': if (isNonNegativeNumber(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'durationString': if (isValidDurationString(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'colorCode': if (isValidColorCode(value)) {
+                        typeMatch = true;
+                    } break;
+                    case 'camelCaseString': if (isValidCamelCase(value)) {
+                        typeMatch = true;
+                    } break;
                     // Allow 'any' type for fields that don't need strict type validation or are complex
                     case 'any': typeMatch = true; break;
                 }
-                if (typeMatch) break;
+                if (typeMatch) {
+                    break;
+                }
             }
             if (!typeMatch) {
                 errors.push(`${fieldPath}: Invalid type. Expected ${expectedTypes.join(' or ')}, but got ${typeof value}.`);
@@ -164,14 +190,21 @@ function ensureFields(obj, fieldDefs, context, errors) {
                 const elementPath = `${fieldPath}[${index}]`;
                 let elementMatch = false;
                 switch (field.arrayElementType) {
-                    case 'string': if (isString(element)) elementMatch = true; break;
-                    case 'number': if (isNumber(element)) elementMatch = true; break;
-                    case 'object': if (isObject(element)) elementMatch = true; break;
+                    case 'string': if (isString(element)) {
+                        elementMatch = true;
+                    } break;
+                    case 'number': if (isNumber(element)) {
+                        elementMatch = true;
+                    } break;
+                    case 'object': if (isObject(element)) {
+                        elementMatch = true;
+                    } break;
                     // Add more types as needed
                 }
                 if (!elementMatch) {
                     errors.push(`${elementPath}: Invalid array element type. Expected ${field.arrayElementType}, but got ${typeof element}.`);
-                } else if (field.arrayElementType === 'object' && field.objectProperties) {
+                }
+                else if (field.arrayElementType === 'object' && field.objectProperties) {
                     // If elements are objects, validate their properties
                     ensureFields(element, field.objectProperties, elementPath, errors);
                 }
@@ -180,7 +213,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
 
         // Object properties validation (for nested objects)
         if (field.type === 'object' && field.objectProperties && isObject(value)) {
-             ensureFields(value, field.objectProperties, fieldPath, errors);
+            ensureFields(value, field.objectProperties, fieldPath, errors);
         }
     });
 }
@@ -198,7 +231,7 @@ function ensureFields(obj, fieldDefs, context, errors) {
  */
 export function validateMainConfig(config, actionProfiles, knownCommands, commandAliasesMap) {
     const errors = [];
-    const context = "config.defaultConfigSettings";
+    const context = 'config.defaultConfigSettings';
 
     if (!isObject(config)) {
         errors.push(`${context}: Expected an object, but got ${typeof config}.`);
@@ -242,9 +275,9 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'discordLink', type: 'string' },
         { name: 'websiteLink', type: 'string' },
         { name: 'helpLinks', type: 'array', arrayElementType: 'object', objectProperties: [
-            { name: 'title', type: 'string'},
-            { name: 'url', type: 'string'}
-        ]},
+            { name: 'title', type: 'string' },
+            { name: 'url', type: 'string' },
+        ] },
         { name: 'generalHelpMessages', type: 'array', arrayElementType: 'string' },
 
         // Logging
@@ -255,79 +288,112 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'swearWordList', type: 'array', arrayElementType: 'string' },
         { name: 'swearCheckMuteDuration', type: 'durationString' },
         { name: 'swearCheckActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'enableAntiAdvertisingCheck', type: 'boolean' },
         { name: 'antiAdvertisingPatterns', type: 'array', arrayElementType: 'string' },
         { name: 'antiAdvertisingActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'enableAdvancedLinkDetection', type: 'boolean' },
         { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string', validator: (val, path, errs) => {
             val.forEach((regex, index) => {
-                try { new RegExp(regex); } catch (e) { errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`); }
+                try {
+                    new RegExp(regex);
+                }
+                catch (e) {
+                    errs.push(`${path}[${index}]: Invalid regex pattern "${regex}": ${e.message}`);
+                }
             });
             return true; // Validator pushes errors directly
-        }},
+        } },
         { name: 'advertisingWhitelistPatterns', type: 'array', arrayElementType: 'string' }, // Could also be regex
         { name: 'enableCapsCheck', type: 'boolean' },
         { name: 'capsCheckMinLength', type: 'nonNegativeNumber' },
         { name: 'capsCheckUpperCasePercentage', type: 'number', validator: (val, path, errs) => {
-            if (val < 0 || val > 100) errs.push(`${path}: Must be between 0 and 100. Got ${val}.`);
+            if (val < 0 || val > 100) {
+                errs.push(`${path}: Must be between 0 and 100. Got ${val}.`);
+            }
             return val >= 0 && val <= 100;
-        }},
+        } },
         { name: 'capsCheckActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         // ... (add more chat check fields)
         { name: 'charRepeatActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'symbolSpamActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'fastMessageSpamActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'maxWordsSpamActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
-         { name: 'chatContentRepeatActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+        } },
+        { name: 'chatContentRepeatActionProfileName', type: 'string', validator: (val, path, errs) => {
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'unicodeAbuseActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'gibberishActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'mentionsActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
         { name: 'impersonationActionProfileName', type: 'string', validator: (val, path, errs) => {
-            if (!actionProfileNames.includes(val)) errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            if (!actionProfileNames.includes(val)) {
+                errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
+            }
             return actionProfileNames.includes(val);
-        }},
+        } },
 
 
         // AntiGrief
         { name: 'enableTntAntiGrief', type: 'boolean' },
         { name: 'tntPlacementAction', type: 'string', validator: (val, path, errs) => {
             const valid = ['remove', 'warn', 'flag_only'];
-            if (!valid.includes(val)) errs.push(`${path}: Invalid action. Expected one of ${valid.join(', ')}. Got ${val}.`);
+            if (!valid.includes(val)) {
+                errs.push(`${path}: Invalid action. Expected one of ${valid.join(', ')}. Got ${val}.`);
+            }
             return valid.includes(val);
-        }},
+        } },
         // ... (add more AntiGrief fields)
 
         // Sound Events
@@ -337,28 +403,28 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 const eventPath = `${sePath}.${eventName}`;
                 const eventDef = soundEventsObj[eventName];
                 const soundFieldDefs = [
-                    { name: 'enabled', type: 'boolean'},
-                    { name: 'soundId', type: 'string', optional: true}, // Can be empty for no sound
-                    { name: 'volume', type: 'number', optional: true},
-                    { name: 'pitch', type: 'number', optional: true},
+                    { name: 'enabled', type: 'boolean' },
+                    { name: 'soundId', type: 'string', optional: true }, // Can be empty for no sound
+                    { name: 'volume', type: 'number', optional: true },
+                    { name: 'pitch', type: 'number', optional: true },
                     { name: 'target', type: 'string', optional: true, validator: (val, p, e) => {
                         const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
                         if (val && !validTargets.includes(val)) {
-                             e.push(`${p}: Invalid sound event target "${val}". Expected one of ${validTargets.join(', ')}.`);
-                             allValid = false;
+                            e.push(`${p}: Invalid sound event target "${val}". Expected one of ${validTargets.join(', ')}.`);
+                            allValid = false;
                         }
                         return true; // Validator pushes error
-                    }},
-                    { name: 'description', type: 'string'}
+                    } },
+                    { name: 'description', type: 'string' },
                 ];
                 ensureFields(eventDef, soundFieldDefs, eventPath, seErrs);
                 if (eventDef.volume !== undefined && (eventDef.volume < 0 || eventDef.volume > 1.0) && isNumber(eventDef.volume)) {
-                     seErrs.push(`${eventPath}.volume: Must be between 0.0 and 1.0. Got ${eventDef.volume}.`);
-                     allValid = false;
+                    seErrs.push(`${eventPath}.volume: Must be between 0.0 and 1.0. Got ${eventDef.volume}.`);
+                    allValid = false;
                 }
             }
             return allValid;
-        }},
+        } },
 
         // Command Settings
         { name: 'commandSettings', type: 'object', validator: (cmdSettingsObj, csPath, csErrs) => {
@@ -369,11 +435,11 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                     allValid = false;
                 }
                 const cmdDef = cmdSettingsObj[cmdName];
-                const cmdFieldDefs = [{ name: 'enabled', type: 'boolean'}];
+                const cmdFieldDefs = [{ name: 'enabled', type: 'boolean' }];
                 ensureFields(cmdDef, cmdFieldDefs, `${csPath}.${cmdName}`, csErrs);
             }
             return allValid;
-        }},
+        } },
         { name: 'chatClearLinesCount', type: 'positiveNumber' },
         { name: 'reportsViewPerPage', type: 'positiveNumber' },
 
@@ -412,18 +478,21 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
     // This needs to be passed in if `commandAliases` is exported directly and not part of the `defaultConfigSettings` object.
     if (commandAliasesMap) {
         if (isObject(commandAliasesMap)) {
-            const aliasContext = "config.commandAliases"; // Keep context string consistent with file structure
+            const aliasContext = 'config.commandAliases'; // Keep context string consistent with file structure
             for (const alias in commandAliasesMap) {
                 const originalCommand = commandAliasesMap[alias];
                 if (!isString(originalCommand)) {
                     errors.push(`${aliasContext}.${alias}: Original command name for alias must be a string. Got ${typeof originalCommand}.`);
-                } else if (knownCommands && !knownCommands.includes(originalCommand)) { // Check knownCommands exists
+                }
+                else if (knownCommands && !knownCommands.includes(originalCommand)) { // Check knownCommands exists
                     errors.push(`${aliasContext}.${alias}: Alias maps to unknown command "${originalCommand}".`);
-                } else if (!knownCommands) {
+                }
+                else if (!knownCommands) {
                     errors.push(`${aliasContext}.${alias}: Cannot validate alias target command "${originalCommand}" as knownCommands list was not provided.`);
                 }
             }
-        } else {
+        }
+        else {
             errors.push(`config.commandAliases: Expected an object, but got ${typeof commandAliasesMap}.`);
         }
     }
@@ -441,7 +510,7 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
  */
 export function validateActionProfiles(actionProfiles) {
     const errors = [];
-    const context = "actionProfiles.checkActionProfiles";
+    const context = 'actionProfiles.checkActionProfiles';
 
     if (!isObject(actionProfiles)) {
         errors.push(`${context}: Expected an object, but got ${typeof actionProfiles}.`);
@@ -469,15 +538,15 @@ export function validateActionProfiles(actionProfiles) {
                 { name: 'increment', type: 'number' },
                 { name: 'reason', type: 'string' },
                 { name: 'type', type: 'camelCaseString' },
-            ]},
+            ] },
             { name: 'notifyAdmins', type: 'object', optional: true, objectProperties: [
                 { name: 'message', type: 'string' },
-            ]},
+            ] },
             { name: 'log', type: 'object', optional: true, objectProperties: [
                 { name: 'actionType', type: 'camelCaseString' },
                 { name: 'detailsPrefix', type: 'string', optional: true }, // Made optional as not all logs might have it
                 { name: 'includeViolationDetails', type: 'boolean', optional: true },
-            ]},
+            ] },
             { name: 'cancelMessage', type: 'boolean', optional: true },
             { name: 'cancelEvent', type: 'boolean', optional: true },
             { name: 'customAction', type: 'string', optional: true, validator: (val, path, errs) => {
@@ -485,7 +554,7 @@ export function validateActionProfiles(actionProfiles) {
                     errs.push(`${path}: Invalid customAction "${val}". Expected one of ${validCustomActions.join(', ')}.`);
                 }
                 return validCustomActions.includes(val);
-            }},
+            } },
         ];
 
         ensureFields(profile, profileFieldDefs, profileContext, errors);
@@ -495,8 +564,9 @@ export function validateActionProfiles(actionProfiles) {
             if (!isObject(profile.flag)) {
                 // This case should be caught by ensureFields's type check, but as a fallback:
                 errors.push(`${profileContext}.flag: Expected an object, but got ${typeof profile.flag}.`);
-            } else {
-                 if (!Object.prototype.hasOwnProperty.call(profile.flag, 'increment') || !isNumber(profile.flag.increment)) {
+            }
+            else {
+                if (!Object.prototype.hasOwnProperty.call(profile.flag, 'increment') || !isNumber(profile.flag.increment)) {
                     errors.push(`${profileContext}.flag.increment: Required field 'increment' is missing or not a number.`);
                 }
                 if (!Object.prototype.hasOwnProperty.call(profile.flag, 'reason') || !isString(profile.flag.reason)) {
@@ -507,11 +577,12 @@ export function validateActionProfiles(actionProfiles) {
                 }
             }
         }
-         // Additional specific checks for log object if it exists
+        // Additional specific checks for log object if it exists
         if (profile.log) {
             if (!isObject(profile.log)) {
                 errors.push(`${profileContext}.log: Expected an object, but got ${typeof profile.log}.`);
-            } else {
+            }
+            else {
                 if (!Object.prototype.hasOwnProperty.call(profile.log, 'actionType') || !isValidCamelCase(profile.log.actionType)) {
                     errors.push(`${profileContext}.log.actionType: Required field 'actionType' is missing or not a camelCase string.`);
                 }
@@ -531,7 +602,7 @@ export function validateActionProfiles(actionProfiles) {
  */
 export function validateAutoModConfig(autoModConfig, actionProfiles) {
     const errors = [];
-    const context = "automodConfig";
+    const context = 'automodConfig';
 
     if (!isObject(autoModConfig)) {
         errors.push(`${context}: Expected an object, but got ${typeof autoModConfig}.`);
@@ -562,14 +633,14 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                 if (!isValidCamelCase(val) && !knownActionProfileNames.includes(val)) {
                     // Check if it's a known actionProfile name OR a generic camelCase string if not found in actionProfiles
                     // This allows for checkTypes that might be aggregations or special cases not directly in actionProfiles
-                     errs.push(`${path}: checkType "${val}" is not a valid camelCase string or a known actionProfile name.`);
+                    errs.push(`${path}: checkType "${val}" is not a valid camelCase string or a known actionProfile name.`);
                 }
                 return true; // Validator pushes error
-            }},
+            } },
             { name: 'enabled', type: 'boolean' },
             { name: 'description', type: 'string', optional: true },
             { name: 'resetFlagsAfterSeconds', type: 'positiveNumber', optional: true },
-            { name: 'tiers', type: 'array' }
+            { name: 'tiers', type: 'array' },
         ];
         ensureFields(ruleSet, ruleSetFieldDefs, ruleSetContext, errors);
 
@@ -584,9 +655,9 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                             errs.push(`${path}: Invalid actionType "${val}". Expected one of ${validAutoModActions.join(', ')}.`);
                         }
                         return validAutoModActions.includes(val);
-                    }},
+                    } },
                     { name: 'parameters', type: 'object' }, // Parameters can vary, specific checks below
-                    { name: 'resetFlagsAfterAction', type: 'boolean' }
+                    { name: 'resetFlagsAfterAction', type: 'boolean' },
                 ];
                 ensureFields(tier, tierFieldDefs, tierContext, errors);
 
@@ -609,11 +680,12 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     if (tier.actionType === 'teleportSafe') {
                         if (tier.parameters.coordinates && !isObject(tier.parameters.coordinates)) {
                             errors.push(`${paramsContext}.coordinates: If present, must be an object for actionType 'teleportSafe'.`);
-                        } else if (tier.parameters.coordinates) {
+                        }
+                        else if (tier.parameters.coordinates) {
                             const coordFields = [
-                                {name: 'x', type: 'number', optional: true},
-                                {name: 'y', type: 'number', optional: true},
-                                {name: 'z', type: 'number', optional: true},
+                                { name: 'x', type: 'number', optional: true },
+                                { name: 'y', type: 'number', optional: true },
+                                { name: 'z', type: 'number', optional: true },
                             ];
                             ensureFields(tier.parameters.coordinates, coordFields, `${paramsContext}.coordinates`, errors);
                         }
@@ -621,19 +693,21 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     if (Object.prototype.hasOwnProperty.call(tier.parameters, 'messageTemplate') && !isString(tier.parameters.messageTemplate)) {
                         errors.push(`${paramsContext}.messageTemplate: If present, must be a string.`);
                     }
-                     if (Object.prototype.hasOwnProperty.call(tier.parameters, 'adminMessageTemplate') && !isString(tier.parameters.adminMessageTemplate)) {
+                    if (Object.prototype.hasOwnProperty.call(tier.parameters, 'adminMessageTemplate') && !isString(tier.parameters.adminMessageTemplate)) {
                         errors.push(`${paramsContext}.adminMessageTemplate: If present, must be a string.`);
                     }
-                } else if (tier.actionType !== 'flagOnly' && tier.actionType !== 'kick' && tier.actionType !== 'warn' && tier.actionType !== 'ban') {
-                     // Some actions like kick/warn/ban might not always require parameters beyond a message template
-                     // flagOnly definitely doesn't.
-                     // For others, parameters object is usually expected.
-                    if(!tier.parameters) { // if parameters object itself is missing
+                }
+                else if (tier.actionType !== 'flagOnly' && tier.actionType !== 'kick' && tier.actionType !== 'warn' && tier.actionType !== 'ban') {
+                    // Some actions like kick/warn/ban might not always require parameters beyond a message template
+                    // flagOnly definitely doesn't.
+                    // For others, parameters object is usually expected.
+                    if (!tier.parameters) { // if parameters object itself is missing
                         errors.push(`${tierContext}.parameters: Required field is missing for actionType '${tier.actionType}'.`);
                     }
                 }
             });
-        } else {
+        }
+        else {
             // This error would be caught by ensureFields if 'tiers' is mandatory and not an array.
             // errors.push(`${ruleSetContext}.tiers: Required field 'tiers' is missing or not an array.`);
         }
@@ -653,7 +727,7 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
  */
 export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfigAdminTag) {
     const errors = [];
-    const context = "ranksConfig";
+    const context = 'ranksConfig';
 
     if (!isObject(ranksConfig)) {
         errors.push(`${context}: Expected an object, but got ${typeof ranksConfig}.`);
@@ -664,7 +738,8 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
     const dcfContext = `${context}.defaultChatFormatting`;
     if (!Object.prototype.hasOwnProperty.call(ranksConfig, 'defaultChatFormatting') || !isObject(ranksConfig.defaultChatFormatting)) {
         errors.push(`${dcfContext}: Required field is missing or not an object.`);
-    } else {
+    }
+    else {
         const chatFormatFields = [
             { name: 'prefixText', type: 'string', optional: true }, // Defaults exist
             { name: 'prefixColor', type: 'colorCode', optional: true },
@@ -708,7 +783,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 }
                 rankIds.add(val);
                 return true; // Validator pushes errors
-            }},
+            } },
             { name: 'name', type: 'string' },
             { name: 'permissionLevel', type: 'number' },
             { name: 'chatFormatting', type: 'object', optional: true, objectProperties: [ // Same as defaultChatFormatting structure
@@ -716,7 +791,7 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 { name: 'prefixColor', type: 'colorCode', optional: true },
                 { name: 'nameColor', type: 'colorCode', optional: true },
                 { name: 'messageColor', type: 'colorCode', optional: true },
-            ]},
+            ] },
             { name: 'nametagPrefix', type: 'string', optional: true },
             { name: 'conditions', type: 'array' },
             { name: 'priority', type: 'number', validator: (val, path, errs) => {
@@ -725,8 +800,8 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 }
                 rankPriorities.add(val);
                 return true; // Validator pushes errors
-            }},
-            { name: 'assignableBy', type: 'number', optional: true }
+            } },
+            { name: 'assignableBy', type: 'number', optional: true },
         ];
         ensureFields(rankDef, rankDefFields, rankDefContext, errors);
 
@@ -743,9 +818,9 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                             errs.push(`${path}: Invalid condition type "${val}". Expected one of ${validConditionTypes.join(', ')}.`);
                         }
                         return validConditionTypes.includes(val);
-                    }},
+                    } },
                     { name: 'prefix', type: 'string', optional: true }, // Required by specific types below
-                    { name: 'tag', type: 'string', optional: true }    // Required by specific types below
+                    { name: 'tag', type: 'string', optional: true },    // Required by specific types below
                 ];
                 ensureFields(condition, conditionFieldDefs, condContext, errors);
 
@@ -762,14 +837,15 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                     if (condition.type === 'ownerName' && (!mainConfigOwnerName || mainConfigOwnerName === 'PlayerNameHere' || mainConfigOwnerName.trim() === '')) {
                         errors.push(`${condContext}: Condition type 'ownerName' used, but config.ownerPlayerName is not properly set in main config.`);
                     }
-                     if (condition.type === 'adminTag' && (!mainConfigAdminTag || mainConfigAdminTag.trim() === '')) {
+                    if (condition.type === 'adminTag' && (!mainConfigAdminTag || mainConfigAdminTag.trim() === '')) {
                         errors.push(`${condContext}: Condition type 'adminTag' used, but config.adminTag is not properly set in main config.`);
                     }
                 }
             });
-        } else {
+        }
+        else {
             // ensureFields would catch this if 'conditions' is not optional and not an array
-             errors.push(`${rankDefContext}.conditions: Required field 'conditions' is missing or not an array.`);
+            errors.push(`${rankDefContext}.conditions: Required field 'conditions' is missing or not an array.`);
         }
     });
 

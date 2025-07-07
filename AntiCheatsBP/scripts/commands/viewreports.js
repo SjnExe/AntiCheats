@@ -63,24 +63,28 @@ export async function execute(player, args, dependencies) {
         if (firstArgLower === 'page' && args[1] && !isNaN(parseInt(args[1], 10))) {
             pageNumber = Math.max(1, parseInt(args[1], 10));
             filterType = 'All (Paginated)';
-        } else if (args[0].includes('-') && args[0].length > 10) {
+        }
+        else if (args[0].includes('-') && args[0].length > 10) {
             const reportId = args[0];
             reportsToShow = reportsToShow.filter(r => r.id === reportId);
             filterType = 'Report ID';
             filterValue = reportId;
             totalPages = Math.max(1, Math.ceil(reportsToShow.length / reportsPerPage));
-        } else {
+        }
+        else {
             const targetPlayerName = args[0];
             reportsToShow = reportsToShow.filter(r =>
                 r.reporterName.toLowerCase().includes(targetPlayerName.toLowerCase()) ||
-                r.reportedName.toLowerCase().includes(targetPlayerName.toLowerCase())
+                r.reportedName.toLowerCase().includes(targetPlayerName.toLowerCase()),
             );
             filterType = 'Player Name';
             filterValue = targetPlayerName;
             totalPages = Math.max(1, Math.ceil(reportsToShow.length / reportsPerPage));
         }
     }
-    if (pageNumber > totalPages) pageNumber = totalPages;
+    if (pageNumber > totalPages) {
+        pageNumber = totalPages;
+    }
 
 
     if (reportsToShow.length === 0) {
@@ -95,7 +99,8 @@ export async function execute(player, args, dependencies) {
     if (paginatedReports.length === 0 && pageNumber > 1) {
         player.sendMessage(getString('command.viewreports.noReportsOnPage', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString() }));
         return;
-    } else if (paginatedReports.length === 0) {
+    }
+    else if (paginatedReports.length === 0) {
         player.sendMessage(getString('command.viewreports.noReportsFound'));
         return;
     }
@@ -113,11 +118,11 @@ export async function execute(player, args, dependencies) {
         message += getString('command.viewreports.footer.nextPage', { nextPageCommand: `${prefix}viewreports page ${pageNumber + 1}${filterValue ? ' ' + filterValue : ''}` }) + '\n';
     }
     if (pageNumber > 1) {
-         message += getString('command.viewreports.footer.prevPage', { prevPageCommand: `${prefix}viewreports page ${pageNumber - 1}${filterValue ? ' ' + filterValue : ''}` }) + '\n';
+        message += getString('command.viewreports.footer.prevPage', { prevPageCommand: `${prefix}viewreports page ${pageNumber - 1}${filterValue ? ' ' + filterValue : ''}` }) + '\n';
     }
 
     player.sendMessage(message.trim());
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     logManager?.addLog({
         adminName: adminName,

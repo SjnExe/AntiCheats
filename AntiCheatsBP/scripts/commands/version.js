@@ -36,6 +36,6 @@ export async function execute(player, _args, dependencies) {
     const versionString = acVersion || getString('common.value.notAvailable');
 
     player.sendMessage(getString('command.version.message', { version: versionString }));
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
 }

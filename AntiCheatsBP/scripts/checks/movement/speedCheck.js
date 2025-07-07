@@ -3,7 +3,6 @@
  * Relies on `pData.velocity` (updated in main tick loop) and `pData.speedAmplifier`
  * (assumed to be updated by `updateTransientPlayerData` based on player effects).
  */
-import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData
@@ -63,7 +62,7 @@ export async function checkSpeed(player, pData, dependencies) {
     if (pData.isWatched && config?.enableDebugLogging) {
         playerUtils?.debugLog(
             `[SpeedCheck] Processing for ${playerName}. HSpeedBPS=${hSpeedBPS.toFixed(3)}, MaxAllowedBPS=${maxAllowedSpeedBPS.toFixed(3)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}, OnGround=${player.isOnGround}`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
     }
 
@@ -83,9 +82,10 @@ export async function checkSpeed(player, pData, dependencies) {
                 try {
                     const effects = player.getEffects();
                     if (effects.length > 0) {
-                        activeEffectsString = effects.map(e => `${e.typeId.replace('minecraft:', '')}(${e.amplifier})`).join(', ') || 'none';
+                        activeEffectsString = effects.map(eff => `${eff.typeId.replace('minecraft:', '')}(${eff.amplifier})`).join(', ') || 'none';
                     }
-                } catch (e) { }
+                }
+                catch (_e) { }
 
                 const violationDetails = {
                     detectedSpeedBps: hSpeedBPS.toFixed(3),
@@ -99,13 +99,15 @@ export async function checkSpeed(player, pData, dependencies) {
                 pData.consecutiveOnGroundSpeedingTicks = 0;
                 pData.isDirtyForSave = true;
             }
-        } else {
+        }
+        else {
             if (pData.consecutiveOnGroundSpeedingTicks > 0) {
                 pData.consecutiveOnGroundSpeedingTicks = 0;
                 pData.isDirtyForSave = true;
             }
         }
-    } else {
+    }
+    else {
         if (pData.consecutiveOnGroundSpeedingTicks > 0) {
             pData.consecutiveOnGroundSpeedingTicks = 0;
             pData.isDirtyForSave = true;

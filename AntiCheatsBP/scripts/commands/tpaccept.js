@@ -57,9 +57,11 @@ export async function execute(player, args, dependencies) {
             player.sendMessage(getString('command.tpaccept.noRequestFromPlayer', { playerName: targetRequesterNameArg }));
             return;
         }
-    } else if (incomingRequests.length === 1) {
+    }
+    else if (incomingRequests.length === 1) {
         requestToAccept = incomingRequests[0];
-    } else {
+    }
+    else {
         const requesterNames = incomingRequests.map(r => {
             const reqOnline = playerUtils?.findPlayer(r.requesterName);
             return reqOnline?.nameTag ?? r.requesterName;
@@ -77,7 +79,7 @@ export async function execute(player, args, dependencies) {
     const success = await tpaManager?.acceptRequest(requestToAccept.requestId, dependencies);
 
     if (success) {
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
             adminName: acceptorName,
@@ -86,8 +88,9 @@ export async function execute(player, args, dependencies) {
             details: `User accepted TPA request (ID: ${requestToAccept.requestId}) from ${requestToAccept.requesterName}.`,
             context: 'TpaAcceptCommand.execute',
         }, dependencies);
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.tpaccept.failure', { playerName: requestToAccept.requesterName }));
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }
 }

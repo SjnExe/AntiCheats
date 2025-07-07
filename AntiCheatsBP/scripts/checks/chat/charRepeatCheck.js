@@ -50,7 +50,8 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
         const char = message[i];
         if (char === currentChar) {
             currentRepeatCount++;
-        } else {
+        }
+        else {
             if (currentRepeatCount > maxRepeatCount) {
                 maxRepeatCount = currentRepeatCount;
                 charThatRepeatedMost = currentChar;
@@ -70,7 +71,7 @@ export async function checkCharRepeat(player, eventData, pData, dependencies) {
             `[CharRepeatCheck] Player ${playerName} triggered char repeat. ` +
             `Msg: '${message}', Char: '${charThatRepeatedMost}', Count: ${maxRepeatCount}, ` +
             `Threshold: ${threshold}, MinLength: ${minLength}`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
 
         const violationDetails = {

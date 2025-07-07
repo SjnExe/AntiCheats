@@ -288,60 +288,60 @@ const defaultConfigSettings = {
     soundEvents: {
         tpaRequestReceived: {
             enabled: true,
-            soundId: "random.orb",
+            soundId: 'random.orb',
             volume: 1.0,
             pitch: 1.2,
-            target: "targetPlayer",
-            description: "Sound played for a player when they receive a TPA request (tpa or tpahere)."
+            target: 'targetPlayer',
+            description: 'Sound played for a player when they receive a TPA request (tpa or tpahere).',
         },
         adminNotificationReceived: { // Played for admins when playerUtils.notifyAdmins is called
             enabled: true,
-            soundId: "note.pling",
+            soundId: 'note.pling',
             volume: 0.8,
             pitch: 1.5,
-            target: "admin",
-            description: "Sound played for an admin when they receive any AntiCheat system notification via notifyAdmins."
+            target: 'admin',
+            description: 'Sound played for an admin when they receive any AntiCheat system notification via notifyAdmins.',
         },
         playerWarningReceived: { // Played for player when playerUtils.warnPlayer is called
             enabled: true,
-            soundId: "note.bass",
+            soundId: 'note.bass',
             volume: 1.0,
             pitch: 0.8,
-            target: "player",
-            description: "Sound played for a player when they receive a direct warning message from AntiCheat (e.g., from a check or AutoMod)."
+            target: 'player',
+            description: 'Sound played for a player when they receive a direct warning message from AntiCheat (e.g., from a check or AutoMod).',
         },
         uiFormOpen: {
             enabled: false,
-            soundId: "ui.button.click",
+            soundId: 'ui.button.click',
             volume: 0.7,
             pitch: 1.0,
-            target: "player",
-            description: "Sound played when a UI form (e.g., admin panel, report form) is opened for a player."
+            target: 'player',
+            description: 'Sound played when a UI form (e.g., admin panel, report form) is opened for a player.',
         },
         commandSuccess: {
             enabled: false,
-            soundId: "random.successful_hit",
+            soundId: 'random.successful_hit',
             volume: 0.8,
             pitch: 1.0,
-            target: "player",
-            description: "Sound played for a player when they execute a command successfully."
+            target: 'player',
+            description: 'Sound played for a player when they execute a command successfully.',
         },
         commandError: {
             enabled: false,
-            soundId: "mob.villager.no",
+            soundId: 'mob.villager.no',
             volume: 1.0,
             pitch: 0.9,
-            target: "player",
-            description: "Sound played for a player when a command they executed results in an error."
+            target: 'player',
+            description: 'Sound played for a player when a command they executed results in an error.',
         },
         automodActionTaken: { // Played for the player being actioned by automod (kick/mute/ban)
             enabled: true,
-            soundId: "mob.irongolem.hit",
+            soundId: 'mob.irongolem.hit',
             volume: 1.0,
             pitch: 0.9,
-            target: "player",
-            description: "Sound played for a player when AutoMod takes a significant action against them (e.g., mute, kick, ban)."
-        }
+            target: 'player',
+            description: 'Sound played for a player when AutoMod takes a significant action against them (e.g., mute, kick, ban).',
+        },
     },
 
     // --- Command Specific Toggles & Values ---
@@ -798,7 +798,7 @@ export const acVersion = 'v__VERSION_STRING__';
 // It is initialized by spreading the defaultConfigSettings.
 // Complex objects like `automodConfig` or `checkActionProfiles` are imported and managed by their own modules
 // and are not part of this editableConfigValues structure directly.
-export let editableConfigValues = { ...defaultConfigSettings };
+export const editableConfigValues = { ...defaultConfigSettings };
 
 /**
  * Updates a configuration value at runtime.
@@ -821,22 +821,32 @@ export function updateConfigValue(key, value) {
 
     if (expectedType === 'boolean') {
         if (typeof value === 'string') {
-            if (value.toLowerCase() === 'true') coercedValue = true;
-            else if (value.toLowerCase() === 'false') coercedValue = false;
-            else return { success: false, message: `Invalid boolean string for key "${key}": "${value}". Use "true" or "false".`, oldValue };
-        } else if (typeof value !== 'boolean') {
+            if (value.toLowerCase() === 'true') {
+                coercedValue = true;
+            }
+            else if (value.toLowerCase() === 'false') {
+                coercedValue = false;
+            }
+            else {
+                return { success: false, message: `Invalid boolean string for key "${key}": "${value}". Use "true" or "false".`, oldValue };
+            }
+        }
+        else if (typeof value !== 'boolean') {
             return { success: false, message: `Invalid type for boolean key "${key}". Expected boolean, got ${typeof value}.`, oldValue };
         }
-    } else if (expectedType === 'number') {
+    }
+    else if (expectedType === 'number') {
         coercedValue = Number(value);
         if (isNaN(coercedValue)) {
             return { success: false, message: `Invalid number for key "${key}": "${value}".`, oldValue };
         }
-    } else if (expectedType === 'string') {
+    }
+    else if (expectedType === 'string') {
         if (typeof value !== 'string') {
             coercedValue = String(value);
         }
-    } else if (Array.isArray(defaultConfigSettings[key])) {
+    }
+    else if (Array.isArray(defaultConfigSettings[key])) {
         if (!Array.isArray(value)) {
             if (typeof value === 'string') {
                 try {
@@ -844,25 +854,30 @@ export function updateConfigValue(key, value) {
                     if (!Array.isArray(coercedValue)) {
                         return { success: false, message: `Key "${key}" expects an array. Parsed string was not an array.`, oldValue };
                     }
-                } catch (e) {
+                }
+                catch (e) {
                     return { success: false, message: `Key "${key}" expects an array. Could not parse string value: "${value}". Error: ${e.message}`, oldValue };
                 }
-            } else {
+            }
+            else {
                 return { success: false, message: `Key "${key}" expects an array. Got type ${typeof value}.`, oldValue };
             }
         }
-    } else if (expectedType === 'object' && defaultConfigSettings[key] !== null) {
-         if (typeof value === 'string') {
+    }
+    else if (expectedType === 'object' && defaultConfigSettings[key] !== null) {
+        if (typeof value === 'string') {
             try {
                 coercedValue = JSON.parse(value);
-                 if (typeof coercedValue !== 'object' || coercedValue === null || Array.isArray(coercedValue)) {
+                if (typeof coercedValue !== 'object' || coercedValue === null || Array.isArray(coercedValue)) {
                     return { success: false, message: `Key "${key}" expects an object. Parsed string was not a valid object.`, oldValue };
                 }
-            } catch (e) {
+            }
+            catch (e) {
                 return { success: false, message: `Key "${key}" expects an object. Could not parse string value: "${value}". Error: ${e.message}`, oldValue };
             }
-        } else if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-             return { success: false, message: `Key "${key}" expects an object. Got type ${typeof value}.`, oldValue };
+        }
+        else if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+            return { success: false, message: `Key "${key}" expects an object. Got type ${typeof value}.`, oldValue };
         }
     }
 

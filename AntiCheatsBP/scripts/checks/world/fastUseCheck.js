@@ -61,7 +61,7 @@ export async function checkFastUse(player, pData, dependencies, eventSpecificDat
         const watchedPrefix = pData.isWatched ? player.nameTag : null;
         playerUtils.debugLog(
             `[FastUseCheck] Flagged ${player.nameTag} for using ${itemTypeId} too fast. Actual: ${timeSinceLastUseMs}ms, Cooldown: ${cooldown}ms`,
-            watchedPrefix, dependencies
+            watchedPrefix, dependencies,
         );
     }
 

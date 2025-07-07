@@ -2,7 +2,6 @@
  * @file Implements a check to prevent players from using or placing banned items.
  * Banned items are defined in the server configuration.
  */
-import * as mc from '@minecraft/server';
 
 /**
  * @typedef {import('../../types.js').PlayerAntiCheatData} PlayerAntiCheatData;
@@ -37,7 +36,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
 
     if (!itemStack) {
         if (actionType !== 'inventory_change' || (actionType === 'inventory_change' && eventData.newItemStack)) {
-             playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}. Skipping check.`, watchedPrefix, dependencies);
+            playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}. Skipping check.`, watchedPrefix, dependencies);
         }
         return;
     }
@@ -49,7 +48,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
 
     let isBanned = false;
     let checkProfileKey = '';
-    let violationDetails = {
+    const violationDetails = {
         itemTypeId: itemId,
         action: actionType,
     };
@@ -66,7 +65,8 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
         violationDetails.blockLocationX = eventData.block?.location?.x?.toString() ?? 'N/A';
         violationDetails.blockLocationY = eventData.block?.location?.y?.toString() ?? 'N/A';
         violationDetails.blockLocationZ = eventData.block?.location?.z?.toString() ?? 'N/A';
-    } else if (actionType === 'use' && bannedItemsForUse.includes(itemId)) {
+    }
+    else if (actionType === 'use' && bannedItemsForUse.includes(itemId)) {
         isBanned = true;
         const rawProfileKey = config.illegalItemUseActionProfileName ?? 'worldIllegalItemUse';
         checkProfileKey = rawProfileKey
@@ -78,7 +78,8 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
     if (isBanned && checkProfileKey) {
         if (typeof eventData.cancel === 'boolean') {
             eventData.cancel = true;
-        } else {
+        }
+        else {
             playerUtils.debugLog(`[IllegalItemCheck] EventData for ${actionType} does not support cancellation. Item: ${itemId}.`, watchedPrefix, dependencies);
         }
 
@@ -86,7 +87,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
 
         playerUtils.debugLog(
             `[IllegalItemCheck] Action '${actionType}' by ${player.nameTag} for item ${itemId} was flagged. Profile: '${checkProfileKey}'. Event cancelled: ${eventData.cancel}.`,
-            watchedPrefix, dependencies
+            watchedPrefix, dependencies,
         );
     }
 }

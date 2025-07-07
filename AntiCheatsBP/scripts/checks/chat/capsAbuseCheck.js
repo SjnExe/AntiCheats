@@ -66,7 +66,7 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
             `[CapsAbuseCheck] Player ${playerName} triggered CAPS abuse. ` +
             `Msg: '${message}', CAPS: ${upperCasePercentage.toFixed(1)}%, ` +
             `Threshold: ${percentageThreshold}%, MinLength: ${minLength}`,
-            watchedPlayerName, dependencies
+            watchedPlayerName, dependencies,
         );
 
         const violationDetails = {

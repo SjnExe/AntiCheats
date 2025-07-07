@@ -47,7 +47,8 @@ export async function execute(player, args, dependencies) {
     let inventoryComponent;
     try {
         inventoryComponent = foundPlayer.getComponent(mc.EntityComponentTypes.Inventory);
-    } catch (e) {
+    }
+    catch (e) {
         player.sendMessage(getString('command.invsee.noAccess', { playerName: foundPlayer.nameTag }));
         playerUtils?.debugLog(`[InvSeeCommand CRITICAL] Error getting inventory component for ${foundPlayer.nameTag}: ${e.message}`, adminName, dependencies);
         console.error(`[InvSeeCommand CRITICAL] Error getting inventory component for ${foundPlayer.nameTag}: ${e.stack || e}`);
@@ -68,19 +69,20 @@ export async function execute(player, args, dependencies) {
         const itemStack = container.getItem(i);
         if (itemStack) {
             itemCount++;
-            let nameTagText = itemStack.nameTag ? getString('command.invsee.item.nameTag', { nameTag: itemStack.nameTag }) : '';
+            const nameTagText = itemStack.nameTag ? getString('command.invsee.item.nameTag', { nameTag: itemStack.nameTag }) : '';
             let durabilityText = '';
             try {
                 const durabilityComponent = itemStack.getComponent(mc.ItemComponentTypes.Durability);
                 if (durabilityComponent) {
                     durabilityText = getString('command.invsee.item.durability', { currentDurability: (durabilityComponent.maxDurability - durabilityComponent.damage).toString(), maxDurability: durabilityComponent.maxDurability.toString() });
                 }
-            } catch (e) { }
+            }
+            catch (_e) { }
 
             let loreText = '';
             const lore = itemStack.getLore();
             if (lore && lore.length > 0) {
-                loreText = getString('command.invsee.item.lore', { loreEntries: lore.join("', '") });
+                loreText = getString('command.invsee.item.lore', { loreEntries: lore.join('\', \'') });
             }
 
             let enchantsText = '';
@@ -93,7 +95,8 @@ export async function execute(player, args, dependencies) {
                         enchantsText = getString('command.invsee.item.enchants', { enchantEntries: enchStrings.join(', ') });
                     }
                 }
-            } catch (e) { }
+            }
+            catch (_e) { }
 
             inventoryDetails += getString('ui.invsee.slotEntry', {
                 slotNum: i.toString(),
@@ -102,7 +105,7 @@ export async function execute(player, args, dependencies) {
                 nameTagText,
                 durabilityText,
                 enchantsText,
-                loreText
+                loreText,
             }) + '\n';
         }
     }
@@ -125,10 +128,11 @@ export async function execute(player, args, dependencies) {
         invForm.body(inventoryDetails.trim());
         invForm.button1(getString('common.button.close'));
 
-        playerUtils?.playSoundForEvent(player, "uiFormOpen", dependencies);
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
         await invForm.show(player);
 
-    } catch (e) {
+    }
+    catch (e) {
         playerUtils?.debugLog(`[InvSeeCommand CRITICAL] Error showing invsee form for ${adminName}: ${e.message}`, adminName, dependencies);
         console.error(`[InvSeeCommand CRITICAL] Error showing invsee form for ${adminName}: ${e.stack || e}`);
         player.sendMessage(getString('command.invsee.error.display'));

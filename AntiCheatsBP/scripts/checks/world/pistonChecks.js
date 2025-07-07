@@ -16,7 +16,7 @@
  * Value: { activations: number[], lastLogTime: number }
  * @type {Map<string, { activations: number[], lastLogTime: number }>}
  */
-let pistonActivityData = new Map();
+const pistonActivityData = new Map();
 
 /**
  * Checks for rapid and sustained piston activations that might indicate a lag machine.
@@ -29,7 +29,7 @@ let pistonActivityData = new Map();
  * @returns {Promise<void>}
  */
 export async function checkPistonLag(pistonBlock, dimensionId, dependencies) {
-    const { config, playerUtils, logManager, actionManager } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies; // Removed logManager
 
     if (!config.enablePistonLagCheck) {
         return;

@@ -44,7 +44,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
             actionType: 'warningClientInfo',
             context: 'InvalidRenderDistanceCheck.getValue',
             targetName: playerName,
-            details: `Reported maxRenderDistance is invalid: ${clientRenderDistance} (type: ${typeof clientRenderDistance})`
+            details: `Reported maxRenderDistance is invalid: ${clientRenderDistance} (type: ${typeof clientRenderDistance})`,
         }, dependencies);
         return;
     }
@@ -67,7 +67,8 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
         playerUtils?.debugLog(`[InvalidRenderDistanceCheck] Player ${playerName} reported ${clientRenderDistance} chunks, max allowed is ${maxAllowed}. Flagged via profile '${actionProfileKey}'.`, watchedPlayerName, dependencies);
-    } else if (pData?.isWatched && config?.enableDebugLogging) {
+    }
+    else if (pData?.isWatched && config?.enableDebugLogging) {
         playerUtils?.debugLog(`[InvalidRenderDistanceCheck] Player ${playerName} reported valid render distance: ${clientRenderDistance} (Max: ${maxAllowed}).`, watchedPlayerName, dependencies);
     }
 }

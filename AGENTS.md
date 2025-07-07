@@ -47,6 +47,12 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
 *   **Error Handling:** Implement robust error handling (e.g., `try...catch` blocks for risky operations, validation of inputs).
 *   **Logging:** Utilize `playerUtils.debugLog()` for development/debug messages (conditional on `config.enableDebugLogging` or `pData.isWatched`) and `logManager.addLog()` for persistent action/error logging.
 *   **User-Facing Text:** All user-facing strings (UI, command responses) should be managed via `AntiCheatsBP/scripts/core/textDatabase.js` and retrieved using `getString()`.
+*   **Linting with ESLint:** This project uses ESLint to enforce code style and catch potential errors.
+    *   The configuration (`eslint.config.js`) is based on `eslint:recommended` rules plus specific project style guidelines from `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
+    *   Run `npm run lint` to check for linting issues.
+    *   Run `npm run lint:fix` to automatically fix many common issues.
+    *   Please ensure your changes pass linting before submitting.
+    *   *Note:* JSDoc specific linting rules via `eslint-plugin-jsdoc` were attempted but deferred due to environmental constraints with ESLint's flat configuration loader in the development environment. Core JSDoc formatting guidelines in `Dev/StandardizationGuidelines.md` should still be followed.
 
 ## 6. Planning and Communication
 *   **Use `set_plan()`:** Always articulate your plan using the `set_plan` tool before starting significant code changes.

@@ -20,7 +20,7 @@ import * as mc from '@minecraft/server';
  * @returns {Promise<void>}
  */
 export async function checkNetherRoof(player, pData, dependencies) {
-    const { config, playerDataManager, playerUtils, actionManager } = dependencies;
+    const { config, playerUtils, actionManager } = dependencies; // Removed playerDataManager
     const minecraftSystem = dependencies.mc;
 
     if (!config.enableNetherRoofCheck) {

@@ -26,7 +26,7 @@ let sortedRankDefinitions = [];
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 function initializeRankSystem(dependencies) {
-    const { playerUtils, config } = dependencies;
+    const { playerUtils } = dependencies; // Removed config
 
     if (!Array.isArray(rankDefinitions)) {
         console.error('[RankManager.initializeRankSystem] rankDefinitions is not an array. Rank system may not function.');
@@ -73,7 +73,7 @@ function initializeRankSystem(dependencies) {
  *          Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
-    const { config, playerUtils, getString } = dependencies;
+    const { config, playerUtils } = dependencies; // Removed getString
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (!(player instanceof mc.Player) || !player.isValid()) {
@@ -92,17 +92,25 @@ function getPlayerRankAndPermissions(player, dependencies) {
                 let match = false;
                 switch (condition.type) {
                     case 'ownerName': // Corrected to camelCase
-                        if (ownerName && player.nameTag.toLowerCase() === ownerName) match = true;
+                        if (ownerName && player.nameTag.toLowerCase() === ownerName) {
+                            match = true;
+                        }
                         break;
                     case 'adminTag': // Corrected to camelCase
-                        if (adminTag && player.hasTag(adminTag)) match = true;
+                        if (adminTag && player.hasTag(adminTag)) {
+                            match = true;
+                        }
                         break;
                     case 'manualTagPrefix': // Corrected to camelCase
-                        // Ensure condition.prefix and rankDef.id are defined. rankDef.id is already lowercased.
-                        if (condition.prefix && rankDef.id && player.hasTag(condition.prefix + rankDef.id)) match = true;
+                    // Ensure condition.prefix and rankDef.id are defined. rankDef.id is already lowercased.
+                        if (condition.prefix && rankDef.id && player.hasTag(condition.prefix + rankDef.id)) {
+                            match = true;
+                        }
                         break;
                     case 'tag':
-                        if (condition.tag && player.hasTag(condition.tag)) match = true;
+                        if (condition.tag && player.hasTag(condition.tag)) {
+                            match = true;
+                        }
                         break;
                     case 'default': // Fallback condition
                         match = true;
@@ -168,7 +176,12 @@ export function updatePlayerNametag(player, dependencies) {
     if (!config || typeof config !== 'object') {
         console.error(`[RankManager.updatePlayerNametag] Config object invalid for ${playerNameForLog}. Nametag not updated.`);
         playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Config invalid for ${playerNameForLog}.`, playerNameForLog, dependencies);
-        try { if (player.isValid()) player.nameTag = String(player.nameTag || player.name || ''); } catch (e) { /* ignore */ }
+        try {
+            if (player.isValid()) {
+                player.nameTag = String(player.nameTag || player.name || '');
+            }
+        }
+        catch (_e) { /* ignore */ }
         return;
     }
 
@@ -207,7 +220,9 @@ export function updatePlayerNametag(player, dependencies) {
             }
         }
         // If after all checks baseName is empty (e.g. player.name was empty), default again.
-        if (!baseName || baseName.trim() === '') baseName = getString('common.value.player');
+        if (!baseName || baseName.trim() === '') {
+            baseName = getString('common.value.player');
+        }
 
 
         player.nameTag = nametagToApply + baseName;
@@ -215,10 +230,16 @@ export function updatePlayerNametag(player, dependencies) {
         if (config.enableDebugLogging && playerUtils) {
             playerUtils.debugLog(`[RankManager.updatePlayerNametag] Updated nametag for ${playerNameForLog} (Original: '${currentNameTag}') to '${player.nameTag}' (Rank: ${rankDefinition?.id ?? 'default'})`, playerNameForLog, dependencies);
         }
-    } catch (error) {
+    }
+    catch (error) {
         console.error(`[RankManager.updatePlayerNametag] Error for '${playerNameForLog}': ${error.stack || error}`);
         playerUtils?.debugLog(`[RankManager.updatePlayerNametag] Error for ${playerNameForLog}: ${error.message}`, playerNameForLog, dependencies);
-        try { if (player.isValid()) player.nameTag = String(player.name ?? getString('common.value.player')); } catch (e) { /* ignore */ }
+        try {
+            if (player.isValid()) {
+                player.nameTag = String(player.name ?? dependencies.getString('common.value.player'));
+            }
+        }
+        catch (_e) { /* ignore */ } // Used dependencies.getString directly
     }
 }
 
@@ -257,7 +278,7 @@ export function getRankById(rankId) {
  *          and `messageParams` provides parameters for that message.
  */
 export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, dependencies) {
-    const { playerUtils, getString, permissionLevels: depPermLevels } = dependencies; // Assuming getString is part of playerUtils or top-level in dependencies
+    const { playerUtils, permissionLevels: depPermLevels } = dependencies; // Removed getString, assuming getString is part of playerUtils or top-level in dependencies
     const issuerName = issuerPlayer?.nameTag ?? 'UnknownIssuer';
     const targetName = targetPlayer?.nameTag ?? 'UnknownTarget';
 
@@ -285,7 +306,7 @@ export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, 
         return {
             allowed: false,
             messageKey: `command.${actionContext}.permissionDeniedOwner`, // e.g., command.ban.permissionDeniedOwner
-            messageParams: { targetName: targetName }
+            messageParams: { targetName: targetName },
         };
     }
 
@@ -294,20 +315,20 @@ export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, 
     // If issuer is an Admin (but not Owner) and target is also an Admin (but not Owner), deny.
     // If issuer is an Admin (but not Owner) and target is an Owner, already covered by Rule 1.
     if (targetPermissionLevel <= adminPerm && targetPermissionLevel > ownerPerm && /* Target is Admin (not Owner) */
-        issuerPermissionLevel > ownerPerm /* Issuer is not Owner (could be Admin, Mod, Member) */ ) {
+        issuerPermissionLevel > ownerPerm /* Issuer is not Owner (could be Admin, Mod, Member) */) {
         // If issuer is also an Admin (perm level <= adminPerm), they cannot action another Admin.
         if (issuerPermissionLevel <= adminPerm) {
-             return {
+            return {
                 allowed: false,
                 messageKey: `command.${actionContext}.permissionDeniedAdminSameRank`, // e.g., command.ban.permissionDeniedAdminSameRank
-                messageParams: { targetName: targetName }
+                messageParams: { targetName: targetName },
             };
         }
         // If issuer is Mod/Member (perm level > adminPerm), they cannot action an Admin.
         return {
             allowed: false,
             messageKey: `command.${actionContext}.permissionDeniedAdminHigherRank`, // e.g., command.ban.permissionDeniedAdminHigherRank
-            messageParams: { targetName: targetName }
+            messageParams: { targetName: targetName },
         };
     }
 

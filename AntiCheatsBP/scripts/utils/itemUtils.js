@@ -165,12 +165,24 @@ const correctToolForBlockMap = {
  * @returns {string | null} The tool type ('pickaxe', 'axe', 'shovel', 'hoe', 'shears', 'sword') or null if not a recognized tool.
  */
 function getToolType(itemTypeId) {
-    if (itemTypeId.includes('_pickaxe')) return 'pickaxe';
-    if (itemTypeId.includes('_axe')) return 'axe';
-    if (itemTypeId.includes('_shovel')) return 'shovel';
-    if (itemTypeId.includes('_hoe')) return 'hoe';
-    if (itemTypeId === 'minecraft:shears') return 'shears';
-    if (itemTypeId.includes('_sword')) return 'sword';
+    if (itemTypeId.includes('_pickaxe')) {
+        return 'pickaxe';
+    }
+    if (itemTypeId.includes('_axe')) {
+        return 'axe';
+    }
+    if (itemTypeId.includes('_shovel')) {
+        return 'shovel';
+    }
+    if (itemTypeId.includes('_hoe')) {
+        return 'hoe';
+    }
+    if (itemTypeId === 'minecraft:shears') {
+        return 'shears';
+    }
+    if (itemTypeId.includes('_sword')) {
+        return 'sword';
+    }
     return null;
 }
 
@@ -180,12 +192,24 @@ function getToolType(itemTypeId) {
  * @returns {string | null} The tool material ('wooden', 'stone', 'iron', 'golden', 'diamond', 'netherite') or null if not a recognized material.
  */
 function getToolMaterial(itemTypeId) {
-    if (itemTypeId.startsWith('minecraft:wooden_')) return 'wooden';
-    if (itemTypeId.startsWith('minecraft:stone_')) return 'stone';
-    if (itemTypeId.startsWith('minecraft:iron_')) return 'iron';
-    if (itemTypeId.startsWith('minecraft:golden_')) return 'golden';
-    if (itemTypeId.startsWith('minecraft:diamond_')) return 'diamond';
-    if (itemTypeId.startsWith('minecraft:netherite_')) return 'netherite';
+    if (itemTypeId.startsWith('minecraft:wooden_')) {
+        return 'wooden';
+    }
+    if (itemTypeId.startsWith('minecraft:stone_')) {
+        return 'stone';
+    }
+    if (itemTypeId.startsWith('minecraft:iron_')) {
+        return 'iron';
+    }
+    if (itemTypeId.startsWith('minecraft:golden_')) {
+        return 'golden';
+    }
+    if (itemTypeId.startsWith('minecraft:diamond_')) {
+        return 'diamond';
+    }
+    if (itemTypeId.startsWith('minecraft:netherite_')) {
+        return 'netherite';
+    }
     return null;
 }
 
@@ -221,10 +245,12 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
 
     if (requiredTool && toolType === requiredTool) {
         correctToolMultiplier = 1.5;
-    } else if (requiredTool && toolType !== requiredTool && toolType !== null) {
+    }
+    else if (requiredTool && toolType !== requiredTool && toolType !== null) {
         speed = 1;
         correctToolMultiplier = 1;
-    } else if (toolType === null && requiredTool) {
+    }
+    else if (toolType === null && requiredTool) {
         return 1 / (blockHardness * 5 * 0.2);
     }
 
@@ -237,7 +263,8 @@ export function calculateRelativeBlockBreakingPower(player, blockPermutation, it
                 efficiencyLevel = efficiency.level;
             }
         }
-    } catch (e) { }
+    }
+    catch (_e) { }
     if (efficiencyLevel > 0) {
         speed += (efficiencyLevel * efficiencyLevel + 1);
     }
@@ -328,17 +355,22 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
             toolSpeed = toolMaterialMultipliersMap[toolMaterial];
             if (toolType === requiredToolClass) {
                 isCorrectToolTypeAndMaterial = true;
-            } else if (requiredToolClass) {
+            }
+            else if (requiredToolClass) {
                 toolSpeed = 1;
             }
-        } else if (toolType === 'shears' && (blockTypeId.includes('leaves') || blockTypeId.includes('wool') || blockTypeId === 'minecraft:cobweb' || blockTypeId === 'minecraft:vine')) {
+        }
+        else if (toolType === 'shears' && (blockTypeId.includes('leaves') || blockTypeId.includes('wool') || blockTypeId === 'minecraft:cobweb' || blockTypeId === 'minecraft:vine')) {
             return 1;
-        } else if (toolType === 'sword' && blockTypeId === 'minecraft:cobweb') {
+        }
+        else if (toolType === 'sword' && blockTypeId === 'minecraft:cobweb') {
             return 1;
-        } else {
+        }
+        else {
             toolSpeed = 1;
         }
-    } else {
+    }
+    else {
         isCorrectToolTypeAndMaterial = !requiredToolClass;
         toolSpeed = 1;
     }
@@ -353,7 +385,8 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
                     efficiencyLevel = eff.level;
                 }
             }
-        } catch (e) { }
+        }
+        catch (_e) { }
     }
     if (efficiencyLevel > 0) {
         toolSpeed += (efficiencyLevel * efficiencyLevel + 1);
@@ -387,7 +420,8 @@ export function getExpectedBreakTicks(player, blockPermutation, itemStack, depen
             if (enchantComp?.getEnchantment('aqua_affinity')) {
                 hasAquaAffinity = true;
             }
-        } catch (e) { }
+        }
+        catch (_e) { }
     }
     if (player.isInWater && !hasAquaAffinity) {
         breakTimeSeconds *= 5;

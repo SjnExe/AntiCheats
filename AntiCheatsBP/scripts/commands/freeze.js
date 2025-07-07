@@ -90,20 +90,22 @@ export async function execute(player, args, dependencies) {
 
             targetPlayer.sendMessage(getString('command.freeze.targetFrozen'));
             player?.sendMessage(getString('command.freeze.success.frozen', { playerName: targetPlayer.nameTag }));
-            playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
             if (config?.notifyOnAdminUtilCommandUsage !== false) {
                 const baseNotifyMsg = getString('command.freeze.notify.froze', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
                 playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
             }
             logManager?.addLog({ adminName, actionType: 'playerFrozen', targetName: targetPlayer.nameTag, targetId: targetPlayer.id, details: 'Player frozen' }, dependencies);
-        } catch (e) {
+        }
+        catch (e) {
             player?.sendMessage(getString('command.freeze.error.apply', { playerName: targetPlayer.nameTag, errorMessage: e.message }));
             playerUtils?.debugLog(`[FreezeCommand CRITICAL] Error freezing ${targetPlayer.nameTag} by ${adminName}: ${e.message}`, adminName, dependencies);
             console.error(`[FreezeCommand CRITICAL] Error freezing ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
-            playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         }
-    } else if (targetFreezeState === false && currentFreezeState) {
+    }
+    else if (targetFreezeState === false && currentFreezeState) {
         try {
             targetPlayer.removeTag(frozenTagName);
             targetPlayer.removeEffect(mc.MinecraftEffectTypes.slowness);
@@ -111,23 +113,25 @@ export async function execute(player, args, dependencies) {
 
             targetPlayer.sendMessage(getString('command.freeze.targetUnfrozen'));
             player?.sendMessage(getString('command.freeze.success.unfrozen', { playerName: targetPlayer.nameTag }));
-            playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
             if (config?.notifyOnAdminUtilCommandUsage !== false) {
                 const baseNotifyMsg = getString('command.freeze.notify.unfroze', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
                 playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
             }
             logManager?.addLog({ adminName, actionType: 'playerUnfrozen', targetName: targetPlayer.nameTag, targetId: targetPlayer.id, details: 'Player unfrozen' }, dependencies);
-        } catch (e) {
+        }
+        catch (e) {
             player?.sendMessage(getString('command.freeze.error.remove', { playerName: targetPlayer.nameTag, errorMessage: e.message }));
             playerUtils?.debugLog(`[FreezeCommand CRITICAL] Error unfreezing ${targetPlayer.nameTag} by ${adminName}: ${e.message}`, adminName, dependencies);
             console.error(`[FreezeCommand CRITICAL] Error unfreezing ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
-            playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         }
-    } else {
+    }
+    else {
         player?.sendMessage(targetFreezeState ?
             getString('command.freeze.alreadyFrozen', { playerName: targetPlayer.nameTag }) :
-            getString('command.freeze.alreadyUnfrozen', { playerName: targetPlayer.nameTag })
+            getString('command.freeze.alreadyUnfrozen', { playerName: targetPlayer.nameTag }),
         );
     }
 }

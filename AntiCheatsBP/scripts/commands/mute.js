@@ -32,9 +32,9 @@ export async function execute(
     dependencies,
     invokedBy = 'PlayerCommand',
     isAutoModAction = false,
-    autoModCheckType = null
+    autoModCheckType = null,
 ) {
-    const { config, playerUtils, playerDataManager, logManager, rankManager, permissionLevels: depPermLevels, getString } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, rankManager, getString } = dependencies; // Removed permissionLevels: depPermLevels
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
@@ -46,7 +46,8 @@ export async function execute(
         const usageMessage = getString('command.mute.usage', { prefix: prefix });
         if (player) {
             player.sendMessage(usageMessage);
-        } else {
+        }
+        else {
             console.warn(`[MuteCommand WARNING] System call for mute missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
             playerUtils?.debugLog('[MuteCommand WARNING] System call missing target player name.', null, dependencies);
         }
@@ -86,7 +87,8 @@ export async function execute(
         const message = getString('command.mute.invalidDuration', { defaultDuration: defaultDuration });
         if (player) {
             player.sendMessage(message);
-        } else {
+        }
+        else {
             console.warn(`[MuteCommand WARNING] Invalid duration '${durationString}' (Invoked by ${issuerName}).`);
         }
         return;
@@ -101,7 +103,7 @@ export async function execute(
             mutedByForRecord,
             isAutoModAction,
             autoModCheckType,
-            dependencies
+            dependencies,
         );
 
         if (muteAdded) {
@@ -116,7 +118,8 @@ export async function execute(
 
             try {
                 foundPlayer.onScreenDisplay.setActionBar(targetNotificationMessage);
-            } catch (e) {
+            }
+            catch (e) {
                 playerUtils?.sendMessage(foundPlayer, targetNotificationMessage);
                 playerUtils?.debugLog(`[MuteCommand INFO] Failed to set action bar for muted player ${foundPlayer.nameTag}, sent chat message instead. Error: ${e.message}`, issuerName, dependencies);
             }
@@ -124,8 +127,9 @@ export async function execute(
             const successMessage = getString('command.mute.success', { playerName: foundPlayer.nameTag, durationText: durationTextUser, reason: actualReason });
             if (player) {
                 player.sendMessage(successMessage);
-                playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
-            } else {
+                playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+            }
+            else {
                 console.log(`[MuteCommand INFO] ${successMessage.replace(/§[a-f0-9]/g, '')}`);
             }
 
@@ -145,21 +149,25 @@ export async function execute(
                 isAutoMod: isAutoModAction,
                 checkType: autoModCheckType,
             }, dependencies);
-        } else {
+        }
+        else {
             const failureMessage = getString('command.mute.failure', { playerName: foundPlayer.nameTag });
             if (player) {
                 player.sendMessage(failureMessage);
-                playerUtils?.playSoundForEvent(player, "commandError", dependencies);
-            } else {
+                playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+            }
+            else {
                 console.warn(`[MuteCommand WARNING] ${failureMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${issuerName})`);
             }
         }
-    } catch (e) {
+    }
+    catch (e) {
         const errorMessage = getString('command.mute.error.generic', { playerName: foundPlayer.nameTag, errorMessage: e.message });
         if (player) {
             player.sendMessage(errorMessage);
-            playerUtils?.playSoundForEvent(player, "commandError", dependencies);
-        } else {
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+        }
+        else {
             console.error(`[MuteCommand CRITICAL] ${errorMessage.replace(/§[a-f0-9]/g, '')} (Invoked by ${issuerName})`);
         }
         playerUtils?.debugLog(`[MuteCommand CRITICAL] Unexpected error during mute command for ${foundPlayer.nameTag} by ${issuerName}: ${e.stack || e}`, issuerName, dependencies);

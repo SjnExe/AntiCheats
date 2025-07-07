@@ -26,7 +26,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { logManager, playerUtils, getString, rankManager } = dependencies;
+    const { logManager, playerUtils, getString } = dependencies; // Removed rankManager
     const adminName = player?.nameTag ?? 'UnknownAdmin';
 
     if (!allRankDefinitions || allRankDefinitions.length === 0) {
@@ -77,7 +77,7 @@ export async function execute(player, _args, dependencies) {
     }
 
     player.sendMessage(message.trim());
-    playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+    playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     try {
         logManager?.addLog({
@@ -85,7 +85,8 @@ export async function execute(player, _args, dependencies) {
             actionType: 'ranksListed',
             details: `Listed all ${sortedRanks.length} ranks.`,
         }, dependencies);
-    } catch (logError) {
+    }
+    catch (logError) {
         console.error(`[ListRanksCommand CRITICAL] Error logging: ${logError.stack || logError}`);
         playerUtils?.debugLog(`[ListRanksCommand CRITICAL] Logging error for ${adminName}: ${logError.message}`, adminName, dependencies);
     }

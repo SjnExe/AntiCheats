@@ -49,7 +49,7 @@ export async function execute(player, args, dependencies) {
             adminName: adminName,
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
-            details: `Attempted to manage watch status for player, but no pData found.`,
+            details: 'Attempted to manage watch status for player, but no pData found.',
         }, dependencies);
         return;
     }
@@ -86,7 +86,7 @@ export async function execute(player, args, dependencies) {
     if (newWatchState) {
         player.sendMessage(getString('command.watch.success.admin', { playerName: targetPlayer.nameTag }));
         targetPlayer.sendMessage(getString('command.watch.success.target', { adminName: adminName }));
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'playerWatched',
@@ -95,10 +95,11 @@ export async function execute(player, args, dependencies) {
             details: `Player ${targetPlayer.nameTag} is now being watched by ${adminName}.`,
         }, dependencies);
         playerUtils?.debugLog(`Admin ${adminName} started watching player ${targetPlayer.nameTag}.`, adminName, dependencies);
-    } else {
+    }
+    else {
         player.sendMessage(getString('command.unwatch.success.admin', { playerName: targetPlayer.nameTag })); // Reusing unwatch string
         targetPlayer.sendMessage(getString('command.unwatch.success.target', { adminName: adminName })); // Reusing unwatch string
-        playerUtils?.playSoundForEvent(player, "commandSuccess", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'playerUnwatched',

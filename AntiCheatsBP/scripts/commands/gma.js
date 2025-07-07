@@ -24,7 +24,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, args, dependencies) {
-    const { playerUtils, logManager, getString, config } = dependencies;
+    const { playerUtils, logManager, getString } = dependencies; // Removed config
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const targetPlayerNameArg = args[0];
     const gamemodeName = mc.GameMode[mc.GameMode.adventure];
@@ -43,7 +43,7 @@ export async function execute(player, args, dependencies) {
         }
 
         targetPlayer.setGameMode(gamemodeMcEnum);
-        const successSound = "commandSuccess";
+        const successSound = 'commandSuccess';
 
         if (targetPlayer.id === player.id) {
             player?.sendMessage(getString('command.gamemode.success.self', { gamemodeName: gamemodeName }));
@@ -54,7 +54,8 @@ export async function execute(player, args, dependencies) {
                 targetId: player.id,
                 details: `Set own gamemode to ${gamemodeName}`,
             }, dependencies);
-        } else {
+        }
+        else {
             player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName: gamemodeName }));
             targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName: gamemodeName }));
             logManager?.addLog({
@@ -67,12 +68,13 @@ export async function execute(player, args, dependencies) {
         }
         playerUtils?.playSoundForEvent(player, successSound, dependencies);
 
-    } catch (error) {
+    }
+    catch (error) {
         const targetNameForError = targetPlayerNameArg || adminName;
         player?.sendMessage(getString('command.gamemode.error.generic', { targetNameForError, gamemodeName, errorMessage: error.message }));
         playerUtils?.debugLog(`[GMACommand CRITICAL] Error setting gamemode for ${targetNameForError} by ${adminName}: ${error.message}`, adminName, dependencies);
         console.error(`[GMACommand CRITICAL] Error for ${adminName} target ${targetNameForError}: ${error.stack || error}`);
-        playerUtils?.playSoundForEvent(player, "commandError", dependencies);
+        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
             adminName: adminName,
             actionType: 'errorGamemodeSet',
