@@ -319,12 +319,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'enableSwearCheck', type: 'boolean' },
         { name: 'swearWordList', type: 'array', arrayElementType: 'string' },
         { name: 'swearCheckMuteDuration', type: 'durationString' },
-        { name: 'swearCheckActionProfileName', type: 'string', /**
-                                                                *
-                                                                * @param val
-                                                                * @param path
-                                                                * @param errs
-                                                                */
+        { name: 'swearCheckActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -333,12 +336,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
             } },
         { name: 'enableAntiAdvertisingCheck', type: 'boolean' },
         { name: 'antiAdvertisingPatterns', type: 'array', arrayElementType: 'string' },
-        { name: 'antiAdvertisingActionProfileName', type: 'string', /**
-                                                                     *
-                                                                     * @param val
-                                                                     * @param path
-                                                                     * @param errs
-                                                                     */
+        { name: 'antiAdvertisingActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -346,12 +352,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 return actionProfileNames.includes(val);
             } },
         { name: 'enableAdvancedLinkDetection', type: 'boolean' },
-        { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string', /**
-                                                                                     *
-                                                                                     * @param val
-                                                                                     * @param path
-                                                                                     * @param errs
-                                                                                     */
+        { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string',
+            /**
+             * Validates regex patterns in an array.
+             *
+             * @param {string[]} val - Array of regex strings.
+             * @param {string} path - The JSDoc path to the array.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True (as errors are pushed directly).
+             */
             validator: (val, path, errs) => {
                 val.forEach((regex, index) => {
                     try {
@@ -366,24 +375,30 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'advertisingWhitelistPatterns', type: 'array', arrayElementType: 'string' }, // Could also be regex
         { name: 'enableCapsCheck', type: 'boolean' },
         { name: 'capsCheckMinLength', type: 'nonNegativeNumber' },
-        { name: 'capsCheckUpperCasePercentage', type: 'number', /**
-                                                                 *
-                                                                 * @param val
-                                                                 * @param path
-                                                                 * @param errs
-                                                                 */
+        { name: 'capsCheckUpperCasePercentage', type: 'number',
+            /**
+             * Validates a number is within a specific range (0-100).
+             *
+             * @param {number} val - The number to validate.
+             * @param {string} path - The JSDoc path to the value.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid.
+             */
             validator: (val, path, errs) => {
                 if (val < 0 || val > 100) {
                     errs.push(`${path}: Must be between 0 and 100. Got ${val}.`);
                 }
                 return val >= 0 && val <= 100;
             } },
-        { name: 'capsCheckActionProfileName', type: 'string', /**
-                                                               *
-                                                               * @param val
-                                                               * @param path
-                                                               * @param errs
-                                                               */
+        { name: 'capsCheckActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -391,108 +406,135 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                 return actionProfileNames.includes(val);
             } },
         // ... (add more chat check fields)
-        { name: 'charRepeatActionProfileName', type: 'string', /**
-                                                                *
-                                                                * @param val
-                                                                * @param path
-                                                                * @param errs
-                                                                */
+        { name: 'charRepeatActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'symbolSpamActionProfileName', type: 'string', /**
-                                                                *
-                                                                * @param val
-                                                                * @param path
-                                                                * @param errs
-                                                                */
+        { name: 'symbolSpamActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'fastMessageSpamActionProfileName', type: 'string', /**
-                                                                     *
-                                                                     * @param val
-                                                                     * @param path
-                                                                     * @param errs
-                                                                     */
+        { name: 'fastMessageSpamActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'maxWordsSpamActionProfileName', type: 'string', /**
-                                                                  *
-                                                                  * @param val
-                                                                  * @param path
-                                                                  * @param errs
-                                                                  */
+        { name: 'maxWordsSpamActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'chatContentRepeatActionProfileName', type: 'string', /**
-                                                                       *
-                                                                       * @param val
-                                                                       * @param path
-                                                                       * @param errs
-                                                                       */
+        { name: 'chatContentRepeatActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'unicodeAbuseActionProfileName', type: 'string', /**
-                                                                  *
-                                                                  * @param val
-                                                                  * @param path
-                                                                  * @param errs
-                                                                  */
+        { name: 'unicodeAbuseActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'gibberishActionProfileName', type: 'string', /**
-                                                               *
-                                                               * @param val
-                                                               * @param path
-                                                               * @param errs
-                                                               */
+        { name: 'gibberishActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'mentionsActionProfileName', type: 'string', /**
-                                                              *
-                                                              * @param val
-                                                              * @param path
-                                                              * @param errs
-                                                              */
+        { name: 'mentionsActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
                 }
                 return actionProfileNames.includes(val);
             } },
-        { name: 'impersonationActionProfileName', type: 'string', /**
-                                                                   *
-                                                                   * @param val
-                                                                   * @param path
-                                                                   * @param errs
-                                                                   */
+        { name: 'impersonationActionProfileName', type: 'string',
+            /**
+             * Validates that the action profile name exists.
+             *
+             * @param {string} val - The value of the action profile name.
+             * @param {string} path - The JSDoc path to the value being validated.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid, false otherwise.
+             */
             validator: (val, path, errs) => {
                 if (!actionProfileNames.includes(val)) {
                     errs.push(`${path}: Action profile "${val}" not found in actionProfiles.js.`);
@@ -503,12 +545,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
 
         // AntiGrief
         { name: 'enableTntAntiGrief', type: 'boolean' },
-        { name: 'tntPlacementAction', type: 'string', /**
-                                                       *
-                                                       * @param val
-                                                       * @param path
-                                                       * @param errs
-                                                       */
+        { name: 'tntPlacementAction', type: 'string',
+            /**
+             * Validates the action string against a list of allowed values.
+             *
+             * @param {string} val - The action string.
+             * @param {string} path - The JSDoc path to the value.
+             * @param {string[]} errs - Array to push error messages to.
+             * @returns {boolean} True if valid.
+             */
             validator: (val, path, errs) => {
                 const valid = ['remove', 'warn', 'flagOnly'];
                 if (!valid.includes(val)) {
@@ -519,12 +564,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         // ... (add more AntiGrief fields)
 
         // Sound Events
-        { name: 'soundEvents', type: 'object', /**
-                                                *
-                                                * @param soundEventsObj
-                                                * @param sePath
-                                                * @param seErrs
-                                                */
+        { name: 'soundEvents', type: 'object',
+            /**
+             * Validates the structure of the soundEvents object.
+             *
+             * @param {object} soundEventsObj - The soundEvents object.
+             * @param {string} sePath - The JSDoc path to this object.
+             * @param {string[]} seErrs - Array to push error messages to.
+             * @returns {boolean} True if all sound event definitions are valid.
+             */
             validator: (soundEventsObj, sePath, seErrs) => {
                 let overallSoundEventsValid = true;
                 for (const eventName in soundEventsObj) {
@@ -538,12 +586,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'soundId', type: 'string', optional: true }, // Can be empty for no sound
                         { name: 'volume', type: 'number', optional: true }, // Specific range check below
                         { name: 'pitch', type: 'number', optional: true },
-                        { name: 'target', type: 'string', optional: true, /**
-                                                                           *
-                                                                           * @param val
-                                                                           * @param p
-                                                                           * @param e
-                                                                           */
+                        { name: 'target', type: 'string', optional: true,
+                            /**
+                             * Validates the sound event target string.
+                             *
+                             * @param {string} val - The target string.
+                             * @param {string} p - The JSDoc path to the value.
+                             * @param {string[]} e - Array to push error messages to.
+                             * @returns {boolean} True if valid.
+                             */
                             validator: (val, p, e) => {
                                 const validTargets = ['player', 'admin', 'targetPlayer', 'global'];
                                 if (val && !validTargets.includes(val)) {
@@ -569,12 +620,15 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
             } },
 
         // Command Settings
-        { name: 'commandSettings', type: 'object', /**
-                                                    *
-                                                    * @param cmdSettingsObj
-                                                    * @param csPath
-                                                    * @param csErrs
-                                                    */
+        { name: 'commandSettings', type: 'object',
+            /**
+             * Validates the commandSettings object.
+             *
+             * @param {object} cmdSettingsObj - The commandSettings object.
+             * @param {string} csPath - The JSDoc path to this object.
+             * @param {string[]} csErrs - Array to push error messages to.
+             * @returns {boolean} True if all command settings are valid.
+             */
             validator: (cmdSettingsObj, csPath, csErrs) => {
                 let overallIsValid = true;
                 for (const cmdName of Object.keys(cmdSettingsObj)) {
@@ -717,12 +771,15 @@ export function validateActionProfiles(actionProfiles) {
             ] },
             { name: 'cancelMessage', type: 'boolean', optional: true },
             { name: 'cancelEvent', type: 'boolean', optional: true },
-            { name: 'customAction', type: 'string', optional: true, /**
-                                                                     *
-                                                                     * @param val
-                                                                     * @param path
-                                                                     * @param errs
-                                                                     */
+            { name: 'customAction', type: 'string', optional: true,
+                /**
+                 * Validates the customAction string against a list of known custom actions.
+                 *
+                 * @param {string} val - The custom action string.
+                 * @param {string} path - The JSDoc path to the value.
+                 * @param {string[]} errs - Array to push error messages to.
+                 * @returns {boolean} True if valid.
+                 */
                 validator: (val, path, errs) => {
                     if (!validCustomActions.includes(val)) {
                         errs.push(`${path}: Invalid customAction "${val}". Expected one of ${validCustomActions.join(', ')}.`);
@@ -797,12 +854,16 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
         const ruleSetContext = `${context}.automodRuleSets[${index}]`;
 
         const ruleSetFieldDefs = [
-            { name: 'checkType', type: 'string', /**
-                                                  *
-                                                  * @param val
-                                                  * @param path
-                                                  * @param errs
-                                                  */
+            { name: 'checkType', type: 'string',
+                /**
+                 * Validates the checkType string.
+                 * Ensures it's camelCase or a known actionProfile name.
+                 *
+                 * @param {string} val - The checkType string.
+                 * @param {string} path - The JSDoc path to the value.
+                 * @param {string[]} errs - Array to push error messages to.
+                 * @returns {boolean} True (as errors are pushed directly).
+                 */
                 validator: (val, path, errs) => {
                 // A checkType in automodConfig might not necessarily have a direct 1:1 actionProfile
                 // if it's a more abstract grouping or if actionProfiles are fine-grained.
@@ -831,12 +892,15 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                 const tierContext = `${ruleSetContext}.tiers[${tierIndex}]`;
                 const tierFieldDefs = [
                     { name: 'flagThreshold', type: 'positiveNumber' },
-                    { name: 'actionType', type: 'string', /**
-                                                           *
-                                                           * @param val
-                                                           * @param path
-                                                           * @param errs
-                                                           */
+                    { name: 'actionType', type: 'string',
+                        /**
+                         * Validates the AutoMod actionType string.
+                         *
+                         * @param {string} val - The actionType string.
+                         * @param {string} path - The JSDoc path to the value.
+                         * @param {string[]} errs - Array to push error messages to.
+                         * @returns {boolean} True if valid.
+                         */
                         validator: (val, path, errs) => {
                             if (!validAutoModActions.includes(val)) {
                                 errs.push(`${path}: Invalid actionType "${val}". Expected one of ${validAutoModActions.join(', ')}.`);
@@ -962,12 +1026,16 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
         const rankDefContext = `${rdContext}[${index}]`;
 
         const rankDefFields = [
-            { name: 'id', type: 'string', /**
-                                           *
-                                           * @param val
-                                           * @param path
-                                           * @param errs
-                                           */
+            { name: 'id', type: 'string',
+                /**
+                 * Validates the rank ID.
+                 * Ensures it is lowercase and unique.
+                 *
+                 * @param {string} val - The rank ID.
+                 * @param {string} path - The JSDoc path to the value.
+                 * @param {string[]} errs - Array to push error messages to.
+                 * @returns {boolean} True (as errors are pushed directly).
+                 */
                 validator: (val, path, errs) => {
                     if (val !== val.toLowerCase()) {
                         errs.push(`${path}: Rank ID "${val}" must be lowercase.`);
@@ -988,12 +1056,16 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
             ] },
             { name: 'nametagPrefix', type: 'string', optional: true },
             { name: 'conditions', type: 'array' },
-            { name: 'priority', type: 'number', /**
-                                                 *
-                                                 * @param val
-                                                 * @param path
-                                                 * @param errs
-                                                 */
+            { name: 'priority', type: 'number',
+                /**
+                 * Validates the rank priority.
+                 * Ensures it is unique.
+                 *
+                 * @param {number} val - The priority value.
+                 * @param {string} path - The JSDoc path to the value.
+                 * @param {string[]} errs - Array to push error messages to.
+                 * @returns {boolean} True (as errors are pushed directly).
+                 */
                 validator: (val, path, errs) => {
                     if (rankPriorities.has(val)) {
                         errs.push(`${path}: Duplicate priority ${val} found. Priorities must be unique.`);
@@ -1013,12 +1085,15 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 const condContext = `${rankDefContext}.conditions[${condIndex}]`;
                 const validConditionTypes = ['ownerName', 'adminTag', 'manualTagPrefix', 'tag', 'default'];
                 const conditionFieldDefs = [
-                    { name: 'type', type: 'string', /**
-                                                     *
-                                                     * @param val
-                                                     * @param path
-                                                     * @param errs
-                                                     */
+                    { name: 'type', type: 'string',
+                        /**
+                         * Validates the rank condition type string.
+                         *
+                         * @param {string} val - The condition type string.
+                         * @param {string} path - The JSDoc path to the value.
+                         * @param {string[]} errs - Array to push error messages to.
+                         * @returns {boolean} True if valid.
+                         */
                         validator: (val, path, errs) => {
                             if (!validConditionTypes.includes(val)) {
                                 errs.push(`${path}: Invalid condition type "${val}". Expected one of ${validConditionTypes.join(', ')}.`);

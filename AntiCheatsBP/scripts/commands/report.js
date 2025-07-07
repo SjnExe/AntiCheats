@@ -19,10 +19,11 @@ export const definition = {
 };
 
 /**
+ * Executes the report command.
  *
- * @param player
- * @param args
- * @param dependencies
+ * @param {import('@minecraft/server').Player} player - The player executing the command.
+ * @param {string[]} args - The command arguments (target player name and reason).
+ * @param {import('../types.js').Dependencies} dependencies - The standard command dependencies.
  */
 export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;

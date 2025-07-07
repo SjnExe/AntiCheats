@@ -8,8 +8,7 @@ import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPe
 /**
  * @description Dynamically generated mapping of rank IDs (lowerCase) to their numeric permission levels.
  * Populated by `initializeRanks`.
- * @export
- * @type {Object.<string, number>}
+ * @type {{[key: string]: number}}
  */
 export let permissionLevels = {};
 
@@ -71,8 +70,8 @@ function initializeRankSystem(dependencies) {
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {{ rankDefinition: import('./ranksConfig.js').RankDefinition | null, permissionLevel: number, rankId: string | null }}
- *          Object containing matched rank definition, permission level, and rank ID (lowerCase).
- *          Returns default/member level if no specific rank matches.
+ * Object containing matched rank definition, permission level, and rank ID (lowerCase).
+ * Returns default/member level if no specific rank matches.
  */
 function getPlayerRankAndPermissions(player, dependencies) {
     const { config, playerUtils } = dependencies; // Removed getString
@@ -284,9 +283,9 @@ export function getRankById(rankId) {
  * @param {string} actionContext - A string describing the action (e.g., 'ban', 'kick', 'mute') for logging/messaging.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  * @returns {{allowed: boolean, messageKey?: string, messageParams?: Record<string, string>}}
- *          `allowed` is true if permission is granted.
- *          If false, `messageKey` provides a textDatabase key for the denial reason,
- *          and `messageParams` provides parameters for that message.
+ * `allowed` is true if permission is granted.
+ * If false, `messageKey` provides a textDatabase key for the denial reason,
+ * and `messageParams` provides parameters for that message.
  */
 export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, dependencies) {
     const { playerUtils, permissionLevels: depPermLevels } = dependencies; // Removed getString, assuming getString is part of playerUtils or top-level in dependencies

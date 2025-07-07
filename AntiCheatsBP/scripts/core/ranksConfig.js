@@ -17,11 +17,11 @@
 /**
  * @typedef {object} RankCondition
  * @property {('ownerName'|'adminTag'|'manualTagPrefix'|'tag'|'default')} type - The type of condition (camelCase).
- *      - `ownerName`: Matches if player's nameTag equals `config.ownerPlayerName`.
- *      - `adminTag`: Matches if player has the tag specified in `config.adminTag`.
- *      - `manualTagPrefix`: Matches if player has a tag like `prefix` + `rankId` (e.g., 'rank_vip').
- *      - `tag`: Matches if player has the specified `tag` string.
- *      - `default`: A fallback condition, usually for the 'member' rank.
+ * - `ownerName`: Matches if player's nameTag equals `config.ownerPlayerName`.
+ * - `adminTag`: Matches if player has the tag specified in `config.adminTag`.
+ * - `manualTagPrefix`: Matches if player has a tag like `prefix` + `rankId` (e.g., 'rank_vip').
+ * - `tag`: Matches if player has the specified `tag` string.
+ * - `default`: A fallback condition, usually for the 'member' rank.
  * @property {string} [prefix] - Required if type is 'manualTagPrefix'. The prefix for the rank tag (e.g., 'rank_').
  * @property {string} [tag] - Required if type is 'tag'. The specific tag to check for.
  */
@@ -29,7 +29,7 @@
 /**
  * @typedef {object} RankDefinition
  * @property {string} id - Unique identifier for the rank (e.g., 'owner', 'admin', 'vip').
- *                        Should be `camelCase` or `lowercase`. It will be processed as lowercase by RankManager.
+ * Should be `camelCase` or `lowercase`. It will be processed as lowercase by RankManager.
  * @property {string} name - Display name for the rank (e.g., "Owner", "Administrator").
  * @property {number} permissionLevel - Numeric permission level. Lower is higher privilege (0 = Owner).
  * @property {ChatFormatting} [chatFormatting] - Optional chat formatting overrides.

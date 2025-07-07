@@ -112,11 +112,15 @@ export function unregisterCommandInternal(commandName, dependencies) {
 // For initial load, aliasToCommandMap will be empty or populated based on command files.
 (() => {
     const initialLoadDeps = {
-        playerUtils: { /**
-                        *
-                        * @param msg
-                        */
-            debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`) },
+        playerUtils: {
+            /**
+             * Minimal debug logger for initial command load.
+             *
+             * @param {string} msg - The message to log.
+             * @returns {void}
+             */
+            debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`),
+        },
         // config: {} // config.commandAliases is no longer used for alias resolution
         // aliasToCommandMap will be initialized within initializeCommands
     };

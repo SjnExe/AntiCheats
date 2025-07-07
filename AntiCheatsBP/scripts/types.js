@@ -123,8 +123,8 @@
  * @property {PlayerBanInfo | null} [banInfo] Current ban status. Persisted.
  * @property {PlayerFlagData} flags Accumulated violation flags.
  * @property {string} [lastFlagType] The `checkType` of the most recent flag.
- * @property {Object.<string, {itemTypeId?: string, quantityFound?: number, timestamp: number, details?: string, [key: string]: any}>} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
- * @property {Object.<string, {lastActionThreshold?: number, lastActionTimestamp?: number, [key: string]: any}>} [automodState] State information for the AutoMod system related to this player. Persisted.
+ * @property {{[key: string]: {itemTypeId?: string, quantityFound?: number, timestamp: number, details?: string, [key: string]: any}}} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
+ * @property {{[key: string]: {lastActionThreshold?: number, lastActionTimestamp?: number, [key: string]: any}}} [automodState] State information for the AutoMod system related to this player. Persisted.
  * @property {number} [lastLoginTime] Timestamp of the last login.
  * @property {number} [lastLogoutTime] Timestamp of the last logout.
  * @property {number} [joinCount=0] Total number of times the player has joined.
@@ -159,7 +159,7 @@
  * @property {boolean} [isChargingBow=false] True if currently charging a bow/crossbow.
  * @property {boolean} [isUsingShield=false] True if currently holding up/using a shield.
  * @property {number} [lastItemUseTick=0] Game tick of the last significant item use start.
- * @property {Object.<string, number>} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check).
+ * @property {{[key: string]: number}} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check).
  *
  * World Interaction / Building State:
  * @property {number[]} [blockBreakEventsTimestamps] Timestamps of recent block break actions (for Nuker).
@@ -487,6 +487,11 @@
  * @typedef {object} EventSpecificData
  */
 
+/**
+ * @typedef {object} SoundOptions
+ * @property {number} volume
+ * @property {number} pitch
+ */
 
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
 /**
