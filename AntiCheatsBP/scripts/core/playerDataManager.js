@@ -714,8 +714,15 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
     if (stateType === 'ban') {
         logMsg += ` (XUID: ${player.id})`;
     }
-    logMsg += ` ${stateType}d by ${restrictedBy}. Reason: '${actualReason}'. AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType ?? 'N/A'}.`;
-    logMsg += (durationMs === Infinity) ? ' Duration: Permanent.' : ` Expiry time: ${new Date(expiryTime).toISOString()}.`;
+    logMsg += ` ${stateType}d by ${restrictedBy}. Reason: '${actualReason}'.`;
+    logMsg += ` AutoMod: ${isAutoMod}. CheckType: ${triggeringCheckType ?? 'N/A'}.`;
+
+    if (durationMs === Infinity) {
+        logMsg += ' Duration: Permanent.';
+    } //
+    else {
+        logMsg += ` Expiry time: ${new Date(expiryTime).toISOString()}.`;
+    }
     playerUtils?.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
     return true;
 }

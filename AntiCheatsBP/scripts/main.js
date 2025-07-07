@@ -104,8 +104,9 @@ function checkEventAPIsReady(dependencies) {
     const useDebugLog = dependencies?.config?.enableDebugLogging && dependencies?.playerUtils?.debugLog;
 
     /**
+     * Logs a message using either debugLog or console.error.
      *
-     * @param msg
+     * @param {string} msg - The message to log.
      */
     const logger = (msg) => {
         if (useDebugLog) {

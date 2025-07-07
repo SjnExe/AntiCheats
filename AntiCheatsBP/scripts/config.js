@@ -803,7 +803,7 @@ export const editableConfigValues = { ...defaultConfigSettings };
  *
  * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
  * @param {any} value - The new value for the configuration key.
- * @returns {{success: boolean, message: string, oldValue?: any, newValue?: any}} Object indicating success, a message, and optionally old/new values.
+ * @returns {{success: boolean, message: string, oldValue?: unknown, newValue?: unknown}} Object indicating success, a message, and optionally old/new values.
  */
 export function updateConfigValue(key, value) {
     if (!Object.prototype.hasOwnProperty.call(defaultConfigSettings, key)) {

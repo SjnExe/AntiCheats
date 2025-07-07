@@ -78,7 +78,7 @@ export default [
         ignoreRegExpLiterals: true,
       }],
       'no-magic-numbers': ['warn', {
-        'ignore': [-1, 0, 1, 2, 10, 100, 1000],
+        'ignore': [-1, 0, 0.5, 1, 2, 3, 4, 10, 20, 100, 600, 1000], // Added 0.5, 3, 4, 20, 600
         'ignoreArrayIndexes': true,
         'enforceConst': true,
       }],

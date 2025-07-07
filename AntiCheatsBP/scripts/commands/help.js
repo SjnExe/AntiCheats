@@ -155,4 +155,5 @@ export function execute(player, args, dependencies) {
         }
         player.sendMessage(helpMessage);
     }
+    return;
 }
