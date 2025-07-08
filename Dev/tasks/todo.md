@@ -62,5 +62,3 @@ This list contains planned features, improvements, and areas for future investig
     - Review codebase for consistency in logging:
         - What level of detail goes to `console.warn` (via `debugLog`) vs. `logManager.addLog`.
         - Standardize prefixes or context markers for `debugLog` if not using `contextPlayerNameIfWatched`.
-- **(Medium) Error Handling Standardization**:
-    - Evaluate creating a more standardized error reporting utility or pattern, especially for errors reported to `logManager`. This could include common error codes or more structured `details` objects.

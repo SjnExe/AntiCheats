@@ -143,12 +143,20 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
     }
     // Add more contexts here if _handleDynamicPropertyError is used by other functions for different DP keys.
 
-    const newActionType = `pdm.dp.${contextStr}.${opType}.error`;
+    // Refined actionType and errorCode to match new standardization
+    const actionTypePrefix = 'error.pdm.dp';
+    let specificErrorType = opType; // 'parse', 'stringify', 'get', 'set'
+    if (opType === 'get') specificErrorType = 'Get';
+    else if (opType === 'set') specificErrorType = 'Set';
+    else if (opType === 'parse') specificErrorType = 'Parse';
+    else if (opType === 'stringify') specificErrorType = 'Stringify';
 
-    const errorCode = `PDM_DP_${contextStr.toUpperCase()}_${opType.toUpperCase()}_ERROR`;
+
+    const newActionType = `${actionTypePrefix}${specificErrorType}`; // e.g., error.pdm.dpGet, error.pdm.dpParse
+    const errorCode = `PDM_DP_${specificErrorType.toUpperCase()}_FAIL`; // e.g., PDM_DP_GET_FAIL, PDM_DP_PARSE_FAIL
 
     logManager?.addLog({
-        actionType: newActionType, // e.g., pdm.dp.data.parse.error
+        actionType: newActionType,
         context: logContext,    // e.g., playerDataManager.loadPlayerDataFromDynamicProperties
         targetName: playerName,
         details: {

@@ -623,10 +623,15 @@ function performInitializations() {
                 console.error(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.stack || checkError}`);
                 tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
                 logManager.addLog({
-                    actionType: 'errorMainPlayerTickChecks',
-                    context: 'Main.TickLoop.playerChecks',
+                    actionType: 'error.main.playerTick.checkFail', // Standardized actionType
+                    context: 'Main.TickLoop.playerChecks', // Specific context
                     targetName: player?.nameTag || 'UnknownPlayer',
-                    details: { errorMessage: checkError.message, stack: checkError.stack },
+                    details: {
+                        errorCode: 'MAIN_PLAYER_TICK_CHECK_FAIL', // Standardized errorCode
+                        message: checkError.message,
+                        rawErrorStack: checkError.stack,
+                        // meta: { checkName: 'UnknownCheckInLoop' } // Example if checkName was known
+                    },
                 }, tickDependencies);
             }
 
