@@ -21,12 +21,6 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Complete) `playerDataManager.js` - Review `persistedPlayerDataKeys`**:
-    - Evaluated `lastAttackTime` and `attackEvents`.
-    - **Action Taken**: Removed `lastAttackTime` and `attackEvents` from `persistedPlayerDataKeys` as they were found to be either redundant for persistence (`lastAttackTime` due to lack of updates and presence of `lastCombatInteractionTime`) or not beneficial for cross-session persistence (`attackEvents` for session-based CPS). This optimizes persisted player data size.
-- **(Reviewed) `playerDataManager.js` - `initializeDefaultPlayerData` Readability**:
-    - Explored grouping related properties into sub-objects (e.g., for timers, building state, breaking state, chat state).
-    - **Decision**: Deferred implementation due to the extensive refactoring effort required across the codebase to update all property access paths, and the risk of introducing errors. The verbosity increase for frequently accessed core movement/combat properties was also a concern. The analysis and proposed groupings (`pData.timers`, `pData.building`, `pData.breaking`, `pData.chat`) are noted here for future consideration if a larger refactoring initiative is undertaken with robust testing. Current flat structure for high-traffic properties remains to avoid widespread verbosity changes.
 - **(Medium) `playerDataManager.js` - `addFlag` and `actionManager.js` - `lastViolationDetailsMap`**:
     - Clarify the intended data flow for populating `pData.lastViolationDetailsMap`. Both `playerDataManager.addFlag` (via `detailsForNotify`) and `actionManager.executeCheckAction` have logic to store item-related details. Consolidate to avoid redundancy or ensure clear roles. `actionManager` seems like a more logical place to determine what from `violationDetails` is stored.
 - **(Low) `playerDataManager.js` - Standardize DP Error Logging**:
