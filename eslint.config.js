@@ -33,8 +33,6 @@ export default [
         mc: "readonly",
         world: "readonly",
         system: "readonly",
-        // Consider adding other Minecraft API globals if used directly, e.g., Player, Entity, etc.
-        // However, it's common to import them via 'import * as mc from "@minecraft/server";'
       },
     },
     plugins: {
@@ -45,7 +43,6 @@ export default [
       ...eslintJs.configs.recommended.rules,
 
       // == Custom Project Style Rules (from StandardizationGuidelines.md & previous setup) ==
-      // These will override any conflicting rules from eslint:recommended
       'semi': ['error', 'always'],
       'quotes': ['error', 'single', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
       'indent': ['error', 4, { 'SwitchCase': 1 }],
@@ -57,7 +54,7 @@ export default [
       'curly': ['error', 'all'],
       'eqeqeq': ['error', 'always'],
       'no-var': 'error',
-      'no-console': 'off', // Project specific decision to allow console
+      'no-console': 'off',
       'brace-style': ['error', '1tbs', { 'allowSingleLine': false }],
       'func-call-spacing': ['error', 'never'],
       'comma-dangle': ['error', 'always-multiline'],
@@ -79,166 +76,117 @@ export default [
         ignoreRegExpLiterals: true,
       }],
       'no-magic-numbers': ['warn', {
-        'ignore': [-1, 0, 0.5, 1, 2, 3, 4, 10, 20, 100, 600, 1000], // Added 0.5, 3, 4, 20, 600
+        'ignore': [-1, 0, 0.5, 1, 2, 3, 4, 10, 20, 100, 600, 1000],
         'ignoreArrayIndexes': true,
         'enforceConst': true,
       }],
-      // Override specific eslint:recommended rules if necessary
-      'no-prototype-builtins': 'warn', // Might be too strict for some Minecraft API patterns if not careful
-      // 'no-undef': 'error', // This is in eslint:recommended, ensure globals are well-defined
-      'no-empty': ['error', { 'allowEmptyCatch': false }], // Guideline: "Avoid silent catches"
-      'no-invalid-this': 'warn', // 'this' can be tricky in callbacks, 'warn' is safer
-      'no-unused-vars': ['warn', { // Already defined above, but ensure it overrides recommended if different
-        'argsIgnorePattern': '^_',
-        'varsIgnorePattern': '^_',
-        'caughtErrorsIgnorePattern': '^_'
-      }],
-      'no-loss-of-precision': 'error', // Good to keep from recommended
-      'no-useless-catch': 'error',     // Good to keep
-      'no-useless-escape': 'error',    // Good to keep
-      'no-useless-return': 'error',    // Good to keep
-      'prefer-const': 'error',         // Good to keep
-      'require-await': 'warn',         // Good to keep as warn
-
-      // Note: 'no-async-promise-executor', 'no-misleading-character-class',
-      // 'no-useless-backreference', 'require-atomic-updates' are part of eslint:recommended
-      // and should be active. No need to re-declare them unless changing their severity.
-
-      // == JSDoc Rules (Initial basic setup - will be expanded in next step) ==
-      // The actual JSDoc rules will be populated here or by the plugin's recommended config below.
-      // Example: 'jsdoc/require-param-type': 'error',
+      'no-prototype-builtins': 'warn',
+      'no-empty': ['error', { 'allowEmptyCatch': false }],
+      'no-invalid-this': 'warn',
+      'no-loss-of-precision': 'error',
+      'no-useless-catch': 'error',
+      'no-useless-escape': 'error',
+      'no-useless-return': 'error',
+      'prefer-const': 'error',
+      'require-await': 'warn',
     },
   },
-  // Configuration for JSDoc plugin.
-  // Start with jsdoc.configs['flat/recommended'] and then override/add specific rules.
   {
-    // This ensures that the JSDoc rules are applied to the same files.
-    ...jsdoc.configs['flat/recommended'], // Spread the recommended config
-    files: ["AntiCheatsBP/scripts/**/*.js"], // Ensure it applies to the correct files
-    plugins: { // Ensure the plugin is explicitly mentioned here too if spreading configs that might not include it
+    ...jsdoc.configs['flat/recommended'],
+    files: ["AntiCheatsBP/scripts/**/*.js"],
+    plugins: {
         jsdoc: jsdoc,
     },
     rules: {
-        // Override or add specific JSDoc rules here.
-        // Rules from jsdoc.configs['flat/recommended'] will be applied first,
-        // and these settings will merge with/override them.
+        // Rules from jsdoc.configs['flat/recommended'] are active here first.
+        // Subsequent rules in this block will override them.
 
         'jsdoc/require-jsdoc': [
-            'error', // Enforce JSDoc for exports as per guidelines
+            'error',
             {
                 require: {
                     FunctionDeclaration: true,
                     MethodDefinition: true,
                     ClassDeclaration: true,
-                    ArrowFunctionExpression: true, // Checks arrow functions
+                    ArrowFunctionExpression: true,
                     FunctionExpression: true
                 },
                 contexts: [
-                    'ExportDefaultDeclaration', // Ensures default exports are documented
-                    'ExportNamedDeclaration',   // Ensures named exports are documented
-                    // The 'ExportNamedDeclaration' context will cover exported variables, functions, classes.
-                    // For variable declarators that are exported, this context is sufficient.
-                    // Specific options for how these are handled (e.g. inline comments) can be fine-tuned
-                    // if needed, but the primary goal is to ensure they are documented.
-                    // The `require` options above specify *what kind* of declarations need docs.
-                    // `ExportNamedDeclaration` ensures that if those kinds are exported, they are checked.
-                    // It also implicitly covers exported variables.
+                    'ExportDefaultDeclaration',
+                    'ExportNamedDeclaration',
                 ],
                 publicOnly: false,
                 checkConstructors: true,
-                checkGetters: true, // Guidelines don't specify JSDoc for getters/setters, but it's good practice.
+                checkGetters: true,
                 checkSetters: true,
             },
         ],
         'jsdoc/require-param': ['error', { checkDestructuredRoots: false }],
         'jsdoc/require-param-type': 'error',
         'jsdoc/require-param-name': 'error',
-        'jsdoc/require-param-description': 'error', // Enforce param descriptions
+        'jsdoc/require-param-description': 'off', // MODIFICATION: Turned OFF due to issues with wrapped functions
 
         'jsdoc/require-returns': ['error', { checkGetters: false }],
         'jsdoc/require-returns-type': 'error',
-        'jsdoc/require-returns-description': 'error', // Enforce return descriptions
+        'jsdoc/require-returns-description': 'error',
 
         'jsdoc/no-undefined-types': ['error', { disableReporting: false }],
         'jsdoc/check-types': ['error', { unifyParentAndChildTypeChecks: true, exemptTagContexts: [{tag: 'typedef', types: true}] }],
         'jsdoc/valid-types': 'error',
 
-        // 'jsdoc/tag-lines': ['warn', 'always', { startLines: 1, applyToEndTag: false, tags: { 'fileoverview': { lines: 'never' }} }], // Ensure a line after description, no line between tags. fileoverview is special. Temporarily disabled due to affecting too many files for auto-fix.
         'jsdoc/check-alignment': 'warn',
-        'jsdoc/check-indentation': ['warn', { "excludeTags": ["example"] } ], // Exclude example tags from indentation checks
+        'jsdoc/check-indentation': 'off', // MODIFICATION: Turned OFF due to persistent false positives
+
         'jsdoc/check-tag-names': [
             'error',
             {
-                definedTags: ['async', 'throws', 'deprecated', 'see', 'example', 'typedef', 'callback', 'property', 'template', 'borrows', 'memberof', 'ignore', 'fileoverview', 'license', 'author', 'type', 'module', 'param', 'returns'], // Added 'type', 'module', 'param', 'returns' to be safe
+                definedTags: ['async', 'throws', 'deprecated', 'see', 'example', 'typedef', 'callback', 'property', 'template', 'borrows', 'memberof', 'ignore', 'fileoverview', 'license', 'author', 'type', 'module', 'param', 'returns'],
                 jsxTags: false,
             }
         ],
+        // This is the primary definition for multiline-blocks, ensuring compactness.
         'jsdoc/multiline-blocks': ['warn', {
             noZeroLineText: true,
             noFinalLineText: true,
-            noSingleLineBlocks: false, // Allow /** @type {string} */
+            singleLineTags: ['type', 'typedef', 'param', 'returns', 'default', 'deprecated', 'async', 'see', 'ignore', 'license', 'author', 'module'],
+            noSingleLineBlocks: false,
         }],
         'jsdoc/no-multi-asterisks': ['warn', { preventAtEnd: true, preventAtMiddleLines: true }],
         'jsdoc/require-asterisk-prefix': ['warn', 'always'],
         'jsdoc/no-bad-blocks': ['warn'],
 
-
         'jsdoc/check-param-names': ['error', { checkDestructured: false, enableFixer: true }],
         'jsdoc/check-property-names': ['error', { enableFixer: true }],
 
-        // Rule for file overview
         'jsdoc/require-file-overview': ['warn', {
             tags: {
-                file: { // Changed from fileoverview to file
+                file: {
                     mustExist: true,
                     preventDuplicates: true,
                 },
-                author: { // Optional, but good to have
+                author: {
                     mustExist: false,
                     preventDuplicates: true,
                 },
-                license: { // Optional
+                license: {
                     mustExist: false,
                     preventDuplicates: true,
                 }
             },
         }],
 
-        // Discourage @type in JSDoc comments where @param or @returns is more appropriate.
-        // This does NOT forbid /** @type {SomeType} */ for variable type annotations.
-        // It targets JSDoc blocks for functions primarily.
-        // 'jsdoc/no-types': 'warn', // Can be noisy if @type is used for complex param/return structures before full typedefs
-
-        // Rules from StandardizationGuidelines.md
-        // - JSDoc mandatory for exported functions, classes, significant constants. (covered by require-jsdoc contexts)
-        // - Concise summary (partially covered by rules requiring descriptions)
-        // - @param {type} name - description (covered)
-        // - @returns {type} description (covered)
-        // - Specific types (no-undefined-types, check-types, valid-types)
-
-        // Turned off or kept as warn based on previous config and common sense
-        'jsdoc/require-description': 'warn', // require-jsdoc implies a description is needed. This one is more specific about the description *content*.
-        'jsdoc/require-description-complete-sentence': 'off', // Disabled to allow more compact comments not necessarily forming complete sentences.
+        'jsdoc/require-description': 'warn',
+        'jsdoc/require-description-complete-sentence': 'off',
         'jsdoc/match-description': 'off',
         'jsdoc/no-defaults': 'warn',
         'jsdoc/require-example': 'off',
-        'jsdoc/empty-tags': 'warn', // Default is warn, keep it
+        'jsdoc/empty-tags': 'warn',
 
-        // Rules for compactness
-        'jsdoc/multiline-blocks': ['warn', { // Adjusted for more flexibility
-            noZeroLineText: true,
-            noFinalLineText: true,
-            singleLineTags: ['type', 'typedef', 'param', 'returns', 'default', 'deprecated', 'async', 'see', 'ignore', 'license', 'author', 'module'], // Allow single line for these common tags
-            noSingleLineBlocks: false, // Allow /** @type {string} */ and /** Short desc. */
-        }],
-        'jsdoc/tag-lines': ['warn', 'never', { // No extra lines between tags for compactness
-            // startLines: 1, // Removed to allow tags immediately after description
-            // applyToEndTag: false, // Default
-            // count: 0, // Ensure no blank lines between tags.
+        'jsdoc/tag-lines': ['warn', 'never', {
             tags: {
-                'file': { lines: 'never' }, // for @file, no lines around it
-                'example': { lines: 'any' }, // Allow space within examples
-                'description': { lines: 'never' } // No blank line after main description before first tag
+                'file': { lines: 'never' },
+                'example': { lines: 'any' },
+                'description': { lines: 'never' }
             }
         }],
 
@@ -255,17 +203,16 @@ export default [
         'yoda': ['warn', 'never', { exceptRange: true }],
         'no-else-return': ['warn', { allowElseIf: false }],
         'prefer-template': 'warn',
-        'object-shorthand': ['warn', 'properties'], // Prefer {x} over {x: x}
+        'object-shorthand': ['warn', 'properties'],
         'no-useless-concat': 'warn',
         'prefer-object-spread': 'warn',
 
-        // Rule to enforce camelCase naming convention
         'camelcase': ['error', {
-          properties: 'always', // Enforce camelCase for property names as well
+          properties: 'always',
           ignoreDestructuring: false,
           ignoreImports: false,
-          ignoreGlobals: false, // Check globals too; if any globals ARE snake_case and cannot be changed, they'd need to be added to 'allow'.
-          allow: ['error_code', 'error_message', 'stack_trace'], // Allow common snake_case properties often found in error objects or external data.
+          ignoreGlobals: false,
+          allow: ['error_code', 'error_message', 'stack_trace'],
         }],
     }
   }

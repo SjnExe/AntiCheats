@@ -422,7 +422,7 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} The initialized or loaded player data.
  */
 export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
-    const { playerUtils } = dependencies;
+    const { playerUtils, logManager } = dependencies; // Added logManager
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (playerData.has(player.id)) {
@@ -572,7 +572,7 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function updateTransientPlayerData(player, pData, dependencies) {
-    const { currentTick, playerUtils, config, logManager } = dependencies;
+    const { currentTick, playerUtils, config } = dependencies; // Removed logManager from destructuring
     const playerName = player?.nameTag ?? pData?.playerNameTag ?? 'UnknownPlayer';
 
     const rotation = player.getRotation();
