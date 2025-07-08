@@ -6,19 +6,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
 
 ## Linting & Code Style Tasks
-- **(High) Add ESLint Rules for Code Optimization**:
-    - Identify and add ESLint rules to `eslint.config.js` to help detect and reduce redundant code, unused variables/functions, and other "unnecessary stuff."
-    - Consider rules like:
-        - `no-useless-rename`
-        - `no-useless-computed-key`
-        - `no-extra-boolean-cast`
-        - `no-extra-semi`
-        - `no-lone-blocks`
-        - `no-useless-constructor`
-        - `no-unneeded-ternary`
-        - `prefer-arrow-callback` (if applicable to project style)
-        - `dot-notation` (for consistency)
-        - `yoda` (to prevent common condition mistakes)
 - **(Medium) Apply Updated Linting Rules**: After the ESLint configuration is updated, run `npm run lint:fix` (or similar) across the entire codebase to apply the new rules and formatting. Manually address any issues that cannot be auto-fixed. (This is a placeholder for a subsequent task).
 - **(High) Linting: Review and fix `camelCase` violations**: Across the codebase, identify and correct violations flagged by the new ESLint `camelcase` rule. This involves renaming variables, function parameters, and object properties where `snake_case` (upper or lower) was used, ensuring adherence to the project's `camelCase` standard.
 - **(Medium) JSDoc: Review and Compact `@type` Annotations**: Go through the codebase to find verbose `/** @type {...} */` annotations, especially for variables. Simplify them based on the updated guidelines in `Dev/StandardizationGuidelines.md`. Prefer single-line JSDoc blocks (e.g., `/** @type {string} */`) or remove the annotation if the variable's type is unambiguously obvious from its initial assignment.
