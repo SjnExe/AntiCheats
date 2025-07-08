@@ -117,47 +117,77 @@ This document outlines the consolidated standardization guidelines for the AntiC
 *   **Efficiency:** Avoid expensive API calls in tight loops or frequent tick operations if data can be cached/optimized. (Refer to `Dev/CodingStyle.md` logging performance section).
 *   **Asynchronous Operations:** Ensure all promises returned by functions (especially those involving I/O or Minecraft API calls that can be asynchronous) are properly handled with `await` and wrapped in `try...catch` blocks at the call site if they can reject, or returned to be handled by the caller.
 
-## 6. Error Handling Standards
+## 6. Logging and Error Handling Standards
+
+This section details standards for both general diagnostic logging and persistent error/event logging.
+
+### 6.1. General Logging Practices & `playerUtils.debugLog()`
+
+`playerUtils.debugLog()` (which wraps `console.warn`) should be used for transient, detailed debugging information. This is for messages primarily useful during development, troubleshooting specific issues, or when actively "watching" a player's activity via the `isWatched` flag in their `pData`. These logs are not intended for a persistent audit trail of significant server events or errors that require admin review after the fact.
+
+*   **Conditionality**:
+    *   All `debugLog` calls **MUST** be conditional on `dependencies.config.enableDebugLogging`.
+    *   Player-specific `debugLog` calls containing sensitive or overly verbose per-player details **SHOULD** also be conditional on `pData.isWatched`.
+*   **Content**: Messages can be verbose. They should provide enough context to understand the state or flow at that point in the code (e.g., variable values, function entry/exit points, specific conditions met).
+*   **Context Prefixing**:
+    *   If the `contextPlayerNameIfWatched` parameter of `debugLog` is provided (typically `pData.isWatched ? player.nameTag : null`), `debugLog` automatically prefixes the output with `[AC Watch - PlayerName]`.
+    *   If `contextPlayerNameIfWatched` is `null` (e.g., for global system debug messages not tied to a specific watched player, or when player context is unavailable/irrelevant), the message string passed to `debugLog` **MUST** itself begin with a context marker:
+        *   Format: `[SourceIdentifier] Actual log message...`
+        *   `SourceIdentifier`: Typically `ModuleName` or `ModuleName.FunctionName` (e.g., `[CoreSystem.init]`, `[FlyCheck.velocityEval]`).
+    *   The `contextPlayerNameIfWatched` parameter can also accept a non-player-name string to serve as a general context label if `enableDebugLogging` is true. For example: `playerUtils.debugLog("Detailed state dump...", dependencies, "MyModule.StateDumpContext");` would output `[AC Watch - MyModule.StateDumpContext] Detailed state dump...` if watched, or `[AC Debug] Detailed state dump...` if not watched but global debug is on (the internal prefixing logic of `debugLog` handles this). It's preferred to bake the context into the message string if not using the player-watch feature for that log.
+    *   **Goal**: Every `debugLog` output in the console should clearly indicate its origin or primary context.
+
+### 6.2. Persistent Logging with `logManager.addLog()`
+
+`logManager.addLog()` is used for creating a persistent record of significant events, actions, and standardized errors that administrators might need to review later. This forms an audit trail.
+
+*   **Non-Error Events**:
+    *   For general significant events (e.g., player joins, command executions, moderation actions taken), the `LogEntry` should be clear and concise.
+    *   The `details` field can be a descriptive string or a simple object containing relevant parameters for the event.
+    *   `actionType` should be descriptive and `camelCase` (e.g., `playerInitialJoin`, `commandKickExecuted`).
+*   **Error Events**:
+    *   Error logging **MUST** follow the detailed standards below to ensure consistency and actionability.
+    *   **`actionType` Naming Convention**:
+        *   All error-related `actionType`s **MUST** follow the pattern: `error.<module>.<operationOrContext>[.<specificError>]`
+            *   `<module>`: Short identifier for the module (e.g., `pdm`, `cmd`, `main`).
+            *   `<operationOrContext>`: Brief description of the operation (e.g., `dpRead`, `exec`, `playerTick`).
+            *   `[.<specificError>]`: Optional, more specific error type (e.g., `parseFail`, `notFound`).
+            *   All parts should be `camelCase` or `lowerCase`.
+        *   Examples: `error.pdm.dpRead.parseFail`, `error.cmd.exec.permission`, `error.main.playerTick.generic`.
+    *   **`LogEntry.details` Object Structure**:
+        *   When `actionType` indicates an error, `details` **MUST** be an object.
+        *   **Mandatory fields in `details`**:
+            *   `errorCode`: (String) A unique, `UPPER_SNAKE_CASE` code (e.g., `PDM_DP_READ_PARSE_FAIL`, `CMD_EXEC_PERMISSION_DENIED`). Convention: `MODULE_OPERATION_ERROR[_SUBTYPE]`.
+            *   `message`: (String) The primary error message (usually `error.message`).
+        *   **Highly Recommended field in `details`**:
+            *   `rawErrorStack`: (String, Optional) The full stack trace from `error.stack`.
+        *   **Optional field in `details`**:
+            *   `meta`: (Object, Optional) For context-specific key-value pairs (e.g., input parameters, state variables). Example: `meta: { commandName: 'kick', targetId: 'Player123' }`.
+    *   **`LogEntry.context`**:
+        *   This field **MUST** provide the specific function or module path where the error originated (e.g., `playerDataManager.loadPlayerDataFromDynamicProperties`, `commands/kick.execute`).
+    *   **Example Error Log Call**:
+        ```javascript
+        // Inside a function in playerDataManager.js
+        logManager.addLog({
+            actionType: 'error.pdm.dpRead.parseFail',
+            context: 'playerDataManager.loadPlayerDataFromDynamicProperties',
+            targetName: playerName, // If applicable
+            details: {
+                errorCode: 'PDM_DP_READ_PARSE_FAIL',
+                message: error.message,
+                rawErrorStack: error.stack,
+                meta: { propertyKey: 'anticheat:pdata_v1' }
+            }
+        }, dependencies);
+        ```
+
+### 6.3. Direct `console.error()` Usage
+
+*   **Purpose**: Reserve for truly critical, unrecoverable errors or bugs that might indicate system instability or an immediate problem requiring developer attention. These are usually errors that might halt a module's function or the entire script if not caught at a very high level.
+*   **Content**: Should include `error.stack` for full trace and be prefixed with a clear module identifier (e.g., `[MyModule CRITICAL]`).
 
 *   **`try...catch` Blocks:** Mandatory for risky operations (API calls, JSON parsing, complex logic). Use reasonable granularity.
 *   **Defensive Programming:** Validate inputs to functions, especially public/exported ones. Check for `null` or `undefined` values where appropriate before accessing properties or performing operations that might throw errors.
-*   **Logging Errors:**
-    *   **Critical/Unrecoverable Errors:** Use `console.error(\`[ModuleName] Critical: \${error.stack || error}\`);` for issues that might affect system stability or represent significant bugs.
-    *   **Handled/Debuggable Errors:** Use `playerUtils.debugLog(\`[ModuleName] Handled Error: \${error.message}\`, context, dependencies);` for less critical, handled errors where execution can continue, or for providing debug context. Adhere to performance guidelines for data gathering.
-    *   **Persistent Admin-Reviewable Errors (`logManager.addLog`):**
-        *   **`actionType` Naming Convention**:
-            *   All error-related `actionType`s **MUST** follow the pattern: `error.<module>.<operationOrContext>[.<specificError>]`
-                *   `<module>`: Short identifier for the module (e.g., `pdm`, `cmd`, `main`).
-                *   `<operationOrContext>`: Brief description of the operation (e.g., `dpRead`, `exec`, `playerTick`).
-                *   `[.<specificError>]`: Optional, more specific error type (e.g., `parseFail`, `notFound`).
-                *   All parts should be `camelCase` or `lowerCase`.
-            *   Examples: `error.pdm.dpRead.parseFail`, `error.cmd.exec.permission`, `error.main.playerTick.generic`.
-        *   **`LogEntry.details` Object Structure**:
-            *   When `actionType` indicates an error, `details` **MUST** be an object.
-            *   **Mandatory fields in `details`**:
-                *   `errorCode`: (String) A unique, `UPPER_SNAKE_CASE` code (e.g., `PDM_DP_READ_PARSE_FAIL`, `CMD_EXEC_PERMISSION_DENIED`). Convention: `MODULE_OPERATION_ERROR[_SUBTYPE]`.
-                *   `message`: (String) The primary error message (usually `error.message`).
-            *   **Highly Recommended field in `details`**:
-                *   `rawErrorStack`: (String, Optional) The full stack trace from `error.stack`.
-            *   **Optional field in `details`**:
-                *   `meta`: (Object, Optional) For context-specific key-value pairs (e.g., input parameters, state variables). Example: `meta: { commandName: 'kick', targetId: 'Player123' }`.
-        *   **`LogEntry.context`**:
-            *   This field **MUST** provide the specific function or module path where the error originated (e.g., `playerDataManager.loadPlayerDataFromDynamicProperties`, `commands/kick.execute`).
-        *   **Example Call**:
-            ```javascript
-            // Inside a function in playerDataManager.js
-            logManager.addLog({
-                actionType: 'error.pdm.dpRead.parseFail',
-                context: 'playerDataManager.loadPlayerDataFromDynamicProperties',
-                targetName: playerName, // If applicable
-                details: {
-                    errorCode: 'PDM_DP_READ_PARSE_FAIL',
-                    message: error.message,
-                    rawErrorStack: error.stack,
-                    meta: { propertyKey: 'anticheat:pdata_v1' }
-                }
-            }, dependencies);
-            ```
 *   **User Feedback:** Provide user-friendly, non-technical error messages for player-initiated actions. Use `getString()` for localization/consistency.
 *   **Error Propagation:** Avoid silent catches unless the error is truly insignificant and expected. Handle errors locally if possible, or let them propagate to a higher-level handler. Top-level handlers in event subscriptions and tick loops are essential to prevent crashes.
 

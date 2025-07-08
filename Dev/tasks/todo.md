@@ -58,7 +58,3 @@ This list contains planned features, improvements, and areas for future investig
     - Schedule periodic reviews of the `PlayerAntiCheatData` typedef to remove obsolete properties and ensure all current properties are accurately documented and handled in `playerDataManager.js` (initialization, persistence, updates).
 
 ### Broader Code Quality & Maintainability
-- **(Medium) Logging Consistency**:
-    - Review codebase for consistency in logging:
-        - What level of detail goes to `console.warn` (via `debugLog`) vs. `logManager.addLog`.
-        - Standardize prefixes or context markers for `debugLog` if not using `contextPlayerNameIfWatched`.
