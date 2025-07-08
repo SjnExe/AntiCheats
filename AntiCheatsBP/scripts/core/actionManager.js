@@ -142,21 +142,28 @@ export async function executeCheckAction(player, checkType, violationDetails, de
         }
     }
 
-    if (player && violationDetails?.itemTypeId) {
+    if (player && violationDetails && Object.keys(violationDetails).length > 0) { // Check if violationDetails has any relevant info
         const pData = playerDataManager?.getPlayerData(player.id);
         if (pData) {
             pData.lastViolationDetailsMap ??= {};
-            pData.lastViolationDetailsMap[checkType] = {
-                itemTypeId: violationDetails.itemTypeId,
+            const detailsToStore = {
                 timestamp: Date.now(),
-                details: formatViolationDetails(violationDetails),
+                details: formatViolationDetails(violationDetails), // General formatted details
             };
+            if (violationDetails.itemTypeId) {
+                detailsToStore.itemTypeId = violationDetails.itemTypeId;
+            }
+            if (typeof violationDetails.quantityFound === 'number') {
+                detailsToStore.quantityFound = violationDetails.quantityFound;
+            }
+
+            pData.lastViolationDetailsMap[checkType] = detailsToStore;
             pData.isDirtyForSave = true;
-            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored itemTypeId '${violationDetails.itemTypeId}' and details for check '${checkType}' for ${playerNameForLog}.`, player?.nameTag, dependencies);
+            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored violation details for check '${checkType}' for ${playerNameForLog}: ${JSON.stringify(detailsToStore)}`, player?.nameTag, dependencies);
         } else {
-            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store itemTypeId for '${checkType}' (pData not found for ${playerNameForLog}).`, player?.nameTag, dependencies);
+            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store violation details for '${checkType}' (pData not found for ${playerNameForLog}).`, player?.nameTag, dependencies);
         }
-    } else if (!player && violationDetails?.itemTypeId) {
-        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping itemTypeId storage for '${checkType}' (player is null).`, null, dependencies);
+    } else if (!player && violationDetails && Object.keys(violationDetails).length > 0) {
+        playerUtils?.debugLog(`[ActionManager.executeCheckAction] Skipping violation details storage for '${checkType}' (player is null).`, null, dependencies);
     }
 }

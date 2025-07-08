@@ -700,17 +700,10 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
     pData.flags[finalFlagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
     pData.lastFlagType = finalFlagType;
-
-    if (typeof detailsForNotify === 'object' && detailsForNotify !== null && detailsForNotify.itemTypeId) {
-        pData.lastViolationDetailsMap ??= {};
-        pData.lastViolationDetailsMap[finalFlagType] = {
-            itemTypeId: detailsForNotify.itemTypeId,
-            quantityFound: detailsForNotify.quantityFound || 0,
-            timestamp: Date.now(),
-        };
-        playerUtils?.debugLog(`[PlayerDataManager.addFlag] Stored violation details for ${finalFlagType} on ${playerName}: ${JSON.stringify(pData.lastViolationDetailsMap[finalFlagType])}`, playerName, dependencies);
-    }
     pData.isDirtyForSave = true;
+
+    // The responsibility for populating pData.lastViolationDetailsMap is now fully in actionManager.executeCheckAction.
+    // This function (addFlag) will still receive detailsForNotify, which might be used by notifyAdmins if specific formatting is needed here.
 
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null) ?
         (detailsForNotify.originalDetailsForNotify || `Item: ${String(detailsForNotify.itemTypeId || 'N/A')}`) :
