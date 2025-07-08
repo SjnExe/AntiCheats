@@ -1,7 +1,7 @@
 /**
  * @file Provides utility functions for common player-related operations such as permission checks,
  * debug logging, admin notifications, player searching, and duration parsing.
- * @module utils/playerUtils
+ * @module AntiCheatsBP/scripts/utils/playerUtils
  */
 import * as mc from '@minecraft/server';
 import { stringDB } from '../core/textDatabase.js';

@@ -1,5 +1,6 @@
 /**
  * @file AntiCheatsBP/scripts/core/reportManager.js
+ * @module AntiCheatsBP/scripts/core/reportManager
  * Manages player-submitted reports. Reports are stored in a world dynamic property
  * with an in-memory cache for performance. This includes adding reports, retrieving them,
  * and clearing reports. All actionType strings should be camelCase.

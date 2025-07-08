@@ -1,5 +1,6 @@
 /**
  * @file Implements various checks related to player building activities, such as Tower, FastPlace,
+ * @module AntiCheatsBP/scripts/checks/world/buildingChecks
  * AirPlace (scaffolding), Downward Scaffold, and Flat/Static Rotation Building, and Block Spam.
  */
 import * as mc from '@minecraft/server';

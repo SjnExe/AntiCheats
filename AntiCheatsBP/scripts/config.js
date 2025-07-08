@@ -1,5 +1,6 @@
 /**
  * @file Anti-Cheat Configuration File
+ * @module AntiCheatsBP/scripts/config
  * This file contains all configurable settings for the AntiCheat system.
  * It defines constants for various features, checks, and system behaviors.
  * It also includes a mechanism for runtime updates to certain configuration values.

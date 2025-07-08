@@ -1,5 +1,6 @@
 /**
  * @file Manages automated moderation actions based on player flags and configured rules.
+ * @module AntiCheatsBP/scripts/core/automodManager
  */
 
 // Time constants

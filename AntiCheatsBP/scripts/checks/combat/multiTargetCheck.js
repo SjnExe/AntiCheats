@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect Killaura-like behavior where a player rapidly hits multiple distinct targets.
+ * @module AntiCheatsBP/scripts/checks/combat/multiTargetCheck
  */
 
 /**

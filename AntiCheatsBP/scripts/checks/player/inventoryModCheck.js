@@ -1,5 +1,6 @@
 /**
  * @file Implements checks for suspicious inventory manipulations, such as:
+ * @module AntiCheatsBP/scripts/checks/player/inventoryModCheck
  * 1. Using an item in the same game tick as a hotbar slot change (Switch-Use).
  * 2. Moving items in the inventory while an action that should lock inventory is in progress (e.g., eating, charging bow) (Move-Locked).
  */

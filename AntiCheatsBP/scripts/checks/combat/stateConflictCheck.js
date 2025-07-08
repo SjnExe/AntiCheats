@@ -1,5 +1,6 @@
 /**
  * @file Implements checks for players attacking while in states that should normally prevent combat actions,
+ * @module AntiCheatsBP/scripts/checks/combat/stateConflictCheck
  * such as sleeping, using consumables, charging bows, or using shields.
  */
 

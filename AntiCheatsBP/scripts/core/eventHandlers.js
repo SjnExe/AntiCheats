@@ -4,6 +4,7 @@
 // Let's assume `dependencies.profilingData` and `dependencies.MAX_PROFILING_HISTORY` will be available.
 
 /**
+ * @module AntiCheatsBP/scripts/core/eventHandlers
  * Wraps an event handler function with profiling logic.
  * @param {string} handlerName - The name of the event handler for logging.
  * @param {Function} handlerFunction - The actual event handler function.

@@ -1,5 +1,6 @@
 /**
  * @file Manages all player-specific data used by the AntiCheat system.
+ * @module AntiCheatsBP/scripts/core/playerDataManager
  * This includes runtime data (pData), persistence via dynamic properties,
  * and helper functions for data manipulation like adding flags, mutes, and bans.
  * All flagType strings should be camelCase.

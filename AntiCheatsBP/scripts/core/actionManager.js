@@ -1,5 +1,6 @@
 /**
  * @file Manages the execution of actions (flagging, logging, notifying) based on cheat detection profiles.
+ * @module AntiCheatsBP/scripts/core/actionManager
  * This module is responsible for interpreting check results and applying configured consequences.
  */
 

@@ -1,5 +1,6 @@
 /**
  * @file Implements checks for various forms of fly-related hacks, including sustained vertical movement,
+ * @module AntiCheatsBP/scripts/checks/movement/flyCheck
  * hovering, and excessively high vertical velocity.
  * Relies on player state (effects, gliding status) being updated in `pData` by other systems
  * (e.g., `updateTransientPlayerData` for effects, event handlers for gliding).

@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect players sending chat messages too frequently (spamming).
+ * @module AntiCheatsBP/scripts/checks/chat/messageRateCheck
  */
 
 /**

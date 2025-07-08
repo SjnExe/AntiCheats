@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to prevent players from using or placing banned items.
+ * @module AntiCheatsBP/scripts/checks/world/illegalItemCheck
  * Banned items are defined in the server configuration.
  */
 

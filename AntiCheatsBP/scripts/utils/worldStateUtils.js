@@ -1,5 +1,6 @@
 /**
  * @file Provides utility functions for managing global world states like dimension locks
+ * @module AntiCheatsBP/scripts/utils/worldStateUtils
  * using world dynamic properties.
  */
 import * as mc from '@minecraft/server';

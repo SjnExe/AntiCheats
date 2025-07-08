@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect if a player is using items faster than their configured cooldowns allow.
+ * @module AntiCheatsBP/scripts/checks/world/fastUseCheck
  * Relies on `pData.itemUseTimestamps` to track the last usage time for each item type.
  */
 

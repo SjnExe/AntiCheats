@@ -1,5 +1,6 @@
 /**
  * @file Piston related checks, primarily for detecting potential lag machines
+ * @module AntiCheatsBP/scripts/checks/world/pistonChecks
  * by monitoring rapid and sustained piston activations.
  */
 

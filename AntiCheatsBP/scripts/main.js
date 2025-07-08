@@ -1,5 +1,6 @@
 /**
  * @file Main entry point for the AntiCheat system.
+ * @module AntiCheatsBP/scripts/main
  * Initializes all core modules, subscribes to Minecraft server events,
  * and runs the main system tick loop for processing checks, player data updates,
  * and other periodic tasks.

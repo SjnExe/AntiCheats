@@ -1,5 +1,6 @@
 /**
  * @file Configuration for all server ranks, their properties, and conditions.
+ * @module AntiCheatsBP/scripts/core/ranksConfig
  * Rank IDs should be defined in `camelCase` (e.g., `superAdmin`, `vipPlus`) but will be handled
  * case-insensitively (converted to lowercase) by the RankManager.
  * It's recommended to define IDs in lowercase here for simplicity and directness,

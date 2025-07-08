@@ -1,5 +1,6 @@
 /**
  * @file Checks for abnormally high Clicks Per Second (CPS) or attack rates.
+ * @module AntiCheatsBP/scripts/checks/combat/cpsCheck
  */
 
 /**

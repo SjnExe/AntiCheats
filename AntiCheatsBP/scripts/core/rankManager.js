@@ -1,5 +1,6 @@
 /**
  * @file Manages player ranks, permission levels, and their display properties (chat/nametag prefixes).
+ * @module AntiCheatsBP/scripts/core/rankManager
  * Ranks are defined in `ranksConfig.js` and processed here. All rank IDs are handled case-insensitively (lowerCased).
  */
 import * as mc from '@minecraft/server';

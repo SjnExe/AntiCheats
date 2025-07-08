@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect excessive repetition of the same character in chat messages.
+ * @module AntiCheatsBP/scripts/checks/chat/charRepeatCheck
  */
 
 /**

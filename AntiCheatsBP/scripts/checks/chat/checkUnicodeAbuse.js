@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect Unicode abuse (e.g., Zalgo text with excessive diacritics).
+ * @module AntiCheatsBP/scripts/checks/chat/checkUnicodeAbuse
  */
 
 /**

@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect excessive user mentions in chat messages.
+ * @module AntiCheatsBP/scripts/checks/chat/checkExcessiveMentions
  */
 
 /**
