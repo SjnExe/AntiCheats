@@ -119,10 +119,10 @@
  * @property {string} [lastFlagType] The `checkType` of the most recent flag. Persisted.
  * @property {{[key: string]: {itemTypeId?: string, quantityFound?: number, timestamp: number, details?: string, [key: string]: any}}} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
  * @property {{[key: string]: {lastActionThreshold?: number, lastActionTimestamp?: number, [key: string]: any}}} [automodState] State information for the AutoMod system related to this player. Persisted.
- * @property {number} [lastLoginTime] Session-specific timestamp of the last login during the current server session. Not persisted. // TODO: Clarify purpose vs. joinTime.
+ * @property {number} [firstEverLoginTime] Timestamp (ms) of when the player first ever joined the server. Persisted and set only once.
  * @property {number} [lastLogoutTime] Timestamp of the last logout. Not persisted (session-end marker).
  * @property {number} [joinCount=0] Session-specific count of joins during the current server session. Resets on server restart. Not persisted. // TODO: Decide if this should be a lifetime persisted count.
- * @property {number} [joinTime] Timestamp (ms) of when the player last joined the server. Persisted.
+ * @property {number} [joinTime] Timestamp (ms) of when the player's current or most recent session started. Persisted.
  *
  * Movement Related State:
  * @property {number} [consecutiveOffGroundTicks=0] How many ticks the player has been airborne. Session-only.

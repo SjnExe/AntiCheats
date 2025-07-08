@@ -220,9 +220,11 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         const spawnGameMode = mc.GameMode[player.gameMode] ?? getString?.('common.value.unknown') ?? 'Unknown';
 
         if (initialSpawn) {
-            pData.joinTime = Date.now();
-            pData.joinCount = (pData.joinCount || 0) + 1;
-            pData.lastLoginTime = Date.now();
+            pData.joinTime = Date.now(); // This correctly sets the start of the current session
+            // pData.firstEverLoginTime is set once during initializeDefaultPlayerData or when loaded data lacks it.
+            // No need to set firstEverLoginTime here.
+            pData.joinCount = (pData.joinCount || 0) + 1; // This remains session-specific as it's not persisted
+            // lastLoginTime is removed
             pData.isDirtyForSave = true;
 
             if (config.enableWelcomerMessage) {

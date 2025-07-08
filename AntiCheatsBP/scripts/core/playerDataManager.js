@@ -33,7 +33,7 @@ const persistedPlayerDataKeys = [
     'consecutiveOffGroundTicks', 'fallDistance',
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
-    'joinTime',
+    'joinTime', 'firstEverLoginTime', // Added firstEverLoginTime
     'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
     'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
@@ -418,6 +418,7 @@ export function initializeDefaultPlayerData(player, dependencies) {
         lastNameTagChangeTick: currentTick,
         muteInfo: null,
         banInfo: null,
+        firstEverLoginTime: Date.now(), // Added
         joinTime: Date.now(),
         lastGameMode: player.gameMode,
         lastDimensionId: player.dimension.id,
@@ -484,22 +485,35 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
         newPData.lastViolationDetailsMap = { ...(defaultPDataForMerge.lastViolationDetailsMap || {}), ...(loadedData.lastViolationDetailsMap || {}) };
         newPData.automodState = { ...(defaultPDataForMerge.automodState || {}), ...(loadedData.automodState || {}) };
 
-        newPData.playerNameTag = player.nameTag;
-        newPData.lastKnownNameTag = loadedData.lastKnownNameTag ?? player.nameTag;
-        newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick;
-        newPData.joinTime = loadedData.joinTime ?? Date.now();
-        newPData.isDirtyForSave = false;
+        newPData.playerNameTag = player.nameTag; // Always update to current nameTag
+        newPData.lastKnownNameTag = loadedData.lastKnownNameTag ?? player.nameTag; // Use persisted if available
+        newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick; // Use persisted if available
+
+        // joinTime is the start of the most recent session. If loadedData has it, that's from a previous save.
+        // handlePlayerSpawn will update it to Date.now() if initialSpawn is true.
+        // If ensurePlayerDataInitialized is called mid-session (e.g. script reload, player already online),
+        // loadedData.joinTime would be correct for *that* session start.
+        newPData.joinTime = loadedData.joinTime ?? newPData.joinTime; // Keep what initializeDefaultPlayerData set if not in loadedData
+                                                                    // or what was loaded. handlePlayerSpawn will update if it's a true new session.
+
+        // firstEverLoginTime should only be set once. If it's in loadedData, use that.
+        // Otherwise, initializeDefaultPlayerData already set it to Date.now().
+        newPData.firstEverLoginTime = loadedData.firstEverLoginTime ?? newPData.firstEverLoginTime;
+
+        newPData.isDirtyForSave = false; // Data loaded is considered clean initially
     } else {
-        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data.`, playerName, dependencies);
+        // This path means initializeDefaultPlayerData already set both joinTime and firstEverLoginTime to Date.now()
+        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data (firstEverLoginTime and joinTime set to now).`, playerName, dependencies);
     }
 
+    // Expired mute/ban clearing
     if (newPData.muteInfo && newPData.muteInfo.unmuteTime !== Infinity && Date.now() >= newPData.muteInfo.unmuteTime) {
-        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Mute for ${newPData.playerNameTag} expired on load. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
+        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Mute for ${newPData.playerNameTag} expired on load/ensure. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
         newPData.muteInfo = null;
         newPData.isDirtyForSave = true;
     }
     if (newPData.banInfo && newPData.banInfo.unbanTime !== Infinity && Date.now() >= newPData.banInfo.unbanTime) {
-        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Ban for ${newPData.playerNameTag} expired on load. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
+        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Ban for ${newPData.playerNameTag} expired on load/ensure. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }

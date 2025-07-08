@@ -56,6 +56,5 @@ This list contains planned features, improvements, and areas for future investig
     - Schedule periodic reviews of the `PlayerAntiCheatData` typedef to remove obsolete properties and ensure all current properties are accurately documented and handled in `playerDataManager.js` (initialization, persistence, updates).
 - **(Low) Persist `pData.itemUseTimestamps`**: Ensure `itemUseTimestamps` in `PlayerAntiCheatData` is persisted to make FastUse check effective across sessions. (Related to `PlayerAntiCheatData` Review)
 - **(Low) Clarify/Align `pData.joinCount` Persistence**: Decide if `joinCount` should be a lifetime persisted count or session-only, and implement accordingly. (Related to `PlayerAntiCheatData` Review)
-- **(Low) Clarify/Align `pData.lastLoginTime` vs. `joinTime`**: Determine distinct purpose and required persistence for `lastLoginTime` compared to the persisted `joinTime`. (Related to `PlayerAntiCheatData` Review)
 
 ### Broader Code Quality & Maintainability
