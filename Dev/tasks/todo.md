@@ -21,9 +21,6 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Complete) `playerDataManager.js` - `addFlag` and `actionManager.js` - `lastViolationDetailsMap`**:
-    - Clarified data flow for `pData.lastViolationDetailsMap`.
-    - **Action Taken**: Consolidated logic into `actionManager.executeCheckAction`. It now solely manages populating `lastViolationDetailsMap` with `itemTypeId`, `quantityFound` (if available in `violationDetails`), a general formatted `details` string, and `timestamp`. Redundant update logic removed from `playerDataManager.addFlag`. This clarifies roles and ensures consistent data storage.
 - **(Low) `playerDataManager.js` - Standardize DP Error Logging**:
     - The `_handleDynamicPropertyError` is good. Consider making the generated `actionType` for `logManager.addLog` more consistent or use a predefined prefix for easier filtering (e.g., `pdm.dp.load.parseFail`).
 - **(Medium) Async Operations & `pData` Staleness**:
