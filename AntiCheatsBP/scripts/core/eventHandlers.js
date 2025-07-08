@@ -272,7 +272,7 @@ export async function handlePlayerSpawn(eventData, dependencies) {
  * @param {import('@minecraft/server').PistonActivateAfterEvent} eventData - The piston activation event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
-export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
+export async function handlePistonActivateAntiGrief(eventData, dependencies) {
     const { config, playerUtils, checks } = dependencies;
     if (!config?.enablePistonLagCheck) {
         return;
@@ -297,7 +297,7 @@ export async function handlePistonActivate_AntiGrief(eventData, dependencies) {
  * @param {import('@minecraft/server').EntitySpawnAfterEvent} eventData - The entity spawn event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
-export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) {
+export async function handleEntitySpawnEventAntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, playerDataManager, checks, mc: minecraftSystem, logManager } = dependencies;
     const { entity, cause } = eventData; // cause can be 'Spawned' or 'Born' etc.
 
@@ -388,7 +388,7 @@ export async function handleEntitySpawnEvent_AntiGrief(eventData, dependencies) 
  * @param {import('@minecraft/server').PlayerPlaceBlockBeforeEvent} eventData - The data associated with the player place block before event.
  * @param {import('../types.js').Dependencies} dependencies - The standard dependencies object containing shared modules and utilities.
  */
-export async function handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies) {
+export async function handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies) {
     const { config, playerUtils, actionManager, rankManager, getString, permissionLevels } = dependencies;
     const { player, itemStack, block } = eventData; // block is the location where itemStack would be placed
     const playerName = player?.nameTag ?? 'UnknownPlayer';
@@ -946,7 +946,7 @@ export async function handlePlayerPlaceBlockBefore(eventData, dependencies) {
     }
 
     // Then run AntiGrief specific placement checks
-    await handlePlayerPlaceBlockBeforeEvent_AntiGrief(eventData, dependencies);
+    await handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependencies);
     // If eventData.cancel is true after AntiGrief, it will stop here.
 }
 
