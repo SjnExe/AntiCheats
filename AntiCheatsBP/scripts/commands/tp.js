@@ -15,9 +15,7 @@ const ARGS_INDEX_PLAYER_TP_DIMENSION = 4;
 const MIN_ARGS_PLAYER_TP_COORDS_WITH_DIM = 5;
 
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'tp',
     syntax: '<targetPlayerNameToMove> [destinationPlayerNameOrX] [y] [z] [dimensionId]',

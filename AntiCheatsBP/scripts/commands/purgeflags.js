@@ -5,9 +5,7 @@
  */
 import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData } from '../core/playerDataManager.js';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'purgeflags',
     syntax: '<playername>',

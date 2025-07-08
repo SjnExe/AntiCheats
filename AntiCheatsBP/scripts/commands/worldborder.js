@@ -11,9 +11,7 @@ const DEFAULT_WB_DAMAGE_AMOUNT = 0.5;
 const DEFAULT_WB_DAMAGE_INTERVAL_TICKS = 20;
 const DEFAULT_WB_TELEPORT_AFTER_DAMAGE_EVENTS = 30;
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'worldborder',
     syntax: '<subcommand> [args...]',

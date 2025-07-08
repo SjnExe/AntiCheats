@@ -5,18 +5,10 @@
  */
 import { commandModules } from './commandRegistry.js'; // Assuming commandRegistry.js is in the same directory
 
-/**
- * @description Stores all command definitions, mapping command name (lowerCase) to its definition object.
- * Populated dynamically from `commandModules`.
- * @type {Map<string, import('../types.js').CommandDefinition>}
- */
+/** @type {Map<string, import('../types.js').CommandDefinition>} Stores all command definitions, mapping command name (lowerCase) to its definition object. Populated dynamically from `commandModules`. */
 export const commandDefinitionMap = new Map();
 
-/**
- * @description Stores all command execution functions, mapping command name (lowerCase) to its execute function.
- * Populated dynamically from `commandModules`.
- * @type {Map<string, (player: import('@minecraft/server').Player, args: string[], dependencies: import('../types.js').Dependencies) => Promise<void>>}
- */
+/** @type {Map<string, (player: import('@minecraft/server').Player, args: string[], dependencies: import('../types.js').Dependencies) => Promise<void>>} Stores all command execution functions, mapping command name (lowerCase) to its execute function. Populated dynamically from `commandModules`. */
 export const commandExecutionMap = new Map();
 
 /**

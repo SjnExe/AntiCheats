@@ -12,7 +12,7 @@ import * as mc from '@minecraft/server';
 // Constants for magic numbers
 const PLAYER_HITBOX_ADJUSTMENT = 0.4;
 const DEFAULT_ENTITY_HITBOX_ADJUSTMENT = 0.5;
-const LOGGING_DECIMAL_PLACES = 3; // Used for .toFixed() in logs and violation details
+const LOGGING_DECIMAL_PLACES = 3;
 const DEFAULT_CREATIVE_REACH = 6.0;
 const DEFAULT_SURVIVAL_REACH = 3.0;
 const DEFAULT_REACH_BUFFER = 0.5;

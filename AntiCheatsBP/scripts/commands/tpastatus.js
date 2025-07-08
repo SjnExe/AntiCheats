@@ -1,9 +1,7 @@
 /**
  * @file Defines the !tpastatus command for players to manage their TPA request availability.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'tpastatus',
     syntax: '[on|off|status]',

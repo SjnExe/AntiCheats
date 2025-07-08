@@ -5,9 +5,7 @@
 // Default configuration values
 const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'tpa',
     syntax: '<playerName>',

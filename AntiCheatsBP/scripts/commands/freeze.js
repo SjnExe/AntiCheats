@@ -7,12 +7,10 @@ import * as mc from '@minecraft/server';
 
 // Default configuration values
 const DEFAULT_FREEZE_EFFECT_DURATION = 2000000; // Very long duration for effects
-const DEFAULT_FREEZE_SLOWNESS_AMPLIFIER = 255; // Max amplifier for slowness
-const DEFAULT_FREEZE_WEAKNESS_AMPLIFIER = 255; // Max amplifier for weakness
+const DEFAULT_FREEZE_SLOWNESS_AMPLIFIER = 255;
+const DEFAULT_FREEZE_WEAKNESS_AMPLIFIER = 255;
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'freeze',
     syntax: '<playername> [on|off|toggle|status]',

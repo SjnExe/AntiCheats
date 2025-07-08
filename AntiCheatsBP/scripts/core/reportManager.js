@@ -5,9 +5,7 @@
  * and clearing reports. All actionType strings should be camelCase.
  */
 
-/**
- * @constant {string} reportsPropertyKeyName - The dynamic property key for storing player reports.
- */
+/** @constant {string} The dynamic property key for storing player reports. */
 const reportsPropertyKeyName = 'anticheat:reports_v1';
 
 // Constants for ID generation
@@ -19,16 +17,10 @@ const RANDOM_ID_COMPONENT_LENGTH = 5; // Results in a 5-character random string 
  * @typedef {import('../types.js').CommandDependencies} CommandDependencies
  */
 
-/**
- * @type {ReportEntry[]}
- * In-memory cache for report entries. Newest reports are typically at the beginning.
- */
+/** @type {ReportEntry[]} In-memory cache for report entries. Newest reports are typically at the beginning. */
 let reportsInMemory = [];
 
-/**
- * @type {boolean}
- * Flag indicating if `reportsInMemory` has changes needing persistence.
- */
+/** @type {boolean} Flag indicating if `reportsInMemory` has changes needing persistence. */
 let reportsAreDirty = false;
 
 /**

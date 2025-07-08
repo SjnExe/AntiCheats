@@ -1,9 +1,7 @@
 /**
  * @file Defines the !testnotify command for administrators to send a test notification.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'testnotify',
     syntax: '[message...]',

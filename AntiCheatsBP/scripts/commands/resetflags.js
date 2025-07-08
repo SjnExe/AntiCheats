@@ -3,9 +3,7 @@
  * and associated violation tracking data. Also aliased by !clearwarnings.
  */
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'resetflags',
     syntax: '!resetflags <playerName>',

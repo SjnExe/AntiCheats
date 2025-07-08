@@ -12,8 +12,8 @@ const SECONDS_PER_MINUTE = 60;
 const MINUTES_PER_HOUR = 60;
 const HOURS_PER_DAY = 24;
 const DAYS_PER_WEEK = 7;
-const AVG_DAYS_PER_MONTH = 30.4375; // Average days in a month for time difference formatting
-const AVG_DAYS_PER_YEAR = 365.25;   // Average days in a year for time difference formatting
+const AVG_DAYS_PER_MONTH = 30.4375;
+const AVG_DAYS_PER_YEAR = 365.25;
 
 
 /**

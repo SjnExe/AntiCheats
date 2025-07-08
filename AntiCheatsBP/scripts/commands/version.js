@@ -5,9 +5,7 @@
  */
 import { acVersion } from '../config.js';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'version',
     syntax: '',

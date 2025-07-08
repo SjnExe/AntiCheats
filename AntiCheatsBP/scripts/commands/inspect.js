@@ -1,9 +1,7 @@
 /**
  * @file Defines the !inspect command for administrators to view a player's AntiCheat data.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'inspect',
     syntax: '<playername>',

@@ -4,9 +4,7 @@
 
 import { MessageFormData } from '@minecraft/server-ui';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'rules',
     description: 'Displays the server rules.',

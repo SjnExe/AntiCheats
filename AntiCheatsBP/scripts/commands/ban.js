@@ -1,9 +1,7 @@
 /**
  * @file Defines the !ban command for administrators to ban players.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'ban',
     syntax: '<playername> [duration] [reason]',

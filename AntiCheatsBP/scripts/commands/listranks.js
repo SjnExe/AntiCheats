@@ -3,9 +3,7 @@
  */
 import { rankDefinitions as allRankDefinitions } from '../core/ranksConfig.js';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'listranks',
     syntax: '',

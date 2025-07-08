@@ -5,9 +5,7 @@
  */
 import { isNetherLocked, setNetherLocked } from '../utils/worldStateUtils.js';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'netherlock',
     syntax: '<on|off|status>',

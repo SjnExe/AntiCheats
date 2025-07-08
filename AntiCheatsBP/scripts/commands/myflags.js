@@ -1,9 +1,7 @@
 /**
  * @file Defines the !myflags command, allowing players to view their own AntiCheat flag status.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'myflags',
     syntax: '',

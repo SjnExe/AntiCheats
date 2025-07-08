@@ -53,9 +53,8 @@ import * as xraynotifyCmd from '../commands/xraynotify.js';
  * Array containing all registered command modules.
  * Each module is expected to export a `definition` object (conforming to `CommandDefinition` type)
  * and an `execute` function.
- *
- * @type {Array<import('../types.js').CommandModule>}
  */
+/** @type {Array<import('../types.js').CommandModule>} */
 export const commandModules = [
     addrankCmd,
     banCmd,

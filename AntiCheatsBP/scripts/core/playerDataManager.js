@@ -14,11 +14,7 @@ const TICKS_PER_SECOND = 20;
 const DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT = 3;
 
 
-/**
- * In-memory cache for player data.
- *
- * @type {Map<string, import('../types.js').PlayerAntiCheatData>}
- */
+/** @type {Map<string, import('../types.js').PlayerAntiCheatData>} In-memory cache for player data. */
 const playerData = new Map();
 
 const dynamicPropertyKeyV1 = 'anticheat:pdata_v1';

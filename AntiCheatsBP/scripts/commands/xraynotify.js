@@ -1,9 +1,7 @@
 /**
  * @file Defines the !xraynotify command for administrators to manage their X-Ray ore mining notification preferences.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'xraynotify',
     syntax: '[on|off|toggle|status]',

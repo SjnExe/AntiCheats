@@ -5,18 +5,10 @@
 import * as mc from '@minecraft/server';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './ranksConfig.js';
 
-/**
- * @description Dynamically generated mapping of rank IDs (lowerCase) to their numeric permission levels.
- * Populated by `initializeRanks`.
- * @type {{[key: string]: number}}
- */
+/** @type {{[key: string]: number}} Dynamically generated mapping of rank IDs (lowerCase) to their numeric permission levels. Populated by `initializeRanks`. */
 export let permissionLevels = {};
 
-/**
- * @description Array of rank definitions, sorted by priority (lower number = higher priority).
- * Populated by `initializeRankSystem`.
- * @type {Array<import('./ranksConfig.js').RankDefinition>}
- */
+/** @type {Array<import('./ranksConfig.js').RankDefinition>} Array of rank definitions, sorted by priority (lower number = higher priority). Populated by `initializeRankSystem`. */
 let sortedRankDefinitions = [];
 
 /**

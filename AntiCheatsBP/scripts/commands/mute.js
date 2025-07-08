@@ -1,9 +1,7 @@
 /**
  * @file Defines the !mute command for administrators to prevent a player from sending chat messages.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'mute',
     syntax: '<playername> [duration] [reason]',
