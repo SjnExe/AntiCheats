@@ -16,7 +16,6 @@ export const definition = {
  * Allows administrators to toggle their AntiCheat notifications on/off or check their current status.
  * Preferences are stored using a field in PlayerAntiCheatData (`pData.notificationsEnabled`).
  * Player tags are secondary and can be used for persistence if pData is not fully loaded/saved immediately.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].
@@ -68,16 +67,16 @@ export function execute(player, args, dependencies) {
             const sourceTextKey = typeof pData[pDataKeyForNotifications] === 'boolean' ?
                 'command.notify.status.source.explicit' :
                 'command.notify.status.source.default';
-            player.sendMessage(getString('command.notify.status', { statusText: statusText, sourceText: getString(sourceTextKey) }));
+            player.sendMessage(getString('command.notify.status', { statusText, sourceText: getString(sourceTextKey) }));
             logManager?.addLog({
-                adminName: adminName,
+                adminName,
                 actionType: 'notifyStatusChecked',
                 details: `Checked own notification status: ${statusText} (${getString(sourceTextKey)})`,
             }, dependencies);
             return;
         }
         default:
-            player.sendMessage(getString('command.notify.usage', { prefix: prefix }));
+            player.sendMessage(getString('command.notify.usage', { prefix }));
             return;
     }
 
@@ -92,7 +91,7 @@ export function execute(player, args, dependencies) {
         const logActionType = newPreference ? 'notifyEnabledUser' : 'notifyDisabledUser';
         playerUtils?.debugLog(`[NotifyCommand] Admin ${adminName} ${logMessageAction} AntiCheat notifications. New preference: ${newPreference}`, adminName, dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: logActionType,
             details: `User notifications ${logMessageAction}`,
         }, dependencies);
@@ -102,7 +101,7 @@ export function execute(player, args, dependencies) {
         console.error(`[NotifyCommand CRITICAL] Error setting notification preference for ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorNotifyCommand',
             context: 'NotifyCommand.setPreference',
             details: `Failed to set notification preference to ${newPreference}: ${error.message}`,

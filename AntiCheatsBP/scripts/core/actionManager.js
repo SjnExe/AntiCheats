@@ -8,7 +8,6 @@ const DECIMAL_PLACES_FOR_VIOLATION_DETAILS = 3;
 
 /**
  * Formats violation details into a readable string.
- *
  * @param {import('../types.js').ViolationDetails | undefined} violationDetails - An object containing details of the violation.
  * @returns {string} A comma-separated string of key-value pairs, or 'N/A'.
  */
@@ -28,7 +27,6 @@ function formatViolationDetails(violationDetails) {
 
 /**
  * Formats a message template with player name, check type, and violation details.
- *
  * @param {string | undefined} template - The message template with placeholders like {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
  * @param {string} playerName - The name of the player involved.
  * @param {string} checkType - The type of check that was triggered (camelCase).
@@ -64,7 +62,6 @@ function formatActionMessage(template, playerName, checkType, violationDetails) 
  * Executes configured actions for a detected cheat/violation based on predefined profiles.
  * Handles cases where `player` might be null (e.g., system-level checks).
  * Assumes `checkType` is provided in correct camelCase format (e.g., 'playerAntiGmc', 'movementFlyHover').
- *
  * @param {import('@minecraft/server').Player | null} player - The player involved, or null if not player-specific.
  * @param {string} checkType - The identifier for the check type (camelCase). This should match keys in `checkActionProfiles`.
  * @param {import('../types.js').ViolationDetails | undefined} [violationDetails] - An object containing specific details about the violation.
@@ -126,7 +123,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             targetId: player?.id,
             details: logDetailsString.trim() || 'N/A',
             reason: flagReasonMessage,
-            checkType: checkType,
+            checkType,
             location: player?.location,
             dimensionId: player?.dimension?.id,
         }, dependencies);

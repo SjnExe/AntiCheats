@@ -535,7 +535,7 @@ export const stringDB = {
     'command.purgeflags.noData': '§cCould not retrieve data for player "{playerName}".', // Typically for online players
     'command.purgeflags.success.admin': '§aSuccessfully purged all flags and violation history for online player "{playerName}". Old total flags: {oldTotalFlags}.',
     'command.purgeflags.success.target': '§eYour AntiCheat flags and violation history have been purged by an administrator ({adminName}).',
-    'command.purgeflags.offlinePlayerScheduled': "Player %playerName% is not online. Their flags have been scheduled to be purged upon their next join.",
+    'command.purgeflags.offlinePlayerScheduled': 'Player %playerName% is not online. Their flags have been scheduled to be purged upon their next join.',
 
     // --- removerank.js ---
     'command.removerank.usage': '§cUsage: {prefix}removerank <playerName> <rankId>',

@@ -18,7 +18,6 @@ const distinctTargetsSampleLimitMulti = 5;
  * It tracks entities hit by the player within a configured time window and flags
  * if the number of distinct entities exceeds a threshold.
  * This check is typically triggered by an entity hurt event where the damager is a player.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The attacking player.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `recentHits`.

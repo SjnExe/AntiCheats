@@ -8,7 +8,6 @@
 
 /**
  * Checks if a value is a string.
- *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is a string, false otherwise.
  */
@@ -18,7 +17,6 @@ function isString(value) {
 
 /**
  * Checks if a value is a number.
- *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is a number, false otherwise.
  */
@@ -28,7 +26,6 @@ function isNumber(value) {
 
 /**
  * Checks if a value is a boolean.
- *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is a boolean, false otherwise.
  */
@@ -38,7 +35,6 @@ function isBoolean(value) {
 
 /**
  * Checks if a value is an array.
- *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is an array, false otherwise.
  */
@@ -48,7 +44,6 @@ function isArray(value) {
 
 /**
  * Checks if a value is an object (and not an array or null).
- *
  * @param {*} value - The value to check.
  * @returns {boolean} True if the value is an object, false otherwise.
  */
@@ -58,7 +53,6 @@ function isObject(value) {
 
 /**
  * Checks if a string is a valid Minecraft color code (e.g., §a, §0).
- *
  * @param {string} colorCode - The string to check.
  * @returns {boolean} True if it's a valid color code.
  */
@@ -69,7 +63,6 @@ function isValidColorCode(colorCode) {
 /**
  * Checks if a string is in camelCase.
  * Simple check: starts with lowercase, no spaces or underscores.
- *
  * @param {string} str - The string to check.
  * @returns {boolean} True if it appears to be camelCase.
  */
@@ -82,7 +75,6 @@ function isValidCamelCase(str) {
 
 /**
  * Checks if a value is a positive number (greater than 0).
- *
  * @param {*} num - The value to check.
  * @returns {boolean} True if it's a positive number.
  */
@@ -92,7 +84,6 @@ function isPositiveNumber(num) {
 
 /**
  * Checks if a value is a non-negative number (0 or greater).
- *
  * @param {*} num - The value to check.
  * @returns {boolean} True if it's a non-negative number.
  */
@@ -104,7 +95,6 @@ function isNonNegativeNumber(num) {
 /**
  * Checks if a string is a valid duration format (e.g., "5m", "1h", "30s").
  * This is a simplified check. Real parsing logic is in playerUtils.parseDuration.
- *
  * @param {string} durationStr - The string to check.
  * @returns {boolean} True if it's a valid duration string format.
  */
@@ -117,7 +107,6 @@ function isValidDurationString(durationStr) {
 
 /**
  * Ensures an object contains all specified required fields and optionally validates their types.
- *
  * @param {object} obj - The object to check.
  * @param {Array<{name: string, type?: string | string[], validator?: Function, optional?: boolean, arrayElementType?: string, objectProperties?: any}>} fieldDefs - Array of field definitions.
  * @param {string} context - A string describing the context of the validation (e.g., "config.soundEvents").
@@ -253,7 +242,6 @@ function ensureFields(obj, fieldDefs, context, errors) {
 
 /**
  * Validates the main configuration object (from config.js).
- *
  * @param {object} config - The `defaultConfigSettings` object from `config.js`.
  * @param {object} actionProfiles - The `checkActionProfiles` object from `actionProfiles.js`.
  * @param {string[]} knownCommands - An array of known command names from `commandRegistry.js`.
@@ -321,7 +309,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'swearCheckActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -338,7 +325,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'antiAdvertisingActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -354,7 +340,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'advancedLinkRegexList', type: 'array', arrayElementType: 'string',
             /**
              * Validates regex patterns in an array.
-             *
              * @param {string[]} val - Array of regex strings.
              * @param {string} path - The JSDoc path to the array.
              * @param {string[]} errs - Array to push error messages to.
@@ -376,7 +361,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'capsCheckUpperCasePercentage', type: 'number',
             /**
              * Validates a number is within a specific range (0-100).
-             *
              * @param {number} val - The number to validate.
              * @param {string} path - The JSDoc path to the value.
              * @param {string[]} errs - Array to push error messages to.
@@ -391,7 +375,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'capsCheckActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -407,7 +390,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'charRepeatActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -422,7 +404,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'symbolSpamActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -437,7 +418,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'fastMessageSpamActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -452,7 +432,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'maxWordsSpamActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -467,7 +446,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'chatContentRepeatActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -482,7 +460,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'unicodeAbuseActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -497,7 +474,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'gibberishActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -512,7 +488,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'mentionsActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -527,7 +502,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'impersonationActionProfileName', type: 'string',
             /**
              * Validates that the action profile name exists.
-             *
              * @param {string} val - The value of the action profile name.
              * @param {string} path - The JSDoc path to the value being validated.
              * @param {string[]} errs - Array to push error messages to.
@@ -546,7 +520,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'tntPlacementAction', type: 'string',
             /**
              * Validates the action string against a list of allowed values.
-             *
              * @param {string} val - The action string.
              * @param {string} path - The JSDoc path to the value.
              * @param {string[]} errs - Array to push error messages to.
@@ -565,7 +538,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'soundEvents', type: 'object',
             /**
              * Validates the structure of the soundEvents object.
-             *
              * @param {object} soundEventsObj - The soundEvents object.
              * @param {string} sePath - The JSDoc path to this object.
              * @param {string[]} seErrs - Array to push error messages to.
@@ -587,7 +559,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
                         { name: 'target', type: 'string', optional: true,
                             /**
                              * Validates the sound event target string.
-                             *
                              * @param {string} val - The target string.
                              * @param {string} p - The JSDoc path to the value.
                              * @param {string[]} e - Array to push error messages to.
@@ -621,7 +592,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
         { name: 'commandSettings', type: 'object',
             /**
              * Validates the commandSettings object.
-             *
              * @param {object} cmdSettingsObj - The commandSettings object.
              * @param {string} csPath - The JSDoc path to this object.
              * @param {string[]} csErrs - Array to push error messages to.
@@ -718,7 +688,6 @@ export function validateMainConfig(config, actionProfiles, knownCommands, comman
 
 /**
  * Validates the checkActionProfiles object from actionProfiles.js.
- *
  * @param {object} actionProfiles - The `checkActionProfiles` object.
  * @returns {string[]} An array of error messages. Empty if no errors.
  */
@@ -769,7 +738,6 @@ export function validateActionProfiles(actionProfiles) {
             { name: 'customAction', type: 'string', optional: true,
                 /**
                  * Validates the customAction string against a list of known custom actions.
-                 *
                  * @param {string} val - The custom action string.
                  * @param {string} path - The JSDoc path to the value.
                  * @param {string[]} errs - Array to push error messages to.
@@ -820,7 +788,6 @@ export function validateActionProfiles(actionProfiles) {
 
 /**
  * Validates the automodConfig object.
- *
  * @param {object} autoModConfig - The `automodConfig` object.
  * @param {object} actionProfiles - The `checkActionProfiles` object from `actionProfiles.js` for cross-referencing checkTypes.
  * @returns {string[]} An array of error messages. Empty if no errors.
@@ -851,7 +818,6 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                 /**
                  * Validates the checkType string.
                  * Ensures it's camelCase or a known actionProfile name.
-                 *
                  * @param {string} val - The checkType string.
                  * @param {string} path - The JSDoc path to the value.
                  * @param {string[]} errs - Array to push error messages to.
@@ -888,7 +854,6 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
                     { name: 'actionType', type: 'string',
                         /**
                          * Validates the AutoMod actionType string.
-                         *
                          * @param {string} val - The actionType string.
                          * @param {string} path - The JSDoc path to the value.
                          * @param {string[]} errs - Array to push error messages to.
@@ -961,7 +926,6 @@ export function validateAutoModConfig(autoModConfig, actionProfiles) {
 
 /**
  * Validates the ranksConfig object.
- *
  * @param {object} ranksConfig - The object containing rank definitions and defaults from `ranksConfig.js`.
  * @param {string} mainConfigOwnerName - The `ownerPlayerName` from `config.js` for 'ownerName' condition validation.
  * @param {string} mainConfigAdminTag - The `adminTag` from `config.js` for 'adminTag' condition validation.
@@ -1019,7 +983,6 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 /**
                  * Validates the rank ID.
                  * Ensures it is lowercase and unique.
-                 *
                  * @param {string} val - The rank ID.
                  * @param {string} path - The JSDoc path to the value.
                  * @param {string[]} errs - Array to push error messages to.
@@ -1049,7 +1012,6 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                 /**
                  * Validates the rank priority.
                  * Ensures it is unique.
-                 *
                  * @param {number} val - The priority value.
                  * @param {string} path - The JSDoc path to the value.
                  * @param {string[]} errs - Array to push error messages to.
@@ -1077,7 +1039,6 @@ export function validateRanksConfig(ranksConfig, mainConfigOwnerName, mainConfig
                     { name: 'type', type: 'string',
                         /**
                          * Validates the rank condition type string.
-                         *
                          * @param {string} val - The condition type string.
                          * @param {string} path - The JSDoc path to the value.
                          * @param {string[]} errs - Array to push error messages to.

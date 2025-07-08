@@ -102,7 +102,7 @@ export const commandModules = [
     warningsCmd,
     watchCmd,
     worldborderCmd,
-    xraynotifyCmd
+    xraynotifyCmd,
 ];
 
 // Ensure JSDoc type import path is correct based on its location relative to types.js

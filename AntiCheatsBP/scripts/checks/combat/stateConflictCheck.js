@@ -12,7 +12,6 @@
 /**
  * Checks if the player is attacking while in a sleeping state.
  * Player's sleep state is determined by `player.isSleeping`.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -54,7 +53,6 @@ export async function checkAttackWhileSleeping(player, pData, dependencies, even
  * Checks if the player is attacking while using an item (consumable, bow, shield).
  * Relies on state flags in `pData` (e.g., `isUsingConsumable`, `isChargingBow`, `isUsingShield`).
  * These flags are expected to be managed by other parts of the system (e.g., eventHandlers.js).
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

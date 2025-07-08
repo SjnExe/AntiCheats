@@ -9,7 +9,6 @@
 
 /**
  * Checks a chat message for excessive character repetition.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.

@@ -22,7 +22,6 @@ const DEFAULT_SPEED_GROUND_CONSECUTIVE_TICKS_THRESHOLD = 5;
  * Considers game mode, effects (Speed), and whether the player is on ground or airborne.
  * Flags are typically applied if speeding on ground for a consecutive number of ticks.
  * This check is typically run every tick.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

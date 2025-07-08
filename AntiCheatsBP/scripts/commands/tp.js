@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !tp command for administrators to teleport players or themselves.
  */
 import * as mc from '@minecraft/server';
@@ -26,7 +25,6 @@ export const definition = {
 
 /**
  * Parses dimension ID string to a valid Minecraft Dimension object.
- *
  * @param {string | undefined} dimensionIdString - The dimension ID string (e.g., "overworld", "nether", "the_end").
  * @param {import('@minecraft/server').Player} currentPlayer - The player whose dimension to use as default if string is invalid/undefined.
  * @param {import('../types.js').Dependencies} dependencies - For logging.
@@ -58,7 +56,6 @@ function parseDimension(dimensionIdString, currentPlayer, dependencies) {
  * !tp PlayerToMove TargetPlayerDestination
  * !tp PlayerToMove X Y Z [Dimension]
  * !tp X Y Z [Dimension] (teleports self)
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
@@ -71,7 +68,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.tp.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.tp.usage', { prefix }));
         return;
     }
 
@@ -132,11 +129,11 @@ export async function execute(player, args, dependencies) {
                 return;
             }
         } else {
-            player.sendMessage(getString('command.tp.usage', { prefix: prefix }));
+            player.sendMessage(getString('command.tp.usage', { prefix }));
             return;
         }
     } else {
-        player.sendMessage(getString('command.tp.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.tp.usage', { prefix }));
         return;
     }
 
@@ -177,11 +174,11 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         if (playerToMove.id !== player.id) {
-            playerToMove.sendMessage(getString('command.tp.targetNotification', { adminName: adminName, destinationDescription: destinationDescription }));
+            playerToMove.sendMessage(getString('command.tp.targetNotification', { adminName, destinationDescription }));
         }
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerTeleported',
             targetName: playerToMove.nameTag,
             targetId: playerToMove.id,
@@ -195,7 +192,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[TPCommand CRITICAL] Error teleporting ${playerToMove.nameTag} by ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorTeleportCommand',
             context: 'TPCommand.execute',
             targetName: playerToMove.nameTag,

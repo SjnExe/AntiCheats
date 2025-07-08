@@ -21,7 +21,6 @@ const defaultMaxPitchSnapPerTick = 75;
  * changes in view angle (pitch/yaw snaps) that occur shortly after a player attacks.
  * Player's last pitch and yaw are updated by the game or via `playerDataManager.updateTransientPlayerData`.
  * Player's last attack tick is updated in `eventHandlers.handleEntityHurt`.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `lastAttackTick`, `lastPitch`, `lastYaw`.

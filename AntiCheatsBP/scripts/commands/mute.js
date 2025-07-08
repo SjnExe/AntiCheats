@@ -15,7 +15,6 @@ export const definition = {
  * Executes the !mute command.
  * Mutes a target player for a specified duration with an optional reason.
  * Can also be invoked by AutoMod.
- *
  * @async
  * @param {import('@minecraft/server').Player | null} player - The player issuing the command, or null if system-invoked.
  * @param {string[]} args - Command arguments: <playername> [duration] [reason].
@@ -42,7 +41,7 @@ export function execute(
     let reason = parsedArgs.reason;
 
     if (!targetPlayerName) {
-        const usageMessage = getString('command.mute.usage', { prefix: prefix });
+        const usageMessage = getString('command.mute.usage', { prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {
@@ -82,7 +81,7 @@ export function execute(
 
     const durationMs = playerUtils?.parseDuration(durationString);
     if (durationMs === null || (durationMs <= 0 && durationMs !== Infinity)) {
-        const message = getString('command.mute.invalidDuration', { defaultDuration: defaultDuration });
+        const message = getString('command.mute.invalidDuration', { defaultDuration });
         if (player) {
             player.sendMessage(message);
         } else {

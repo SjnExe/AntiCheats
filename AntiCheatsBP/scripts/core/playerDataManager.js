@@ -45,7 +45,6 @@ const persistedPlayerDataKeys = [
 
 /**
  * Retrieves the runtime AntiCheat data for a given player ID.
- *
  * @param {string} playerId The ID of the player.
  * @returns {import('../types.js').PlayerAntiCheatData | undefined} The player's data, or undefined if not found.
  */
@@ -54,8 +53,67 @@ export function getPlayerData(playerId) {
 }
 
 /**
+ * Schedules a flag purge for an offline player.
+ * Stores the player's identifier (name) in a world dynamic property list.
+ * @param {string} playerIdentifier - The name of the player to schedule for flag purge.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {boolean} True if scheduling was successful, false otherwise.
+ */
+export function scheduleFlagPurge(playerIdentifier, dependencies) {
+    const { playerUtils, logManager } = dependencies;
+    if (!playerIdentifier || typeof playerIdentifier !== 'string' || playerIdentifier.trim() === '') {
+        console.warn('[PlayerDataManager.scheduleFlagPurge] Invalid playerIdentifier provided.');
+        playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Attempted to schedule purge with invalid identifier: '${playerIdentifier}'`, null, dependencies);
+        return false;
+    }
+
+    try {
+        const rawPendingPurges = mc.world.getDynamicProperty(PENDING_FLAG_PURGES_DP_KEY);
+        let pendingPurges = [];
+
+        if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0) {
+            try {
+                pendingPurges = JSON.parse(rawPendingPurges);
+                if (!Array.isArray(pendingPurges)) {
+                    console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: not an array. Resetting. JSON: ${rawPendingPurges}`);
+                    pendingPurges = [];
+                }
+            } catch (parseError) {
+                console.error(`[PlayerDataManager.scheduleFlagPurge] Failed to parse pending purges list. Error: ${parseError.stack || parseError}. JSON: "${rawPendingPurges}". Resetting list.`);
+                logManager?.addLog({ actionType: 'system_error', context: 'scheduleFlagPurge_json_parse_fail', details: `Failed to parse PENDING_FLAG_PURGES_DP_KEY. Error: ${parseError.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
+                pendingPurges = []; // Reset if parsing fails to prevent further issues
+            }
+        } else if (rawPendingPurges !== undefined) {
+            // Data exists but is not a string or is an empty string - indicates corruption or unexpected type
+            console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: expected string, got ${typeof rawPendingPurges}. Resetting. Key: ${PENDING_FLAG_PURGES_DP_KEY}`);
+            pendingPurges = [];
+        }
+        // If rawPendingPurges is undefined, pendingPurges remains an empty array, which is correct.
+
+
+        if (!pendingPurges.includes(playerIdentifier)) {
+            pendingPurges.push(playerIdentifier);
+            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+            playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Scheduled flag purge for '${playerIdentifier}'. Pending list size: ${pendingPurges.length}`, null, dependencies);
+            return true;
+        }
+        playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Flag purge for '${playerIdentifier}' was already scheduled.`, null, dependencies);
+        return true; // Still considered success as the desired state is achieved
+
+    } catch (error) {
+        console.error(`[PlayerDataManager.scheduleFlagPurge] Error accessing or saving pending purges list: ${error.stack || error}`);
+        logManager?.addLog({
+            actionType: 'system_error',
+            context: 'scheduleFlagPurge_dp_access_fail',
+            details: `Error with PENDING_FLAG_PURGES_DP_KEY. Error: ${error.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`,
+            errorStack: error.stack || error.toString(),
+        }, dependencies);
+        return false;
+    }
+}
+
+/**
  * Centralized error handler for dynamic property operations.
- *
  * @param {string} callingFunction - The name of the function where the error occurred.
  * @param {string} operation - The specific operation that failed (e.g., 'JSON.stringify', 'player.setDynamicProperty').
  * @param {string} playerName - The name of the player involved.
@@ -78,7 +136,7 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
         context: logContext,
         targetName: playerName,
         details: {
-            operation: operation,
+            operation,
             errorMessage: error.message,
             stack: error.stack,
             ...additionalDetails,
@@ -88,7 +146,6 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
 
 /**
  * Saves a subset of player data (persisted keys) to the player's dynamic properties.
- *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {object} pDataToSave - Data containing only keys to be persisted.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -142,7 +199,6 @@ export function savePlayerDataToDynamicProperties(player, pDataToSave, dependenc
 
 /**
  * Loads player data from dynamic properties.
- *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {object | null} The loaded player data object, or null if not found or error.
@@ -198,7 +254,6 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
 
 /**
  * Prepares and saves the persistable parts of a player's AntiCheat data.
- *
  * @param {import('@minecraft/server').Player} player - The player whose data to save.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {Promise<void>}
@@ -251,7 +306,6 @@ if (allKnownFlagTypes.length === 0) {
 
 /**
  * Initializes a new default PlayerAntiCheatData object for a player.
- *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {number} currentTick - The current game tick.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -362,7 +416,6 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
 /**
  * Ensures that a player's data is initialized, loading from persistence if available,
  * or creating default data otherwise. Merges loaded data with defaults for transient fields.
- *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {number} currentTick - Current game tick, used if initializing default data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -490,7 +543,6 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
 
 /**
  * Removes runtime data for players who are no longer online.
- *
  * @param {Array<import('@minecraft/server').Player>} activePlayers - An array of currently online players.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
@@ -515,7 +567,6 @@ export function cleanupActivePlayerData(activePlayers, dependencies) {
 
 /**
  * Updates transient (per-tick) player data fields.
- *
  * @param {import('@minecraft/server').Player} player - The player object.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data object.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -558,14 +609,14 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         } catch (e) {
             if (!pData.slimeCheckErrorLogged) {
                 console.warn(`[PlayerDataManager.updateTransientPlayerData] Error checking slime block for ${playerName}: ${e.stack || e}`);
-                logManager?.addLog({
+                dependencies.logManager?.addLog({
                     actionType: 'errorPlayerDataManagerSlimeCheck',
                     context: 'playerDataManager.updateTransientPlayerData.slimeBlockCheck',
                     targetName: playerName,
                     details: {
                         errorMessage: e.message,
                         stack: e.stack,
-                        feetPos: feetPos,
+                        feetPos,
                     },
                 }, dependencies);
                 pData.slimeCheckErrorLogged = true;
@@ -575,67 +626,6 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.consecutiveOffGroundTicks++;
         pData.slimeCheckErrorLogged = false;
     }
-
-/**
- * Schedules a flag purge for an offline player.
- * Stores the player's identifier (name) in a world dynamic property list.
- *
- * @param {string} playerIdentifier - The name of the player to schedule for flag purge.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {Promise<boolean>} True if scheduling was successful, false otherwise.
- */
-export async function scheduleFlagPurge(playerIdentifier, dependencies) {
-    const { playerUtils, logManager } = dependencies;
-    if (!playerIdentifier || typeof playerIdentifier !== 'string' || playerIdentifier.trim() === '') {
-        console.warn('[PlayerDataManager.scheduleFlagPurge] Invalid playerIdentifier provided.');
-        playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Attempted to schedule purge with invalid identifier: '${playerIdentifier}'`, null, dependencies);
-        return false;
-    }
-
-    try {
-        const rawPendingPurges = mc.world.getDynamicProperty(PENDING_FLAG_PURGES_DP_KEY);
-        let pendingPurges = [];
-
-        if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0) {
-            try {
-                pendingPurges = JSON.parse(rawPendingPurges);
-                if (!Array.isArray(pendingPurges)) {
-                    console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: not an array. Resetting. JSON: ${rawPendingPurges}`);
-                    pendingPurges = [];
-                }
-            } catch (parseError) {
-                console.error(`[PlayerDataManager.scheduleFlagPurge] Failed to parse pending purges list. Error: ${parseError.stack || parseError}. JSON: "${rawPendingPurges}". Resetting list.`);
-                logManager?.addLog({ actionType: 'system_error', context: 'scheduleFlagPurge_json_parse_fail', details: `Failed to parse PENDING_FLAG_PURGES_DP_KEY. Error: ${parseError.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
-                pendingPurges = []; // Reset if parsing fails to prevent further issues
-            }
-        } else if (rawPendingPurges !== undefined) {
-            // Data exists but is not a string or is an empty string - indicates corruption or unexpected type
-            console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: expected string, got ${typeof rawPendingPurges}. Resetting. Key: ${PENDING_FLAG_PURGES_DP_KEY}`);
-            pendingPurges = [];
-        }
-        // If rawPendingPurges is undefined, pendingPurges remains an empty array, which is correct.
-
-
-        if (!pendingPurges.includes(playerIdentifier)) {
-            pendingPurges.push(playerIdentifier);
-            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
-            playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Scheduled flag purge for '${playerIdentifier}'. Pending list size: ${pendingPurges.length}`, null, dependencies);
-            return true;
-        } else {
-            playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Flag purge for '${playerIdentifier}' was already scheduled.`, null, dependencies);
-            return true; // Still considered success as the desired state is achieved
-        }
-    } catch (error) {
-        console.error(`[PlayerDataManager.scheduleFlagPurge] Error accessing or saving pending purges list: ${error.stack || error}`);
-        logManager?.addLog({
-            actionType: 'system_error',
-            context: 'scheduleFlagPurge_dp_access_fail',
-            details: `Error with PENDING_FLAG_PURGES_DP_KEY. Error: ${error.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`,
-            errorStack: error.stack || error.toString()
-        }, dependencies);
-        return false;
-    }
-}
 
     if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
         pData.lastSelectedSlotChangeTick = currentTick;
@@ -673,7 +663,6 @@ export async function scheduleFlagPurge(playerIdentifier, dependencies) {
 
 /**
  * Adds a flag to a player's data and triggers AutoMod processing.
- *
  * @param {import('@minecraft/server').Player} player - The player to flag.
  * @param {string} flagType - Standardized camelCase flag type (e.g., 'movementFlyHover').
  * @param {string} reasonMessage - Base reason message for the flag.
@@ -764,7 +753,6 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
 
 /**
  * Adds a mute record to a player's data.
- *
  * @param {import('@minecraft/server').Player} player - The player to mute.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the mute.
@@ -780,7 +768,6 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
 
 /**
  * Internal helper to add a state restriction (mute or ban) to a player's data.
- *
  * @param {import('@minecraft/server').Player} player - The player to restrict.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
@@ -835,7 +822,6 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
 
 /**
  * Internal helper to remove a state restriction (mute or ban) from a player's data.
- *
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -851,15 +837,14 @@ function _removePlayerStateRestriction(pData, stateType, dependencies) {
         pData.isDirtyForSave = true;
         playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} un${stateType}d.`, pData.isWatched ? playerName : null, dependencies);
         return true;
-    } else {
-        playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} was not ${stateType}d. No action.`, pData.isWatched ? playerName : null, dependencies);
-        return false;
     }
+    playerUtils?.debugLog(`[PlayerDataManager._removePlayerStateRestriction] Player ${playerName} was not ${stateType}d. No action.`, pData.isWatched ? playerName : null, dependencies);
+    return false;
+
 }
 
 /**
  * Internal helper to retrieve a player's current state restriction information, clearing it if expired.
- *
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {PlayerStateRestrictionType} stateType - The type of restriction ('mute' or 'ban').
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -888,7 +873,6 @@ function _getPlayerStateRestriction(pData, stateType, dependencies) {
 
 /**
  * Adds a mute record to a player's data.
- *
  * @param {import('@minecraft/server').Player} player - The player to mute.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the mute.
@@ -916,7 +900,6 @@ export function addMute(player, durationMs, reason, dependencies, mutedBy = 'Unk
 
 /**
  * Removes a mute record from a player's data.
- *
  * @param {import('@minecraft/server').Player} player - The player to unmute.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if player was unmuted, false otherwise.
@@ -939,7 +922,6 @@ export function removeMute(player, dependencies) {
 
 /**
  * Retrieves a player's current mute information, clearing it if expired.
- *
  * @param {import('@minecraft/server').Player} player - The player whose mute info to get.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {import('../types.js').PlayerMuteInfo | null} The mute info, or null if not muted or expired.
@@ -957,7 +939,6 @@ export function getMuteInfo(player, dependencies) {
 
 /**
  * Checks if a player is currently muted.
- *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the player is muted, false otherwise.
@@ -968,7 +949,6 @@ export function isMuted(player, dependencies) {
 
 /**
  * Adds a ban record to a player's data.
- *
  * @param {import('@minecraft/server').Player} player - The player to ban.
  * @param {number | Infinity} durationMs - Duration in milliseconds, or Infinity for permanent.
  * @param {string} reason - The reason for the ban.
@@ -996,7 +976,6 @@ export function addBan(player, durationMs, reason, dependencies, bannedBy = 'Unk
 
 /**
  * Removes a ban record from a player's data.
- *
  * @param {import('@minecraft/server').Player} player - The player to unban.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if player was unbanned, false otherwise.
@@ -1019,7 +998,6 @@ export function removeBan(player, dependencies) {
 
 /**
  * Retrieves a player's current ban information, clearing it if expired.
- *
  * @param {import('@minecraft/server').Player} player - The player whose ban info to get.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {import('../types.js').PlayerBanInfo | null} The ban info, or null if not banned or expired.
@@ -1037,7 +1015,6 @@ export function getBanInfo(player, dependencies) {
 
 /**
  * Checks if a player is currently banned.
- *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the player is banned, false otherwise.
@@ -1048,7 +1025,6 @@ export function isBanned(player, dependencies) {
 
 /**
  * Saves player data if it has been marked as dirty.
- *
  * @param {import('@minecraft/server').Player} player - The player whose data to potentially save.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {Promise<boolean>} True if data was saved or not dirty, false on save error.
@@ -1075,7 +1051,6 @@ export async function saveDirtyPlayerData(player, dependencies) {
 
 /**
  * Clears all flags and resets AutoMod state for a specific check type for a player.
- *
  * @param {import('@minecraft/server').Player} player - The player whose flags to clear.
  * @param {string} checkType - The check type (camelCase) whose flags to clear.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -1115,7 +1090,6 @@ export function clearFlagsForCheckType(player, checkType, dependencies) {
 
 /**
  * Clears transient item use state flags if they persist beyond a configured timeout.
- *
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */

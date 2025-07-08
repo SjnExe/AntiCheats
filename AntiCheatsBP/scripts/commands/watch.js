@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !watch command.
  * Sets the `isWatched` flag for the target player's AntiCheat data based on the provided action or toggles it.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [on|off|toggle].
@@ -27,7 +26,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.watch.usage', { prefix: prefix, syntax: definition.syntax }));
+        player.sendMessage(getString('command.watch.usage', { prefix, syntax: definition.syntax }));
         return;
     }
 
@@ -45,7 +44,7 @@ export async function execute(player, args, dependencies) {
         logManager?.addLog({
             actionType: 'errorWatchCommandNoPData',
             context: 'WatchCommand.execute',
-            adminName: adminName,
+            adminName,
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
             details: 'Attempted to manage watch status for player, but no pData found.',
@@ -67,7 +66,7 @@ export async function execute(player, args, dependencies) {
             newWatchState = !currentWatchState;
             break;
         default:
-            player.sendMessage(getString('command.watch.invalidAction', { action: actionArg, prefix: prefix, syntax: definition.syntax }));
+            player.sendMessage(getString('command.watch.invalidAction', { action: actionArg, prefix, syntax: definition.syntax }));
             return;
     }
 
@@ -84,10 +83,10 @@ export async function execute(player, args, dependencies) {
 
     if (newWatchState) {
         player.sendMessage(getString('command.watch.success.admin', { playerName: targetPlayer.nameTag }));
-        targetPlayer.sendMessage(getString('command.watch.success.target', { adminName: adminName }));
+        targetPlayer.sendMessage(getString('command.watch.success.target', { adminName }));
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerWatched',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
@@ -96,10 +95,10 @@ export async function execute(player, args, dependencies) {
         playerUtils?.debugLog(`Admin ${adminName} started watching player ${targetPlayer.nameTag}.`, adminName, dependencies);
     } else {
         player.sendMessage(getString('command.unwatch.success.admin', { playerName: targetPlayer.nameTag })); // Reusing unwatch string
-        targetPlayer.sendMessage(getString('command.unwatch.success.target', { adminName: adminName })); // Reusing unwatch string
+        targetPlayer.sendMessage(getString('command.unwatch.success.target', { adminName })); // Reusing unwatch string
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerUnwatched',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,

@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !tpastatus command.
  * Allows players to enable/disable receiving TPA requests, or check their current TPA status.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].
@@ -32,7 +31,7 @@ export function execute(player, args, dependencies) {
         return;
     }
     if (!dependencies.commandSettings?.tpastatus?.enabled) {
-        player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
+        player.sendMessage(getString('command.error.unknownCommand', { prefix, commandName: definition.name }));
         return;
     }
 
@@ -56,13 +55,13 @@ export function execute(player, args, dependencies) {
             return;
         }
         default:
-            player.sendMessage(getString('command.tpastatus.invalidOption', { prefix: prefix }));
+            player.sendMessage(getString('command.tpastatus.invalidOption', { prefix }));
             return;
     }
 
     if (newAcceptsTpa === currentStatus?.acceptsTpaRequests) {
         const alreadyMsgKey = newAcceptsTpa ? 'command.tpastatus.status.accepting' : 'command.tpastatus.status.notAccepting';
-        player.sendMessage(getString(alreadyMsgKey) + ' (No change made)');
+        player.sendMessage(`${getString(alreadyMsgKey) } (No change made)`);
         return;
     }
 

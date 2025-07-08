@@ -15,7 +15,6 @@ export const definition = {
  * Executes the !unban command.
  * Removes a ban from the specified player. If the ban was due to an AutoMod action
  * that also reset flags, this command might not automatically restore those flags.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
@@ -31,7 +30,7 @@ export function execute(player, args, dependencies) {
     const targetPlayerName = parsedArgs.targetPlayerName;
 
     if (!targetPlayerName) {
-        player.sendMessage(getString('command.unban.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.unban.usage', { prefix }));
         return;
     }
 
@@ -42,7 +41,7 @@ export function execute(player, args, dependencies) {
 
     const pData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
     if (!pData) {
-        player.sendMessage(getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag }) + ' (No data)');
+        player.sendMessage(`${getString('command.unban.failure', { playerName: targetOnlinePlayer.nameTag }) } (No data)`);
         playerUtils?.debugLog(`[UnbanCommand] No pData found for online player ${targetOnlinePlayer.nameTag}. Cannot verify ban status or unban.`, adminName, dependencies);
         return;
     }
@@ -64,7 +63,7 @@ export function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerUnbanned',
             targetName: targetOnlinePlayer.nameTag,
             targetId: targetOnlinePlayer.id,
@@ -76,7 +75,7 @@ export function execute(player, args, dependencies) {
         }
 
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const notifyMsg = getString('command.unban.notify.unbanned', { adminName: adminName, targetName: targetOnlinePlayer.nameTag });
+            const notifyMsg = getString('command.unban.notify.unbanned', { adminName, targetName: targetOnlinePlayer.nameTag });
             playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
 

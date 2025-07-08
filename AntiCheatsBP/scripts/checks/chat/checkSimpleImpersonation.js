@@ -15,7 +15,6 @@ const DEBUG_LOG_SIMP_IMP_SNIPPET_LENGTH = 50;
 /**
  * Checks a message for simple impersonation patterns (e.g., mimicking server announcements).
  * Exempts players with a permission level at or below `config.impersonationExemptPermissionLevel`.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
@@ -78,7 +77,7 @@ export async function checkSimpleImpersonation(player, eventData, pData, depende
             if (regex.test(rawMessageContent)) {
                 const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
                 const violationDetails = {
-                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_SIMP_IMP) + '...' : rawMessageContent,
+                    messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_SIMP_IMP) }...` : rawMessageContent,
                     matchedPattern: patternString,
                     playerPermissionLevel: typeof playerPermission === 'number' ? playerPermission.toString() : 'Unknown',
                     exemptPermissionLevelRequired: exemptPermissionLevel.toString(),

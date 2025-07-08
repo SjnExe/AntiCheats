@@ -14,7 +14,6 @@ const pistonActivityData = new Map();
 /**
  * Checks for rapid and sustained piston activations that might indicate a lag machine.
  * This function is typically called from a `PistonActivateAfterEvent` handler.
- *
  * @async
  * @param {import('@minecraft/server').Block} pistonBlock - The piston block that activated.
  * @param {string} dimensionId - The ID of the dimension where the piston activated.

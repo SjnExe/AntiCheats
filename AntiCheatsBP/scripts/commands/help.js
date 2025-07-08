@@ -16,7 +16,6 @@ export const definition = {
  * Executes the !help command.
  * Displays a list of available commands filtered by the user's permission level,
  * or detailed information if a specific command name is provided.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [command_name].
@@ -57,7 +56,7 @@ export function execute(player, args, dependencies) {
             }
 
             if (!isEffectivelyEnabled) {
-                player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandNameInput }));
+                player.sendMessage(getString('command.help.unknownCommand', { prefix, commandName: specificCommandNameInput }));
                 return;
             }
 
@@ -77,19 +76,19 @@ export function execute(player, args, dependencies) {
                 const descriptionText = getString(foundCmdDef.description) || foundCmdDef.description;
 
                 player.sendMessage(
-                    getString('command.help.specific.header', { prefix: prefix, commandName: foundCmdDef.name }) + '\n' +
-                    getString('command.help.specific.syntax', { prefix: prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs || '' }) + '\n' +
-                    getString('command.help.specific.description', { description: descriptionText }) + '\n' +
-                    getString('command.help.specific.permission', { permLevelName: permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() }),
+                    `${getString('command.help.specific.header', { prefix, commandName: foundCmdDef.name }) }\n${
+                        getString('command.help.specific.syntax', { prefix, commandName: foundCmdDef.name, syntaxArgs: syntaxArgs || '' }) }\n${
+                        getString('command.help.specific.description', { description: descriptionText }) }\n${
+                        getString('command.help.specific.permission', { permLevelName, permissionLevel: foundCmdDef.permissionLevel.toString() })}`,
                 );
             } else {
-                player.sendMessage(getString('command.help.noPermission', { prefix: prefix, commandName: specificCommandNameInput }));
+                player.sendMessage(getString('command.help.noPermission', { prefix, commandName: specificCommandNameInput }));
             }
         } else {
-            player.sendMessage(getString('command.help.unknownCommand', { prefix: prefix, commandName: specificCommandNameInput }));
+            player.sendMessage(getString('command.help.unknownCommand', { prefix, commandName: specificCommandNameInput }));
         }
     } else {
-        let helpMessage = getString('command.help.header', { prefix: prefix }) + '\n';
+        let helpMessage = `${getString('command.help.header', { prefix }) }\n`;
         let commandsListed = 0;
 
         const categories = [
@@ -135,7 +134,7 @@ export function execute(player, args, dependencies) {
                         ? cmdDef.syntax.substring((prefix + cmdDef.name).length).trim()
                         : (cmdDef.syntax.startsWith(cmdDef.name) ? cmdDef.syntax.substring(cmdDef.name.length).trim() : cmdDef.syntax);
                     const descriptionText = getString(cmdDef.description) || cmdDef.description;
-                    helpMessage += getString('command.help.entryFormat', { prefix: prefix, commandName: cmdDef.name, syntaxArgs: syntaxArgs || '', description: descriptionText }) + '\n';
+                    helpMessage += `${getString('command.help.entryFormat', { prefix, commandName: cmdDef.name, syntaxArgs: syntaxArgs || '', description: descriptionText }) }\n`;
                     commandsListed++;
                 });
             }

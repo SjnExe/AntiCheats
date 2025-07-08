@@ -15,7 +15,6 @@ export const definition = {
 /**
  * Executes the !warnings command.
  * Displays a summary of the target player's AntiCheat flags to the command issuer.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
@@ -28,7 +27,7 @@ export function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.warnings.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.warnings.usage', { prefix }));
         return;
     }
 
@@ -49,7 +48,7 @@ export function execute(player, args, dependencies) {
         messageLines.push(getString('command.warnings.totalFlags', { totalFlags: totalFlags.toString() }));
 
         const lastFlagType = pData.lastFlagType || getString('common.value.notAvailable');
-        messageLines.push(getString('command.warnings.lastFlagType', { lastFlagType: lastFlagType }));
+        messageLines.push(getString('command.warnings.lastFlagType', { lastFlagType }));
 
         let specificFlagsOutput = '';
         let specificFlagsFound = false;
@@ -60,7 +59,7 @@ export function execute(player, args, dependencies) {
         for (const flagKey of flagKeys) {
             const flagData = pData.flags[flagKey];
             const lastTime = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleTimeString() : getString('common.value.notAvailable');
-            specificFlagsOutput += '\n' + getString('command.warnings.flagEntry', { flagKey: flagKey, count: (flagData.count ?? 0).toString(), lastTime: lastTime });
+            specificFlagsOutput += `\n${ getString('command.warnings.flagEntry', { flagKey, count: (flagData.count ?? 0).toString(), lastTime })}`;
             specificFlagsFound = true;
         }
 
@@ -81,7 +80,7 @@ export function execute(player, args, dependencies) {
 
     try {
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'warningsViewed',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,

@@ -17,7 +17,6 @@ export const definition = {
 
 /**
  * Executes the !clearreports command.
- *
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
  * @param {import('../types.js').Dependencies} dependencies - Command dependencies.
@@ -29,8 +28,8 @@ export function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        playerUtils?.sendMessage(player, getString('command.clearreports.usage', { prefix: prefix, syntax: definition.syntax }));
-        playerUtils?.sendMessage(player, getString('command.clearreports.example', { prefix: prefix }));
+        playerUtils?.sendMessage(player, getString('command.clearreports.usage', { prefix, syntax: definition.syntax }));
+        playerUtils?.sendMessage(player, getString('command.clearreports.example', { prefix }));
         return;
     }
 
@@ -41,7 +40,7 @@ export function execute(player, args, dependencies) {
         playerUtils?.sendMessage(player, getString('command.clearreports.allSuccess', { count: clearedCount.toString() }));
         logManager?.addLog({
             actionType: 'reportsClearedAll',
-            adminName: adminName,
+            adminName,
             details: `Cleared ${clearedCount} reports.`,
             context: 'ClearReportsCommand.execute.all',
         }, dependencies);
@@ -50,16 +49,16 @@ export function execute(player, args, dependencies) {
         const reportId = subCommandOrTarget;
         const success = clearReportById(reportId, dependencies);
         if (success) {
-            playerUtils?.sendMessage(player, getString('command.clearreports.idSuccess', { reportId: reportId }));
+            playerUtils?.sendMessage(player, getString('command.clearreports.idSuccess', { reportId }));
             logManager?.addLog({
                 actionType: 'reportClearedById',
-                adminName: adminName,
+                adminName,
                 details: `Cleared report ID: ${reportId}.`,
                 context: 'ClearReportsCommand.execute.byId',
             }, dependencies);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
         } else {
-            playerUtils?.sendMessage(player, getString('command.clearreports.idNotFound', { reportId: reportId }));
+            playerUtils?.sendMessage(player, getString('command.clearreports.idNotFound', { reportId }));
             playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         }
     } else {
@@ -69,7 +68,7 @@ export function execute(player, args, dependencies) {
             playerUtils?.sendMessage(player, getString('command.clearreports.playerSuccess', { count: clearedCount.toString(), playerName: targetPlayerName }));
             logManager?.addLog({
                 actionType: 'reportsClearedForPlayer',
-                adminName: adminName,
+                adminName,
                 targetName: targetPlayerName,
                 details: `Cleared ${clearedCount} reports for player.`,
                 context: 'ClearReportsCommand.execute.forPlayer',

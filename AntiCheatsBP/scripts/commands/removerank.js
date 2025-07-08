@@ -13,7 +13,6 @@ export const definition = {
 
 /**
  * Executes the removerank command.
- *
  * @async
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName, rankId].
@@ -26,7 +25,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 2) {
-        player.sendMessage(getString('command.removerank.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.removerank.usage', { prefix }));
         return;
     }
 
@@ -83,7 +82,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'rankRemoved',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
@@ -91,7 +90,7 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const baseNotifyMsg = getString('command.removerank.notify.removedRank', { adminName: adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
+            const baseNotifyMsg = getString('command.removerank.notify.removedRank', { adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
@@ -100,7 +99,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[RemoveRankCommand CRITICAL] Error removing rank ${rankDef.id} from ${targetPlayer.nameTag} by ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorRankRemove',
             context: 'RemoveRankCommand.execute',
             targetName: targetPlayer.nameTag,

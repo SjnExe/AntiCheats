@@ -13,7 +13,6 @@ import { ActionFormData, ModalFormData } from '@minecraft/server-ui'; // Direct 
 
 /**
  * Helper to show a confirmation modal.
- *
  * @param {mc.Player} adminPlayer - Player to show modal to.
  * @param {string} titleKey - Localization key for title.
  * @param {string} bodyKey - Localization key for body.
@@ -48,8 +47,8 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
             context: 'uiManager._showConfirmationModal', // Standardized
             adminName: playerName,
             details: {
-                titleKey: titleKey,
-                bodyKey: bodyKey, // Added for context
+                titleKey,
+                bodyKey, // Added for context
                 errorMessage: error.message,
                 stack: error.stack,
             },
@@ -60,7 +59,6 @@ async function _showConfirmationModal(adminPlayer, titleKey, bodyKey, confirmTog
 
 /**
  * Shows a form to input a player name for inspection (text-based).
- *
  * @param {mc.Player} adminPlayer - Admin using the form.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies.
  */
@@ -98,7 +96,7 @@ async function showInspectPlayerForm(adminPlayer, dependencies) {
         logManager?.addLog({
             actionType: 'errorUiInspectPlayerForm', // Standardized
             context: 'uiManager.showInspectPlayerForm', // Standardized
-            adminName: adminName,
+            adminName,
             details: {
                 // response is not in scope here if modalForm.show() failed before assignment
                 errorMessage: error.message,
@@ -143,7 +141,6 @@ const PLAYER_ACTIONS_BTN_BACK_TO_LIST = 10;
 
 /**
  * Displays a form with various actions that can be taken on a specific player.
- *
  * @param {import('@minecraft/server').Player} adminPlayer - The admin player using the form.
  * @param {import('@minecraft/server').Player} targetPlayer - The player being targeted by the actions.
  * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance.
@@ -205,7 +202,6 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         let shouldReturnToPlayerActions = true; // Default to re-showing this form
         /**
          * Retrieves a command execution function from the command map.
-         *
          * @param {string} cmd - The name of the command to retrieve.
          * @returns {((player: import('@minecraft/server').Player, args: string[], dependencies: import('../types.js').Dependencies) => Promise<void>) | undefined} The command's execute function or undefined if not found.
          */
@@ -230,8 +226,8 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     logManager?.addLog({
                         actionType: 'errorUiTeleportToPlayer',
                         context: 'uiManager.showPlayerActionsForm.teleportToPlayer',
-                        adminName: adminName,
-                        targetName: targetName,
+                        adminName,
+                        targetName,
                         details: {
                             errorMessage: e.message,
                             stack: e.stack,
@@ -252,8 +248,8 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     logManager?.addLog({
                         actionType: 'errorUiTeleportPlayerToAdmin',
                         context: 'uiManager.showPlayerActionsForm.teleportPlayerToAdmin',
-                        adminName: adminName,
-                        targetName: targetName,
+                        adminName,
+                        targetName,
                         details: {
                             errorMessage: e.message,
                             stack: e.stack,
@@ -306,8 +302,8 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         logManager?.addLog({
             actionType: 'errorUiPlayerActionsForm', // Standardized
             context: 'uiManager.showPlayerActionsForm', // Standardized
-            adminName: adminName,
-            targetName: targetName, // Retain as top-level field as per LogEntry
+            adminName,
+            targetName, // Retain as top-level field as per LogEntry
             details: {
                 errorMessage: error.message,
                 stack: error.stack,
@@ -316,7 +312,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         adminPlayer?.sendMessage(getString('ui.playerActions.error.generic'));
         await showOnlinePlayersList(adminPlayer, dependencies); // Fallback
     }
-};
+}
 
 
 // Assign other functions similarly ensure dependencies are passed correctly, and use optional chaining.
@@ -335,7 +331,6 @@ const ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON = 6; // Index of close if owner bu
 /**
  * Shows the main admin panel form.
  * Displays different options based on the admin's permission level.
- *
  * @param {import('@minecraft/server').Player} player - The player (admin) viewing the panel.
  * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
@@ -355,7 +350,7 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
 
     const form = new ActionFormData()
         .title(getString('ui.adminPanel.title'))
-        .body(getString('ui.adminPanel.body', { playerName: playerName }));
+        .body(getString('ui.adminPanel.body', { playerName }));
 
     form.button(getString('ui.adminPanel.button.viewPlayers'), 'textures/ui/multiplayer_glyph_color');
     form.button(getString('ui.adminPanel.button.inspectPlayerText'), 'textures/ui/magnifying_glass');
@@ -411,12 +406,11 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
         }, dependencies);
         player?.sendMessage(getString('ui.adminPanel.error.generic'));
     }
-};
+}
 
 /**
  * Shows a form listing all currently online players.
  * Allows selecting a player to view further actions.
- *
  * @param {import('@minecraft/server').Player} adminPlayer - The admin player viewing the list.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
@@ -465,7 +459,7 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
         logManager?.addLog({
             actionType: 'errorUiOnlinePlayersList', // Standardized
             context: 'uiManager.showOnlinePlayersList', // Standardized
-            adminName: adminName,
+            adminName,
             details: {
                 errorMessage: error.message,
                 stack: error.stack,
@@ -477,14 +471,13 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
             console.warn(`[UiManager.showOnlinePlayersList] Error in fallback showAdminPanelMain: ${e}`);
         }); // Pass full dependencies
     }
-};
+}
 
 // Commenting out unused function assignments based on ESLint warnings
 // async function showServerManagementForm (_adminPlayer, _playerDataManager_unused, _config_unused, _dependencies) { /* ... */ };
 // async function showModLogTypeSelectionForm (_adminPlayer, _dependencies, _currentFilterName = null) { /* ... */ };
 /**
  * Shows a form displaying detailed flags for a specific target player. (Currently a stub)
- *
  * @param {import('@minecraft/server').Player} adminPlayer - The admin player viewing the flags.
  * @param {import('@minecraft/server').Player} targetPlayer - The player whose flags are being viewed.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
@@ -496,11 +489,10 @@ async function showDetailedFlagsForm (adminPlayer, targetPlayer, dependencies) {
     playerUtils?.debugLog(`[UiManager.showDetailedFlagsForm] Stub for ${targetName} by ${adminName}`, adminName, dependencies);
     adminPlayer?.sendMessage(getString('common.error.notImplemented', { featureName: 'Detailed Flags View' }));
     await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
-};
+}
 
 /**
  * Shows a form for resetting flags for a player. (Currently a stub)
- *
  * @param {import('@minecraft/server').Player} player - The admin player initiating the action.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
@@ -513,7 +505,6 @@ async function showResetFlagsForm(player, dependencies) {
 
 /**
  * Shows a list of watched players. (Currently a stub)
- *
  * @param {import('@minecraft/server').Player} player - The admin player viewing the list.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
@@ -526,7 +517,6 @@ async function showWatchedPlayersList(player, dependencies) {
 
 /**
  * Shows a server management form. (Currently a stub)
- *
  * @param {import('@minecraft/server').Player} player - The admin player using the form.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
@@ -539,7 +529,6 @@ async function showServerManagementForm(player, dependencies) {
 
 /**
  * Shows a form for editing configuration values. (Currently a stub)
- *
  * @param {import('@minecraft/server').Player} player - The admin player (owner) using the form.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
@@ -552,7 +541,6 @@ async function showEditConfigForm(player, dependencies) {
 
 /**
  * Shows the main panel for normal users. (Currently a stub)
- *
  * @param {import('@minecraft/server').Player} player - The player viewing the panel.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */

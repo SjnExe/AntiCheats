@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !worldborder command (aliased as !wb) for managing per-dimension world borders.
  */
 import * as mc from '@minecraft/server';
@@ -23,7 +22,6 @@ export const definition = {
 
 /**
  * Helper to parse dimension ID from arguments or default to player's current dimension.
- *
  * @param {string | undefined} dimensionArg - The dimension argument from the command.
  * @param {import('@minecraft/server').Player} player - The command issuer.
  * @param {import('../types.js').Dependencies} dependencies - For getString.
@@ -59,7 +57,6 @@ function parseDimensionArgument(dimensionArg, player, dependencies) {
 
 /**
  * Executes the !worldborder command and its subcommands.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
@@ -87,16 +84,16 @@ export async function execute(player, args, dependencies) {
     if (!subCommand || subCommand === 'help') {
         const helpMessages = [
             getString('command.worldborder.help.header'),
-            getString('command.worldborder.help.set', { prefix: prefix }),
+            getString('command.worldborder.help.set', { prefix }),
             getString('command.worldborder.help.setSizeNote'),
-            getString('command.worldborder.help.get', { prefix: prefix }),
-            getString('command.worldborder.help.toggle', { prefix: prefix }),
-            getString('command.worldborder.help.remove', { prefix: prefix }),
-            getString('command.worldborder.help.resize', { prefix: prefix }),
-            getString('command.worldborder.help.pause', { prefix: prefix }),
-            getString('command.worldborder.help.resume', { prefix: prefix }),
-            getString('command.worldborder.help.setGlobalParticle', { prefix: prefix }),
-            getString('command.worldborder.help.setParticle', { prefix: prefix }),
+            getString('command.worldborder.help.get', { prefix }),
+            getString('command.worldborder.help.toggle', { prefix }),
+            getString('command.worldborder.help.remove', { prefix }),
+            getString('command.worldborder.help.resize', { prefix }),
+            getString('command.worldborder.help.pause', { prefix }),
+            getString('command.worldborder.help.resume', { prefix }),
+            getString('command.worldborder.help.setGlobalParticle', { prefix }),
+            getString('command.worldborder.help.setParticle', { prefix }),
             getString('command.worldborder.help.dimensionNote'),
             getString('command.worldborder.help.interpolationNote'),
         ];
@@ -111,7 +108,7 @@ export async function execute(player, args, dependencies) {
         switch (subCommand) {
             case 'set': {
                 if (subArgs.length < MIN_ARGS_WB_SET) {
-                    player.sendMessage(getString('command.worldborder.set.usage', { prefix: prefix }));
+                    player.sendMessage(getString('command.worldborder.set.usage', { prefix }));
                     player.sendMessage(getString('command.worldborder.set.noteSize'));
                     return;
                 }
@@ -138,11 +135,11 @@ export async function execute(player, args, dependencies) {
                 }
 
                 const newSettings = {
-                    dimensionId: dimensionId,
+                    dimensionId,
                     enabled: true,
-                    shape: shape,
-                    centerX: centerX,
-                    centerZ: centerZ,
+                    shape,
+                    centerX,
+                    centerZ,
                     ...(wbManager.getBorderSettings(dimensionId, dependencies) || {}),
                     isResizing: false,
                 };
@@ -154,15 +151,15 @@ export async function execute(player, args, dependencies) {
 
                 success = await wbManager.saveBorderSettings(dimensionId, newSettings, dependencies); // Set success
                 if (success) {
-                    let message = getString('command.worldborder.set.successHeader', { dimensionName: dimensionName }) + '\n';
+                    let message = `${getString('command.worldborder.set.successHeader', { dimensionName }) }\n`;
                     const sizeDisplay = shape === 'square' ? `${size} (Diameter: ${size * 2})` : `${size}`;
-                    message += getString('command.worldborder.set.successDetails', { shape: shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay: sizeDisplay }) + '\n';
+                    message += `${getString('command.worldborder.set.successDetails', { shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay }) }\n`;
                     const damageStatus = newSettings.enableDamage
                         ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? DEFAULT_WB_DAMAGE_AMOUNT).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? DEFAULT_WB_DAMAGE_INTERVAL_TICKS).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? DEFAULT_WB_TELEPORT_AFTER_DAMAGE_EVENTS).toString() })
                         : getString('command.worldborder.set.damage.off');
-                    message += getString('command.worldborder.set.successDamage', { damageStatus: damageStatus });
+                    message += getString('command.worldborder.set.successDamage', { damageStatus });
                     if (newSettings.wasResizing) {
-                        message += '\n' + getString('command.worldborder.set.resizeCancelled');
+                        message += `\n${ getString('command.worldborder.set.resizeCancelled')}`;
                     }
 
                     player.sendMessage(message);
@@ -182,30 +179,30 @@ export async function execute(player, args, dependencies) {
 
                 borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
                 if (!borderSettings || !borderSettings.enabled) {
-                    player.sendMessage(getString('command.worldborder.get.noBorder', { dimensionName: dimensionName, prefix: prefix }));
+                    player.sendMessage(getString('command.worldborder.get.noBorder', { dimensionName, prefix }));
                     return;
                 }
-                let getMsg = getString('command.worldborder.get.header', { dimensionName: dimensionName }) + '\n';
-                getMsg += getString('command.worldborder.get.enabled', { status: borderSettings.enabled ? getString('common.boolean.yes') : getString('common.boolean.no') }) + '\n';
-                getMsg += getString('command.worldborder.get.shape', { shape: borderSettings.shape }) + '\n';
-                getMsg += getString('command.worldborder.get.center', { centerX: borderSettings.centerX.toString(), centerZ: borderSettings.centerZ.toString() }) + '\n';
+                let getMsg = `${getString('command.worldborder.get.header', { dimensionName }) }\n`;
+                getMsg += `${getString('command.worldborder.get.enabled', { status: borderSettings.enabled ? getString('common.boolean.yes') : getString('common.boolean.no') }) }\n`;
+                getMsg += `${getString('command.worldborder.get.shape', { shape: borderSettings.shape }) }\n`;
+                getMsg += `${getString('command.worldborder.get.center', { centerX: borderSettings.centerX.toString(), centerZ: borderSettings.centerZ.toString() }) }\n`;
                 if (borderSettings.shape === 'square') {
                     const diameter = (borderSettings.halfSize ?? 0) * 2;
-                    getMsg += getString('command.worldborder.get.square.halfSize', { halfSize: (borderSettings.halfSize ?? 0).toString(), diameter: diameter.toString() }) + '\n';
+                    getMsg += `${getString('command.worldborder.get.square.halfSize', { halfSize: (borderSettings.halfSize ?? 0).toString(), diameter: diameter.toString() }) }\n`;
                     const minX = borderSettings.centerX - (borderSettings.halfSize ?? 0);
                     const maxX = borderSettings.centerX + (borderSettings.halfSize ?? 0);
                     const minZ = borderSettings.centerZ - (borderSettings.halfSize ?? 0);
                     const maxZ = borderSettings.centerZ + (borderSettings.halfSize ?? 0);
-                    getMsg += getString('command.worldborder.get.square.bounds', { minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString() }) + '\n';
+                    getMsg += `${getString('command.worldborder.get.square.bounds', { minX: minX.toString(), maxX: maxX.toString(), minZ: minZ.toString(), maxZ: maxZ.toString() }) }\n`;
                 } else {
-                    getMsg += getString('command.worldborder.get.circle.radius', { radius: (borderSettings.radius ?? 0).toString() }) + '\n';
+                    getMsg += `${getString('command.worldborder.get.circle.radius', { radius: (borderSettings.radius ?? 0).toString() }) }\n`;
                 }
                 player.sendMessage(getMsg.trim());
                 break;
             }
             case 'toggle': {
                 if (subArgs.length < 1) {
-                    player.sendMessage(getString('command.worldborder.toggle.usage', { prefix: prefix })); return;
+                    player.sendMessage(getString('command.worldborder.toggle.usage', { prefix })); return;
                 }
                 const toggleState = subArgs[0].toLowerCase();
                 dimParseResult = parseDimensionArgument(subArgs[1], player, dependencies);
@@ -222,24 +219,24 @@ export async function execute(player, args, dependencies) {
 
                 borderSettings = wbManager.getBorderSettings(dimensionId, dependencies);
                 if (!borderSettings) {
-                    player.sendMessage(getString('command.worldborder.toggle.noBorder', { dimensionName: dimensionName })); return;
+                    player.sendMessage(getString('command.worldborder.toggle.noBorder', { dimensionName })); return;
                 }
 
                 const newState = toggleState === 'on';
                 if (borderSettings.enabled === newState) {
-                    player.sendMessage(getString('command.worldborder.toggle.alreadyState', { dimensionName: dimensionName, state: toggleState }));
+                    player.sendMessage(getString('command.worldborder.toggle.alreadyState', { dimensionName, state: toggleState }));
                     return;
                 }
                 borderSettings.enabled = newState;
                 let resizeCancelledMessage = '';
                 if (!newState && borderSettings.isResizing) {
                     borderSettings.isResizing = false;
-                    resizeCancelledMessage = ' ' + getString('command.worldborder.set.resizeCancelled');
+                    resizeCancelledMessage = ` ${ getString('command.worldborder.set.resizeCancelled')}`;
                 }
 
                 success = await wbManager.saveBorderSettings(dimensionId, borderSettings, dependencies); // Set success
                 if (success) {
-                    player.sendMessage(getString('command.worldborder.toggle.success', { dimensionName: dimensionName, state: toggleState, resizeCancelledMessage: resizeCancelledMessage }));
+                    player.sendMessage(getString('command.worldborder.toggle.success', { dimensionName, state: toggleState, resizeCancelledMessage }));
                     logManager?.addLog({ adminName, actionType: newState ? 'worldBorderEnabled' : 'worldBorderDisabled', targetName: dimensionName, details: `Border ${toggleState}` }, dependencies);
                 } else {
                     player.sendMessage(getString('command.worldborder.toggle.fail'));
@@ -258,21 +255,21 @@ export async function execute(player, args, dependencies) {
                 dimensionName = dimParseResult.dimensionName;
 
                 if (confirmArg !== 'confirm') {
-                    const dimDisplay = dimensionId === player.dimension.id ? getString('command.worldborder.remove.confirmNeeded.currentDimension', { dimensionName: dimensionName }) : dimensionName;
-                    player.sendMessage(getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimDisplay, confirmCommand: `${prefix}wb remove ${dimensionId === player.dimension.id ? '' : dimensionName + ' '}confirm` }));
+                    const dimDisplay = dimensionId === player.dimension.id ? getString('command.worldborder.remove.confirmNeeded.currentDimension', { dimensionName }) : dimensionName;
+                    player.sendMessage(getString('command.worldborder.remove.confirmNeeded', { dimensionDisplayName: dimDisplay, confirmCommand: `${prefix}wb remove ${dimensionId === player.dimension.id ? '' : `${dimensionName } `}confirm` }));
                     return;
                 }
                 success = await wbManager.clearBorderSettings(dimensionId, dependencies); // Set success
                 if (success) {
-                    player.sendMessage(getString('command.worldborder.remove.success', { dimensionName: dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.' }));
+                    player.sendMessage(getString('command.worldborder.remove.success', { dimensionName, resizeCancelledMessage: ' Any active resize was also cancelled.' }));
                     logManager?.addLog({ adminName, actionType: 'worldBorderRemoved', targetName: dimensionName, details: 'Border removed' }, dependencies);
                 } else {
-                    player.sendMessage(getString('command.worldborder.remove.fail', { dimensionName: dimensionName }));
+                    player.sendMessage(getString('command.worldborder.remove.fail', { dimensionName }));
                 }
                 break;
             }
             default:
-                player.sendMessage(getString('command.worldborder.invalidSubcommand', { subCommand: subCommand, prefix: prefix }));
+                player.sendMessage(getString('command.worldborder.invalidSubcommand', { subCommand, prefix }));
                 break;
         }
         if (success || ['get', 'status', 'help'].includes(subCommand)) {
@@ -286,7 +283,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[WorldBorderCommand CRITICAL] Error for ${adminName} command '${mainCommand} ${subCommand}': ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorWorldBorderCommand',
             context: `WorldBorderCommand.execute.${subCommand}`,
             details: `Execution error: ${error.message}`,

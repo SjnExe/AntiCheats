@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !invsee command for administrators to view a player's inventory.
  */
 import { MessageFormData } from '@minecraft/server-ui';
@@ -19,7 +18,6 @@ export const definition = {
 /**
  * Executes the !invsee command.
  * Displays the target player's inventory in a message form to the command issuer.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.
@@ -32,7 +30,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.invsee.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.invsee.usage', { prefix }));
         return;
     }
 
@@ -61,7 +59,7 @@ export async function execute(player, args, dependencies) {
     }
 
     const container = inventoryComponent.container;
-    let inventoryDetails = getString('ui.invsee.header', { playerName: foundPlayer.nameTag }) + '\n';
+    let inventoryDetails = `${getString('ui.invsee.header', { playerName: foundPlayer.nameTag }) }\n`;
     let itemCount = 0;
 
     for (let i = 0; i < container.size; i++) {
@@ -95,7 +93,7 @@ export async function execute(player, args, dependencies) {
                 }
             } catch (_e) { /* Component may not exist, or error fetching; text remains empty */ }
 
-            inventoryDetails += getString('ui.invsee.slotEntry', {
+            inventoryDetails += `${getString('ui.invsee.slotEntry', {
                 slotNum: i.toString(),
                 itemId: itemStack.typeId.replace('minecraft:', ''),
                 amount: itemStack.amount.toString(),
@@ -103,17 +101,17 @@ export async function execute(player, args, dependencies) {
                 durabilityText,
                 enchantsText,
                 loreText,
-            }) + '\n';
+            }) }\n`;
         }
     }
 
     if (itemCount === 0) {
-        inventoryDetails += getString('ui.invsee.empty') + '\n';
+        inventoryDetails += `${getString('ui.invsee.empty') }\n`;
     }
 
     try {
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'inventoryViewed',
             targetName: foundPlayer.nameTag,
             targetId: foundPlayer.id,
@@ -133,7 +131,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[InvSeeCommand CRITICAL] Error showing invsee form for ${adminName}: ${e.stack || e}`);
         player.sendMessage(getString('command.invsee.error.display'));
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorInvseeDisplay',
             context: 'InvSeeCommand.formDisplay',
             targetName: foundPlayer.nameTag,

@@ -17,7 +17,6 @@ const debugLogMessageSnippetLength = 20;
 /**
  * Normalizes a chat message for comparison by converting to lowercase,
  * trimming whitespace, and collapsing multiple spaces into single spaces.
- *
  * @param {string} message - The message to normalize.
  * @returns {string} The normalized message, or an empty string if input is not a string.
  */
@@ -30,7 +29,6 @@ function normalizeMessage(message) {
 
 /**
  * Checks if a player is repeating the same message content based on their recent chat history.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.

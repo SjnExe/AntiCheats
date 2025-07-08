@@ -18,7 +18,6 @@ const DEFAULT_SPRINT_HUNGER_LIMIT = 6;
 /**
  * Checks if a player is sprinting under invalid conditions.
  * Conditions checked: Blindness, Sneaking, Riding, Low Hunger, Using Consumable, Charging Bow.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

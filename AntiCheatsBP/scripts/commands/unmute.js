@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !unmute command.
  * Removes a mute from the specified player.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
@@ -30,7 +29,7 @@ export function execute(player, args, dependencies) {
     const targetPlayerName = parsedArgs.targetPlayerName;
 
     if (!targetPlayerName) {
-        player.sendMessage(getString('command.unmute.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.unmute.usage', { prefix }));
         return;
     }
 
@@ -41,7 +40,7 @@ export function execute(player, args, dependencies) {
 
     const pData = playerDataManager?.getPlayerData(targetPlayer.id);
     if (!pData) {
-        player.sendMessage(getString('command.unmute.failure', { playerName: targetPlayer.nameTag }) + ' (No data)');
+        player.sendMessage(`${getString('command.unmute.failure', { playerName: targetPlayer.nameTag }) } (No data)`);
         playerUtils?.debugLog(`[UnmuteCommand] No pData found for online player ${targetPlayer.nameTag}. Cannot verify mute status or unmute.`, adminName, dependencies);
         return;
     }
@@ -64,7 +63,7 @@ export function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerUnmuted',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
@@ -76,7 +75,7 @@ export function execute(player, args, dependencies) {
         }
 
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const notifyMsg = getString('command.unmute.notify.unmuted', { adminName: adminName, targetName: targetPlayer.nameTag });
+            const notifyMsg = getString('command.unmute.notify.unmuted', { adminName, targetName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
         }
 

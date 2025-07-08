@@ -14,7 +14,6 @@ const defaultPercentageThreshold = 50;
 /**
  * Checks a chat message for excessive symbol usage.
  * Symbols are defined as non-alphanumeric characters, excluding spaces.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.

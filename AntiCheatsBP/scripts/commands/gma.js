@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !gma command for administrators to set a player's gamemode to Adventure.
  */
 import * as mc from '@minecraft/server';
@@ -16,7 +15,6 @@ export const definition = {
 
 /**
  * Executes the !gma (gamemode adventure) command.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
@@ -46,19 +44,19 @@ export function execute(player, args, dependencies) {
         const successSound = 'commandSuccess';
 
         if (targetPlayer.id === player.id) {
-            player?.sendMessage(getString('command.gamemode.success.self', { gamemodeName: gamemodeName }));
+            player?.sendMessage(getString('command.gamemode.success.self', { gamemodeName }));
             logManager?.addLog({
-                adminName: adminName,
+                adminName,
                 actionType: 'gamemodeSetSelf',
                 targetName: adminName,
                 targetId: player.id,
                 details: `Set own gamemode to ${gamemodeName}`,
             }, dependencies);
         } else {
-            player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName: gamemodeName }));
-            targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName: gamemodeName }));
+            player?.sendMessage(getString('command.gamemode.success.other', { playerName: targetPlayer.nameTag, gamemodeName }));
+            targetPlayer.sendMessage(getString('command.gamemode.targetNotification', { gamemodeName }));
             logManager?.addLog({
-                adminName: adminName,
+                adminName,
                 actionType: 'gamemodeSetOther',
                 targetName: targetPlayer.nameTag,
                 targetId: targetPlayer.id,
@@ -74,7 +72,7 @@ export function execute(player, args, dependencies) {
         console.error(`[GMACommand CRITICAL] Error for ${adminName} target ${targetNameForError}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorGamemodeSet',
             context: 'GMACommand.execute',
             targetName: targetNameForError,

@@ -20,7 +20,6 @@ const switchBackStateAdditionalTimeoutTicks = 20;
  * 1. Detecting a quick switch to an optimal tool right when a block break attempt starts.
  * 2. Detecting a quick switch away from that optimal tool right after the block is broken.
  * This check is typically run on a tick-based interval.
- *
  * @async
  * @param {mc.Player} player - The player instance.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.

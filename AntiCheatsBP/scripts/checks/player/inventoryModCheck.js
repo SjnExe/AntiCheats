@@ -18,7 +18,6 @@ import * as mc from '@minecraft/server';
  * (e.g., main tick loop processing `player.selectedSlotChanged` or similar event if available,
  * or `playerDataManager.updateTransientPlayerData` which updates it if slot index changes).
  * This check is typically called from an `ItemUseBeforeEvent` handler.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -69,7 +68,6 @@ export async function checkSwitchAndUseInSameTick(player, pData, dependencies, e
  * Relies on `pData` state flags like `isUsingConsumable` or `isChargingBow`,
  * which are expected to be managed by other parts of the system (e.g., eventHandlers.js).
  * This check is typically called from an `PlayerInventoryItemChangeAfterEvent` handler.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

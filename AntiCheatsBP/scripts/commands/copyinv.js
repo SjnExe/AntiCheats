@@ -18,7 +18,6 @@ export const definition = {
  * Executes the !copyinv command.
  * Allows an admin to overwrite their own inventory with a copy of a target player's inventory,
  * after a confirmation step.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The admin player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.
@@ -31,7 +30,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player?.sendMessage(getString('command.copyinv.usage', { prefix: prefix }));
+        player?.sendMessage(getString('command.copyinv.usage', { prefix }));
         return;
     }
 
@@ -109,7 +108,7 @@ export async function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'inventoryCopied',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
@@ -118,7 +117,7 @@ export async function execute(player, args, dependencies) {
 
         const targetPData = playerDataManager?.getPlayerData(targetPlayer.id);
         if (config?.notifyOnCopyInventory !== false) {
-            const baseNotifyMsg = getString('command.copyinv.notify.copiedSimple', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
+            const baseNotifyMsg = getString('command.copyinv.notify.copiedSimple', { adminName, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, targetPData);
         }
 
@@ -128,7 +127,7 @@ export async function execute(player, args, dependencies) {
         console.error(`[CopyInvCommand CRITICAL] Error for ${adminName} copying from ${targetPlayer.nameTag}: ${e.stack || e}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorCopyInventory',
             context: 'CopyInvCommand.execution',
             targetName: targetPlayer.nameTag,

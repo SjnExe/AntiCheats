@@ -28,7 +28,6 @@ const DEFAULT_BLOCK_SPAM_DENSITY_THRESHOLD_PERCENTAGE = 70;
 /**
  * Checks for tower-like upward building (pillaring straight up with suspicious pitch).
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
- *
  * @async
  * @param {mc.Player} player - The player who placed the block.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -55,7 +54,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
         y: blockLocation.y,
         z: blockLocation.z,
         typeId: block.typeId,
-        pitch: pitch,
+        pitch,
         yaw: rotation.y,
         tick: currentTick,
     };
@@ -134,7 +133,6 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
 /**
  * Checks for overly fast block placement rate.
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
- *
  * @async
  * @param {mc.Player} player - The player who placed the block.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -182,7 +180,6 @@ export async function checkFastPlace(player, pData, dependencies, eventSpecificD
 /**
  * Checks for blocks placed against air or liquid without proper solid adjacent support (Scaffold/AirPlace).
  * This function is typically called from a `PlayerPlaceBlockBeforeEvent` or `ItemUseOnBeforeEvent` handler.
- *
  * @async
  * @param {mc.Player} player - The player placing the block.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -274,7 +271,6 @@ export async function checkAirPlace(player, pData, dependencies, eventData) {
 /**
  * Checks for downward scaffolding behavior (placing blocks below while airborne and moving).
  * This function is typically called from a `PlayerPlaceBlockAfterEvent` handler.
- *
  * @async
  * @param {mc.Player} player - The player who placed the block.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -348,7 +344,6 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
  * Checks for building with flat or static camera rotation, which can indicate scaffold/tower cheats.
  * This check analyzes the pitch and yaw from `pData.recentBlockPlacements`.
  * This function is typically run on a tick-based interval.
- *
  * @async
  * @param {mc.Player} player - The player instance.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -460,7 +455,6 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
 /**
  * Checks for block spamming based on placement rate for monitored block types.
  * Typically called from `PlayerPlaceBlockAfterEvent`.
- *
  * @async
  * @param {mc.Player} player - The player who placed the block.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -507,7 +501,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
             count: pData.recentBlockSpamTimestamps.length.toString(),
             maxBlocks: maxBlocks.toString(),
             windowMs: windowMs.toString(),
-            blockType: blockType,
+            blockType,
             actionTaken: config.blockSpamAction,
         };
         const rawActionProfileKey = config.blockSpamActionProfileName ?? 'worldAntiGriefBlockspam';
@@ -525,7 +519,6 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
 /**
  * Checks for high-density block spam within a defined radius and time window.
  * Typically called from `PlayerPlaceBlockAfterEvent`.
- *
  * @async
  * @param {mc.Player} player - The player who placed the block.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.

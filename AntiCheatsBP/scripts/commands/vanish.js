@@ -23,7 +23,6 @@ export const definition = {
  * Toggles vanish state for the command issuer.
  * 'silent' mode attempts to suppress join/leave messages (limited effectiveness in Bedrock).
  * 'notify' mode shows fake join/leave messages.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle] [silent|notify].

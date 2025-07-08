@@ -20,7 +20,6 @@ const DEFAULT_MIN_FALL_DISTANCE_FOR_DAMAGE = 3.5;
 /**
  * Checks for NoFall violations by verifying if a player takes appropriate fall damage
  * after accumulating significant fall distance. This check runs every tick.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data. Expected to contain `fallDistance`,

@@ -14,7 +14,6 @@ const LOCAL_ELLIPSIS_LENGTH_MSG_RATE = 3;
 /**
  * Checks if a player is sending messages too frequently.
  * If a violation is detected, configured actions (flagging, logging, message cancellation) are executed.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player sending the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data, used for message content and cancellation.
@@ -58,7 +57,7 @@ export async function checkMessageRate(player, eventData, pData, dependencies) {
             const violationDetails = {
                 timeSinceLastMsgMs: timeSinceLastMsgMs.toString(),
                 thresholdMs: threshold.toString(),
-                messageContent: eventData.message.length > messageSnippetLimit ? eventData.message.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_MSG_RATE) + '...' : eventData.message,
+                messageContent: eventData.message.length > messageSnippetLimit ? `${eventData.message.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_MSG_RATE) }...` : eventData.message,
                 originalMessage: eventData.message,
             };
 

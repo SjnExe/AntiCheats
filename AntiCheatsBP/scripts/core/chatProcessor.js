@@ -12,7 +12,6 @@ const DEFAULT_MAX_MESSAGE_LENGTH = 256;
 /**
  * Processes an incoming chat message, performing various checks and formatting.
  * This function is typically called from a `beforeChatSend` event handler.
- *
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The AntiCheat data for the player.
  * @param {string} originalMessage - The original raw message content.
@@ -42,7 +41,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             const muteInfo = playerDataManager.getMuteInfo(player, dependencies);
             const reason = muteInfo?.reason ?? getString('common.value.noReasonProvided');
             const formattedMuteMessage = getString('chat.error.mutedDetailed', {
-                reason: reason,
+                reason,
                 duration: muteInfo?.unmuteTime === Infinity ? getString('common.value.permanent') : playerUtils.formatDurationFriendly(muteInfo?.unmuteTime - Date.now()),
             });
             playerUtils?.warnPlayer(player, formattedMuteMessage);
@@ -77,7 +76,7 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
                 if (profile.cancelMessage !== false) {
                     eventData.cancel = true;
                 }
-                playerUtils?.warnPlayer(player, getString(profile.messageKey || 'chat.error.itemUse', { itemUseState: itemUseState }));
+                playerUtils?.warnPlayer(player, getString(profile.messageKey || 'chat.error.itemUse', { itemUseState }));
                 await actionManager?.executeCheckAction(player, 'playerChatDuringItemUse', { itemUseState }, dependencies);
                 if (eventData.cancel) {
                     playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cancelling chat for ${playerName} (chat during item use: ${itemUseState}).`, playerName, dependencies);

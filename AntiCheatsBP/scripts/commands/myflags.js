@@ -15,7 +15,6 @@ export const definition = {
  * Executes the !myflags command.
  * Displays the command issuer's current AntiCheat flags, including total count, last flag type,
  * and a breakdown of specific flag counts with their last detection times.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).
@@ -37,7 +36,7 @@ export function execute(player, _args, dependencies) {
         const totalFlags = pDataSelf.flags.totalFlags ?? 0;
         const lastFlagTypeString = pDataSelf.lastFlagType || getString('common.value.notAvailable');
 
-        let message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n';
+        let message = `${getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) }\n`;
         let specificFlagsFound = false;
 
         const flagKeys = Object.keys(pDataSelf.flags)
@@ -49,14 +48,14 @@ export function execute(player, _args, dependencies) {
             const lastDetectionTime = flagDetail.lastDetectionTime ?
                 new Date(flagDetail.lastDetectionTime).toLocaleString() :
                 getString('common.value.notAvailable');
-            message += getString('command.myflags.flagEntry', { key: key, count: (flagDetail.count ?? 0).toString(), lastDetectionTime: lastDetectionTime }) + '\n';
+            message += `${getString('command.myflags.flagEntry', { key, count: (flagDetail.count ?? 0).toString(), lastDetectionTime }) }\n`;
             specificFlagsFound = true;
         }
 
         if (!specificFlagsFound && totalFlags === 0) {
             message = getString('command.myflags.noFlags');
         } else if (!specificFlagsFound && totalFlags > 0) {
-            message = getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) + '\n' + getString('command.myflags.noSpecificFlags');
+            message = `${getString('command.myflags.header', { totalFlags: totalFlags.toString(), lastFlagType: lastFlagTypeString }) }\n${ getString('command.myflags.noSpecificFlags')}`;
             playerUtils?.debugLog(`[MyFlagsCommand WARNING] Player ${playerName} has totalFlags=${totalFlags} but no specific flag details were displayed. Flags object: ${JSON.stringify(pDataSelf.flags)}`, playerName, dependencies);
         }
         player?.sendMessage(message.trim());

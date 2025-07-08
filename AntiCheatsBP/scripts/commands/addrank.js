@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !addrank command.
  * Assigns a specified rank to a target player if the rank is assignable and the issuer has permission.
- *
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> <rankId>.
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
@@ -26,7 +25,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 2) {
-        player?.sendMessage(getString('command.addrank.usage', { prefix: prefix }));
+        player?.sendMessage(getString('command.addrank.usage', { prefix }));
         return;
     }
 
@@ -78,7 +77,7 @@ export async function execute(player, args, dependencies) {
         targetPlayer.sendMessage(getString('command.addrank.assignSuccessToTarget', { rankName: rankDef.name }));
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'rankAssigned',
             targetName: targetPlayer.nameTag,
             targetId: targetPlayer.id,
@@ -86,7 +85,7 @@ export async function execute(player, args, dependencies) {
         }, dependencies);
 
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const baseNotifyMsg = getString('command.addrank.notify.assigned', { adminName: adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
+            const baseNotifyMsg = getString('command.addrank.notify.assigned', { adminName, rankName: rankDef.name, targetPlayerName: targetPlayer.nameTag });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
@@ -94,7 +93,7 @@ export async function execute(player, args, dependencies) {
         player?.sendMessage(getString('command.addrank.errorAssign', { errorMessage: e.message }));
         console.error(`[AddRankCommand CRITICAL] Error assigning rank ${rankDef.id} to ${targetPlayer.nameTag} by ${adminName}: ${e.stack || e}`);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorRankAssign',
             context: 'AddRankCommand.execute',
             targetName: targetPlayer.nameTag,

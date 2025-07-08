@@ -18,7 +18,6 @@ const PLAYER_HEIGHT_BLOCKS = 2;
 
 /**
  * Calculates the current effective size (halfSize or radius) of the border, accounting for resizing.
- *
  * @param {object} borderSettings - The border settings for the dimension.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {{currentSize: number | null, shape: string | null}} Object with currentSize and shape, or nulls if invalid.
@@ -68,7 +67,6 @@ function getCurrentEffectiveBorderSize(borderSettings, dependencies) {
 /**
  * Checks if a player is currently outside the configured world border for their dimension.
  * Takes into account active resizing operations for accurate border size.
- *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if the player is outside the border, false otherwise or if no border is active/valid.
@@ -90,7 +88,7 @@ export function isPlayerOutsideBorder(player, dependencies) {
         const minZ = centerZ - currentSize;
         const maxZ = centerZ + currentSize;
         return loc.x < minX || loc.x > maxX || loc.z < minZ || loc.z > maxZ;
-    } else if (shape === 'circle') {
+    } if (shape === 'circle') {
         const { centerX, centerZ } = borderSettings;
         const dx = loc.x - centerX;
         const dz = loc.z - centerZ;
@@ -106,16 +104,15 @@ export function isPlayerOutsideBorder(player, dependencies) {
  *
  * This function attempts to load and parse settings stored as JSON. It includes validation
  * for the structure and essential fields of the settings object.
- *
  * @param {string} dimensionId - The ID of the dimension (e.g., 'minecraft:overworld').
- *        It's expected to be a valid dimension identifier.
+ * It's expected to be a valid dimension identifier.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object,
- *        including `playerUtils` and `logManager` for logging.
+ * including `playerUtils` and `logManager` for logging.
  * @returns {object | null} The border settings object if found and valid, otherwise null.
- *         Null is returned if the settings are not found, if the stored data is corrupted
- *         (e.g., not valid JSON, incorrect data types, missing essential fields),
- *         or if an unexpected error occurs during retrieval or parsing.
- *         Detailed logs are generated for error conditions.
+ * Null is returned if the settings are not found, if the stored data is corrupted
+ * (e.g., not valid JSON, incorrect data types, missing essential fields),
+ * or if an unexpected error occurs during retrieval or parsing.
+ * Detailed logs are generated for error conditions.
  */
 export function getBorderSettings(dimensionId, dependencies) {
     const { playerUtils, logManager } = dependencies; // Added logManager
@@ -149,7 +146,7 @@ export function getBorderSettings(dimensionId, dependencies) {
         try {
             settings = JSON.parse(settingsJson);
         } catch (parseError) {
-            console.error(`[WorldBorderManager] Failed to parse border settings JSON for dimension '${dimensionId}'. Error: ${parseError.stack || parseError}. JSON: "${settingsJson}"`, );
+            console.error(`[WorldBorderManager] Failed to parse border settings JSON for dimension '${dimensionId}'. Error: ${parseError.stack || parseError}. JSON: "${settingsJson}"`);
             logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_json_parse_fail', details: `Dimension ${dimensionId}: JSON parse error. Error: ${parseError.message}. Key: ${propertyKey}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
             return null;
         }
@@ -164,9 +161,9 @@ export function getBorderSettings(dimensionId, dependencies) {
 
         // Validate dimensionId consistency
         if (settings.dimensionId !== dimensionId) {
-             console.warn(`[WorldBorderManager] Mismatch in dimensionId for '${dimensionId}'. Expected '${dimensionId}', got '${settings.dimensionId}' in stored data. Key: ${propertyKey}`);
-             logManager?.addLog({ actionType: 'system_warning', context: 'getBorderSettings_dimension_mismatch', details: `Dimension ${dimensionId}: Mismatch in stored dimensionId. Expected ${dimensionId}, got ${settings.dimensionId}. Key: ${propertyKey}` }, dependencies);
-             // Continue, but this is a warning sign. Could choose to return null if strict consistency is required.
+            console.warn(`[WorldBorderManager] Mismatch in dimensionId for '${dimensionId}'. Expected '${dimensionId}', got '${settings.dimensionId}' in stored data. Key: ${propertyKey}`);
+            logManager?.addLog({ actionType: 'system_warning', context: 'getBorderSettings_dimension_mismatch', details: `Dimension ${dimensionId}: Mismatch in stored dimensionId. Expected ${dimensionId}, got ${settings.dimensionId}. Key: ${propertyKey}` }, dependencies);
+            // Continue, but this is a warning sign. Could choose to return null if strict consistency is required.
         }
 
         // Validate shape-specific settings
@@ -206,7 +203,6 @@ export function getBorderSettings(dimensionId, dependencies) {
 
 /**
  * Saves the world border settings for a specific dimension.
- *
  * @param {string} dimensionId - The ID of the dimension.
  * @param {object} settingsToSave - The border settings object to save.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -219,7 +215,7 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
         return false;
     }
     const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.toLowerCase().replace('minecraft:', '');
-    const fullSettings = { ...settingsToSave, dimensionId: dimensionId };
+    const fullSettings = { ...settingsToSave, dimensionId };
     if (fullSettings.shape === 'square') {
         if (typeof fullSettings.halfSize !== 'number' || fullSettings.halfSize <= 0) {
             playerUtils.debugLog(`[WorldBorderManager] saveBorderSettings: Invalid 'halfSize' for square shape. Value: ${fullSettings.halfSize}`, 'System', dependencies);
@@ -284,7 +280,6 @@ export function saveBorderSettings(dimensionId, settingsToSave, dependencies) {
 
 /**
  * Quadratic easing out function. Provides a smooth deceleration.
- *
  * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
  * @returns {number} Eased value.
  */
@@ -294,7 +289,6 @@ function easeOutQuad(t) {
 
 /**
  * Quadratic easing in and out function. Provides acceleration until halfway, then deceleration.
- *
  * @param {number} t - Progress ratio, typically from 0 (start) to 1 (end).
  * @returns {number} Eased value.
  */
@@ -305,7 +299,6 @@ function easeInOutQuad(t) {
 /**
  * Finds a safe Y-coordinate for teleportation near a target X, Z.
  * Searches downwards first, then upwards from the initial Y to find a 2-block high air gap with solid ground.
- *
  * @param {import('@minecraft/server').Dimension} dimension - The dimension object to search within.
  * @param {number} targetX - The target X-coordinate for the safe location.
  * @param {number} initialY - The initial Y-coordinate to begin searching from.
@@ -356,7 +349,6 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
 
 /**
  * Processes active world border resizing operations. Called periodically (e.g., every tick).
- *
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function processWorldBorderResizing(dependencies) {
@@ -423,7 +415,6 @@ export function processWorldBorderResizing(dependencies) {
 
 /**
  * Enforces the world border for a given player. Called periodically (e.g., every tick).
- *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
@@ -579,7 +570,6 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 const minZ = centerZ - currentEffectiveSize, maxZ = centerZ + currentEffectiveSize;
                 /**
                  * Spawns particles along a line segment for the world border visual.
-                 *
                  * @param {boolean} isXAxis - True if the line is parallel to the X-axis (fixed X), false for Z-axis.
                  * @param {number} fixedCoord - The fixed coordinate value (X if isXAxis, Z otherwise).
                  * @param {number} startDyn - The starting dynamic coordinate value (Z if isXAxis, X otherwise).
@@ -644,7 +634,6 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
 
 /**
  * Clears the world border settings for a specific dimension from persistent storage.
- *
  * @param {string} dimensionId - The ID of the dimension.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {boolean} True if clearing was successful or property didn't exist, false on error.

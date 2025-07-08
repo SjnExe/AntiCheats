@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !freeze command for administrators to immobilize or release players.
  */
 import * as mc from '@minecraft/server';
@@ -23,7 +22,6 @@ export const definition = {
 /**
  * Executes the !freeze command.
  * Applies or removes a 'frozen' tag and strong slowness/weakness effects to the target player.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [on|off|toggle|status].
@@ -42,7 +40,7 @@ export function execute(player, args, dependencies) {
     const showParticles = config?.freezeShowParticles ?? false;
 
     if (args.length < 1) {
-        player?.sendMessage(getString('command.freeze.usage', { prefix: prefix }));
+        player?.sendMessage(getString('command.freeze.usage', { prefix }));
         return;
     }
 
@@ -91,15 +89,15 @@ export function execute(player, args, dependencies) {
     if (targetFreezeState === true && !currentFreezeState) {
         try {
             targetPlayer.addTag(frozenTagName);
-            targetPlayer.addEffect(mc.MinecraftEffectTypes.slowness, effectDuration, { amplifier: slownessAmplifier, showParticles: showParticles });
-            targetPlayer.addEffect(mc.MinecraftEffectTypes.weakness, effectDuration, { amplifier: weaknessAmplifier, showParticles: showParticles });
+            targetPlayer.addEffect(mc.MinecraftEffectTypes.slowness, effectDuration, { amplifier: slownessAmplifier, showParticles });
+            targetPlayer.addEffect(mc.MinecraftEffectTypes.weakness, effectDuration, { amplifier: weaknessAmplifier, showParticles });
 
             targetPlayer.sendMessage(getString('command.freeze.targetFrozen'));
             player?.sendMessage(getString('command.freeze.success.frozen', { playerName: targetPlayer.nameTag }));
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
             if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                const baseNotifyMsg = getString('command.freeze.notify.froze', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
+                const baseNotifyMsg = getString('command.freeze.notify.froze', { adminName, targetPlayerName: targetPlayer.nameTag });
                 playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
             }
             logManager?.addLog({ adminName, actionType: 'playerFrozen', targetName: targetPlayer.nameTag, targetId: targetPlayer.id, details: 'Player frozen' }, dependencies);
@@ -120,7 +118,7 @@ export function execute(player, args, dependencies) {
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
             if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                const baseNotifyMsg = getString('command.freeze.notify.unfroze', { adminName: adminName, targetPlayerName: targetPlayer.nameTag });
+                const baseNotifyMsg = getString('command.freeze.notify.unfroze', { adminName, targetPlayerName: targetPlayer.nameTag });
                 playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
             }
             logManager?.addLog({ adminName, actionType: 'playerUnfrozen', targetName: targetPlayer.nameTag, targetId: targetPlayer.id, details: 'Player unfrozen' }, dependencies);

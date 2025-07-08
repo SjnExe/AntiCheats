@@ -18,7 +18,6 @@ const AVG_DAYS_PER_YEAR = 365.25;
 
 /**
  * Retrieves a string from the text database and formats it with parameters.
- *
  * @param {string} key - The key of the string to retrieve (e.g., 'ui.adminPanel.title').
  * @param {Record<string, string | number>} [params] - Optional object containing placeholder values.
  * @returns {string} The formatted string, or the key itself if not found (with a warning).
@@ -41,7 +40,6 @@ export function getString(key, params) {
 
 /**
  * Checks if a player has admin-level permissions.
- *
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {import('../types.js').CommandDependencies} dependencies - Object containing rankManager and permissionLevels.
  * @returns {boolean} True if the player is an admin, false otherwise.
@@ -59,7 +57,6 @@ export function isAdmin(player, dependencies) {
 
 /**
  * Sends a standardized warning message to a player.
- *
  * @param {import('@minecraft/server').Player} player - The player to warn.
  * @param {string} reason - The reason for the warning.
  * @param {import('../types.js').CommandDependencies} [dependencies] - Optional dependencies, needed if playing a sound.
@@ -73,7 +70,6 @@ export function warnPlayer(player, reason, dependencies) {
 
 /**
  * Formats a dimension ID string into a more readable name.
- *
  * @param {string} dimensionId - The dimension ID (e.g., 'minecraft:the_nether', 'overworld').
  * @returns {string} The formatted dimension name (e.g., 'The Nether', 'Overworld'), or 'Unknown Dimension' for invalid/empty input.
  */
@@ -100,7 +96,6 @@ export function formatDimensionName(dimensionId) {
 
 /**
  * Notifies online administrators of an event.
- *
  * @param {string} baseMessage - The core message to send.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies.
  * @param {import('@minecraft/server').Player | null} player - The player primarily involved in the event (for context), or null.
@@ -147,7 +142,6 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
 /**
  * Logs a debug message to the console if debug logging is enabled.
  * Prefixes messages with context if a watched player's name is provided.
- *
  * @param {string} message - The message to log.
  * @param {import('../types.js').CommandDependencies} dependencies - Access to config for `enableDebugLogging`.
  * @param {string | null} [contextPlayerNameIfWatched] - The name of the player if they are being watched, for contextual prefixing.
@@ -161,7 +155,6 @@ export function debugLog(message, dependencies, contextPlayerNameIfWatched = nul
 
 /**
  * Finds an online player by their nameTag (case-insensitive).
- *
  * @param {string} playerName - The nameTag of the player to find.
  * @returns {import('@minecraft/server').Player | null} The player object if found, otherwise null.
  */
@@ -176,7 +169,6 @@ export function findPlayer(playerName) {
 /**
  * Parses a duration string (e.g., "7d", "2h", "30m", "perm") into milliseconds.
  * Also accepts a plain number, which is interpreted as seconds.
- *
  * @param {string} durationString - The duration string to parse.
  * @returns {number | null} The duration in milliseconds, Infinity for "perm", or null if invalid.
  */
@@ -217,7 +209,6 @@ export function parseDuration(durationString) {
 
 /**
  * Formats a duration in milliseconds into a human-readable string (e.g., "1h 23m 45s").
- *
  * @param {number} ms - The duration in milliseconds.
  * @returns {string} A formatted string representing the duration, or "N/A" if ms is non-positive or invalid.
  */
@@ -246,7 +237,6 @@ export function formatSessionDuration(ms) {
 
 /**
  * Formats a time difference (e.g., from a past timestamp to Date.now()) into a human-readable "ago" string.
- *
  * @param {number} msDifference - The time difference in milliseconds.
  * @returns {string} A formatted string like "5m ago", "2h ago", "3d ago", or "just now".
  */
@@ -289,12 +279,11 @@ export function formatTimeDifference(msDifference) {
 
 /**
  * Plays a sound for a specific game event based on configuration.
- *
  * @param {import('@minecraft/server').Player | null} primaryPlayer - The primary player associated with the event (e.g., the one executing a command, or an admin receiving a notification). Can be null for global sounds.
  * @param {string} eventName - The key of the sound event in `config.soundEvents` (e.g., "tpaRequestReceived", "adminNotificationReceived").
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @param {import('@minecraft/server').Player | null} [targetPlayerContext] - An optional secondary player, used if `soundConfig.target`
- *                                                                       is "targetPlayer".
+ * is "targetPlayer".
  */
 export function playSoundForEvent(primaryPlayer, eventName, dependencies, targetPlayerContext = null) {
     const { config, playerUtils } = dependencies; // playerUtils for isAdmin if needed
@@ -318,7 +307,6 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
     /**
      * Helper function to play a configured sound to a specific player instance.
      * Includes error handling for `playSound`.
-     *
      * @param {import('@minecraft/server').Player} playerInstance - The player to play the sound for.
      */
     const playToPlayer = (playerInstance) => {
@@ -365,7 +353,6 @@ export function playSoundForEvent(primaryPlayer, eventName, dependencies, target
 
 /**
  * Parses command arguments to extract a target player name and a reason string.
- *
  * @param {string[]} args - The array of command arguments.
  * @param {import('../types.js').CommandDependencies} dependencies - For accessing `getString`.
  * @param {number} [reasonStartIndex] - The index in `args` from which the reason string starts.
@@ -394,7 +381,6 @@ export function parsePlayerAndReasonArgs(args, dependencies, reasonStartIndex = 
 /**
  * Validates the target of a command, checking if the player is found and if self-targeting is allowed.
  * Sends appropriate messages to the issuer if validation fails.
- *
  * @param {import('@minecraft/server').Player} issuer - The player issuing the command.
  * @param {string | undefined} targetPlayerName - The name of the target player from command arguments.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
@@ -429,7 +415,7 @@ export function validateCommandTarget(issuer, targetPlayerName, dependencies, op
         if (stringDB[selfTargetErrorKey]) {
             issuer.sendMessage(getString(selfTargetErrorKey));
         } else {
-            issuer.sendMessage(getString('command.error.cannotTargetSelf', { commandName: commandName }));
+            issuer.sendMessage(getString('command.error.cannotTargetSelf', { commandName }));
         }
         return null;
     }

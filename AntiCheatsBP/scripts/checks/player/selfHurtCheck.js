@@ -14,7 +14,6 @@ import * as mc from '@minecraft/server';
  * Checks if a player is damaging themselves directly via an entity attack.
  * This is suspicious as players cannot normally attack themselves directly.
  * This check is typically called from an `EntityHurtAfterEvent` handler where the `hurtEntity` is the player.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who was hurt (the `hurtEntity` from the event).
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data for the hurt player.

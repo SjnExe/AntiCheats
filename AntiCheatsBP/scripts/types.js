@@ -64,7 +64,6 @@
 
 /**
  * Represents detailed information about a specific flag type for a player.
- *
  * @typedef {object} PlayerFlagDetail
  * @property {number} count The number of times this flag has been triggered.
  * @property {number} lastDetectionTime Unix timestamp (in milliseconds) of the last detection.
@@ -74,13 +73,11 @@
 /**
  * Represents the collection of all flags a player has accumulated.
  * Keys are typically `checkType` strings (e.g., "fly", "speed", "chatSpamFastMessage").
- *
  * @typedef {{ totalFlags: number } & Record<string, PlayerFlagDetail | undefined>} PlayerFlagData
  */
 
 /**
  * Information about a player's mute status.
- *
  * @typedef {object} PlayerMuteInfo
  * @property {number | Infinity} unmuteTime Unix timestamp (ms) when the mute expires, or Infinity for permanent.
  * @property {string} reason The reason for the mute.
@@ -446,28 +443,28 @@
 /**
  * Defines the settings for a world border in a specific dimension.
  *
- * @typedef {object} WorldBorderSettings
- * @property {string} dimensionId - The ID of the dimension these settings apply to (e.g., "minecraft:overworld").
- * @property {boolean} enabled - Whether the border is active in this dimension.
- * @property {'square' | 'circle'} shape - The shape of the world border.
- * @property {number} centerX - The X-coordinate of the border's center.
- * @property {number} centerZ - The Z-coordinate of the border's center.
- * @property {number} [halfSize] - For 'square' shape: half the length of a side (e.g., 500 for a 1000x1000 border).
- * @property {number} [radius] - For 'circle' shape: the radius of the border.
- * @property {boolean} [enableDamage=false] - Whether players take damage when outside the border.
- * @property {number} [damageAmount=0.5] - Damage amount per interval for players outside (0.5 heart = 1 damage).
- * @property {number} [damageIntervalTicks=20] - Interval in game ticks at which damage is applied (20 ticks = 1 second).
- * @property {number} [teleportAfterNumDamageEvents=30] - Number of damage events after which a player is teleported back inside. 0 or negative to disable.
- * @property {string} [particleNameOverride] - Specific particle name to use for this dimension's border, overrides global. 'reset' or 'default' to use global.
- * @property {boolean} [isResizing=false] - True if the border is currently undergoing a resize operation.
- * @property {number} [originalSize] - The size (halfSize/radius) before the resize started.
- * @property {number} [targetSize] - The target size (halfSize/radius) for the resize operation.
- * @property {number} [resizeStartTimeMs] - Timestamp (ms) when the current resize operation began.
- * @property {number} [resizeDurationMs] - Total duration (ms) for the current resize operation.
- * @property {boolean} [isPaused=false] - True if the current resize operation is paused.
- * @property {number} [resizePausedTimeMs=0] - Total accumulated time (ms) this resize has been paused.
- * @property {number} [resizeLastPauseStartTimeMs] - Timestamp (ms) when the current pause began (if `isPaused` is true).
- * @property {'linear' | 'easeOutQuad' | 'easeInOutQuad'} [resizeInterpolationType='linear'] - The interpolation method for resizing.
+ *@typedef {object} WorldBorderSettings
+ *@property {string} dimensionId - The ID of the dimension these settings apply to (e.g., "minecraft:overworld").
+ *@property {boolean} enabled - Whether the border is active in this dimension.
+ *@property {'square' | 'circle'} shape - The shape of the world border.
+ *@property {number} centerX - The X-coordinate of the border's center.
+ *@property {number} centerZ - The Z-coordinate of the border's center.
+ *@property {number} [halfSize] - For 'square' shape: half the length of a side (e.g., 500 for a 1000x1000 border).
+ *@property {number} [radius] - For 'circle' shape: the radius of the border.
+ *@property {boolean} [enableDamage=false] - Whether players take damage when outside the border.
+ *@property {number} [damageAmount=0.5] - Damage amount per interval for players outside (0.5 heart = 1 damage).
+ *@property {number} [damageIntervalTicks=20] - Interval in game ticks at which damage is applied (20 ticks = 1 second).
+ *@property {number} [teleportAfterNumDamageEvents=30] - Number of damage events after which a player is teleported back inside. 0 or negative to disable.
+ *@property {string} [particleNameOverride] - Specific particle name to use for this dimension's border, overrides global. 'reset' or 'default' to use global.
+ *@property {boolean} [isResizing=false] - True if the border is currently undergoing a resize operation.
+ *@property {number} [originalSize] - The size (halfSize/radius) before the resize started.
+ *@property {number} [targetSize] - The target size (halfSize/radius) for the resize operation.
+ *@property {number} [resizeStartTimeMs] - Timestamp (ms) when the current resize operation began.
+ *@property {number} [resizeDurationMs] - Total duration (ms) for the current resize operation.
+ *@property {boolean} [isPaused=false] - True if the current resize operation is paused.
+ *@property {number} [resizePausedTimeMs=0] - Total accumulated time (ms) this resize has been paused.
+ *@property {number} [resizeLastPauseStartTimeMs] - Timestamp (ms) when the current pause began (if `isPaused` is true).
+ *@property {'linear' | 'easeOutQuad' | 'easeInOutQuad'} [resizeInterpolationType='linear'] - The interpolation method for resizing.
  */
 
 // --- Miscellaneous Generic Types ---
