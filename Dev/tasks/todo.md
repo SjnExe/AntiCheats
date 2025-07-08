@@ -7,7 +7,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Linting & Code Style Tasks
 - **(Medium) Apply Updated Linting Rules**: After the ESLint configuration is updated, run `npm run lint:fix` (or similar) across the entire codebase to apply the new rules and formatting. Manually address any issues that cannot be auto-fixed. (This is a placeholder for a subsequent task).
-- **(High) Linting: Review and fix `camelCase` violations**: Across the codebase, identify and correct violations flagged by the new ESLint `camelcase` rule. This involves renaming variables, function parameters, and object properties where `snake_case` (upper or lower) was used, ensuring adherence to the project's `camelCase` standard.
 
 ## Code Refinement & Feature Enhancements
 - **(Medium) `worldBorderManager.js` Robustness**: Consider if `worldBorderManager.getBorderSettings` should be more robust if a dimension from `config.worldBorderKnownDimensions` is invalid or if the dynamic property for a specific dimension is corrupted.
