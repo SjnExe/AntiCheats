@@ -304,11 +304,18 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         console.error(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorEventHandlersPlayerSpawn',
-            context: 'eventHandlers.handlePlayerSpawn',
-            targetName: playerName, targetId: player?.id,
-            details: { initialSpawn, errorMessage: error.message },
-            errorStack: error.stack,
+            actionType: 'error.evt.playerSpawn', // Standardized actionType
+            context: 'eventHandlers.handlePlayerSpawn', // Context remains useful
+            targetName: playerName,
+            targetId: player?.id,
+            details: {
+                errorCode: 'EVT_PLAYER_SPAWN_GENERAL_ERROR',
+                message: error.message,
+                rawErrorStack: error.stack,
+                meta: {
+                    initialSpawn: initialSpawn,
+                }
+            }
         }, dependencies);
     }
 }

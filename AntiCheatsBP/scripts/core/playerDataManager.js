@@ -144,15 +144,21 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
 
     const newActionType = `pdm.dp.${contextStr}.${opType}.error`;
 
+    const errorCode = `PDM_DP_${contextStr.toUpperCase()}_${opType.toUpperCase()}_ERROR`;
+
     logManager?.addLog({
-        actionType: newActionType,
-        context: logContext, // Retaining original context for now, as it's slightly more specific.
+        actionType: newActionType, // e.g., pdm.dp.data.parse.error
+        context: logContext,    // e.g., playerDataManager.loadPlayerDataFromDynamicProperties
         targetName: playerName,
         details: {
-            operation,
-            errorMessage: error.message,
-            stack: error.stack,
-            ...additionalDetails,
+            errorCode: errorCode,
+            message: error.message,
+            rawErrorStack: error.stack,
+            meta: {
+                originalOperation: operation, // Keep original 'operation' for specific detail
+                callingFunctionContext: callingFunction, // Keep original 'callingFunction' for specific detail
+                ...additionalDetails,
+            }
         },
     }, dependencies);
 }
