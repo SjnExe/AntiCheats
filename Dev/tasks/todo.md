@@ -68,5 +68,3 @@ This list contains planned features, improvements, and areas for future investig
     - Ensure all files that are intended to be modules have a `@module path/to/module` tag for better documentation generation and clarity, if not already present.
 - **(Low) AGENTS.md - JSDoc Linting Update**:
     - Update `AGENTS.md` section on ESLint/JSDoc if the "environmental constraints" for `eslint-plugin-jsdoc` are resolved, or if a decision is made to enforce more JSDoc rules via ESLint.
-- **(Low) Task Management Files in `Dev/tasks/`**:
-    - Ensure `AGENTS.md` instructions for AI to update `ongoing.md`, `completed.md`, and `todo.md` are clear and consistently followed. Add a note for human devs to also follow this if collaborating.
