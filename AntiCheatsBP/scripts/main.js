@@ -30,6 +30,56 @@ import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPe
 let currentTick = 0;
 const mainModuleName = 'Main';
 
+// Simple structure for profiling data
+const profilingData = {
+    tickLoop: { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] },
+    playerChecks: {}, // Stores data per check type
+    eventHandlers: {}, // Stores data per event handler
+};
+const MAX_PROFILING_HISTORY = 100; // Store last 100 execution times for more detailed analysis if needed
+const PROFILING_LOG_INTERVAL_TICKS = 1200; // Log every 60 seconds (1200 ticks)
+let lastProfilingLogTick = 0;
+
+/**
+ * Logs aggregated profiling data.
+ * @param {import('./types.js').Dependencies} dependencies - The standard dependencies object.
+ */
+function logProfilingData(dependencies) {
+    if (!dependencies.config.enablePerformanceProfiling) { return; }
+
+    const now = Date.now();
+    let logOutput = `[PerformanceProfiling] Report @ ${new Date(now).toISOString()} (Tick: ${currentTick})\n`;
+
+    const formatStats = (name, stats) => {
+        if (stats.count === 0) { return `  ${name}: No data captured.\n`; }
+        const avgTime = (stats.totalTime / stats.count).toFixed(3);
+        return `  ${name}: Avg: ${avgTime}ms, Min: ${stats.minTime}ms, Max: ${stats.maxTime}ms, Count: ${stats.count}, Total: ${stats.totalTime}ms\n`;
+    };
+
+    logOutput += '----- Tick Loop -----\n';
+    logOutput += formatStats('Overall Tick', profilingData.tickLoop);
+
+    logOutput += '\n----- Player Checks -----\n';
+    for (const checkName in profilingData.playerChecks) {
+        logOutput += formatStats(checkName, profilingData.playerChecks[checkName]);
+    }
+
+    logOutput += '\n----- Event Handlers -----\n';
+    for (const handlerName in profilingData.eventHandlers) {
+        logOutput += formatStats(handlerName, profilingData.eventHandlers[handlerName]);
+    }
+
+    dependencies.playerUtils.debugLog(logOutput, 'PerformanceProfile', dependencies);
+
+    // Optional: Reset stats after logging to capture fresh data for the next interval
+    // This depends on whether cumulative or interval-specific data is more useful.
+    // For now, let's keep it cumulative. If resetting:
+    // profilingData.tickLoop = { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] };
+    // profilingData.playerChecks = {};
+    // profilingData.eventHandlers = {};
+}
+
+
 /**
  * Assembles and returns the standard dependencies object used throughout the system.
  * This object provides access to configuration, utilities, managers, and Minecraft APIs.
@@ -78,6 +128,9 @@ function getStandardDependencies() {
                 reloadCommands: commandManager.initializeCommands,
             },
             editableConfig: configModule,
+            // Add profiling related data to dependencies
+            profilingData: profilingData,
+            MAX_PROFILING_HISTORY: MAX_PROFILING_HISTORY,
         };
     } catch (error) {
         console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error: ${error.stack || error}`);
@@ -411,6 +464,11 @@ function performInitializations() {
         currentTick++;
         const tickDependencies = getStandardDependencies();
 
+        let tickStartTime;
+        if (tickDependencies.config.enablePerformanceProfiling) {
+            tickStartTime = Date.now();
+        }
+
         if (tickDependencies.config.enableWorldBorderSystem) {
             try {
                 worldBorderManager.processWorldBorderResizing(tickDependencies);
@@ -469,46 +527,80 @@ function performInitializations() {
             playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
             playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
 
+            let playerChecksStartTime;
+            if (tickDependencies.config.enablePerformanceProfiling) {
+                playerChecksStartTime = Date.now();
+            }
+
             try {
-                if (tickDependencies.config.enableFlyCheck && checks.checkFly) {
-                    await checks.checkFly(player, pData, tickDependencies);
+                // Helper function to run and profile a check
+            /**
+             * Executes a check function and profiles its execution time if performance profiling is enabled.
+             * @param {string} checkName - The name of the check for profiling.
+             * @param {Function} checkFunction - The check function to execute.
+             * @param {...any} args - Arguments to pass to the check function.
+             */
+                const runProfiledCheck = async (checkName, checkFunction, ...args) => {
+                if (!checkFunction) { return; }
+
+                    if (tickDependencies.config.enablePerformanceProfiling) {
+                        const checkStartTime = Date.now();
+                        await checkFunction(...args);
+                        const checkEndTime = Date.now();
+                        const duration = checkEndTime - checkStartTime;
+
+                        profilingData.playerChecks[checkName] = profilingData.playerChecks[checkName] || { totalTime: 0, count: 0, maxTime: 0, minTime: Infinity, history: [] };
+                        const stats = profilingData.playerChecks[checkName];
+                        stats.totalTime += duration;
+                        stats.count++;
+                        stats.maxTime = Math.max(stats.maxTime, duration);
+                        stats.minTime = Math.min(stats.minTime, duration);
+                        stats.history.push(duration);
+                    if (stats.history.length > MAX_PROFILING_HISTORY) { stats.history.shift(); }
+                    } else {
+                        await checkFunction(...args);
+                    }
+                };
+
+                if (tickDependencies.config.enableFlyCheck) {
+                    await runProfiledCheck('checkFly', checks.checkFly, player, pData, tickDependencies);
                 }
-                if (tickDependencies.config.enableSpeedCheck && checks.checkSpeed) {
-                    await checks.checkSpeed(player, pData, tickDependencies);
+                if (tickDependencies.config.enableSpeedCheck) {
+                    await runProfiledCheck('checkSpeed', checks.checkSpeed, player, pData, tickDependencies);
                 }
-                if (tickDependencies.config.enableNofallCheck && checks.checkNoFall) {
-                    await checks.checkNoFall(player, pData, tickDependencies);
+                if (tickDependencies.config.enableNofallCheck) {
+                    await runProfiledCheck('checkNoFall', checks.checkNoFall, player, pData, tickDependencies);
                 }
-                if (tickDependencies.config.enableNoSlowCheck && checks.checkNoSlow) {
-                    await checks.checkNoSlow(player, pData, tickDependencies, null);
+                if (tickDependencies.config.enableNoSlowCheck) {
+                    await runProfiledCheck('checkNoSlow', checks.checkNoSlow, player, pData, tickDependencies, null);
                 }
-                if (tickDependencies.config.enableInvalidSprintCheck && checks.checkInvalidSprint) {
-                    await checks.checkInvalidSprint(player, pData, tickDependencies);
+                if (tickDependencies.config.enableInvalidSprintCheck) {
+                    await runProfiledCheck('checkInvalidSprint', checks.checkInvalidSprint, player, pData, tickDependencies);
                 }
 
-                if (tickDependencies.config.enableNetherRoofCheck && checks.checkNetherRoof &&
+                if (tickDependencies.config.enableNetherRoofCheck &&
                     (currentTick - (pData.lastCheckNetherRoofTick || 0) >= tickDependencies.config.netherRoofCheckIntervalTicks)) {
-                    await checks.checkNetherRoof(player, pData, tickDependencies);
+                    await runProfiledCheck('checkNetherRoof', checks.checkNetherRoof, player, pData, tickDependencies);
                     pData.lastCheckNetherRoofTick = currentTick;
                 }
-                if (tickDependencies.config.enableAntiGmcCheck && checks.checkAntiGmc &&
+                if (tickDependencies.config.enableAntiGmcCheck &&
                     (currentTick - (pData.lastCheckAntiGmcTick || 0) >= tickDependencies.config.antiGmcCheckIntervalTicks)) {
-                    await checks.checkAntiGmc(player, pData, tickDependencies);
+                    await runProfiledCheck('checkAntiGmc', checks.checkAntiGmc, player, pData, tickDependencies);
                     pData.lastCheckAntiGmcTick = currentTick;
                 }
-                if (tickDependencies.config.enableNameSpoofCheck && checks.checkNameSpoof &&
+                if (tickDependencies.config.enableNameSpoofCheck &&
                     (currentTick - (pData.lastCheckNameSpoofTick || 0) >= tickDependencies.config.nameSpoofCheckIntervalTicks)) {
-                    await checks.checkNameSpoof(player, pData, tickDependencies);
+                    await runProfiledCheck('checkNameSpoof', checks.checkNameSpoof, player, pData, tickDependencies);
                     pData.lastCheckNameSpoofTick = currentTick;
                 }
-                if (tickDependencies.config.enableAutoToolCheck && checks.checkAutoTool &&
+                if (tickDependencies.config.enableAutoToolCheck &&
                     (currentTick - (pData.lastCheckAutoToolTick || 0) >= tickDependencies.config.autoToolCheckIntervalTicks)) {
-                    await checks.checkAutoTool(player, pData, tickDependencies, null);
+                    await runProfiledCheck('checkAutoTool', checks.checkAutoTool, player, pData, tickDependencies, null);
                     pData.lastCheckAutoToolTick = currentTick;
                 }
-                if (tickDependencies.config.enableInvalidRenderDistanceCheck && checks.checkInvalidRenderDistance &&
+                if (tickDependencies.config.enableInvalidRenderDistanceCheck &&
                     (currentTick - (pData.lastRenderDistanceCheckTick || 0) >= tickDependencies.config.invalidRenderDistanceCheckIntervalTicks)) {
-                    await checks.checkInvalidRenderDistance(player, pData, tickDependencies);
+                    await runProfiledCheck('checkInvalidRenderDistance', checks.checkInvalidRenderDistance, player, pData, tickDependencies);
                     pData.lastRenderDistanceCheckTick = currentTick;
                 }
             } catch (checkError) {
@@ -579,6 +671,24 @@ function performInitializations() {
             });
             logManager.persistLogCacheToDisk(tickDependencies);
             reportManager.persistReportsToDisk(tickDependencies);
+        }
+
+        if (tickDependencies.config.enablePerformanceProfiling && tickStartTime) {
+            const tickEndTime = Date.now();
+            const duration = tickEndTime - tickStartTime;
+            const stats = profilingData.tickLoop;
+            stats.totalTime += duration;
+            stats.count++;
+            stats.maxTime = Math.max(stats.maxTime, duration);
+            stats.minTime = Math.min(stats.minTime, duration);
+            stats.history.push(duration);
+            if (stats.history.length > MAX_PROFILING_HISTORY) stats.history.shift();
+        }
+
+        // Log profiling data periodically
+        if (tickDependencies.config.enablePerformanceProfiling && (currentTick - lastProfilingLogTick >= (tickDependencies.config.logPerformanceProfileIntervalTicks || PROFILING_LOG_INTERVAL_TICKS))) {
+            logProfilingData(tickDependencies);
+            lastProfilingLogTick = currentTick;
         }
     }, 1);
 

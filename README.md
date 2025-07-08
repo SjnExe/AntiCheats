@@ -135,12 +135,20 @@ All detailed information has been moved to our `Docs` folder for clarity:
 
 ---
 
-##  Performance Considerations
+##  Performance Considerations & Profiling
 
 This addon is designed to be as lightweight as possible. However, like any complex system:
 *   The number of checks enabled and their sensitivity can influence server performance.
 *   Very high player counts on servers with limited resources might see a slight impact.
+
 We recommend starting with default configurations and adjusting based on your server's specific needs and performance characteristics.
+
+**Performance Profiling:**
+To help identify potential bottlenecks, the addon includes a basic performance profiling feature.
+*   **Enable:** Set `enablePerformanceProfiling: true` in `AntiCheatsBP/scripts/config.js`.
+*   **Logging:** When enabled, aggregated performance data for the main tick loop, individual checks, and event handlers will be logged periodically to the server console/logs (via `playerUtils.debugLog` with a `PerformanceProfile` tag).
+*   **Usage:** This data can help developers pinpoint specific areas that might be consuming more resources than expected. It's recommended to only enable this for temporary debugging sessions, as continuous profiling can itself have a minor performance overhead.
+*   **Configuration:** The logging interval can be adjusted with `logPerformanceProfileIntervalTicks` in the config.
 
 ---
 
