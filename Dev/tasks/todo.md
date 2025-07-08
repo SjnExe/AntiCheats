@@ -21,14 +21,6 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Complete) Standardized Error Object/Logging for `logManager`**:
-    - **Action Taken**: Defined and implemented a standardized structure for the `details` object in error logs sent to `logManager.addLog`. The new structure includes `errorCode` (UPPER_SNAKE_CASE), `message` (error.message), optional `rawErrorStack` (error.stack), and an optional `meta` object for context-specific details.
-    - Applied this standard to key error handling locations:
-        - `_handleDynamicPropertyError` in `playerDataManager.js` (actionType also updated to `pdm.dp.<context>.<op_type>.error`).
-        - Command execution error in `commandManager.js` (actionType `error.cmd.exec`).
-        - General error in `_handlePlayerSpawn` in `eventHandlers.js` (actionType `error.evt.playerSpawn`).
-    - Documented the new standard in `logManager.js` via JSDoc comments.
-    - This improves error log consistency, filterability, and clarity.
 - **(Low) `currentTick` Dependency Consistency**:
     - Review usage of `currentTick`. Some functions receive it directly, others from `dependencies.currentTick`. Standardize on `dependencies.currentTick` where feasible unless a specific tick from an event is required.
 - **(Medium) `commandManager.js` Alias Handling in `initializeCommands`**:
