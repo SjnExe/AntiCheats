@@ -52,7 +52,10 @@ This list contains planned features, improvements, and areas for future investig
     - Perform a manual review or add a linting rule (if possible for JSON-like structures in JS) to strictly enforce `camelCase` for all `checkType` keys, `flag.type` values, `log.actionType` values, and `actionType` parameters within these files, as per documentation and `AGENTS.md`.
 - **(Low) `textDatabase.js` - Maintainability**:
     - As the addon grows, consider if further sub-grouping of keys within `stringDB` (e.g., `ui.adminPanel.buttons.viewPlayers`) would improve organization if the file becomes excessively large.
-- **(Medium) `types.js` - `PlayerAntiCheatData` Review**:
+- **(Medium) `types.js` - `PlayerAntiCheatData` Review**: (Completed initial review as per task #XYZ - JULES)
     - Schedule periodic reviews of the `PlayerAntiCheatData` typedef to remove obsolete properties and ensure all current properties are accurately documented and handled in `playerDataManager.js` (initialization, persistence, updates).
+- **(Low) Persist `pData.itemUseTimestamps`**: Ensure `itemUseTimestamps` in `PlayerAntiCheatData` is persisted to make FastUse check effective across sessions. (Related to `PlayerAntiCheatData` Review)
+- **(Low) Clarify/Align `pData.joinCount` Persistence**: Decide if `joinCount` should be a lifetime persisted count or session-only, and implement accordingly. (Related to `PlayerAntiCheatData` Review)
+- **(Low) Clarify/Align `pData.lastLoginTime` vs. `joinTime`**: Determine distinct purpose and required persistence for `lastLoginTime` compared to the persisted `joinTime`. (Related to `PlayerAntiCheatData` Review)
 
 ### Broader Code Quality & Maintainability

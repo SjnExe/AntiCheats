@@ -110,23 +110,23 @@
  * @property {number} [currentTick] The game tick when this data snapshot was last updated for checks.
  * @property {boolean} [isOnline=false] Whether the player is currently online.
  * @property {boolean} [isDirtyForSave=false] Flag indicating if this data needs to be saved to persistent storage. Not persisted itself.
- * @property {boolean} [isWatched=false] If true, more detailed logging or specific actions might apply to this player.
- * @property {string} [lastKnownNameTag] Persisted last known nameTag, useful for offline lookups.
- * @property {number} [lastNameTagChangeTick] Game tick of the last nameTag change.
+ * @property {boolean} [isWatched=false] If true, more detailed logging or specific actions might apply to this player. Persisted.
+ * @property {string} [lastKnownNameTag] Persisted last known nameTag, useful for offline lookups. Persisted.
+ * @property {number} [lastNameTagChangeTick] Game tick of the last nameTag change. Persisted.
  * @property {PlayerMuteInfo | null} [muteInfo] Current mute status. Persisted.
  * @property {PlayerBanInfo | null} [banInfo] Current ban status. Persisted.
- * @property {PlayerFlagData} flags Accumulated violation flags.
- * @property {string} [lastFlagType] The `checkType` of the most recent flag.
+ * @property {PlayerFlagData} flags Accumulated violation flags. Persisted.
+ * @property {string} [lastFlagType] The `checkType` of the most recent flag. Persisted.
  * @property {{[key: string]: {itemTypeId?: string, quantityFound?: number, timestamp: number, details?: string, [key: string]: any}}} [lastViolationDetailsMap] Stores details of the last violation for specific check types. Persisted.
  * @property {{[key: string]: {lastActionThreshold?: number, lastActionTimestamp?: number, [key: string]: any}}} [automodState] State information for the AutoMod system related to this player. Persisted.
- * @property {number} [lastLoginTime] Timestamp of the last login.
- * @property {number} [lastLogoutTime] Timestamp of the last logout.
- * @property {number} [joinCount=0] Total number of times the player has joined.
+ * @property {number} [lastLoginTime] Session-specific timestamp of the last login during the current server session. Not persisted. // TODO: Clarify purpose vs. joinTime.
+ * @property {number} [lastLogoutTime] Timestamp of the last logout. Not persisted (session-end marker).
+ * @property {number} [joinCount=0] Session-specific count of joins during the current server session. Resets on server restart. Not persisted. // TODO: Decide if this should be a lifetime persisted count.
  * @property {number} [joinTime] Timestamp (ms) of when the player last joined the server. Persisted.
  *
  * Movement Related State:
- * @property {number} [consecutiveOffGroundTicks=0] How many ticks the player has been airborne.
- * @property {number} [fallDistance=0] Accumulated fall distance since last on-ground or damage mitigating event.
+ * @property {number} [consecutiveOffGroundTicks=0] How many ticks the player has been airborne. Session-only.
+ * @property {number} [fallDistance=0] Accumulated fall distance since last on-ground or damage mitigating event. Session-only.
  * @property {number} [lastOnGroundTick=0] Game tick when the player was last on solid ground.
  * @property {Vector3} [lastOnGroundPosition] Position when last on solid ground.
  * @property {boolean} [isTakingFallDamage=false] True if the player is currently in the process of taking fall damage (to prevent fallDistance reset too early).
@@ -138,12 +138,12 @@
  * @property {number} [lastUsedElytraTick=0] Game tick when elytra was last used.
  * @property {number} [lastUsedRiptideTick=0] Game tick when riptide trident was last used.
  * @property {number} [lastOnSlimeBlockTick=0] Game tick when last bounced on a slime block.
- * @property {number} [consecutiveOnGroundSpeedingTicks=0] For speed check: consecutive ticks exceeding speed limits while on ground.
+ * @property {number} [consecutiveOnGroundSpeedingTicks=0] For speed check: consecutive ticks exceeding speed limits while on ground. Persisted.
  *
  * Combat Related State:
- * @property {number[]} [attackEventsTimestamps] Timestamps of recent attack actions (for CPS).
- * @property {number} [lastAttackTime=0] Timestamp of the last attack action (general).
- * @property {number} [lastAttackTick=0] Game tick of the last attack action.
+ * @property {number[]} [attackEvents] Timestamps of recent attack actions (for CPS). Persisted.
+ * @property {number} [lastAttackTime=0] Timestamp of the last attack action (general). Session-only unless explicitly persisted for specific cross-session logic.
+ * @property {number} [lastAttackTick=0] Game tick of the last attack action. Session-only.
  * @property {number} [lastTookDamageTick=0] Game tick when the player last took damage.
  * @property {number} [lastCombatInteractionTime=0] Timestamp of last combat event (dealt or received damage).
  * @property {Array<{entityId: string, timestamp: number, entityType?: string}>} [recentHits] History of entities hit by the player (for MultiTarget).
@@ -152,13 +152,13 @@
  * @property {boolean} [isUsingConsumable=false] True if currently using a consumable item (food, potion).
  * @property {boolean} [isChargingBow=false] True if currently charging a bow/crossbow.
  * @property {boolean} [isUsingShield=false] True if currently holding up/using a shield.
- * @property {number} [lastItemUseTick=0] Game tick of the last significant item use start.
- * @property {{[key: string]: number}} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check).
+ * @property {number} [lastItemUseTick=0] Game tick of the last significant item use start. Session-only.
+ * @property {{[key: string]: number}} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check). Session-only. // TODO: Consider persisting this for FastUse check effectiveness across sessions.
  *
  * World Interaction / Building State:
- * @property {number[]} [blockBreakEventsTimestamps] Timestamps of recent block break actions (for Nuker).
- * @property {Array<{x: number, y: number, z: number, blockTypeId: string, pitch: number, yaw: number, tick: number, dimensionId: string}>} [recentBlockPlacements] History of recent block placements.
- * @property {number[]} [recentPlaceTimestamps] Timestamps of recent block placements (for FastPlace check).
+ * @property {number[]} [blockBreakEvents] Timestamps of recent block break actions (for Nuker). Persisted.
+ * @property {Array<{x: number, y: number, z: number, blockTypeId: string, pitch: number, yaw: number, tick: number, dimensionId: string}>} [recentBlockPlacements] History of recent block placements. Session-only.
+ * @property {number[]} [recentPlaceTimestamps] Timestamps of recent block placements (for FastPlace check). Session-only.
  * @property {boolean} [isAttemptingBlockBreak=false] True if player is currently holding break on a block.
  * @property {string | null} [breakingBlockTypeId] Type ID of the block currently being broken.
  * @property {Vector3 | null} [breakingBlockLocation] Location of the block currently being broken.
@@ -183,7 +183,7 @@
  * @property {Vector3 | null} [lastDownwardScaffoldBlockLocation] For DownwardScaffold check.
  *
  * Chat Related State:
- * @property {Array<{timestamp: number, content: string, isCommand?: boolean}>} [recentMessages] History of recent chat messages.
+ * @property {Array<string>} [chatMessageHistory] History of normalized chat messages for repeat content checks. Session-only.
  *
  * Inventory / Client State:
  * @property {number} [previousSelectedSlotIndex=-1] Previously selected hotbar slot.
@@ -203,9 +203,9 @@
  * @property {boolean} [slimeCheckErrorLogged=false] Transient flag to prevent spamming slime block check errors.
  *
  * World Border State:
- * @property {number} [lastBorderVisualTick=0] Last tick world border visuals were updated for this player.
- * @property {number} [ticksOutsideBorder=0] Consecutive ticks spent outside the world border.
- * @property {number} [borderDamageApplications=0] Number of times damage has been applied by the border this session.
+ * @property {number} [lastBorderVisualTick=0] Last tick world border visuals were updated for this player. Session-only.
+ * @property {number} [ticksOutsideBorder=0] Consecutive ticks spent outside the world border. Session-only state.
+ * @property {number} [borderDamageApplications=0] Number of times damage has been applied by the border this session. Session-only state.
  */
 
 /**

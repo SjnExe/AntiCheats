@@ -361,11 +361,11 @@ export function initializeDefaultPlayerData(player, dependencies) {
         lastOnGroundPosition: { ...player.location },
         consecutiveOnGroundSpeedingTicks: 0,
         isTakingFallDamage: false,
-        attackEvents: [],
+        attackEvents: [], // Standardized from attackEventsTimestamps
         lastAttackTime: 0,
         lastCombatInteractionTime: 0,
-        blockBreakEvents: [],
-        recentMessages: [],
+        blockBreakEvents: [], // Standardized from blockBreakEventsTimestamps
+        chatMessageHistory: [], // Added to match usage, removed recentMessages
         flags: defaultFlags,
         lastFlagType: '',
         isWatched: false,
