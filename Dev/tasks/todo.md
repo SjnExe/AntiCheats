@@ -66,5 +66,3 @@ This list contains planned features, improvements, and areas for future investig
     - Evaluate creating a more standardized error reporting utility or pattern, especially for errors reported to `logManager`. This could include common error codes or more structured `details` objects.
 - **(Low) JSDoc `@module` Tags**:
     - Ensure all files that are intended to be modules have a `@module path/to/module` tag for better documentation generation and clarity, if not already present.
-- **(Low) AGENTS.md - JSDoc Linting Update**:
-    - Update `AGENTS.md` section on ESLint/JSDoc if the "environmental constraints" for `eslint-plugin-jsdoc` are resolved, or if a decision is made to enforce more JSDoc rules via ESLint.
