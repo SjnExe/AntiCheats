@@ -216,7 +216,7 @@ export default [
 
         // Turned off or kept as warn based on previous config and common sense
         'jsdoc/require-description': 'warn', // require-jsdoc implies a description is needed. This one is more specific about the description *content*.
-        'jsdoc/require-description-complete-sentence': ['warn', { abbreviations: ["e.g.", "i.e."] }], // Keep sentences, but allow common abbreviations.
+        'jsdoc/require-description-complete-sentence': 'off', // Disabled to allow more compact comments not necessarily forming complete sentences.
         'jsdoc/match-description': 'off',
         'jsdoc/no-defaults': 'warn',
         'jsdoc/require-example': 'off',

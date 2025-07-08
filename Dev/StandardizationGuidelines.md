@@ -69,12 +69,16 @@ This document outlines the consolidated standardization guidelines for the AntiC
 *   **JSDoc (`/** ... */`):**
     *   **Target:** Mandatory for all exported functions, classes, and significant constants. Recommended for complex internal functions.
     *   **Content (Functions):**
-        *   **Concise Summary**: The main description should be brief and to the point. If the function's purpose is clear from its name and parameters, an overly detailed summary is not needed. Focus on *why* it does something or any non-obvious behaviors.
+        *   **Concise Summary**: The main description should be brief and to the point. If the function's purpose, parameters, and return type are very clear from its name and signature (e.g., `function getUserById(id: string): User`), the summary can be extremely brief, focusing only on non-obvious aspects or side effects. Avoid restating the obvious.
         *   **Compactness**:
-            *   Single-line JSDoc comments (e.g., `/** @type {string} */` or `/** @returns {boolean} True if action was successful. */`) are encouraged for simple type annotations or very short descriptions.
-            *   Minimize empty lines within JSDoc blocks. Tags should ideally follow the main description or each other without unnecessary blank lines, as configured in ESLint.
-        *   `@param {type} name - description`: Descriptions for parameters should also be concise. If the parameter's role is evident from its name and type, a very brief or even omitted description (if ESLint allows) might be acceptable for internal/simple functions.
-        *   `@returns {type} description`: Similar to params, keep return descriptions brief.
+            *   **Single-line JSDoc comments are highly preferred** for simple type annotations (e.g., `/** @type {string} */`) or very short, self-contained descriptions (e.g., `/** @returns {boolean} True if action was successful. */` or `/** Processes user input. */`).
+            *   ESLint rules are configured to support this:
+                *   `jsdoc/multiline-blocks` allows single-line blocks.
+                *   `jsdoc/tag-lines` is set to 'never' to minimize empty lines.
+                *   `jsdoc/require-description-complete-sentence` is 'off', allowing non-sentence descriptions for brevity.
+            *   Example of a compact, multi-tag single-line comment: `/** @param {string} id - The user ID. @returns {User | null} The user or null if not found. */` (if appropriate for very simple functions).
+        *   `@param {type} name - description`: Descriptions for parameters should be concise. If the parameter's role is evident from its name and type (e.g., `@param {string} name`), a very brief description is sufficient. For highly self-documenting internal or simple functions, if ESLint rules were more relaxed on param descriptions, it might be omitted, but current rules (`jsdoc/require-param-description`) enforce it. Keep it short.
+        *   `@returns {type} description`: Similar to params, keep return descriptions brief and focused. If the return is obvious (e.g., `@returns {boolean} True if validation passed, false otherwise.`), don't over-explain.
         *   Strive to use specific types from `@minecraft/server`, custom typedefs from `types.js` (e.g., `import('../types.js').PlayerAntiCheatData`), or primitive types. Avoid generic `object` or `any` where possible.
         *   Optional: `@async` if the function is asynchronous, `@throws {ErrorType} description`, `@deprecated message`, `@see reference`, `@example code`.
     *   **Content (Constants):** Brief description and `@type {type}`. Single-line JSDoc is often sufficient: `/** @type {number} Maximum retry attempts. */`.
@@ -91,9 +95,10 @@ This document outlines the consolidated standardization guidelines for the AntiC
     *   This can be a single line for simple files: `/** @file Utility functions for array manipulation. */`
     *   The `@author` and `@license` tags are optional but good practice.
     *   **Variable Type Annotation with `@type`**:
-        *   For annotating variable types using JSDoc, prefer the most compact form. Single-line `/** @type {TypeName} */ let myVar;` is ideal when no further description is needed.
-        *   If a variable's type is unambiguously clear from its initial assignment (e.g., `const name = "John";`, `const isValid = true;`, `const count = 0;`), consider omitting the `/** @type {...} */` annotation to reduce verbosity, unless it's a complex type or explicitly initialized to `null` or `undefined` where the type context is critical.
-        *   The goal is to maintain clarity while minimizing clutter from overly verbose type comments.
+        *   For annotating variable types using JSDoc, **always prefer the most compact form**. Single-line `/** @type {TypeName} */ let myVar;` is ideal when no further description for the variable itself is needed.
+        *   **Omit the `/** @type {...} */` annotation entirely if a variable's type is unambiguously obvious from its initial assignment** (e.g., `const name = "John";`, `const isValid = true;`, `const count = 0;`, `const user = new User();`). This is crucial for reducing verbosity.
+        *   Use `@type` primarily when the type is not immediately clear from the assignment (e.g., `let data; /** @type {ComplexType | null} */ data = fetchData();` or for parameters/return types in JSDoc blocks).
+        *   The goal is to maintain clarity while minimizing clutter from overly verbose or redundant type comments.
 
 ## 5. API Usage Standards (Minecraft Server API)
 
