@@ -21,8 +21,9 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Medium) Async Operations & `pData` Staleness**:
-    - Conduct a codebase search for areas where `pData` is used after an `await` call. Ensure the pattern of re-fetching `pData` (e.g., `pData = playerDataManager.getPlayerData(player.id);`) is consistently applied if the awaited function could have modified `pData` or if other operations might have invalidated the reference. This was noted as good practice in `_processPlayerPlaceBlockAfterEffects`.
+- **(Complete) Async Operations & `pData` Staleness**:
+    - Conducted a codebase search for areas where `pData` is used after an `await` call.
+    - **Action Taken**: Applied `pData` re-fetching pattern (get `pData` again via `playerDataManager.getPlayerData(player.id)` and check `player.isValid()` + `pData` validity) in several key async functions in `AntiCheatsBP/scripts/core/eventHandlers.js` (specifically in `_handlePlayerLeave`, `_handlePlayerSpawn`'s timeout, `_handleEntitySpawnEventAntiGrief`'s loop, `_handlePlayerBreakBlockBeforeEvent`, `_handlePlayerBreakBlockAfterEvent`, `_handlePlayerDimensionChangeAfterEvent`) and in `AntiCheatsBP/scripts/core/actionManager.js` (in `executeCheckAction` after `await addFlag`). This enhances data integrity by mitigating risks of using stale `pData` references after asynchronous operations.
 - **(Low) Standardized Error Object/Logging for `logManager`**:
     - For errors logged via `logManager.addLog`, consider a more standardized structure for the `details` object, perhaps including a common `errorCode` string or a more consistent `errorContext` for easier filtering and analysis of system errors.
 - **(Low) `currentTick` Dependency Consistency**:
