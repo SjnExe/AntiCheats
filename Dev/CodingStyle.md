@@ -56,13 +56,14 @@ String literals used for `actionType` values (e.g., in `automodConfig.js` for Au
 
 ## JSDoc
 *   Use JSDoc comments for all functions, especially exported ones.
-    *   **Conciseness is Key**: Comments should be clear and informative but also concise. Avoid overly verbose descriptions, especially if the function's purpose is clear from its name and parameters.
+    *   **Conciseness is Key**: Comments should be clear and informative but also concise. Avoid overly verbose descriptions, especially if the function's purpose, parameters, and return values are clear from its name and signature. The `jsdoc/require-description-complete-sentence` ESLint rule is disabled (`'off'`) to support brevity, allowing descriptions that are not full sentences.
     *   **Compact JSDoc**:
-        *   For simple type annotations or very short descriptions, single-line JSDoc comments are encouraged (e.g., `/** @type {string} */` or `/** @returns {boolean} True if successful. */`).
-        *   Minimize empty lines within JSDoc blocks. Tags should follow the main description or each other without unnecessary blank lines.
-    *   Detail purpose, parameters (`@param`), and return values (`@returns`) as needed.
+        *   **Single-line comments are highly encouraged** for simple type annotations (e.g., `/** @type {string} */`) or very short, self-contained descriptions (e.g., `/** @returns {boolean} True if successful. */` or `/** Handles player login. */`).
+        *   If a function is simple and its name is descriptive (e.g., `/** @param {string} userId */`), a very brief comment is sufficient.
+        *   Minimize empty lines within JSDoc blocks. ESLint rules are set up to enforce this (tags should follow the main description or each other without unnecessary blank lines).
+    *   Detail purpose, parameters (`@param`), and return values (`@returns`) as needed, but prioritize clarity and conciseness over forced verbosity.
 *   Use JSDoc typedefs (`@typedef`) for complex object structures (e.g., `PlayerAntiCheatData`). These are typically centralized in `types.js`.
-*   Refer to `Dev/StandardizationGuidelines.md` for more detailed JSDoc type usage and specific formatting.
+*   Refer to `Dev/StandardizationGuidelines.md` for more detailed JSDoc type usage and specific formatting examples.
 
 ## General Formatting
 *   Follow existing code formatting for indentation (e.g., 4 spaces), spacing, and brace style.
