@@ -52,7 +52,10 @@ This list contains planned features, improvements, and areas for future investig
     - Perform a manual review or add a linting rule (if possible for JSON-like structures in JS) to strictly enforce `camelCase` for all `checkType` keys, `flag.type` values, `log.actionType` values, and `actionType` parameters within these files, as per documentation and `AGENTS.md`.
 - **(Low) `textDatabase.js` - Maintainability**:
     - As the addon grows, consider if further sub-grouping of keys within `stringDB` (e.g., `ui.adminPanel.buttons.viewPlayers`) would improve organization if the file becomes excessively large.
-- **(Medium) `types.js` - `PlayerAntiCheatData` Review**: (Completed initial review as per task #XYZ - JULES)
-    - Schedule periodic reviews of the `PlayerAntiCheatData` typedef to remove obsolete properties and ensure all current properties are accurately documented and handled in `playerDataManager.js` (initialization, persistence, updates).
+- **(Low) Periodic `PlayerAntiCheatData` Review (Next Due: Approx. Nov 2024)**
+    - Re-evaluate `PlayerAntiCheatData` properties in `types.js` for any obsolescence.
+    - Ensure all JSDoc comments are accurate and clear.
+    - Verify properties are correctly initialized, persisted (if needed), and handled in `playerDataManager.js`.
+    - This is a recurring task to maintain data structure health.
 
 ### Broader Code Quality & Maintainability
