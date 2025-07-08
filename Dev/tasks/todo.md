@@ -21,8 +21,6 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Low) `currentTick` Dependency Consistency**:
-    - Review usage of `currentTick`. Some functions receive it directly, others from `dependencies.currentTick`. Standardize on `dependencies.currentTick` where feasible unless a specific tick from an event is required.
 - **(Medium) `commandManager.js` Alias Handling in `initializeCommands`**:
     - The IIFE comment in `commandManager.js` regarding `config.commandAliases` needs updating to reflect that aliases are now sourced from command definitions.
     - Ensure `dependencies.aliasToCommandMap` is the single source of truth for alias resolution during command handling and for other modules like `help.js`.

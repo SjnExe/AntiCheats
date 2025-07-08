@@ -172,7 +172,8 @@ async function _handlePlayerSpawn(eventData, dependencies) {
     );
 
     try {
-        const pData = await playerDataManager.ensurePlayerDataInitialized(player, minecraftSystem.system.currentTick, dependencies);
+        // currentTick is now sourced from dependencies within ensurePlayerDataInitialized
+        const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies);
         if (!pData) {
             console.error(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
             player.sendMessage(getString('error.playerDataLoadFailedKick')); // Kick if data can't be loaded/created

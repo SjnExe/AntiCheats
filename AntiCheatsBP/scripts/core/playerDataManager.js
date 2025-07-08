@@ -326,14 +326,13 @@ if (allKnownFlagTypes.length === 0) {
 /**
  * Initializes a new default PlayerAntiCheatData object for a player.
  * @param {import('@minecraft/server').Player} player - The player object.
- * @param {number} currentTick - The current game tick.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object, expected to contain `currentTick`.
  * @returns {import('../types.js').PlayerAntiCheatData} The initialized player data.
  */
-export function initializeDefaultPlayerData(player, currentTick, dependencies) {
-    const { playerUtils } = dependencies;
+export function initializeDefaultPlayerData(player, dependencies) {
+    const { playerUtils, currentTick } = dependencies; // Use currentTick from dependencies
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
-    playerUtils?.debugLog(`[PlayerDataManager.initializeDefaultPlayerData] Initializing for ${playerName} (ID: ${player.id})`, playerName, dependencies);
+    playerUtils?.debugLog(`[PlayerDataManager.initializeDefaultPlayerData] Initializing for ${playerName} (ID: ${player.id}) at tick ${currentTick}`, playerName, dependencies);
 
     const defaultFlags = { totalFlags: 0 };
     for (const flagKey of allKnownFlagTypes) {
@@ -436,12 +435,11 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
  * Ensures that a player's data is initialized, loading from persistence if available,
  * or creating default data otherwise. Merges loaded data with defaults for transient fields.
  * @param {import('@minecraft/server').Player} player - The player object.
- * @param {number} currentTick - Current game tick, used if initializing default data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object, expected to contain `currentTick`.
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} The initialized or loaded player data.
  */
-export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
-    const { playerUtils, logManager } = dependencies; // Added logManager
+export async function ensurePlayerDataInitialized(player, dependencies) {
+    const { playerUtils, logManager, currentTick } = dependencies; // Use currentTick from dependencies
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (playerData.has(player.id)) {
@@ -455,12 +453,12 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         return existingPData;
     }
 
-    let newPData = initializeDefaultPlayerData(player, currentTick, dependencies);
+    let newPData = initializeDefaultPlayerData(player, dependencies); // Pass only dependencies
     const loadedData = await loadPlayerDataFromDynamicProperties(player, dependencies);
 
     if (loadedData && typeof loadedData === 'object') {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Merging persisted pData for ${playerName}.`, playerName, dependencies);
-        const defaultPDataForMerge = initializeDefaultPlayerData(player, currentTick, dependencies);
+        const defaultPDataForMerge = initializeDefaultPlayerData(player, dependencies); // Pass only dependencies
         newPData = { ...defaultPDataForMerge, ...loadedData };
 
         newPData.flags = { ...defaultPDataForMerge.flags, ...(loadedData.flags || {}) };
@@ -522,7 +520,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Found pending flag purge for ${playerIdentifierForPurge}. Processing...`, newPData.isWatched ? playerIdentifierForPurge : null, dependencies);
 
             const oldTotalFlags = newPData.flags?.totalFlags ?? 0;
-            const defaultPlayerDataForFlags = initializeDefaultPlayerData(player, currentTick, dependencies); // Re-get defaults for safety
+            const defaultPlayerDataForFlags = initializeDefaultPlayerData(player, dependencies); // Pass only dependencies
 
             newPData.flags = JSON.parse(JSON.stringify(defaultPlayerDataForFlags.flags));
             newPData.lastFlagType = '';
