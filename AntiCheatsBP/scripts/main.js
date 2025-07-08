@@ -293,7 +293,7 @@ function performInitializations() {
 
     if (mc.world?.afterEvents?.entitySpawn) {
         mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => {
-            await eventHandlers.handleEntitySpawnEvent_AntiGrief(eventData, getStandardDependencies());
+            await eventHandlers.handleEntitySpawnEventAntiGrief(eventData, getStandardDependencies());
         });
     } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for entitySpawn (after): object undefined.`);
@@ -301,7 +301,7 @@ function performInitializations() {
 
     if (mc.world?.afterEvents?.pistonActivate) {
         mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => {
-            await eventHandlers.handlePistonActivate_AntiGrief(eventData, getStandardDependencies());
+            await eventHandlers.handlePistonActivateAntiGrief(eventData, getStandardDependencies());
         });
     } else {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for pistonActivate (after): object undefined.`);

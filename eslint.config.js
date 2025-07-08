@@ -228,7 +228,6 @@ export default [
             noFinalLineText: true,
             singleLineTags: ['type', 'typedef', 'param', 'returns', 'default', 'deprecated', 'async', 'see', 'ignore', 'license', 'author', 'module'], // Allow single line for these common tags
             noSingleLineBlocks: false, // Allow /** @type {string} */ and /** Short desc. */
-            allowFinalAlignment: false, // Don't require final asterisk alignment for single line blocks
         }],
         'jsdoc/tag-lines': ['warn', 'never', { // No extra lines between tags for compactness
             // startLines: 1, // Removed to allow tags immediately after description
