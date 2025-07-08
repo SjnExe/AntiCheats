@@ -153,7 +153,7 @@
  * @property {boolean} [isChargingBow=false] True if currently charging a bow/crossbow.
  * @property {boolean} [isUsingShield=false] True if currently holding up/using a shield.
  * @property {number} [lastItemUseTick=0] Game tick of the last significant item use start. Session-only.
- * @property {{[key: string]: number}} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check). Session-only. // TODO: Consider persisting this for FastUse check effectiveness across sessions.
+ * @property {{[key: string]: number}} [itemUseTimestamps] Timestamps of last use for specific items (for FastUse check). Persisted.
  *
  * World Interaction / Building State:
  * @property {number[]} [blockBreakEvents] Timestamps of recent block break actions (for Nuker). Persisted.

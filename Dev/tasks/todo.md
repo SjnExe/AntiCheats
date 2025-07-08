@@ -54,6 +54,5 @@ This list contains planned features, improvements, and areas for future investig
     - As the addon grows, consider if further sub-grouping of keys within `stringDB` (e.g., `ui.adminPanel.buttons.viewPlayers`) would improve organization if the file becomes excessively large.
 - **(Medium) `types.js` - `PlayerAntiCheatData` Review**: (Completed initial review as per task #XYZ - JULES)
     - Schedule periodic reviews of the `PlayerAntiCheatData` typedef to remove obsolete properties and ensure all current properties are accurately documented and handled in `playerDataManager.js` (initialization, persistence, updates).
-- **(Low) Persist `pData.itemUseTimestamps`**: Ensure `itemUseTimestamps` in `PlayerAntiCheatData` is persisted to make FastUse check effective across sessions. (Related to `PlayerAntiCheatData` Review)
 
 ### Broader Code Quality & Maintainability

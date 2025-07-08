@@ -39,6 +39,7 @@ const persistedPlayerDataKeys = [
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
     'lastChatMessageTimestamp', // For messageRateCheck
     'recentHits', // For multiTargetCheck
+    'itemUseTimestamps', // Added for FastUse check persistence
     'lastUsedElytraTick',
     'lastOnSlimeBlockTick',
     'recentEntitySpamTimestamps',
