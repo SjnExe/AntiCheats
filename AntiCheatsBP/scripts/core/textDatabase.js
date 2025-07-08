@@ -268,6 +268,7 @@ export const stringDB = {
     // Player Data Manager specific (used by its functions, not directly UI)
     'playerData.mute.defaultReason': 'Muted by system.',
     'playerData.ban.defaultReason': 'Banned by system.',
+    'playerDataManager.offlinePurgeCompleteNotification': "Your player flags and violation history were automatically purged by an administrator's request upon joining.",
 
     // TPA Manager Messages
     'tpa.manager.error.targetOfflineOnAccept': '§cTarget player {offlinePlayerName} went offline. TPA cancelled.',
@@ -530,10 +531,11 @@ export const stringDB = {
 
     // --- purgeflags.js ---
     'command.purgeflags.usage': '§cUsage: {prefix}{syntax}',
-    'command.purgeflags.playerNotFound': '§cPlayer "{playerName}" not found or is not online.',
-    'command.purgeflags.noData': '§cCould not retrieve data for player "{playerName}".',
-    'command.purgeflags.success.admin': '§aSuccessfully purged all flags and violation history for player "{playerName}". Old total flags: {oldTotalFlags}.',
+    'command.purgeflags.playerNotFound': '§cPlayer "{playerName}" not found or is not online.', // Note: Command logic might need adjustment if it handles offline differently now.
+    'command.purgeflags.noData': '§cCould not retrieve data for player "{playerName}".', // Typically for online players
+    'command.purgeflags.success.admin': '§aSuccessfully purged all flags and violation history for online player "{playerName}". Old total flags: {oldTotalFlags}.',
     'command.purgeflags.success.target': '§eYour AntiCheat flags and violation history have been purged by an administrator ({adminName}).',
+    'command.purgeflags.offlinePlayerScheduled': "Player %playerName% is not online. Their flags have been scheduled to be purged upon their next join.",
 
     // --- removerank.js ---
     'command.removerank.usage': '§cUsage: {prefix}removerank <playerName> <rankId>',

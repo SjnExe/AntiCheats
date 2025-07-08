@@ -9,7 +9,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Medium) Apply Updated Linting Rules**: After the ESLint configuration is updated, run `npm run lint:fix` (or similar) across the entire codebase to apply the new rules and formatting. Manually address any issues that cannot be auto-fixed. (This is a placeholder for a subsequent task).
 
 ## Code Refinement & Feature Enhancements
-- **(Medium) Offline Player Flag Purging (`purgeflags` command)**: Implement the functionality to purge flags for offline players, likely by directly modifying their persisted data in dynamic properties. (Context: `AntiCheatsBP/scripts/commands/purgeflags.js:31`).
 
 ## New Feature Ideas (Examples - to be expanded by project owner)
 - **(Medium) More advanced X-Ray detection methods (if feasible with Script API).**

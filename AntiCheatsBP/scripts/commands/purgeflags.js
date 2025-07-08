@@ -3,7 +3,7 @@
  * This command allows administrators to completely clear all flags,
  * violation history, and AutoMod state for a specified player.
  */
-import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData } from '../core/playerDataManager.js';
+import { getPlayerData, saveDirtyPlayerData, initializeDefaultPlayerData, scheduleFlagPurge } from '../core/playerDataManager.js';
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -96,18 +96,24 @@ export async function execute(player, args, dependencies) {
         // perhaps from a name history or by trusting the input name if it's unique.
         // This part is complex and depends on how playerDataManager can be extended.
 
-        // TODO: Implement offline player data retrieval and modification via playerDataManager
-        // For now, send a message indicating the intent or future capability.
-        playerUtils?.sendMessage(player, getString('command.purgeflags.offlinePlayerNote', { playerName: targetPlayerName }));
-        playerUtils?.debugLog(`[PurgeFlagsCommand] Admin ${adminName} attempted to purge flags for offline player ${targetPlayerName}. Offline functionality pending.`, adminName, dependencies);
+        // Player is not online, schedule the purge for when they next join.
+        const scheduleSuccess = await scheduleFlagPurge(targetPlayerName, dependencies);
 
-        // Example of what might be logged if we had a pending system:
-        // logManager?.addLog({
-        //     actionType: 'flagsPurgeRequestedOffline',
-        //     adminName: adminName,
-        //     targetName: targetPlayerName, // Target ID might not be known here yet
-        //     details: `Request to purge flags for offline player ${targetPlayerName} has been queued.`,
-        //     context: 'PurgeFlagsCommand',
-        // }, dependencies);
+        if (scheduleSuccess) {
+            playerUtils?.sendMessage(player, getString('command.purgeflags.offlinePlayerScheduled', { playerName: targetPlayerName }));
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies); // Use success sound for scheduling
+            logManager?.addLog({
+                actionType: 'flagsPurgeScheduledOffline',
+                adminName: adminName,
+                targetName: targetPlayerName,
+                details: `Flag purge scheduled for offline player ${targetPlayerName}. Will be processed on next join.`,
+                context: 'PurgeFlagsCommand',
+            }, dependencies);
+            playerUtils?.debugLog(`Admin ${adminName} scheduled flag purge for offline player ${targetPlayerName}.`, adminName, dependencies);
+        } else {
+            playerUtils?.sendMessage(player, getString('common.error.genericCommandError', { commandName: definition.name, errorMessage: `Failed to schedule flag purge for offline player ${targetPlayerName}.` }));
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+            playerUtils?.debugLog(`[PurgeFlagsCommand CRITICAL] Failed to schedule flag purge for ${targetPlayerName} by ${adminName}.`, adminName, dependencies);
+        }
     }
 }

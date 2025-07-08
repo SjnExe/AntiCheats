@@ -12,6 +12,7 @@ import { checkActionProfiles } from './actionProfiles.js';
 const JSON_SAMPLE_LOG_LENGTH = 200;
 const TICKS_PER_SECOND = 20;
 const DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT = 3;
+const PENDING_FLAG_PURGES_DP_KEY = 'anticheat:pending_flag_purges_v1';
 
 
 /** @type {Map<string, import('../types.js').PlayerAntiCheatData>} In-memory cache for player data. */
@@ -423,6 +424,66 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }
+
+    // Check for and process pending flag purges
+    try {
+        const rawPendingPurges = mc.world.getDynamicProperty(PENDING_FLAG_PURGES_DP_KEY);
+        let pendingPurges = [];
+        let purgesListModified = false;
+
+        if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0) {
+            try {
+                pendingPurges = JSON.parse(rawPendingPurges);
+                if (!Array.isArray(pendingPurges)) {
+                    pendingPurges = []; // Reset if corrupted
+                }
+            } catch (e) {
+                console.error(`[PlayerDataManager.ensurePlayerDataInitialized] Error parsing pending purges list for ${playerName}: ${e.message}. Resetting list.`);
+                pendingPurges = [];
+            }
+        }
+
+        const playerIdentifierForPurge = newPData.lastKnownNameTag || newPData.playerNameTag; // Use last known name or current
+        const purgeIndex = pendingPurges.indexOf(playerIdentifierForPurge);
+
+        if (purgeIndex > -1) {
+            playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Found pending flag purge for ${playerIdentifierForPurge}. Processing...`, newPData.isWatched ? playerIdentifierForPurge : null, dependencies);
+
+            const oldTotalFlags = newPData.flags?.totalFlags ?? 0;
+            const defaultPlayerDataForFlags = initializeDefaultPlayerData(player, currentTick, dependencies); // Re-get defaults for safety
+
+            newPData.flags = JSON.parse(JSON.stringify(defaultPlayerDataForFlags.flags));
+            newPData.lastFlagType = '';
+            newPData.lastViolationDetailsMap = {};
+            newPData.automodState = {};
+            newPData.isDirtyForSave = true;
+
+            pendingPurges.splice(purgeIndex, 1);
+            purgesListModified = true;
+
+            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+
+            playerUtils?.sendMessage(player, dependencies.getString('playerDataManager.offlinePurgeCompleteNotification'));
+            logManager?.addLog({
+                actionType: 'flagsPurgedOfflineOnJoin',
+                adminName: 'System (Scheduled Purge)',
+                targetName: playerIdentifierForPurge,
+                targetId: player.id,
+                details: `Flags, violation history, and automod state purged on join due to scheduled request. Old total flags: ${oldTotalFlags}.`,
+                context: 'PlayerDataManager.ensurePlayerDataInitialized',
+            }, dependencies);
+            playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Successfully processed scheduled flag purge for ${playerIdentifierForPurge}. Old total flags: ${oldTotalFlags}. Pending list size: ${pendingPurges.length}`, newPData.isWatched ? playerIdentifierForPurge : null, dependencies);
+        } else if (purgesListModified) {
+            // This case should not be hit if logic is correct, but as a fallback if list was modified for other reasons (e.g. corruption reset)
+            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+        }
+
+    } catch (e) {
+        console.error(`[PlayerDataManager.ensurePlayerDataInitialized] Error processing pending flag purges for ${playerName}: ${e.stack || e}`);
+        logManager?.addLog({ actionType: 'system_error', context: 'ensurePlayerDataInitialized_pending_purge_fail', details: `Player ${playerName}: Error processing PENDING_FLAG_PURGES_DP_KEY. Error: ${e.message}`, errorStack: e.stack || e.toString() }, dependencies);
+    }
+    // End of pending purge processing
+
     playerData.set(player.id, newPData);
     return newPData;
 }
@@ -514,6 +575,67 @@ export function updateTransientPlayerData(player, pData, dependencies) {
         pData.consecutiveOffGroundTicks++;
         pData.slimeCheckErrorLogged = false;
     }
+
+/**
+ * Schedules a flag purge for an offline player.
+ * Stores the player's identifier (name) in a world dynamic property list.
+ *
+ * @param {string} playerIdentifier - The name of the player to schedule for flag purge.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @returns {Promise<boolean>} True if scheduling was successful, false otherwise.
+ */
+export async function scheduleFlagPurge(playerIdentifier, dependencies) {
+    const { playerUtils, logManager } = dependencies;
+    if (!playerIdentifier || typeof playerIdentifier !== 'string' || playerIdentifier.trim() === '') {
+        console.warn('[PlayerDataManager.scheduleFlagPurge] Invalid playerIdentifier provided.');
+        playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Attempted to schedule purge with invalid identifier: '${playerIdentifier}'`, null, dependencies);
+        return false;
+    }
+
+    try {
+        const rawPendingPurges = mc.world.getDynamicProperty(PENDING_FLAG_PURGES_DP_KEY);
+        let pendingPurges = [];
+
+        if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0) {
+            try {
+                pendingPurges = JSON.parse(rawPendingPurges);
+                if (!Array.isArray(pendingPurges)) {
+                    console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: not an array. Resetting. JSON: ${rawPendingPurges}`);
+                    pendingPurges = [];
+                }
+            } catch (parseError) {
+                console.error(`[PlayerDataManager.scheduleFlagPurge] Failed to parse pending purges list. Error: ${parseError.stack || parseError}. JSON: "${rawPendingPurges}". Resetting list.`);
+                logManager?.addLog({ actionType: 'system_error', context: 'scheduleFlagPurge_json_parse_fail', details: `Failed to parse PENDING_FLAG_PURGES_DP_KEY. Error: ${parseError.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
+                pendingPurges = []; // Reset if parsing fails to prevent further issues
+            }
+        } else if (rawPendingPurges !== undefined) {
+            // Data exists but is not a string or is an empty string - indicates corruption or unexpected type
+            console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: expected string, got ${typeof rawPendingPurges}. Resetting. Key: ${PENDING_FLAG_PURGES_DP_KEY}`);
+            pendingPurges = [];
+        }
+        // If rawPendingPurges is undefined, pendingPurges remains an empty array, which is correct.
+
+
+        if (!pendingPurges.includes(playerIdentifier)) {
+            pendingPurges.push(playerIdentifier);
+            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+            playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Scheduled flag purge for '${playerIdentifier}'. Pending list size: ${pendingPurges.length}`, null, dependencies);
+            return true;
+        } else {
+            playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Flag purge for '${playerIdentifier}' was already scheduled.`, null, dependencies);
+            return true; // Still considered success as the desired state is achieved
+        }
+    } catch (error) {
+        console.error(`[PlayerDataManager.scheduleFlagPurge] Error accessing or saving pending purges list: ${error.stack || error}`);
+        logManager?.addLog({
+            actionType: 'system_error',
+            context: 'scheduleFlagPurge_dp_access_fail',
+            details: `Error with PENDING_FLAG_PURGES_DP_KEY. Error: ${error.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`,
+            errorStack: error.stack || error.toString()
+        }, dependencies);
+        return false;
+    }
+}
 
     if (player.selectedSlotIndex !== pData.previousSelectedSlotIndex) {
         pData.lastSelectedSlotChangeTick = currentTick;
