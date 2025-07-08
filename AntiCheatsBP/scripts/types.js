@@ -42,7 +42,6 @@
 
 /**
  * Represents the definition of a command.
- *
  * @typedef {object} CommandDefinition
  * @property {string} name The primary name of the command (e.g., "kick").
  * @property {string} syntax A brief description of how to use the command (e.g., "!kick <player> [reason]").
@@ -56,7 +55,6 @@
 
 /**
  * Represents a module containing a command's definition and execution logic.
- *
  * @typedef {object} CommandModule
  * @property {CommandDefinition} definition The definition of the command.
  * @property {function(Player, string[], Dependencies): Promise<void>} execute The function to run when the command is executed.
@@ -88,7 +86,6 @@
 
 /**
  * Information about a player's ban status.
- *
  * @typedef {object} PlayerBanInfo
  * @property {string} [xuid] The Xbox User ID of the banned player, if available.
  * @property {string} [playerName] The last known nameTag of the banned player.
@@ -103,7 +100,6 @@
 /**
  * Core data structure for tracking player-specific AntiCheat state and violations.
  * This data is typically managed by `playerDataManager.js` and can be persisted.
- *
  * @typedef {object} PlayerAntiCheatData
  * @property {string} id Player's unique ID (e.g., `player.id`).
  * @property {string} playerNameTag Current nameTag of the player.
@@ -214,7 +210,6 @@
 
 /**
  * Structure for a TPA (Teleport Ask) request.
- *
  * @typedef {object} TpaRequest
  * @property {string} requestId Unique ID for this TPA request.
  * @property {string} requesterName Name of the player who initiated the request.
@@ -234,7 +229,6 @@
 
 /**
  * Represents a player's TPA system preferences.
- *
  * @typedef {object} PlayerTpaStatus
  * @property {string} playerName Name of the player.
  * @property {boolean} acceptsTpaRequests True if the player is currently accepting TPA requests.
@@ -244,7 +238,6 @@
 
 /**
  * Structure for a log entry.
- *
  * @typedef {object} LogEntry
  * @property {number} [timestamp=Date.now()] Unix timestamp (ms) of the log event.
  * @property {string} actionType Type of action being logged (e.g., "flag_added", "command_executed", "player_muted", "error").
@@ -261,7 +254,6 @@
 
 /**
  * Structure for a player report.
- *
  * @typedef {object} ReportEntry
  * @property {string} reportId Unique ID for the report.
  * @property {number} timestamp Unix timestamp (ms) when the report was filed.
@@ -279,7 +271,6 @@
 /**
  * Structure for an action profile defined in `actionProfiles.js`.
  * Describes a sequence of actions to take based on flag counts for a `checkType`.
- *
  * @typedef {object} ActionProfile
  * @property {string} profileName Unique name for this action profile.
  * @property {Array<{threshold: number, actions: Array<string | {type: string, params: any}>, messageToPlayer?: string, messageToAdmins?: string, duration?: string, reason?: string, priority?: number}>} tiers Ordered list of tiers.
@@ -290,7 +281,6 @@
 /**
  * Structure for an AutoMod configuration rule defined in `automodConfig.js`.
  * Links a `checkType` to an `actionProfileName` and enables/disables it.
- *
  * @typedef {object} AutoModRuleDef
  * @property {string} checkType The type of check this rule applies to (e.g., "chatSpamFastMessage", "movementFlySustained").
  * @property {string} actionProfileName The name of the action profile (from `actionProfiles.js`) to use for this check.
@@ -301,7 +291,6 @@
 
 /**
  * Rank definition structure from `ranksConfig.js`.
- *
  * @typedef {object} RankDefinition
  * @property {string} id Unique identifier for the rank (e.g., "member", "moderator", "admin").
  * @property {string} name Display name of the rank (e.g., "Member", "Moderator").
@@ -319,7 +308,6 @@
 /**
  * Represents the set of dependencies passed to most functions, particularly event handlers and checks.
  * This provides a consistent way to access shared modules and data.
- *
  * @typedef {object} Dependencies
  * @property {ConfigEditable} config The current editable configuration settings.
  * @property {CheckActionProfiles} checkActionProfiles All defined action profiles.
@@ -352,7 +340,6 @@
 
 /**
  * Defines flagging behavior within an ActionProfile.
- *
  * @typedef {object} ActionProfileFlag
  * @property {number} [increment=1] - How much to increment the flag count by.
  * @property {string} reason - Template for the flag reason. Placeholders: {playerName}, {checkType}, {detailsString}, and any keys from violationDetails.
@@ -361,14 +348,12 @@
 
 /**
  * Defines admin notification behavior within an ActionProfile.
- *
  * @typedef {object} ActionProfileNotify
  * @property {string} message - Template for the admin notification message. Placeholders same as ActionProfileFlag.reason.
  */
 
 /**
  * Defines logging behavior within an ActionProfile.
- *
  * @typedef {object} ActionProfileLog
  * @property {string} [actionType] - Specific actionType for logging (camelCase); defaults to `detected<CheckType>` (e.g., `detectedMovementFlyHover`).
  * @property {string} [detailsPrefix=''] - Prefix for the log details string.
@@ -378,7 +363,6 @@
 /**
  * Defines an entry in `checkActionProfiles`. It determines the immediate consequences
  * when a specific `checkType` is triggered.
- *
  * @typedef {object} ActionProfileEntry
  * @property {boolean} enabled - Whether this action profile is active.
  * @property {ActionProfileFlag} [flag] - Configuration for flagging the player.
@@ -393,7 +377,6 @@
 
 /**
  * Defines parameters for a specific AutoMod action.
- *
  * @typedef {object} AutoModActionParameters
  * @property {string} [messageTemplate] - Template for messages to players or admins. Placeholders: {playerName}, {actionType}, {checkType}, {flagCount}, {flagThreshold}, {duration}, {itemTypeId}, {itemQuantity}, {teleportCoordinates}.
  * @property {string} [adminMessageTemplate] - Optional separate template for admin notifications. Same placeholders.
@@ -404,7 +387,6 @@
 
 /**
  * Defines a rule within an AutoMod tier for a specific `checkType`.
- *
  * @typedef {object} AutoModTierRule
  * @property {number} flagThreshold - The number of flags of a specific `checkType` (camelCase) to trigger this rule.
  * @property {('warn'|'kick'|'tempBan'|'permBan'|'mute'|'freezePlayer'|'removeIllegalItem'|'teleportSafe'|'flagOnly')} actionType - The type of action to take (camelCase).
@@ -416,7 +398,6 @@
 
 /**
  * Defines chat formatting for a rank.
- *
  * @typedef {object} ChatFormatting
  * @property {string} [prefixText=''] - The text part of the rank prefix (e.g., "[Admin] ").
  * @property {string} [prefixColor='§7'] - Minecraft color code for the prefix text (e.g., "§c").
@@ -426,7 +407,6 @@
 
 /**
  * Defines a condition for a player to be assigned a rank.
- *
  * @typedef {object} RankCondition
  * @property {('ownerName'|'adminTag'|'manualTagPrefix'|'tag'|'default')} type - The type of condition (camelCase).
  *      - `ownerName`: Matches if player's nameTag equals `config.ownerPlayerName`.
@@ -442,29 +422,28 @@
 
 /**
  * Defines the settings for a world border in a specific dimension.
- *
- *@typedef {object} WorldBorderSettings
- *@property {string} dimensionId - The ID of the dimension these settings apply to (e.g., "minecraft:overworld").
- *@property {boolean} enabled - Whether the border is active in this dimension.
- *@property {'square' | 'circle'} shape - The shape of the world border.
- *@property {number} centerX - The X-coordinate of the border's center.
- *@property {number} centerZ - The Z-coordinate of the border's center.
- *@property {number} [halfSize] - For 'square' shape: half the length of a side (e.g., 500 for a 1000x1000 border).
- *@property {number} [radius] - For 'circle' shape: the radius of the border.
- *@property {boolean} [enableDamage=false] - Whether players take damage when outside the border.
- *@property {number} [damageAmount=0.5] - Damage amount per interval for players outside (0.5 heart = 1 damage).
- *@property {number} [damageIntervalTicks=20] - Interval in game ticks at which damage is applied (20 ticks = 1 second).
- *@property {number} [teleportAfterNumDamageEvents=30] - Number of damage events after which a player is teleported back inside. 0 or negative to disable.
- *@property {string} [particleNameOverride] - Specific particle name to use for this dimension's border, overrides global. 'reset' or 'default' to use global.
- *@property {boolean} [isResizing=false] - True if the border is currently undergoing a resize operation.
- *@property {number} [originalSize] - The size (halfSize/radius) before the resize started.
- *@property {number} [targetSize] - The target size (halfSize/radius) for the resize operation.
- *@property {number} [resizeStartTimeMs] - Timestamp (ms) when the current resize operation began.
- *@property {number} [resizeDurationMs] - Total duration (ms) for the current resize operation.
- *@property {boolean} [isPaused=false] - True if the current resize operation is paused.
- *@property {number} [resizePausedTimeMs=0] - Total accumulated time (ms) this resize has been paused.
- *@property {number} [resizeLastPauseStartTimeMs] - Timestamp (ms) when the current pause began (if `isPaused` is true).
- *@property {'linear' | 'easeOutQuad' | 'easeInOutQuad'} [resizeInterpolationType='linear'] - The interpolation method for resizing.
+ * @typedef {object} WorldBorderSettings
+ * @property {string} dimensionId - The ID of the dimension these settings apply to (e.g., "minecraft:overworld").
+ * @property {boolean} enabled - Whether the border is active in this dimension.
+ * @property {'square' | 'circle'} shape - The shape of the world border.
+ * @property {number} centerX - The X-coordinate of the border's center.
+ * @property {number} centerZ - The Z-coordinate of the border's center.
+ * @property {number} [halfSize] - For 'square' shape: half the length of a side (e.g., 500 for a 1000x1000 border).
+ * @property {number} [radius] - For 'circle' shape: the radius of the border.
+ * @property {boolean} [enableDamage=false] - Whether players take damage when outside the border.
+ * @property {number} [damageAmount=0.5] - Damage amount per interval for players outside (0.5 heart = 1 damage).
+ * @property {number} [damageIntervalTicks=20] - Interval in game ticks at which damage is applied (20 ticks = 1 second).
+ * @property {number} [teleportAfterNumDamageEvents=30] - Number of damage events after which a player is teleported back inside. 0 or negative to disable.
+ * @property {string} [particleNameOverride] - Specific particle name to use for this dimension's border, overrides global. 'reset' or 'default' to use global.
+ * @property {boolean} [isResizing=false] - True if the border is currently undergoing a resize operation.
+ * @property {number} [originalSize] - The size (halfSize/radius) before the resize started.
+ * @property {number} [targetSize] - The target size (halfSize/radius) for the resize operation.
+ * @property {number} [resizeStartTimeMs] - Timestamp (ms) when the current resize operation began.
+ * @property {number} [resizeDurationMs] - Total duration (ms) for the current resize operation.
+ * @property {boolean} [isPaused=false] - True if the current resize operation is paused.
+ * @property {number} [resizePausedTimeMs=0] - Total accumulated time (ms) this resize has been paused.
+ * @property {number} [resizeLastPauseStartTimeMs] - Timestamp (ms) when the current pause began (if `isPaused` is true).
+ * @property {'linear' | 'easeOutQuad' | 'easeInOutQuad'} [resizeInterpolationType='linear'] - The interpolation method for resizing.
  */
 
 // --- Miscellaneous Generic Types ---
@@ -473,7 +452,6 @@
  * Generic type for `violationDetails` objects passed by check scripts.
  * Specific keys depend on the `checkType`. Common examples: `{value: number, threshold: number, itemTypeId: string}`.
  * Refer to individual check implementations or `actionProfiles.js` for expected placeholders.
- *
  * @typedef {Object<string, any>} ViolationDetails
  */
 
@@ -481,7 +459,6 @@
  * Generic type for `eventSpecificData` objects passed to some check functions.
  * Contains context from the game event that triggered the check.
  * Specific keys depend on the event and check. Example: `{ targetEntity: Entity, gameMode: GameMode }` for `reachCheck`.
- *
  * @typedef {object} EventSpecificData
  */
 
