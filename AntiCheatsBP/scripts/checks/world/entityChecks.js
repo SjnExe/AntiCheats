@@ -10,7 +10,6 @@ const defaultEntitySpamMaxSpawnsInWindow = 5;
 /**
  * Checks for entity spamming based on spawn rate of monitored entity types by a player.
  * This is typically called when an entity is spawned, and the potential spawner is identified.
- *
  * @async
  * @param {mc.Player | null} potentialPlayer - The player suspected of spawning the entity, if known.
  * @param {string} entityType - The typeId of the spawned entity (e.g., 'minecraft:boat').
@@ -79,7 +78,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     if (pData.recentEntitySpamTimestamps[entityType].length > maxSpawns) {
         const violationDetails = {
             playerName: potentialPlayer.nameTag,
-            entityType: entityType,
+            entityType,
             count: pData.recentEntitySpamTimestamps[entityType].length.toString(),
             maxSpawns: maxSpawns.toString(),
             windowMs: windowMs.toString(),

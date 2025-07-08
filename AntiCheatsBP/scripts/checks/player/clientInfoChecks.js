@@ -13,7 +13,6 @@ const defaultMaxAllowedClientRenderDistance = 64;
 /**
  * Checks if a player's reported maximum render distance exceeds the configured allowed limit.
  * This check is typically run periodically (e.g., via main tick loop) or on player spawn/join.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data (used for watched status).
@@ -56,7 +55,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
 
     if (clientRenderDistance > maxAllowed) {
         const violationDetails = {
-            playerName: playerName,
+            playerName,
             reportedDistance: clientRenderDistance.toString(),
             maxAllowed: maxAllowed.toString(),
             devicePlatform: player.clientSystemInfo.platformType?.toString() ?? 'Unknown',

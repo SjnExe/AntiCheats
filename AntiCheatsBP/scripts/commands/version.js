@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !version command, which displays the current version of the AntiCheat addon.
  */
 import { acVersion } from '../config.js';
@@ -18,7 +17,6 @@ export const definition = {
 /**
  * Executes the !version command.
  * Sends a message to the player with the current addon version.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).

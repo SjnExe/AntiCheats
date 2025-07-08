@@ -15,7 +15,6 @@ const DEBUG_LOG_SNIPPET_LENGTH_MENTIONS = 20;
 /**
  * Checks a message for excessive user mentions (e.g., @PlayerName).
  * Considers both the number of unique users mentioned and the frequency of mentions for a single user.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
@@ -95,11 +94,11 @@ export async function checkExcessiveMentions(player, eventData, pData, dependenc
     if (flagReasonTexts.length > 0) {
         const messageSnippetLimit = 75; // This is a local const, might be better at top or from config if shared
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - ELLIPSIS_LENGTH) + '...' : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - ELLIPSIS_LENGTH) }...` : rawMessageContent,
             totalMentionsFound: allMentions.length.toString(),
             uniqueMentionsCount: distinctMentionCount.toString(),
             maxRepeatedMentionCount: maxRepeatCount.toString(),
-            mostRepeatedUser: mostRepeatedUser,
+            mostRepeatedUser,
             distinctUsersSample: Array.from(distinctMentionedUsers).slice(0, DISTINCT_USERS_SAMPLE_LIMIT).join(', '),
             triggerReasons: flagReasonTexts.join('; '),
             originalMessage: rawMessageContent,

@@ -15,7 +15,6 @@ const DEFAULT_AUTMOD_MUTE_DURATION_MS = 600000;   // 10 minutes
 
 /**
  * Formats a duration in milliseconds into a human-readable string.
- *
  * @param {number | Infinity} ms - The duration in milliseconds, or Infinity for permanent.
  * @returns {string} A formatted duration string (e.g., '5m', '1h', 'Permanent').
  */
@@ -51,7 +50,6 @@ function formatDuration(ms) {
 
 /**
  * Formats an AutoMod message template with dynamic context values.
- *
  * @param {string | undefined} template - The message template.
  * @param {object} context - An object containing key-value pairs for placeholders.
  * @returns {string} The formatted message.
@@ -74,7 +72,6 @@ function formatAutomodMessage(template, context) {
 
 /**
  * Internal function to execute a specific AutoMod action.
- *
  * @param {import('@minecraft/server').Player} player - The player to action.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {string} actionType - The type of action (e.g., 'warn', 'kick', 'tempBan') (camelCase).
@@ -99,9 +96,9 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
 
     const baseMessageContext = {
         playerName: player?.nameTag,
-        actionType: actionType,
-        checkType: checkType,
-        flagCount: flagCount,
+        actionType,
+        checkType,
+        flagCount,
         flagThreshold: flagThresholdForRule,
         duration: 'N/A',
         itemTypeId: parameters.itemToRemoveTypeId || 'N/A',
@@ -130,7 +127,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             } catch (e) {
                 playerUtils?.debugLog(`[AutoModManager CRITICAL] Error kicking player ${player?.nameTag}: ${e.stack || e}`, player?.nameTag, dependencies);
                 logDetails = `Failed to kick player ${player?.nameTag}. Check: ${checkType}. Reason: '${kickReason}'. Error: ${e.message}`;
-                logManager?.addLog({ actionType: 'errorAutomodKick', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickReason, details: `Error: ${e.message}`, checkType: checkType }, dependencies);
+                logManager?.addLog({ actionType: 'errorAutomodKick', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickReason, details: `Error: ${e.message}`, checkType }, dependencies);
             }
             break;
         }
@@ -158,14 +155,14 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
                 } catch (e) {
                     playerUtils?.debugLog(`[AutoModManager CRITICAL] Error kicking player ${player?.nameTag} after tempBan: ${e.stack || e}`, player?.nameTag, dependencies);
                     logDetails = `Temp banned player (kick failed). Duration: ${friendlyDurationTempBan}, Check: ${checkType}. Stored Reason: ${banReasonForStorageTemp}. Error: ${e.message}`;
-                    logManager?.addLog({ actionType: 'errorAutomodKick', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickMsgTempBan, details: `Error: ${e.message}`, checkType: checkType }, dependencies);
+                    logManager?.addLog({ actionType: 'errorAutomodKick', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickMsgTempBan, details: `Error: ${e.message}`, checkType }, dependencies);
                     playerUtils?.playSoundForEvent(player, 'automodActionTaken', dependencies);
                 }
                 actionProcessed = true;
             } else {
                 playerUtils?.debugLog(`[AutoModManager CRITICAL] Failed to apply tempBan to ${player?.nameTag} via playerDataManager.addBan.`, player?.nameTag, dependencies);
                 logDetails = `Failed to apply tempBan. Check: ${checkType}. Reason: ${banReasonForStorageTemp}`;
-                logManager?.addLog({ actionType: 'errorAutomodAddBan', adminName: 'AutoMod', targetName: player?.nameTag, reason: banReasonForStorageTemp, details: `Duration: ${parsedDurationMsTempBan}ms`, checkType: checkType }, dependencies);
+                logManager?.addLog({ actionType: 'errorAutomodAddBan', adminName: 'AutoMod', targetName: player?.nameTag, reason: banReasonForStorageTemp, details: `Duration: ${parsedDurationMsTempBan}ms`, checkType }, dependencies);
             }
             break;
         }
@@ -186,14 +183,14 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
                 } catch (e) {
                     playerUtils?.debugLog(`[AutoModManager CRITICAL] Error kicking player ${player?.nameTag} after permBan: ${e.stack || e}`, player?.nameTag, dependencies);
                     logDetails = `Permanently banned player (kick failed). Check: ${checkType}. Stored Reason: ${permBanReasonForStorage}. Error: ${e.message}`;
-                    logManager?.addLog({ actionType: 'errorAutomodKick', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickMsgPermBan, details: `Error: ${e.message}`, checkType: checkType }, dependencies);
+                    logManager?.addLog({ actionType: 'errorAutomodKick', adminName: 'AutoMod', targetName: player?.nameTag, reason: kickMsgPermBan, details: `Error: ${e.message}`, checkType }, dependencies);
                     playerUtils?.playSoundForEvent(player, 'automodActionTaken', dependencies);
                 }
                 actionProcessed = true;
             } else {
                 playerUtils?.debugLog(`[AutoModManager CRITICAL] Failed to apply permBan to ${player?.nameTag} via playerDataManager.addBan.`, player?.nameTag, dependencies);
                 logDetails = `Failed to apply permBan. Check: ${checkType}. Reason: ${permBanReasonForStorage}`;
-                logManager?.addLog({ actionType: 'errorAutomodAddBan', adminName: 'AutoMod', targetName: player?.nameTag, reason: permBanReasonForStorage, details: 'Duration: Infinity', checkType: checkType }, dependencies);
+                logManager?.addLog({ actionType: 'errorAutomodAddBan', adminName: 'AutoMod', targetName: player?.nameTag, reason: permBanReasonForStorage, details: 'Duration: Infinity', checkType }, dependencies);
             }
             break;
         }
@@ -221,7 +218,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             } else {
                 playerUtils?.debugLog(`[AutoModManager CRITICAL] Failed to apply mute to ${player?.nameTag} via playerDataManager.addMute.`, player?.nameTag, dependencies);
                 logDetails = `Failed to apply mute. Duration: ${durationStringMute}, Check: ${checkType}. Reason: ${muteReasonForStorage}`;
-                logManager?.addLog({ actionType: 'errorAutomodAddMute', adminName: 'AutoMod', targetName: player?.nameTag, reason: muteReasonForStorage, details: `Duration: ${parsedDurationMsMute}ms`, checkType: checkType }, dependencies);
+                logManager?.addLog({ actionType: 'errorAutomodAddMute', adminName: 'AutoMod', targetName: player?.nameTag, reason: muteReasonForStorage, details: `Duration: ${parsedDurationMsMute}ms`, checkType }, dependencies);
             }
             break;
         }
@@ -275,7 +272,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             } catch (e) {
                 playerUtils?.debugLog(`[AutoModManager CRITICAL] Error during removeIllegalItem for ${player?.nameTag} (${itemTypeIdToRemove}): ${e.stack || e}`, player?.nameTag, dependencies);
                 logDetails = `Error removing item ${itemTypeIdToRemove} from ${player?.nameTag}: ${e.message}`;
-                logManager?.addLog({ actionType: 'errorAutomodRemoveItem', adminName: 'AutoMod', targetName: player?.nameTag, reason: `Item: ${itemTypeIdToRemove}`, details: `Error: ${e.message}`, checkType: checkType }, dependencies);
+                logManager?.addLog({ actionType: 'errorAutomodRemoveItem', adminName: 'AutoMod', targetName: player?.nameTag, reason: `Item: ${itemTypeIdToRemove}`, details: `Error: ${e.message}`, checkType }, dependencies);
             }
             break;
         }
@@ -313,7 +310,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
                 playerUtils?.debugLog(`[AutoModManager CRITICAL] Error teleporting player ${player?.nameTag} for teleportSafe: ${e.stack || e}`, player?.nameTag, dependencies);
                 playerUtils?.warnPlayer(player, `Failed to teleport: ${e.message}`, dependencies);
                 logDetails = `Failed to teleport player ${player?.nameTag} to ${teleportTargetDesc}. Check: ${checkType}. Error: ${e.message}`;
-                logManager?.addLog({ actionType: 'errorAutomodTeleport', adminName: 'AutoMod', targetName: player?.nameTag, reason: `Target: ${teleportTargetDesc}`, details: `Error: ${e.message}`, checkType: checkType }, dependencies);
+                logManager?.addLog({ actionType: 'errorAutomodTeleport', adminName: 'AutoMod', targetName: player?.nameTag, reason: `Target: ${teleportTargetDesc}`, details: `Error: ${e.message}`, checkType }, dependencies);
             }
             break;
         }
@@ -340,8 +337,8 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             duration: durationForLog,
             reason: finalReasonForLog,
             details: logDetails,
-            checkType: checkType,
-            actionParams: { ...parameters, flagCount: flagCount },
+            checkType,
+            actionParams: { ...parameters, flagCount },
         }, dependencies);
 
         const adminContext = { ...baseMessageContext };
@@ -360,7 +357,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
                 targetName: player?.nameTag,
                 targetId: player?.id,
                 details: logDetails,
-                checkType: checkType,
+                checkType,
                 actionParams: parameters,
             }, dependencies);
         }
@@ -370,7 +367,6 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
 
 /**
  * Processes AutoMod actions for a player based on their current flags for a specific check type.
- *
  * @param {import('@minecraft/server').Player} player - The player to process actions for.
  * @param {import('../types.js').PlayerAntiCheatData} pData - The player's AntiCheat data.
  * @param {string} checkType - The specific check type (e.g., 'movementFlyHover', 'playerAntiGmc') to evaluate rules for.

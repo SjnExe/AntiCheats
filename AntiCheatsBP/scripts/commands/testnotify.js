@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !testnotify command.
  * Sends a test notification message to all online admins/owners.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments (the message to send).
@@ -34,7 +33,7 @@ export function execute(player, args, dependencies) {
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'testNotificationSent',
             details: `Sent test notification: "${messageToSend}". Notified count (approx): ${notifiedCount ?? 'N/A'}`,
         }, dependencies);
@@ -44,7 +43,7 @@ export function execute(player, args, dependencies) {
         console.error(`[TestNotifyCommand CRITICAL] Error sending test notification from ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorTestNotification',
             context: 'TestNotifyCommand.execute',
             details: `Failed to send test notification: ${error.message}`,

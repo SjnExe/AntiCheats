@@ -14,7 +14,6 @@ export const definition = {
 
 /**
  * Executes the !tpacancel command.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playerName].
@@ -31,7 +30,7 @@ export function execute(player, args, dependencies) {
         return;
     }
     if (!dependencies.commandSettings?.tpacancel?.enabled) {
-        player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
+        player.sendMessage(getString('command.error.unknownCommand', { prefix, commandName: definition.name }));
         return;
     }
 

@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !kick command.
  * Removes a specified player from the server with an optional reason.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [reason].
@@ -31,7 +30,7 @@ export function execute(player, args, dependencies) {
     const reason = parsedArgs.reason;
 
     if (!targetPlayerName) {
-        player.sendMessage(getString('command.kick.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.kick.usage', { prefix }));
         return;
     }
 
@@ -47,24 +46,24 @@ export function execute(player, args, dependencies) {
     }
 
     try {
-        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: adminName, reason: reason });
+        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: adminName, reason });
         foundPlayer.kick(kickMessageToTarget);
 
-        player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason: reason }));
+        player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason }));
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
         const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: adminName, reason: reason });
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName, reason });
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         }
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerKicked',
             targetName: foundPlayer.nameTag,
             targetId: foundPlayer.id,
-            reason: reason,
+            reason,
         }, dependencies);
 
     } catch (e) {
@@ -74,7 +73,7 @@ export function execute(player, args, dependencies) {
         logManager?.addLog({
             actionType: 'errorKickCommand',
             context: 'KickCommand.execute',
-            adminName: adminName,
+            adminName,
             targetName: targetPlayerName,
             targetId: foundPlayer?.id,
             details: { errorMessage: e.message, reasonAttempted: reason },

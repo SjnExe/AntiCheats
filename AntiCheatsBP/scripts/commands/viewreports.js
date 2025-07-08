@@ -19,7 +19,6 @@ export const definition = {
 
 /**
  * Formats a single report entry for display.
- *
  * @param {import('../types.js').ReportEntry} report - The report entry.
  * @param {import('../types.js').Dependencies} dependencies - For getString.
  * @returns {string} Formatted string for one report.
@@ -28,16 +27,16 @@ function formatReportEntry(report, dependencies) {
     const { getString, playerUtils } = dependencies;
     const timeAgo = playerUtils?.formatTimeAgo(report.timestamp) ?? getString('common.value.unknown');
 
-    let entry = getString('command.viewreports.entry.id', { reportId: report.id, timeAgo: timeAgo }) + '\n';
-    entry += getString('command.viewreports.entry.reporter', { reporterName: report.reporterName }) + '\n';
-    entry += getString('command.viewreports.entry.reported', { reportedName: report.reportedName }) + '\n';
-    entry += getString('command.viewreports.entry.reason', { reason: report.reason }) + '\n';
-    entry += getString('command.viewreports.entry.status', { status: report.status }) + '\n';
+    let entry = `${getString('command.viewreports.entry.id', { reportId: report.id, timeAgo }) }\n`;
+    entry += `${getString('command.viewreports.entry.reporter', { reporterName: report.reporterName }) }\n`;
+    entry += `${getString('command.viewreports.entry.reported', { reportedName: report.reportedName }) }\n`;
+    entry += `${getString('command.viewreports.entry.reason', { reason: report.reason }) }\n`;
+    entry += `${getString('command.viewreports.entry.status', { status: report.status }) }\n`;
     if (report.assignedAdmin) {
-        entry += getString('command.viewreports.entry.assigned', { assignedAdmin: report.assignedAdmin }) + '\n';
+        entry += `${getString('command.viewreports.entry.assigned', { assignedAdmin: report.assignedAdmin }) }\n`;
     }
     if (report.resolutionDetails) {
-        entry += getString('command.viewreports.entry.resolution', { resolutionDetails: report.resolutionDetails }) + '\n';
+        entry += `${getString('command.viewreports.entry.resolution', { resolutionDetails: report.resolutionDetails }) }\n`;
     }
     entry += getString('command.viewreports.entry.separator');
     return entry;
@@ -45,7 +44,6 @@ function formatReportEntry(report, dependencies) {
 
 /**
  * Executes the !viewreports command.
- *
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments.
  * @param {import('../types.js').Dependencies} dependencies - Command dependencies.
@@ -102,32 +100,32 @@ export function execute(player, args, dependencies) {
     if (paginatedReports.length === 0 && pageNumber > 1) {
         player.sendMessage(getString('command.viewreports.noReportsOnPage', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString() }));
         return;
-    } else if (paginatedReports.length === 0) {
+    } if (paginatedReports.length === 0) {
         player.sendMessage(getString('command.viewreports.noReportsFound'));
         return;
     }
 
     let message = filterValue ?
-        getString('command.viewreports.header.filtered', { filterType: filterType, filterValue: filterValue, pageNumber: pageNumber.toString(), totalPages: totalPages.toString(), totalReports: reportsToShow.length.toString() }) :
+        getString('command.viewreports.header.filtered', { filterType, filterValue, pageNumber: pageNumber.toString(), totalPages: totalPages.toString(), totalReports: reportsToShow.length.toString() }) :
         getString('command.viewreports.header.all', { pageNumber: pageNumber.toString(), totalPages: totalPages.toString(), totalReports: reportsToShow.length.toString() });
     message += '\n';
 
     paginatedReports.forEach(report => {
-        message += formatReportEntry(report, dependencies) + '\n';
+        message += `${formatReportEntry(report, dependencies) }\n`;
     });
 
     if (totalPages > pageNumber) {
-        message += getString('command.viewreports.footer.nextPage', { nextPageCommand: `${prefix}viewreports page ${pageNumber + 1}${filterValue ? ' ' + filterValue : ''}` }) + '\n';
+        message += `${getString('command.viewreports.footer.nextPage', { nextPageCommand: `${prefix}viewreports page ${pageNumber + 1}${filterValue ? ` ${ filterValue}` : ''}` }) }\n`;
     }
     if (pageNumber > 1) {
-        message += getString('command.viewreports.footer.prevPage', { prevPageCommand: `${prefix}viewreports page ${pageNumber - 1}${filterValue ? ' ' + filterValue : ''}` }) + '\n';
+        message += `${getString('command.viewreports.footer.prevPage', { prevPageCommand: `${prefix}viewreports page ${pageNumber - 1}${filterValue ? ` ${ filterValue}` : ''}` }) }\n`;
     }
 
     player.sendMessage(message.trim());
     playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
     logManager?.addLog({
-        adminName: adminName,
+        adminName,
         actionType: 'reportsViewed',
         details: `Viewed reports. Filter: ${filterType}='${filterValue}', Page: ${pageNumber}/${totalPages}.`,
         context: 'ViewReportsCommand.execute',

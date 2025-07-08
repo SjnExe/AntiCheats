@@ -8,7 +8,6 @@ import * as mc from '@minecraft/server';
  * Checks if a player is attempting to break an "unbreakable" block (e.g., bedrock)
  * when not in Creative mode.
  * This function should be called from a `PlayerBreakBlockBeforeEvent` handler.
- *
  * @async
  * @param {mc.Player} player - The player instance.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.
@@ -66,7 +65,6 @@ export async function checkBreakUnbreakable(player, pData, eventData, dependenci
  * This function is called from a `PlayerBreakBlockAfterEvent` handler and relies on timing information
  * (e.g., `pData.breakStartTickGameTime`, `pData.expectedBreakDurationTicks`) being set in `pData`
  * by the `PlayerBreakBlockBeforeEvent` handler (which should call `getExpectedBreakTicks` from `itemUtils.js`).
- *
  * @async
  * @param {mc.Player} player - The player instance.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.

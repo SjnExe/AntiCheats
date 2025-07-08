@@ -12,7 +12,6 @@ const NUKER_DEBUG_EVENT_SUMMARY_COUNT = 5;
  * Checks for Nuker-like behavior by analyzing the rate of block breaking.
  * It filters `pData.blockBreakEvents` to a configured time window and flags if the count exceeds a threshold.
  * This check is typically run on a tick-based interval.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data, expected to contain `blockBreakEvents`.

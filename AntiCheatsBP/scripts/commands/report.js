@@ -20,7 +20,6 @@ export const definition = {
 
 /**
  * Executes the report command.
- *
  * @param {import('@minecraft/server').Player} player - The player executing the command.
  * @param {string[]} args - The command arguments (target player name and reason).
  * @param {import('../types.js').Dependencies} dependencies - The standard command dependencies.
@@ -55,7 +54,7 @@ export function execute(player, args, dependencies) {
     const newReport = reportManager.addReport(reporterPlayer, reportedPlayerName, reason, dependencies);
 
     if (newReport) {
-        playerUtils.sendMessage(reporterPlayer, getString('command.report.success', { reportedPlayerName: reportedPlayerName, reportId: newReport.id }));
+        playerUtils.sendMessage(reporterPlayer, getString('command.report.success', { reportedPlayerName, reportId: newReport.id }));
         logManager.addLog({
             actionType: 'commandReportExecuted',
             adminName: reporterPlayer.nameTag,

@@ -1,6 +1,5 @@
 /**
  * /**
- *
  * @file Defines the !endlock command for administrators to manage End dimension access.
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
@@ -18,7 +17,6 @@ export const definition = {
 /**
  * Executes the !endlock command.
  * Allows administrators to lock, unlock, or check the status of The End dimension.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|status].
@@ -44,7 +42,7 @@ export function execute(player, args, dependencies) {
                     player?.sendMessage(getString('command.endlock.locked'));
                     logManager?.addLog({ adminName, actionType: 'dimensionLockEnabled', targetName: 'The End', details: 'The End dimension locked' }, dependencies);
                     if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                        const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.locked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
                     playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
@@ -61,7 +59,7 @@ export function execute(player, args, dependencies) {
                     player?.sendMessage(getString('command.endlock.unlocked'));
                     logManager?.addLog({ adminName, actionType: 'dimensionLockDisabled', targetName: 'The End', details: 'The End dimension unlocked' }, dependencies);
                     if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                        const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName: adminName, dimensionNamePlaceholder: dimensionNameForMsg });
+                        const baseNotifyMsg = getString('command.dimensionLock.notify.unlocked', { adminName, dimensionNamePlaceholder: dimensionNameForMsg });
                         playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
                     }
                     playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
@@ -86,7 +84,7 @@ export function execute(player, args, dependencies) {
         console.error(`[EndlockCommand CRITICAL] Error for ${adminName} executing '${subCommand}': ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorDimensionLockCommand',
             context: `EndlockCommand.execute.${subCommand}`,
             targetName: 'The End',

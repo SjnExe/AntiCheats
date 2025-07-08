@@ -18,7 +18,6 @@ const defaultNameSpoofMinChangeIntervalTicks = 200;
  * regarding length, disallowed characters, and rapid changes.
  * Updates `pData.lastKnownNameTag` and `pData.lastNameTagChangeTick` if a name change is detected.
  * This check should be run periodically for all online players (e.g., via main tick loop).
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

@@ -22,7 +22,6 @@ const violationDetailDecimalPlaces = 2;
  * Checks if a player is attacking an entity from an excessive distance (Reach).
  * Calculates the distance between the player's eye location and the target entity's bounding box,
  * then compares it against configured maximums based on game mode, with a buffer.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The attacking player instance.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data for the attacker.

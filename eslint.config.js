@@ -130,17 +130,19 @@ export default [
                     FunctionDeclaration: true,
                     MethodDefinition: true,
                     ClassDeclaration: true,
-                    ArrowFunctionExpression: true,
-                    FunctionExpression: true,
+                    ArrowFunctionExpression: true, // Checks arrow functions
+                    FunctionExpression: true
                 },
                 contexts: [
-                    'ExportDefaultDeclaration',
-                    'ExportNamedDeclaration',
-                    // Consider adding 'VariableDeclaration' if exported consts with types need full JSDoc blocks
-                    // For now, @type inline or above is often used for consts.
-                    // Guidelines: "Mandatory for all exported functions, classes, and significant constants."
-                    // For exported constants, a separate rule or manual check might be better if they only need @type.
-                    // This rule will enforce a full JSDoc block for them if they are ArrowFunctionExpression etc.
+                    'ExportDefaultDeclaration', // Ensures default exports are documented
+                    'ExportNamedDeclaration',   // Ensures named exports are documented
+                    // The 'ExportNamedDeclaration' context will cover exported variables, functions, classes.
+                    // For variable declarators that are exported, this context is sufficient.
+                    // Specific options for how these are handled (e.g. inline comments) can be fine-tuned
+                    // if needed, but the primary goal is to ensure they are documented.
+                    // The `require` options above specify *what kind* of declarations need docs.
+                    // `ExportNamedDeclaration` ensures that if those kinds are exported, they are checked.
+                    // It also implicitly covers exported variables.
                 ],
                 publicOnly: false,
                 checkConstructors: true,

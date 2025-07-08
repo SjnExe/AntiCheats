@@ -14,7 +14,6 @@ let sortedRankDefinitions = [];
 /**
  * Initializes the rank system by sorting rank definitions and generating the `permissionLevels` mapping.
  * This function should be called once at script startup via `initializeRanks`.
- *
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 function initializeRankSystem(dependencies) {
@@ -58,7 +57,6 @@ function initializeRankSystem(dependencies) {
 
 /**
  * Internal helper to get the player's highest priority rank definition and effective permission level.
- *
  * @param {import('@minecraft/server').Player} player - The player instance.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {{ rankDefinition: import('./ranksConfig.js').RankDefinition | null, permissionLevel: number, rankId: string | null }}
@@ -127,7 +125,6 @@ function getPlayerRankAndPermissions(player, dependencies) {
 
 /**
  * Gets the effective permission level for a player.
- *
  * @param {import('@minecraft/server').Player} player - The player.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {number} The player's permission level.
@@ -139,7 +136,6 @@ export function getPlayerPermissionLevel(player, dependencies) {
 
 /**
  * Gets the formatted chat prefix, name color, and message color for a player based on their rank.
- *
  * @param {import('@minecraft/server').Player} player - The player.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  * @returns {{fullPrefix: string, nameColor: string, messageColor: string}} The chat formatting elements.
@@ -160,7 +156,6 @@ export function getPlayerRankFormattedChatElements(player, dependencies) {
 
 /**
  * Updates a player's nametag based on their current rank and vanish status.
- *
  * @param {import('@minecraft/server').Player} player - The player whose nametag to update.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
@@ -242,7 +237,6 @@ export function updatePlayerNametag(player, dependencies) {
 
 /**
  * Initializes the rank system. This must be called from `main.js` after all dependencies are available.
- *
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */
 export function initializeRanks(dependencies) {
@@ -251,7 +245,6 @@ export function initializeRanks(dependencies) {
 
 /**
  * Retrieves a rank definition object by its unique ID.
- *
  * @param {string} rankId - The ID (case-insensitive) of the rank to retrieve.
  * @returns {import('./ranksConfig.js').RankDefinition | undefined} The rank definition object if found, otherwise undefined.
  */
@@ -266,7 +259,6 @@ export function getRankById(rankId) {
 /**
  * Checks if an issuer has permission to perform an administrative action on a target player.
  * This considers rank hierarchy (e.g., Admins cannot action Owners).
- *
  * @param {import('@minecraft/server').Player} issuerPlayer - The player attempting the action.
  * @param {import('@minecraft/server').Player} targetPlayer - The player being targeted by the action.
  * @param {string} actionContext - A string describing the action (e.g., 'ban', 'kick', 'mute') for logging/messaging.
@@ -305,7 +297,7 @@ export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, 
         return {
             allowed: false,
             messageKey: `command.${actionContext}.permissionDeniedOwner`, // e.g., command.ban.permissionDeniedOwner
-            messageParams: { targetName: targetName },
+            messageParams: { targetName },
         };
     }
 
@@ -320,14 +312,14 @@ export function canAdminActionTarget(issuerPlayer, targetPlayer, actionContext, 
             return {
                 allowed: false,
                 messageKey: `command.${actionContext}.permissionDeniedAdminSameRank`, // e.g., command.ban.permissionDeniedAdminSameRank
-                messageParams: { targetName: targetName },
+                messageParams: { targetName },
             };
         }
         // If issuer is Mod/Member (perm level > adminPerm), they cannot action an Admin.
         return {
             allowed: false,
             messageKey: `command.${actionContext}.permissionDeniedAdminHigherRank`, // e.g., command.ban.permissionDeniedAdminHigherRank
-            messageParams: { targetName: targetName },
+            messageParams: { targetName },
         };
     }
 

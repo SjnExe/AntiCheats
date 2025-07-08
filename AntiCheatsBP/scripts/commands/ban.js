@@ -13,7 +13,6 @@ export const definition = {
 
 /**
  * Executes the ban command.
- *
  * @async
  * @param {import('@minecraft/server').Player | null} player - The player issuing the command, or null if system-invoked.
  * @param {string[]} args - The command arguments: <playername> [duration] [reason].
@@ -40,7 +39,7 @@ export function execute(
     let reason = parsedArgs.reason;
 
     if (!targetPlayerName) {
-        const usageMessage = getString('command.ban.usage', { prefix: prefix });
+        const usageMessage = getString('command.ban.usage', { prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {
@@ -109,7 +108,7 @@ export function execute(
             getString('command.ban.kickMessage.header'),
             getString('command.ban.kickMessage.reason', { reason: actualReason }),
             getString('command.ban.kickMessage.bannedBy', { bannedBy: actualBannedBy }),
-            getString('command.ban.kickMessage.duration', { durationDisplay: durationDisplay }),
+            getString('command.ban.kickMessage.duration', { durationDisplay }),
         ];
         if (config?.discordLink && config.discordLink.trim() !== '' && !config.discordLink.includes('example.com')) {
             kickMessageParts.push(getString('command.ban.kickMessage.appeal', { discordLink: config.discordLink }));
@@ -132,7 +131,7 @@ export function execute(
 
         const targetPData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
         if (config?.notifyOnAdminUtilCommandUsage !== false || (isAutoModAction && config?.notifyOnAutoModAction !== false)) {
-            const baseAdminNotifyMsg = getString('command.ban.notify.banned', { bannedBy: actualBannedBy, targetName: targetOnlinePlayer.nameTag, durationDisplay: durationDisplay, reason: actualReason });
+            const baseAdminNotifyMsg = getString('command.ban.notify.banned', { bannedBy: actualBannedBy, targetName: targetOnlinePlayer.nameTag, durationDisplay, reason: actualReason });
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         }
 

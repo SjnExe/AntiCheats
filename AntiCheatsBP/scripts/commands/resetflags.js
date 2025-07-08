@@ -15,7 +15,6 @@ export const definition = {
 
 /**
  * Executes the resetflags command.
- *
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName].
  * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
@@ -26,7 +25,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config.prefix;
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.resetflags.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.resetflags.usage', { prefix }));
         return;
     }
     const targetPlayerName = args[0];

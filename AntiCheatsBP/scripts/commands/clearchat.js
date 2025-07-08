@@ -19,7 +19,6 @@ export const definition = {
 /**
  * Executes the !clearchat command.
  * Sends a large number of empty messages to effectively clear the chat screen for all players.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).
@@ -67,12 +66,12 @@ export function execute(player, _args, dependencies) {
 
     try {
         if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const baseNotifyMsg = getString('command.clearchat.notify.cleared', { adminName: adminName });
+            const baseNotifyMsg = getString('command.clearchat.notify.cleared', { adminName });
             playerUtils?.notifyAdmins(baseNotifyMsg, dependencies, player, null);
         }
 
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'chatCleared',
             targetName: 'Global',
             details: `Chat cleared by ${adminName} (${linesToClear} lines attempted).`,

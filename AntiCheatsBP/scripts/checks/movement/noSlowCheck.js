@@ -23,7 +23,6 @@ const DEFAULT_NOSLOW_GENERAL_TOLERANCE_PERCENT = 0.05;
  * Slowing actions considered: Eating/Drinking, Charging Bow, Using Shield, Sneaking.
  * Takes into account Speed effect and a configurable tolerance.
  * This check is typically run every tick.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

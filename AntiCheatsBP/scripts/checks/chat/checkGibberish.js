@@ -13,7 +13,6 @@ const DEBUG_LOG_GIBBERISH_SNIPPET_LENGTH = 20;
 
 /**
  * Checks a message for gibberish patterns based on character ratios and consecutive consonants.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
@@ -119,7 +118,7 @@ export async function checkGibberish(player, eventData, pData, dependencies) {
     if (flagReasons.length > 0) {
         const messageSnippetLimit = 50; // This is a local const, might be better at top or from config if shared
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH) + '...' : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH) }...` : rawMessageContent,
             vowelRatio: actualVowelRatio.toFixed(2),
             alphaRatio: actualAlphaRatio.toFixed(2),
             maxConsecutiveConsonantsFound: overallMaxConsecutiveConsonants.toString(),

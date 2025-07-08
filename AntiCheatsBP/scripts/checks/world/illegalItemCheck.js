@@ -7,7 +7,6 @@
  * Checks if a player is attempting to use or place an item that is on a configured ban list.
  * If a banned item action is detected, the event is cancelled, and configured actions are executed.
  * This check is typically called from `ItemUseBeforeEvent`, `ItemUseOnBeforeEvent`, or `PlayerPlaceBlockBeforeEvent` handlers.
- *
  * @async
  * @param {mc.Player} player - The player performing the action.
  * @param {mc.ItemStack | undefined} itemStack - The ItemStack involved in the action. Can be undefined if player's hand is empty.

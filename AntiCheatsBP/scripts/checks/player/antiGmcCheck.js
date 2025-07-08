@@ -14,7 +14,6 @@ import * as mc from '@minecraft/server';
  * If unauthorized Creative Mode is detected, it flags the player and can optionally
  * switch their gamemode back to a configured default (e.g., survival).
  * This check is typically run periodically for all players (e.g., via main tick loop).
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data.

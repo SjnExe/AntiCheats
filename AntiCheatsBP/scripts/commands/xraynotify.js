@@ -15,7 +15,6 @@ export const definition = {
  * Executes the !xraynotify command.
  * Allows administrators to toggle their personal X-Ray ore mining notifications.
  * Preferences are stored using a player tag.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [on|off|toggle|status].
@@ -72,14 +71,14 @@ export function execute(player, args, dependencies) {
             }
             player.sendMessage(getString(statusKey));
             logManager?.addLog({
-                adminName: adminName,
+                adminName,
                 actionType: 'xrayNotifyStatusChecked',
                 details: `Checked own X-Ray notification status: ${getString(statusKey)}`,
             }, dependencies);
             return;
         }
         default:
-            player.sendMessage(getString('command.xraynotify.usage', { prefix: prefix }));
+            player.sendMessage(getString('command.xraynotify.usage', { prefix }));
             return;
     }
 
@@ -94,7 +93,7 @@ export function execute(player, args, dependencies) {
         const logActionType = newPreference ? 'xrayNotifyEnabledUser' : 'xrayNotifyDisabledUser';
         playerUtils?.debugLog(`[XrayNotifyCommand] Admin ${adminName} ${logMessageAction} X-Ray notifications. New preference: ${newPreference}`, adminName, dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: logActionType,
             details: `X-Ray notifications ${logMessageAction}`,
         }, dependencies);
@@ -104,7 +103,7 @@ export function execute(player, args, dependencies) {
         console.error(`[XrayNotifyCommand CRITICAL] Error setting X-Ray notification preference for ${adminName}: ${error.stack || error}`);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'errorXrayNotifyCommand',
             context: 'XrayNotifyCommand.setPreference',
             details: `Failed to set X-Ray notification preference to ${newPreference}: ${error.message}`,

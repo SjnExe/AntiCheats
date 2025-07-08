@@ -14,7 +14,6 @@ const DEBUG_LOG_UNICODE_SNIPPET_LENGTH = 20;
 
 /**
  * Checks a message for Unicode abuse, specifically excessive combining diacritical marks.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
@@ -68,7 +67,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     if (baseCharCount === 0 && diacriticCount > 0) {
         if (diacriticCount >= absoluteMaxDiacritics || (maxDiacriticRatio <= 1.0 && diacriticCount > 0)) { // 1.0 is not magic
             const violationDetails = {
-                messageSnippet: rawMessageContent.length > MESSAGE_SNIPPET_LIMIT_UNICODE ? rawMessageContent.substring(0, MESSAGE_SNIPPET_LIMIT_UNICODE - LOCAL_ELLIPSIS_LENGTH_UNICODE) + '...' : rawMessageContent,
+                messageSnippet: rawMessageContent.length > MESSAGE_SNIPPET_LIMIT_UNICODE ? `${rawMessageContent.substring(0, MESSAGE_SNIPPET_LIMIT_UNICODE - LOCAL_ELLIPSIS_LENGTH_UNICODE) }...` : rawMessageContent,
                 diacriticCount: diacriticCount.toString(),
                 baseCharCount: baseCharCount.toString(),
                 calculatedRatio: 'Infinity (or 1.0 if base is 0)',
@@ -109,7 +108,7 @@ export async function checkUnicodeAbuse(player, eventData, pData, dependencies) 
     if (reason) {
         const messageSnippetLimit = 50; // This is okay as it's a const
         const violationDetails = {
-            messageSnippet: rawMessageContent.length > messageSnippetLimit ? rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_UNICODE) + '...' : rawMessageContent,
+            messageSnippet: rawMessageContent.length > messageSnippetLimit ? `${rawMessageContent.substring(0, messageSnippetLimit - LOCAL_ELLIPSIS_LENGTH_UNICODE) }...` : rawMessageContent,
             diacriticCount: diacriticCount.toString(),
             baseCharCount: baseCharCount.toString(),
             calculatedRatio: actualRatio.toFixed(2),

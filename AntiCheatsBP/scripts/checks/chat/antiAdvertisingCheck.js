@@ -13,7 +13,6 @@
  * It first attempts to use advanced regex-based detection if enabled and configured.
  * If not, or if no advanced matches are found, it falls back to simple pattern matching.
  * Whitelisting is supported for advanced regex detection.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player who sent the message.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data containing the message.

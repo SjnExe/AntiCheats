@@ -12,7 +12,6 @@ const defaultMaxCpsThreshold = 20;
 
 /**
  * Checks if a player is clicking or attacking at an abnormally high rate (CPS).
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance to check.
  * @param {PlayerAntiCheatData} pData - Player-specific anti-cheat data, containing `attackEvents`.

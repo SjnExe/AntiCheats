@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !tpaccept command.
  * Allows a player to accept a pending TPA request made to them.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command (the one accepting).
  * @param {string[]} args - Command arguments: [playerName] (optional, name of player whose request to accept).
@@ -31,7 +30,7 @@ export async function execute(player, args, dependencies) {
         return;
     }
     if (!dependencies.commandSettings?.tpaccept?.enabled) {
-        player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
+        player.sendMessage(getString('command.error.unknownCommand', { prefix, commandName: definition.name }));
         return;
     }
 
@@ -64,7 +63,7 @@ export async function execute(player, args, dependencies) {
             return reqOnline?.nameTag ?? r.requesterName;
         }).join(', ');
         player.sendMessage(getString('command.tpaccept.pendingFrom', { playerNames: requesterNames }));
-        player.sendMessage(getString('command.tpaccept.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.tpaccept.usage', { prefix }));
         return;
     }
 

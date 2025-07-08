@@ -17,7 +17,6 @@ export const definition = {
  * Executes the !listranks command.
  * Displays a list of all defined ranks, their properties (ID, name, permission level, priority),
  * conditions for assignment, and basic formatting (chat prefix, nametag).
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} _args - Command arguments (not used in this command).
@@ -33,7 +32,7 @@ export function execute(player, _args, dependencies) {
         return;
     }
 
-    let message = getString('command.listranks.header') + '\n';
+    let message = `${getString('command.listranks.header') }\n`;
     const sortedRanks = [...allRankDefinitions].sort((a, b) => {
         const priorityA = a.priority ?? Infinity;
         const priorityB = b.priority ?? Infinity;
@@ -45,10 +44,10 @@ export function execute(player, _args, dependencies) {
     });
 
     for (const rankDef of sortedRanks) {
-        message += getString('command.listranks.rank.id', { id: rankDef.id }) + '\n';
-        message += getString('command.listranks.rank.name', { name: rankDef.name }) + '\n';
-        message += getString('command.listranks.rank.permLevel', { permLevel: rankDef.permissionLevel.toString() }) + '\n';
-        message += getString('command.listranks.rank.priority', { priority: (rankDef.priority ?? 'N/A').toString() }) + '\n';
+        message += `${getString('command.listranks.rank.id', { id: rankDef.id }) }\n`;
+        message += `${getString('command.listranks.rank.name', { name: rankDef.name }) }\n`;
+        message += `${getString('command.listranks.rank.permLevel', { permLevel: rankDef.permissionLevel.toString() }) }\n`;
+        message += `${getString('command.listranks.rank.priority', { priority: (rankDef.priority ?? 'N/A').toString() }) }\n`;
 
         const conditionStrings = [];
         if (rankDef.conditions && rankDef.conditions.length > 0) {
@@ -66,13 +65,13 @@ export function execute(player, _args, dependencies) {
         if (conditionStrings.length === 0) {
             conditionStrings.push(getString('command.listranks.condition.none'));
         }
-        message += getString('command.listranks.rank.conditions', { conditions: conditionStrings.join(', ') }) + '\n';
+        message += `${getString('command.listranks.rank.conditions', { conditions: conditionStrings.join(', ') }) }\n`;
 
         const chatPrefixText = rankDef.chatFormatting?.prefixText?.replace(/§[0-9a-fk-or]/gi, '') || getString('command.listranks.formatting.default');
-        message += getString('command.listranks.rank.chatPrefix', { prefix: chatPrefixText.trim() || getString('common.value.notAvailable') }) + '\n';
+        message += `${getString('command.listranks.rank.chatPrefix', { prefix: chatPrefixText.trim() || getString('common.value.notAvailable') }) }\n`;
 
         const nametagText = rankDef.nametagPrefix?.replace(/§[0-9a-fk-or]/gi, '').replace(/\\n/g, ' ').trim() || getString('command.listranks.formatting.default');
-        message += getString('command.listranks.rank.nametag', { nametag: nametagText || getString('common.value.notAvailable') }) + '\n\n';
+        message += `${getString('command.listranks.rank.nametag', { nametag: nametagText || getString('common.value.notAvailable') }) }\n\n`;
     }
 
     player.sendMessage(message.trim());
@@ -80,7 +79,7 @@ export function execute(player, _args, dependencies) {
 
     try {
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'ranksListed',
             details: `Listed all ${sortedRanks.length} ranks.`,
         }, dependencies);

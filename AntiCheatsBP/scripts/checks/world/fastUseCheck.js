@@ -7,7 +7,6 @@
  * Checks for overly fast item usage based on configured cooldowns for specific item types.
  * Timestamps of item usage are stored in `pData.itemUseTimestamps`.
  * This check is typically called from an `ItemUseBeforeEvent` or `ItemUseOnBeforeEvent` handler.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player instance using the item.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - Player-specific anti-cheat data.

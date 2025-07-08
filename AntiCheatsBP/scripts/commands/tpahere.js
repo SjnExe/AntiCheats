@@ -17,7 +17,6 @@ export const definition = {
 /**
  * Executes the !tpahere command.
  * Initiates a teleport request from the command issuer, asking a target player to teleport to the issuer's location.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command (requester).
  * @param {string[]} args - Command arguments: [playerName].
@@ -34,12 +33,12 @@ export function execute(player, args, dependencies) {
         return;
     }
     if (!dependencies.commandSettings?.tpahere?.enabled) {
-        player.sendMessage(getString('command.error.unknownCommand', { prefix: prefix, commandName: definition.name }));
+        player.sendMessage(getString('command.error.unknownCommand', { prefix, commandName: definition.name }));
         return;
     }
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.tpahere.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.tpahere.usage', { prefix }));
         return;
     }
 
@@ -80,9 +79,9 @@ export function execute(player, args, dependencies) {
     } else if (addResult && typeof addResult === 'object' && 'requestId' in addResult) {
         const request = /** @type {import('../types.js').TpaRequest} */ (addResult);
         const timeoutSeconds = config?.tpaRequestTimeoutSeconds ?? DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS;
-        player.sendMessage(getString('command.tpahere.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix: prefix }));
+        player.sendMessage(getString('command.tpahere.requestSent', { playerName: targetPlayer.nameTag, timeoutSeconds: timeoutSeconds.toString(), prefix }));
 
-        const actionBarMessage = getString('tpa.notify.actionBar.requestYouToThem', { requestingPlayerName: requesterName, prefix: prefix });
+        const actionBarMessage = getString('tpa.notify.actionBar.requestYouToThem', { requestingPlayerName: requesterName, prefix });
         try {
             targetPlayer.onScreenDisplay.setActionBar(actionBarMessage);
         } catch (e) {

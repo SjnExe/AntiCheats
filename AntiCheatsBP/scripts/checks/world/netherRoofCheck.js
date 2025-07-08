@@ -6,7 +6,6 @@ import * as mc from '@minecraft/server';
 /**
  * Checks if a player is on top of the Nether roof based on their Y-coordinate.
  * This check is typically run periodically for players in the Nether dimension.
- *
  * @async
  * @param {mc.Player} player - The player to check.
  * @param {import('../../types.js').PlayerAntiCheatData} pData - The player's anti-cheat data.

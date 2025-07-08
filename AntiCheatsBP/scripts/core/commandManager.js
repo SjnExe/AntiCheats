@@ -13,7 +13,6 @@ export const commandExecutionMap = new Map();
 
 /**
  * Loads or reloads command definitions and execution functions from the commandRegistry.
- *
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies, used for logging.
  */
 export function initializeCommands(dependencies) {
@@ -66,7 +65,6 @@ export function initializeCommands(dependencies) {
 
 /**
  * Registers a new command dynamically. (Currently a stub for future expansion)
- *
  * @param {import('../types.js').CommandModule} commandModule - The command module to register.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
  */
@@ -83,7 +81,6 @@ export function registerCommandInternal(commandModule, dependencies) {
 
 /**
  * Unregisters a command dynamically. (Currently a stub for future expansion)
- *
  * @param {string} commandName - The name of the command to unregister.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
  */
@@ -104,7 +101,6 @@ export function unregisterCommandInternal(commandName, dependencies) {
         playerUtils: {
             /**
              * Minimal debug logger for initial command load.
-             *
              * @param {string} msg - The message to log.
              * @returns {void}
              */
@@ -123,7 +119,6 @@ export function unregisterCommandInternal(commandName, dependencies) {
 /**
  * Handles incoming chat messages to process potential commands.
  * This function is typically called from a `beforeChatSend` event listener in `main.js`.
- *
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - The chat event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object, including command maps.
  * @returns {Promise<void>}
@@ -160,7 +155,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     // Resolve alias using the new aliasToCommandMap from dependencies
     const aliasTargetCommand = dependencies.aliasToCommandMap?.get(commandNameInput);
-    const finalCommandName = aliasTargetCommand ? aliasTargetCommand : commandNameInput; // No .toLowerCase() needed as keys in map are already lowercase
+    const finalCommandName = aliasTargetCommand || commandNameInput; // No .toLowerCase() needed as keys in map are already lowercase
 
     if (aliasTargetCommand) {
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Alias '${commandNameInput}' for ${playerName} resolved to main command '${finalCommandName}'.`, playerName, dependencies);
@@ -224,9 +219,9 @@ export async function handleChatCommand(eventData, dependencies) {
             details: {
                 command: finalCommandName,
                 args: args.join(', '),
-                errorMessage: errorMessage,
+                errorMessage,
             },
-            errorStack: errorStack, // Store full stack for detailed debugging
+            errorStack, // Store full stack for detailed debugging
         }, dependencies);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }

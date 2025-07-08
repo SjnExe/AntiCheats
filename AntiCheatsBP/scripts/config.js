@@ -808,7 +808,6 @@ export const editableConfigValues = { ...defaultConfigSettings };
 /**
  * Updates a configuration value at runtime.
  * Performs type checking and coercion for basic types (string, number, boolean) and simple arrays of these types.
- *
  * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
  * @param {unknown} value - The new value for the configuration key.
  * @returns {UpdateConfigValueResult} Object indicating success, a message, and optionally old/new values.

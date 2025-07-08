@@ -20,7 +20,6 @@ export const definition = {
  * For online players, it immediately purges their flags and associated data.
  * For offline players, it currently logs the attempt and informs the admin that
  * full offline processing is pending (e.g., will be handled on next join).
- *
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} args Command arguments: [playerName].
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
@@ -31,7 +30,7 @@ export async function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        playerUtils?.sendMessage(player, getString('command.purgeflags.usage', { prefix: prefix, syntax: definition.syntax }));
+        playerUtils?.sendMessage(player, getString('command.purgeflags.usage', { prefix, syntax: definition.syntax }));
         return;
     }
 
@@ -63,17 +62,17 @@ export async function execute(player, args, dependencies) {
             playerUtils?.sendMessage(player, messageToAdmin);
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
 
-            const messageToTarget = getString('command.purgeflags.success.target', { adminName: adminName });
+            const messageToTarget = getString('command.purgeflags.success.target', { adminName });
             playerUtils?.sendMessage(targetPlayerOnline, messageToTarget);
 
             if (config?.notifyOnAdminUtilCommandUsage !== false) {
-                const notifyMsg = getString('command.purgeflags.notify.purged', { adminName: adminName, targetPlayerName: targetPlayerOnline.nameTag, oldTotalFlags: oldTotalFlags.toString() });
+                const notifyMsg = getString('command.purgeflags.notify.purged', { adminName, targetPlayerName: targetPlayerOnline.nameTag, oldTotalFlags: oldTotalFlags.toString() });
                 playerUtils?.notifyAdmins(notifyMsg, dependencies, player, pData);
             }
 
             logManager?.addLog({
                 actionType: 'flagsPurgedOnline',
-                adminName: adminName,
+                adminName,
                 targetName: targetPlayerOnline.nameTag,
                 targetId: targetPlayerOnline.id,
                 details: `All flags, violation details, and automod state purged for online player. Old total flags: ${oldTotalFlags}.`,
@@ -104,7 +103,7 @@ export async function execute(player, args, dependencies) {
             playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies); // Use success sound for scheduling
             logManager?.addLog({
                 actionType: 'flagsPurgeScheduledOffline',
-                adminName: adminName,
+                adminName,
                 targetName: targetPlayerName,
                 details: `Flag purge scheduled for offline player ${targetPlayerName}. Will be processed on next join.`,
                 context: 'PurgeFlagsCommand',

@@ -14,7 +14,6 @@ export const definition = {
 /**
  * Executes the !inspect command.
  * Displays detailed AntiCheat information about a target player to the command issuer.
- *
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername>.
@@ -27,7 +26,7 @@ export function execute(player, args, dependencies) {
     const prefix = config?.prefix ?? '!';
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.inspect.usage', { prefix: prefix }));
+        player.sendMessage(getString('command.inspect.usage', { prefix }));
         return;
     }
 
@@ -63,7 +62,7 @@ export function execute(player, args, dependencies) {
             for (const flagKey of flagKeys) {
                 const flagData = pData.flags[flagKey];
                 const timestamp = flagData.lastDetectionTime ? new Date(flagData.lastDetectionTime).toLocaleString() : getString('common.value.notAvailable');
-                messageLines.push(getString('command.inspect.flagEntry', { flagKey: flagKey, count: (flagData.count ?? 0).toString(), timestamp: timestamp }));
+                messageLines.push(getString('command.inspect.flagEntry', { flagKey, count: (flagData.count ?? 0).toString(), timestamp }));
                 specificFlagsFound = true;
             }
             if (!specificFlagsFound) {
@@ -74,7 +73,7 @@ export function execute(player, args, dependencies) {
         const muteInfo = targetPlayer ? playerDataManager?.getMuteInfo(targetPlayer, dependencies) : pData.muteInfo;
         if (muteInfo) {
             const expiry = muteInfo.unmuteTime === Infinity ? getString('ban.duration.permanent') : new Date(muteInfo.unmuteTime).toLocaleString();
-            messageLines.push(getString('command.inspect.muted.yes', { expiry: expiry, reason: muteInfo.reason || getString('common.value.noReasonProvided') }));
+            messageLines.push(getString('command.inspect.muted.yes', { expiry, reason: muteInfo.reason || getString('common.value.noReasonProvided') }));
         } else {
             messageLines.push(getString('command.inspect.muted.no'));
         }
@@ -82,7 +81,7 @@ export function execute(player, args, dependencies) {
         const banInfo = targetPlayer ? playerDataManager?.getBanInfo(targetPlayer, dependencies) : pData.banInfo;
         if (banInfo) {
             const expiry = banInfo.unbanTime === Infinity ? getString('ban.duration.permanent') : new Date(banInfo.unbanTime).toLocaleString();
-            messageLines.push(getString('command.inspect.banned.yes', { expiry: expiry, reason: banInfo.reason || getString('common.value.noReasonProvided') }));
+            messageLines.push(getString('command.inspect.banned.yes', { expiry, reason: banInfo.reason || getString('common.value.noReasonProvided') }));
         } else {
             messageLines.push(getString('command.inspect.banned.no'));
         }
@@ -96,7 +95,7 @@ export function execute(player, args, dependencies) {
 
     try {
         logManager?.addLog({
-            adminName: adminName,
+            adminName,
             actionType: 'playerInspected',
             targetName: targetDisplayName,
             targetId: targetPlayer?.id ?? pData?.id,

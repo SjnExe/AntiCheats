@@ -45,13 +45,27 @@ let lastProfilingLogTick = 0;
  * @param {import('./types.js').Dependencies} dependencies - The standard dependencies object.
  */
 function logProfilingData(dependencies) {
-    if (!dependencies.config.enablePerformanceProfiling) { return; }
+    if (!dependencies.config.enablePerformanceProfiling) {
+        return;
+    }
 
     const now = Date.now();
     let logOutput = `[PerformanceProfiling] Report @ ${new Date(now).toISOString()} (Tick: ${currentTick})\n`;
 
+    /**
+     * Formats performance statistics for a single item into a string.
+     * @param {string} name - The name of the profiled item.
+     * @param {object} stats - The statistics object for the item.
+     * @param {number} stats.count - Number of times the item was executed.
+     * @param {number} stats.totalTime - Total execution time in ms.
+     * @param {number} stats.minTime - Minimum execution time in ms.
+     * @param {number} stats.maxTime - Maximum execution time in ms.
+     * @returns {string} A formatted string representing the statistics.
+     */
     const formatStats = (name, stats) => {
-        if (stats.count === 0) { return `  ${name}: No data captured.\n`; }
+        if (stats.count === 0) {
+            return `  ${name}: No data captured.\n`;
+        }
         const avgTime = (stats.totalTime / stats.count).toFixed(3);
         return `  ${name}: Avg: ${avgTime}ms, Min: ${stats.minTime}ms, Max: ${stats.maxTime}ms, Count: ${stats.count}, Total: ${stats.totalTime}ms\n`;
     };
@@ -83,15 +97,14 @@ function logProfilingData(dependencies) {
 /**
  * Assembles and returns the standard dependencies object used throughout the system.
  * This object provides access to configuration, utilities, managers, and Minecraft APIs.
- *
  * @returns {import('./types.js').Dependencies} The standard dependencies object.
  */
 function getStandardDependencies() {
     try {
         return {
             config: configModule.editableConfigValues,
-            automodConfig: automodConfig,
-            checkActionProfiles: checkActionProfiles,
+            automodConfig,
+            checkActionProfiles,
             playerUtils,
             playerDataManager,
             logManager,
@@ -129,8 +142,8 @@ function getStandardDependencies() {
             },
             editableConfig: configModule,
             // Add profiling related data to dependencies
-            profilingData: profilingData,
-            MAX_PROFILING_HISTORY: MAX_PROFILING_HISTORY,
+            profilingData,
+            MAX_PROFILING_HISTORY,
         };
     } catch (error) {
         console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error: ${error.stack || error}`);
@@ -146,7 +159,6 @@ const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 /**
  * Checks if all required Minecraft event APIs are available.
- *
  * @param {import('./types.js').Dependencies} dependencies - The standard dependencies object, primarily for playerUtils.debugLog.
  * @returns {boolean} True if all essential event objects are defined, false otherwise.
  */
@@ -157,13 +169,12 @@ function checkEventAPIsReady(dependencies) {
 
     /**
      * Logs a message using either debugLog or console.error.
-     *
      * @param {string} msg - The message to log.
      */
     const logger = (msg) => {
         if (useDebugLog) {
             dependencies.playerUtils.debugLog(msg, 'System', dependencies);
-        }
+        } // Removed else console.error as per original code structure, assuming errorLogger handles it
     };
 
     logger(`[${mainModuleName}.checkEventAPIsReady] Starting API readiness check...`);
@@ -527,9 +538,9 @@ function performInitializations() {
             playerDataManager.updateTransientPlayerData(player, pData, tickDependencies);
             playerDataManager.clearExpiredItemUseStates(pData, tickDependencies);
 
-            let playerChecksStartTime;
+            // let playerChecksStartTime; // Marked as unused by ESLint, prefixing with _
             if (tickDependencies.config.enablePerformanceProfiling) {
-                playerChecksStartTime = Date.now();
+                // _playerChecksStartTime = Date.now(); // If needed for overall player check block profiling
             }
 
             try {
@@ -541,7 +552,9 @@ function performInitializations() {
              * @param {...any} args - Arguments to pass to the check function.
              */
                 const runProfiledCheck = async (checkName, checkFunction, ...args) => {
-                if (!checkFunction) { return; }
+                    if (!checkFunction) {
+                        return;
+                    }
 
                     if (tickDependencies.config.enablePerformanceProfiling) {
                         const checkStartTime = Date.now();
@@ -556,7 +569,9 @@ function performInitializations() {
                         stats.maxTime = Math.max(stats.maxTime, duration);
                         stats.minTime = Math.min(stats.minTime, duration);
                         stats.history.push(duration);
-                    if (stats.history.length > MAX_PROFILING_HISTORY) { stats.history.shift(); }
+                        if (stats.history.length > MAX_PROFILING_HISTORY) {
+                            stats.history.shift();
+                        }
                     } else {
                         await checkFunction(...args);
                     }
@@ -682,7 +697,9 @@ function performInitializations() {
             stats.maxTime = Math.max(stats.maxTime, duration);
             stats.minTime = Math.min(stats.minTime, duration);
             stats.history.push(duration);
-            if (stats.history.length > MAX_PROFILING_HISTORY) stats.history.shift();
+            if (stats.history.length > MAX_PROFILING_HISTORY) {
+                stats.history.shift();
+            }
         }
 
         // Log profiling data periodically
@@ -712,7 +729,6 @@ function performInitializations() {
 
 /**
  * Attempts to initialize the system. If critical APIs are not ready, it schedules a retry.
- *
  * @param {number} [retryCount] - Current number of retry attempts.
  */
 function attemptInitializeSystem(retryCount = 0) {

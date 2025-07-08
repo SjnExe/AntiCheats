@@ -16,7 +16,6 @@ export const definition = {
 
 /**
  * Executes the !rules command.
- *
  * @param {import('@minecraft/server').Player} player The player executing the command.
  * @param {string[]} _args Command arguments (not used).
  * @param {import('../types.js').CommandDependencies} dependencies The dependencies object.
