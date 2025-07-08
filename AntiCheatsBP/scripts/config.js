@@ -21,6 +21,13 @@ const defaultConfigSettings = {
     ownerPlayerName: 'PlayerNameHere',
     /** @type {boolean} If true, enables detailed debug logging to the console for development and troubleshooting. */
     enableDebugLogging: true,
+
+    // --- Debugging & Development Settings ---
+    /** @type {boolean} If true, enables collection and logging of performance metrics. SET TO FALSE FOR PRODUCTION. */
+    enablePerformanceProfiling: false,
+    /** @type {number} Interval in game ticks to log performance profile data if enabled. Default: 1200 (60 seconds). */
+    logPerformanceProfileIntervalTicks: 1200,
+
     /** @type {string} The prefix for chat-based commands (e.g., "!", "."). */
     prefix: '!',
     /** @type {string} The tag applied to players who are vanished. */
@@ -692,7 +699,7 @@ Rule 6: Have fun and contribute to a positive community!`,
     // --- Fast Use/Place Checks Specifics ---
     /** @type {boolean} If true, the Fast Item Use check (using items like ender pearls, snowballs faster than vanilla cooldowns) is active. */
     enableFastUseCheck: false,
-    /** @type {Object.<string, number>} Defines minimum cooldown in milliseconds between uses for specific items. Key is item ID, value is cooldown in MS. */
+    /** @type {{[key: string]: number}} Defines minimum cooldown in milliseconds between uses for specific items. Key is item ID, value is cooldown in MS. */
     fastUseItemCooldowns: {
         'minecraft:ender_pearl': 1000,
         'minecraft:snowball': 150,

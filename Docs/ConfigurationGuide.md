@@ -40,6 +40,9 @@ This file is extensively commented and allows you to customize a wide range of s
     *   `prefix`: The chat command prefix (default: `!`).
     *   `enableDebugLogging`: Toggle for detailed console logs, useful for troubleshooting.
     *   Global toggles for major features like `enableAutoMod`, `enableTpaSystem`, `enableWorldBorderSystem`, etc.
+*   **Debugging & Development Settings:**
+    *   `enablePerformanceProfiling`: Toggle for collecting and logging performance metrics. Useful for identifying bottlenecks. (Default: `false`)
+    *   `logPerformanceProfileIntervalTicks`: How often to log performance data if `enablePerformanceProfiling` is true. (Default: `1200` ticks / 60 seconds)
 *   **Cheat Detection Parameters:**
     *   Enable/disable individual cheat checks (e.g., `enableFlyCheck`, `enableReachCheck`).
     *   Adjust sensitivity, thresholds, and specific conditions for many detections (e.g., `maxCpsThreshold`, `reachDistanceSurvival`, `flySustainedVerticalSpeedThreshold`).

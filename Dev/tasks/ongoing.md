@@ -1,4 +1,5 @@
-*   **Task:** Define formal schemas for command definitions and config.js.
-    *   **Objective:** Create JSON Schema files for `CommandDefinition` (in `commandDefinitionSchema.json`) and `defaultConfigSettings` (in `configSchema.json`) to aid in validation, documentation, and tooling.
-    *   **Agent:** Jules
-    *   **Status:** In progress. Schemas created. Next: Submit changes.
+# Ongoing Development Tasks
+
+This document lists tasks currently being worked on. When a task is completed, it should be moved to `Dev/tasks/completed.md`. If a task is paused or deferred, it should be moved back to `Dev/tasks/todo.md`.
+
+*No tasks currently ongoing.*

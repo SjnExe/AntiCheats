@@ -4,6 +4,35 @@ This document lists significant tasks that have been completed.
 
 ---
 
+## Performance Profiling Implementation - [Current Date] (Jules - AI Agent)
+*   **Task:** (Medium) Performance Profiling: Periodically profile performance-critical areas, such as frequently executed checks or operations within the main tick loop, to identify and address potential bottlenecks.
+*   **Objective:** Implement a basic profiling mechanism to measure and log execution times of critical code sections. Add configuration to enable/disable profiling. Document the feature.
+*   **Key Activities:**
+    *   Identified critical areas: main tick loop (`main.js`), event handlers (`eventHandlers.js`), and individual checks (`checks/`).
+    *   Added timing logic (`Date.now()`) around these sections in `main.js` and `eventHandlers.js`.
+    *   Created a helper function `runProfiledCheck` in `main.js` to wrap individual check executions with timing.
+    *   Created a helper function `profileEventHandler` in `eventHandlers.js` to wrap event handler functions.
+    *   Implemented `profilingData` structure in `main.js` to store timings (total, count, min, max, history).
+    *   Added `logProfilingData` function in `main.js` to aggregate and log collected metrics using `playerUtils.debugLog()`.
+    *   Added configuration flags `enablePerformanceProfiling` (boolean) and `logPerformanceProfileIntervalTicks` (number) to `config.js`.
+    *   Ensured profiling logic and logging only execute when `enablePerformanceProfiling` is true.
+    *   Updated `README.md` to mention the new profiling feature and its configuration.
+    *   Updated `Docs/ConfigurationGuide.md` to document the new configuration flags.
+    *   Updated `Dev/tasks/todo.md`, `Dev/tasks/ongoing.md`, and `Dev/tasks/completed.md` to reflect task progress.
+*   **Outcome:** A basic performance profiling system is now integrated into the addon. Users can enable it via configuration to get insights into the execution times of different parts of the system, aiding in future optimization efforts.
+*   **Files Updated:**
+    *   `AntiCheatsBP/scripts/main.js`
+    *   `AntiCheatsBP/scripts/core/eventHandlers.js`
+    *   `AntiCheatsBP/scripts/config.js`
+    *   `README.md`
+    *   `Docs/ConfigurationGuide.md`
+    *   `Dev/tasks/todo.md`
+    *   `Dev/tasks/ongoing.md`
+    *   `Dev/tasks/completed.md` (this entry)
+*   **Submission Reference:** Commit related to "feat: Implement performance profiling system".
+
+---
+
 ## Code Linting and Comment Enhancement - Session [Current Date] (Jules - AI Agent)
 *   **Task:** Use linting to fix syntax errors and other issues. Improve already created linting to fix them. Add meaningful comments, especially for missing comment warnings.
 *   **Objective:** Ensure code adheres to established project linting rules and coding standards, and improve code clarity through comments if indicated by linting.
