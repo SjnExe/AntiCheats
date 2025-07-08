@@ -21,8 +21,9 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Low) `playerDataManager.js` - Standardize DP Error Logging**:
-    - The `_handleDynamicPropertyError` is good. Consider making the generated `actionType` for `logManager.addLog` more consistent or use a predefined prefix for easier filtering (e.g., `pdm.dp.load.parseFail`).
+- **(Complete) `playerDataManager.js` - Standardize DP Error Logging**:
+    - The `_handleDynamicPropertyError` function was updated.
+    - **Action Taken**: Modified `_handleDynamicPropertyError` in `playerDataManager.js` to generate a standardized `actionType` for `logManager.addLog` calls. The new scheme is `pdm.dp.<context>.<operation_type>.error` (e.g., `pdm.dp.data.parse.error`). This improves log consistency and filterability. The original `logContext` is retained for detailed tracing.
 - **(Medium) Async Operations & `pData` Staleness**:
     - Conduct a codebase search for areas where `pData` is used after an `await` call. Ensure the pattern of re-fetching `pData` (e.g., `pData = playerDataManager.getPlayerData(player.id);`) is consistently applied if the awaited function could have modified `pData` or if other operations might have invalidated the reference. This was noted as good practice in `_processPlayerPlaceBlockAfterEffects`.
 - **(Low) Standardized Error Object/Logging for `logManager`**:

@@ -129,11 +129,24 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
     playerUtils?.debugLog(`${baseMessage}. Error: ${error.message}`, playerName, dependencies);
 
     const logContext = `playerDataManager.${callingFunction}`;
-    const actionType = `errorPDM${callingFunction.replace('playerData', '')}${operation.replace('player.', '').replace('JSON.', '')}`;
+
+    let opType = 'unknown';
+    if (operation.toLowerCase().includes('json.parse')) opType = 'parse';
+    else if (operation.toLowerCase().includes('json.stringify')) opType = 'stringify';
+    else if (operation.toLowerCase().includes('getdynamicproperty')) opType = 'get'; // Made lowercase for robust matching
+    else if (operation.toLowerCase().includes('setdynamicproperty')) opType = 'set'; // Made lowercase
+
+    let contextStr = 'unknown';
+    if (callingFunction === 'savePlayerDataToDynamicProperties' || callingFunction === 'loadPlayerDataFromDynamicProperties') {
+        contextStr = 'data';
+    }
+    // Add more contexts here if _handleDynamicPropertyError is used by other functions for different DP keys.
+
+    const newActionType = `pdm.dp.${contextStr}.${opType}.error`;
 
     logManager?.addLog({
-        actionType: actionType.charAt(0).toLowerCase() + actionType.slice(1),
-        context: logContext,
+        actionType: newActionType,
+        context: logContext, // Retaining original context for now, as it's slightly more specific.
         targetName: playerName,
         details: {
             operation,
