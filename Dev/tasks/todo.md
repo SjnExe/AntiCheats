@@ -48,8 +48,6 @@ This list contains planned features, improvements, and areas for future investig
 ### Configuration Files & Data Structures
 - **(Low) `config.js` - `updateConfigValue` Type Coercion**:
     - For `updateConfigValue`, document that complex object/array updates are full replacements if parsed from JSON. If partial updates or more sophisticated validation for nested structures are ever needed, this function would require significant enhancement.
-- **(Medium) `actionProfiles.js` & `automodConfig.js` - `camelCase` Enforcement**:
-    - Perform a manual review or add a linting rule (if possible for JSON-like structures in JS) to strictly enforce `camelCase` for all `checkType` keys, `flag.type` values, `log.actionType` values, and `actionType` parameters within these files, as per documentation and `AGENTS.md`.
 - **(Low) Refactor `textDatabase.js` Content**:
     - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).
     - Identify single-use, static strings that could be moved to their respective local modules.
