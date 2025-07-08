@@ -42,10 +42,12 @@ export function execute(player, args, dependencies) {
         const specificCommandNameInput = args[0].toLowerCase().replace(prefix, '');
         let foundCmdDef = commandDefinitionMap?.get(specificCommandNameInput);
 
-        if (!foundCmdDef && config?.commandAliases) {
-            const aliasTargetName = config.commandAliases[specificCommandNameInput];
-            if (aliasTargetName) {
-                foundCmdDef = commandDefinitionMap?.get(aliasTargetName.toLowerCase());
+        // If not found directly, try resolving as an alias using the central aliasToCommandMap
+        if (!foundCmdDef && dependencies.aliasToCommandMap) {
+            const mainCommandName = dependencies.aliasToCommandMap.get(specificCommandNameInput);
+            if (mainCommandName) {
+                // mainCommandName should already be lowercase as stored in aliasToCommandMap
+                foundCmdDef = commandDefinitionMap?.get(mainCommandName);
             }
         }
 

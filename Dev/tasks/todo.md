@@ -21,9 +21,6 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Medium) `commandManager.js` Alias Handling in `initializeCommands`**:
-    - The IIFE comment in `commandManager.js` regarding `config.commandAliases` needs updating to reflect that aliases are now sourced from command definitions.
-    - Ensure `dependencies.aliasToCommandMap` is the single source of truth for alias resolution during command handling and for other modules like `help.js`.
 
 ### Checks Implementation
 - **(Medium) `flyCheck.js` - Grace Conditions & Slow Fall**:
@@ -39,8 +36,6 @@ This list contains planned features, improvements, and areas for future investig
     - Emphasize in developer documentation that all checks' accuracy heavily relies on `pData` being accurate and timely. Errors in `pData` updates can cascade into check malfunctions.
 
 ### Commands Implementation
-- **(Low) `help.js` - Alias Resolution**:
-    - Update `help.js` to use `dependencies.aliasToCommandMap` (populated by `commandManager`) for resolving aliases to main command names, instead of potentially checking `config.commandAliases` or other outdated methods. This ensures consistency with `commandManager`.
 - **(Low) Programmatic Command Invocation**:
     - Review if commands other than `ban.js` might be invoked programmatically (e.g., by AutoMod or other systems). If so, ensure they have appropriate parameters (like `invokedBy`, `isAutoModAction`) and logic to handle different invocation contexts for feedback and logging.
 
