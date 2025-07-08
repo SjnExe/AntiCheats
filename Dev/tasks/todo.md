@@ -7,11 +7,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(High) Update Documentation for Compact Comments**: Modify `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md` to reflect new guidelines for compact JSDoc comments, emphasizing conciseness and avoiding overly verbose descriptions where code is self-explanatory. Document when single-line JSDoc comments are preferred.
 
 ## Linting & Code Style Tasks
-- **(High) Enhance ESLint JSDoc Rules for Compactness**:
-    - Review and update JSDoc rules in `eslint.config.js` to encourage or enforce more compact comments.
-    - Adjust rules like `jsdoc/require-description-complete-sentence` (potentially disable or make less strict).
-    - Modify `jsdoc/multiline-blocks` to better support compact styles, possibly allowing more single-line JSDoc blocks for simple cases (e.g., `/** @type {string} */` or `/** Short description. */`).
-    - Discourage overly verbose descriptions if the code itself is clear.
 - **(High) Add ESLint Rules for Code Optimization**:
     - Identify and add ESLint rules to `eslint.config.js` to help detect and reduce redundant code, unused variables/functions, and other "unnecessary stuff."
     - Consider rules like:
