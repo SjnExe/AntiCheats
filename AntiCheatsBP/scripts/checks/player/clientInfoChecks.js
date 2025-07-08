@@ -8,7 +8,7 @@
  */
 
 // Constants for magic numbers
-const DEFAULT_MAX_ALLOWED_CLIENT_RENDER_DISTANCE = 64;
+const defaultMaxAllowedClientRenderDistance = 64;
 
 /**
  * Checks if a player's reported maximum render distance exceeds the configured allowed limit.
@@ -52,7 +52,7 @@ export async function checkInvalidRenderDistance(player, pData, dependencies) {
         return;
     }
 
-    const maxAllowed = config?.maxAllowedClientRenderDistance ?? DEFAULT_MAX_ALLOWED_CLIENT_RENDER_DISTANCE;
+    const maxAllowed = config?.maxAllowedClientRenderDistance ?? defaultMaxAllowedClientRenderDistance;
 
     if (clientRenderDistance > maxAllowed) {
         const violationDetails = {

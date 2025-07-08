@@ -5,15 +5,15 @@
 import * as mc from '@minecraft/server';
 
 // Default configuration values used if not provided in config.js
-const DEFAULT_TOWER_PLACEMENT_HISTORY_LENGTH = 20;
-const DEFAULT_TOWER_MIN_HEIGHT = 5;
-const DEFAULT_TOWER_MAX_PITCH_WHILE_PILLARING = -30;
-const TICKS_PER_SECOND = 20;
-const DEFAULT_DOWNWARD_SCAFFOLD_MIN_BLOCKS = 3;
-const DEFAULT_DOWNWARD_SCAFFOLD_MIN_HORIZONTAL_SPEED = 3.0;
-const DEFAULT_FLAT_ROTATION_CONSECUTIVE_BLOCKS = 4;
-const INITIAL_MIN_OBSERVED_PITCH = 91;
-const INITIAL_MAX_OBSERVED_PITCH = -91;
+const defaultTowerPlacementHistoryLength = 20;
+const defaultTowerMinHeight = 5;
+const defaultTowerMaxPitchWhilePillaring = -30;
+const ticksPerSecond = 20;
+const defaultDownwardScaffoldMinBlocks = 3;
+const defaultDownwardScaffoldMinHorizontalSpeed = 3.0;
+const defaultFlatRotationConsecutiveBlocks = 4;
+const initialMinObservedPitch = 91;
+const initialMaxObservedPitch = -91;
 const DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MIN = -5.0;
 const DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MAX = 5.0;
 const DEFAULT_FLAT_ROTATION_PITCH_DOWNWARD_MIN = -90.0;
@@ -60,7 +60,7 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
         tick: currentTick,
     };
     pData.recentBlockPlacements.push(newPlacement);
-    if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? DEFAULT_TOWER_PLACEMENT_HISTORY_LENGTH)) {
+    if (pData.recentBlockPlacements.length > (config.towerPlacementHistoryLength ?? defaultTowerPlacementHistoryLength)) {
         pData.recentBlockPlacements.shift();
     }
     pData.isDirtyForSave = true;
@@ -102,8 +102,8 @@ export async function checkTower(player, pData, dependencies, eventSpecificData)
     }
     pData.isDirtyForSave = true;
 
-    const minHeight = config.towerMinHeight ?? DEFAULT_TOWER_MIN_HEIGHT;
-    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? DEFAULT_TOWER_MAX_PITCH_WHILE_PILLARING;
+    const minHeight = config.towerMinHeight ?? defaultTowerMinHeight;
+    const maxPitchValue = config.towerMaxPitchWhilePillaring ?? defaultTowerMaxPitchWhilePillaring;
 
     if ((pData.consecutivePillarBlocks ?? 0) >= minHeight && pitch > maxPitchValue) {
         const violationDetails = {
@@ -300,7 +300,7 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const blockLocation = block.location;
     const velocity = player.getVelocity();
-    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * TICKS_PER_SECOND;
+    const horizontalSpeedBPS = Math.sqrt(velocity.x * velocity.x + velocity.z * velocity.z) * ticksPerSecond;
 
     let isContinuingSequence = false;
     const maxTickGap = config.downwardScaffoldMaxTickGap ?? 10;
@@ -320,8 +320,8 @@ export async function checkDownwardScaffold(player, pData, dependencies, eventSp
     pData.lastDownwardScaffoldBlockLocation = { x: blockLocation.x, y: blockLocation.y, z: blockLocation.z };
     pData.isDirtyForSave = true;
 
-    const minBlocks = config.downwardScaffoldMinBlocks ?? DEFAULT_DOWNWARD_SCAFFOLD_MIN_BLOCKS;
-    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? DEFAULT_DOWNWARD_SCAFFOLD_MIN_HORIZONTAL_SPEED;
+    const minBlocks = config.downwardScaffoldMinBlocks ?? defaultDownwardScaffoldMinBlocks;
+    const minHSpeed = config.downwardScaffoldMinHorizontalSpeed ?? defaultDownwardScaffoldMinHorizontalSpeed;
 
     if ((pData.consecutiveDownwardBlocks ?? 0) >= minBlocks && horizontalSpeedBPS >= minHSpeed) {
         const violationDetails = {
@@ -362,7 +362,7 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
         return;
     }
 
-    const consecutiveBlocksToAnalyze = config.flatRotationConsecutiveBlocks ?? DEFAULT_FLAT_ROTATION_CONSECUTIVE_BLOCKS;
+    const consecutiveBlocksToAnalyze = config.flatRotationConsecutiveBlocks ?? defaultFlatRotationConsecutiveBlocks;
     if (!pData.recentBlockPlacements || pData.recentBlockPlacements.length < consecutiveBlocksToAnalyze) {
         return;
     }
@@ -370,8 +370,8 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     const watchedPrefix = pData.isWatched ? player.nameTag : null;
     const relevantPlacements = pData.recentBlockPlacements.slice(-consecutiveBlocksToAnalyze);
 
-    let minObservedPitch = INITIAL_MIN_OBSERVED_PITCH;
-    let maxObservedPitch = INITIAL_MAX_OBSERVED_PITCH;
+    let minObservedPitch = initialMinObservedPitch;
+    let maxObservedPitch = initialMaxObservedPitch;
     let allPitchesInHorizontalRange = true;
     let allPitchesInDownwardRange = true;
     const horizontalMin = config.flatRotationPitchHorizontalMin ?? DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MIN;
