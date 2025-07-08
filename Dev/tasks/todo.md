@@ -46,8 +46,6 @@ This list contains planned features, improvements, and areas for future investig
     - Highlight that this utility is a primary candidate for issues if Minecraft changes block breaking mechanics.
 
 ### Configuration Files & Data Structures
-- **(Low) `config.js` - `updateConfigValue` Type Coercion**:
-    - For `updateConfigValue`, document that complex object/array updates are full replacements if parsed from JSON. If partial updates or more sophisticated validation for nested structures are ever needed, this function would require significant enhancement.
 - **(Low) Refactor `textDatabase.js` Content**:
     - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).
     - Identify single-use, static strings that could be moved to their respective local modules.

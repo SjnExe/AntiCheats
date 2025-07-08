@@ -808,9 +808,20 @@ export const editableConfigValues = { ...defaultConfigSettings };
 
 /**
  * Updates a configuration value at runtime.
- * Performs type checking and coercion for basic types (string, number, boolean) and simple arrays of these types.
+ * Performs type checking and coercion for basic types (string, number, boolean).
+ *
+ * For array and object types, if the input `value` is a JSON string, it will be parsed
+ * and will fully replace the existing array/object. This function does not support
+ * partial updates (e.g., adding an element to an array or modifying a single property
+ * of an object via a partial JSON string).
+ *
+ * If more sophisticated partial updates or validation for nested structures within
+ * complex types (arrays/objects) are needed in the future, this function would
+ * require significant enhancement.
+ *
  * @param {string} key - The configuration key to update (must exist in `defaultConfigSettings` and `editableConfigValues`).
- * @param {unknown} value - The new value for the configuration key.
+ * @param {unknown} value - The new value for the configuration key. If `key` corresponds to an array or object,
+ *                        `value` can be the new array/object directly, or a JSON string representation.
  * @returns {UpdateConfigValueResult} Object indicating success, a message, and optionally old/new values.
  */
 export function updateConfigValue(key, value) {
