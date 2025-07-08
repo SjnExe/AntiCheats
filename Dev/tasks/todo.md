@@ -21,9 +21,9 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Core Systems & Data Management
-- **(Medium) `playerDataManager.js` - Review `persistedPlayerDataKeys`**:
-    - Evaluate if `lastAttackTime` is redundant given `lastCombatInteractionTime` or potential timestamped `attackEvents`.
-    - Consider if `attackEvents` (currently `attackEventsTimestamps` in `handleEntityHurt`) should be persisted if it's meant for more than session-only CPS.
+- **(Complete) `playerDataManager.js` - Review `persistedPlayerDataKeys`**:
+    - Evaluated `lastAttackTime` and `attackEvents`.
+    - **Action Taken**: Removed `lastAttackTime` and `attackEvents` from `persistedPlayerDataKeys` as they were found to be either redundant for persistence (`lastAttackTime` due to lack of updates and presence of `lastCombatInteractionTime`) or not beneficial for cross-session persistence (`attackEvents` for session-based CPS). This optimizes persisted player data size.
 - **(Low) `playerDataManager.js` - `initializeDefaultPlayerData` Readability**:
     - Explore grouping related properties into sub-objects if it enhances readability without making access overly verbose.
 - **(Medium) `playerDataManager.js` - `addFlag` and `actionManager.js` - `lastViolationDetailsMap`**:

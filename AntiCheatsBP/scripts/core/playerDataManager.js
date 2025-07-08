@@ -28,7 +28,7 @@ const dynamicPropertySizeLimit = 32760;
  */
 const persistedPlayerDataKeys = [
     'flags', 'isWatched', 'lastFlagType', 'playerNameTag',
-    'attackEvents', 'lastAttackTime', 'blockBreakEvents', // lastAttackTime might be redundant if attackEvents stores timestamps
+    'blockBreakEvents', // lastAttackTime might be redundant if attackEvents stores timestamps
     'consecutiveOffGroundTicks', 'fallDistance',
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
