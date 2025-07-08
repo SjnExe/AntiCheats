@@ -33,7 +33,7 @@ const persistedPlayerDataKeys = [
     'consecutiveOffGroundTicks', 'fallDistance',
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
-    'joinTime', 'firstEverLoginTime', // Added firstEverLoginTime
+    'joinTime', 'firstEverLoginTime', 'joinCount', // Added joinCount
     'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
     'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
@@ -500,9 +500,12 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
         // Otherwise, initializeDefaultPlayerData already set it to Date.now().
         newPData.firstEverLoginTime = loadedData.firstEverLoginTime ?? newPData.firstEverLoginTime;
 
+        // joinCount should use persisted value if available, otherwise default from initializeDefaultPlayerData (which is 0)
+        newPData.joinCount = loadedData.joinCount ?? newPData.joinCount;
+
         newPData.isDirtyForSave = false; // Data loaded is considered clean initially
     } else {
-        // This path means initializeDefaultPlayerData already set both joinTime and firstEverLoginTime to Date.now()
+        // This path means initializeDefaultPlayerData already set both joinTime, firstEverLoginTime to Date.now(), and joinCount to 0
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data (firstEverLoginTime and joinTime set to now).`, playerName, dependencies);
     }
 
