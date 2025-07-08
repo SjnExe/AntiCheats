@@ -191,7 +191,41 @@ This section details standards for both general diagnostic logging and persisten
 *   **User Feedback:** Provide user-friendly, non-technical error messages for player-initiated actions. Use `getString()` for localization/consistency.
 *   **Error Propagation:** Avoid silent catches unless the error is truly insignificant and expected. Handle errors locally if possible, or let them propagate to a higher-level handler. Top-level handlers in event subscriptions and tick loops are essential to prevent crashes.
 
-## 7. Future Considerations
+## 7. Text Management & `textDatabase.js`
+
+The `AntiCheatsBP/scripts/core/textDatabase.js` file serves as a centralized repository for user-facing strings and other important text literals. Its proper use enhances maintainability, consistency, and prepares for potential future localization. All text retrieved from this database should use the `playerUtils.getString(key, params?)` utility.
+
+1.  **Purpose of `textDatabase.js`**:
+    *   To store strings that are displayed to users (players or admins via chat, UI forms, etc.).
+    *   To manage text that might need configuration or frequent updates.
+    *   To ensure consistency in terminology and tone across the addon.
+    *   To centralize text that might be subject to future localization efforts.
+
+2.  **Key Naming and Structure**:
+    *   **Dot Notation Hierarchy**: Keys **MUST** use a dot-notation hierarchy to create a logical structure. For example: `category.moduleOrFeature.specificIdentifier`.
+        *   Examples: `common.button.confirm`, `ui.adminPanel.title`, `command.kick.success`, `error.config.loadFailure`.
+    *   **Key Segment Naming**: Each segment in the key should be `camelCase` or `lowercase`.
+    *   **Clarity and Specificity**: Keys should be descriptive enough to understand their context and purpose without needing to see the value.
+    *   **Sub-grouping**: As the number of strings for a particular module, UI panel, or command grows, consider adding deeper levels of sub-grouping to maintain organization. For example, if `command.myCommand.*` becomes very large, you might introduce `command.myCommand.help.*`, `command.myCommand.error.*`, etc.
+
+3.  **When to Use `textDatabase.js` (Inclusion Criteria)**:
+    *   **Reused Strings**: Strings that are used in more than one place in the codebase **MUST** be in `textDatabase.js`.
+    *   **User-Facing Text**: All text displayed directly to players or admins (UI elements, command responses, important notifications) **SHOULD** generally be in `textDatabase.js`. This promotes consistency and ease of review/modification.
+    *   **Configurable/Changeable Text**: Strings that are likely to be modified by server owners (though direct modification of `textDatabase.js` is for devs) or are tied to configurable features **SHOULD** be included.
+    *   **Common Error Messages**: Standard error messages displayed to users **SHOULD** be in `textDatabase.js`.
+    *   **Placeholders**: Utilize placeholders like `{placeholderName}` within strings for dynamic content. These are resolved by `playerUtils.getString()`.
+
+4.  **When Local String Literals *May* Be Acceptable (Exclusion Criteria)**:
+    *   **Highly Specific, Static, Single-Use UI Labels**: For very specific labels within a complex UI form that are unlikely to ever be reused or changed independently of that UI element's code, defining them locally *may* be acceptable if it significantly improves the readability of `textDatabase.js` by not cluttering it with dozens of minor, unique strings for a single panel. This is a judgment call.
+        *   *Guideline*: If a UI panel has many unique labels, group them logically within the panel's module or use a more detailed sub-group in `textDatabase.js` (e.g., `ui.myPanel.labels.specificField`).
+    *   **Internal Constants/Logging Strings (Not User-Facing)**: String constants used purely for internal logic, non-standardized debug messages, or very specific non-user-facing log details do not need to be in `textDatabase.js`. Standardized error codes and user-facing components of log messages (if any) should still consider it.
+    *   **Developer-Facing Comments and Documentation**: JSDoc, inline comments, etc., are not part of `textDatabase.js`.
+
+5.  **Review and Refactoring**:
+    *   Periodically review `textDatabase.js` for strings that might no longer be used or could be better defined locally.
+    *   A dedicated task should be maintained in `Dev/tasks/todo.md` to audit existing entries against these guidelines, particularly focusing on potentially single-use strings that could be localized within their respective modules if they don't meet the criteria for central management (e.g., not reused, not configurable, not critical for overall message consistency).
+
+## 8. Future Considerations
 *   **Automated Formatting:** While manual adherence to formatting is expected, the project may consider adopting an automated code formatter like Prettier in the future to ensure uniform style and reduce review overhead.
 
 These guidelines will be applied iteratively across the codebase.
