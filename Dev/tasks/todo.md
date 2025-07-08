@@ -4,7 +4,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## Documentation Tasks
 - **(High) JSDoc Review**: Conduct a thorough pass over all `.js` files to ensure JSDoc comments are present, accurate, and use correct `@param` / `@returns` types, especially referencing `types.js` where appropriate. Ensure all core manager functions and check module functions are well-documented.
-- **(High) Update Documentation for Compact Comments**: Modify `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md` to reflect new guidelines for compact JSDoc comments, emphasizing conciseness and avoiding overly verbose descriptions where code is self-explanatory. Document when single-line JSDoc comments are preferred.
 
 ## Linting & Code Style Tasks
 - **(High) Add ESLint Rules for Code Optimization**:
