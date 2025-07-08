@@ -20,64 +20,124 @@ export const definition = {
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {void}
  */
-export function execute(player, args, dependencies) {
-    const { config, playerUtils, logManager, playerDataManager, rankManager, getString } = dependencies; // Removed permissionLevels: depPermLevels
-    const adminName = player?.nameTag ?? 'UnknownAdmin';
+export function execute(
+    player,
+    args,
+    dependencies,
+    invokedBy = 'PlayerCommand',
+    isAutoModAction = false,
+    autoModCheckType = null,
+    programmaticReason = null
+) {
+    const { config, playerUtils, logManager, playerDataManager, rankManager, getString } = dependencies;
+    const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
-    const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 1, 'common.value.noReasonProvided', dependencies);
-    const targetPlayerName = parsedArgs.targetPlayerName;
-    const reason = parsedArgs.reason;
+    // Determine targetPlayerName from args[0]
+    const targetPlayerName = args[0];
+    let reason;
+
+    if (invokedBy === 'AutoMod' && programmaticReason) {
+        reason = programmaticReason;
+    } else if (invokedBy === 'AutoMod') {
+        reason = getString('command.kick.automodReason', { checkType: autoModCheckType || 'violations' });
+    } else {
+        const parsedArgsUtil = playerUtils.parsePlayerAndReasonArgs(args, 1, 'common.value.noReasonProvided', dependencies);
+        // Note: parsePlayerAndReasonArgs assumes args[0] is player, args[1] starts reason.
+        // If called programmatically with args like [target, reasonForAutoMod], this might misinterpret.
+        // For now, if programmaticReason is not used, AutoMod should ensure args[1] is the reason or it will take default.
+        reason = parsedArgsUtil.reason;
+    }
 
     if (!targetPlayerName) {
-        player.sendMessage(getString('command.kick.usage', { prefix }));
+        const usageMessage = getString('command.kick.usage', { prefix });
+        if (player) {
+            player.sendMessage(usageMessage);
+        } else {
+            console.warn(`[KickCommand.execute] System call missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
+            playerUtils?.debugLog(`[KickCommand.execute] System call missing target player name.`, null, dependencies);
+        }
         return;
     }
 
-    const foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'kick' });
-    if (!foundPlayer) {
-        return;
-    }
+    let foundPlayer;
+    if (invokedBy === 'PlayerCommand' && player) {
+        foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'kick' });
+        if (!foundPlayer) return; // validateCommandTarget sends messages
 
-    const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'kick', dependencies);
-    if (!permCheck.allowed) {
-        player.sendMessage(getString(permCheck.messageKey || 'command.kick.noPermission', permCheck.messageParams));
-        return;
+        const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'kick', dependencies);
+        if (!permCheck.allowed) {
+            player.sendMessage(getString(permCheck.messageKey || 'command.kick.noPermission', permCheck.messageParams));
+            return;
+        }
+    } else { // System or AutoMod call
+        foundPlayer = playerUtils.findPlayer(targetPlayerName);
+        if (!foundPlayer || !foundPlayer.isValid()) {
+            console.warn(`[KickCommand.execute] ${issuerName} call: Target player '${targetPlayerName}' not found or invalid.`);
+            logManager?.addLog({
+                actionType: 'error.cmd.kick.targetNotFound',
+                context: 'KickCommand.execute',
+                adminName: issuerName,
+                targetName: targetPlayerName,
+                details: { errorCode: 'CMD_TARGET_NOT_FOUND', message: `${issuerName} attempt to kick offline/invalid player.` },
+            }, dependencies);
+            return;
+        }
     }
 
     try {
-        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: adminName, reason });
+        const kickMessageToTarget = getString('command.kick.targetMessage', { kickerName: issuerName, reason });
         foundPlayer.kick(kickMessageToTarget);
 
-        player.sendMessage(getString('command.kick.success', { playerName: foundPlayer.nameTag, reason }));
-        playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
-
-        const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
-        if (config?.notifyOnAdminUtilCommandUsage !== false) {
-            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName, reason });
-            playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
+        const successMessage = getString('command.kick.success', { playerName: foundPlayer.nameTag, reason });
+        if (player) {
+            player.sendMessage(successMessage);
+            playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
+        } else {
+            console.log(`[KickCommand] ${successMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
         }
 
+        const targetPData = playerDataManager?.getPlayerData(foundPlayer.id);
+        if (config?.notifyOnAdminUtilCommandUsage !== false && invokedBy === 'PlayerCommand') {
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason });
+            playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
+        } else if (isAutoModAction && config?.notifyOnAutoModAction !== false) {
+             const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason }); // issuerName will be AutoMod
+            playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, null, targetPData); // Pass null for player if AutoMod
+        }
+
+
         logManager?.addLog({
-            adminName,
+            adminName: issuerName,
             actionType: 'playerKicked',
             targetName: foundPlayer.nameTag,
             targetId: foundPlayer.id,
             reason,
+            isAutoMod: isAutoModAction,
+            checkType: autoModCheckType,
         }, dependencies);
 
     } catch (e) {
-        player.sendMessage(getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message }));
-        console.error(`[KickCommand CRITICAL] Error kicking player ${targetPlayerName} by ${adminName}: ${e.stack || e}`);
-        playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+        const errorMessage = getString('command.kick.error', { playerName: targetPlayerName, errorMessage: e.message });
+        if (player) {
+            player.sendMessage(errorMessage);
+            playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
+        } else {
+            console.error(`[KickCommand CRITICAL] ${errorMessage.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+        }
+        console.error(`[KickCommand CRITICAL] Error kicking player ${targetPlayerName} by ${issuerName}: ${e.stack || e}`);
         logManager?.addLog({
-            actionType: 'errorKickCommand',
+            actionType: 'error.cmd.kick.execFail',
             context: 'KickCommand.execute',
-            adminName,
+            adminName: issuerName,
             targetName: targetPlayerName,
             targetId: foundPlayer?.id,
-            details: { errorMessage: e.message, reasonAttempted: reason },
-            errorStack: e.stack || e.toString(),
+            details: {
+                errorCode: 'CMD_KICK_EXEC_FAIL',
+                message: e.message,
+                rawErrorStack: e.stack || e.toString(),
+                meta: { reasonAttempted: reason, invokedBy }
+            },
         }, dependencies);
     }
 }

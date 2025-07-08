@@ -36,8 +36,6 @@ This list contains planned features, improvements, and areas for future investig
     - Emphasize in developer documentation that all checks' accuracy heavily relies on `pData` being accurate and timely. Errors in `pData` updates can cascade into check malfunctions.
 
 ### Commands Implementation
-- **(Low) Programmatic Command Invocation**:
-    - Review if commands other than `ban.js` might be invoked programmatically (e.g., by AutoMod or other systems). If so, ensure they have appropriate parameters (like `invokedBy`, `isAutoModAction`) and logic to handle different invocation contexts for feedback and logging.
 
 ### Utility Functions
 - **(Low) `playerUtils.js` - `parseDuration` Flexibility**:
