@@ -2,9 +2,7 @@
  * @file Defines the !uinfo command (User Info Panel), providing players with access to their stats, server rules, and helpful links.
  * This command serves as an entry point to a UI managed by uiManager.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'uinfo',
     syntax: '',

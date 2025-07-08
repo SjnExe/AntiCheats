@@ -8,13 +8,7 @@ const DEFAULT_PISTON_ACTIVITY_MAP_MAX_SIZE = 2000;
 const DEFAULT_PISTON_ACTIVITY_ENTRY_TIMEOUT_SECONDS = 300;
 const MILLISECONDS_PER_SECOND = 1000;
 
-/**
- * Stores activity data for pistons.
- * Key: string representation of piston location and dimension.
- * Value: { activations: number[], lastLogTime: number }
- *
- * @type {Map<string, { activations: number[], lastLogTime: number }>}
- */
+/** @type {Map<string, { activations: number[], lastLogTime: number }>} Stores activity data for pistons. Key: string representation of piston location and dimension. Value: { activations: number[], lastLogTime: number } */
 const pistonActivityData = new Map();
 
 /**

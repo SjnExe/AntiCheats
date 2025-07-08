@@ -8,18 +8,18 @@ import * as mc from '@minecraft/server';
 
 // Constants for calculations
 const HAND_BREAK_HARDNESS_FACTOR_1 = 1.5;
-const HAND_BREAK_HARDNESS_FACTOR_2 = 0.2; // Multiplied together, this is 0.3
+const HAND_BREAK_HARDNESS_FACTOR_2 = 0.2;
 const SWORD_COBWEB_SPEED_MULTIPLIER = 5;
-const INCORRECT_TOOL_PENALTY_FACTOR = 5.0; // For breaking with hand when a tool is required
+const INCORRECT_TOOL_PENALTY_FACTOR = 5.0;
 const CORRECT_TOOL_TIME_FACTOR = 1.5;
-const INCORRECT_TOOL_TIME_FACTOR = 5.0; // For baseTimeFactor when tool is incorrect
+const INCORRECT_TOOL_TIME_FACTOR = 5.0;
 const HASTE_EFFECT_MULTIPLIER_BASE = 0.2;
 const MINING_FATIGUE_EFFECT_POWER_BASE = 0.3;
 const NOT_ON_GROUND_BREAK_SPEED_PENALTY = 5;
 const IN_WATER_NO_AQUA_AFFINITY_PENALTY = 5;
 const MIN_BREAK_TIME_SECONDS = 0.05;
 const TICKS_PER_SECOND = 20;
-const DEFAULT_BLOCK_HARDNESS = 50.0; // Default hardness if block not in map
+const DEFAULT_BLOCK_HARDNESS = 50.0;
 const HOTBAR_SIZE = 9;
 
 

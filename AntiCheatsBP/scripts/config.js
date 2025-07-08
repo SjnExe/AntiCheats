@@ -13,12 +13,7 @@
  * @property {unknown} [newValue] - The new value of the configuration key.
  */
 
-/**
- * @description Defines all default configuration values that are potentially runtime-editable.
- * JSDoc comments for each setting are placed here.
- * Other modules import `editableConfigValues` for the current runtime state,
- * or this `defaultConfigSettings` for the initial hardcoded defaults.
- */
+/** @description Defines all default configuration values that are potentially runtime-editable. JSDoc comments for each setting are placed here. Other modules import `editableConfigValues` for the current runtime state, or this `defaultConfigSettings` for the initial hardcoded defaults. */
 const defaultConfigSettings = {
     /** @type {string} The tag for identifying admin players. */
     adminTag: 'admin',
@@ -800,10 +795,7 @@ export const acVersion = 'v__VERSION_STRING__';
 // It is initialized by spreading the defaultConfigSettings.
 // Complex objects like `automodConfig` or `checkActionProfiles` are imported and managed by their own modules
 // and are not part of this editableConfigValues structure directly.
-/**
- * @description Holds all configuration settings that can be modified at runtime.
- * Initialized with values from `defaultConfigSettings`.
- */
+/** @description Holds all configuration settings that can be modified at runtime. Initialized with values from `defaultConfigSettings`. */
 export const editableConfigValues = { ...defaultConfigSettings };
 
 /**

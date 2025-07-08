@@ -6,11 +6,9 @@
 import * as mc from '@minecraft/server';
 
 // Default configuration values
-const VERY_LONG_EFFECT_DURATION = 2000000; // Effectively infinite duration for effects like invisibility
+const VERY_LONG_EFFECT_DURATION = 2000000;
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'vanish',
     syntax: '[on|off|toggle] [silent|notify]',

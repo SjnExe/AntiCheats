@@ -5,9 +5,7 @@
  */
 import * as mc from '@minecraft/server';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'gmsp',
     syntax: '[playername]',

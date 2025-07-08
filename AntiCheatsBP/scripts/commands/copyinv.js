@@ -4,9 +4,7 @@
 import { ModalFormData } from '@minecraft/server-ui';
 import * as mc from '@minecraft/server';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'copyinv',
     syntax: '<playername>',

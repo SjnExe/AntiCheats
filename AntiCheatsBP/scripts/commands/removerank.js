@@ -1,9 +1,7 @@
 /**
  * @file Defines the !removerank command for server administrators to remove a manual rank from a player.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'removerank',
     syntax: '<playerName> <rankId>',

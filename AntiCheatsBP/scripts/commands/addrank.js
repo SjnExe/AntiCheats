@@ -1,9 +1,7 @@
 /**
  * @file Defines the !addrank command for server administrators to assign a manual rank to a player.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'addrank',
     syntax: '<playername> <rankId>',

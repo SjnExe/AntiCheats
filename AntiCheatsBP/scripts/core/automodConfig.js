@@ -11,8 +11,8 @@
  * @property {string} [description] - Optional description of this rule set.
  * @property {number} [resetFlagsAfterSeconds] - Optional: Cooldown in seconds after which flags for this specific check type are reset for a player if no new violations occur and no AutoMod action was taken from this rule set.
  * @property {AutoModTierRule[]} tiers - An array of AutoModTierRule objects, ordered by escalating severity.
- * @type {{ automodRuleSets: AutoModRuleDef[] }}
  */
+/** @type {{ automodRuleSets: AutoModRuleDef[] }} */
 export const automodConfig = {
     /**
      * Defines sets of rules for different checkTypes.

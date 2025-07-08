@@ -7,8 +7,8 @@
  * @typedef {import('../types.js').ActionProfileNotify} ActionProfileNotify
  * @typedef {import('../types.js').ActionProfileLog} ActionProfileLog
  * @typedef {import('../types.js').ActionProfileEntry} ActionProfileEntry
- * @type {{[key: string]: import('../types.js').ActionProfileEntry}}
  */
+/** @type {{[key: string]: import('../types.js').ActionProfileEntry}} */
 export const checkActionProfiles = {
     // Movement Checks
     movementFlyHover: {

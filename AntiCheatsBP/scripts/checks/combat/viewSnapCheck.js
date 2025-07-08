@@ -11,10 +11,10 @@
 // Constants for magic numbers
 const DEFAULT_INVALID_PITCH_MIN = -90.5;
 const DEFAULT_INVALID_PITCH_MAX = 90.5;
-const YAW_FLIP_THRESHOLD = 180; // Degrees
-const DEGREES_IN_CIRCLE = 360; // Degrees
+const YAW_FLIP_THRESHOLD = 180;
+const DEGREES_IN_CIRCLE = 360;
 const MS_PER_TICK = 50;
-const DEFAULT_MAX_PITCH_SNAP_PER_TICK = 75; // Degrees per tick
+const DEFAULT_MAX_PITCH_SNAP_PER_TICK = 75;
 
 /**
  * Checks for invalid pitch (looking too far up or down) and for excessively rapid

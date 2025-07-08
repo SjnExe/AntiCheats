@@ -5,9 +5,7 @@
  */
 import { isEndLocked, setEndLocked } from '../utils/worldStateUtils.js';
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'endlock',
     syntax: '<on|off|status>',

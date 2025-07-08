@@ -6,9 +6,7 @@
 const DEFAULT_CHAT_CLEAR_LINES_COUNT = 150;
 const CLEAR_CHAT_FAILURE_THRESHOLD_MESSAGES = 5;
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'clearchat',
     syntax: '',

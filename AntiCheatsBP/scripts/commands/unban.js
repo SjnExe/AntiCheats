@@ -1,9 +1,7 @@
 /**
  * @file Defines the !unban command for administrators to remove a ban from a player.
  */
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'unban',
     syntax: '<playername>',

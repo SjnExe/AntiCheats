@@ -9,7 +9,7 @@ const worldBorderDynamicPropertyPrefix = 'anticheat:worldborder_';
 
 // Constants for calculations and defaults
 const BORDER_TELEPORT_INWARD_OFFSET = 0.5;
-const TICKS_PER_SECOND = 20.0; // Using float for division
+const TICKS_PER_SECOND = 20.0;
 const DEFAULT_PULSE_DENSITY_MIN = 0.1;
 const SAFE_TELEPORT_Y_SEARCH_DOWN_DEPTH = 10;
 const SAFE_TELEPORT_Y_SEARCH_UP_DEPTH = 5;

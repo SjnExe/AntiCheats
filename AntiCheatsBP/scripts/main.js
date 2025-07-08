@@ -86,10 +86,10 @@ function getStandardDependencies() {
 }
 
 const maxInitRetries = 3;
-const initialRetryDelayTicks = 20; // Ticks for initial system init retry delay
-const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600; // Approx 30 seconds (600 ticks / 20 tps)
-const PLAYER_FALL_DAMAGE_VELOCITY_Y_THRESHOLD = -0.0784; // Minecraft specific value for fall damage velocity check
-const TPA_SYSTEM_TICK_INTERVAL = 20; // How often TPA system processes requests (warmups, expirations)
+const initialRetryDelayTicks = 20;
+const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
+const PLAYER_FALL_DAMAGE_VELOCITY_Y_THRESHOLD = -0.0784;
+const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 /**
  * Checks if all required Minecraft event APIs are available.

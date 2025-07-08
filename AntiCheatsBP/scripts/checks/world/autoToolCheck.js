@@ -7,10 +7,10 @@ import * as mc from '@minecraft/server';
 import { getOptimalToolForBlock, calculateRelativeBlockBreakingPower } from '../../utils/index.js';
 
 // Constants for magic numbers
-const DEFAULT_AUTO_TOOL_SWITCH_TO_OPTIMAL_WINDOW_TICKS = 2; // Not a magic number in use, but good for context
+const DEFAULT_AUTO_TOOL_SWITCH_TO_OPTIMAL_WINDOW_TICKS = 2;
 const DEFAULT_AUTO_TOOL_SWITCH_BACK_WINDOW_TICKS = 5;
 const SIGNIFICANT_POWER_INCREASE_MULTIPLIER = 1.5;
-const HIGH_POWER_THRESHOLD = 5; // For newPower > 5 when old power is very low
+const HIGH_POWER_THRESHOLD = 5;
 const DEFAULT_AUTO_TOOL_BREAK_ATTEMPT_TIMEOUT_TICKS = 200;
 const SWITCH_BACK_STATE_ADDITIONAL_TIMEOUT_TICKS = 20;
 

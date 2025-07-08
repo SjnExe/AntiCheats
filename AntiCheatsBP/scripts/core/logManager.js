@@ -4,32 +4,16 @@
  * in-memory cache for performance. All `actionType` strings should be `camelCase`.
  */
 
-/**
- * The dynamic property key used for storing action logs.
- *
- * @type {string}
- */
+/** @type {string} The dynamic property key used for storing action logs. */
 const logPropertyKeyName = 'anticheat:action_logs_v1'; // Using _v1 suffix for potential future format changes.
 
-/**
- * Maximum number of log entries to keep in memory and persisted storage.
- *
- * @type {number}
- */
+/** @type {number} Maximum number of log entries to keep in memory and persisted storage. */
 const maxLogEntriesCount = 200; // Guideline: Keep this reasonable to avoid large dynamic property sizes.
 
-/**
- * In-memory cache for log entries. Initialized on script load.
- *
- * @type {Array<import('../types.js').LogEntry>}
- */
+/** @type {Array<import('../types.js').LogEntry>} In-memory cache for log entries. Initialized on script load. */
 let logsInMemory = [];
 
-/**
- * Flag indicating if the in-memory logs have changed and need to be persisted.
- *
- * @type {boolean}
- */
+/** @type {boolean} Flag indicating if the in-memory logs have changed and need to be persisted. */
 let logsAreDirty = false;
 
 /**

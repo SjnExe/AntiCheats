@@ -3,9 +3,7 @@
  * Also aliased as !ui.
  */
 
-/**
- * @type {import('../types.js').CommandDefinition}
- */
+/** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'panel',
     syntax: '',
