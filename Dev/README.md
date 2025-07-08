@@ -72,6 +72,15 @@ This directory can be used by developers (including AI assistants like Jules) to
 - Place utility scripts for debugging or build processes.
 - Maintain any other resources that facilitate understanding and working on this addon.
 
+## Build Scripts
+
+This project uses simple Node.js scripts for some build/generation tasks.
+
+*   **`npm run build:registry`**:
+    *   Runs the `scripts/build/generateCommandRegistry.js` script.
+    *   This script automatically generates the `AntiCheatsBP/scripts/core/commandRegistry.js` file by scanning the `AntiCheatsBP/scripts/commands/` directory.
+    *   **Important**: If you add, remove, or rename command files in `AntiCheatsBP/scripts/commands/`, you **must** run this script to update the command registry. Failure to do so will result in new commands not being registered or errors from missing commands.
+
 ## Target Minecraft Version
 The addon currently targets Minecraft Bedrock version 1.21.90 and newer. Please ensure development and testing align with this version.
 

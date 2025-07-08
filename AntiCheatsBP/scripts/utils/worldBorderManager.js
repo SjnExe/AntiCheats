@@ -102,52 +102,106 @@ export function isPlayerOutsideBorder(player, dependencies) {
 }
 
 /**
- * Retrieves the world border settings for a specific dimension.
+ * Retrieves the world border settings for a specific dimension from world dynamic properties.
+ *
+ * This function attempts to load and parse settings stored as JSON. It includes validation
+ * for the structure and essential fields of the settings object.
  *
  * @param {string} dimensionId - The ID of the dimension (e.g., 'minecraft:overworld').
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @returns {object | null} The border settings object or null if not found or invalid.
+ *        It's expected to be a valid dimension identifier.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object,
+ *        including `playerUtils` and `logManager` for logging.
+ * @returns {object | null} The border settings object if found and valid, otherwise null.
+ *         Null is returned if the settings are not found, if the stored data is corrupted
+ *         (e.g., not valid JSON, incorrect data types, missing essential fields),
+ *         or if an unexpected error occurs during retrieval or parsing.
+ *         Detailed logs are generated for error conditions.
  */
 export function getBorderSettings(dimensionId, dependencies) {
-    const { playerUtils } = dependencies;
-    if (!dimensionId || typeof dimensionId !== 'string') {
-        playerUtils.debugLog('[WorldBorderManager] getBorderSettings: Invalid dimensionId provided.', null, dependencies);
+    const { playerUtils, logManager } = dependencies; // Added logManager
+    if (!dimensionId || typeof dimensionId !== 'string' || dimensionId.trim() === '') {
+        // Log an actual error/warning if dimensionId is fundamentally invalid, as this is unexpected from internal calls.
+        console.warn(`[WorldBorderManager] getBorderSettings: Called with invalid dimensionId: '${dimensionId}'`);
+        playerUtils.debugLog(`[WorldBorderManager] getBorderSettings: Invalid dimensionId provided (type: ${typeof dimensionId}, value: '${dimensionId}').`, null, dependencies);
         return null;
     }
-    const propertyKey = worldBorderDynamicPropertyPrefix + dimensionId.toLowerCase().replace('minecraft:', '');
+
+    const normalizedDimId = dimensionId.toLowerCase().replace('minecraft:', '');
+    const propertyKey = worldBorderDynamicPropertyPrefix + normalizedDimId;
+
     try {
         const settingsJson = mc.world.getDynamicProperty(propertyKey);
-        if (typeof settingsJson === 'string') {
-            const settings = JSON.parse(settingsJson);
-            if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
-                typeof settings.enabled !== 'boolean' || typeof settings.dimensionId !== 'string' || settings.dimensionId !== dimensionId) {
-                playerUtils.debugLog(`[WorldBorderManager] Invalid or corrupt common settings for ${dimensionId}. Settings: ${JSON.stringify(settings)}`, 'System', dependencies);
-                return null;
-            }
-            if (settings.shape === 'square') {
-                if (typeof settings.halfSize !== 'number' || settings.halfSize <= 0) {
-                    playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in ${dimensionId}. Value: ${settings.halfSize}`, 'System', dependencies);
-                    return null;
-                }
-            } else if (settings.shape === 'circle') {
-                if (typeof settings.radius !== 'number' || settings.radius <= 0) {
-                    playerUtils.debugLog(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in ${dimensionId}. Value: ${settings.radius}`, 'System', dependencies);
-                    return null;
-                }
-            } else if (settings.shape !== undefined) {
-                playerUtils.debugLog(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for ${dimensionId}. Defaulting to no border.`, 'System', dependencies);
-                return null;
-            }
-            if (settings.isResizing && settings.resizeInterpolationType === undefined) {
-                settings.resizeInterpolationType = 'linear';
-            }
-            return settings;
+
+        if (settingsJson === undefined) {
+            // This is a common case (border not set for a dimension), not necessarily an error.
+            playerUtils.debugLog(`[WorldBorderManager] No border settings found for dimension '${dimensionId}' (key: ${propertyKey}).`, null, dependencies);
+            return null;
         }
+
+        if (typeof settingsJson !== 'string') {
+            // This indicates corrupted data type if property exists but isn't a string.
+            console.warn(`[WorldBorderManager] Corrupted border settings for dimension '${dimensionId}'. Expected string, got ${typeof settingsJson}. Key: ${propertyKey}`);
+            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_corruption', details: `Dimension ${dimensionId}: Expected string for dynamic property, got ${typeof settingsJson}. Key: ${propertyKey}` }, dependencies);
+            return null;
+        }
+
+        let settings;
+        try {
+            settings = JSON.parse(settingsJson);
+        } catch (parseError) {
+            console.error(`[WorldBorderManager] Failed to parse border settings JSON for dimension '${dimensionId}'. Error: ${parseError.stack || parseError}. JSON: "${settingsJson}"`, );
+            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_json_parse_fail', details: `Dimension ${dimensionId}: JSON parse error. Error: ${parseError.message}. Key: ${propertyKey}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
+            return null;
+        }
+
+        // Validate core settings structure
+        if (!settings || typeof settings.centerX !== 'number' || typeof settings.centerZ !== 'number' ||
+            typeof settings.enabled !== 'boolean' || typeof settings.dimensionId !== 'string') {
+            console.warn(`[WorldBorderManager] Invalid or corrupt common settings structure for dimension '${dimensionId}'. Settings: ${JSON.stringify(settings)}`);
+            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_structure', details: `Dimension ${dimensionId}: Invalid common settings structure. Loaded: ${JSON.stringify(settings)}. Key: ${propertyKey}` }, dependencies);
+            return null;
+        }
+
+        // Validate dimensionId consistency
+        if (settings.dimensionId !== dimensionId) {
+             console.warn(`[WorldBorderManager] Mismatch in dimensionId for '${dimensionId}'. Expected '${dimensionId}', got '${settings.dimensionId}' in stored data. Key: ${propertyKey}`);
+             logManager?.addLog({ actionType: 'system_warning', context: 'getBorderSettings_dimension_mismatch', details: `Dimension ${dimensionId}: Mismatch in stored dimensionId. Expected ${dimensionId}, got ${settings.dimensionId}. Key: ${propertyKey}` }, dependencies);
+             // Continue, but this is a warning sign. Could choose to return null if strict consistency is required.
+        }
+
+        // Validate shape-specific settings
+        if (settings.shape === 'square') {
+            if (typeof settings.halfSize !== 'number' || settings.halfSize <= 0) {
+                console.warn(`[WorldBorderManager] Invalid or non-positive 'halfSize' for square border in '${dimensionId}'. Value: ${settings.halfSize}`);
+                logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_halfsize', details: `Dimension ${dimensionId}: Invalid square halfSize: ${settings.halfSize}. Key: ${propertyKey}` }, dependencies);
+                return null;
+            }
+        } else if (settings.shape === 'circle') {
+            if (typeof settings.radius !== 'number' || settings.radius <= 0) {
+                console.warn(`[WorldBorderManager] Invalid or non-positive 'radius' for circle border in '${dimensionId}'. Value: ${settings.radius}`);
+                logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_radius', details: `Dimension ${dimensionId}: Invalid circle radius: ${settings.radius}. Key: ${propertyKey}` }, dependencies);
+                return null;
+            }
+        } else if (settings.shape !== undefined) { // Allows shape to be undefined if border is disabled (though 'enabled' flag is primary)
+            console.warn(`[WorldBorderManager] Unknown or invalid shape '${settings.shape}' for dimension '${dimensionId}'.`);
+            logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_invalid_shape', details: `Dimension ${dimensionId}: Unknown shape: ${settings.shape}. Key: ${propertyKey}` }, dependencies);
+            return null; // Or default to a disabled state if preferred
+        }
+
+        // Default resizeInterpolationType if missing during an active resize
+        if (settings.isResizing && settings.resizeInterpolationType === undefined) {
+            settings.resizeInterpolationType = 'linear';
+        }
+
+        return settings;
+
     } catch (error) {
-        console.error(`[WorldBorderManager] Error in getBorderSettings for ${dimensionId}: ${error.stack || error}`);
-        playerUtils.debugLog(`[WorldBorderManager] Exception in getBorderSettings for ${dimensionId}: ${error.message}`, 'System', dependencies);
+        // Catch any other unexpected errors during dynamic property access or other logic
+        console.error(`[WorldBorderManager] Unexpected error in getBorderSettings for dimension '${dimensionId}': ${error.stack || error}`);
+        logManager?.addLog({ actionType: 'system_error', context: 'getBorderSettings_unexpected_exception', details: `Dimension ${dimensionId}: Unexpected error: ${error.message}. Key: ${propertyKey}`, errorStack: error.stack || error.toString() }, dependencies);
     }
-    return null;
+
+    return null; // Default return if any error path leads here
 }
 
 /**

@@ -10,8 +10,8 @@
  */
 
 // Constants for magic numbers
-const DEFAULT_NAME_SPOOF_MAX_LENGTH = 48;
-const DEFAULT_NAME_SPOOF_MIN_CHANGE_INTERVAL_TICKS = 200;
+const defaultNameSpoofMaxLength = 48;
+const defaultNameSpoofMinChangeIntervalTicks = 200;
 
 /**
  * Checks a player's nameTag for spoofing attempts based on configured rules
@@ -44,7 +44,7 @@ export async function checkNameSpoof(player, pData, dependencies) {
     let flaggedReasonForLog = null;
     const previousNameTagForViolationDetails = pData.lastKnownNameTag ?? 'N/A';
 
-    const maxLength = config?.nameSpoofMaxLength ?? DEFAULT_NAME_SPOOF_MAX_LENGTH;
+    const maxLength = config?.nameSpoofMaxLength ?? defaultNameSpoofMaxLength;
     if (currentNameTag.length > maxLength) {
         reasonDetailString = `Name is too long (${currentNameTag.length}/${maxLength}).`;
         flaggedReasonForLog = `NameTag length limit exceeded (${currentNameTag.length}/${maxLength}). Name: '${currentNameTag}'`;
@@ -70,7 +70,7 @@ export async function checkNameSpoof(player, pData, dependencies) {
     }
 
     if (currentNameTag !== pData.lastKnownNameTag) {
-        const minIntervalTicks = config?.nameSpoofMinChangeIntervalTicks ?? DEFAULT_NAME_SPOOF_MIN_CHANGE_INTERVAL_TICKS;
+        const minIntervalTicks = config?.nameSpoofMinChangeIntervalTicks ?? defaultNameSpoofMinChangeIntervalTicks;
         const ticksSinceLastChange = currentTick - (pData.lastNameTagChangeTick ?? 0); // 0 is fine
 
         if (!reasonDetailString &&

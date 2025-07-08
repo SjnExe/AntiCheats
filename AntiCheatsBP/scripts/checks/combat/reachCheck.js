@@ -10,13 +10,13 @@ import * as mc from '@minecraft/server';
  */
 
 // Constants for magic numbers
-const PLAYER_HITBOX_ADJUSTMENT = 0.4;
-const DEFAULT_ENTITY_HITBOX_ADJUSTMENT = 0.5;
-const LOGGING_DECIMAL_PLACES = 3;
-const DEFAULT_CREATIVE_REACH = 6.0;
-const DEFAULT_SURVIVAL_REACH = 3.0;
-const DEFAULT_REACH_BUFFER = 0.5;
-const VIOLATION_DETAIL_DECIMAL_PLACES = 2;
+const playerHitboxAdjustment = 0.4;
+const defaultEntityHitboxAdjustment = 0.5;
+const loggingDecimalPlaces = 3;
+const defaultCreativeReach = 6.0;
+const defaultSurvivalReach = 3.0;
+const defaultReachBuffer = 0.5;
+const violationDetailDecimalPlaces = 2;
 
 /**
  * Checks if a player is attacking an entity from an excessive distance (Reach).
@@ -52,41 +52,41 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
     const vectorToTarget = mc.Vector.subtract(targetEntity.location, eyeLocation);
     let distanceToTargetOrigin = vectorToTarget.length();
 
-    const approximateHitboxAdjustment = targetEntity.typeId === 'minecraft:player' ? PLAYER_HITBOX_ADJUSTMENT : DEFAULT_ENTITY_HITBOX_ADJUSTMENT;
+    const approximateHitboxAdjustment = targetEntity.typeId === 'minecraft:player' ? playerHitboxAdjustment : defaultEntityHitboxAdjustment;
     distanceToTargetOrigin = Math.max(0, distanceToTargetOrigin - approximateHitboxAdjustment); // 0 is fine
 
 
     if (pData?.isWatched) {
-        playerUtils?.debugLog(`[ReachCheck] ${playerName} distance to ${targetEntity.typeId} origin (adjusted): ${distanceToTargetOrigin.toFixed(LOGGING_DECIMAL_PLACES)}. Mode: ${mc.GameMode[gameMode]}. Eye: ${eyeLocation.x.toFixed(1)},${eyeLocation.y.toFixed(1)},${eyeLocation.z.toFixed(1)}. TargetLoc: ${targetEntity.location.x.toFixed(1)},${targetEntity.location.y.toFixed(1)},${targetEntity.location.z.toFixed(1)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ReachCheck] ${playerName} distance to ${targetEntity.typeId} origin (adjusted): ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}. Mode: ${mc.GameMode[gameMode]}. Eye: ${eyeLocation.x.toFixed(1)},${eyeLocation.y.toFixed(1)},${eyeLocation.z.toFixed(1)}. TargetLoc: ${targetEntity.location.x.toFixed(1)},${targetEntity.location.y.toFixed(1)},${targetEntity.location.z.toFixed(1)}`, watchedPlayerName, dependencies);
     }
 
     let maxReachDistBase;
     switch (gameMode) {
         case mc.GameMode.creative:
-            maxReachDistBase = config?.reachDistanceCreative ?? DEFAULT_CREATIVE_REACH;
+            maxReachDistBase = config?.reachDistanceCreative ?? defaultCreativeReach;
             break;
         case mc.GameMode.survival:
         case mc.GameMode.adventure:
-            maxReachDistBase = config?.reachDistanceSurvival ?? DEFAULT_SURVIVAL_REACH;
+            maxReachDistBase = config?.reachDistanceSurvival ?? defaultSurvivalReach;
             break;
         default:
             playerUtils?.debugLog(`[ReachCheck] Unsupported game mode '${mc.GameMode[gameMode]}' for player ${playerName}. Skipping reach check.`, watchedPlayerName, dependencies);
             return;
     }
 
-    const reachBuffer = config?.reachBuffer ?? DEFAULT_REACH_BUFFER;
+    const reachBuffer = config?.reachBuffer ?? defaultReachBuffer;
     const maxAllowedReach = maxReachDistBase + reachBuffer;
 
     if (pData?.isWatched) {
-        playerUtils?.debugLog(`[ReachCheck] ${playerName}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(LOGGING_DECIMAL_PLACES)}, ActualAdjustedDist: ${distanceToTargetOrigin.toFixed(LOGGING_DECIMAL_PLACES)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ReachCheck] ${playerName}: BaseReach: ${maxReachDistBase.toFixed(2)}, Buffer: ${reachBuffer.toFixed(2)}, MaxAllowedReach: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}, ActualAdjustedDist: ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}`, watchedPlayerName, dependencies);
     }
 
     if (distanceToTargetOrigin > maxAllowedReach) {
         const violationDetails = {
-            distance: distanceToTargetOrigin.toFixed(LOGGING_DECIMAL_PLACES),
-            maxAllowed: maxAllowedReach.toFixed(LOGGING_DECIMAL_PLACES),
-            baseMax: maxReachDistBase.toFixed(VIOLATION_DETAIL_DECIMAL_PLACES),
-            buffer: reachBuffer.toFixed(VIOLATION_DETAIL_DECIMAL_PLACES),
+            distance: distanceToTargetOrigin.toFixed(loggingDecimalPlaces),
+            maxAllowed: maxAllowedReach.toFixed(loggingDecimalPlaces),
+            baseMax: maxReachDistBase.toFixed(violationDetailDecimalPlaces),
+            buffer: reachBuffer.toFixed(violationDetailDecimalPlaces),
             targetEntityType: targetEntity.typeId,
             targetEntityName: targetEntity.nameTag || targetEntity.typeId.replace('minecraft:', ''),
             playerGameMode: mc.GameMode[gameMode] ?? String(gameMode),
@@ -97,6 +97,6 @@ export async function checkReach(player, pData, dependencies, eventSpecificData)
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
 
         await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
-        playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Distance: ${distanceToTargetOrigin.toFixed(LOGGING_DECIMAL_PLACES)}, Max: ${maxAllowedReach.toFixed(LOGGING_DECIMAL_PLACES)}`, watchedPlayerName, dependencies);
+        playerUtils?.debugLog(`[ReachCheck] Flagged ${playerName} for reach. Distance: ${distanceToTargetOrigin.toFixed(loggingDecimalPlaces)}, Max: ${maxAllowedReach.toFixed(loggingDecimalPlaces)}`, watchedPlayerName, dependencies);
     }
 }

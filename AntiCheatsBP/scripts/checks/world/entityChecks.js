@@ -4,8 +4,8 @@
 import * as mc from '@minecraft/server';
 
 // Constants for magic numbers
-const DEFAULT_ENTITY_SPAM_TIME_WINDOW_MS = 2000;
-const DEFAULT_ENTITY_SPAM_MAX_SPAWNS_IN_WINDOW = 5;
+const defaultEntitySpamTimeWindowMs = 2000;
+const defaultEntitySpamMaxSpawnsInWindow = 5;
 
 /**
  * Checks for entity spamming based on spawn rate of monitored entity types by a player.
@@ -59,7 +59,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
     pData.recentEntitySpamTimestamps[entityType].push(currentTime);
     pData.isDirtyForSave = true;
 
-    const windowMs = config.entitySpamTimeWindowMs || DEFAULT_ENTITY_SPAM_TIME_WINDOW_MS;
+    const windowMs = config.entitySpamTimeWindowMs || defaultEntitySpamTimeWindowMs;
     const originalCount = pData.recentEntitySpamTimestamps[entityType].length;
 
     pData.recentEntitySpamTimestamps[entityType] = pData.recentEntitySpamTimestamps[entityType].filter(
@@ -70,7 +70,7 @@ export async function checkEntitySpam(potentialPlayer, entityType, pData, depend
         pData.isDirtyForSave = true;
     }
 
-    const maxSpawns = config.entitySpamMaxSpawnsInWindow || DEFAULT_ENTITY_SPAM_MAX_SPAWNS_IN_WINDOW;
+    const maxSpawns = config.entitySpamMaxSpawnsInWindow || defaultEntitySpamMaxSpawnsInWindow;
     const rawActionProfileKey = config.entitySpamActionProfileName ?? 'worldAntiGriefEntityspam';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
