@@ -1,4 +1,4 @@
-*   **Task:** Continue ESLint JSDoc and Style Fixes.
-    *   **Objective:** Address remaining ESLint warnings and errors, focusing on missing JSDoc information (`require-jsdoc`, `require-param-type`, etc.), stylistic JSDoc issues, and general code style warnings (`no-magic-numbers`, etc.) across the entire codebase. Investigate and correctly configure/apply the `jsdoc/empty-tags` rule.
+*   **Task:** Define formal schemas for command definitions and config.js.
+    *   **Objective:** Create JSON Schema files for `CommandDefinition` (in `commandDefinitionSchema.json`) and `defaultConfigSettings` (in `configSchema.json`) to aid in validation, documentation, and tooling.
     *   **Agent:** Jules
-    *   **Status:** In progress. Next up: Systematically fix JSDoc `require-` errors.
+    *   **Status:** In progress. Schemas created. Next: Submit changes.
