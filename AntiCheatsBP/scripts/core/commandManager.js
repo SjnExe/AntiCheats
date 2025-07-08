@@ -93,9 +93,9 @@ export function unregisterCommandInternal(commandName, dependencies) {
     // initializeCommands(dependencies); // Or a more targeted update.
 }
 
-// IIFE for initial command loading on script start
-// This IIFE needs to be adjusted as `config.commandAliases` is no longer the source.
-// For initial load, aliasToCommandMap will be empty or populated based on command files.
+// IIFE for initial command loading on script start.
+// Aliases are now sourced directly from command definitions within commandModules,
+// and `initializeCommands` populates `dependencies.aliasToCommandMap`.
 (() => {
     const initialLoadDeps = {
         playerUtils: {
@@ -213,15 +213,19 @@ export async function handleChatCommand(eventData, dependencies) {
         console.error(`[CommandManager.handleChatCommand CRITICAL] Error executing ${finalCommandName} for ${playerName}: ${errorStack}`);
         playerUtils?.debugLog(`[CommandManager.handleChatCommand CRITICAL] Error executing ${finalCommandName} for ${playerName}: ${errorMessage}. Stack: ${errorStack}`, null, dependencies);
         logManager?.addLog({
-            actionType: 'errorCommandExecution',
+            actionType: 'error.cmd.exec', // Standardized actionType
             targetName: playerName,
             targetId: player.id,
+            context: `commandManager.handleChatCommand.${finalCommandName}`, // More specific context
             details: {
-                command: finalCommandName,
-                args: args.join(', '),
-                errorMessage,
-            },
-            errorStack, // Store full stack for detailed debugging
+                errorCode: 'CMD_EXEC_FAIL',
+                message: errorMessage,
+                rawErrorStack: errorStack,
+                meta: {
+                    command: finalCommandName,
+                    args: args.join(', '),
+                }
+            }
         }, dependencies);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }

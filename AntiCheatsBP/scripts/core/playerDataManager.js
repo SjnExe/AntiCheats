@@ -28,7 +28,7 @@ const dynamicPropertySizeLimit = 32760;
  */
 const persistedPlayerDataKeys = [
     'flags', 'isWatched', 'lastFlagType', 'playerNameTag',
-    'attackEvents', 'lastAttackTime', 'blockBreakEvents', // lastAttackTime might be redundant if attackEvents stores timestamps
+    'blockBreakEvents', // lastAttackTime might be redundant if attackEvents stores timestamps
     'consecutiveOffGroundTicks', 'fallDistance',
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
@@ -129,17 +129,36 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
     playerUtils?.debugLog(`${baseMessage}. Error: ${error.message}`, playerName, dependencies);
 
     const logContext = `playerDataManager.${callingFunction}`;
-    const actionType = `errorPDM${callingFunction.replace('playerData', '')}${operation.replace('player.', '').replace('JSON.', '')}`;
+
+    let opType = 'unknown';
+    if (operation.toLowerCase().includes('json.parse')) opType = 'parse';
+    else if (operation.toLowerCase().includes('json.stringify')) opType = 'stringify';
+    else if (operation.toLowerCase().includes('getdynamicproperty')) opType = 'get'; // Made lowercase for robust matching
+    else if (operation.toLowerCase().includes('setdynamicproperty')) opType = 'set'; // Made lowercase
+
+    let contextStr = 'unknown';
+    if (callingFunction === 'savePlayerDataToDynamicProperties' || callingFunction === 'loadPlayerDataFromDynamicProperties') {
+        contextStr = 'data';
+    }
+    // Add more contexts here if _handleDynamicPropertyError is used by other functions for different DP keys.
+
+    const newActionType = `pdm.dp.${contextStr}.${opType}.error`;
+
+    const errorCode = `PDM_DP_${contextStr.toUpperCase()}_${opType.toUpperCase()}_ERROR`;
 
     logManager?.addLog({
-        actionType: actionType.charAt(0).toLowerCase() + actionType.slice(1),
-        context: logContext,
+        actionType: newActionType, // e.g., pdm.dp.data.parse.error
+        context: logContext,    // e.g., playerDataManager.loadPlayerDataFromDynamicProperties
         targetName: playerName,
         details: {
-            operation,
-            errorMessage: error.message,
-            stack: error.stack,
-            ...additionalDetails,
+            errorCode: errorCode,
+            message: error.message,
+            rawErrorStack: error.stack,
+            meta: {
+                originalOperation: operation, // Keep original 'operation' for specific detail
+                callingFunctionContext: callingFunction, // Keep original 'callingFunction' for specific detail
+                ...additionalDetails,
+            }
         },
     }, dependencies);
 }
@@ -307,14 +326,13 @@ if (allKnownFlagTypes.length === 0) {
 /**
  * Initializes a new default PlayerAntiCheatData object for a player.
  * @param {import('@minecraft/server').Player} player - The player object.
- * @param {number} currentTick - The current game tick.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object, expected to contain `currentTick`.
  * @returns {import('../types.js').PlayerAntiCheatData} The initialized player data.
  */
-export function initializeDefaultPlayerData(player, currentTick, dependencies) {
-    const { playerUtils } = dependencies;
+export function initializeDefaultPlayerData(player, dependencies) {
+    const { playerUtils, currentTick } = dependencies; // Use currentTick from dependencies
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
-    playerUtils?.debugLog(`[PlayerDataManager.initializeDefaultPlayerData] Initializing for ${playerName} (ID: ${player.id})`, playerName, dependencies);
+    playerUtils?.debugLog(`[PlayerDataManager.initializeDefaultPlayerData] Initializing for ${playerName} (ID: ${player.id}) at tick ${currentTick}`, playerName, dependencies);
 
     const defaultFlags = { totalFlags: 0 };
     for (const flagKey of allKnownFlagTypes) {
@@ -417,12 +435,11 @@ export function initializeDefaultPlayerData(player, currentTick, dependencies) {
  * Ensures that a player's data is initialized, loading from persistence if available,
  * or creating default data otherwise. Merges loaded data with defaults for transient fields.
  * @param {import('@minecraft/server').Player} player - The player object.
- * @param {number} currentTick - Current game tick, used if initializing default data.
- * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
+ * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object, expected to contain `currentTick`.
  * @returns {Promise<import('../types.js').PlayerAntiCheatData>} The initialized or loaded player data.
  */
-export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
-    const { playerUtils, logManager } = dependencies; // Added logManager
+export async function ensurePlayerDataInitialized(player, dependencies) {
+    const { playerUtils, logManager, currentTick } = dependencies; // Use currentTick from dependencies
     const playerName = player?.nameTag ?? player?.id ?? 'UnknownPlayer';
 
     if (playerData.has(player.id)) {
@@ -436,12 +453,12 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
         return existingPData;
     }
 
-    let newPData = initializeDefaultPlayerData(player, currentTick, dependencies);
+    let newPData = initializeDefaultPlayerData(player, dependencies); // Pass only dependencies
     const loadedData = await loadPlayerDataFromDynamicProperties(player, dependencies);
 
     if (loadedData && typeof loadedData === 'object') {
         playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Merging persisted pData for ${playerName}.`, playerName, dependencies);
-        const defaultPDataForMerge = initializeDefaultPlayerData(player, currentTick, dependencies);
+        const defaultPDataForMerge = initializeDefaultPlayerData(player, dependencies); // Pass only dependencies
         newPData = { ...defaultPDataForMerge, ...loadedData };
 
         newPData.flags = { ...defaultPDataForMerge.flags, ...(loadedData.flags || {}) };
@@ -503,7 +520,7 @@ export async function ensurePlayerDataInitialized(player, currentTick, dependenc
             playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Found pending flag purge for ${playerIdentifierForPurge}. Processing...`, newPData.isWatched ? playerIdentifierForPurge : null, dependencies);
 
             const oldTotalFlags = newPData.flags?.totalFlags ?? 0;
-            const defaultPlayerDataForFlags = initializeDefaultPlayerData(player, currentTick, dependencies); // Re-get defaults for safety
+            const defaultPlayerDataForFlags = initializeDefaultPlayerData(player, dependencies); // Pass only dependencies
 
             newPData.flags = JSON.parse(JSON.stringify(defaultPlayerDataForFlags.flags));
             newPData.lastFlagType = '';
@@ -700,17 +717,10 @@ export async function addFlag(player, flagType, reasonMessage, dependencies, det
     pData.flags[finalFlagType].lastDetectionTime = Date.now();
     pData.flags.totalFlags = (pData.flags.totalFlags || 0) + 1;
     pData.lastFlagType = finalFlagType;
-
-    if (typeof detailsForNotify === 'object' && detailsForNotify !== null && detailsForNotify.itemTypeId) {
-        pData.lastViolationDetailsMap ??= {};
-        pData.lastViolationDetailsMap[finalFlagType] = {
-            itemTypeId: detailsForNotify.itemTypeId,
-            quantityFound: detailsForNotify.quantityFound || 0,
-            timestamp: Date.now(),
-        };
-        playerUtils?.debugLog(`[PlayerDataManager.addFlag] Stored violation details for ${finalFlagType} on ${playerName}: ${JSON.stringify(pData.lastViolationDetailsMap[finalFlagType])}`, playerName, dependencies);
-    }
     pData.isDirtyForSave = true;
+
+    // The responsibility for populating pData.lastViolationDetailsMap is now fully in actionManager.executeCheckAction.
+    // This function (addFlag) will still receive detailsForNotify, which might be used by notifyAdmins if specific formatting is needed here.
 
     const notifyString = (typeof detailsForNotify === 'object' && detailsForNotify !== null) ?
         (detailsForNotify.originalDetailsForNotify || `Item: ${String(detailsForNotify.itemTypeId || 'N/A')}`) :

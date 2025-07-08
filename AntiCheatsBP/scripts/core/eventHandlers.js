@@ -95,17 +95,21 @@ async function _handlePlayerLeave(eventData, dependencies) { // Renamed to indic
         }
     }
 
-    if (pData) {
-        pData.lastLogoutTime = Date.now();
-        pData.isOnline = false; // Mark as offline
-        pData.isDirtyForSave = true; // Ensure data is marked for saving
+    // Re-fetch pData as actionManager.executeCheckAction involves awaits and player might have left
+    // or pData cache could have been affected.
+    const pDataAfterAction = playerDataManager?.getPlayerData(player.id);
 
-        const lastLocation = pData.lastPosition ?? player?.location; // Use pData's lastPosition if available
-        const lastDimensionId = (pData.lastDimensionId ?? player?.dimension?.id)?.replace('minecraft:', '');
-        const lastGameModeString = mc.GameMode[pData.lastGameMode ?? player?.gameMode] ?? getString?.('common.value.unknown') ?? 'Unknown';
+    if (pDataAfterAction) { // Use the potentially updated pData
+        pDataAfterAction.lastLogoutTime = Date.now();
+        pDataAfterAction.isOnline = false; // Mark as offline
+        pDataAfterAction.isDirtyForSave = true; // Ensure data is marked for saving
+
+        const lastLocation = pDataAfterAction.lastPosition ?? player?.location;
+        const lastDimensionId = (pDataAfterAction.lastDimensionId ?? player?.dimension?.id)?.replace('minecraft:', '');
+        const lastGameModeString = mc.GameMode[pDataAfterAction.lastGameMode ?? player?.gameMode] ?? getString?.('common.value.unknown') ?? 'Unknown';
         let sessionDurationString = getString?.('common.value.notApplicable') ?? 'N/A';
-        if (pData.joinTime && pData.joinTime > 0) {
-            sessionDurationString = formatSessionDuration(Date.now() - pData.joinTime);
+        if (pDataAfterAction.joinTime && pDataAfterAction.joinTime > 0) {
+            sessionDurationString = formatSessionDuration(Date.now() - pDataAfterAction.joinTime);
         }
         logManager?.addLog({
             actionType: 'playerLeave',
@@ -168,7 +172,8 @@ async function _handlePlayerSpawn(eventData, dependencies) {
     );
 
     try {
-        const pData = await playerDataManager.ensurePlayerDataInitialized(player, minecraftSystem.system.currentTick, dependencies);
+        // currentTick is now sourced from dependencies within ensurePlayerDataInitialized
+        const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies);
         if (!pData) {
             console.error(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
             player.sendMessage(getString('error.playerDataLoadFailedKick')); // Kick if data can't be loaded/created
@@ -277,9 +282,13 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         if (checks?.checkInvalidRenderDistance && config.enableInvalidRenderDistanceCheck) {
             // Initial render distance check might be useful on spawn
             minecraftSystem.system.runTimeout(async () => {
-                if (player.isValid()) {
-                    await checks.checkInvalidRenderDistance(player, pData, dependencies);
+                if (!player.isValid()) return;
+                const currentPData = playerDataManager.getPlayerData(player.id); // Re-fetch pData inside timeout
+                if (!currentPData) {
+                    playerUtils?.debugLog(`[EvtHdlr.Spawn.Timeout.checkInvalidRenderDistance] pData not found for ${playerName}.`, playerName, dependencies);
+                    return;
                 }
+                await checks.checkInvalidRenderDistance(player, currentPData, dependencies);
             }, RENDER_DISTANCE_CHECK_DELAY_TICKS);
         }
 
@@ -296,11 +305,18 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         console.error(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[EvtHdlr.Spawn CRITICAL] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorEventHandlersPlayerSpawn',
-            context: 'eventHandlers.handlePlayerSpawn',
-            targetName: playerName, targetId: player?.id,
-            details: { initialSpawn, errorMessage: error.message },
-            errorStack: error.stack,
+            actionType: 'error.evt.playerSpawn', // Standardized actionType
+            context: 'eventHandlers.handlePlayerSpawn', // Context remains useful
+            targetName: playerName,
+            targetId: player?.id,
+            details: {
+                errorCode: 'EVT_PLAYER_SPAWN_GENERAL_ERROR',
+                message: error.message,
+                rawErrorStack: error.stack,
+                meta: {
+                    initialSpawn: initialSpawn,
+                }
+            }
         }, dependencies);
     }
 }
@@ -398,7 +414,14 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                     playerName, dependencies,
                 );
                 if (checks?.checkEntitySpam) {
-                    const isSpam = await checks.checkEntitySpam(player, entity.typeId, pData, dependencies); // Pass entity.typeId
+                    // pData here is from the loop's start, checkEntitySpam is async.
+                    const isSpam = await checks.checkEntitySpam(player, entity.typeId, pData, dependencies);
+
+                    // Re-fetch pData for this player after the await before modifying it
+                    if (!player.isValid()) break; // Player might have disconnected during await
+                    const currentPDataForLoop = playerDataManager?.getPlayerData(player.id);
+                    if (!currentPDataForLoop) break; // pData might be gone
+
                     if (isSpam && config.entitySpamAction === 'kill') {
                         try {
                             entity.kill();
@@ -416,9 +439,13 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                             }, dependencies);
                         }
                     }
+                    currentPDataForLoop.expectingConstructedEntity = null; // Clear expectation on the potentially re-fetched pData
+                    currentPDataForLoop.isDirtyForSave = true;
+                } else {
+                     // If checkEntitySpam doesn't exist, still clear expectation on original pData
+                    pData.expectingConstructedEntity = null;
+                    pData.isDirtyForSave = true;
                 }
-                pData.expectingConstructedEntity = null; // Clear expectation
-                pData.isDirtyForSave = true;
                 break;
             }
         }
@@ -792,15 +819,25 @@ async function _handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
         } // Stop if cancelled
     }
 
-    // If not cancelled, set up for speed check
-    if (config?.enableInstaBreakSpeedCheck) {
-        const expectedTicks = getExpectedBreakTicks(player, block.permutation, itemStack, dependencies); // itemStack can be undefined (hand)
-        pData.breakStartTickGameTime = currentTick;
-        pData.expectedBreakDurationTicks = expectedTicks;
-        pData.breakingBlockTypeId = block.typeId; // Store the type of block being broken
-        pData.breakingBlockLocation = { x: block.location.x, y: block.location.y, z: block.location.z };
-        pData.toolUsedForBreakAttempt = itemStack?.typeId; // Store tool, can be undefined
-        pData.isDirtyForSave = true;
+    // If not cancelled by checkBreakUnbreakable
+    if (!eventData.cancel) {
+        // Re-fetch pData after await checkBreakUnbreakable
+        if (!player.isValid()) return;
+        const currentPData = playerDataManager?.getPlayerData(player.id);
+        if (!currentPData) {
+            dependencies.playerUtils?.debugLog(`[EvtHdlr.BreakBlockBefore] pData not found for ${player.nameTag} after unbreakable check.`, player.nameTag, dependencies);
+            return;
+        }
+
+        if (config?.enableInstaBreakSpeedCheck) {
+            const expectedTicks = getExpectedBreakTicks(player, block.permutation, itemStack, dependencies);
+            currentPData.breakStartTickGameTime = currentTick;
+            currentPData.expectedBreakDurationTicks = expectedTicks;
+            currentPData.breakingBlockTypeId = block.typeId;
+            currentPData.breakingBlockLocation = { x: block.location.x, y: block.location.y, z: block.location.z };
+            currentPData.toolUsedForBreakAttempt = itemStack?.typeId;
+            currentPData.isDirtyForSave = true;
+        }
     }
 }
 /**
@@ -848,12 +885,20 @@ async function _handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
         await checks.checkAutoTool(player, pData, dependencies, autoToolEventData);
     }
 
+    // Re-fetch pData after all await calls before modifying it.
+    if (!player.isValid()) return;
+    const finalPData = playerDataManager?.getPlayerData(player.id);
+    if (!finalPData) {
+        dependencies.playerUtils?.debugLog(`[EvtHdlr.BreakBlockAfter] pData not found for ${player.nameTag} at end of handler.`, player.nameTag, dependencies);
+        return;
+    }
+
     // Clear break attempt data after all checks related to this break are done
-    pData.breakingBlockTypeId = null;
-    pData.breakingBlockLocation = null;
-    pData.toolUsedForBreakAttempt = null;
-    pData.expectedBreakDurationTicks = 0; // Reset expected duration
-    pData.isDirtyForSave = true;
+    finalPData.breakingBlockTypeId = null;
+    finalPData.breakingBlockLocation = null;
+    finalPData.toolUsedForBreakAttempt = null;
+    finalPData.expectedBreakDurationTicks = 0; // Reset expected duration
+    finalPData.isDirtyForSave = true;
 }
 /**
  *
@@ -1204,18 +1249,23 @@ export const handleBeforeChatSend = profileEventHandler('handleBeforeChatSend', 
 async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;
     const { playerUtils, getString, rankManager, permissionLevels, logManager, config, playerDataManager: pdm } = dependencies; // Renamed for brevity
-    const _playerName = player?.nameTag ?? 'UnknownPlayer'; // Ensured this variable is correctly prefixed
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
     if (!player?.isValid() || !toDimension || !fromDimension || !fromLocation) {
-        playerUtils?.debugLog('[EvtHdlr.DimChange] Incomplete event data for player.', player?.nameTag, dependencies);
+        playerUtils?.debugLog('[EvtHdlr.DimChange] Incomplete event data for player.', playerName, dependencies);
         return;
     }
 
     // Update pData with new dimension
-    const pData = pdm?.getPlayerData(player.id);
+    let pData = pdm?.getPlayerData(player.id);
     if (pData) {
         pData.lastDimensionId = toDimension.id;
         pData.isDirtyForSave = true;
+    } else {
+        // If pData is somehow null here, we might not be able to proceed with permission checks or notifications.
+        // However, ensurePlayerDataInitialized should run on spawn/join.
+        playerUtils?.debugLog(`[EvtHdlr.DimChange] pData not found for ${playerName} at start of dimension change.`, playerName, dependencies);
+        // Depending on strictness, might return here or allow logic that doesn't need pData.
     }
 
     const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
@@ -1245,10 +1295,15 @@ async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
             await player.teleport(fromLocation, { dimension: fromDimension });
             playerUtils?.warnPlayer(player, getString('dimensionLock.teleportMessage', { lockedDimensionName }));
 
+            // Re-fetch pData before using it for notifyAdmins, as player.teleport was awaited
+            if (!player.isValid()) return; // Player might have disconnected during teleport attempt
+            const currentPData = pdm?.getPlayerData(player.id);
+            // pData for notifyAdmins context can be the currentPData or null if not found
+
             if (config.notifyOnDimensionLockAttempt !== false) {
                 playerUtils?.notifyAdmins(
                     getString('admin.notify.dimensionLockAttempt', { playerName: player.nameTag, dimensionName: lockedDimensionName }),
-                    dependencies, player, pData,
+                    dependencies, player, currentPData, // Use re-fetched pData
                 );
             }
             logManager?.addLog({
