@@ -5,7 +5,6 @@ This list contains planned features, improvements, and areas for future investig
 ## Documentation Tasks
 
 ## Linting & Code Style Tasks
-- **(Medium) Apply Updated Linting Rules**: After the ESLint configuration is updated, run `npm run lint:fix` (or similar) across the entire codebase to apply the new rules and formatting. Manually address any issues that cannot be auto-fixed. (This is a placeholder for a subsequent task).
 
 ## Code Refinement & Feature Enhancements
 
