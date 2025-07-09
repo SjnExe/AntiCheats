@@ -1091,14 +1091,6 @@ const UI_ACTION_FUNCTIONS = {
     displayActionLogsModal: displayActionLogsModalImpl, // Implemented
     showModLogFilterModal: showModLogFilterModalImpl, // Implemented
     displaySpecificLogsPage: displaySpecificLogsPageImpl, // Implemented
-    // dismissErrorPanelAction: async (player, dependencies, context) => {
-    //    // This function could be used if errorDisplayPanel had an explicit "Dismiss" button
-    //    // that needed to do more than just go "Back". For now, "Back" is handled by showPanel.
-    //    // It would be defined here and mapped in panelLayoutConfig.js for the error panel.
-    //    const { playerUtils } = dependencies;
-    //    playerUtils.debugLog(`Error panel dismissed by ${player.nameTag}`, player.nameTag, dependencies);
-    //    clearPlayerNavStack(player.id); // Example: Dismiss clears stack and exits UI flow
-    // },
 
     /**
      * Displays a modal with detailed flag information for a target player.
@@ -1923,19 +1915,6 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
 
     // Back/Exit button logic and Response handling logic will be added in the next segments.
     // This is a placeholder to make the function syntactically complete for this step.
-    // try {
-    //     if (permittedItems.length === 0 && isNavStackAtRoot(player.id)) { // And no other static buttons yet
-    //          form.body("No options available.");
-    //     }
-    //     // Actual form.show() and response handling is complex and will be added next.
-    //     // console.warn(`[UiManager.showPanel] Form for ${panelId} constructed (title: ${panelTitle}), but show/response handling is next.`);
-    //     // For now, to avoid errors and allow testing the build part:
-    //     // If you want to test show it, you'd do it here, but the response handling is crucial.
-    //     // For this partial step, we might just log or do nothing after building.
-    // } catch(e) {
-    //     console.error(`[UiManager.showPanel] Error during panel ${panelId} construction (pre-show): ${e.stack}`);
-    //     player.sendMessage(getString('common.error.genericForm'));
-    // }
 }
 
 

@@ -235,14 +235,6 @@ export const panelDefinitions = {
             // It has no predefined items. The "Back" button (or "Close" if no previous panel is known)
             // is the primary interaction, handled by `showPanel`'s generic back/exit logic,
             // which is aware of the error context (`previousPanelIdOnError`).
-            // If specific actions like "Retry" or "Report" were needed, they could be added as PanelItems here
-            // and would call corresponding functions in UI_ACTION_FUNCTIONS.
-            // Example:
-            // {
-            //   id: 'retryFailedOperation', sortId: 10, text: 'Retry Last Action', icon: 'textures/ui/refresh_light',
-            //   requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'retryFailedPanelAction',
-            //   actionContextVars: ['originalPanelId', 'originalContext'] // Pass info about what failed
-            // }
         ]
     }
 };
