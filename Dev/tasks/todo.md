@@ -18,7 +18,6 @@ This list contains planned features, improvements, and areas for future investig
 <!-- Placeholder for future tasks -->
 - **(Medium) Enhance Configuration Editing UI (uiManager.js):** Modify `showConfigCategoriesListImpl` to dynamically discover editable config keys from `config.js` (e.g., based on metadata or type) instead of using a hardcoded list. Investigate options for safely editing simple array types if feasible.
 - **(Low) Review Player Action Panel for Completeness (panelLayoutConfig.js, uiManager.js):** Ensure all intended player actions (e.g., 'Reset Player Flags' directly from panel if different from text input, specific unmute types if commands support) are represented and implemented.
-- **(Low) Audit textDatabase.js for Unused Strings:** Review `textDatabase.js` for any strings that may no longer be in use after recent refactoring and UI updates.
 
 ## Hierarchical Panel System Enhancements (Post-Refactor)
 - **(Medium) Refine User Info Panel Sub-Panel Content Display & Interaction:**
