@@ -16,10 +16,11 @@ This list contains planned features, improvements, and areas for future investig
 
 ### Configuration Files & Data Structures
 <!-- Placeholder for future tasks -->
+- **(Medium) Enhance Configuration Editing UI (uiManager.js):** Modify `showConfigCategoriesListImpl` to dynamically discover editable config keys from `config.js` (e.g., based on metadata or type) instead of using a hardcoded list. Investigate options for safely editing simple array types if feasible.
+- **(Low) Review Player Action Panel for Completeness (panelLayoutConfig.js, uiManager.js):** Ensure all intended player actions (e.g., 'Reset Player Flags' directly from panel if different from text input, specific unmute types if commands support) are represented and implemented.
+- **(Low) Audit textDatabase.js for Unused Strings:** Review `textDatabase.js` for any strings that may no longer be in use after recent refactoring and UI updates.
 
 ## Hierarchical Panel System Enhancements (Post-Refactor)
-- **(High) Complete All Leaf Action Functions in `UI_ACTION_FUNCTIONS` (`uiManager.js`):**
-    - Fully implement forms and logic for: kicking, muting, teleport actions, configuration editing, chat/lag clearing confirmations, log viewing, detailed flag display, and other admin actions defined in `panelLayoutConfig.js` that are currently placeholders.
 - **(Medium) Refine User Info Panel Sub-Panel Content Display & Interaction:**
     - Evaluate if `showMyStatsPageContent`, `showServerRulesPageContent`, `showHelpfulLinksPageContent`, `showGeneralTipsPageContent` (currently simple modals) should become full panels defined in `panelLayoutConfig.js` (e.g., `helpfulLinksPanel` listing links as clickable buttons).
     - This may involve changing `actionType: 'functionCall'` to `actionType: 'openPanel'` for some items in `mainUserPanel`.
