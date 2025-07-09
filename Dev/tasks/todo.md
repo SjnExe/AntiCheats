@@ -38,8 +38,6 @@ This list contains planned features, improvements, and areas for future investig
 ### Commands Implementation
 
 ### Utility Functions
-- **(Low) `playerUtils.js` - `parseDuration` Flexibility**:
-    - Consider if additional time units (e.g., 'w' for weeks) are needed for `parseDuration`. If so, update the regex and logic.
 - **(High) `itemUtils.js` - Accuracy and Maintenance**:
     - Document clearly that `itemUtils.js` (especially `getExpectedBreakTicks` and `calculateRelativeBlockBreakingPower`) is a server-side approximation of complex client-side game mechanics.
     - Schedule periodic reviews of its internal data maps (`blockHardnessMap`, etc.) and constants against Minecraft updates to maintain reasonable accuracy.
