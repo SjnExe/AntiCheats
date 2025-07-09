@@ -10,10 +10,10 @@ import { processAutoModActions } from './automodManager.js';
 import { checkActionProfiles } from './actionProfiles.js';
 
 // Constants
-const JSON_SAMPLE_LOG_LENGTH = 200;
-const TICKS_PER_SECOND = 20;
-const DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT = 3;
-const PENDING_FLAG_PURGES_DP_KEY = 'anticheat:pending_flag_purges_v1';
+const jsonSampleLogLength = 200;
+const ticksPerSecond = 20;
+const decimalPlacesForDebugSnapshot = 3;
+const pendingFlagPurgesDpKey = 'anticheat:pending_flag_purges_v1';
 
 
 /** @type {Map<string, import('../types.js').PlayerAntiCheatData>} In-memory cache for player data. */
@@ -70,7 +70,7 @@ export function scheduleFlagPurge(playerIdentifier, dependencies) {
     }
 
     try {
-        const rawPendingPurges = mc.world.getDynamicProperty(PENDING_FLAG_PURGES_DP_KEY);
+        const rawPendingPurges = mc.world.getDynamicProperty(pendingFlagPurgesDpKey);
         let pendingPurges = [];
 
         if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0) {
@@ -82,12 +82,12 @@ export function scheduleFlagPurge(playerIdentifier, dependencies) {
                 }
             } catch (parseError) {
                 console.error(`[PlayerDataManager.scheduleFlagPurge] Failed to parse pending purges list. Error: ${parseError.stack || parseError}. JSON: "${rawPendingPurges}". Resetting list.`);
-                logManager?.addLog({ actionType: 'system_error', context: 'scheduleFlagPurge_json_parse_fail', details: `Failed to parse PENDING_FLAG_PURGES_DP_KEY. Error: ${parseError.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
+                logManager?.addLog({ actionType: 'system_error', context: 'scheduleFlagPurge_json_parse_fail', details: `Failed to parse pendingFlagPurgesDpKey. Error: ${parseError.message}. Key: ${pendingFlagPurgesDpKey}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
                 pendingPurges = []; // Reset if parsing fails to prevent further issues
             }
         } else if (rawPendingPurges !== undefined) { // Closing brace for: if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0)
             // Data exists but is not a string or is an empty string - indicates corruption or unexpected type
-            console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: expected string, got ${typeof rawPendingPurges}. Resetting. Key: ${PENDING_FLAG_PURGES_DP_KEY}`);
+            console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: expected string, got ${typeof rawPendingPurges}. Resetting. Key: ${pendingFlagPurgesDpKey}`);
             pendingPurges = [];
         }
         // If rawPendingPurges is undefined, pendingPurges remains an empty array, which is correct.
@@ -95,7 +95,7 @@ export function scheduleFlagPurge(playerIdentifier, dependencies) {
 
         if (!pendingPurges.includes(playerIdentifier)) {
             pendingPurges.push(playerIdentifier);
-            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+            mc.world.setDynamicProperty(pendingFlagPurgesDpKey, JSON.stringify(pendingPurges));
             playerUtils?.debugLog(`[PlayerDataManager.scheduleFlagPurge] Scheduled flag purge for '${playerIdentifier}'. Pending list size: ${pendingPurges.length}`, null, dependencies);
             return true;
         }
@@ -107,7 +107,7 @@ export function scheduleFlagPurge(playerIdentifier, dependencies) {
         logManager?.addLog({
             actionType: 'system_error',
             context: 'scheduleFlagPurge_dp_access_fail',
-            details: `Error with PENDING_FLAG_PURGES_DP_KEY. Error: ${error.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`,
+            details: `Error with pendingFlagPurgesDpKey. Error: ${error.message}. Key: ${pendingFlagPurgesDpKey}`,
             errorStack: error.stack || error.toString(),
         }, dependencies);
         return false;
@@ -274,7 +274,7 @@ export function loadPlayerDataFromDynamicProperties(player, dependencies) {
                 playerName,
                 error,
                 dependencies,
-                { jsonSample: jsonString.substring(0, JSON_SAMPLE_LOG_LENGTH) + (jsonString.length > JSON_SAMPLE_LOG_LENGTH ? '...' : '') },
+                { jsonSample: jsonString.substring(0, jsonSampleLogLength) + (jsonString.length > jsonSampleLogLength ? '...' : '') },
             );
             return null;
         }
@@ -530,7 +530,7 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
 
     // Check for and process pending flag purges
     try {
-        const rawPendingPurges = mc.world.getDynamicProperty(PENDING_FLAG_PURGES_DP_KEY);
+        const rawPendingPurges = mc.world.getDynamicProperty(pendingFlagPurgesDpKey);
         let pendingPurges = [];
         let purgesListModified = false;
 
@@ -564,7 +564,7 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
             pendingPurges.splice(purgeIndex, 1);
             purgesListModified = true;
 
-            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+            mc.world.setDynamicProperty(pendingFlagPurgesDpKey, JSON.stringify(pendingPurges));
 
             playerUtils?.sendMessage(player, dependencies.getString('playerDataManager.offlinePurgeCompleteNotification'));
             logManager?.addLog({
@@ -578,12 +578,12 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
             playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Successfully processed scheduled flag purge for ${playerIdentifierForPurge}. Old total flags: ${oldTotalFlags}. Pending list size: ${pendingPurges.length}`, newPData.isWatched ? playerIdentifierForPurge : null, dependencies);
         } else if (purgesListModified) {
             // This case should not be hit if logic is correct, but as a fallback if list was modified for other reasons (e.g. corruption reset)
-            mc.world.setDynamicProperty(PENDING_FLAG_PURGES_DP_KEY, JSON.stringify(pendingPurges));
+            mc.world.setDynamicProperty(pendingFlagPurgesDpKey, JSON.stringify(pendingPurges));
         }
 
     } catch (e) {
         console.error(`[PlayerDataManager.ensurePlayerDataInitialized] Error processing pending flag purges for ${playerName}: ${e.stack || e}`);
-        logManager?.addLog({ actionType: 'system_error', context: 'ensurePlayerDataInitialized_pending_purge_fail', details: `Player ${playerName}: Error processing PENDING_FLAG_PURGES_DP_KEY. Error: ${e.message}`, errorStack: e.stack || e.toString() }, dependencies);
+        logManager?.addLog({ actionType: 'system_error', context: 'ensurePlayerDataInitialized_pending_purge_fail', details: `Player ${playerName}: Error processing pendingFlagPurgesDpKey. Error: ${e.message}`, errorStack: e.stack || e.toString() }, dependencies);
     }
     // End of pending purge processing
 
@@ -696,12 +696,12 @@ export function updateTransientPlayerData(player, pData, dependencies) {
     pData.speedAmplifier = effects?.find(eff => eff.typeId === mc.MinecraftEffectTypes.speed.id)?.amplifier ?? -1;
     pData.blindnessTicks = effects?.find(eff => eff.typeId === mc.MinecraftEffectTypes.blindness.id)?.duration ?? 0;
 
-    if (pData.isWatched && config?.enableDebugLogging && (currentTick % TICKS_PER_SECOND === 0)) {
+    if (pData.isWatched && config?.enableDebugLogging && (currentTick % ticksPerSecond === 0)) {
         const transientSnapshot = {
-            vx: pData.velocity.x.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT), vy: pData.velocity.y.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT), vz: pData.velocity.z.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT),
-            pitch: pData.lastPitch.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT), yaw: pData.lastYaw.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT),
+            vx: pData.velocity.x.toFixed(decimalPlacesForDebugSnapshot), vy: pData.velocity.y.toFixed(decimalPlacesForDebugSnapshot), vz: pData.velocity.z.toFixed(decimalPlacesForDebugSnapshot),
+            pitch: pData.lastPitch.toFixed(decimalPlacesForDebugSnapshot), yaw: pData.lastYaw.toFixed(decimalPlacesForDebugSnapshot),
             sprinting: player.isSprinting, sneaking: player.isSneaking, onGround: player.isOnGround,
-            fallDist: player.fallDistance.toFixed(DECIMAL_PLACES_FOR_DEBUG_SNAPSHOT),
+            fallDist: player.fallDistance.toFixed(decimalPlacesForDebugSnapshot),
             jumpBoost: pData.jumpBoostAmplifier, slowFall: pData.hasSlowFalling, lev: pData.hasLevitation, speedAmp: pData.speedAmplifier,
         };
         const logMsg = `${playerName} (Tick: ${currentTick}) Snapshot: `; // Shortened prefix
