@@ -319,7 +319,8 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
 
 /**
  * Shows the main admin panel form.
- * Displays different options based on the admin's permission level.
+ * Dynamically builds UI elements based on `adminPanelLayout` from `panelLayoutConfig.js` and player permissions.
+ * Routes to `showNormalUserPanelMain` for non-admin users.
  * @param {import('@minecraft/server').Player} player - The player (admin) viewing the panel.
  * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance. (Note: playerDataManager is not directly used in this refactored version but kept for signature consistency if other parts of the codebase expect it)
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
@@ -749,6 +750,12 @@ async function showGeneralTipsUIPanel(player, dependencies) {
     }
 }
 
+/**
+ * Shows the main user information panel.
+ * Dynamically builds UI elements based on `userPanelLayout` from `panelLayoutConfig.js`.
+ * @param {import('@minecraft/server').Player} player - The player viewing the panel.
+ * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
+ */
 async function showNormalUserPanelMain(player, dependencies) {
     const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // Added rankManager, permissionLevels
     const playerName = player?.nameTag ?? 'UnknownPlayer';

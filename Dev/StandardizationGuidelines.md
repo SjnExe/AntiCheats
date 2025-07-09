@@ -59,7 +59,7 @@ This document outlines the consolidated standardization guidelines for the AntiC
 *   **Constants and Magic Strings/Numbers:**
     *   Module-specific constants at the top, after imports. Shared config in `config.js`.
     *   Avoid 'magic strings' and 'magic numbers'. Define `camelCase` constants for recurring string literals (tags, event names, property keys) and numeric literals that have specific meanings. This improves readability and makes refactoring safer.
-    *   Prefer using `getString(key, params)` utility (which sources from `textDatabase.js`) for all user-facing messages in UI and command responses. Avoid hardcoding user-visible strings directly in logic files.
+    *   For most user-facing messages (command responses, dynamic UI content), prefer using `getString(key, params)` from `textDatabase.js`. However, for highly specific, static, single-use UI labels or button texts within UI modules (like `uiManager.js`), these should be hardcoded directly in the module. Panel button texts (for `!panel`) are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
 *   **Global Scope:** Minimize global scope pollution (ES6 modules help here).
 *   **Single Responsibility Principle (SRP):** Aim for functions and modules to adhere to the SRP. A function should do one thing well. Modules should group closely related functionalities. This improves modularity, testability, and maintainability.
 *   **Pure Functions:** Strive to write pure functions where possible, especially for utility and data transformation logic. Pure functions are easier to test and reason about.
@@ -196,10 +196,10 @@ This section details standards for both general diagnostic logging and persisten
 The `AntiCheatsBP/scripts/core/textDatabase.js` file serves as a centralized repository for user-facing strings and other important text literals. Its proper use enhances maintainability, consistency, and prepares for potential future localization. All text retrieved from this database should use the `playerUtils.getString(key, params?)` utility.
 
 1.  **Purpose of `textDatabase.js`**:
-    *   To store strings that are displayed to users (players or admins via chat, UI forms, etc.).
-    *   To manage text that might need configuration or frequent updates.
-    *   To ensure consistency in terminology and tone across the addon.
-    *   To centralize text that might be subject to future localization efforts.
+    *   To store reusable or configurable strings that are displayed to users (players or admins via chat, UI forms, etc.), especially command responses and dynamic messages.
+    *   To manage text that might need configuration or frequent updates by developers.
+    *   To ensure consistency in terminology and tone for common messages across the addon.
+    *   To centralize text that might be subject to future localization efforts (excluding single-use static UI labels and panel button texts, which are hardcoded or in `panelLayoutConfig.js`).
 
 2.  **Key Naming and Structure**:
     *   **Dot Notation Hierarchy**: Keys **MUST** use a dot-notation hierarchy to create a logical structure. For example: `category.moduleOrFeature.specificIdentifier`.
@@ -210,14 +210,14 @@ The `AntiCheatsBP/scripts/core/textDatabase.js` file serves as a centralized rep
 
 3.  **When to Use `textDatabase.js` (Inclusion Criteria)**:
     *   **Reused Strings**: Strings that are used in more than one place in the codebase **MUST** be in `textDatabase.js`.
-    *   **User-Facing Text**: All text displayed directly to players or admins (UI elements, command responses, important notifications) **SHOULD** generally be in `textDatabase.js`. This promotes consistency and ease of review/modification.
+    *   **User-Facing Text (General)**: Text displayed directly to players or admins, such as command responses, dynamic status messages, or important notifications that are not single-use static UI labels. This promotes consistency.
     *   **Configurable/Changeable Text**: Strings that are likely to be modified by server owners (though direct modification of `textDatabase.js` is for devs) or are tied to configurable features **SHOULD** be included.
     *   **Common Error Messages**: Standard error messages displayed to users **SHOULD** be in `textDatabase.js`.
     *   **Placeholders**: Utilize placeholders like `{placeholderName}` within strings for dynamic content. These are resolved by `playerUtils.getString()`.
 
-4.  **When Local String Literals *May* Be Acceptable (Exclusion Criteria)**:
-    *   **Highly Specific, Static, Single-Use UI Labels**: For very specific labels within a complex UI form that are unlikely to ever be reused or changed independently of that UI element's code, defining them locally *may* be acceptable if it significantly improves the readability of `textDatabase.js` by not cluttering it with dozens of minor, unique strings for a single panel. This is a judgment call.
-        *   *Guideline*: If a UI panel has many unique labels, group them logically within the panel's module or use a more detailed sub-group in `textDatabase.js` (e.g., `ui.myPanel.labels.specificField`).
+4.  **When Local String Literals *Are Preferred* (Exclusion Criteria from `textDatabase.js` for UI)**:
+    *   **Highly Specific, Static, Single-Use UI Labels/Texts**: For very specific labels, titles, or descriptive texts within a UI form/panel (e.g., in `uiManager.js`) that are used only once and are static (not configurable by users/admins at runtime), these **SHOULD be hardcoded** directly within the UI building logic. This co-locates the text with its direct usage, improving readability of the UI code and reducing clutter in `textDatabase.js`.
+    *   **Panel Button Texts (Config-Driven Panels)**: For UI panels whose buttons are dynamically generated from a configuration (e.g., `!panel` using `panelLayoutConfig.js`), the button texts themselves are defined directly within that configuration file (e.g., `panelLayoutConfig.js`) and are thus not stored in `textDatabase.js`.
     *   **Internal Constants/Logging Strings (Not User-Facing)**: String constants used purely for internal logic, non-standardized debug messages, or very specific non-user-facing log details do not need to be in `textDatabase.js`. Standardized error codes and user-facing components of log messages (if any) should still consider it.
     *   **Developer-Facing Comments and Documentation**: JSDoc, inline comments, etc., are not part of `textDatabase.js`.
 

@@ -46,7 +46,7 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
 *   **Plain JavaScript:** All Behavior Pack scripts are written in plain JavaScript. Do not use TypeScript syntax.
 *   **Error Handling:** Implement robust error handling (e.g., `try...catch` blocks for risky operations, validation of inputs). Refer to `Dev/StandardizationGuidelines.md` (Section 6) for detailed error logging standards.
 *   **Logging:** Utilize `playerUtils.debugLog()` for development/debug messages (conditional on `config.enableDebugLogging` or `pData.isWatched`). For persistent action logging and standardized error reporting, use `logManager.addLog()`, following the detailed error logging guidelines in `Dev/StandardizationGuidelines.md` (Section 6).
-*   **User-Facing Text:** All user-facing strings (UI, command responses) should be managed via `AntiCheatsBP/scripts/core/textDatabase.js` and retrieved using `getString()`.
+    *   **User-Facing Text:** User-facing strings for command responses, shared messages, and configurable text should generally be managed via `AntiCheatsBP/scripts/core/textDatabase.js` and retrieved using `getString()`. However, static single-use UI labels/texts are typically hardcoded directly in UI modules (e.g., `uiManager.js`). Button texts for dynamically generated panels (like `!panel`) are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
 *   **Linting with ESLint:** This project uses ESLint to enforce code style and catch potential errors.
     *   The configuration (`eslint.config.js`) is based on `eslint:recommended` rules plus specific project style guidelines from `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
     *   Run `npm run lint` to check for linting issues.

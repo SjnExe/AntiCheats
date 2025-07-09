@@ -1,14 +1,11 @@
 /**
- * @file Defines a simple key-value store for UI and message strings.
+ * @file Defines a key-value store for reusable or configurable UI and message strings.
  * @module AntiCheatsBP/scripts/core/textDatabase
  * Since full localization is not required, this provides a centralized
- * place for text, allowing for easier management and consistency.
+ * place for such texts, excluding single-use static UI labels and dynamic panel button texts which are managed elsewhere.
  * All keys should be camelCase or dot.case for structure.
  */
 
-/**
- *
- */
 export const stringDB = {
     // Common UI elements
     'common.button.back': '§l§cBack§r',
