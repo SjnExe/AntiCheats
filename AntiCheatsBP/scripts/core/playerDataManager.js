@@ -85,7 +85,7 @@ export function scheduleFlagPurge(playerIdentifier, dependencies) {
                 logManager?.addLog({ actionType: 'system_error', context: 'scheduleFlagPurge_json_parse_fail', details: `Failed to parse PENDING_FLAG_PURGES_DP_KEY. Error: ${parseError.message}. Key: ${PENDING_FLAG_PURGES_DP_KEY}`, errorStack: parseError.stack || parseError.toString() }, dependencies);
                 pendingPurges = []; // Reset if parsing fails to prevent further issues
             }
-        } else if (rawPendingPurges !== undefined) {
+        } else if (rawPendingPurges !== undefined) { // Closing brace for: if (typeof rawPendingPurges === 'string' && rawPendingPurges.length > 0)
             // Data exists but is not a string or is an empty string - indicates corruption or unexpected type
             console.warn(`[PlayerDataManager.scheduleFlagPurge] Corrupted pending purges list: expected string, got ${typeof rawPendingPurges}. Resetting. Key: ${PENDING_FLAG_PURGES_DP_KEY}`);
             pendingPurges = [];
@@ -139,8 +139,7 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
         opType = 'stringify';
     } else if (operation.toLowerCase().includes('getdynamicproperty')) {
         opType = 'get';
-    } // Made lowercase for robust matching
-    else if (operation.toLowerCase().includes('setdynamicproperty')) {
+    } else if (operation.toLowerCase().includes('setdynamicproperty')) { // Made lowercase for robust matching
         opType = 'set';
     } // Made lowercase
 
