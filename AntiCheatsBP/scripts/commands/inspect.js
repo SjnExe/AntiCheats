@@ -24,9 +24,10 @@ export function execute(player, args, dependencies) {
     const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
+    const usageMessage = `§cUsage: ${prefix}inspect <playername>`;
 
     if (args.length < 1) {
-        player.sendMessage(getString('command.inspect.usage', { prefix }));
+        player.sendMessage(usageMessage);
         return;
     }
 

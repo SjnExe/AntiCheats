@@ -5,7 +5,7 @@
 export const definition = {
     name: 'unban',
     syntax: '<playername>',
-    description: 'Unbans a player, allowing them to rejoin the server.',
+    description: 'Unbans a player.',
     aliases: ['ub'],
     permissionLevel: 1, // admin
     enabled: true,

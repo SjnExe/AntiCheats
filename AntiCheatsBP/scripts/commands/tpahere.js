@@ -9,7 +9,7 @@ const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
 export const definition = {
     name: 'tpahere',
     syntax: '<playerName>',
-    description: 'Requests another player to teleport to your location. They must accept with !tpaccept.',
+    description: 'Requests another player to teleport to you.',
     permissionLevel: 1024, // member
     enabled: true,
 };

@@ -49,9 +49,9 @@ export function execute(
     const slownessAmplifier = config?.freezeSlownessAmplifier ?? DEFAULT_FREEZE_SLOWNESS_AMPLIFIER;
     const weaknessAmplifier = config?.freezeWeaknessAmplifier ?? DEFAULT_FREEZE_WEAKNESS_AMPLIFIER;
     const showParticles = config?.freezeShowParticles ?? false;
+    const usageMsg = `§cUsage: ${prefix}freeze <playername> [on|off|toggle|status]`;
 
     if (args.length < 1) {
-        const usageMsg = getString('command.freeze.usage', { prefix });
         if (player) {
             player.sendMessage(usageMsg);
         } else {

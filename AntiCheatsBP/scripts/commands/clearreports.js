@@ -26,10 +26,12 @@ export function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
+    const usageMessage = `§cUsage: ${prefix}${definition.syntax}`;
+    const exampleMessage = `§cExample: ${prefix}clearreports <report_id> OR ${prefix}clearreports <player_name> OR ${prefix}clearreports all`;
 
     if (args.length < 1) {
-        playerUtils?.sendMessage(player, getString('command.clearreports.usage', { prefix, syntax: definition.syntax }));
-        playerUtils?.sendMessage(player, getString('command.clearreports.example', { prefix }));
+        playerUtils?.sendMessage(player, usageMessage);
+        playerUtils?.sendMessage(player, exampleMessage);
         return;
     }
 

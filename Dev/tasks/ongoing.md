@@ -2,10 +2,7 @@
 
 This document lists tasks currently being worked on. When a task is completed, it should be moved to `Dev/tasks/completed.md`. If a task is paused or deferred, it should be moved back to `Dev/tasks/todo.md`.
 
-- **(High) Linting: Fix syntax errors and improve linting configuration.** (Jules)
-    - Ran ESLint, confirmed no initial errors with existing config.
-    - Reviewed ESLint configuration against coding guidelines.
-    - Improved ESLint configuration structure for clarity and to correctly apply rules to build scripts.
-    - Ensured Node.js globals are defined for build scripts, resolving `no-undef` errors.
-    - Added missing JSDoc `@file` overview to the build script.
-    - Confirmed all scripts now pass the updated linting rules.
+- **(Low) Refactor `textDatabase.js` Content**: (Jules)
+    - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).
+    - Identify single-use, static strings that could be moved to their respective local modules.
+    - Implement refactoring for identified strings to improve `textDatabase.js` focus and maintainability.
