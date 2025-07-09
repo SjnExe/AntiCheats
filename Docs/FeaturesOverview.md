@@ -126,12 +126,10 @@ The addon includes a comprehensive suite of chat checks to maintain a clean and 
 ## II. Administrative & Server Management Systems
 
 ### A. Core Admin Tools
-*   **Intuitive Admin Panel:** Accessible via `!panel` (or its alias `!ui`). Provides a graphical user interface for:
-    *   Viewing and managing online players (inspect details, kick, ban, mute, freeze, teleport, clear inventory, etc.).
-    *   Viewing detailed player flags and violation history.
-    *   Accessing server-wide management functions (clear chat, lag clear).
-    *   Viewing AntiCheat action logs and player-submitted reports.
-    *   Editing many runtime configuration values directly from the UI (some settings are owner-only).
+*   **Intuitive Admin Panel:** Accessible via `!panel`. Provides a graphical user interface whose content and available actions vary based on user permissions.
+    *   For staff: Viewing/managing online players, server management, log viewing, etc. The structure and items of this panel are highly configurable via `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
+    *   For regular players: Shows user-specific info like stats, rules, links (previously `!uinfo`).
+    *   Some settings may be editable directly from the UI by authorized users (typically Owner).
 *   **Comprehensive Text Commands:** A full suite of chat-based commands offers granular control over all features and administrative actions. (See [Commands List](Commands.md) for a complete reference).
 *   **Persistent Player Data:** Critical player data such as flags, violation records, active mutes, and bans are saved using Minecraft's dynamic properties, ensuring they persist across player sessions and server restarts.
 *   **Admin Notifications:** Real-time alerts are sent to administrators for significant cheat detections or actions taken by the AutoMod system. Admin notification preferences can be toggled per admin using the `!notify` command.

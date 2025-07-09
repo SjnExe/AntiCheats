@@ -100,13 +100,14 @@ The AntiCheats addon is structured to be modular and configurable. Here's a high
         *   `rankManager.js`: Manages player ranks, permission levels, and their display properties (chat/nametag prefixes) based on `ranksConfig.js`.
         *   `reportManager.js`: Manages player-submitted reports, storing them and providing admin access.
         *   `tpaManager.js`: Manages the Teleport Ask (TPA/TPAHere) system.
-        *   `uiManager.js`: Creates and displays various UI forms. Main panels like the Admin Panel and User Info Panel are dynamically structured based on configurations in `panelLayoutConfig.js`, allowing for permission-based display of elements.
+        *   `panelLayoutConfig.js`: (New) Defines the structure, content (button texts, icons), permission levels, sorting, and actions for all dynamic UI panels (e.g., `!panel` content). This allows for easy customization of panel hierarchies and elements without altering `uiManager.js` logic.
+        *   `uiManager.js`: Core module for displaying UI. Features a generic `showPanel` function that dynamically renders hierarchical, permission-based UI panels defined in `panelLayoutConfig.js`. Manages UI navigation state per player.
         *   `chatProcessor.js`: Handles pre-processing of chat messages for checks and command detection.
         *   `eventHandlers.js`: Contains listeners for various Minecraft game events, which often trigger specific checks or update player data.
         *   `actionProfiles.js`: Defines immediate consequences (flagging, logging, notifications) for specific `checkType` violations. This is a critical configuration file linking detections to actions.
         *   `automodConfig.js`: Defines rules for escalating automated actions based on accumulated flag counts for different `checkType`s.
         *   `ranksConfig.js`: Defines the available ranks, their permissions, and display properties.
-        *   `textDatabase.js`: Stores reusable or configurable user-facing strings, particularly for command responses and dynamic messages. Static single-use UI labels are typically hardcoded in their respective UI modules, and panel button texts are often defined in `panelLayoutConfig.js`.
+        *   `textDatabase.js`: Stores reusable or configurable user-facing strings, particularly for command responses and dynamic messages. Static single-use UI labels are typically hardcoded in their respective UI modules. Panel button texts and titles are defined in `panelLayoutConfig.js`.
     *   **`checks/`**: Contains all the individual cheat detection logic, categorized into subdirectories (e.g., `movement/`, `combat/`, `world/`, `player/`, `chat/`). Each check file typically exports one or more functions that perform specific violation detections.
         *   `checks/index.js`: A barrel file that re-exports all check modules for easy importing.
     *   **`commands/`**: Contains modules for each chat command. Each command module defines its name, syntax, permission level, and execution logic.
@@ -134,8 +135,8 @@ The AntiCheats addon is structured to be modular and configurable. Here's a high
 ### Text and Localization
 
 *   User-facing text for command responses, shared warnings, and configurable messages is managed via `textDatabase.js`. Strings are retrieved using the `playerUtils.getString(key, params)` utility function.
-*   Static, single-use UI labels and descriptive texts within UI modules (like `uiManager.js`) are typically hardcoded directly in the JavaScript files.
-*   Button texts and other UI elements for dynamically generated panels (e.g., `!panel`) are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
+*   Static, single-use UI labels and descriptive texts not part of the dynamic panel system are typically hardcoded directly in their respective UI modules (e.g., within modal forms shown by leaf action functions).
+*   Titles, button texts, and other static display strings for the main, dynamically generated panels (e.g., `!panel` UI) are defined in `AntiCheatsBP/scripts/core/panelLayoutConfig.js`.
 
 ## Task Management for Development
 

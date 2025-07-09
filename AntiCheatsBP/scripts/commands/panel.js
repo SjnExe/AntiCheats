@@ -22,7 +22,7 @@ export const definition = {
  * @returns {Promise<void>}
  */
 export async function execute(player, _args, dependencies) {
-    const { uiManager, playerDataManager, config, logManager, getString, playerUtils } = dependencies;
+    const { uiManager, logManager, getString, playerUtils, rankManager, permissionLevels } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
@@ -31,14 +31,24 @@ export async function execute(player, _args, dependencies) {
     }
 
     try {
-        await uiManager?.showAdminPanelMain(player, playerDataManager, dependencies);
+        const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
+        let initialPanelId = 'mainUserPanel'; // Default for non-admins
+
+        if (userPermLevel <= permissionLevels.admin) { // Admins and above see admin panel
+            initialPanelId = 'mainAdminPanel';
+        }
+
+        if (uiManager.clearPlayerNavStack) uiManager.clearPlayerNavStack(player.id);
+
+        await uiManager.showPanel(player, initialPanelId, dependencies, { playerName: player.nameTag }); // Pass initial context
 
         logManager?.addLog({
-            adminName: playerName,
+            adminName: playerName, // field is adminName but used for player initiating UI
             actionType: 'uiPanelOpened',
             targetName: playerName,
             targetId: player.id,
-            details: 'Player opened a UI panel via command.',
+            details: `Player opened panel: ${initialPanelId}`,
+            context: 'PanelCommand.execute',
         }, dependencies);
 
     } catch (error) {
@@ -50,7 +60,7 @@ export async function execute(player, _args, dependencies) {
             context: 'PanelCommand.execute',
             adminName: playerName,
             targetId: player.id,
-            details: `Error opening panel: ${error.message}`,
+            details: { panelIdAttempted: initialPanelId || 'mainAdmin/User', errorMessage: error.message }, // initialPanelId might not be set if error is early
             errorStack: error.stack || error.toString(),
         }, dependencies);
     }

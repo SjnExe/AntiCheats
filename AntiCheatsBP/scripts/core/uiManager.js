@@ -1,13 +1,370 @@
 /**
- * @file Manages the creation and display of various UI forms (Action, Modal, Message) for administrative
- * actions and player information within the AntiCheat system.
- * All actionType strings used for logging should be camelCase.
+ * @file Manages the display of dynamic, hierarchical UI panels and modal forms.
+ * Core functionality revolves around the generic `showPanel` function, which renders
+ * UI structures defined in `../core/panelLayoutConfig.js`. It also handles
+ * player-specific navigation stacks for hierarchical panel traversal.
  * @module AntiCheatsBP/scripts/core/uiManager
  */
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui'; // Direct imports, Removed MessageFormData
 // Removed formatSessionDuration, formatDimensionName from '../utils/index.js'
-import { adminPanelLayout, userPanelLayout } from '../core/panelLayoutConfig.js';
+import { panelDefinitions } from '../core/panelLayoutConfig.js'; // Replaced old imports
+
+// --- Player Navigation Stack Management ---
+const playerNavigationStacks = new Map(); // Stores navigation stacks per player: playerId -> [{ panelId, context }, ...]
+
+/**
+ * Pushes a panel state onto the player's navigation stack.
+ * Avoids pushing identical consecutive states.
+ * @param {string} playerId The ID of the player.
+ * @param {string} panelId The ID of the panel being recorded in the stack.
+ * @param {object} context The context associated with this panel state.
+ */
+function pushToPlayerNavStack(playerId, panelId, context) {
+    if (!playerNavigationStacks.has(playerId)) {
+        playerNavigationStacks.set(playerId, []);
+    }
+    const stack = playerNavigationStacks.get(playerId);
+    // Avoid pushing the same panel consecutively if context is identical
+    const currentTop = stack.length > 0 ? stack[stack.length - 1] : null;
+    if (!currentTop || currentTop.panelId !== panelId || JSON.stringify(currentTop.context) !== JSON.stringify(context)) {
+        stack.push({ panelId, context: { ...context } }); // Store a copy of context
+    }
+}
+
+/**
+ * Pops the top panel state from the player's navigation stack.
+ * @param {string} playerId The ID of the player.
+ * @returns {{ panelId: string, context: object } | null} The popped panel state or null if stack is empty.
+ */
+function popFromPlayerNavStack(playerId) {
+    if (!playerNavigationStacks.has(playerId)) {
+        return null;
+    }
+    const stack = playerNavigationStacks.get(playerId);
+    return stack.pop() || null; // .pop() returns undefined for empty array, ensure null
+}
+
+/**
+ * Clears the navigation stack for a specific player.
+ * @param {string} playerId The ID of the player.
+ */
+function clearPlayerNavStack(playerId) {
+    if (playerNavigationStacks.has(playerId)) {
+        playerNavigationStacks.set(playerId, []);
+    }
+}
+
+/**
+ * Checks if the player's navigation stack is effectively empty (or has only one item, meaning current view is top).
+ * This helps determine if a "Back" button should go to a previous panel or if "Exit" is more appropriate.
+ * @param {string} playerId The ID of the player.
+ * @returns {boolean} True if the stack implies no logical "back" operation.
+ */
+function isNavStackAtRoot(playerId) {
+    if (!playerNavigationStacks.has(playerId)) {
+        return true;
+    }
+    // If stack has 0 or 1 item, we are at a root or the first opened panel.
+    return playerNavigationStacks.get(playerId).length <= 1;
+}
+
+/**
+ * Gets the current (top) panel state from the player's navigation stack without popping it.
+ * @param {string} playerId The ID of the player.
+ * @returns {{ panelId: string, context: object } | null} The current panel state or null if stack is empty.
+ */
+function getCurrentTopOfNavStack(playerId) {
+    if (!playerNavigationStacks.has(playerId)) {
+        return null;
+    }
+    const stack = playerNavigationStacks.get(playerId);
+    if (stack.length === 0) {
+        return null;
+    }
+    return stack[stack.length - 1];
+}
+// --- End Player Navigation Stack Management ---
+
+/**
+ * Generic function to display a panel based on its definition from `panelLayoutConfig.js`.
+ * Handles dynamic button generation, permission filtering, item sorting,
+ * title/text interpolation with context, 'Back'/'Exit' button logic,
+ * navigation stack management, and action dispatching.
+ * @async
+ * @param {import('@minecraft/server').Player} player The player viewing the panel.
+ * @param {string} panelId The ID of the panel to display (must be a key in `panelDefinitions`).
+ * @param {import('../types.js').Dependencies} dependencies Standard command dependencies.
+ * @param {object} [currentContext={}] Optional context object for the panel (e.g., { playerName: 'Steve', targetPlayerId: '12345' }).
+ *                                     Used for title/text interpolation and passed to action functions/sub-panels.
+ */
+async function showPanel(player, panelId, dependencies, currentContext = {}) {
+    const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies;
+    const viewingPlayerName = player.nameTag; // For logging
+
+    playerUtils?.debugLog(`[UiManager.showPanel] Player: ${viewingPlayerName}, PanelID: ${panelId}, Context: ${JSON.stringify(currentContext)}`, viewingPlayerName, dependencies);
+
+    const panelDefinition = panelDefinitions[panelId];
+
+    if (!panelDefinition) {
+        console.error(`[UiManager.showPanel] Error: Panel definition for panelId "${panelId}" not found.`);
+        player.sendMessage(getString('common.error.genericForm'));
+        const previousPanelState = popFromPlayerNavStack(player.id);
+        if (previousPanelState) {
+            if (previousPanelState.panelId !== panelId) { // Prevent loops
+                 await showPanel(player, previousPanelState.panelId, dependencies, previousPanelState.context);
+            } else {
+                clearPlayerNavStack(player.id);
+            }
+        } else {
+            clearPlayerNavStack(player.id);
+        }
+        return;
+    }
+
+    // Interpolate title
+    let panelTitle = panelDefinition.title;
+    for (const key in currentContext) {
+        if (Object.prototype.hasOwnProperty.call(currentContext, key)) {
+            panelTitle = panelTitle.replace(new RegExp(`{${key}}`, 'g'), String(currentContext[key]));
+        }
+    }
+
+    const form = new ActionFormData().title(panelTitle);
+
+    const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
+    const permittedItems = panelDefinition.items
+        .filter(item => userPermLevel <= item.requiredPermLevel)
+        .sort((a, b) => a.sortId - b.sortId);
+
+    permittedItems.forEach(item => {
+        let buttonText = item.text;
+        for (const key in currentContext) {
+            if (Object.prototype.hasOwnProperty.call(currentContext, key)) {
+                buttonText = buttonText.replace(new RegExp(`{${key}}`, 'g'), String(currentContext[key]));
+            }
+        }
+        form.button(buttonText, item.icon);
+    });
+
+    // Back/Exit button logic
+    const atRootLevel = isNavStackAtRoot(player.id) || !panelDefinition.parentPanelId;
+    const backExitButtonText = atRootLevel ? getString('common.button.close') : getString('common.button.back');
+    const backExitButtonIcon = atRootLevel ? 'textures/ui/cancel' : 'textures/ui/undo';
+    form.button(backExitButtonText, backExitButtonIcon);
+    const backExitButtonIndex = permittedItems.length; // This button is added last
+
+    try {
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
+        const response = await form.show(player);
+
+        if (response.canceled) {
+            playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId} cancelled by ${viewingPlayerName}. Reason: ${response.cancelationReason}`, viewingPlayerName, dependencies);
+            // If a top-level panel is cancelled, clear its history.
+            if (atRootLevel) {
+                clearPlayerNavStack(player.id);
+            }
+            return;
+        }
+
+        const selection = response.selection;
+        if (typeof selection === 'undefined') return;
+
+        if (selection < permittedItems.length) { // A dynamic item was selected
+            const selectedItemConfig = permittedItems[selection];
+            playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Player ${viewingPlayerName} selected item: ${selectedItemConfig.id}`, viewingPlayerName, dependencies);
+
+            if (selectedItemConfig.actionType === 'openPanel') {
+                let nextContext = { ...currentContext, ...(selectedItemConfig.initialContext || {}) };
+                if (selectedItemConfig.actionContextVars && selectedItemConfig.actionContextVars.length > 0) {
+                    const extractedContext = {};
+                    selectedItemConfig.actionContextVars.forEach(varName => {
+                        if (currentContext[varName] !== undefined) {
+                            extractedContext[varName] = currentContext[varName];
+                        }
+                    });
+                    nextContext = { ...nextContext, ...extractedContext };
+                }
+
+                pushToPlayerNavStack(player.id, panelId, currentContext);
+                await showPanel(player, selectedItemConfig.actionValue, dependencies, nextContext);
+
+            } else if (selectedItemConfig.actionType === 'functionCall') {
+                const funcToCall = UI_ACTION_FUNCTIONS[selectedItemConfig.actionValue];
+                if (funcToCall && typeof funcToCall === 'function') {
+                    let functionContext = { ...currentContext, ...(selectedItemConfig.initialContext || {}) };
+                    await funcToCall(player, dependencies, functionContext);
+                } else {
+                    playerUtils?.debugLog(`[UiManager.showPanel] Misconfigured functionCall for item ${selectedItemConfig.id} in panel ${panelId}. Function "${selectedItemConfig.actionValue}" not found in UI_ACTION_FUNCTIONS.`, viewingPlayerName, dependencies);
+                    player.sendMessage(getString('common.error.genericForm'));
+                    await showPanel(player, panelId, dependencies, currentContext);
+                }
+            } else {
+                playerUtils?.debugLog(`[UiManager.showPanel] Unknown actionType "${selectedItemConfig.actionType}" for item ${selectedItemConfig.id} in panel ${panelId}.`, viewingPlayerName, dependencies);
+                await showPanel(player, panelId, dependencies, currentContext);
+            }
+        } else if (selection === backExitButtonIndex) {
+            if (atRootLevel) {
+                playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId} (top-level) exited by ${viewingPlayerName}.`, viewingPlayerName, dependencies);
+                clearPlayerNavStack(player.id);
+            } else {
+                const previousPanelState = popFromPlayerNavStack(player.id);
+                if (previousPanelState) {
+                    playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Player ${viewingPlayerName} selected Back. Navigating to ${previousPanelState.panelId}.`, viewingPlayerName, dependencies);
+                    await showPanel(player, previousPanelState.panelId, dependencies, previousPanelState.context);
+                } else {
+                    playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Player ${viewingPlayerName} selected Back, but nav stack was empty. Clearing stack.`, viewingPlayerName, dependencies);
+                    clearPlayerNavStack(player.id);
+                }
+            }
+        } else {
+            playerUtils?.debugLog(`[UiManager.showPanel] Invalid selection ${selection} in panel ${panelId} by ${viewingPlayerName}.`, viewingPlayerName, dependencies);
+        }
+
+    } catch (error) {
+        console.error(`[UiManager.showPanel] Error processing panel ${panelId} for ${viewingPlayerName}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[UiManager.showPanel] Error processing panel ${panelId} for ${viewingPlayerName}: ${error.message}`, viewingPlayerName, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiGenericPanelShow',
+            context: `uiManager.showPanel.${panelId}`,
+            adminName: viewingPlayerName,
+            details: { panelId, context: currentContext, errorMessage: error.message, stack: error.stack },
+        }, dependencies);
+        player.sendMessage(getString('common.error.genericForm'));
+        const previousPanelStateOnError = popFromPlayerNavStack(player.id);
+        if (previousPanelStateOnError && previousPanelStateOnError.panelId !== panelId) {
+            await showPanel(player, previousPanelStateOnError.panelId, dependencies, previousPanelStateOnError.context);
+        } else {
+            clearPlayerNavStack(player.id);
+        }
+    }
+}
+
+const UI_ACTION_FUNCTIONS = {
+    showMyStatsPageContent: async (player, dependencies, context) => {
+        const { playerUtils, playerDataManager, getString } = dependencies;
+        playerUtils.debugLog(`Action: showMyStatsPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        const pData = playerDataManager.getPlayerData(player.id);
+        const totalFlags = pData?.flags?.totalFlags ?? 0;
+        let bodyText = totalFlags === 0 ? 'You currently have no flags!' : `You have ${totalFlags} flags.`;
+        const location = player.location;
+        const dimensionName = playerUtils.formatDimensionName(player.dimension.id);
+        bodyText += `\nLocation: X: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)} in ${dimensionName}`;
+
+        const modal = new ModalFormData().title('§l§bYour Stats§r').content(bodyText);
+        modal.button1(getString('common.button.ok'));
+        await modal.show(player);
+    },
+    showServerRulesPageContent: async (player, dependencies, context) => {
+        const { playerUtils, config, getString } = dependencies;
+        playerUtils.debugLog(`Action: showServerRulesPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        const serverRules = config?.serverRules ?? [];
+        let bodyText = serverRules.length === 0 ? 'No server rules have been defined by the admin yet.' : serverRules.join('\n');
+
+        const modal = new ModalFormData().title('§l§eServer Rules§r').content(bodyText);
+        modal.button1(getString('common.button.ok'));
+        await modal.show(player);
+    },
+    showHelpfulLinksPageContent: async (player, dependencies, context) => {
+        const { playerUtils, config, getString } = dependencies;
+        playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        const helpfulLinks = config?.helpfulLinks ?? [];
+        let linksBody = "";
+        if (helpfulLinks.length === 0) {
+            linksBody = 'No helpful links configured.';
+        } else {
+            linksBody = helpfulLinks.map(l => `${l.title}: ${l.url}`).join('\n');
+        }
+        const modal = new ModalFormData().title("§l§9Helpful Links§r").content(linksBody);
+        modal.button1(getString('common.button.ok'));
+        await modal.show(player);
+    },
+    showGeneralTipsPageContent: async (player, dependencies, context) => {
+        const { playerUtils, config, getString } = dependencies;
+        playerUtils.debugLog(`Action: showGeneralTipsPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        const generalTips = config?.generalTips ?? [];
+        let bodyText = generalTips.length === 0 ? 'No general tips available at the moment.' : generalTips.join('\n\n---\n\n');
+        const modal = new ModalFormData().title('General Tips').content(bodyText);
+        modal.button1(getString('common.button.ok'));
+        await modal.show(player);
+    },
+    // Admin panel functions will be added here as they are refactored or created
+    // showOnlinePlayersList: showOnlinePlayersList, // Example
+};
+
+/**
+ * Generic function to display a panel based on its definition.
+ * @param {import('@minecraft/server').Player} player The player viewing the panel.
+ * @param {string} panelId The ID of the panel to display, matching a key in panelDefinitions.
+ * @param {import('../types.js').Dependencies} dependencies Standard command dependencies.
+ * @param {object} [currentContext={}] Optional context object for the panel (e.g., { playerName: 'Steve', targetPlayerId: '12345' }).
+ */
+async function showPanel(player, panelId, dependencies, currentContext = {}) {
+    const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies;
+    const viewingPlayerName = player.nameTag; // For logging
+
+    playerUtils?.debugLog(`[UiManager.showPanel] Player: ${viewingPlayerName}, PanelID: ${panelId}, Context: ${JSON.stringify(currentContext)}`, viewingPlayerName, dependencies);
+
+    const panelDefinition = panelDefinitions[panelId];
+
+    if (!panelDefinition) {
+        console.error(`[UiManager.showPanel] Error: Panel definition for panelId "${panelId}" not found.`);
+        player.sendMessage(getString('common.error.genericForm'));
+        const previousPanelState = popFromPlayerNavStack(player.id);
+        if (previousPanelState) {
+            if (previousPanelState.panelId !== panelId) { // Prevent loops
+                 await showPanel(player, previousPanelState.panelId, dependencies, previousPanelState.context);
+            } else {
+                clearPlayerNavStack(player.id);
+            }
+        } else {
+            clearPlayerNavStack(player.id);
+        }
+        return;
+    }
+
+    // Interpolate title
+    let panelTitle = panelDefinition.title;
+    for (const key in currentContext) {
+        if (Object.prototype.hasOwnProperty.call(currentContext, key)) {
+            panelTitle = panelTitle.replace(new RegExp(`{${key}}`, 'g'), String(currentContext[key]));
+        }
+    }
+
+    const form = new ActionFormData().title(panelTitle);
+
+    const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
+    const permittedItems = panelDefinition.items
+        .filter(item => userPermLevel <= item.requiredPermLevel)
+        .sort((a, b) => a.sortId - b.sortId);
+
+    permittedItems.forEach(item => {
+        let buttonText = item.text;
+        for (const key in currentContext) {
+            if (Object.prototype.hasOwnProperty.call(currentContext, key)) {
+                buttonText = buttonText.replace(new RegExp(`{${key}}`, 'g'), String(currentContext[key]));
+            }
+        }
+        form.button(buttonText, item.icon);
+    });
+
+    // Back/Exit button logic and Response handling logic will be added in the next segments.
+    // This is a placeholder to make the function syntactically complete for this step.
+    try {
+        if (permittedItems.length === 0 && isNavStackAtRoot(player.id)) { // And no other static buttons yet
+             form.body("No options available.");
+        }
+        // Actual form.show() and response handling is complex and will be added next.
+        console.warn(`[UiManager.showPanel] Form for ${panelId} constructed (title: ${panelTitle}), but show/response handling is next.`);
+        // For now, to avoid errors and allow testing the build part:
+        // If you want to test show it, you'd do it here, but the response handling is crucial.
+        // For this partial step, we might just log or do nothing after building.
+    } catch(e) {
+        console.error(`[UiManager.showPanel] Error during panel ${panelId} construction (pre-show): ${e.stack}`);
+        player.sendMessage(getString('common.error.genericForm'));
+    }
+}
+
 
 // UI functions will be defined below using 'async function' for hoisting.
 // No separate forward declarations needed for them.
@@ -318,97 +675,6 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
 // Assign other functions similarly ensure dependencies are passed correctly, and use optional chaining.
 
 /**
- * Shows the main admin panel form.
- * Dynamically builds UI elements based on `adminPanelLayout` from `panelLayoutConfig.js` and player permissions.
- * Routes to `showNormalUserPanelMain` for non-admin users.
- * @param {import('@minecraft/server').Player} player - The player (admin) viewing the panel.
- * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance. (Note: playerDataManager is not directly used in this refactored version but kept for signature consistency if other parts of the codebase expect it)
- * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
- */
-async function showAdminPanelMain(player, playerDataManager, dependencies) { // playerDataManager kept for signature, though less used directly
-    const { playerUtils, logManager, getString, permissionLevels, rankManager, config } = dependencies; // Added config
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
-    playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Requested by ${playerName}`, playerName, dependencies);
-
-    const userPermLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-
-    // This check remains: if not admin, show normal user panel
-    if (userPermLevel > permissionLevels.admin) {
-        await showNormalUserPanelMain(player, dependencies); // Direct call
-        return;
-    }
-
-    const form = new ActionFormData()
-        .title('§l§bAntiCheat Admin Panel§r') // Hardcoded title
-        .body(`Welcome, ${playerName}! Select an action:`); // Hardcoded body
-
-    const permittedButtons = [];
-    // adminPanelLayout should be imported from panelLayoutConfig.js
-    for (const buttonConfig of adminPanelLayout) {
-        if (userPermLevel <= buttonConfig.requiredPermLevel) {
-            form.button(buttonConfig.text, buttonConfig.icon);
-            permittedButtons.push(buttonConfig); // Store the config for this button
-        }
-    }
-    form.button(getString('common.button.close'), 'textures/ui/cancel'); // Common close button
-
-    try {
-        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
-        const response = await form.show(player);
-
-        if (response.canceled) {
-            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Panel cancelled by ${playerName}. Reason: ${response.cancelationReason}`, playerName, dependencies);
-            return;
-        }
-
-        const selection = response.selection;
-        if (typeof selection === 'undefined') return;
-
-        if (selection < permittedButtons.length) {
-            const selectedButtonConfig = permittedButtons[selection];
-            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Selected action: ${selectedButtonConfig.id} by ${playerName}`, playerName, dependencies);
-
-            const actionFunctions = {
-                showOnlinePlayersList,
-                showInspectPlayerForm,
-                showResetFlagsForm,
-                showWatchedPlayersList,
-                showServerManagementForm,
-                showEditConfigForm,
-                // Potentially add other ui functions if they become part of the configurable panel
-                // showMyStatsUIPanel, showServerRulesUIPanel, showHelpfulLinksUIPanel, showGeneralTipsUIPanel, etc.
-                // but these are typically for the userPanelLayout.
-            };
-
-            if (selectedButtonConfig.actionType === 'functionCall' && actionFunctions[selectedButtonConfig.actionValue]) {
-                // Most of these functions expect (player, dependencies)
-                // showAdminPanelMain itself takes (player, playerDataManager, dependencies)
-                // We ensure dependencies are passed, and individual functions can retrieve playerDataManager from it if needed.
-                await actionFunctions[selectedButtonConfig.actionValue](player, dependencies);
-            } else {
-                playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Unknown actionValue or actionType for ${selectedButtonConfig.id}: ${selectedButtonConfig.actionValue}`, playerName, dependencies);
-                player?.sendMessage(getString('common.error.genericForm'));
-            }
-        } else if (selection === permittedButtons.length) { // This is the "Close" button
-            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
-        } else {
-            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
-        }
-
-    } catch (error) {
-        console.error(`[UiManager.showAdminPanelMain] Error for ${playerName}: ${error.stack || error}`);
-        playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Error for ${playerName}: ${error.message}`, playerName, dependencies);
-        logManager?.addLog({
-            actionType: 'errorUiAdminPanelMain',
-            context: 'uiManager.showAdminPanelMain',
-            adminName: playerName,
-            details: { errorMessage: error.message, stack: error.stack },
-        }, dependencies);
-        player?.sendMessage('§cError displaying admin panel.'); // Hardcoded from previous refactor
-    }
-}
-
-/**
  * Shows a form listing all currently online players.
  * Allows selecting a player to view further actions.
  * @param {import('@minecraft/server').Player} adminPlayer - The admin player viewing the list.
@@ -445,13 +711,25 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
         if (selection >= 0 && selection < onlinePlayers.length) {
             const targetPlayer = onlinePlayers[selection];
             if (targetPlayer?.isValid()) { // Check validity before passing
-                await showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManager, dependencies);
+                const playerContext = { targetPlayerId: targetPlayer.id, targetPlayerName: targetPlayer.nameTag };
+                // `showPanel` for 'playerActionsPanel' will handle navigation stack based on its own definition
+                // and the panel that called `showOnlinePlayersList` (which should be on the stack).
+                await showPanel(adminPlayer, 'playerActionsPanel', dependencies, playerContext);
             } else {
                 adminPlayer?.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayer?.nameTag || 'Selected Player' }));
                 await showOnlinePlayersList(adminPlayer, dependencies); // Refresh list
             }
-        } else if (selection === onlinePlayers.length) { // Corresponds to the "Back" button
-            await showAdminPanelMain(adminPlayer, playerDataManager, dependencies); // Pass full dependencies
+        } else if (selection === onlinePlayers.length) { // Corresponds to the "Back" button in this custom form
+            // This "Back" should return to the panel that called showOnlinePlayersList.
+            // The calling panel's state should be at the top of the stack (or just under if showOnlinePlayersList pushed something).
+            // For a functionCall, showPanel doesn't push the function itself to stack. So top of stack IS the caller.
+            const callerPanelState = getCurrentTopOfNavStack(adminPlayer.id); // Peek at the panel that called this function
+            if (callerPanelState) {
+                await showPanel(adminPlayer, callerPanelState.panelId, dependencies, callerPanelState.context);
+            } else {
+                // Fallback if stack is unexpectedly empty (e.g. if showOnlinePlayersList was called directly)
+                await showPanel(adminPlayer, 'mainAdminPanel', dependencies, {});
+            }
         }
     } catch (error) {
         console.error(`[UiManager.showOnlinePlayersList] Error for ${adminName}: ${error.stack || error}`);
@@ -750,84 +1028,6 @@ async function showGeneralTipsUIPanel(player, dependencies) {
     }
 }
 
-/**
- * Shows the main user information panel.
- * Dynamically builds UI elements based on `userPanelLayout` from `panelLayoutConfig.js`.
- * @param {import('@minecraft/server').Player} player - The player viewing the panel.
- * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
- */
-async function showNormalUserPanelMain(player, dependencies) {
-    const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // Added rankManager, permissionLevels
-    const playerName = player?.nameTag ?? 'UnknownPlayer';
-
-    playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Requested by ${playerName}`, playerName, dependencies);
-
-    const userPermLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
-
-    const form = new ActionFormData()
-        .title('Player Information Panel') // Title remains hardcoded as per previous step
-        .body(`Welcome, ${playerName}! Select an option:`); // Body remains hardcoded
-
-    const permittedButtons = [];
-    // userPanelLayout should be imported from panelLayoutConfig.js
-    for (const buttonConfig of userPanelLayout) {
-        if (userPermLevel <= buttonConfig.requiredPermLevel) { // Check permission
-            form.button(buttonConfig.text, buttonConfig.icon);
-            permittedButtons.push(buttonConfig);
-        }
-    }
-    form.button(getString('common.button.close'), 'textures/ui/cancel'); // Common close button
-
-    try {
-        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
-        const response = await form.show(player);
-
-        if (response.canceled || typeof response.selection === 'undefined') {
-            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Panel cancelled by ${playerName}. Reason: ${response.cancelationReason}`, playerName, dependencies);
-            return;
-        }
-
-        const selection = response.selection;
-
-        if (selection < permittedButtons.length) {
-            const selectedButtonConfig = permittedButtons[selection];
-            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Selected action: ${selectedButtonConfig.id} by ${playerName}`, playerName, dependencies);
-
-            const actionFunctions = {
-                showMyStatsUIPanel,
-                showServerRulesUIPanel,
-                showHelpfulLinksUIPanel,
-                showGeneralTipsUIPanel,
-            };
-
-            if (selectedButtonConfig.actionType === 'functionCall' && actionFunctions[selectedButtonConfig.actionValue]) {
-                await actionFunctions[selectedButtonConfig.actionValue](player, dependencies);
-            } else {
-                playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Unknown actionValue or actionType for ${selectedButtonConfig.id}: ${selectedButtonConfig.actionValue}`, playerName, dependencies);
-                player?.sendMessage(getString('common.error.genericForm'));
-            }
-        } else if (selection === permittedButtons.length) { // This is the "Close" button
-            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
-        } else {
-            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
-            player?.sendMessage(getString('common.error.genericForm'));
-        }
-    } catch (error) {
-        console.error(`[UiManager.showNormalUserPanelMain] Error for ${playerName}: ${error.stack || error}`);
-        playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Error for ${playerName}: ${error.message}`, playerName, dependencies);
-        logManager?.addLog({
-            actionType: 'errorUiNormalUserPanelMain',
-            context: 'uiManager.showNormalUserPanelMain',
-            adminName: playerName,
-            details: {
-                errorMessage: error.message,
-                stack: error.stack,
-            },
-        }, dependencies);
-        player?.sendMessage(getString('common.error.genericForm'));
-    }
-}
-
 // TODO: Define or remove these other potentially unused/stubbed functions if they cause lint errors:
 // async function showSystemInfo (_adminPlayer, _dependencies) { /* ... */ };
 // async function showActionLogsForm (_adminPlayer, _dependencies) { /* ... */ };
@@ -841,4 +1041,4 @@ async function showNormalUserPanelMain(player, dependencies) {
 /**
  *
  */
-export { showAdminPanelMain, showNormalUserPanelMain };
+export { showPanel, clearPlayerNavStack }; // Exporting showPanel and clearPlayerNavStack
