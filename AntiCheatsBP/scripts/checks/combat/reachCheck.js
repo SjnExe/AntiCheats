@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect if a player is attacking entities from an excessive distance.
+ * @module AntiCheatsBP/scripts/checks/combat/reachCheck
  */
 import * as mc from '@minecraft/server';
 

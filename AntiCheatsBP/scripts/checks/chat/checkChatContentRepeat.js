@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect players repeating the same message content.
+ * @module AntiCheatsBP/scripts/checks/chat/checkChatContentRepeat
  * All actionProfileKey and checkType strings should be camelCase.
  */
 

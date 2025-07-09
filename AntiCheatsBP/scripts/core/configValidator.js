@@ -1,5 +1,6 @@
 /**
  * @file Configuration Validator
+ * @module AntiCheatsBP/scripts/core/configValidator
  * This file contains functions to validate the structure and values of configuration files
  * for the AntiCheat system. It helps prevent runtime errors due to misconfigurations.
  */

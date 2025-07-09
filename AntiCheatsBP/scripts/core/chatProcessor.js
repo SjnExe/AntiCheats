@@ -1,5 +1,6 @@
 /**
  * @file Handles all chat message processing, including checks and formatting.
+ * @module AntiCheatsBP/scripts/core/chatProcessor
  */
 import * as mc from '@minecraft/server';
 

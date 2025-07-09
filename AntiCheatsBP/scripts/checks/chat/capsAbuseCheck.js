@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect excessive capitalization (CAPS abuse) in chat messages.
+ * @module AntiCheatsBP/scripts/checks/chat/capsAbuseCheck
  * All actionProfileKey and checkType strings should be camelCase.
  */
 

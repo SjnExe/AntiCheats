@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect excessive symbol usage (non-alphanumeric, excluding spaces) in chat messages.
+ * @module AntiCheatsBP/scripts/checks/chat/symbolSpamCheck
  * All actionProfileKey and checkType strings should be camelCase.
  */
 

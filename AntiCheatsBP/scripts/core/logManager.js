@@ -1,5 +1,6 @@
 /**
  * @file Manages the storage and retrieval of action logs, such as administrative commands (ban, mute, kick)
+ * @module AntiCheatsBP/scripts/core/logManager
  * and significant system events. Logs are persisted using world dynamic properties with an
  * in-memory cache for performance. All `actionType` strings should be `camelCase`.
  */

@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect gibberish or keyboard-mashed messages.
+ * @module AntiCheatsBP/scripts/checks/chat/checkGibberish
  */
 
 /**

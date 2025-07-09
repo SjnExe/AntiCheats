@@ -1,7 +1,7 @@
 /**
  * @file Provides utility functions for common player-related operations such as permission checks,
  * debug logging, admin notifications, player searching, and duration parsing.
- * @module utils/playerUtils
+ * @module AntiCheatsBP/scripts/utils/playerUtils
  */
 import * as mc from '@minecraft/server';
 import { stringDB } from '../core/textDatabase.js';
@@ -167,9 +167,11 @@ export function findPlayer(playerName) {
 }
 
 /**
- * Parses a duration string (e.g., "7d", "2h", "30m", "perm") into milliseconds.
+ * Parses a duration string (e.g., "2w", "7d", "2h", "30m", "perm") into milliseconds.
+ * Supported units: 'w' (weeks), 'd' (days), 'h' (hours), 'm' (minutes), 's' (seconds).
  * Also accepts a plain number, which is interpreted as seconds.
- * @param {string} durationString - The duration string to parse.
+ * "perm" or "permanent" results in Infinity.
+ * @param {string} durationString - The duration string to parse (e.g., "2w", "7d", "30m", "60s", "perm").
  * @returns {number | null} The duration in milliseconds, Infinity for "perm", or null if invalid.
  */
 export function parseDuration(durationString) {
@@ -181,7 +183,7 @@ export function parseDuration(durationString) {
         return Infinity;
     }
 
-    const regex = /^(\d+)([smhd])$/;
+    const regex = /^(\d+)([smhdw])$/; // Added 'w' for weeks
     const match = lowerDurationString.match(regex);
 
     if (match) {
@@ -192,9 +194,9 @@ export function parseDuration(durationString) {
             case 'm': return value * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
             case 'h': return value * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
             case 'd': return value * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
+            case 'w': return value * DAYS_PER_WEEK * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND; // Added weeks
             default:
                 // This case should ideally not be reached if the regex is correct.
-                // If it is reached, it implies an unexpected unit.
                 console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
                 return null;
         }

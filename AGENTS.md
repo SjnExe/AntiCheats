@@ -44,15 +44,15 @@ This project uses a simple task management system in the `Dev/tasks/` directory.
 ## 5. Code Style and Quality
 *   **Adherence to Guidelines:** Strictly follow `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
 *   **Plain JavaScript:** All Behavior Pack scripts are written in plain JavaScript. Do not use TypeScript syntax.
-*   **Error Handling:** Implement robust error handling (e.g., `try...catch` blocks for risky operations, validation of inputs).
-*   **Logging:** Utilize `playerUtils.debugLog()` for development/debug messages (conditional on `config.enableDebugLogging` or `pData.isWatched`) and `logManager.addLog()` for persistent action/error logging.
+*   **Error Handling:** Implement robust error handling (e.g., `try...catch` blocks for risky operations, validation of inputs). Refer to `Dev/StandardizationGuidelines.md` (Section 6) for detailed error logging standards.
+*   **Logging:** Utilize `playerUtils.debugLog()` for development/debug messages (conditional on `config.enableDebugLogging` or `pData.isWatched`). For persistent action logging and standardized error reporting, use `logManager.addLog()`, following the detailed error logging guidelines in `Dev/StandardizationGuidelines.md` (Section 6).
 *   **User-Facing Text:** All user-facing strings (UI, command responses) should be managed via `AntiCheatsBP/scripts/core/textDatabase.js` and retrieved using `getString()`.
 *   **Linting with ESLint:** This project uses ESLint to enforce code style and catch potential errors.
     *   The configuration (`eslint.config.js`) is based on `eslint:recommended` rules plus specific project style guidelines from `Dev/CodingStyle.md` and `Dev/StandardizationGuidelines.md`.
     *   Run `npm run lint` to check for linting issues.
     *   Run `npm run lint:fix` to automatically fix many common issues.
     *   Please ensure your changes pass linting before submitting.
-    *   *Note:* JSDoc specific linting rules via `eslint-plugin-jsdoc` were attempted but deferred due to environmental constraints with ESLint's flat configuration loader in the development environment. Core JSDoc formatting guidelines in `Dev/StandardizationGuidelines.md` should still be followed.
+    *   JSDoc specific linting rules are enforced using `eslint-plugin-jsdoc`. The detailed configuration, including enabled and customized rules, can be found in `eslint.config.js`. Adherence to these rules is important for maintaining JSDoc quality and consistency. Core JSDoc formatting guidelines in `Dev/StandardizationGuidelines.md` should also be followed as a general reference.
 
 ## 6. Planning and Communication
 *   **Use `set_plan()`:** Always articulate your plan using the `set_plan` tool before starting significant code changes.

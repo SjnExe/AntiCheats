@@ -1,5 +1,6 @@
 /**
  * @file Manages the registration, parsing, and execution of chat-based commands for the AntiCheat system.
+ * @module AntiCheatsBP/scripts/core/commandManager
  * It dynamically loads command modules and handles permission checking and alias resolution.
  * All command names and aliases are treated as case-insensitive (converted to lowerCase).
  */

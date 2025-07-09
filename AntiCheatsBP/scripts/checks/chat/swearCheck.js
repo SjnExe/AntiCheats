@@ -1,5 +1,6 @@
 /**
  * @file Implements swear word detection in chat messages with obfuscation resistance
+ * @module AntiCheatsBP/scripts/checks/chat/swearCheck
  * using exact normalized matching. All actionProfileKey and checkType strings should be camelCase.
  */
 

@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect simple impersonation attempts in chat,
+ * @module AntiCheatsBP/scripts/checks/chat/checkSimpleImpersonation
  * such as mimicking server announcements.
  */
 

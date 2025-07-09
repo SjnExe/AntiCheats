@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect players negating fall damage (NoFall).
+ * @module AntiCheatsBP/scripts/checks/movement/noFallCheck
  * It compares accumulated fall distance with whether the player actually took damage upon landing.
  * Relies on `pData.fallDistance` being accumulated in the main tick loop and
  * `pData.isTakingFallDamage` being set by `handleEntityHurt` and reset in the main tick loop.

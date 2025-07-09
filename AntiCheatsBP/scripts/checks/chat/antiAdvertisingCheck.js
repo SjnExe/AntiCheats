@@ -1,5 +1,6 @@
 /**
  * @file Implements a check to detect potential advertising in chat messages.
+ * @module AntiCheatsBP/scripts/checks/chat/antiAdvertisingCheck
  * All actionProfileName and checkType strings should be camelCase.
  */
 

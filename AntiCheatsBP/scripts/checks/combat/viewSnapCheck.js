@@ -1,5 +1,6 @@
 /**
  * @file Implements checks for invalid player view pitch and rapid view snaps (aimbot-like behavior)
+ * @module AntiCheatsBP/scripts/checks/combat/viewSnapCheck
  * that can occur shortly after a player performs an attack.
  */
 

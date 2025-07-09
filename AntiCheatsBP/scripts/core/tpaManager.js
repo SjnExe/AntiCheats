@@ -1,7 +1,7 @@
 /**
  * @file Manages TPA (teleport request) operations, including creating, tracking, and processing requests.
  * All actionType strings used for logging should be camelCase.
- * @module core/tpaManager
+ * @module AntiCheatsBP/scripts/core/tpaManager
  */
 
 // Constants for UUID generation

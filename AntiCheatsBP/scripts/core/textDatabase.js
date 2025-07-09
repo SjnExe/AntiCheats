@@ -1,5 +1,6 @@
 /**
  * @file Defines a simple key-value store for UI and message strings.
+ * @module AntiCheatsBP/scripts/core/textDatabase
  * Since full localization is not required, this provides a centralized
  * place for text, allowing for easier management and consistency.
  * All keys should be camelCase or dot.case for structure.

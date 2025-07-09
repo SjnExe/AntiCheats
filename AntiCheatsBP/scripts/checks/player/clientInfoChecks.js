@@ -1,5 +1,6 @@
 /**
  * @file Implements checks related to player client system information, such as render distance.
+ * @module AntiCheatsBP/scripts/checks/player/clientInfoChecks
  */
 
 /**

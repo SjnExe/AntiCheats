@@ -1,5 +1,6 @@
 /**
  * @file Stores the configuration for the AutoMod system.
+ * @module AntiCheatsBP/scripts/core/automodConfig
  * This includes rules for automated actions based on flag counts,
  * (with rule-specific message templates) and per-check type toggles for AutoMod.
  * All `checkType` keys and `actionType` string literals must be in `camelCase`.

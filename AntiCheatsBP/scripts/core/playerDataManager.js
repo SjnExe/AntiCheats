@@ -1,5 +1,6 @@
 /**
  * @file Manages all player-specific data used by the AntiCheat system.
+ * @module AntiCheatsBP/scripts/core/playerDataManager
  * This includes runtime data (pData), persistence via dynamic properties,
  * and helper functions for data manipulation like adding flags, mutes, and bans.
  * All flagType strings should be camelCase.
@@ -32,12 +33,13 @@ const persistedPlayerDataKeys = [
     'consecutiveOffGroundTicks', 'fallDistance',
     'consecutiveOnGroundSpeedingTicks', 'muteInfo', 'banInfo',
     'lastCombatInteractionTime', 'lastViolationDetailsMap', 'automodState',
-    'joinTime',
+    'joinTime', 'firstEverLoginTime', 'joinCount', // Added joinCount
     'lastKnownNameTag', 'lastNameTagChangeTick', 'deathMessageToShowOnSpawn',
     'lastCheckNameSpoofTick', 'lastCheckAntiGmcTick', 'lastCheckNetherRoofTick',
     'lastCheckAutoToolTick', 'lastCheckFlatRotationBuildingTick', 'lastRenderDistanceCheckTick',
     'lastChatMessageTimestamp', // For messageRateCheck
     'recentHits', // For multiTargetCheck
+    'itemUseTimestamps', // Added for FastUse check persistence
     'lastUsedElytraTick',
     'lastOnSlimeBlockTick',
     'recentEntitySpamTimestamps',
@@ -142,12 +144,20 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
     }
     // Add more contexts here if _handleDynamicPropertyError is used by other functions for different DP keys.
 
-    const newActionType = `pdm.dp.${contextStr}.${opType}.error`;
+    // Refined actionType and errorCode to match new standardization
+    const actionTypePrefix = 'error.pdm.dp';
+    let specificErrorType = opType; // 'parse', 'stringify', 'get', 'set'
+    if (opType === 'get') specificErrorType = 'Get';
+    else if (opType === 'set') specificErrorType = 'Set';
+    else if (opType === 'parse') specificErrorType = 'Parse';
+    else if (opType === 'stringify') specificErrorType = 'Stringify';
 
-    const errorCode = `PDM_DP_${contextStr.toUpperCase()}_${opType.toUpperCase()}_ERROR`;
+
+    const newActionType = `${actionTypePrefix}${specificErrorType}`; // e.g., error.pdm.dpGet, error.pdm.dpParse
+    const errorCode = `PDM_DP_${specificErrorType.toUpperCase()}_FAIL`; // e.g., PDM_DP_GET_FAIL, PDM_DP_PARSE_FAIL
 
     logManager?.addLog({
-        actionType: newActionType, // e.g., pdm.dp.data.parse.error
+        actionType: newActionType,
         context: logContext,    // e.g., playerDataManager.loadPlayerDataFromDynamicProperties
         targetName: playerName,
         details: {
@@ -352,11 +362,11 @@ export function initializeDefaultPlayerData(player, dependencies) {
         lastOnGroundPosition: { ...player.location },
         consecutiveOnGroundSpeedingTicks: 0,
         isTakingFallDamage: false,
-        attackEvents: [],
+        attackEvents: [], // Standardized from attackEventsTimestamps
         lastAttackTime: 0,
         lastCombatInteractionTime: 0,
-        blockBreakEvents: [],
-        recentMessages: [],
+        blockBreakEvents: [], // Standardized from blockBreakEventsTimestamps
+        chatMessageHistory: [], // Added to match usage, removed recentMessages
         flags: defaultFlags,
         lastFlagType: '',
         isWatched: false,
@@ -409,6 +419,7 @@ export function initializeDefaultPlayerData(player, dependencies) {
         lastNameTagChangeTick: currentTick,
         muteInfo: null,
         banInfo: null,
+        firstEverLoginTime: Date.now(), // Added
         joinTime: Date.now(),
         lastGameMode: player.gameMode,
         lastDimensionId: player.dimension.id,
@@ -475,22 +486,38 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
         newPData.lastViolationDetailsMap = { ...(defaultPDataForMerge.lastViolationDetailsMap || {}), ...(loadedData.lastViolationDetailsMap || {}) };
         newPData.automodState = { ...(defaultPDataForMerge.automodState || {}), ...(loadedData.automodState || {}) };
 
-        newPData.playerNameTag = player.nameTag;
-        newPData.lastKnownNameTag = loadedData.lastKnownNameTag ?? player.nameTag;
-        newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick;
-        newPData.joinTime = loadedData.joinTime ?? Date.now();
-        newPData.isDirtyForSave = false;
+        newPData.playerNameTag = player.nameTag; // Always update to current nameTag
+        newPData.lastKnownNameTag = loadedData.lastKnownNameTag ?? player.nameTag; // Use persisted if available
+        newPData.lastNameTagChangeTick = loadedData.lastNameTagChangeTick ?? currentTick; // Use persisted if available
+
+        // joinTime is the start of the most recent session. If loadedData has it, that's from a previous save.
+        // handlePlayerSpawn will update it to Date.now() if initialSpawn is true.
+        // If ensurePlayerDataInitialized is called mid-session (e.g. script reload, player already online),
+        // loadedData.joinTime would be correct for *that* session start.
+        newPData.joinTime = loadedData.joinTime ?? newPData.joinTime; // Keep what initializeDefaultPlayerData set if not in loadedData
+                                                                    // or what was loaded. handlePlayerSpawn will update if it's a true new session.
+
+        // firstEverLoginTime should only be set once. If it's in loadedData, use that.
+        // Otherwise, initializeDefaultPlayerData already set it to Date.now().
+        newPData.firstEverLoginTime = loadedData.firstEverLoginTime ?? newPData.firstEverLoginTime;
+
+        // joinCount should use persisted value if available, otherwise default from initializeDefaultPlayerData (which is 0)
+        newPData.joinCount = loadedData.joinCount ?? newPData.joinCount;
+
+        newPData.isDirtyForSave = false; // Data loaded is considered clean initially
     } else {
-        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data.`, playerName, dependencies);
+        // This path means initializeDefaultPlayerData already set both joinTime, firstEverLoginTime to Date.now(), and joinCount to 0
+        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] No persisted data for ${playerName}. Using fresh default data (firstEverLoginTime and joinTime set to now).`, playerName, dependencies);
     }
 
+    // Expired mute/ban clearing
     if (newPData.muteInfo && newPData.muteInfo.unmuteTime !== Infinity && Date.now() >= newPData.muteInfo.unmuteTime) {
-        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Mute for ${newPData.playerNameTag} expired on load. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
+        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Mute for ${newPData.playerNameTag} expired on load/ensure. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
         newPData.muteInfo = null;
         newPData.isDirtyForSave = true;
     }
     if (newPData.banInfo && newPData.banInfo.unbanTime !== Infinity && Date.now() >= newPData.banInfo.unbanTime) {
-        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Ban for ${newPData.playerNameTag} expired on load. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
+        playerUtils?.debugLog(`[PlayerDataManager.ensurePlayerDataInitialized] Ban for ${newPData.playerNameTag} expired on load/ensure. Clearing.`, newPData.isWatched ? newPData.playerNameTag : null, dependencies);
         newPData.banInfo = null;
         newPData.isDirtyForSave = true;
     }
