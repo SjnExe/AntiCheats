@@ -11,7 +11,10 @@
  */
 export const stringDB = {
     // Common UI elements
+    'common.button.back': '§l§cBack§r',
     'common.button.close': '§l§cClose§r',
+    'common.button.confirm': '§l§aConfirm§r',
+    'common.button.cancel': '§l§cCancel§r',
     'common.button.ok': '§l§aOK§r',
     'common.boolean.yes': '§aYes§r',
     'common.boolean.no': '§cNo§r',
