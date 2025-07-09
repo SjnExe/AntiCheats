@@ -148,10 +148,9 @@ export async function executeCheckAction(player, checkType, violationDetails, de
     // Use the re-fetched pData (pDataAfterAwait) for lastViolationDetailsMap update
     // This block should only execute if player was valid and pDataAfterAwait was successfully fetched.
     if (player && player.isValid() && violationDetails && Object.keys(violationDetails).length > 0) {
-        const pDataToUseForMap = playerDataManager?.getPlayerData(player.id); // Re-fetch to ensure latest state, or use pDataAfterAwait if it was confirmed valid
-                                                                            // Using a fresh fetch here to be absolutely certain after all awaits.
-                                                                            // However, if pDataAfterAwait from above is sufficient and confirmed valid, it can be reused.
-                                                                            // For maximum safety in this specific update:
+        // Using a fresh fetch here to be absolutely certain after all awaits.
+        // However, if pDataAfterAwait from above is sufficient and confirmed valid, it can be reused.
+        // For maximum safety in this specific update:
         const currentPData = playerDataManager?.getPlayerData(player.id);
         if (currentPData) {
             currentPData.lastViolationDetailsMap ??= {};
@@ -170,7 +169,7 @@ export async function executeCheckAction(player, checkType, violationDetails, de
             currentPData.isDirtyForSave = true;
             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Stored violation details for check '${checkType}' for ${playerNameForLog}: ${JSON.stringify(detailsToStore)}`, player?.nameTag, dependencies);
         } else { // Player is valid, but pData is null (should be rare if player just interacted)
-             playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store violation details for '${checkType}' (pData not found for ${playerNameForLog} after await).`, player?.nameTag, dependencies);
+            playerUtils?.debugLog(`[ActionManager.executeCheckAction] Could not store violation details for '${checkType}' (pData not found for ${playerNameForLog} after await).`, player?.nameTag, dependencies);
         }
     } else if (player && !player.isValid() && violationDetails && Object.keys(violationDetails).length > 0) {
         playerUtils?.debugLog(`[ActionManager.executeCheckAction] Player ${playerNameForLog} became invalid. Skipping details map update.`, null, dependencies);

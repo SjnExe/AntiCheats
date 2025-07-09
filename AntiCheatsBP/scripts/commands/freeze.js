@@ -26,6 +26,9 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [on|off|toggle|status].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {string} [invokedBy] - Source of the command invocation (e.g., 'PlayerCommand', 'AutoMod', 'System').
+ * @param {boolean} [isAutoModAction] - Whether this execution is part of an AutoMod action.
+ * @param {string | null} [autoModCheckType] - The specific check type if invoked by AutoMod.
  * @returns {void}
  */
 export function execute(
@@ -34,10 +37,10 @@ export function execute(
     dependencies,
     invokedBy = 'PlayerCommand',
     isAutoModAction = false,
-    autoModCheckType = null
+    autoModCheckType = null,
     // No programmaticReason needed for freeze as it's a state change
 ) {
-    const { config, playerUtils, logManager, getString, rankManager } = dependencies;
+    const { config, playerUtils, logManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
@@ -49,8 +52,11 @@ export function execute(
 
     if (args.length < 1) {
         const usageMsg = getString('command.freeze.usage', { prefix });
-        if (player) player.sendMessage(usageMsg);
-        else console.warn(`[FreezeCommand.execute] System call missing target player name. Usage: ${usageMsg}`);
+        if (player) {
+            player.sendMessage(usageMsg);
+        } else {
+            console.warn(`[FreezeCommand.execute] System call missing target player name. Usage: ${usageMsg}`);
+        }
         return;
     }
 
@@ -60,14 +66,16 @@ export function execute(
     let targetPlayer;
     if (invokedBy === 'PlayerCommand' && player) {
         targetPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'freeze', allowSelf: false });
-        if (!targetPlayer) return; // validateCommandTarget sends messages
+        if (!targetPlayer) {
+            return;
+        } // validateCommandTarget sends messages
 
         // No canAdminActionTarget needed for freeze as it's typically a base admin perm
     } else { // System or AutoMod call
         targetPlayer = playerUtils.findPlayer(targetPlayerName);
         if (!targetPlayer || !targetPlayer.isValid()) {
             console.warn(`[FreezeCommand.execute] ${issuerName} call: Target player '${targetPlayerName}' not found or invalid.`);
-             logManager?.addLog({
+            logManager?.addLog({
                 actionType: 'error.cmd.freeze.targetNotFound',
                 context: 'FreezeCommand.execute',
                 adminName: issuerName,
@@ -93,8 +101,8 @@ export function execute(
             break;
         case 'toggle':
             if (invokedBy !== 'PlayerCommand') { // System/AutoMod should specify on/off
-                 console.warn(`[FreezeCommand.execute] ${issuerName} call used 'toggle'. Defaulting to 'on' if not frozen, 'off' if frozen.`);
-                 targetFreezeState = !currentFreezeState; // Still allow toggle for safety but log warning
+                console.warn(`[FreezeCommand.execute] ${issuerName} call used 'toggle'. Defaulting to 'on' if not frozen, 'off' if frozen.`);
+                targetFreezeState = !currentFreezeState; // Still allow toggle for safety but log warning
             } else {
                 targetFreezeState = !currentFreezeState;
             }
@@ -111,8 +119,11 @@ export function execute(
             return;
         }
         default:
-            if (player) player.sendMessage(getString('command.freeze.invalidArg'));
-            else console.warn(`[FreezeCommand.execute] ${issuerName} call with invalid subcommand: ${subCommand}`);
+            if (player) {
+                player.sendMessage(getString('command.freeze.invalidArg'));
+            } else {
+                console.warn(`[FreezeCommand.execute] ${issuerName} call with invalid subcommand: ${subCommand}`);
+            }
             return;
     }
 
@@ -146,7 +157,7 @@ export function execute(
                 targetId: targetPlayer.id,
                 details: 'Player frozen',
                 isAutoMod: isAutoModAction,
-                checkType: autoModCheckType
+                checkType: autoModCheckType,
             }, dependencies);
         } catch (e) {
             const errorMsg = getString('command.freeze.error.apply', { playerName: targetPlayer.nameTag, errorMessage: e.message });
@@ -171,7 +182,7 @@ export function execute(
                 player.sendMessage(successMsg);
                 playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
             } else {
-                 console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+                console.log(`[FreezeCommand] ${successMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
             }
 
             if (config?.notifyOnAdminUtilCommandUsage !== false && invokedBy === 'PlayerCommand') {
@@ -188,7 +199,7 @@ export function execute(
                 targetId: targetPlayer.id,
                 details: 'Player unfrozen',
                 isAutoMod: isAutoModAction,
-                checkType: autoModCheckType
+                checkType: autoModCheckType,
             }, dependencies);
         } catch (e) {
             const errorMsg = getString('command.freeze.error.remove', { playerName: targetPlayer.nameTag, errorMessage: e.message });
@@ -196,7 +207,7 @@ export function execute(
                 player.sendMessage(errorMsg);
                 playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
             } else {
-                 console.error(`[FreezeCommand CRITICAL] ${errorMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
+                console.error(`[FreezeCommand CRITICAL] ${errorMsg.replace(/§[a-f0-9lr]/g, '')} (Invoked by ${issuerName})`);
             }
             playerUtils?.debugLog(`[FreezeCommand CRITICAL] Error unfreezing ${targetPlayer.nameTag} by ${issuerName}: ${e.message}`, issuerName, dependencies);
             console.error(`[FreezeCommand CRITICAL] Error unfreezing ${targetPlayer.nameTag} by ${issuerName}: ${e.stack || e}`);

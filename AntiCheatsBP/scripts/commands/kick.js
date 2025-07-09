@@ -18,6 +18,10 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: <playername> [reason].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {string} [invokedBy] - Source of the command invocation (e.g., 'PlayerCommand', 'AutoMod', 'System').
+ * @param {boolean} [isAutoModAction] - Whether this execution is part of an AutoMod action.
+ * @param {string | null} [autoModCheckType] - The specific check type if invoked by AutoMod.
+ * @param {string | null} [programmaticReason] - Reason for the kick if not from player command arguments.
  * @returns {void}
  */
 export function execute(
@@ -27,7 +31,7 @@ export function execute(
     invokedBy = 'PlayerCommand',
     isAutoModAction = false,
     autoModCheckType = null,
-    programmaticReason = null
+    programmaticReason = null,
 ) {
     const { config, playerUtils, logManager, playerDataManager, rankManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
@@ -63,7 +67,9 @@ export function execute(
     let foundPlayer;
     if (invokedBy === 'PlayerCommand' && player) {
         foundPlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'kick' });
-        if (!foundPlayer) return; // validateCommandTarget sends messages
+        if (!foundPlayer) {
+            return;
+        } // validateCommandTarget sends messages
 
         const permCheck = rankManager.canAdminActionTarget(player, foundPlayer, 'kick', dependencies);
         if (!permCheck.allowed) {
@@ -102,7 +108,7 @@ export function execute(
             const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason });
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, player, targetPData);
         } else if (isAutoModAction && config?.notifyOnAutoModAction !== false) {
-             const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason }); // issuerName will be AutoMod
+            const baseAdminNotifyMsg = getString('command.kick.notify.kicked', { targetName: foundPlayer.nameTag, adminName: issuerName, reason }); // issuerName will be AutoMod
             playerUtils?.notifyAdmins(baseAdminNotifyMsg, dependencies, null, targetPData); // Pass null for player if AutoMod
         }
 
@@ -136,7 +142,7 @@ export function execute(
                 errorCode: 'CMD_KICK_EXEC_FAIL',
                 message: e.message,
                 rawErrorStack: e.stack || e.toString(),
-                meta: { reasonAttempted: reason, invokedBy }
+                meta: { reasonAttempted: reason, invokedBy },
             },
         }, dependencies);
     }
