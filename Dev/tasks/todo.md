@@ -22,8 +22,6 @@ This list contains planned features, improvements, and areas for future investig
     - Document that the hitbox adjustment is an approximation. While raycasting is expensive, note this as a potential area for future precision improvement if performance allows or if specific false positives due to entity size variations become problematic.
 - **(Low) `antiGmcCheck.js` - Dependency Reliability**:
     - Note that its accuracy depends on reliable `rankManager.getPlayerPermissionLevel` and `permissionLevels` configuration.
-- **(Medium) `nukerCheck.js` - False Positive Review**:
-    - Review thresholds (`nukerMaxBreaksShortInterval`, `nukerCheckIntervalMs`) against legitimate fast mining with high-efficiency tools and effects (e.g., Haste II + Eff V) or instant mining of sculk-like blocks.
 
 ### Utility Functions
 
