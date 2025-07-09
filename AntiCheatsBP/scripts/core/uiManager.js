@@ -755,18 +755,43 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
         .sort((a, b) => a.sortId - b.sortId);
 
     permittedItems.forEach(item => {
-        let buttonText = item.text;
+        let effectiveText = item.text;
+        let effectiveIcon = item.icon;
+
+        // Process textVariants
+        if (item.textVariants && Array.isArray(item.textVariants)) {
+            for (const variant of item.textVariants) {
+                if (variant && effectiveContext[variant.contextKey] === variant.contextValue) {
+                    effectiveText = variant.text;
+                    break; // First match wins
+                }
+            }
+        }
+
+        // Process iconVariants
+        if (item.iconVariants && Array.isArray(item.iconVariants)) {
+            for (const variant of item.iconVariants) {
+                if (variant && effectiveContext[variant.contextKey] === variant.contextValue) {
+                    effectiveIcon = variant.icon;
+                    break; // First match wins
+                }
+            }
+        }
+
+        // Interpolate placeholders in the chosen text
         if (panelId === 'logViewerPanel') {
-             buttonText = buttonText.replace(/{currentPage}/g, String(effectiveContext.currentPage ?? 1));
-             buttonText = buttonText.replace(/{totalPages}/g, String(effectiveContext.totalPages ?? 1));
+            effectiveText = effectiveText.replace(/{currentPage}/g, String(effectiveContext.currentPage ?? 1));
+            effectiveText = effectiveText.replace(/{totalPages}/g, String(effectiveContext.totalPages ?? 1));
         }
         for (const key in effectiveContext) {
             if (Object.prototype.hasOwnProperty.call(effectiveContext, key) && !['currentPage', 'totalPages'].includes(key)) {
                 const replacementValue = String(effectiveContext[key]);
-                buttonText = buttonText.replace(new RegExp(`{${key}}`, 'g'), replacementValue);
+                if (typeof effectiveText === 'string') { // Ensure effectiveText is a string before replacing
+                    effectiveText = effectiveText.replace(new RegExp(`{${key}}`, 'g'), replacementValue);
+                }
             }
         }
-        form.button(buttonText, item.icon);
+        form.button(effectiveText, effectiveIcon);
     });
 
     let atRootLevel = isNavStackAtRoot(player.id) || !panelDefinition.parentPanelId;
@@ -1678,11 +1703,20 @@ async function showOnlinePlayersList(adminPlayer, dependencies, context = {}) { 
         if (selection >= 0 && selection < onlinePlayers.length) {
             const targetPlayer = onlinePlayers[selection];
             if (targetPlayer?.isValid()) {
+                const targetPlayerData = playerDataManager?.getPlayerData(targetPlayer.id);
+                const isTargetFrozen = targetPlayerData?.isFrozen ?? false; // Default to false if undefined
+
                 const playerContext = {
                     targetPlayerId: targetPlayer.id,
                     targetPlayerName: targetPlayer.nameTag,
+                    isTargetFrozen: isTargetFrozen, // Add frozen status to context
                     ...(callingPanelState?.context || {})
                 };
+                // Remove isTargetFrozen from the callingPanelState context before merging,
+                // to avoid it persisting if the calling panel didn't intend it.
+                // However, playerActionsPanel specifically needs it.
+                // The spread `...(callingPanelState?.context || {})` should be fine, playerContext specific keys take precedence.
+
                 if (callingPanelState) pushToPlayerNavStack(adminPlayer.id, callingPanelState.panelId, callingPanelState.context);
                 else pushToPlayerNavStack(adminPlayer.id, 'playerManagementPanel', {});
 

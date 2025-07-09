@@ -6,6 +6,16 @@
 
 /**
  * Represents a single interactive item within a panel, typically displayed as a button.
+ *
+ * Dynamic Text and Icons:
+ * The `textVariants` and `iconVariants` properties allow button text and icons to change
+ * based on the current panel's context. For each type of variant (text or icon),
+ * `uiManager.showPanel` will iterate through the defined variants. The first variant where
+ * `currentContext[variant.contextKey] === variant.contextValue` will be applied.
+ * If no variant matches, the default `text` or `icon` property for the PanelItem is used.
+ * Placeholder interpolation (e.g., `{playerName}`) is applied to the text *after* a variant
+ * (or default) has been selected.
+ *
  * @typedef {object} PanelItem
  * @property {string} id - Unique string identifier for this item within its panel (e.g., 'viewPlayers', 'editConfigKey_maxCps').
  *                         Used for logging and potentially for direct item manipulation if ever needed.
@@ -24,6 +34,12 @@
  * @property {string} actionValue - If `actionType` is `'functionCall'`, this is the name of the function to call
  *                                 (must be a key in `uiManager.UI_ACTION_FUNCTIONS`).
  *                                 If `actionType` is `'openPanel'`, this is the `panelId` of the target panel to open.
+ * @property {Array<{contextKey: string, contextValue: any, text: string}>} [textVariants] - Optional. Allows dynamic button text.
+ *                                   The first variant where `currentContext[contextKey] === contextValue` will be used.
+ *                                   If no variant matches, the default `text` property is used.
+ * @property {Array<{contextKey: string, contextValue: any, icon: string}>} [iconVariants] - Optional. Allows dynamic button icon.
+ *                                   The first variant where `currentContext[contextKey] === contextValue` will be used.
+ *                                   If no variant matches, the default `icon` property is used.
  * @property {string[]} [actionContextVars] - Optional array of strings.
  *                                          When `actionType` is `'openPanel'`, these specify which keys from the *current*
  *                                          panel's context should be explicitly passed along to the *next* panel's context.
@@ -148,7 +164,21 @@ export const panelDefinitions = {
             { id: 'kickPlayer', sortId: 20, text: '§cKick Player§r', icon: 'textures/ui/icon_hammer', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showKickFormForPlayer', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             { id: 'mutePlayer', sortId: 30, text: '§6Mute Player§r', icon: 'textures/ui/speaker_on_light', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showMuteFormForPlayer', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             { id: 'unmutePlayer', sortId: 35, text: '§aUnmute Player§r', icon: 'textures/ui/speaker_off_light', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showUnmuteFormForPlayer', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
-            { id: 'freezePlayer', sortId: 40, text: '§bFreeze/Unfreeze Player§r', icon: 'textures/ui/icon_locked', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'toggleFreezePlayer', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
+            {
+                id: 'freezePlayer', sortId: 40,
+                text: '§bToggle Freeze for {targetPlayerName}§r', // Default text
+                icon: 'textures/ui/debug_glyph_color', // Default icon (placeholder)
+                textVariants: [
+                    { contextKey: 'isTargetFrozen', contextValue: true, text: '§aUnfreeze {targetPlayerName}§r' },
+                    { contextKey: 'isTargetFrozen', contextValue: false, text: '§bFreeze {targetPlayerName}§r' }
+                ],
+                iconVariants: [
+                    { contextKey: 'isTargetFrozen', contextValue: true, icon: 'textures/ui/icon_unlocked' }, // Placeholder icon for "Unfreeze"
+                    { contextKey: 'isTargetFrozen', contextValue: false, icon: 'textures/ui/icon_locked' }     // Placeholder icon for "Freeze"
+                ],
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'toggleFreezePlayer',
+                actionContextVars: ['targetPlayerId', 'targetPlayerName', 'isTargetFrozen'] // Pass isTargetFrozen to the action too
+            },
             { id: 'viewPlayerInventory', sortId: 42, text: '§9View Inventory§r', icon: 'textures/ui/inventory_icon', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showPlayerInventoryFromPanel', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             { id: 'toggleWatchPlayer', sortId: 43, text: '§3Toggle Watch§r', icon: 'textures/ui/spyglass_flat_color', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'toggleWatchPlayerFromPanel', actionContextVars: ['targetPlayerId', 'targetPlayerName'] },
             { id: 'clearInventory', sortId: 45, text: '§cClear Inventory§r', icon: 'textures/ui/trash', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'confirmClearPlayerInventory', actionContextVars: ['targetPlayerId', 'targetPlayerName']},
