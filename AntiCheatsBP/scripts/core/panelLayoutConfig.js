@@ -5,26 +5,48 @@
  */
 
 /**
+ * Represents a single interactive item within a panel, typically displayed as a button.
  * @typedef {object} PanelItem
- * @property {string} id - Unique string identifier for this item within its panel (e.g., 'viewPlayers', 'editConfig').
- * @property {number} sortId - Numerical ID for ordering items within the panel (lower numbers appear first).
- * @property {string} text - Display text for the button (can use placeholders like {playerName}).
- * @property {string} [icon] - Optional path to the button icon.
- * @property {number} requiredPermLevel - Minimum numerical permission level required to see/use this item
- *                                      (e.g., Owner=0, Admin=1, Moderator=2, Member=1024).
- * @property {'functionCall' | 'openPanel'} actionType - Type of action to perform.
- * @property {string} actionValue - The name of the JS function/command (if 'functionCall') or the panelId
- *                                 of the target panel (if 'openPanel').
- * @property {string[]} [actionContextVars] - Optional array of strings. For 'openPanel', these define context keys
- *                                          to be passed from current context. For 'functionCall', context keys required by the function.
- * @property {object} [initialContext] - For 'openPanel' or 'functionCall', initial/additional context to merge.
+ * @property {string} id - Unique string identifier for this item within its panel (e.g., 'viewPlayers', 'editConfigKey_maxCps').
+ *                         Used for logging and potentially for direct item manipulation if ever needed.
+ * @property {number} sortId - Numerical ID for ordering items within the panel. Lower numbers appear first.
+ *                             Items with the same sortId will have a stable but otherwise undefined relative order.
+ * @property {string} text - Display text for the button. Can include placeholders like `{playerName}` or `{keyName}`
+ *                         which will be interpolated by `uiManager.showPanel` using the current panel context.
+ * @property {string} [icon] - Optional path to an icon texture to be displayed on the button
+ *                           (e.g., 'textures/ui/icon_multiplayer').
+ * @property {number} requiredPermLevel - Minimum numerical permission level (from `config.permissionLevels`)
+ *                                      required for a player to see and interact with this item.
+ *                                      Example: Owner=0, Admin=1, Moderator=2, Member=1024.
+ * @property {'functionCall' | 'openPanel'} actionType - Defines what happens when the item is selected.
+ *                                                     - `'functionCall'`: Calls a JavaScript function defined in `uiManager.UI_ACTION_FUNCTIONS`.
+ *                                                     - `'openPanel'`: Navigates to another panel.
+ * @property {string} actionValue - If `actionType` is `'functionCall'`, this is the name of the function to call
+ *                                 (must be a key in `uiManager.UI_ACTION_FUNCTIONS`).
+ *                                 If `actionType` is `'openPanel'`, this is the `panelId` of the target panel to open.
+ * @property {string[]} [actionContextVars] - Optional array of strings.
+ *                                          When `actionType` is `'openPanel'`, these specify which keys from the *current*
+ *                                          panel's context should be explicitly passed along to the *next* panel's context.
+ *                                          This allows selective context propagation.
+ *                                          For `'functionCall'`, this can document expected context variables, though the function
+ *                                          itself will destructure what it needs from the provided context.
+ * @property {object} [initialContext] - For `'openPanel'` or `'functionCall'`, this object provides additional
+ *                                     key-value pairs to be merged into the context passed to the target panel or function.
+ *                                     This is useful for setting up specific context needed by the next step,
+ *                                     e.g., `{ logTypeFilter: ['ban', 'unban'], logTypeName: 'Ban Logs' }`.
+ *                                     Values from `initialContext` may override values from the current panel's context if keys conflict.
  */
 
 /**
+ * Defines the structure and content of a single UI panel.
  * @typedef {object} PanelDefinition
- * @property {string} title - String for the panel title (can use placeholders like {playerName}).
- * @property {string | null} parentPanelId - The panelId of the parent panel for 'Back' navigation, or null if top-level.
- * @property {PanelItem[]} items - An array of PanelItem objects defining the buttons/elements in this panel.
+ * @property {string} title - The title string for the panel. Can include placeholders like `{playerName}`
+ *                         that will be interpolated by `uiManager.showPanel` using the current panel context.
+ * @property {string | null} parentPanelId - The `panelId` of the panel that should be considered the "parent"
+ *                                         for 'Back' button navigation. If `null`, this panel is treated as a
+ *                                         top-level panel, and its 'Back' button will function as an 'Exit' button.
+ * @property {PanelItem[]} items - An array of {@link PanelItem} objects that define the interactive elements
+ *                               (buttons) to be displayed in this panel.
  */
 
 /**
@@ -201,6 +223,26 @@ export const panelDefinitions = {
         parentPanelId: 'playerActionsPanel',
         items: [
             { id: 'displayPlayerFlags', sortId: 10, text: 'Show Flag Details', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'displayDetailedFlagsModal', actionContextVars: ['targetPlayerId', 'targetPlayerName'] }
+        ]
+    },
+
+    // --- System Panels ---
+    errorDisplayPanel: {
+        title: '§l§cError Occurred§r',
+        parentPanelId: null, // Special handling: Back button tries to go to `previousPanelIdOnError` from context if available.
+        items: [
+            // This panel's body is dynamically set by `uiManager.showPanel` using `context.errorMessage`.
+            // It has no predefined items. The "Back" button (or "Close" if no previous panel is known)
+            // is the primary interaction, handled by `showPanel`'s generic back/exit logic,
+            // which is aware of the error context (`previousPanelIdOnError`).
+            // If specific actions like "Retry" or "Report" were needed, they could be added as PanelItems here
+            // and would call corresponding functions in UI_ACTION_FUNCTIONS.
+            // Example:
+            // {
+            //   id: 'retryFailedOperation', sortId: 10, text: 'Retry Last Action', icon: 'textures/ui/refresh_light',
+            //   requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'retryFailedPanelAction',
+            //   actionContextVars: ['originalPanelId', 'originalContext'] // Pass info about what failed
+            // }
         ]
     }
 };
