@@ -1,14 +1,11 @@
 /**
- * @file Defines a simple key-value store for UI and message strings.
+ * @file Defines a key-value store for reusable or configurable UI and message strings.
  * @module AntiCheatsBP/scripts/core/textDatabase
  * Since full localization is not required, this provides a centralized
- * place for text, allowing for easier management and consistency.
+ * place for such texts, excluding single-use static UI labels and dynamic panel button texts which are managed elsewhere.
  * All keys should be camelCase or dot.case for structure.
  */
 
-/**
- *
- */
 export const stringDB = {
     // Common UI elements
     'common.button.back': '§l§cBack§r',
@@ -40,71 +37,28 @@ export const stringDB = {
     'command.error.executionFailed': '§cError executing command "{commandName}". Please contact an admin.',
 
     // Admin Panel
-    'ui.adminPanel.title': '§l§bAntiCheat Admin Panel§r',
-    'ui.adminPanel.body': 'Welcome, {playerName}! Select an action:',
-    'ui.adminPanel.button.viewPlayers': '§lView Online Players§r',
-    'ui.adminPanel.button.inspectPlayerText': '§lInspect Player (Text)§r',
-    'ui.adminPanel.button.resetFlagsText': '§lReset Player Flags (Text)§r',
-    'ui.adminPanel.button.listWatched': '§lList Watched Players§r',
-    'ui.adminPanel.button.serverManagement': '§lServer Management§r',
-    'ui.adminPanel.button.editConfig': '§l§6Edit Configuration§r (Owner)',
-    'ui.adminPanel.error.generic': '§cError displaying admin panel.',
 
     // User Info Panel (UInfo Command)
-    'ui.uinfo.mainPanel.title': 'Player Information Panel',
-    'ui.uinfo.mainPanel.body': 'Welcome, {playerName}! Select an option:',
-    'ui.uinfo.button.myStats': 'My AntiCheat Stats',
-    'ui.uinfo.button.serverRules': 'Server Rules',
-    'ui.uinfo.button.helpfulLinks': 'Helpful Links',
-    'ui.uinfo.button.generalTips': 'General Tips',
-    'uinfo.myStats.noFlags': 'You currently have no flags!',
-    'ui.helpfulLinks.otherLinksHeader': 'Other Links:',
-    'ui.helpfulLinks.linkEntryFormat': '{title}: {url}',
-    'ui.generalTips.noTips': 'No general tips available at the moment.',
-    'ui.generalTips.title': 'General Tips',
 
     // Normal User Panel (Fallback from Admin Panel if not admin)
-    'ui.normalPanel.title': '§l§aPlayer Panel§r',
-    'ui.normalPanel.body': 'Welcome, {playerName}!',
-    'ui.normalPanel.button.myStats': '§bMy Stats§r', // Can reuse uinfo.button.myStats if text is same
-    'ui.normalPanel.button.serverRules': '§eServer Rules§r', // Can reuse uinfo.button.serverRules
-    'ui.normalPanel.button.helpLinks': '§9Helpful Links§r', // Can reuse uinfo.button.helpfulLinks
 
     // My Stats UI (Shared by Admin Panel > Inspect (conceptually) and UInfo)
-    'ui.myStats.title': '§l§bYour Stats§r', // uinfo uses this directly
-    'ui.myStats.labelLocation': 'Location: X: {x}, Y: {y}, Z: {z}',
-    'ui.myStats.labelDimension': 'Dimension: {dimensionName}',
 
     // Server Rules UI
-    'ui.serverRules.title': '§l§eServer Rules§r',
-    'ui.serverRules.noRulesDefined': 'No server rules have been defined by the admin yet.',
 
     // Helpful Links UI
-    'ui.helpfulLinks.title': '§l§9Helpful Links§r',
-    'ui.helpfulLinks.body': 'Select a link to view it in chat:',
-    'ui.helpfulLinks.noLinks': 'No helpful links have been configured by the admin.',
-    'ui.helpfulLinks.linkMessageFormat': '§e{title}: §9§n{url}§r (Copy and paste into your browser)',
 
     // Online Players List
-    'ui.onlinePlayers.title': '§l§bOnline Players ({count})§r',
-    'ui.onlinePlayers.body': 'Select a player to manage:',
-    'ui.onlinePlayers.noPlayers': 'No players are currently online.',
-    'ui.onlinePlayers.button.playerEntry': '{playerName} §7(Flags: {flagCount})§r',
-    'ui.button.backToAdminPanel': '§l§cBack to Admin Panel§r',
-    'ui.onlinePlayers.error.generic': '§cError displaying online players list.',
+    'ui.button.backToAdminPanel': '§l§cBack to Admin Panel§r', // This seems a bit generic, might be for an older panel.
+                                                            // showOnlinePlayersList itself uses common.button.back.
+                                                            // Consider if this specific key is still actively used or can be deprecated/moved.
 
     // Inspect Player Form (Text Input)
-    'ui.inspectPlayerForm.title': '§l§3Inspect Player§r',
-    'ui.inspectPlayerForm.textField.label': 'Player Name:',
-    'ui.inspectPlayerForm.textField.placeholder': 'Enter exact player name',
+    'ui.inspectPlayer.title': '§l§3Inspect Player§r',
+    'ui.inspectPlayer.textFieldLabel': 'Player Name:',
+    'ui.inspectPlayer.textFieldPlaceholder': 'Enter exact player name',
 
     // Player Actions Form
-    'ui.playerActions.title': '§l§6Actions for {targetPlayerName}§r',
-    'ui.playerActions.body': 'Flags: {flags} | Watched: {watchedStatus}',
-    'ui.playerActions.button.viewFlags': '§bView Detailed Flags§r',
-    'ui.playerActions.button.viewInventory': '§3View Inventory§r',
-    'ui.playerActions.button.teleportTo': '§dTeleport To Player§r',
-    'ui.playerActions.button.teleportHere': '§dTeleport Player Here§r',
     'ui.playerActions.button.kick': '§cKick Player§r',
     'ui.playerActions.button.freeze': '§bFreeze Player§r',
     'ui.playerActions.button.unfreeze': '§aUnfreeze Player§r',
@@ -116,9 +70,9 @@ export const stringDB = {
     'ui.playerActions.button.clearInventory': '§cClear Inventory§r',
     'ui.playerActions.button.backToList': '§l§cBack to Player List§r',
     'ui.playerActions.teleport.error': '§cTeleport failed: {error}',
-    'ui.playerActions.teleportTo.success': '§aTeleported to {targetPlayerName}.',
-    'ui.playerActions.teleportHere.success': '§aTeleported {targetPlayerName} to you.',
-    'ui.playerActions.teleportHere.targetNotification': '§eYou have been teleported by an admin.',
+    'ui.playerActions.teleport.successToTarget': '§aTeleported to {targetPlayerName}.',
+    'ui.playerActions.teleport.successPlayerToAdmin': '§aTeleported {targetPlayerName} to you ({adminName}).',
+    'ui.playerActions.teleport.targetNotification': '§eYou have been teleported by an admin ({adminName}).',
     'ui.playerActions.kick.title': '§l§cKick {targetPlayerName}§r',
     'ui.playerActions.kick.reasonPrompt': 'Reason for kicking (optional):',
     'ui.playerActions.kick.reasonPlaceholder': 'Enter kick reason',
@@ -140,7 +94,12 @@ export const stringDB = {
     'ui.playerActions.clearInventory.confirmToggle': '§cConfirm Clear Inventory',
     'ui.playerActions.clearInventory.success': '§aInventory of {targetPlayerName} cleared.',
     'ui.playerActions.clearInventory.fail': '§cFailed to clear inventory for {targetPlayerName}.',
+    'ui.playerActions.unmute.confirmTitle': '§l§aConfirm Unmute Player§r',
+    'ui.playerActions.unmute.confirmBody': 'Are you sure you want to unmute {targetPlayerName}?',
+    'ui.playerActions.unmute.confirmToggle': '§aConfirm Unmute',
+    // 'ui.playerActions.unmute.cancelled': '§7Unmute action cancelled.', // Can use common.actionCancelled
     'ui.playerActions.error.invalidSelection': '§cInvalid selection. Please try again.',
+    'ui.playerActions.error.targetNotSpecified': '§cTarget player not specified for {action}.',
     'ui.playerActions.error.generic': '§cAn error occurred performing the player action.',
 
     // Detailed Flags Form
@@ -231,6 +190,12 @@ export const stringDB = {
     'ui.watchedPlayers.noPlayers': 'No players are currently being watched or online.',
     'ui.watchedPlayers.playerEntry': '- {playerName}',
     'ui.watchedPlayers.button.ok': '§l§aOK§r',
+
+    // Online Players List (specific strings for showOnlinePlayersList)
+    'ui.onlinePlayers.title': '§l§bOnline Players ({playerCount})§r',
+    'ui.onlinePlayers.noPlayers': 'No players are currently online.',
+    'ui.onlinePlayers.selectPlayerPrompt': 'Select a player to view actions:',
+    'ui.onlinePlayers.playerEntryFormat': '{playerName} §7(Flags: {flagCount})§r',
 
     // Action Logs / Mod Logs
     'ui.actionLogs.title': '§l§3Action Logs (All)§r',

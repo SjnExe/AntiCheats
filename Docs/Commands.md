@@ -170,7 +170,7 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
     *   **Permission:** Member
 *   **`!panel`** (Alias: `!ui`)
     *   **Syntax:** `!panel`
-    *   **Description:** Opens the player information panel (content varies by permission).
+    *   **Description:** Opens the main AntiCheat UI panel (content varies by permission; admin tools for staff, user info for regular players).
     *   **Permission:** Member
 *   **`!report`** (Alias: `!rep`)
     *   **Syntax:** `!report <playername> <reason...>`
@@ -179,10 +179,6 @@ Please verify the exact permission levels in `AntiCheatsBP/scripts/core/ranksCon
 *   **`!rules`** (Alias: `!r`)
     *   **Syntax:** `!rules`
     *   **Description:** Displays the server rules.
-    *   **Permission:** Member
-*   **`!uinfo`** (Aliases: `!playerinfo`, `!userinfo`)
-    *   **Syntax:** `!uinfo`
-    *   **Description:** Shows your anti-cheat stats, server rules, and help links in a UI.
     *   **Permission:** Member
 *   **`!version`** (Alias: `!v`)
     *   **Syntax:** `!version`
