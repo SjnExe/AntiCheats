@@ -289,7 +289,205 @@ const UI_ACTION_FUNCTIONS = {
         await modal.show(player);
     },
     // Admin panel functions will be added here as they are refactored or created
-    // showOnlinePlayersList: showOnlinePlayersList, // Example
+    showOnlinePlayersList: showOnlinePlayersList,
+    showInspectPlayerForm: showInspectPlayerForm,
+    showResetFlagsForm: showResetFlagsForm,
+    showWatchedPlayersList: showWatchedPlayersList,
+    displaySystemInfoModal: async (player, dependencies, context) => {
+        const { playerUtils, config, getString, mc, logManager, playerDataManager, reportManager } = dependencies; // Added more deps
+        const viewingPlayerName = player.nameTag;
+
+        playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Requested by ${viewingPlayerName}`, viewingPlayerName, dependencies);
+
+        let infoText = `§g--- System Information ---\n§r`;
+        infoText += `AntiCheat Version: §e${config.addonVersion}\n`;
+        // mc.minecraftVersion might not be available or what's needed. Game version is usually in manifest.
+        // For server specific version, it's not directly exposed.
+        // infoText += `Minecraft Version: §e${mc.minecraftVersion}\n`;
+        infoText += `Server Time: §e${new Date().toLocaleTimeString()}\n`;
+        infoText += `Current Game Tick: §e${mc.system.currentTick}\n`;
+
+        const onlinePlayersInstance = mc.world.getAllPlayers();
+        infoText += `Online Players: §e${onlinePlayersInstance.length}\n`; // Max players not available via script
+
+        if (playerDataManager?.getAllPlayerDataCount) {
+            infoText += `Cached PlayerData Entries: §e${playerDataManager.getAllPlayerDataCount()}\n`;
+        }
+        let watchedCount = 0;
+        onlinePlayersInstance.forEach(p => {
+            const pData = playerDataManager?.getPlayerData(p.id);
+            if (pData?.isWatched) watchedCount++;
+        });
+        infoText += `Watched Players (Online): §e${watchedCount}\n`;
+
+        if (playerDataManager?.getPersistentMuteCount) {
+             infoText += `Active Mutes (Persistent): §e${playerDataManager.getPersistentMuteCount()}\n`;
+        }
+        if (playerDataManager?.getPersistentBanCount) {
+             infoText += `Active Bans (Persistent): §e${playerDataManager.getPersistentBanCount()}\n`;
+        }
+        // Active world borders would need access to worldBorderManager instance
+        if (dependencies.worldBorderManager?.getActiveBorderCount) {
+            infoText += `Active World Borders: §e${dependencies.worldBorderManager.getActiveBorderCount()}\n`;
+        }
+        if (logManager?.getInMemoryLogCount) {
+            infoText += `LogManager Entries (In-Memory): §e${logManager.getInMemoryLogCount()}\n`;
+        }
+        if (reportManager?.getInMemoryReportCount) {
+            infoText += `ReportManager Entries (In-Memory): §e${reportManager.getInMemoryReportCount()}\n`;
+        }
+
+        const modal = new ModalFormData()
+            .title("§l§bSystem Information§r")
+            .content(infoText);
+        modal.button1(getString('common.button.ok'));
+
+        try {
+            await modal.show(player);
+        } catch (error) {
+            console.error(`[UiManager.displaySystemInfoModal] Error for ${viewingPlayerName}: ${error.stack || error}`);
+            playerUtils?.debugLog(`[UiManager.displaySystemInfoModal] Error: ${error.message}`, viewingPlayerName, dependencies);
+            logManager?.addLog({
+                actionType: 'errorUiSystemInfoModal',
+                context: 'uiManager.displaySystemInfoModal',
+                adminName: viewingPlayerName,
+                details: { errorMessage: error.message, stack: error.stack },
+            }, dependencies);
+            player.sendMessage(getString('common.error.genericForm'));
+        }
+    },
+    confirmClearChat: async (player, dependencies, context) => { /* calls _showConfirmationModal, then actual clear chat */ dependencies.playerUtils.debugLog('Action: confirmClearChat', player.nameTag, dependencies); player.sendMessage("Confirm Clear Chat: Not implemented.");const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'serverManagementPanel', dependencies, {});},
+    confirmLagClear: async (player, dependencies, context) => { /* calls _showConfirmationModal, then actual lag clear */ dependencies.playerUtils.debugLog('Action: confirmLagClear', player.nameTag, dependencies); player.sendMessage("Confirm Lag Clear: Not implemented.");const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'serverManagementPanel', dependencies, {});},
+    showConfigCategoriesList: async (player, dependencies, context) => { dependencies.playerUtils.debugLog('Action: showConfigCategoriesList', player.nameTag, dependencies); player.sendMessage("Config Categories: Not implemented.");const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'configEditingRootPanel', dependencies, {});},
+    showActionLogsForm: async (player, dependencies, context) => { dependencies.playerUtils.debugLog('Action: showActionLogsForm', player.nameTag, dependencies); player.sendMessage("Action Logs Form: Not implemented.");const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'serverManagementPanel', dependencies, {});},
+    showModLogFilterModal: async (player, dependencies, context) => { dependencies.playerUtils.debugLog('Action: showModLogFilterModal', player.nameTag, dependencies); player.sendMessage("Mod Log Filter Modal: Not implemented.");const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'modLogSelectionPanel', dependencies, {});},
+    displaySpecificLogsPage: async (player, dependencies, context) => { dependencies.playerUtils.debugLog('Action: displaySpecificLogsPage', player.nameTag, dependencies); player.sendMessage(`Displaying logs for type: ${context.logTypeName}, filter: ${context.playerNameFilter}`);const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'modLogSelectionPanel', dependencies, {});},
+    displayDetailedFlagsModal: async (player, dependencies, context) => { dependencies.playerUtils.debugLog('Action: displayDetailedFlagsModal for ' + context.targetPlayerName, player.nameTag, dependencies); player.sendMessage(`Detailed flags modal for ${context.targetPlayerName}: Not implemented.`); const selfPanel = popFromPlayerNavStack(player.id); if (selfPanel && selfPanel.panelId) await showPanel(player, selfPanel.panelId, dependencies, selfPanel.context); else await showPanel(player, 'playerActionsPanel', dependencies, context);},
+
+    // Player Actions Panel functions
+    /**
+     * Shows a modal form to collect ban duration and reason for a target player.
+     * Executes the ban command and then re-displays the player actions panel.
+     * @async
+     * @param {import('@minecraft/server').Player} player - The admin player initiating the ban.
+     * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
+     * @param {object} context - Context object.
+     * @param {string} context.targetPlayerId - The ID of the player to ban.
+     * @param {string} context.targetPlayerName - The name of the player to ban.
+     */
+    showBanFormForPlayer: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage("§cTarget player not specified for ban form.");
+            const currentPanelState = getCurrentTopOfNavStack(player.id); // This should be playerActionsPanel
+            if (currentPanelState) {
+                 // Re-showing the panel that tried to call this action.
+                await showPanel(player, currentPanelState.panelId, dependencies, currentPanelState.context);
+            }
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Admin: ${adminPlayerName} opening ban form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const banFormTitle = `§l§4Ban ${targetPlayerName}§r`;
+        const durationPrompt = 'Ban duration (e.g., 7d, 1mo, perm):';
+        const durationPlaceholder = config?.banCommand?.defaultDurationPlaceholder ?? 'Enter duration or "perm"';
+        const reasonPrompt = 'Reason for banning:';
+        const reasonPlaceholder = config?.banCommand?.defaultReasonPlaceholder ?? 'Enter ban reason';
+        const cancelledMessage = '§7Ban action cancelled.';
+
+        const modalForm = new ModalFormData()
+            .title(banFormTitle)
+            .textField(durationPrompt, durationPlaceholder, config?.banCommand?.defaultDuration ?? "perm")
+            .textField(reasonPrompt, reasonPlaceholder, config?.banCommand?.defaultReason ?? "");
+
+        try {
+            const response = await modalForm.show(player);
+            if (response.canceled) {
+                player.sendMessage(cancelledMessage);
+                await showPanel(player, 'playerActionsPanel', dependencies, context);
+                return;
+            }
+            const [duration, reason] = response.formValues;
+            if (!reason || reason.trim() === "") {
+                player.sendMessage(getString('common.error.reasonEmpty'));
+                await showBanFormForPlayer(player, dependencies, context); // Re-show this modal
+                return;
+            }
+            const banCommand = commandExecutionMap?.get('ban');
+            if (banCommand) {
+                const reasonParts = reason.split(' ');
+                const args = [targetPlayerName, duration || (config?.banCommand?.defaultDuration ?? "perm"), ...reasonParts];
+                await banCommand(player, args, dependencies);
+            } else {
+                player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'ban' }));
+            }
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+        } catch (error) {
+            console.error(`[UiManager.showBanFormForPlayer] Error for ${adminPlayerName} banning ${targetPlayerName}: ${error.stack || error}`);
+            playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Error: ${error.message}`, adminPlayerName, dependencies);
+            logManager?.addLog({
+                actionType: 'errorUiBanForm', context: 'uiManager.showBanFormForPlayer', adminName: adminPlayerName, targetName: targetPlayerName,
+                details: { errorMessage: error.message, stack: error.stack },
+            }, dependencies);
+            player.sendMessage(getString('common.error.genericForm'));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+        }
+    },
+    showKickFormForPlayer: async (player, dependencies, context) => { dependencies.playerUtils.debugLog(`Action: showKickFormForPlayer, Target: ${context.targetPlayerName}`, player.nameTag, dependencies); player.sendMessage(`Kick form for ${context.targetPlayerName} TBD`); await showPanel(player, 'playerActionsPanel', dependencies, context);},
+    showMuteFormForPlayer: async (player, dependencies, context) => { dependencies.playerUtils.debugLog(`Action: showMuteFormForPlayer, Target: ${context.targetPlayerName}`, player.nameTag, dependencies); player.sendMessage(`Mute form for ${context.targetPlayerName} TBD`); await showPanel(player, 'playerActionsPanel', dependencies, context);},
+    /**
+     * Toggles the freeze state for a target player by executing the freeze command.
+     * Refreshes the player actions panel afterwards.
+     * @async
+     * @param {import('@minecraft/server').Player} player - The admin player initiating the action.
+     * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
+     * @param {object} context - Context object.
+     * @param {string} context.targetPlayerId - The ID of the player to freeze/unfreeze. (Currently unused by command, but good for context)
+     * @param {string} context.targetPlayerName - The name of the player to freeze/unfreeze.
+     */
+    toggleFreezePlayer: async (player, dependencies, context) => {
+        const { playerUtils, getString, commandExecutionMap, logManager } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage("§cTarget player not specified for freeze toggle.");
+            const currentPanelState = getCurrentTopOfNavStack(player.id);
+            if (currentPanelState && currentPanelState.panelId) { // Ensure panelId exists
+                await showPanel(player, currentPanelState.panelId, dependencies, currentPanelState.context);
+            } else { // Fallback if stack is weird, go to a default or clear
+                await showPanel(player, 'playerManagementPanel', dependencies, {}); // Sensible fallback
+            }
+            return;
+        }
+
+        playerUtils?.debugLog(`[UiManager.toggleFreezePlayer] Admin: ${adminPlayerName} toggling freeze for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const freezeCommand = commandExecutionMap?.get('freeze');
+        if (freezeCommand) {
+            try {
+                await freezeCommand(player, [targetPlayerName, 'toggle'], dependencies);
+            } catch (error) {
+                console.error(`[UiManager.toggleFreezePlayer] Error executing freeze command for ${targetPlayerName}: ${error.stack || error}`);
+                player.sendMessage(getString('common.error.genericCommandError', { commandName: 'freeze', errorMessage: error.message }));
+                logManager?.addLog({
+                    actionType: 'errorUiFreezeToggle',
+                    context: 'uiManager.toggleFreezePlayer',
+                    adminName: adminPlayerName,
+                    targetName: targetPlayerName,
+                    details: { errorMessage: error.message, stack: error.stack },
+                }, dependencies);
+            }
+        } else {
+            player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'freeze' }));
+        }
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    },
+    teleportAdminToPlayer: async (player, dependencies, context) => { dependencies.playerUtils.debugLog(`Action: teleportAdminToPlayer, Target: ${context.targetPlayerName}`, player.nameTag, dependencies); player.sendMessage(`Teleporting to ${context.targetPlayerName} (simulated)`); await showPanel(player, 'playerActionsPanel', dependencies, context);},
+    teleportPlayerToAdmin: async (player, dependencies, context) => { dependencies.playerUtils.debugLog(`Action: teleportPlayerToAdmin, Target: ${context.targetPlayerName}`, player.nameTag, dependencies); player.sendMessage(`Teleporting ${context.targetPlayerName} to you (simulated)`); await showPanel(player, 'playerActionsPanel', dependencies, context);},
 };
 
 /**
