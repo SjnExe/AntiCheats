@@ -24,8 +24,6 @@ This list contains planned features, improvements, and areas for future investig
     - Note that its accuracy depends on reliable `rankManager.getPlayerPermissionLevel` and `permissionLevels` configuration.
 - **(Medium) `nukerCheck.js` - False Positive Review**:
     - Review thresholds (`nukerMaxBreaksShortInterval`, `nukerCheckIntervalMs`) against legitimate fast mining with high-efficiency tools and effects (e.g., Haste II + Eff V) or instant mining of sculk-like blocks.
-- **(High) General Check `pData` Reliance**:
-    - Emphasize in developer documentation that all checks' accuracy heavily relies on `pData` being accurate and timely. Errors in `pData` updates can cascade into check malfunctions.
 
 ### Utility Functions
 
