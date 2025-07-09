@@ -851,15 +851,31 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
         const adminPlayerName = player.nameTag;
         const { targetPlayerId, targetPlayerName } = context;
-        if (!targetPlayerName) { player.sendMessage("§cTarget player not specified for ban form."); await showPanel(player, 'playerActionsPanel', dependencies, context); return; }
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'ban' })); // Assumes new string
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
         playerUtils?.debugLog(`[UiManager.showBanFormForPlayer] Admin: ${adminPlayerName} opening ban form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-        const modalForm = new ModalFormData().title(`§l§4Ban ${targetPlayerName}§r`)
-            .textField('Ban duration (e.g., 7d, 1mo, perm):', config?.banCommand?.defaultDurationPlaceholder ?? 'Enter duration or "perm"', config?.banCommand?.defaultDuration ?? "perm")
-            .textField('Reason for banning:', config?.banCommand?.defaultReasonPlaceholder ?? 'Enter ban reason', config?.banCommand?.defaultReason ?? "");
+
+        const modalForm = new ModalFormData()
+            .title(getString('ui.playerActions.ban.title', { targetPlayerName }))
+            .textField(
+                getString('ui.playerActions.ban.durationPrompt'),
+                config?.banCommand?.defaultDurationPlaceholder ?? getString('ui.playerActions.ban.durationPlaceholder'),
+                config?.banCommand?.defaultDuration ?? "perm"
+            )
+            .textField(
+                getString('ui.playerActions.ban.reasonPrompt'),
+                config?.banCommand?.defaultReasonPlaceholder ?? getString('ui.playerActions.ban.reasonPlaceholder'),
+                config?.banCommand?.defaultReason ?? ""
+            );
+
         try {
             const response = await modalForm.show(player);
-            if (response.canceled) { player.sendMessage('§7Ban action cancelled.'); }
-            else {
+            if (response.canceled) {
+                player.sendMessage(getString('ui.playerActions.ban.cancelled'));
+            } else {
                 const [duration, reason] = response.formValues;
                 if (!reason || reason.trim() === "") { player.sendMessage(getString('common.error.reasonEmpty')); await UI_ACTION_FUNCTIONS.showBanFormForPlayer(player, dependencies, context); return; }
                 const banCommand = commandExecutionMap?.get('ban');
@@ -873,13 +889,26 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
         const adminPlayerName = player.nameTag;
         const { targetPlayerId, targetPlayerName } = context;
-        if (!targetPlayerName) { player.sendMessage("§cTarget player not specified for kick form."); await showPanel(player, 'playerActionsPanel', dependencies, context); return; }
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'kick' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
         playerUtils?.debugLog(`[UiManager.showKickFormForPlayer] Admin: ${adminPlayerName} opening kick form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-        const modalForm = new ModalFormData().title(`§l§cKick ${targetPlayerName}§r`).textField('Reason for kicking (optional):', config?.kickCommand?.defaultReasonPlaceholder ?? 'Enter kick reason', config?.kickCommand?.defaultReason ?? "");
+
+        const modalForm = new ModalFormData()
+            .title(getString('ui.playerActions.kick.title', { targetPlayerName }))
+            .textField(
+                getString('ui.playerActions.kick.reasonPrompt'),
+                config?.kickCommand?.defaultReasonPlaceholder ?? getString('ui.playerActions.kick.reasonPlaceholder'),
+                config?.kickCommand?.defaultReason ?? ""
+            );
+
         try {
             const response = await modalForm.show(player);
-            if (response.canceled) { player.sendMessage('§7Kick action cancelled.'); }
-            else {
+            if (response.canceled) {
+                player.sendMessage(getString('ui.playerActions.kick.cancelled'));
+            } else {
                 const [reason] = response.formValues;
                 const kickCommand = commandExecutionMap?.get('kick');
                 if (kickCommand) { await kickCommand(player, [targetPlayerName, ...(reason ? reason.split(' ') : [])], dependencies); }
@@ -892,15 +921,31 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils, logManager, getString, config, commandExecutionMap } = dependencies;
         const adminPlayerName = player.nameTag;
         const { targetPlayerId, targetPlayerName } = context;
-        if (!targetPlayerName) { player.sendMessage("§cTarget player not specified for mute form."); await showPanel(player, 'playerActionsPanel', dependencies, context); return; }
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'mute' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
         playerUtils?.debugLog(`[UiManager.showMuteFormForPlayer] Admin: ${adminPlayerName} opening mute form for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
-        const modalForm = new ModalFormData().title(`§l§6Mute ${targetPlayerName}§r`)
-            .textField('Mute duration (e.g., 30s, 5m, 1h, perm):', config?.muteCommand?.defaultDurationPlaceholder ?? 'Enter duration or "perm"', config?.muteCommand?.defaultDuration ?? "30m")
-            .textField('Reason for muting (optional):', config?.muteCommand?.defaultReasonPlaceholder ?? 'Enter mute reason', config?.muteCommand?.defaultReason ?? "");
+
+        const modalForm = new ModalFormData()
+            .title(getString('ui.playerActions.mute.title', { targetPlayerName }))
+            .textField(
+                getString('ui.playerActions.mute.durationPrompt'),
+                config?.muteCommand?.defaultDurationPlaceholder ?? getString('ui.playerActions.mute.durationPlaceholder'),
+                config?.muteCommand?.defaultDuration ?? "30m"
+            )
+            .textField(
+                getString('ui.playerActions.mute.reasonPrompt'),
+                config?.muteCommand?.defaultReasonPlaceholder ?? getString('ui.playerActions.mute.reasonPlaceholder'),
+                config?.muteCommand?.defaultReason ?? ""
+            );
+
         try {
             const response = await modalForm.show(player);
-            if (response.canceled) { player.sendMessage('§7Mute action cancelled.'); }
-            else {
+            if (response.canceled) {
+                player.sendMessage(getString('ui.playerActions.mute.cancelled'));
+            } else {
                 const [duration, reason] = response.formValues;
                 const muteCommand = commandExecutionMap?.get('mute');
                 if (muteCommand) { await muteCommand(player, [targetPlayerName, duration || (config?.muteCommand?.defaultDuration ?? "30m"), ...(reason ? reason.split(' ') : [])], dependencies); }
@@ -941,18 +986,126 @@ const UI_ACTION_FUNCTIONS = {
         const { playerUtils, logManager, getString } = dependencies;
         const adminPlayerName = player.nameTag;
         const { targetPlayerName } = context;
-        if (!targetPlayerName) { player.sendMessage("§cTarget player not specified for teleport."); await showPanel(player, 'playerActionsPanel', dependencies, context); return; }
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'teleport here' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
         const targetPlayer = playerUtils.findPlayer(targetPlayerName);
         if (targetPlayer?.isValid() && player.location && player.dimension) {
             try {
                 await targetPlayer.teleport(player.location, { dimension: player.dimension });
-                player.sendMessage(`§aTeleported ${targetPlayerName} to you.`);
-                targetPlayer.sendMessage('§eYou have been teleported by an admin.');
+                player.sendMessage(getString('ui.playerActions.teleport.successPlayerToAdmin', { targetPlayerName, adminName: adminPlayerName })); // Assuming new string
+                targetPlayer.sendMessage(getString('ui.playerActions.teleport.targetNotification', { adminName: adminPlayerName })); // Assuming new string
                 logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportPlayerToAdmin', targetName: targetPlayerName, details: `Admin TP'd ${targetPlayerName} to self` }, dependencies);
-            } catch (e) { player.sendMessage(`§cTeleport failed: ${e.message}`); logManager?.addLog({ actionType: 'errorUiTeleportPlayerToAdmin', context: 'uiManager.teleportPlayerToAdmin', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack }}, dependencies); }
-        } else { player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName })); }
+            } catch (e) {
+                player.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message }));
+                logManager?.addLog({ actionType: 'errorUiTeleportPlayerToAdmin', context: 'uiManager.teleportPlayerToAdmin', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack }}, dependencies);
+            }
+        } else {
+            player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+        }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
+    /**
+     * Shows a confirmation modal to unmute a player.
+     * If confirmed, executes the 'unmute' command for the target player.
+     * @async
+     * @param {import('@minecraft/server').Player} player - The admin player initiating the action.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - Context from the calling panel, must include `targetPlayerName`.
+     */
+    showUnmuteFormForPlayer: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'unmute' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.showUnmuteFormForPlayer] Admin: ${adminPlayerName} initiating unmute for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const confirmed = await _showConfirmationModal(
+            player,
+            getString('ui.playerActions.unmute.confirmTitle'),
+            getString('ui.playerActions.unmute.confirmBody', { targetPlayerName }),
+            getString('ui.playerActions.unmute.confirmToggle'),
+            async () => { // This callback is only executed if confirmed
+                const unmuteCommand = commandExecutionMap?.get('unmute');
+                if (unmuteCommand) {
+                    await unmuteCommand(player, [targetPlayerName], dependencies);
+                } else {
+                    player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'unmute' }));
+                }
+            },
+            dependencies
+        );
+        // _showConfirmationModal returns true if confirmed and callback ran, false otherwise (cancelled or error in modal)
+        // It also handles sending 'ui.common.actionCancelled' if not confirmed.
+
+        // Always navigate back to the playerActionsPanel.
+        // The command itself (unmute) should provide success/failure feedback to the admin.
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    },
+    /**
+     * Shows a confirmation modal to clear a player's inventory.
+     * If confirmed, attempts to use a 'clearinv' command or falls back to vanilla /clear.
+     * @async
+     * @param {import('@minecraft/server').Player} player - The admin player initiating the action.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - Context from the calling panel, must include `targetPlayerName`.
+     */
+    confirmClearPlayerInventory: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, commandExecutionMap, mc } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'clear inventory' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.confirmClearPlayerInventory] Admin: ${adminPlayerName} initiating clear inventory for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const confirmed = await _showConfirmationModal(
+            player,
+            getString('ui.playerActions.clearInventory.confirmTitle'),
+            getString('ui.playerActions.clearInventory.confirmBody', { targetPlayerName }),
+            getString('ui.playerActions.clearInventory.confirmToggle'),
+            async () => {
+                const clearInvCommand = commandExecutionMap?.get('clearinv') ?? commandExecutionMap?.get('clearinventory');
+                if (clearInvCommand) {
+                    await clearInvCommand(player, [targetPlayerName], dependencies);
+                    // Assuming the command itself sends success/failure messages. If not, add here.
+                } else {
+                    // Fallback to vanilla /clear command
+                    playerUtils.debugLog(`[UiManager.confirmClearPlayerInventory] No 'clearinv' command in map, using vanilla /clear for ${targetPlayerName}`, adminPlayerName, dependencies);
+                    try {
+                        // Need to execute this command as the target player, or target them if run by server/admin with perms
+                        // The vanilla /clear command targets the executor unless a target is specified.
+                        // For safety and clarity, find the actual player object to ensure they are online.
+                        const targetPlayerObject = mc.world.getAllPlayers().find(p => p.nameTag === targetPlayerName);
+                        if (targetPlayerObject) {
+                            await targetPlayerObject.runCommandAsync('clear @s'); // Target self from player object context
+                            player.sendMessage(getString('ui.playerActions.clearInventory.success', { targetPlayerName }));
+                            logManager?.addLog({ adminName: adminPlayerName, actionType: 'playerInventoryCleared', targetName: targetPlayerName, details: `Inventory cleared for ${targetPlayerName} via UI.` }, dependencies);
+                        } else {
+                            player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName }));
+                            logManager?.addLog({ adminName: adminPlayerName, actionType: 'errorPlayerInventoryClear', targetName: targetPlayerName, details: `Failed to clear inventory: ${targetPlayerName} not found online.` }, dependencies);
+                        }
+                    } catch (e) {
+                        player.sendMessage(getString('ui.playerActions.clearInventory.fail', { targetPlayerName }));
+                        console.error(`[UiManager.confirmClearPlayerInventory] Vanilla /clear command failed for ${targetPlayerName}: ${e}`);
+                        logManager?.addLog({ adminName: adminPlayerName, actionType: 'errorPlayerInventoryClear', targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack } }, dependencies);
+                    }
+                }
+            },
+            dependencies
+        );
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    }
 };
 
 /**

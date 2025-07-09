@@ -70,6 +70,9 @@ export const stringDB = {
     'ui.playerActions.button.clearInventory': '§cClear Inventory§r',
     'ui.playerActions.button.backToList': '§l§cBack to Player List§r',
     'ui.playerActions.teleport.error': '§cTeleport failed: {error}',
+    'ui.playerActions.teleport.successToTarget': '§aTeleported to {targetPlayerName}.',
+    'ui.playerActions.teleport.successPlayerToAdmin': '§aTeleported {targetPlayerName} to you ({adminName}).',
+    'ui.playerActions.teleport.targetNotification': '§eYou have been teleported by an admin ({adminName}).',
     'ui.playerActions.kick.title': '§l§cKick {targetPlayerName}§r',
     'ui.playerActions.kick.reasonPrompt': 'Reason for kicking (optional):',
     'ui.playerActions.kick.reasonPlaceholder': 'Enter kick reason',
@@ -91,7 +94,12 @@ export const stringDB = {
     'ui.playerActions.clearInventory.confirmToggle': '§cConfirm Clear Inventory',
     'ui.playerActions.clearInventory.success': '§aInventory of {targetPlayerName} cleared.',
     'ui.playerActions.clearInventory.fail': '§cFailed to clear inventory for {targetPlayerName}.',
+    'ui.playerActions.unmute.confirmTitle': '§l§aConfirm Unmute Player§r',
+    'ui.playerActions.unmute.confirmBody': 'Are you sure you want to unmute {targetPlayerName}?',
+    'ui.playerActions.unmute.confirmToggle': '§aConfirm Unmute',
+    // 'ui.playerActions.unmute.cancelled': '§7Unmute action cancelled.', // Can use common.actionCancelled
     'ui.playerActions.error.invalidSelection': '§cInvalid selection. Please try again.',
+    'ui.playerActions.error.targetNotSpecified': '§cTarget player not specified for {action}.',
     'ui.playerActions.error.generic': '§cAn error occurred performing the player action.',
 
     // Detailed Flags Form
