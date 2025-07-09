@@ -68,8 +68,8 @@ async function showInspectPlayerForm(adminPlayer, dependencies) {
     playerUtils?.debugLog(`[UiManager.showInspectPlayerForm] Requested by ${adminName}`, adminName, dependencies);
 
     const modalForm = new ModalFormData()
-        .title(getString('ui.inspectPlayerForm.title'))
-        .textField(getString('ui.inspectPlayerForm.textField.label'), getString('ui.inspectPlayerForm.textField.placeholder'));
+        .title('§l§3Inspect Player§r')
+        .textField('Player Name:', 'Enter exact player name');
 
     try {
         const response = await modalForm.show(adminPlayer);
@@ -158,14 +158,13 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         return;
     }
 
-    const title = getString('ui.playerActions.title', { targetPlayerName: targetName });
     const targetPData = playerDataManager?.getPlayerData(targetPlayer.id);
     const flagCount = targetPData?.flags?.totalFlags ?? 0;
     const isWatched = targetPData?.isWatched ?? false;
 
     const form = new ActionFormData()
-        .title(title)
-        .body(getString('ui.playerActions.body', { flags: flagCount.toString(), watchedStatus: isWatched ? getString('common.boolean.yes') : getString('common.boolean.no') }));
+        .title(`§l§6Actions for ${targetName}§r`) // Hardcoded ui.playerActions.title
+        .body(`Flags: ${flagCount.toString()} | Watched: ${isWatched ? getString('common.boolean.yes') : getString('common.boolean.no')}`); // Hardcoded ui.playerActions.body (getString for common booleans remains)
 
     const frozenTag = config?.frozenPlayerTag || 'frozen';
     const isTargetFrozen = targetPlayer?.hasTag(frozenTag); // targetPlayer might be invalid
@@ -179,10 +178,10 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
         getString('ui.playerActions.button.mute');
     const muteButtonIcon = isTargetMuted ? 'textures/ui/speaker_off_light' : 'textures/ui/speaker_on_light';
 
-    form.button(getString('ui.playerActions.button.viewFlags'), 'textures/ui/magnifying_glass');
-    form.button(getString('ui.playerActions.button.viewInventory'), 'textures/ui/chest_icon.png');
-    form.button(getString('ui.playerActions.button.teleportTo'), 'textures/ui/portal'); // Index 2
-    form.button(getString('ui.playerActions.button.teleportHere'), 'textures/ui/arrow_down_thin'); // Index 3
+    form.button('§bView Detailed Flags§r', 'textures/ui/magnifying_glass'); // Hardcoded ui.playerActions.button.viewFlags
+    form.button('§3View Inventory§r', 'textures/ui/chest_icon.png'); // Hardcoded ui.playerActions.button.viewInventory
+    form.button('§dTeleport To Player§r', 'textures/ui/portal'); // Hardcoded ui.playerActions.button.teleportTo
+    form.button('§dTeleport Player Here§r', 'textures/ui/arrow_down_thin'); // Hardcoded ui.playerActions.button.teleportHere
     form.button(getString('ui.playerActions.button.kick'), 'textures/ui/icon_hammer');
     form.button(freezeButtonText, freezeButtonIcon);
     form.button(muteButtonText, muteButtonIcon);
@@ -219,7 +218,7 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     if (targetPlayer?.location && targetPlayer?.dimension) {
                         await adminPlayer?.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
                     }
-                    adminPlayer?.sendMessage(getString('ui.playerActions.teleportTo.success', { targetPlayerName: targetName }));
+                    adminPlayer?.sendMessage(`§aTeleported to ${targetName}.`); // Hardcoded ui.playerActions.teleportTo.success
                     logManager?.addLog({ adminName, actionType: 'teleportSelfToPlayer', targetName, details: `Admin TP to ${targetName}` }, dependencies);
                 } catch (e) {
                     adminPlayer?.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message }));
@@ -240,8 +239,8 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
                     if (adminPlayer?.location && adminPlayer?.dimension) {
                         await targetPlayer?.teleport(adminPlayer.location, { dimension: adminPlayer.dimension });
                     }
-                    adminPlayer?.sendMessage(getString('ui.playerActions.teleportHere.success', { targetPlayerName: targetName }));
-                    targetPlayer?.sendMessage(getString('ui.playerActions.teleportHere.targetNotification'));
+                    adminPlayer?.sendMessage(`§aTeleported ${targetName} to you.`); // Hardcoded ui.playerActions.teleportHere.success
+                    targetPlayer?.sendMessage('§eYou have been teleported by an admin.'); // Hardcoded ui.playerActions.teleportHere.targetNotification
                     logManager?.addLog({ adminName, actionType: 'teleportPlayerToAdmin', targetName, details: `Admin TP'd ${targetName} to self` }, dependencies);
                 } catch (e) {
                     adminPlayer?.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message }));
@@ -349,17 +348,17 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
     }
 
     const form = new ActionFormData()
-        .title(getString('ui.adminPanel.title'))
-        .body(getString('ui.adminPanel.body', { playerName }));
+        .title('§l§bAntiCheat Admin Panel§r')
+        .body(`Welcome, ${playerName}! Select an action:`);
 
-    form.button(getString('ui.adminPanel.button.viewPlayers'), 'textures/ui/multiplayer_glyph_color');
-    form.button(getString('ui.adminPanel.button.inspectPlayerText'), 'textures/ui/magnifying_glass');
-    form.button(getString('ui.adminPanel.button.resetFlagsText'), 'textures/ui/refresh');
-    form.button(getString('ui.adminPanel.button.listWatched'), 'textures/ui/spyglass_flat_color');
-    form.button(getString('ui.adminPanel.button.serverManagement'), 'textures/ui/server_icon');
+    form.button('§lView Online Players§r', 'textures/ui/multiplayer_glyph_color');
+    form.button('§lInspect Player (Text)§r', 'textures/ui/magnifying_glass');
+    form.button('§lReset Player Flags (Text)§r', 'textures/ui/refresh');
+    form.button('§lList Watched Players§r', 'textures/ui/spyglass_flat_color');
+    form.button('§lServer Management§r', 'textures/ui/server_icon');
 
     if (userPermLevel === permissionLevels.owner) {
-        form.button(getString('ui.adminPanel.button.editConfig'), 'textures/ui/settings_glyph_color');
+        form.button('§l§6Edit Configuration§r (Owner)', 'textures/ui/settings_glyph_color');
     }
     form.button(getString('common.button.close'), 'textures/ui/cancel');
 
@@ -404,7 +403,7 @@ async function showAdminPanelMain(player, playerDataManager, dependencies) {
                 stack: error.stack,
             },
         }, dependencies);
-        player?.sendMessage(getString('ui.adminPanel.error.generic'));
+        player?.sendMessage('§cError displaying admin panel.');
     }
 }
 
@@ -421,16 +420,16 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
 
     const onlinePlayers = minecraft.world.getAllPlayers();
     const form = new ActionFormData()
-        .title(getString('ui.onlinePlayers.title', { count: onlinePlayers.length.toString() }));
+        .title(`§l§bOnline Players (${onlinePlayers.length})§r`);
 
     if (onlinePlayers.length === 0) {
-        form.body(getString('ui.onlinePlayers.noPlayers'));
+        form.body('No players are currently online.');
     } else {
-        form.body(getString('ui.onlinePlayers.body'));
+        form.body('Select a player to manage:');
         onlinePlayers.forEach(p => {
             const pData = playerDataManager?.getPlayerData(p.id);
             const flagCount = pData?.flags?.totalFlags ?? 0;
-            form.button(getString('ui.onlinePlayers.button.playerEntry', { playerName: p.nameTag, flagCount: flagCount.toString() }));
+            form.button(`${p.nameTag} §7(Flags: ${flagCount})§r`);
         });
     }
     form.button(getString('ui.button.backToAdminPanel')); // Back button
@@ -465,7 +464,7 @@ async function showOnlinePlayersList(adminPlayer, dependencies) {
                 stack: error.stack,
             },
         }, dependencies);
-        adminPlayer?.sendMessage(getString('ui.onlinePlayers.error.generic'));
+        adminPlayer?.sendMessage('§cError displaying online players list.');
         // Optionally, try to go back to admin panel on error
         await showAdminPanelMain(adminPlayer, playerDataManager, dependencies).catch((e) => {
             console.warn(`[UiManager.showOnlinePlayersList] Error in fallback showAdminPanelMain: ${e}`);
@@ -544,11 +543,274 @@ async function showEditConfigForm(player, dependencies) {
  * @param {import('@minecraft/server').Player} player - The player viewing the panel.
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
-function showNormalUserPanelMain(player, dependencies) { // Removed async
-    const { playerUtils, getString, playerDataManager: _playerDataManager } = dependencies; // Prefixed playerDataManager
-    playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Stub called by ${player?.nameTag}`, player?.nameTag, dependencies);
-    player?.sendMessage(getString('common.error.notImplemented', { featureName: 'User Panel' }));
-    // No automatic redirect to admin panel for normal users
+// Placeholder for other UI functions that will be defined in later steps
+async function showMyStatsUIPanel(player, dependencies) {
+    const { playerUtils, logManager, playerDataManager, getString, mc } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
+
+    playerUtils?.debugLog(`[UiManager.showMyStatsUIPanel] Requested by ${playerName}`, playerName, dependencies);
+
+    const pData = playerDataManager?.getPlayerData(player.id);
+    const totalFlags = pData?.flags?.totalFlags ?? 0;
+
+    let bodyText = '';
+    if (totalFlags === 0) {
+        bodyText = 'You currently have no flags!\n\n'; // Hardcoded from uinfo.myStats.noFlags
+    } else {
+        // Could list flags here if desired, for now, just a summary
+        bodyText = `You have a total of ${totalFlags} flag(s).\nDetailed flag information can be shown here.\n\n`;
+    }
+
+    const location = player.location;
+    // Ensure playerUtils.formatDimensionName is available or implement a simple version if not part of dependencies.playerUtils directly
+    const dimensionName = dependencies.playerUtils?.formatDimensionName ? dependencies.playerUtils.formatDimensionName(player.dimension.id) : player.dimension.id.replace('minecraft:', '').replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+
+    bodyText += `Location: X: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)}\n`; // Hardcoded from ui.myStats.labelLocation
+    bodyText += `Dimension: ${dimensionName}`; // Hardcoded from ui.myStats.labelDimension
+
+    const form = new ActionFormData()
+        .title('§l§bYour Stats§r') // Hardcoded from ui.myStats.title
+        .body(bodyText);
+
+    form.button(getString('common.button.back'), 'textures/ui/undo'); // Back to NormalUserPanel
+
+    try {
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
+        const response = await form.show(player);
+
+        if (response.canceled || response.selection === 0) { // 0 is Back button
+            await showNormalUserPanelMain(player, dependencies);
+            return;
+        }
+        // No other buttons expected here for now
+    } catch (error) {
+        console.error(`[UiManager.showMyStatsUIPanel] Error for ${playerName}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[UiManager.showMyStatsUIPanel] Error for ${playerName}: ${error.message}`, playerName, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiMyStatsPanel',
+            context: 'uiManager.showMyStatsUIPanel',
+            adminName: playerName,
+            details: { errorMessage: error.message, stack: error.stack },
+        }, dependencies);
+        player?.sendMessage(getString('common.error.genericForm'));
+        await showNormalUserPanelMain(player, dependencies); // Attempt to go back on error
+    }
+}
+async function showServerRulesUIPanel(player, dependencies) {
+    const { playerUtils, logManager, config, getString } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
+
+    playerUtils?.debugLog(`[UiManager.showServerRulesUIPanel] Requested by ${playerName}`, playerName, dependencies);
+
+    const serverRules = config?.serverRules ?? [];
+    let bodyText;
+
+    if (serverRules.length === 0) {
+        bodyText = 'No server rules have been defined by the admin yet.'; // Hardcoded from ui.serverRules.noRulesDefined
+    } else {
+        bodyText = serverRules.join('\n'); // Display each rule on a new line
+    }
+
+    const form = new ActionFormData()
+        .title('§l§eServer Rules§r') // Hardcoded from ui.serverRules.title
+        .body(bodyText);
+
+    form.button(getString('common.button.back'), 'textures/ui/undo'); // Back to NormalUserPanel
+
+    try {
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
+        const response = await form.show(player);
+
+        if (response.canceled || response.selection === 0) { // 0 is Back button
+            await showNormalUserPanelMain(player, dependencies);
+            return;
+        }
+    } catch (error) {
+        console.error(`[UiManager.showServerRulesUIPanel] Error for ${playerName}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[UiManager.showServerRulesUIPanel] Error for ${playerName}: ${error.message}`, playerName, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiServerRulesPanel',
+            context: 'uiManager.showServerRulesUIPanel',
+            adminName: playerName,
+            details: { errorMessage: error.message, stack: error.stack },
+        }, dependencies);
+        player?.sendMessage(getString('common.error.genericForm'));
+        await showNormalUserPanelMain(player, dependencies); // Attempt to go back on error
+    }
+}
+async function showHelpfulLinksUIPanel(player, dependencies) {
+    const { playerUtils, logManager, config, getString } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
+
+    playerUtils?.debugLog(`[UiManager.showHelpfulLinksUIPanel] Requested by ${playerName}`, playerName, dependencies);
+
+    const helpfulLinks = config?.helpfulLinks ?? []; // Expected format: [{ title: string, url: string }]
+
+    const form = new ActionFormData()
+        .title('§l§9Helpful Links§r'); // Hardcoded from ui.helpfulLinks.title
+
+    if (helpfulLinks.length === 0) {
+        form.body('No helpful links have been configured by the admin.'); // Hardcoded from ui.helpfulLinks.noLinks
+    } else {
+        form.body('Select a link to view it in chat:'); // Hardcoded from ui.helpfulLinks.body
+        helpfulLinks.forEach(link => {
+            if (link && typeof link.title === 'string' && typeof link.url === 'string') {
+                form.button(link.title); // Using link title as button text
+            }
+        });
+    }
+
+    form.button(getString('common.button.back'), 'textures/ui/undo'); // Back button is the last one
+
+    try {
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
+        const response = await form.show(player);
+
+        if (response.canceled) {
+            await showNormalUserPanelMain(player, dependencies);
+            return;
+        }
+
+        const selection = response.selection;
+        const backButtonIndex = helpfulLinks.length; // Index of the back button
+
+        if (selection === backButtonIndex) {
+            await showNormalUserPanelMain(player, dependencies);
+            return;
+        }
+
+        if (selection >= 0 && selection < helpfulLinks.length) {
+            const selectedLink = helpfulLinks[selection];
+            if (selectedLink) {
+                // Hardcoded from ui.helpfulLinks.linkMessageFormat: "§e{title}: §9§n{url}§r (Copy and paste into your browser)"
+                player.sendMessage(`§e${selectedLink.title}: §9§n${selectedLink.url}§r (Copy and paste into your browser)`);
+                // Re-show this panel after displaying a link
+                await showHelpfulLinksUIPanel(player, dependencies);
+            }
+        } else {
+             playerUtils?.debugLog(`[UiManager.showHelpfulLinksUIPanel] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
+             await showNormalUserPanelMain(player, dependencies); // Go back to main panel on unexpected selection
+        }
+
+    } catch (error) {
+        console.error(`[UiManager.showHelpfulLinksUIPanel] Error for ${playerName}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[UiManager.showHelpfulLinksUIPanel] Error for ${playerName}: ${error.message}`, playerName, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiHelpfulLinksPanel',
+            context: 'uiManager.showHelpfulLinksUIPanel',
+            adminName: playerName,
+            details: { errorMessage: error.message, stack: error.stack },
+        }, dependencies);
+        player?.sendMessage(getString('common.error.genericForm'));
+        await showNormalUserPanelMain(player, dependencies); // Attempt to go back on error
+    }
+}
+async function showGeneralTipsUIPanel(player, dependencies) {
+    const { playerUtils, logManager, config, getString } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
+
+    playerUtils?.debugLog(`[UiManager.showGeneralTipsUIPanel] Requested by ${playerName}`, playerName, dependencies);
+
+    const generalTips = config?.generalTips ?? []; // Expected format: string[]
+
+    let bodyText;
+    if (generalTips.length === 0) {
+        bodyText = 'No general tips available at the moment.'; // Hardcoded from ui.generalTips.noTips
+    } else {
+        bodyText = generalTips.join('\n\n---\n\n'); // Display each tip separated by a horizontal rule
+    }
+
+    const form = new ActionFormData()
+        .title('General Tips') // Hardcoded from ui.generalTips.title
+        .body(bodyText);
+
+    form.button(getString('common.button.back'), 'textures/ui/undo'); // Back to NormalUserPanel
+
+    try {
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
+        const response = await form.show(player);
+
+        if (response.canceled || response.selection === 0) { // 0 is Back button
+            await showNormalUserPanelMain(player, dependencies);
+            return;
+        }
+    } catch (error) {
+        console.error(`[UiManager.showGeneralTipsUIPanel] Error for ${playerName}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[UiManager.showGeneralTipsUIPanel] Error for ${playerName}: ${error.message}`, playerName, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiGeneralTipsPanel',
+            context: 'uiManager.showGeneralTipsUIPanel',
+            adminName: playerName,
+            details: { errorMessage: error.message, stack: error.stack },
+        }, dependencies);
+        player?.sendMessage(getString('common.error.genericForm'));
+        await showNormalUserPanelMain(player, dependencies); // Attempt to go back on error
+    }
+}
+
+async function showNormalUserPanelMain(player, dependencies) {
+    const { playerUtils, logManager, getString } = dependencies;
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
+
+    playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Requested by ${playerName}`, playerName, dependencies);
+
+    const form = new ActionFormData()
+        .title('Player Information Panel') // Hardcoded from ui.uinfo.mainPanel.title
+        .body(`Welcome, ${playerName}! Select an option:`); // Hardcoded from ui.uinfo.mainPanel.body
+
+    // Button texts hardcoded from ui.uinfo.button.*
+    form.button('My AntiCheat Stats', 'textures/ui/icon_bestfriend');
+    form.button('Server Rules', 'textures/ui/scroll_filled');
+    form.button('Helpful Links', 'textures/ui/icon_Details');
+    form.button('General Tips', 'textures/ui/light_bulb_momented');
+    form.button(getString('common.button.close'), 'textures/ui/cancel');
+
+    try {
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
+        const response = await form.show(player);
+
+        if (response.canceled || typeof response.selection === 'undefined') {
+            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Panel cancelled by ${playerName}. Reason: ${response.cancelationReason}`, playerName, dependencies);
+            return;
+        }
+
+        const selection = response.selection;
+        switch (selection) {
+            case 0: // My AntiCheat Stats
+                await showMyStatsUIPanel(player, dependencies);
+                break;
+            case 1: // Server Rules
+                await showServerRulesUIPanel(player, dependencies);
+                break;
+            case 2: // Helpful Links
+                await showHelpfulLinksUIPanel(player, dependencies);
+                break;
+            case 3: // General Tips
+                await showGeneralTipsUIPanel(player, dependencies);
+                break;
+            case 4: // Close
+                playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
+                break;
+            default:
+                playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
+                player?.sendMessage(getString('common.error.genericForm'));
+                break;
+        }
+    } catch (error) {
+        console.error(`[UiManager.showNormalUserPanelMain] Error for ${playerName}: ${error.stack || error}`);
+        playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Error for ${playerName}: ${error.message}`, playerName, dependencies);
+        logManager?.addLog({
+            actionType: 'errorUiNormalUserPanelMain',
+            context: 'uiManager.showNormalUserPanelMain',
+            adminName: playerName,
+            details: {
+                errorMessage: error.message,
+                stack: error.stack,
+            },
+        }, dependencies);
+        player?.sendMessage(getString('common.error.genericForm'));
+    }
 }
 
 // TODO: Define or remove these other potentially unused/stubbed functions if they cause lint errors:
@@ -564,4 +826,4 @@ function showNormalUserPanelMain(player, dependencies) { // Removed async
 /**
  *
  */
-export { showAdminPanelMain };
+export { showAdminPanelMain, showNormalUserPanelMain };
