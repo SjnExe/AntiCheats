@@ -49,9 +49,14 @@ export const stringDB = {
     // Helpful Links UI
 
     // Online Players List
-    'ui.button.backToAdminPanel': '§l§cBack to Admin Panel§r',
+    'ui.button.backToAdminPanel': '§l§cBack to Admin Panel§r', // This seems a bit generic, might be for an older panel.
+                                                            // showOnlinePlayersList itself uses common.button.back.
+                                                            // Consider if this specific key is still actively used or can be deprecated/moved.
 
     // Inspect Player Form (Text Input)
+    'ui.inspectPlayer.title': '§l§3Inspect Player§r',
+    'ui.inspectPlayer.textFieldLabel': 'Player Name:',
+    'ui.inspectPlayer.textFieldPlaceholder': 'Enter exact player name',
 
     // Player Actions Form
     'ui.playerActions.button.kick': '§cKick Player§r',
@@ -177,6 +182,12 @@ export const stringDB = {
     'ui.watchedPlayers.noPlayers': 'No players are currently being watched or online.',
     'ui.watchedPlayers.playerEntry': '- {playerName}',
     'ui.watchedPlayers.button.ok': '§l§aOK§r',
+
+    // Online Players List (specific strings for showOnlinePlayersList)
+    'ui.onlinePlayers.title': '§l§bOnline Players ({playerCount})§r',
+    'ui.onlinePlayers.noPlayers': 'No players are currently online.',
+    'ui.onlinePlayers.selectPlayerPrompt': 'Select a player to view actions:',
+    'ui.onlinePlayers.playerEntryFormat': '{playerName} §7(Flags: {flagCount})§r',
 
     // Action Logs / Mod Logs
     'ui.actionLogs.title': '§l§3Action Logs (All)§r',

@@ -154,9 +154,19 @@ export const panelDefinitions = {
         title: '§l§3Moderation Log Viewer§r',
         parentPanelId: 'serverManagementPanel',
         items: [
-            { id: 'banUnbanLogs', sortId: 10, text: '§cBans/Unbans§r', requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'logViewerPanel', initialContext: { logTypeFilter: ['ban', 'unban'], logTypeName: 'Ban/Unban' } },
-            { id: 'muteUnmuteLogs', sortId: 20, text: '§6Mutes/Unmutes§r', requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'logViewerPanel', initialContext: { logTypeFilter: ['mute', 'unmute'], logTypeName: 'Mute/Unmute' } },
-            { id: 'filterByName', sortId: 30, text: '§bFilter by Player Name§r', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showModLogFilterModal' }, // This form would then open logViewerPanel with context
+            {
+                id: 'banUnbanLogs', sortId: 10, text: '§cBans/Unbans§r',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'prepareBanUnbanLogsViewer'
+            },
+            {
+                id: 'muteUnmuteLogs', sortId: 20, text: '§6Mutes/Unmutes§r',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'prepareMuteUnmuteLogsViewer'
+            },
+            {
+                id: 'filterByName', sortId: 30, text: '§bFilter by Player Name§r',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showModLogFilterModal'
+                // This function (showModLogFilterModalImpl) already handles setting initial context for logViewerPanel
+            },
         ]
     },
 
@@ -210,12 +220,30 @@ export const panelDefinitions = {
             { id: 'displayActionLogs', sortId: 10, text: 'Show Logs', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'displayActionLogsModal' }
         ]
     },
-    logViewerPanel: { // Generic log viewer, context defines what logs to show
-        title: 'Log Viewer: {logTypeName}', // Dynamic title
-        parentPanelId: 'modLogSelectionPanel', // Or could be other panels
+    logViewerPanel: {
+        title: 'Logs: {logTypeName} (Page {currentPage}/{totalPages})', // Dynamic title
+        parentPanelId: 'modLogSelectionPanel',
         items: [
-            // Log entries would be dynamically generated here by a function, or this is a functionCall itself
-            { id: 'displayLogs', sortId: 10, text: 'Refresh Logs', requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'displaySpecificLogsPage', actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter'] }
+            {
+                id: 'viewCurrentPageLogs', sortId: 10, text: 'View Current Page ({currentPage}) Logs', icon: 'textures/ui/book_writable',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'displaySpecificLogsPage',
+                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter', 'currentPage', 'totalPages'] // Pass all relevant for display
+            },
+            {
+                id: 'prevLogPage', sortId: 20, text: 'Previous Page', icon: 'textures/ui/arrow_left_thin_hover',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'goToPrevLogPage',
+                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter', 'currentPage', 'totalPages']
+            },
+            {
+                id: 'nextLogPage', sortId: 30, text: 'Next Page', icon: 'textures/ui/arrow_right_thin_hover',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'goToNextLogPage',
+                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter', 'currentPage', 'totalPages']
+            },
+            { // Optional: Re-filter if needed from here
+                id: 'filterLogsAgain', sortId: 40, text: 'Change Filter', icon: 'textures/ui/icon_filter',
+                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showModLogFilterModal',
+                actionContextVars: ['logTypeFilter', 'logTypeName', 'playerNameFilter'] // Current filter context
+            }
         ]
     },
     detailedFlagsPanel: {
