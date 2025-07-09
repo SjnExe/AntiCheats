@@ -14,10 +14,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## General Code & System Improvements (Suggestions by Jules)
 
-### Checks Implementation
-- **(Low) `reachCheck.js` - Hitbox Approximation**:
-    - Document that the hitbox adjustment is an approximation. While raycasting is expensive, note this as a potential area for future precision improvement if performance allows or if specific false positives due to entity size variations become problematic.
-
 ### Configuration Files & Data Structures
 - **(Low) Refactor `textDatabase.js` Content**:
     - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).
