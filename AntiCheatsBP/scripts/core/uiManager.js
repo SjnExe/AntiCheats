@@ -9,6 +9,11 @@ import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui';
 import { panelDefinitions } from '../core/panelLayoutConfig.js';
 
+// Constants for showInspectPlayerForm
+const INSPECT_PLAYER_TITLE = '§l§3Inspect Player§r';
+const INSPECT_PLAYER_TEXT_FIELD_LABEL = 'Player Name:';
+const INSPECT_PLAYER_TEXT_FIELD_PLACEHOLDER = 'Enter exact player name';
+
 // --- Player Navigation Stack Management ---
 /**
  * Stores navigation stacks for each player.
@@ -1216,8 +1221,8 @@ async function showInspectPlayerForm(adminPlayer, dependencies, context) {
     playerUtils?.debugLog(`[UiManager.showInspectPlayerForm] Requested by ${adminName}`, adminName, dependencies);
 
     const modalForm = new ModalFormData()
-        .title(getString('ui.inspectPlayer.title'))
-        .textField(getString('ui.inspectPlayer.textFieldLabel'), getString('ui.inspectPlayer.textFieldPlaceholder'));
+        .title(INSPECT_PLAYER_TITLE)
+        .textField(INSPECT_PLAYER_TEXT_FIELD_LABEL, INSPECT_PLAYER_TEXT_FIELD_PLACEHOLDER);
 
     try {
         const response = await modalForm.show(adminPlayer);
