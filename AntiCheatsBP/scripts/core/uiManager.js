@@ -138,6 +138,81 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
             }
         });
         return items;
+    },
+    /**
+     * Generates panel items for each server rule found in the configuration.
+     * @param {import('@minecraft/server').Player} player - The player viewing the panel.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current panel context.
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for server rules.
+     */
+    generateServerRuleItems: (player, dependencies, context) => {
+        const { config, getString } = dependencies;
+        // Assuming config.serverRules is an array of strings.
+        const serverRules = config?.serverRules ?? [];
+        const items = [];
+
+        if (serverRules.length === 0) {
+            // Let showPanel handle the empty list message.
+            return [];
+        }
+
+        serverRules.forEach((rule, index) => {
+            if (typeof rule === 'string' && rule.trim() !== '') {
+                items.push({
+                    id: `serverRule_${index}`,
+                    sortId: 10 + index * 10,
+                    text: rule, // Display the rule text directly on the button
+                    icon: 'textures/ui/scroll_filled', // Optional: use a consistent icon
+                    requiredPermLevel: 1024,
+                    actionType: 'functionCall',
+                    actionValue: 'returnToCallingPanel', // Action to re-display this panel
+                    initialContext: {
+                        originalPanelId: 'serverRulesPanel', // Panel to return to
+                        originalContext: { ...context }      // Context of this panel
+                    },
+                    actionContextVars: []
+                });
+            }
+        });
+        return items;
+    },
+    /**
+     * Generates panel items for each general tip found in the configuration.
+     * @param {import('@minecraft/server').Player} player - The player viewing the panel.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current panel context.
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for general tips.
+     */
+    generateGeneralTipItems: (player, dependencies, context) => {
+        const { config, getString } = dependencies;
+        // Assuming config.generalTips is an array of strings.
+        const generalTips = config?.generalTips ?? [];
+        const items = [];
+
+        if (generalTips.length === 0) {
+            return []; // Let showPanel handle empty list message.
+        }
+
+        generalTips.forEach((tip, index) => {
+            if (typeof tip === 'string' && tip.trim() !== '') {
+                items.push({
+                    id: `generalTip_${index}`,
+                    sortId: 10 + index * 10,
+                    text: tip, // Display the tip text directly on the button
+                    icon: 'textures/ui/light_bulb_momented', // Optional: use a consistent icon
+                    requiredPermLevel: 1024,
+                    actionType: 'functionCall',
+                    actionValue: 'returnToCallingPanel', // Action to re-display this panel
+                    initialContext: {
+                        originalPanelId: 'generalTipsPanel', // Panel to return to
+                        originalContext: { ...context }       // Context of this panel
+                    },
+                    actionContextVars: []
+                });
+            }
+        });
+        return items;
     }
 };
 // --- End Dynamic Item Generators ---
@@ -914,6 +989,23 @@ const UI_ACTION_FUNCTIONS = {
         } else {
             // Fallback if context wasn't passed correctly, though it should be.
             await showPanel(player, 'helpfulLinksPanel', dependencies, {});
+        }
+    },
+    returnToCallingPanel: async (player, dependencies, context) => {
+        const { playerUtils } = dependencies;
+        const { originalPanelId, originalContext } = context;
+
+        playerUtils.debugLog(`Action: returnToCallingPanel for ${player.nameTag}. Returning to Panel ID: ${originalPanelId}`, player.nameTag, dependencies);
+
+        if (originalPanelId) {
+            // The originalContext should be the context of the panel we are returning to.
+            await showPanel(player, originalPanelId, dependencies, originalContext || {});
+        } else {
+            playerUtils.debugLog(`Cannot return to original panel: originalPanelId missing from context.`, player.nameTag, dependencies);
+            player.sendMessage("§cError: Could not determine panel to return to.");
+            // Fallback to a default panel if necessary, though this indicates a setup error.
+            // For user panels, mainUserPanel is a safe bet.
+            await showPanel(player, 'mainUserPanel', dependencies, {});
         }
     },
     showGeneralTipsPageContent: async (player, dependencies, context) => {

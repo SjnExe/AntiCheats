@@ -190,8 +190,11 @@ export const panelDefinitions = {
     serverRulesPanel: {
         title: '§l§eServer Rules§r',
         parentPanelId: 'mainUserPanel',
+        dynamicItemGeneratorKey: "generateServerRuleItems", // Added for dynamic items
         items: [
-            { id: 'displayServerRules', sortId: 10, text: 'View Rules', requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'showServerRulesPageContent' }
+            // Items will be dynamically generated.
+            // The 'showServerRulesPageContent' function call is no longer needed here
+            // as the panel itself will list the rules.
         ]
     },
     helpfulLinksPanel: {
@@ -208,8 +211,10 @@ export const panelDefinitions = {
     generalTipsPanel: {
         title: 'General Tips',
         parentPanelId: 'mainUserPanel',
+        dynamicItemGeneratorKey: "generateGeneralTipItems", // Added for dynamic items
         items: [
-            { id: 'displayGeneralTips', sortId: 10, text: 'View Tips', requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'showGeneralTipsPageContent' }
+            // Items will be dynamically generated.
+            // The 'showGeneralTipsPageContent' function call is no longer needed here.
         ]
     },
 
