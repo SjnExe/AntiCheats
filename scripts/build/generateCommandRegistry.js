@@ -1,4 +1,12 @@
 // @ts-check
+/**
+ * @file Simple Node.js script to generate AntiCheatsBP/scripts/core/commandRegistry.js
+ * This script reads the contents of the 'AntiCheatsBP/scripts/commands' directory,
+ * identifies all JavaScript command files, and then generates the
+ * 'AntiCheatsBP/scripts/core/commandRegistry.js' file. The generated registry
+ * imports all found command modules and exports them in an array, which is
+ * then used by the commandManager to load and execute commands.
+ */
 // Simple Node.js script to generate AntiCheatsBP/scripts/core/commandRegistry.js
 
 import fs from 'fs';

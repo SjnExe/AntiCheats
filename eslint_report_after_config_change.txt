@@ -1,0 +1,7 @@
+
+/app/scripts/build/generateCommandRegistry.js
+   1:2   warning  Missing @file             jsdoc/require-file-overview
+   9:24  error    'process' is not defined  no-undef
+  79:5   error    'process' is not defined  no-undef
+
+✖ 3 problems (2 errors, 1 warning)
