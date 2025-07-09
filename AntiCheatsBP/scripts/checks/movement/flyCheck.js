@@ -21,7 +21,8 @@ const DEFAULT_FLY_HOVER_VERTICAL_SPEED_THRESHOLD = 0.08;
 const DEFAULT_FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD = 20;
 const DEFAULT_FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD = 1.0;
 const DEFAULT_FLY_HOVER_NEAR_GROUND_THRESHOLD = 2.5;
-const MIN_VERTICAL_SPEED_FOR_SLOW_FALLING_GRACE = -0.01;
+const MIN_VERTICAL_SPEED_FOR_SLOW_FALLING_GRACE = -0.01; // If player has slow fall and is falling faster than this (more negative), they are exempt from hover.
+const SLOW_FALLING_HOVER_FALL_DISTANCE_MULTIPLIER = 1.5; // Player with slow fall can accumulate this much more fallDistance before hover triggers.
 const LOGGING_DECIMAL_PLACES_FLY = 3;
 const GENERIC_DECIMAL_PLACES_FLY = 2;
 
@@ -175,8 +176,12 @@ export async function checkFly(player, pData, dependencies) {
 
     const hoverVSpeedThreshold = config?.flyHoverVerticalSpeedThreshold ?? DEFAULT_FLY_HOVER_VERTICAL_SPEED_THRESHOLD;
     const hoverOffGroundTicks = config?.flyHoverOffGroundTicksThreshold ?? DEFAULT_FLY_HOVER_OFF_GROUND_TICKS_THRESHOLD;
-    const hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? DEFAULT_FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD;
+    let hoverMaxFallDist = config?.flyHoverMaxFallDistanceThreshold ?? DEFAULT_FLY_HOVER_MAX_FALL_DISTANCE_THRESHOLD;
     const hoverMinHeight = config?.flyHoverNearGroundThreshold ?? DEFAULT_FLY_HOVER_NEAR_GROUND_THRESHOLD;
+
+    if (pData.hasSlowFalling) {
+        hoverMaxFallDist *= SLOW_FALLING_HOVER_FALL_DISTANCE_MULTIPLIER;
+    }
 
     if (!player.isOnGround &&
         Math.abs(verticalSpeed) < hoverVSpeedThreshold &&

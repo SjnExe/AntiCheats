@@ -14,25 +14,6 @@ This list contains planned features, improvements, and areas for future investig
 
 ## General Code & System Improvements (Suggestions by Jules)
 
-### Checks Implementation
-- **(Medium) `flyCheck.js` - Grace Conditions & Slow Fall**:
-    - Evaluate `yVelocityGraceTicks` for knockback scenarios.
-    - Refine hover check logic for players with `hasSlowFalling` to ensure it correctly distinguishes between legitimate bobbing and "Float" hacks, especially if the player is ascending or stationary with slow fall.
-- **(Low) `reachCheck.js` - Hitbox Approximation**:
-    - Document that the hitbox adjustment is an approximation. While raycasting is expensive, note this as a potential area for future precision improvement if performance allows or if specific false positives due to entity size variations become problematic.
-- **(Low) `antiGmcCheck.js` - Dependency Reliability**:
-    - Note that its accuracy depends on reliable `rankManager.getPlayerPermissionLevel` and `permissionLevels` configuration.
-- **(Medium) `nukerCheck.js` - False Positive Review**:
-    - Review thresholds (`nukerMaxBreaksShortInterval`, `nukerCheckIntervalMs`) against legitimate fast mining with high-efficiency tools and effects (e.g., Haste II + Eff V) or instant mining of sculk-like blocks.
-- **(High) General Check `pData` Reliance**:
-    - Emphasize in developer documentation that all checks' accuracy heavily relies on `pData` being accurate and timely. Errors in `pData` updates can cascade into check malfunctions.
-
-### Utility Functions
-- **(High) `itemUtils.js` - Accuracy and Maintenance**:
-    - Document clearly that `itemUtils.js` (especially `getExpectedBreakTicks` and `calculateRelativeBlockBreakingPower`) is a server-side approximation of complex client-side game mechanics.
-    - Schedule periodic reviews of its internal data maps (`blockHardnessMap`, etc.) and constants against Minecraft updates to maintain reasonable accuracy.
-    - Highlight that this utility is a primary candidate for issues if Minecraft changes block breaking mechanics.
-
 ### Configuration Files & Data Structures
 - **(Low) Refactor `textDatabase.js` Content**:
     - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).

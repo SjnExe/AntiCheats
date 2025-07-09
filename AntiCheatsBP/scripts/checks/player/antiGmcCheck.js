@@ -1,7 +1,13 @@
 /**
  * @file Implements a check to detect and optionally correct players who are in Creative Mode
- * @module AntiCheatsBP/scripts/checks/player/antiGmcCheck
  * without proper authorization (e.g., not an admin or owner).
+ *
+ * Its accuracy is critically dependent on the `rankManager.getPlayerPermissionLevel` function
+ * returning correct permission levels for players and the `permissionLevels` object (from `dependencies`)
+ * being accurately configured to reflect the server's intended permission hierarchy.
+ * Misconfiguration in these areas can lead to false positives (incorrectly flagging
+ * authorized creative mode) or false negatives (failing to detect unauthorized creative mode).
+ * @module AntiCheatsBP/scripts/checks/player/antiGmcCheck
  */
 import * as mc from '@minecraft/server';
 

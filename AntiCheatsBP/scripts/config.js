@@ -549,7 +549,7 @@ Rule 6: Have fun and contribute to a positive community!`,
     /** @type {number} Tolerance in game ticks for block breaking speed. Actual break time must be less than (ExpectedTime - Tolerance) to flag. Higher values are more lenient. */
     instaBreakTimeToleranceTicks: 2,
     /** @type {number} Maximum number of blocks that can be broken within `nukerCheckIntervalMs` before flagging for Nuker. */
-    nukerMaxBreaksShortInterval: 4,
+    nukerMaxBreaksShortInterval: 5,
     /** @type {number} Time window in milliseconds for the Nuker check to count broken blocks. */
     nukerCheckIntervalMs: 200,
     /** @type {string[]} Array of item type IDs banned from being placed by players. */
