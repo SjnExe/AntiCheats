@@ -54,10 +54,6 @@ export const stringDB = {
                                                             // Consider if this specific key is still actively used or can be deprecated/moved.
 
     // Inspect Player Form (Text Input)
-    'ui.inspectPlayer.title': '§l§3Inspect Player§r',
-    'ui.inspectPlayer.textFieldLabel': 'Player Name:',
-    'ui.inspectPlayer.textFieldPlaceholder': 'Enter exact player name',
-
     // Player Actions Form
     'ui.playerActions.button.kick': '§cKick Player§r',
     'ui.playerActions.button.freeze': '§bFreeze Player§r',
@@ -176,21 +172,7 @@ export const stringDB = {
     'ui.configEditor.valueInput.error.generic': '§cError updating config value for "{keyName}".',
 
     // Reset Flags Form (Text Input)
-    'ui.resetFlagsForm.title': '§l§eReset Player Flags§r',
-    'ui.resetFlagsForm.textField.label': 'Player Name to Reset Flags For:',
-    'ui.resetFlagsForm.textField.placeholder': 'Enter exact player name',
-    'ui.resetFlagsForm.toggle.label': '§cConfirm Resetting All Flags',
-    'ui.resetFlagsForm.cancelled': '§7Flag reset action cancelled.',
-    'ui.resetFlagsForm.error.nameEmpty': '§cPlayer name cannot be empty.',
-    'ui.resetFlagsForm.error.generic': '§cError processing flag reset.',
-
     // Watched Players List
-    'ui.watchedPlayers.title': '§l§bWatched Players§r',
-    'ui.watchedPlayers.header': 'Currently watched players (online):\n',
-    'ui.watchedPlayers.noPlayers': 'No players are currently being watched or online.',
-    'ui.watchedPlayers.playerEntry': '- {playerName}',
-    'ui.watchedPlayers.button.ok': '§l§aOK§r',
-
     // Online Players List (specific strings for showOnlinePlayersList)
     'ui.onlinePlayers.title': '§l§bOnline Players ({playerCount})§r',
     'ui.onlinePlayers.noPlayers': 'No players are currently online.',
