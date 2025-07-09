@@ -133,24 +133,31 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
     const logContext = `playerDataManager.${callingFunction}`;
 
     let opType = 'unknown';
-    if (operation.toLowerCase().includes('json.parse')) opType = 'parse';
-    else if (operation.toLowerCase().includes('json.stringify')) opType = 'stringify';
-    else if (operation.toLowerCase().includes('getdynamicproperty')) opType = 'get'; // Made lowercase for robust matching
-    else if (operation.toLowerCase().includes('setdynamicproperty')) opType = 'set'; // Made lowercase
+    if (operation.toLowerCase().includes('json.parse')) {
+        opType = 'parse';
+    } else if (operation.toLowerCase().includes('json.stringify')) {
+        opType = 'stringify';
+    } else if (operation.toLowerCase().includes('getdynamicproperty')) {
+        opType = 'get';
+    } // Made lowercase for robust matching
+    else if (operation.toLowerCase().includes('setdynamicproperty')) {
+        opType = 'set';
+    } // Made lowercase
 
-    let contextStr = 'unknown';
-    if (callingFunction === 'savePlayerDataToDynamicProperties' || callingFunction === 'loadPlayerDataFromDynamicProperties') {
-        contextStr = 'data';
-    }
     // Add more contexts here if _handleDynamicPropertyError is used by other functions for different DP keys.
 
     // Refined actionType and errorCode to match new standardization
     const actionTypePrefix = 'error.pdm.dp';
     let specificErrorType = opType; // 'parse', 'stringify', 'get', 'set'
-    if (opType === 'get') specificErrorType = 'Get';
-    else if (opType === 'set') specificErrorType = 'Set';
-    else if (opType === 'parse') specificErrorType = 'Parse';
-    else if (opType === 'stringify') specificErrorType = 'Stringify';
+    if (opType === 'get') {
+        specificErrorType = 'Get';
+    } else if (opType === 'set') {
+        specificErrorType = 'Set';
+    } else if (opType === 'parse') {
+        specificErrorType = 'Parse';
+    } else if (opType === 'stringify') {
+        specificErrorType = 'Stringify';
+    }
 
 
     const newActionType = `${actionTypePrefix}${specificErrorType}`; // e.g., error.pdm.dpGet, error.pdm.dpParse
@@ -161,14 +168,14 @@ function _handleDynamicPropertyError(callingFunction, operation, playerName, err
         context: logContext,    // e.g., playerDataManager.loadPlayerDataFromDynamicProperties
         targetName: playerName,
         details: {
-            errorCode: errorCode,
+            errorCode,
             message: error.message,
             rawErrorStack: error.stack,
             meta: {
                 originalOperation: operation, // Keep original 'operation' for specific detail
                 callingFunctionContext: callingFunction, // Keep original 'callingFunction' for specific detail
                 ...additionalDetails,
-            }
+            },
         },
     }, dependencies);
 }
@@ -495,7 +502,7 @@ export async function ensurePlayerDataInitialized(player, dependencies) {
         // If ensurePlayerDataInitialized is called mid-session (e.g. script reload, player already online),
         // loadedData.joinTime would be correct for *that* session start.
         newPData.joinTime = loadedData.joinTime ?? newPData.joinTime; // Keep what initializeDefaultPlayerData set if not in loadedData
-                                                                    // or what was loaded. handlePlayerSpawn will update if it's a true new session.
+        // or what was loaded. handlePlayerSpawn will update if it's a true new session.
 
         // firstEverLoginTime should only be set once. If it's in loadedData, use that.
         // Otherwise, initializeDefaultPlayerData already set it to Date.now().

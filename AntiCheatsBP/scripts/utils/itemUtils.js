@@ -1,8 +1,4 @@
 /**
- * @file Provides utility functions related to items, blocks, and their interactions,
- * primarily for calculating block breaking speeds and determining optimal tools.
- * Includes simplified models for game mechanics like block hardness and tool effectiveness.
- *
  * IMPORTANT: This module is a server-side approximation of complex client-side game mechanics.
  * It is intended for use in contexts where exact client-side behavior is not critical
  * but a reasonable estimation is needed for server-side logic (e.g., anti-cheat checks).
@@ -18,7 +14,9 @@
  * block breaking mechanics. Any updates to the game that alter how block hardness,
  * tool speeds, enchantments, or player effects interact will likely necessitate
  * modifications to this file to maintain reasonable accuracy.
- *
+ * @file Provides utility functions related to items, blocks, and their interactions,
+ * primarily for calculating block breaking speeds and determining optimal tools.
+ * Includes simplified models for game mechanics like block hardness and tool effectiveness.
  * @module AntiCheatsBP/scripts/utils/itemUtils
  */
 import * as mc from '@minecraft/server';

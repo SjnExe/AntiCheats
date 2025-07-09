@@ -70,21 +70,19 @@ export function persistLogCacheToDisk(dependencies) {
  * Adds a new log entry to the in-memory cache and marks logs as dirty.
  * Manages log rotation to stay within `maxLogEntriesCount`.
  * Ensures `actionType` uses `camelCase`.
- *
  * Standard for Error Log Entries:
  * When logging errors (e.g., actionType starts with 'error.' or is 'system_error'), the `details` object
  * within the `LogEntry` should follow this structure for consistency and better analysis:
  * ```
  * details: {
- *   errorCode: string,    // REQUIRED: A unique, short, UPPER_SNAKE_CASE string code (e.g., 'PDM_DP_DATA_PARSE_FAIL', 'CMD_EXEC_FAIL').
- *   message: string,      // REQUIRED: The primary error message (usually error.message).
- *   rawErrorStack?: string, // OPTIONAL (but recommended): The full stack trace (error.stack).
- *   meta?: object          // OPTIONAL: An object for any other context-specific key-value pairs relevant to this specific error.
+ * errorCode: string,    // REQUIRED: A unique, short, UPPER_SNAKE_CASE string code (e.g., 'PDM_DP_DATA_PARSE_FAIL', 'CMD_EXEC_FAIL').
+ * message: string,      // REQUIRED: The primary error message (usually error.message).
+ * rawErrorStack?: string, // OPTIONAL (but recommended): The full stack trace (error.stack).
+ * meta?: object          // OPTIONAL: An object for any other context-specific key-value pairs relevant to this specific error.
  * }
  * ```
  * The `actionType` for errors should also follow a pattern like `error.<module>.<optional_sub_context>` (e.g., `error.pdm.dp`, `error.cmd.exec`).
  * The main `LogEntry.context` string should still provide the specific function/module path where the error originated.
- *
  * @param {import('../types.js').LogEntry} logEntry - The log entry object. Must contain `actionType`. `timestamp` and `adminName` default if not provided.
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
  */

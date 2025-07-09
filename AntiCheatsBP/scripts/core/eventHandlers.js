@@ -4,8 +4,8 @@
 // Let's assume `dependencies.profilingData` and `dependencies.MAX_PROFILING_HISTORY` will be available.
 
 /**
- * @module AntiCheatsBP/scripts/core/eventHandlers
  * Wraps an event handler function with profiling logic.
+ * @module AntiCheatsBP/scripts/core/eventHandlers
  * @param {string} handlerName - The name of the event handler for logging.
  * @param {Function} handlerFunction - The actual event handler function.
  * @returns {Function} - The wrapped event handler function.
@@ -285,7 +285,9 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         if (checks?.checkInvalidRenderDistance && config.enableInvalidRenderDistanceCheck) {
             // Initial render distance check might be useful on spawn
             minecraftSystem.system.runTimeout(async () => {
-                if (!player.isValid()) return;
+                if (!player.isValid()) {
+                    return;
+                }
                 const currentPData = playerDataManager.getPlayerData(player.id); // Re-fetch pData inside timeout
                 if (!currentPData) {
                     playerUtils?.debugLog(`[EvtHdlr.Spawn.Timeout.checkInvalidRenderDistance] pData not found for ${playerName}.`, playerName, dependencies);
@@ -317,9 +319,9 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                 message: error.message,
                 rawErrorStack: error.stack,
                 meta: {
-                    initialSpawn: initialSpawn,
-                }
-            }
+                    initialSpawn,
+                },
+            },
         }, dependencies);
     }
 }
@@ -421,9 +423,13 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                     const isSpam = await checks.checkEntitySpam(player, entity.typeId, pData, dependencies);
 
                     // Re-fetch pData for this player after the await before modifying it
-                    if (!player.isValid()) break; // Player might have disconnected during await
+                    if (!player.isValid()) {
+                        break;
+                    } // Player might have disconnected during await
                     const currentPDataForLoop = playerDataManager?.getPlayerData(player.id);
-                    if (!currentPDataForLoop) break; // pData might be gone
+                    if (!currentPDataForLoop) {
+                        break;
+                    } // pData might be gone
 
                     if (isSpam && config.entitySpamAction === 'kill') {
                         try {
@@ -445,7 +451,7 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                     currentPDataForLoop.expectingConstructedEntity = null; // Clear expectation on the potentially re-fetched pData
                     currentPDataForLoop.isDirtyForSave = true;
                 } else {
-                     // If checkEntitySpam doesn't exist, still clear expectation on original pData
+                    // If checkEntitySpam doesn't exist, still clear expectation on original pData
                     pData.expectingConstructedEntity = null;
                     pData.isDirtyForSave = true;
                 }
@@ -825,7 +831,9 @@ async function _handlePlayerBreakBlockBeforeEvent(eventData, dependencies) {
     // If not cancelled by checkBreakUnbreakable
     if (!eventData.cancel) {
         // Re-fetch pData after await checkBreakUnbreakable
-        if (!player.isValid()) return;
+        if (!player.isValid()) {
+            return;
+        }
         const currentPData = playerDataManager?.getPlayerData(player.id);
         if (!currentPData) {
             dependencies.playerUtils?.debugLog(`[EvtHdlr.BreakBlockBefore] pData not found for ${player.nameTag} after unbreakable check.`, player.nameTag, dependencies);
@@ -889,7 +897,9 @@ async function _handlePlayerBreakBlockAfterEvent(eventData, dependencies) {
     }
 
     // Re-fetch pData after all await calls before modifying it.
-    if (!player.isValid()) return;
+    if (!player.isValid()) {
+        return;
+    }
     const finalPData = playerDataManager?.getPlayerData(player.id);
     if (!finalPData) {
         dependencies.playerUtils?.debugLog(`[EvtHdlr.BreakBlockAfter] pData not found for ${player.nameTag} at end of handler.`, player.nameTag, dependencies);
@@ -1260,7 +1270,7 @@ async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     }
 
     // Update pData with new dimension
-    let pData = pdm?.getPlayerData(player.id);
+    const pData = pdm?.getPlayerData(player.id);
     if (pData) {
         pData.lastDimensionId = toDimension.id;
         pData.isDirtyForSave = true;
@@ -1299,7 +1309,9 @@ async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
             playerUtils?.warnPlayer(player, getString('dimensionLock.teleportMessage', { lockedDimensionName }));
 
             // Re-fetch pData before using it for notifyAdmins, as player.teleport was awaited
-            if (!player.isValid()) return; // Player might have disconnected during teleport attempt
+            if (!player.isValid()) {
+                return;
+            } // Player might have disconnected during teleport attempt
             const currentPData = pdm?.getPlayerData(player.id);
             // pData for notifyAdmins context can be the currentPData or null if not found
 

@@ -18,6 +18,10 @@ export const definition = {
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
  * @param {string[]} args - Command arguments: [playername].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
+ * @param {string} [invokedBy] - Source of the command invocation (e.g., 'PlayerCommand', 'AutoMod', 'System').
+ * @param {boolean} [isAutoModAction] - Whether this execution is part of an AutoMod action.
+ * @param {string | null} [autoModCheckType] - The specific check type if invoked by AutoMod.
+ * @param {string | null} [programmaticUnmuteReason] - Reason for the unmute if not from player command arguments.
  * @returns {void}
  */
 export function execute(
@@ -27,9 +31,9 @@ export function execute(
     invokedBy = 'PlayerCommand',
     isAutoModAction = false, // Retained for consistency, though less direct use in unmute
     autoModCheckType = null,  // Retained for consistency
-    programmaticUnmuteReason = null
+    programmaticUnmuteReason = null,
 ) {
-    const { config, playerUtils, playerDataManager, logManager, getString, rankManager } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
 
@@ -46,11 +50,12 @@ export function execute(
     }
 
     let targetOnlinePlayer;
-    let targetPData;
 
     if (invokedBy === 'PlayerCommand' && player) {
         targetOnlinePlayer = playerUtils.validateCommandTarget(player, targetPlayerName, dependencies, { commandName: 'unmute', requireOnline: true });
-        if (!targetOnlinePlayer) return;
+        if (!targetOnlinePlayer) {
+            return;
+        }
         // Permission check - can this admin unmute in general? (Not target-specific hierarchy for unmute)
         // This is typically handled by the command's base permissionLevel.
         // No specific rankManager.canAdminActionTarget needed for unmute usually, unless specific rules apply.
@@ -63,7 +68,7 @@ export function execute(
             console.warn(`[UnmuteCommand.execute] ${issuerName} call: Target player '${targetPlayerName}' not found online. Offline unmute may require playerDataManager enhancements.`);
             // Log this attempt if it's a system action that should have worked.
             if (invokedBy !== 'PlayerCommand') {
-                 logManager?.addLog({
+                logManager?.addLog({
                     actionType: 'error.cmd.unmute.targetOffline',
                     context: 'UnmuteCommand.execute',
                     adminName: issuerName,
@@ -75,7 +80,7 @@ export function execute(
         }
     }
 
-    targetPData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
+    const targetPData = playerDataManager?.getPlayerData(targetOnlinePlayer.id);
 
     if (!targetPData) {
         const failureMsg = `${getString('command.unmute.failure', { playerName: targetOnlinePlayer.nameTag }) } (No data)`;
@@ -96,7 +101,7 @@ export function execute(
             player.sendMessage(notMutedMsg);
         } else {
             // For system calls, this might be normal if a race condition occurred or state changed.
-             playerUtils?.debugLog(`[UnmuteCommand] ${issuerName} call: Target ${targetOnlinePlayer.nameTag} was not muted.`, null, dependencies);
+            playerUtils?.debugLog(`[UnmuteCommand] ${issuerName} call: Target ${targetOnlinePlayer.nameTag} was not muted.`, null, dependencies);
         }
         return;
     }
@@ -133,13 +138,16 @@ export function execute(
 
         if (wasPreviouslyAutoModMute && previousAutoModCheckType && config?.unmuteClearsAutomodFlagsForCheckType) {
             playerDataManager.clearFlagsForCheckType(targetOnlinePlayer, previousAutoModCheckType, dependencies);
-             const flagsClearedMsg = getString('command.unmute.flagsCleared', {checkType: previousAutoModCheckType, playerName: targetOnlinePlayer.nameTag });
-            if (player) player.sendMessage(flagsClearedMsg);
-            else playerUtils.debugLog(flagsClearedMsg, null, dependencies);
+            const flagsClearedMsg = getString('command.unmute.flagsCleared', { checkType: previousAutoModCheckType, playerName: targetOnlinePlayer.nameTag });
+            if (player) {
+                player.sendMessage(flagsClearedMsg);
+            } else {
+                playerUtils.debugLog(flagsClearedMsg, null, dependencies);
+            }
 
             if (config?.notifyOnAdminUtilCommandUsage !== false || (isAutoModAction && config?.notifyOnAutoModAction !== false)) {
-                 const notifyMsgCleared = getString('command.unmute.notify.flagsCleared', { adminName: issuerName, targetName: targetOnlinePlayer.nameTag, checkType: previousAutoModCheckType });
-                 playerUtils?.notifyAdmins(notifyMsgCleared, dependencies, player, targetPData);
+                const notifyMsgCleared = getString('command.unmute.notify.flagsCleared', { adminName: issuerName, targetName: targetOnlinePlayer.nameTag, checkType: previousAutoModCheckType });
+                playerUtils?.notifyAdmins(notifyMsgCleared, dependencies, player, targetPData);
             }
         }
 

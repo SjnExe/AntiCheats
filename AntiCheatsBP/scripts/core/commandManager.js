@@ -225,8 +225,8 @@ export async function handleChatCommand(eventData, dependencies) {
                 meta: {
                     command: finalCommandName,
                     args: args.join(', '),
-                }
-            }
+                },
+            },
         }, dependencies);
         playerUtils?.playSoundForEvent(player, 'commandError', dependencies);
     }
