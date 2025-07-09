@@ -1083,17 +1083,12 @@ const UI_ACTION_FUNCTIONS = {
                 const clearInvCommand = commandExecutionMap?.get('clearinv') ?? commandExecutionMap?.get('clearinventory');
                 if (clearInvCommand) {
                     await clearInvCommand(player, [targetPlayerName], dependencies);
-                    // Assuming the command itself sends success/failure messages. If not, add here.
                 } else {
-                    // Fallback to vanilla /clear command
                     playerUtils.debugLog(`[UiManager.confirmClearPlayerInventory] No 'clearinv' command in map, using vanilla /clear for ${targetPlayerName}`, adminPlayerName, dependencies);
                     try {
-                        // Need to execute this command as the target player, or target them if run by server/admin with perms
-                        // The vanilla /clear command targets the executor unless a target is specified.
-                        // For safety and clarity, find the actual player object to ensure they are online.
                         const targetPlayerObject = mc.world.getAllPlayers().find(p => p.nameTag === targetPlayerName);
                         if (targetPlayerObject) {
-                            await targetPlayerObject.runCommandAsync('clear @s'); // Target self from player object context
+                            await targetPlayerObject.runCommandAsync('clear @s');
                             player.sendMessage(getString('ui.playerActions.clearInventory.success', { targetPlayerName }));
                             logManager?.addLog({ adminName: adminPlayerName, actionType: 'playerInventoryCleared', targetName: targetPlayerName, details: `Inventory cleared for ${targetPlayerName} via UI.` }, dependencies);
                         } else {
@@ -1109,6 +1104,137 @@ const UI_ACTION_FUNCTIONS = {
             },
             dependencies
         );
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    },
+
+    showUnbanFormForPlayer: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'unban' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.showUnbanFormForPlayer] Admin: ${adminPlayerName} initiating unban for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const confirmed = await _showConfirmationModal(
+            player,
+            getString('ui.playerActions.unban.confirmTitle', {targetPlayerName: targetPlayerName}), // Assuming similar string key structure
+            getString('ui.playerActions.unban.confirmBody', { targetPlayerName }),
+            getString('ui.playerActions.unban.confirmToggle'),
+            async () => {
+                const unbanCommand = commandExecutionMap?.get('unban');
+                if (unbanCommand) {
+                    await unbanCommand(player, [targetPlayerName], dependencies);
+                } else {
+                    player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'unban' }));
+                }
+            },
+            dependencies
+        );
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    },
+
+    confirmResetPlayerFlagsForPlayer: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'reset flags' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.confirmResetPlayerFlagsForPlayer] Admin: ${adminPlayerName} initiating flag reset for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const confirmed = await _showConfirmationModal(
+            player,
+            getString('ui.playerActions.resetFlags.confirmTitle', {targetPlayerName: targetPlayerName}), // Assuming string key
+            getString('ui.playerActions.resetFlags.confirmBody', { targetPlayerName }),
+            getString('ui.playerActions.resetFlags.confirmToggle'),
+            async () => {
+                const resetFlagsCommand = commandExecutionMap?.get('resetflags');
+                if (resetFlagsCommand) {
+                    await resetFlagsCommand(player, [targetPlayerName], dependencies);
+                } else {
+                    player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'resetflags' }));
+                }
+            },
+            dependencies
+        );
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    },
+
+    showPlayerInventoryFromPanel: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'view inventory' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.showPlayerInventoryFromPanel] Admin: ${adminPlayerName} viewing inventory for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const invseeCommand = commandExecutionMap?.get('invsee');
+        if (invseeCommand) {
+            try {
+                await invseeCommand(player, [targetPlayerName], dependencies);
+            } catch (error) {
+                console.error(`[UiManager.showPlayerInventoryFromPanel] Error executing invsee command for ${targetPlayerName}: ${error.stack || error}`);
+                player.sendMessage(getString('common.error.genericCommandError', { commandName: 'invsee', errorMessage: error.message }));
+                logManager?.addLog({ actionType: 'errorUiInvsee', context: 'uiManager.showPlayerInventoryFromPanel', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack }, }, dependencies);
+                // Still show panel again in finally
+            }
+        } else {
+            player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'invsee' }));
+        }
+        // The invsee command shows its own form. We should return to playerActionsPanel *after* that form is closed.
+        // However, invsee command itself doesn't have a callback to uiManager.
+        // For now, we'll navigate back immediately. This might be slightly awkward if invsee takes time or is cancelled.
+        // A more robust solution would involve invsee command being aware of UI flow or uiManager having a way to await modal closure.
+        // Given the current structure, this is the most straightforward approach.
+        // The `invsee` command itself doesn't return to any panel, it just shows a MessageFormData.
+        // So, after it's called, we need to manually bring the user back to the playerActionsPanel.
+        // The `invsee` command's `execute` function is async and shows a form.
+        // We don't want to show the playerActionsPanel *before* the invsee form is shown.
+        // This means this function should ensure the invsee form is handled, then return.
+        // The `invsee` command doesn't take a `context` to return to a panel.
+        // This is a slight architectural limitation. We will proceed by calling it, and the user will manually close the invsee form.
+        // Then, they'd still be on the playerActionsPanel because we're calling showPanel here.
+        // This might be okay. Let's test this assumption.
+        // Actually, the invsee command shows a MessageFormData, which is modal.
+        // After it's dismissed, control returns. So calling showPanel afterwards is correct.
+        await showPanel(player, 'playerActionsPanel', dependencies, context);
+    },
+
+    toggleWatchPlayerFromPanel: async (player, dependencies, context) => {
+        const { playerUtils, logManager, getString, commandExecutionMap } = dependencies;
+        const adminPlayerName = player.nameTag;
+        const { targetPlayerId, targetPlayerName } = context;
+
+        if (!targetPlayerName) {
+            player.sendMessage(getString('ui.playerActions.error.targetNotSpecified', { action: 'toggle watch' }));
+            await showPanel(player, 'playerActionsPanel', dependencies, context);
+            return;
+        }
+        playerUtils?.debugLog(`[UiManager.toggleWatchPlayerFromPanel] Admin: ${adminPlayerName} toggling watch for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
+
+        const watchCommand = commandExecutionMap?.get('watch');
+        if (watchCommand) {
+            try {
+                await watchCommand(player, [targetPlayerName, 'toggle'], dependencies);
+            } catch (error) {
+                console.error(`[UiManager.toggleWatchPlayerFromPanel] Error executing watch command for ${targetPlayerName}: ${error.stack || error}`);
+                player.sendMessage(getString('common.error.genericCommandError', { commandName: 'watch', errorMessage: error.message }));
+                logManager?.addLog({ actionType: 'errorUiWatchToggle', context: 'uiManager.toggleWatchPlayerFromPanel', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: error.message, stack: error.stack }, }, dependencies);
+            }
+        } else {
+            player.sendMessage(getString('common.error.commandModuleNotFound', { moduleName: 'watch' }));
+        }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     }
 };
