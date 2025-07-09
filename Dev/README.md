@@ -118,6 +118,7 @@ The AntiCheats addon is structured to be modular and configurable. Here's a high
 ### Key Data Structures and Flows
 
 *   **`PlayerAntiCheatData` (`pData`)**: This is a central object, managed by `playerDataManager.js`, that stores all runtime and some persistent data for each player. This includes their current flags for various cheats, violation counts, mute/ban status, last known positions, velocities, and other states required by different checks.
+    *   **Critical Note on `pData` Integrity:** The accuracy and effectiveness of almost all cheat detection checks are critically dependent on the integrity, accuracy, and timeliness of the `PlayerAntiCheatData` (`pData`) object for each player. Errors in `pData` acquisition, updates, or serialization can lead to a cascade of malfunctions across various checks, potentially resulting in false positives, false negatives, or unexpected behavior. Developers must exercise extreme caution when modifying `playerDataManager.js` or any logic that interacts with or updates `pData`.
 *   **Detection-to-Action Flow**:
     1.  **Detection**: An event occurs (e.g., player moves, attacks, chats) or a periodic tick check runs.
     2.  A specific **check function** (e.g., from `flyCheck.js` or `cpsCheck.js`) analyzes player actions or data.
