@@ -36,24 +36,6 @@ export const stringDB = {
     'command.error.unknownCommand': '§cUnknown command: "{commandName}". Type {prefix}help for commands.',
     'command.error.executionFailed': '§cError executing command "{commandName}". Please contact an admin.',
 
-    // Admin Panel
-
-    // User Info Panel (UInfo Command)
-
-    // Normal User Panel (Fallback from Admin Panel if not admin)
-
-    // My Stats UI (Shared by Admin Panel > Inspect (conceptually) and UInfo)
-
-    // Server Rules UI
-
-    // Helpful Links UI
-
-    // Online Players List
-    'ui.button.backToAdminPanel': '§l§cBack to Admin Panel§r', // This seems a bit generic, might be for an older panel.
-                                                            // showOnlinePlayersList itself uses common.button.back.
-                                                            // Consider if this specific key is still actively used or can be deprecated/moved.
-
-    // Inspect Player Form (Text Input)
     // Player Actions Form
     'ui.playerActions.button.kick': '§cKick Player§r',
     'ui.playerActions.button.freeze': '§bFreeze Player§r',
@@ -93,7 +75,6 @@ export const stringDB = {
     'ui.playerActions.unmute.confirmTitle': '§l§aConfirm Unmute Player§r',
     'ui.playerActions.unmute.confirmBody': 'Are you sure you want to unmute {targetPlayerName}?',
     'ui.playerActions.unmute.confirmToggle': '§aConfirm Unmute',
-    // 'ui.playerActions.unmute.cancelled': '§7Unmute action cancelled.', // Can use common.actionCancelled
     'ui.playerActions.error.invalidSelection': '§cInvalid selection. Please try again.',
     'ui.playerActions.error.targetNotSpecified': '§cTarget player not specified for {action}.',
     'ui.playerActions.error.generic': '§cAn error occurred performing the player action.',
@@ -171,8 +152,6 @@ export const stringDB = {
     'ui.configEditor.valueInput.success': '§aSuccessfully updated "{keyName}" to: {value}.',
     'ui.configEditor.valueInput.error.generic': '§cError updating config value for "{keyName}".',
 
-    // Reset Flags Form (Text Input)
-    // Watched Players List
     // Online Players List (specific strings for showOnlinePlayersList)
     'ui.onlinePlayers.title': '§l§bOnline Players ({playerCount})§r',
     'ui.onlinePlayers.noPlayers': 'No players are currently online.',
@@ -246,9 +225,6 @@ export const stringDB = {
     'tpa.notify.actionBar.requestYouToThem': '§e{requestingPlayerName} has requested you to teleport to them. Use {prefix}tpaccept {requestingPlayerName} or {prefix}tpacancel {requestingPlayerName}.',
     'tpa.notify.actionBar.autoDeclined': '§e{playerName} is no longer accepting TPA requests; your request was automatically declined.',
 
-    // --- Command Descriptions (for help command) ---
-    // Descriptions are now directly in command definition files.
-
     // Command specific: addrank
     'command.addrank.playerNotFound': '§cPlayer \'{playerName}\' not found.',
     'command.addrank.rankIdInvalid': '§cRank ID \'{rankId}\' is not a valid rank.',
@@ -290,9 +266,6 @@ export const stringDB = {
     'config.key.chatClearLinesCount.description': 'Number of empty lines sent by !clearchat command to clear chat.',
     'config.key.reportsViewPerPage.title': 'Reports View Per Page',
     'config.key.reportsViewPerPage.description': 'Number of reports displayed per page in the !viewreports command.',
-
-    // Add more string keys and their corresponding text here as needed.
-    // Example: 'some.module.someMessage': 'This is a message for {placeholder}.',
 
     // --- copyinv.js ---
     'command.copyinv.playerNotFound': '§cPlayer \'{playerName}\' not found.',
