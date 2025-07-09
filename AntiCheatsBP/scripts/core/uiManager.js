@@ -7,6 +7,7 @@
 import * as mc from '@minecraft/server';
 import { ActionFormData, ModalFormData } from '@minecraft/server-ui'; // Direct imports, Removed MessageFormData
 // Removed formatSessionDuration, formatDimensionName from '../utils/index.js'
+import { adminPanelLayout, userPanelLayout } from '../core/panelLayoutConfig.js';
 
 // UI functions will be defined below using 'async function' for hoisting.
 // No separate forward declarations needed for them.
@@ -316,94 +317,93 @@ async function showPlayerActionsForm(adminPlayer, targetPlayer, playerDataManage
 
 // Assign other functions similarly ensure dependencies are passed correctly, and use optional chaining.
 
-// Button indices for showAdminPanelMain
-const ADMIN_PANEL_BTN_VIEW_PLAYERS = 0;
-const ADMIN_PANEL_BTN_INSPECT_TEXT = 1;
-const ADMIN_PANEL_BTN_RESET_FLAGS_TEXT = 2;
-const ADMIN_PANEL_BTN_LIST_WATCHED = 3;
-const ADMIN_PANEL_BTN_SERVER_MGMT = 4;
-const ADMIN_PANEL_BTN_EDIT_CONFIG_OWNER = 5; // Only if owner
-const ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON = 5; // Index of close if owner button not present
-const ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON = 6; // Index of close if owner button is present
-
-
 /**
  * Shows the main admin panel form.
  * Displays different options based on the admin's permission level.
  * @param {import('@minecraft/server').Player} player - The player (admin) viewing the panel.
- * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance.
+ * @param {import('../types.js').PlayerDataManagerFull} playerDataManager - The player data manager instance. (Note: playerDataManager is not directly used in this refactored version but kept for signature consistency if other parts of the codebase expect it)
  * @param {import('../types.js').Dependencies} dependencies - Standard command dependencies.
  */
-async function showAdminPanelMain(player, playerDataManager, dependencies) {
-    const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // uiManager removed as functions are called directly
+async function showAdminPanelMain(player, playerDataManager, dependencies) { // playerDataManager kept for signature, though less used directly
+    const { playerUtils, logManager, getString, permissionLevels, rankManager, config } = dependencies; // Added config
     const playerName = player?.nameTag ?? 'UnknownPlayer';
     playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Requested by ${playerName}`, playerName, dependencies);
 
     const userPermLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
 
-    if (userPermLevel > permissionLevels.admin) { // Assuming admin is the minimum to see any admin panel
-        // If not at least admin, show normal user panel
+    // This check remains: if not admin, show normal user panel
+    if (userPermLevel > permissionLevels.admin) {
         await showNormalUserPanelMain(player, dependencies); // Direct call
         return;
     }
 
     const form = new ActionFormData()
-        .title('§l§bAntiCheat Admin Panel§r')
-        .body(`Welcome, ${playerName}! Select an action:`);
+        .title('§l§bAntiCheat Admin Panel§r') // Hardcoded title
+        .body(`Welcome, ${playerName}! Select an action:`); // Hardcoded body
 
-    form.button('§lView Online Players§r', 'textures/ui/multiplayer_glyph_color');
-    form.button('§lInspect Player (Text)§r', 'textures/ui/magnifying_glass');
-    form.button('§lReset Player Flags (Text)§r', 'textures/ui/refresh');
-    form.button('§lList Watched Players§r', 'textures/ui/spyglass_flat_color');
-    form.button('§lServer Management§r', 'textures/ui/server_icon');
-
-    if (userPermLevel === permissionLevels.owner) {
-        form.button('§l§6Edit Configuration§r (Owner)', 'textures/ui/settings_glyph_color');
+    const permittedButtons = [];
+    // adminPanelLayout should be imported from panelLayoutConfig.js
+    for (const buttonConfig of adminPanelLayout) {
+        if (userPermLevel <= buttonConfig.requiredPermLevel) {
+            form.button(buttonConfig.text, buttonConfig.icon);
+            permittedButtons.push(buttonConfig); // Store the config for this button
+        }
     }
-    form.button(getString('common.button.close'), 'textures/ui/cancel');
+    form.button(getString('common.button.close'), 'textures/ui/cancel'); // Common close button
 
     try {
-        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies); // Sound for opening a form
+        playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
         const response = await form.show(player);
+
         if (response.canceled) {
             playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Panel cancelled by ${playerName}. Reason: ${response.cancelationReason}`, playerName, dependencies);
             return;
         }
 
         const selection = response.selection;
-        switch (selection) {
-            case ADMIN_PANEL_BTN_VIEW_PLAYERS: await showOnlinePlayersList(player, dependencies); break;
-            case ADMIN_PANEL_BTN_INSPECT_TEXT: await showInspectPlayerForm(player, dependencies); break;
-            case ADMIN_PANEL_BTN_RESET_FLAGS_TEXT: await showResetFlagsForm(player, dependencies); break;
-            case ADMIN_PANEL_BTN_LIST_WATCHED: await showWatchedPlayersList(player, dependencies); break;
-            case ADMIN_PANEL_BTN_SERVER_MGMT: await showServerManagementForm(player, dependencies); break;
-            case ADMIN_PANEL_BTN_EDIT_CONFIG_OWNER: // This is also the index for ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON
-                if (userPermLevel === permissionLevels.owner) {
-                    await showEditConfigForm(player, dependencies);
-                } else if (selection === ADMIN_PANEL_BTN_CLOSE_NO_OWNER_BUTTON) { // Explicitly check if it's the close button for non-owners
-                    playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
-                }
-                break;
-            case ADMIN_PANEL_BTN_CLOSE_WITH_OWNER_BUTTON: // This would be the close button if owner button was shown
-                if (userPermLevel === permissionLevels.owner) { // Ensure this case is only hit if owner button was present
-                    playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
-                }
-                break;
-            default: playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies); break;
+        if (typeof selection === 'undefined') return;
+
+        if (selection < permittedButtons.length) {
+            const selectedButtonConfig = permittedButtons[selection];
+            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Selected action: ${selectedButtonConfig.id} by ${playerName}`, playerName, dependencies);
+
+            const actionFunctions = {
+                showOnlinePlayersList,
+                showInspectPlayerForm,
+                showResetFlagsForm,
+                showWatchedPlayersList,
+                showServerManagementForm,
+                showEditConfigForm,
+                // Potentially add other ui functions if they become part of the configurable panel
+                // showMyStatsUIPanel, showServerRulesUIPanel, showHelpfulLinksUIPanel, showGeneralTipsUIPanel, etc.
+                // but these are typically for the userPanelLayout.
+            };
+
+            if (selectedButtonConfig.actionType === 'functionCall' && actionFunctions[selectedButtonConfig.actionValue]) {
+                // Most of these functions expect (player, dependencies)
+                // showAdminPanelMain itself takes (player, playerDataManager, dependencies)
+                // We ensure dependencies are passed, and individual functions can retrieve playerDataManager from it if needed.
+                await actionFunctions[selectedButtonConfig.actionValue](player, dependencies);
+            } else {
+                playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Unknown actionValue or actionType for ${selectedButtonConfig.id}: ${selectedButtonConfig.actionValue}`, playerName, dependencies);
+                player?.sendMessage(getString('common.error.genericForm'));
+            }
+        } else if (selection === permittedButtons.length) { // This is the "Close" button
+            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
+        } else {
+            playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
         }
+
     } catch (error) {
         console.error(`[UiManager.showAdminPanelMain] Error for ${playerName}: ${error.stack || error}`);
         playerUtils?.debugLog(`[UiManager.showAdminPanelMain] Error for ${playerName}: ${error.message}`, playerName, dependencies);
         logManager?.addLog({
-            actionType: 'errorUiAdminPanelMain', // Standardized
-            context: 'uiManager.showAdminPanelMain', // Standardized
-            adminName: playerName, // adminName is the player in this context
-            details: {
-                errorMessage: error.message,
-                stack: error.stack,
-            },
+            actionType: 'errorUiAdminPanelMain',
+            context: 'uiManager.showAdminPanelMain',
+            adminName: playerName,
+            details: { errorMessage: error.message, stack: error.stack },
         }, dependencies);
-        player?.sendMessage('§cError displaying admin panel.');
+        player?.sendMessage('§cError displaying admin panel.'); // Hardcoded from previous refactor
     }
 }
 
@@ -750,21 +750,26 @@ async function showGeneralTipsUIPanel(player, dependencies) {
 }
 
 async function showNormalUserPanelMain(player, dependencies) {
-    const { playerUtils, logManager, getString } = dependencies;
+    const { playerUtils, logManager, getString, permissionLevels, rankManager } = dependencies; // Added rankManager, permissionLevels
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
     playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Requested by ${playerName}`, playerName, dependencies);
 
-    const form = new ActionFormData()
-        .title('Player Information Panel') // Hardcoded from ui.uinfo.mainPanel.title
-        .body(`Welcome, ${playerName}! Select an option:`); // Hardcoded from ui.uinfo.mainPanel.body
+    const userPermLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
 
-    // Button texts hardcoded from ui.uinfo.button.*
-    form.button('My AntiCheat Stats', 'textures/ui/icon_bestfriend');
-    form.button('Server Rules', 'textures/ui/scroll_filled');
-    form.button('Helpful Links', 'textures/ui/icon_Details');
-    form.button('General Tips', 'textures/ui/light_bulb_momented');
-    form.button(getString('common.button.close'), 'textures/ui/cancel');
+    const form = new ActionFormData()
+        .title('Player Information Panel') // Title remains hardcoded as per previous step
+        .body(`Welcome, ${playerName}! Select an option:`); // Body remains hardcoded
+
+    const permittedButtons = [];
+    // userPanelLayout should be imported from panelLayoutConfig.js
+    for (const buttonConfig of userPanelLayout) {
+        if (userPermLevel <= buttonConfig.requiredPermLevel) { // Check permission
+            form.button(buttonConfig.text, buttonConfig.icon);
+            permittedButtons.push(buttonConfig);
+        }
+    }
+    form.button(getString('common.button.close'), 'textures/ui/cancel'); // Common close button
 
     try {
         playerUtils?.playSoundForEvent(player, 'uiFormOpen', dependencies);
@@ -776,26 +781,29 @@ async function showNormalUserPanelMain(player, dependencies) {
         }
 
         const selection = response.selection;
-        switch (selection) {
-            case 0: // My AntiCheat Stats
-                await showMyStatsUIPanel(player, dependencies);
-                break;
-            case 1: // Server Rules
-                await showServerRulesUIPanel(player, dependencies);
-                break;
-            case 2: // Helpful Links
-                await showHelpfulLinksUIPanel(player, dependencies);
-                break;
-            case 3: // General Tips
-                await showGeneralTipsUIPanel(player, dependencies);
-                break;
-            case 4: // Close
-                playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
-                break;
-            default:
-                playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
+
+        if (selection < permittedButtons.length) {
+            const selectedButtonConfig = permittedButtons[selection];
+            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Selected action: ${selectedButtonConfig.id} by ${playerName}`, playerName, dependencies);
+
+            const actionFunctions = {
+                showMyStatsUIPanel,
+                showServerRulesUIPanel,
+                showHelpfulLinksUIPanel,
+                showGeneralTipsUIPanel,
+            };
+
+            if (selectedButtonConfig.actionType === 'functionCall' && actionFunctions[selectedButtonConfig.actionValue]) {
+                await actionFunctions[selectedButtonConfig.actionValue](player, dependencies);
+            } else {
+                playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Unknown actionValue or actionType for ${selectedButtonConfig.id}: ${selectedButtonConfig.actionValue}`, playerName, dependencies);
                 player?.sendMessage(getString('common.error.genericForm'));
-                break;
+            }
+        } else if (selection === permittedButtons.length) { // This is the "Close" button
+            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Close selected by ${playerName}.`, playerName, dependencies);
+        } else {
+            playerUtils?.debugLog(`[UiManager.showNormalUserPanelMain] Invalid selection ${selection} by ${playerName}.`, playerName, dependencies);
+            player?.sendMessage(getString('common.error.genericForm'));
         }
     } catch (error) {
         console.error(`[UiManager.showNormalUserPanelMain] Error for ${playerName}: ${error.stack || error}`);
