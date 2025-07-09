@@ -11,10 +11,7 @@
  */
 export const stringDB = {
     // Common UI elements
-    'common.button.back': '§l§cBack§r',
     'common.button.close': '§l§cClose§r',
-    'common.button.confirm': '§l§aConfirm§r',
-    'common.button.cancel': '§l§cCancel§r',
     'common.button.ok': '§l§aOK§r',
     'common.boolean.yes': '§aYes§r',
     'common.boolean.no': '§cNo§r',
@@ -26,13 +23,9 @@ export const stringDB = {
     'common.error.playerNotFound': '§cPlayer "{playerName}" not found.',
     'common.error.playerNotFoundOnline': '§cPlayer "{playerName}" is not online.',
     'common.error.nameEmpty': '§cName cannot be empty.',
-    'common.error.reasonEmpty': '§cReason cannot be empty.',
-    'common.error.durationInvalid': '§cInvalid duration format.',
     'common.error.commandModuleNotFound': '§cError: Command module "{moduleName}" not found or not enabled.',
     'common.error.permissionDenied': '§cYou do not have permission to use this command.',
-    'common.error.chatProcessingUnavailable': '§cChat processing is currently unavailable. Please try again later or contact an admin.',
     'common.error.genericCommandError': '§cAn error occurred while running !{commandName}: {errorMessage}',
-    'common.success.generic': '§aAction successful.',
 
     // Command Specific Errors (used by commandManager)
     'command.error.noCommandEntered': '§cNo command entered. Type {prefix}help for commands.',
@@ -49,31 +42,6 @@ export const stringDB = {
     'ui.adminPanel.button.serverManagement': '§lServer Management§r',
     'ui.adminPanel.button.editConfig': '§l§6Edit Configuration§r (Owner)',
     'ui.adminPanel.error.generic': '§cError displaying admin panel.',
-
-    // User Info Panel (UInfo Command)
-    'ui.uinfo.mainPanel.title': 'Player Information Panel',
-    'ui.uinfo.mainPanel.body': 'Welcome, {playerName}! Select an option:',
-    'ui.uinfo.button.myStats': 'My AntiCheat Stats',
-    'ui.uinfo.button.serverRules': 'Server Rules',
-    'ui.uinfo.button.helpfulLinks': 'Helpful Links',
-    'ui.uinfo.button.generalTips': 'General Tips',
-    'uinfo.myStats.noFlags': 'You currently have no flags!',
-    'ui.helpfulLinks.otherLinksHeader': 'Other Links:',
-    'ui.helpfulLinks.linkEntryFormat': '{title}: {url}',
-    'ui.generalTips.noTips': 'No general tips available at the moment.',
-    'ui.generalTips.title': 'General Tips',
-
-    // Normal User Panel (Fallback from Admin Panel if not admin)
-    'ui.normalPanel.title': '§l§aPlayer Panel§r',
-    'ui.normalPanel.body': 'Welcome, {playerName}!',
-    'ui.normalPanel.button.myStats': '§bMy Stats§r', // Can reuse uinfo.button.myStats if text is same
-    'ui.normalPanel.button.serverRules': '§eServer Rules§r', // Can reuse uinfo.button.serverRules
-    'ui.normalPanel.button.helpLinks': '§9Helpful Links§r', // Can reuse uinfo.button.helpfulLinks
-
-    // My Stats UI (Shared by Admin Panel > Inspect (conceptually) and UInfo)
-    'ui.myStats.title': '§l§bYour Stats§r', // uinfo uses this directly
-    'ui.myStats.labelLocation': 'Location: X: {x}, Y: {y}, Z: {z}',
-    'ui.myStats.labelDimension': 'Dimension: {dimensionName}',
 
     // Server Rules UI
     'ui.serverRules.title': '§l§eServer Rules§r',
