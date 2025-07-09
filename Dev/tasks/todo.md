@@ -19,8 +19,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Medium) Enhance Configuration Editing UI (uiManager.js):** Modify `showConfigCategoriesListImpl` to dynamically discover editable config keys from `config.js` (e.g., based on metadata or type) instead of using a hardcoded list. Investigate options for safely editing simple array types if feasible.
 
 ## Hierarchical Panel System Enhancements (Post-Refactor)
-- **(Medium) Dynamic Button Text/Icon Updates in `showPanel` (Enhancement):**
-    - Implement support in `showPanel` and `panelLayoutConfig.js` for button text/icons that change dynamically based on context (e.g., "Freeze Player" vs "Unfreeze Player").
 - **(Medium) Context Passing and Management Refinement:**
     - Thoroughly test and refine context passing (`actionContextVars`, `initialContext`) for all multi-level panel navigation and action calls.
 - **(Low) `showOnlinePlayersList` and other List-Displaying Functions Refinement:**
