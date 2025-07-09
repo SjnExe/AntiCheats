@@ -197,10 +197,12 @@ export const panelDefinitions = {
     helpfulLinksPanel: {
         title: '§l§9Helpful Links§r',
         parentPanelId: 'mainUserPanel',
+        dynamicItemGeneratorKey: "generateHelpfulLinkItems", // Added for dynamic items
         items: [
-            // Links will be dynamically added here by the showPanel logic if actionValue points to a function that generates items
-            // Or, define a special actionType: 'generateLinkButtons'
-            { id: 'listHelpfulLinks', sortId: 10, text: 'View Links', requiredPermLevel: 1024, actionType: 'functionCall', actionValue: 'showHelpfulLinksPageContent'}
+            // Static items can still be defined here if needed, e.g., a refresh button.
+            // For now, it will be populated entirely by the dynamic generator.
+            // The 'showHelpfulLinksPageContent' function call is no longer needed here
+            // as the panel itself will list the links.
         ]
     },
     generalTipsPanel: {

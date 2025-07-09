@@ -85,6 +85,63 @@ function getCurrentTopOfNavStack(playerId) {
 }
 // --- End Player Navigation Stack Management ---
 
+// --- Dynamic Item Generators ---
+/**
+ * @typedef {(player: import('@minecraft/server').Player, dependencies: import('../types.js').Dependencies, context: object) => PanelItem[]} DynamicItemGeneratorFunction
+ */
+
+/**
+ * Collection of functions that dynamically generate panel items.
+ * Each function takes the player, dependencies, and current panel context,
+ * and returns an array of `PanelItem` objects.
+ * @type {Object<string, DynamicItemGeneratorFunction>}
+ */
+const UI_DYNAMIC_ITEM_GENERATORS = {
+    /**
+     * Generates panel items for each helpful link found in the configuration.
+     * @param {import('@minecraft/server').Player} player - The player viewing the panel.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current panel context.
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for helpful links.
+     */
+    generateHelpfulLinkItems: (player, dependencies, context) => {
+        const { config, getString } = dependencies;
+        const helpfulLinks = config?.helpfulLinks ?? [];
+        const items = [];
+
+        if (helpfulLinks.length === 0) {
+            // If no links, we could return a single item saying "No links configured"
+            // or let showPanel handle empty items list with its generic message.
+            // For now, let showPanel handle it.
+            return [];
+        }
+
+        helpfulLinks.forEach((link, index) => {
+            if (link && link.title && link.url) {
+                items.push({
+                    id: `helpfulLink_${index}`,
+                    sortId: 10 + index * 10, // Basic sorting
+                    text: link.title,
+                    icon: link.icon || 'textures/ui/icon_Details', // Use link-specific icon or default
+                    requiredPermLevel: 1024, // Standard user permission
+                    actionType: 'functionCall',
+                    actionValue: 'displayLinkInChat',
+                    initialContext: {
+                        linkUrl: link.url,
+                        linkTitle: link.title,
+                        // Pass the original panel context so `displayLinkInChat` can return properly
+                        originalPanelIdForDisplayLink: 'helpfulLinksPanel',
+                        originalContextForDisplayLink: { ...context }
+                    },
+                    actionContextVars: [] // No need to pass current panel context vars further in this specific item
+                });
+            }
+        });
+        return items;
+    }
+};
+// --- End Dynamic Item Generators ---
+
 async function showResetFlagsFormImpl(player, dependencies, context) {
     const { playerUtils, getString, commandExecutionMap, logManager } = dependencies;
     const adminPlayerName = player.nameTag;
@@ -571,8 +628,49 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
     const form = new ActionFormData().title(panelTitle);
     const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
 
-    const permittedItems = panelDefinition.items
+    let allPanelItems = [...(panelDefinition.items || [])]; // Start with static items
+
+    // Check for and execute dynamic item generator
+    if (panelDefinition.dynamicItemGeneratorKey) {
+        const generatorFunction = UI_DYNAMIC_ITEM_GENERATORS[panelDefinition.dynamicItemGeneratorKey];
+        if (generatorFunction && typeof generatorFunction === 'function') {
+            try {
+                const dynamicItems = generatorFunction(player, dependencies, effectiveContext);
+                if (Array.isArray(dynamicItems)) {
+                    allPanelItems = allPanelItems.concat(dynamicItems);
+                } else {
+                    console.warn(`[UiManager.showPanel] Dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" did not return an array.`);
+                    logManager?.addLog({
+                        actionType: 'warningUiDynamicGeneratorInvalidReturn',
+                        context: 'uiManager.showPanel',
+                        adminName: viewingPlayerName,
+                        details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, panelTitle },
+                    }, dependencies);
+                }
+            } catch (genError) {
+                console.error(`[UiManager.showPanel] Error in dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}": ${genError.stack || genError}`);
+                logManager?.addLog({
+                    actionType: 'errorUiDynamicGenerator',
+                    context: 'uiManager.showPanel',
+                    adminName: viewingPlayerName,
+                    details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, errorMessage: genError.message, stack: genError.stack },
+                }, dependencies);
+                // Potentially show an error message in the panel itself or navigate to error panel
+            }
+        } else {
+            console.warn(`[UiManager.showPanel] Dynamic item generator key "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" not found in UI_DYNAMIC_ITEM_GENERATORS.`);
+            logManager?.addLog({
+                actionType: 'warningUiDynamicGeneratorNotFound',
+                context: 'uiManager.showPanel',
+                adminName: viewingPlayerName,
+                details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, panelTitle },
+            }, dependencies);
+        }
+    }
+
+    const permittedItems = allPanelItems
         .filter(item => {
+            if (!item) return false; // Handle potential undefined items if generator had issues
             if (panelId === 'logViewerPanel') {
                 if (item.id === 'prevLogPage' && effectiveContext.currentPage <= 1) return false;
                 if (item.id === 'nextLogPage' && effectiveContext.currentPage >= effectiveContext.totalPages) return false;
@@ -745,7 +843,17 @@ const UI_ACTION_FUNCTIONS = {
         bodyText += `\nLocation: X: ${Math.floor(location.x)}, Y: ${Math.floor(location.y)}, Z: ${Math.floor(location.z)} in ${dimensionName}`;
         const modal = new ModalFormData().title('§l§bYour Stats§r').content(bodyText);
         modal.button1(getString('common.button.ok'));
-        await modal.show(player);
+        try {
+            await modal.show(player);
+        } catch (e) {
+            playerUtils.debugLog(`Error showing MyStats modal: ${e}`, player.nameTag, dependencies);
+            // Log error if necessary
+        } finally {
+            // Return to the panel that called this function.
+            // The 'context' here is the context of 'myStatsPanel'.
+            // 'myStatsPanel' is the panel that has the button calling 'showMyStatsPageContent'.
+            await showPanel(player, 'myStatsPanel', dependencies, context);
+        }
     },
     showServerRulesPageContent: async (player, dependencies, context) => {
         const { playerUtils, config, getString } = dependencies;
@@ -754,21 +862,59 @@ const UI_ACTION_FUNCTIONS = {
         let bodyText = serverRules.length === 0 ? 'No server rules have been defined by the admin yet.' : serverRules.join('\n');
         const modal = new ModalFormData().title('§l§eServer Rules§r').content(bodyText);
         modal.button1(getString('common.button.ok'));
-        await modal.show(player);
+        try {
+            await modal.show(player);
+        } catch (e) {
+            playerUtils.debugLog(`Error showing ServerRules modal: ${e}`, player.nameTag, dependencies);
+        } finally {
+            // Return to the panel that called this function.
+            await showPanel(player, 'serverRulesPanel', dependencies, context);
+        }
     },
     showHelpfulLinksPageContent: async (player, dependencies, context) => {
         const { playerUtils, config, getString } = dependencies;
         playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
         const helpfulLinks = config?.helpfulLinks ?? [];
-        let linksBody = "";
-        if (helpfulLinks.length === 0) {
-            linksBody = 'No helpful links configured.';
+        // This function is no longer used by helpfulLinksPanel, which now dynamically generates items.
+        // It can be removed or kept for other potential uses if any. For this refactor, we'll remove it.
+        playerUtils.debugLog(`DEPRECATED Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
+        player.sendMessage("This way of showing links is outdated.");
+        // Ensure the player is returned to a sensible panel if this were somehow called.
+        const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'mainUserPanel', context: {} };
+        if (callingPanelState.panelId) await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
+        else await showPanel(player, 'mainUserPanel', dependencies, {});
+    },
+    displayLinkInChat: async (player, dependencies, context) => {
+        const { playerUtils, getString } = dependencies;
+        const { linkUrl, linkTitle, originalPanelIdForDisplayLink, originalContextForDisplayLink } = context;
+
+        playerUtils.debugLog(`Action: displayLinkInChat for ${player.nameTag}: ${linkTitle} - ${linkUrl}`, player.nameTag, dependencies);
+
+        if (linkUrl && linkTitle) {
+            // Minecraft typically makes full URLs clickable in chat.
+            // Using §9 (blue) and §n (underline) for link-like appearance.
+            player.sendMessage(`§e${linkTitle}: §9§n${linkUrl}§r`);
+            player.sendMessage(getString('ui.helpfulLinks.clickHint') || "§7(You may need to click the link in chat to open it)");
         } else {
-            linksBody = helpfulLinks.map(l => `§e${l.title}§r: §9§n${l.url}§r`).join('\n');
+            player.sendMessage(getString('common.error.generic') || "§cCould not display link: Information missing.");
         }
-        const modal = new ModalFormData().title("§l§9Helpful Links§r").content(linksBody);
-        modal.button1(getString('common.button.ok'));
-        await modal.show(player);
+
+        // Return the user to the helpfulLinksPanel
+        // Ensure originalPanelIdForDisplayLink and originalContextForDisplayLink were passed in initialContext
+        if (originalPanelIdForDisplayLink) {
+            // We need to push the current state (which is the helpfulLinksPanel itself, about to be re-shown)
+            // onto the stack BEFORE showing it, so 'Back' from it works correctly.
+            // However, showPanel itself handles pushing to stack when navigating TO a new panel.
+            // When a functionCall completes, it typically returns to the panel it was called FROM.
+            // If the functionCall itself calls showPanel, it becomes the new "current" panel.
+
+            // The context for helpfulLinksPanel might need to be the one it had when it was first opened.
+            // This is why we passed originalContextForDisplayLink.
+            await showPanel(player, originalPanelIdForDisplayLink, dependencies, originalContextForDisplayLink || {});
+        } else {
+            // Fallback if context wasn't passed correctly, though it should be.
+            await showPanel(player, 'helpfulLinksPanel', dependencies, {});
+        }
     },
     showGeneralTipsPageContent: async (player, dependencies, context) => {
         const { playerUtils, config, getString } = dependencies;
@@ -777,7 +923,14 @@ const UI_ACTION_FUNCTIONS = {
         let bodyText = generalTips.length === 0 ? 'No general tips available at the moment.' : generalTips.join('\n\n---\n\n');
         const modal = new ModalFormData().title('General Tips').content(bodyText);
         modal.button1(getString('common.button.ok'));
-        await modal.show(player);
+        try {
+            await modal.show(player);
+        } catch (e) {
+            playerUtils.debugLog(`Error showing GeneralTips modal: ${e}`, player.nameTag, dependencies);
+        } finally {
+            // Return to the panel that called this function.
+            await showPanel(player, 'generalTipsPanel', dependencies, context);
+        }
     },
     showOnlinePlayersList: showOnlinePlayersList,
     showInspectPlayerForm: showInspectPlayerForm,
