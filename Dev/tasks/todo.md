@@ -20,10 +20,6 @@ This list contains planned features, improvements, and areas for future investig
     - Refine hover check logic for players with `hasSlowFalling` to ensure it correctly distinguishes between legitimate bobbing and "Float" hacks, especially if the player is ascending or stationary with slow fall.
 - **(Low) `reachCheck.js` - Hitbox Approximation**:
     - Document that the hitbox adjustment is an approximation. While raycasting is expensive, note this as a potential area for future precision improvement if performance allows or if specific false positives due to entity size variations become problematic.
-- **(Low) `antiGmcCheck.js` - Dependency Reliability**:
-    - Note that its accuracy depends on reliable `rankManager.getPlayerPermissionLevel` and `permissionLevels` configuration.
-
-### Utility Functions
 
 ### Configuration Files & Data Structures
 - **(Low) Refactor `textDatabase.js` Content**:
