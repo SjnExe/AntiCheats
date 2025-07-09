@@ -28,10 +28,6 @@ This list contains planned features, improvements, and areas for future investig
     - Emphasize in developer documentation that all checks' accuracy heavily relies on `pData` being accurate and timely. Errors in `pData` updates can cascade into check malfunctions.
 
 ### Utility Functions
-- **(High) `itemUtils.js` - Accuracy and Maintenance**:
-    - Document clearly that `itemUtils.js` (especially `getExpectedBreakTicks` and `calculateRelativeBlockBreakingPower`) is a server-side approximation of complex client-side game mechanics.
-    - Schedule periodic reviews of its internal data maps (`blockHardnessMap`, etc.) and constants against Minecraft updates to maintain reasonable accuracy.
-    - Highlight that this utility is a primary candidate for issues if Minecraft changes block breaking mechanics.
 
 ### Configuration Files & Data Structures
 - **(Low) Refactor `textDatabase.js` Content**:
