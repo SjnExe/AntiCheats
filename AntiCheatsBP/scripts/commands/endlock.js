@@ -76,7 +76,7 @@ export function execute(player, args, dependencies) {
                 break;
             }
             default:
-                player?.sendMessage(getString('command.endlock.usage', { prefix }));
+                player?.sendMessage(`§cUsage: ${prefix}endlock <on|off|status>`);
 
         }
     } catch (error) {

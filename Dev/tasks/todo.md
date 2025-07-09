@@ -15,7 +15,4 @@ This list contains planned features, improvements, and areas for future investig
 ## General Code & System Improvements (Suggestions by Jules)
 
 ### Configuration Files & Data Structures
-- **(Low) Refactor `textDatabase.js` Content**:
-    - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).
-    - Identify single-use, static strings that could be moved to their respective local modules.
-    - Implement refactoring for identified strings to improve `textDatabase.js` focus and maintainability.
+<!-- Placeholder for future tasks -->

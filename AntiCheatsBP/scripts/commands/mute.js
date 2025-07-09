@@ -39,9 +39,9 @@ export function execute(
     const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 2, 'command.mute.defaultReason', dependencies);
     const targetPlayerName = parsedArgs.targetPlayerName;
     let reason = parsedArgs.reason;
+    const usageMessage = `§cUsage: ${prefix}mute <playername> [duration] [reason]`;
 
     if (!targetPlayerName) {
-        const usageMessage = getString('command.mute.usage', { prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {

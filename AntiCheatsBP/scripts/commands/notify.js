@@ -76,7 +76,7 @@ export function execute(player, args, dependencies) {
             return;
         }
         default:
-            player.sendMessage(getString('command.notify.usage', { prefix }));
+            player.sendMessage(`§cUsage: ${prefix}notify <on|off|toggle|status>`);
             return;
     }
 

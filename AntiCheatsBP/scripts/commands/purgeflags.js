@@ -28,9 +28,10 @@ export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, currentTick, getString } = dependencies; // Removed mc
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
+    const usageMessage = `§cUsage: ${prefix}${definition.syntax}`;
 
     if (args.length < 1) {
-        playerUtils?.sendMessage(player, getString('command.purgeflags.usage', { prefix, syntax: definition.syntax }));
+        playerUtils?.sendMessage(player, usageMessage);
         return;
     }
 

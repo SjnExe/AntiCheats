@@ -300,16 +300,9 @@ export const stringDB = {
     'tpa.notify.actionBar.autoDeclined': '§e{playerName} is no longer accepting TPA requests; your request was automatically declined.',
 
     // --- Command Descriptions (for help command) ---
-    'command.tpa.description': 'Requests to teleport to another player.',
-    'command.tpacancel.description': 'Cancels or declines a TPA request.',
-    'command.tpaccept.description': 'Accepts an incoming TPA request.',
-    'command.tpahere.description': 'Requests another player to teleport to you.',
-    'command.tpastatus.description': 'Manages your TPA request availability (on/off/status).',
-    'command.unban.description': 'Unbans a player.',
-    'command.unmute.description': 'Unmutes a player, allowing them to chat.',
+    // Descriptions are now directly in command definition files.
 
     // Command specific: addrank
-    'command.addrank.usage': '§cUsage: {prefix}addrank <playername> <rankId>',
     'command.addrank.playerNotFound': '§cPlayer \'{playerName}\' not found.',
     'command.addrank.rankIdInvalid': '§cRank ID \'{rankId}\' is not a valid rank.',
     'command.addrank.rankNotManuallyAssignable': '§cRank \'{rankName}\' cannot be assigned using this command (not configured for manual tag assignment).',
@@ -320,7 +313,6 @@ export const stringDB = {
     'command.addrank.errorAssign': '§cAn error occurred while assigning the rank: {errorMessage}',
 
     // Command specific: ban
-    'command.ban.usage': '§cUsage: {prefix}ban <playername> [duration] [reason]',
     'command.ban.playerNotFound': '§cPlayer \'{playerName}\' not found.',
     'command.ban.cannotBanSelf': '§cYou cannot ban yourself.',
     'command.ban.permissionDeniedAdminOwner': '§cYou do not have permission to ban an admin or owner.',
@@ -340,8 +332,6 @@ export const stringDB = {
     'command.clearchat.success': '§aChat cleared successfully.',
 
     // Command specific: clearreports
-    'command.clearreports.usage': '§cUsage: {prefix}{syntax}',
-    'command.clearreports.example': '§cExample: {prefix}clearreports <report_id> OR {prefix}clearreports <player_name> OR {prefix}clearreports all',
     'command.clearreports.allSuccess': '§aSuccessfully cleared all {count} reports.',
     'command.clearreports.idSuccess': '§aReport with ID \'{reportId}\' has been cleared.',
     'command.clearreports.idNotFound': '§cReport with ID \'{reportId}\' not found.',
@@ -358,7 +348,6 @@ export const stringDB = {
     // Example: 'some.module.someMessage': 'This is a message for {placeholder}.',
 
     // --- copyinv.js ---
-    'command.copyinv.usage': '§cUsage: {prefix}copyinv <playername>',
     'command.copyinv.playerNotFound': '§cPlayer \'{playerName}\' not found.',
     'command.copyinv.cannotSelf': '§cYou cannot copy your own inventory.',
     'command.copyinv.noAccess': '§cCould not access inventories.',
@@ -372,7 +361,6 @@ export const stringDB = {
     'command.copyinv.error.generic': '§cAn unexpected error occurred: {errorMessage}',
 
     // --- endlock.js ---
-    'command.endlock.usage': '§cUsage: {prefix}endlock <on|off|status>',
     'command.endlock.locked': '§aThe End dimension is now locked.',
     'command.endlock.unlocked': '§aThe End dimension is now unlocked.',
     'command.endlock.failUpdate': '§cFailed to update End lock status.',
@@ -382,7 +370,6 @@ export const stringDB = {
     'command.endlock.error.generic': '§cAn unexpected error occurred with the {commandName} command: {errorMessage}',
 
     // --- freeze.js ---
-    'command.freeze.usage': '§cUsage: {prefix}freeze <playername> [on|off|toggle|status]',
     // playerNotFound is common, can reuse 'common.error.playerNotFound'
     'command.freeze.cannotSelf': '§cYou cannot freeze yourself.',
     'command.freeze.status.isFrozen': '§ePlayer {playerName} is currently frozen.',
@@ -398,10 +385,7 @@ export const stringDB = {
     'command.freeze.alreadyUnfrozen': '§ePlayer {playerName} is already unfrozen.',
 
     // --- gma.js, gmc.js, gms.js, gmsp.js ---
-    'command.gamemode.gma.usage': '§cUsage: {prefix}gma [playername]',
-    'command.gamemode.gmc.usage': '§cUsage: {prefix}gmc [playername]',
-    'command.gamemode.gms.usage': '§cUsage: {prefix}gms [playername]',
-    'command.gamemode.gmsp.usage': '§cUsage: {prefix}gmsp [playername]',
+    // Usage strings for gamemode commands are not used/needed as they default to self if no args.
     'command.gamemode.success.other': '§aSet {playerName}\'s gamemode to {gamemodeName}.',
     'command.gamemode.success.self': '§aYour gamemode has been set to {gamemodeName}.',
     'command.gamemode.targetNotification': '§eYour gamemode has been set to {gamemodeName}.',
@@ -424,7 +408,6 @@ export const stringDB = {
     'command.help.noCommandsAvailable': '§7No commands available to you at this time.',
 
     // --- inspect.js ---
-    'command.inspect.usage': '§cUsage: {prefix}inspect <playername>',
     'command.inspect.header': '§6--- AntiCheat Status for {playerName} ---',
     'command.inspect.playerId': '§ePlayer ID: §f{playerId}',
     'command.inspect.watched': '§eWatched: §f{isWatched}',
@@ -440,7 +423,6 @@ export const stringDB = {
     'command.inspect.noData': '§cNo AntiCheat data found for this player.',
 
     // --- invsee.js ---
-    'command.invsee.usage': '§cUsage: {prefix}invsee <playername>',
     'command.invsee.noAccess': '§cCould not access {playerName}\'s inventory.',
     'ui.invsee.title': 'Inventory: {playerName}',
     'ui.invsee.header': '§6Inventory of {playerName}:§r',
@@ -454,7 +436,6 @@ export const stringDB = {
     'command.invsee.item.enchants': ' (Enchants: {enchantEntries})', // {enchantEntries} will be pre-joined
 
     // --- kick.js ---
-    'command.kick.usage': '§cUsage: {prefix}kick <playername> [reason]',
     'command.kick.cannotSelf': '§cYou cannot kick yourself.',
     'command.kick.noPermission': '§cYou do not have permission to kick this player.',
     'command.kick.noPermissionOwner': '§cOnly the server owner can kick another owner.',
@@ -486,7 +467,6 @@ export const stringDB = {
     'command.listwatched.header': 'Currently watched players: ',
 
     // --- mute.js ---
-    'command.mute.usage': '§cUsage: {prefix}mute <playername> [duration] [reason]',
     'command.mute.systemNoArgs': '[MuteCommand] Mute command called by system without sufficient arguments.',
     'command.mute.systemNoTarget': '[MuteCommand] System call missing target player name.',
     'command.mute.playerNotFound': '§cPlayer \'{playerName}\' not found.', // Reusable

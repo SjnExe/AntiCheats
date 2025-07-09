@@ -33,13 +33,13 @@ export function execute(
     const { config, playerUtils, playerDataManager, logManager, rankManager, getString } = dependencies;
     const issuerName = player?.nameTag ?? (invokedBy === 'AutoMod' ? 'AutoMod' : 'System');
     const prefix = config?.prefix ?? '!';
+    const usageMessage = `§cUsage: ${prefix}ban <playername> [duration] [reason]`;
 
     const parsedArgs = playerUtils.parsePlayerAndReasonArgs(args, 2, 'command.ban.defaultReason', dependencies);
     const targetPlayerName = parsedArgs.targetPlayerName;
     let reason = parsedArgs.reason;
 
     if (!targetPlayerName) {
-        const usageMessage = getString('command.ban.usage', { prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {

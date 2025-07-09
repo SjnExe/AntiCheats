@@ -76,7 +76,7 @@ export function execute(player, args, dependencies) {
                 break;
             }
             default:
-                player?.sendMessage(getString('command.netherlock.usage', { prefix }));
+                player?.sendMessage(`§cUsage: ${prefix}netherlock <on|off|status>`);
 
         }
     } catch (error) {

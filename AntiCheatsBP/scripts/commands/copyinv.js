@@ -28,9 +28,10 @@ export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, playerDataManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
+    const usageMessage = `§cUsage: ${prefix}copyinv <playername>`;
 
     if (args.length < 1) {
-        player?.sendMessage(getString('command.copyinv.usage', { prefix }));
+        player?.sendMessage(usageMessage);
         return;
     }
 

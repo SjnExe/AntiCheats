@@ -52,9 +52,9 @@ export function execute(
         // For now, if programmaticReason is not used, AutoMod should ensure args[1] is the reason or it will take default.
         reason = parsedArgsUtil.reason;
     }
+    const usageMessage = `§cUsage: ${prefix}kick <playername> [reason]`;
 
     if (!targetPlayerName) {
-        const usageMessage = getString('command.kick.usage', { prefix });
         if (player) {
             player.sendMessage(usageMessage);
         } else {

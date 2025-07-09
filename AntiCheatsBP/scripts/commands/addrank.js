@@ -23,9 +23,10 @@ export async function execute(player, args, dependencies) {
     const { config, playerUtils, logManager, rankManager, getString } = dependencies;
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
+    const usageMessage = `§cUsage: ${prefix}addrank <playername> <rankId>`;
 
     if (args.length < 2) {
-        player?.sendMessage(getString('command.addrank.usage', { prefix }));
+        player?.sendMessage(usageMessage);
         return;
     }
 

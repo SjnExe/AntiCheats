@@ -5,7 +5,7 @@
 export const definition = {
     name: 'tpaccept',
     syntax: '[playerName]',
-    description: 'Accepts an incoming TPA request. If multiple, specify which player\'s request to accept.',
+    description: 'Accepts an incoming TPA request.',
     aliases: ['tpaa', 'tpaaccept'],
     permissionLevel: 1024, // member
     enabled: true,

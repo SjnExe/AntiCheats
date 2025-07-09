@@ -9,7 +9,7 @@ const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
 export const definition = {
     name: 'tpa',
     syntax: '<playerName>',
-    description: 'Requests to teleport to another player. They must accept with !tpaccept.',
+    description: 'Requests to teleport to another player.',
     permissionLevel: 1024, // member
     enabled: true,
 };
