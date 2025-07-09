@@ -2,12 +2,6 @@
 
 This list contains planned features, improvements, and areas for future investigation. When a task is started, it should be moved to `Dev/tasks/ongoing.md`.
 
-## Documentation Tasks
-
-## Linting & Code Style Tasks
-
-## Code Refinement & Feature Enhancements
-
 ## New Feature Ideas (Examples - to be expanded by project owner)
 - **(Medium) More advanced X-Ray detection methods (if feasible with Script API).**
 - **(High) Webhook integration for critical alerts or logs.**
@@ -19,8 +13,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) Add GIF/Screenshot for World Border to README.md**: Create and add a visual of the World Border feature. (Context: `README.md:75`).
 
 ## General Code & System Improvements (Suggestions by Jules)
-
-### Core Systems & Data Management
 
 ### Checks Implementation
 - **(Medium) `flyCheck.js` - Grace Conditions & Slow Fall**:
@@ -35,8 +27,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(High) General Check `pData` Reliance**:
     - Emphasize in developer documentation that all checks' accuracy heavily relies on `pData` being accurate and timely. Errors in `pData` updates can cascade into check malfunctions.
 
-### Commands Implementation
-
 ### Utility Functions
 - **(High) `itemUtils.js` - Accuracy and Maintenance**:
     - Document clearly that `itemUtils.js` (especially `getExpectedBreakTicks` and `calculateRelativeBlockBreakingPower`) is a server-side approximation of complex client-side game mechanics.
@@ -48,5 +38,3 @@ This list contains planned features, improvements, and areas for future investig
     - Review existing strings in `stringDB` against new usage guidelines (see `Dev/StandardizationGuidelines.md`).
     - Identify single-use, static strings that could be moved to their respective local modules.
     - Implement refactoring for identified strings to improve `textDatabase.js` focus and maintainability.
-
-### Broader Code Quality & Maintainability
