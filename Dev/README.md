@@ -90,7 +90,7 @@ The AntiCheats addon is structured to be modular and configurable. Here's a high
 
 *   **`AntiCheatsBP/scripts/`**: This is the root for all behavior pack scripts.
     *   **`main.js`**: The entry point of the addon. It initializes all core modules, subscribes to Minecraft server events, and runs the main system tick loop for processing checks and player data updates.
-    *   **`config.js`**: Contains a vast array of configurable settings for various features, checks, system behaviors, command aliases, and general check toggles. It also supports runtime updates for many of these values.
+    *   **`config.js`**: Contains a vast array of configurable settings for various features, checks, system behaviors, and general check toggles. It also supports runtime updates for many of these values. (Note: Command aliases are now defined within individual command files, not centrally in `config.js`.)
     *   **`core/`**: Houses the central manager modules that form the backbone of the addon:
         *   `playerDataManager.js`: Manages runtime and persistent data for each player (`PlayerAntiCheatData`), including flags, mutes, bans, and various states needed by checks. Handles data serialization to dynamic properties.
         *   `commandManager.js`: Registers, parses, and executes chat-based commands. Handles permission checking and alias resolution.
@@ -111,7 +111,7 @@ The AntiCheats addon is structured to be modular and configurable. Here's a high
     *   **`checks/`**: Contains all the individual cheat detection logic, categorized into subdirectories (e.g., `movement/`, `combat/`, `world/`, `player/`, `chat/`). Each check file typically exports one or more functions that perform specific violation detections.
         *   `checks/index.js`: A barrel file that re-exports all check modules for easy importing.
     *   **`commands/`**: Contains modules for each chat command. Each command module defines its name, syntax, permission level, and execution logic.
-        *   `core/commandRegistry.js`: A barrel file that exports all command modules, moved here as it's part of the command management system.
+    *   **`core/commandRegistry.js`**: Resides in the `core` directory and acts as a central registry (barrel file) that imports and re-exports all individual command modules from the `commands/` directory. It is auto-generated.
     *   **`utils/`**: Provides utility functions used across the addon (e.g., `playerUtils.js` for player-related helpers like `getString`, `notifyAdmins`, `findPlayer`; `worldUtils.js` for world-related helpers).
         *   `utils/index.js`: A barrel file for utility modules.
     *   **`types.js`**: Contains JSDoc `@typedef` definitions for complex object structures used throughout the addon, like `PlayerAntiCheatData`, `CommandDependencies`, etc.

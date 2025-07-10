@@ -36,7 +36,7 @@ If applicable, add screenshots or link to videos to help explain your problem.
 
 **Environment (please complete the following information):**
 *   **Minecraft Version:** (e.g., 1.21.90)
-*   **AntiCheats Addon Version:** (e.g., v0.5.0 - check `!ac version` in-game or the release page)
+*   **AntiCheats Addon Version:** (e.g., v0.5.0 - check `!version` in-game or the release page)
 *   **Device/Platform:** (e.g., Windows 10, Android, iOS, Xbox)
 *   **Server Software (if applicable):** (e.g., Vanilla Bedrock Dedicated Server, Realm, third-party server software like PocketMine-MP with a script-supporting plugin)
 *   **Other Addons Installed:** (List any other behavior packs or resource packs active, especially if you suspect a conflict)

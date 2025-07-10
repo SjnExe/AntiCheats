@@ -79,7 +79,7 @@ Please follow our [**Coding Style Guide**](Dev/CodingStyle.md) and [**Standardiz
 
 Key points:
 *   All Behavior Pack scripts are written in plain JavaScript (ES6+ features as supported by Minecraft's engine). Do not use TypeScript syntax.
-*   Pay close attention to naming conventions, especially for `checkType` and `actionType` identifiers as outlined in `AGENTS.md`.
+*   Pay close attention to all naming conventions (including for `checkType` and `actionType` identifiers, which must be `camelCase`), formatting, JSDoc practices, and error handling as detailed in these guides.
 
 ### Testing
 

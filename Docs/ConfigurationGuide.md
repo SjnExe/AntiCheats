@@ -49,13 +49,12 @@ This file is extensively commented and allows you to customize a wide range of s
 *   **Behavioral Settings:**
     *   Messages for welcomer, death coordinates, etc.
     *   Default settings for features like World Border damage or AutoMod mute durations.
-*   **Command Aliases:**
-    *   `commandAliases`: Define short aliases for longer commands.
 *   **Individual Command Toggles:**
     *   `commandSettings`: An object to enable or disable specific commands individually.
+    *   *Note on Command Aliases:* Previously, `config.js` might have contained a global `commandAliases` object. This has been deprecated. Command aliases are now defined directly within each command's definition object (typically in `AntiCheatsBP/scripts/commands/yourcommand.js`) under an `aliases` array.
 
 **Structure of `config.js`:**
-The `config.js` file primarily exports constants. Many ofthese are grouped into an `editableConfigValues` object. This special object allows some (but not all) configuration values to be modified at runtime by the server Owner via the `!panel` UI or potentially a dedicated `!acconfig` command (if implemented).
+The `config.js` file primarily exports constants. Many of these are grouped into an `editableConfigValues` object. This special object allows some (but not all) configuration values to be modified at runtime by the server Owner via the `!panel` UI or potentially a dedicated `!acconfig` command (if implemented).
 
 > [!IMPORTANT]
 > Always make a backup of `config.js` before making significant changes. Incorrectly modifying this file can lead to errors or unexpected behavior.
@@ -72,9 +71,8 @@ While `config.js` is the central hub, some complex systems have their detailed r
 
 *   **AutoMod Configuration (`automodConfig.js`):**
     *   **File:** `AntiCheatsBP/scripts/core/automodConfig.js`
-    *   **Purpose:** Contains the rules for the Automated Moderation system. This includes:
-        *   `automodRules`: Defines flag thresholds for specific `checkTypes` and the corresponding actions (warn, kick, ban, mute) to take, along with message templates.
-        *   `automodPerCheckTypeToggles`: Allows enabling or disabling AutoMod for individual cheat detections.
+    *   **Purpose:** Contains the rule sets for the Automated Moderation system. This includes:
+        *   `automodRuleSets`: An array where each element defines a complete rule set for a specific `checkType`. A rule set includes an `enabled` toggle for that specific check's AutoMod, a description, an optional flag reset cooldown, and an array of `tiers` (previously rules) that define escalating actions based on flag thresholds.
     *   **Details:** See the "Customizing Automated Moderation (`automodConfig.js`)" section below for an in-depth explanation. (This also links to [AutoMod Details](AutoModDetails.md) which can remain for broader concepts if this guide focuses on file structure).
 
 *   **Rank Definitions (`ranksConfig.js`):**
@@ -303,47 +301,75 @@ The file `AntiCheatsBP/scripts/core/automodConfig.js` controls the addon's Autom
 **Prerequisites:**
 1.  The global AutoMod system must be enabled in `AntiCheatsBP/scripts/config.js`:
     ```javascript
-    export const enableAutoMod = true;
+    // In config.js, within editableConfigValues or defaultConfigSettings
+    enableAutoMod: true,
     ```
-2.  AutoMod must also be enabled for the specific `checkType` you want to automate actions for (see `automodPerCheckTypeToggles` below).
+2.  For a specific `checkType` to be processed by AutoMod, its corresponding rule set in `automodConfig.js` must have `enabled: true`.
 
 **Structure of `automodConfig.js`:**
-The file exports an object named `automodConfig` with two main properties:
+The file exports an object named `automodConfig`. This object contains a single main property:
 
-1.  **`automodRules`**: An object where each key is a `checkType` string (in **`camelCase`**, e.g., `movementFlyHover`, `combatCpsHigh`). The value for each `checkType` is an array of `AutoModRule` objects. These rules define the actions to be taken at different flag thresholds for that specific `checkType`.
-2.  **`automodPerCheckTypeToggles`**: An object where each key is a `checkType` string (in **`camelCase`**), and the value is a boolean (`true` to enable AutoMod for this check, `false` to disable).
+*   **`automodRuleSets`**: An array of `AutoModRuleSet` objects. Each `AutoModRuleSet` defines the automated actions for a specific `checkType`.
 
 ```javascript
 // Example structure within automodConfig.js
 export const automodConfig = {
-    automodRules: {
-        movementFlyHover: [ // <--- This is a checkType (must be camelCase)
-            { flagThreshold: 10, actionType: 'warn', parameters: { /*...*/ }, resetFlagsAfterAction: false },
-            { flagThreshold: 20, actionType: 'kick', parameters: { /*...*/ }, resetFlagsAfterAction: false },
-            // ... more rules for movementFlyHover
-        ],
-        combatCpsHigh: [
-            { flagThreshold: 15, actionType: 'warn', parameters: { /*...*/ }, resetFlagsAfterAction: false },
-            // ... more rules for combatCpsHigh
-        ]
-        // ... more checkTypes
-    },
-    automodPerCheckTypeToggles: {
-        movementFlyHover: true, // Enable AutoMod for fly/hover flags
-        combatCpsHigh: true,    // Enable AutoMod for CPS flags
-        worldNuker: false,      // Disable AutoMod for nuker flags (manual review preferred)
-        // ... more toggles
-    }
+    automodRuleSets: [
+        {
+            checkType: 'movementFlyHover', // <--- This is a checkType (must be camelCase)
+            enabled: true,                 // Enable AutoMod for this specific checkType
+            description: 'Actions for persistent hovering/flying.',
+            resetFlagsAfterSeconds: 300,   // Optional: Cooldown to reset flags if no new violations
+            tiers: [                       // Array of action tiers (previously rules)
+                { flagThreshold: 10, actionType: 'warn', parameters: { /*...*/ }, resetFlagsAfterAction: false },
+                { flagThreshold: 20, actionType: 'kick', parameters: { /*...*/ }, resetFlagsAfterAction: false },
+                // ... more tiers for movementFlyHover
+            ]
+        },
+        {
+            checkType: 'combatCpsHigh',
+            enabled: true,
+            description: 'Actions for high CPS.',
+            tiers: [
+                { flagThreshold: 15, actionType: 'warn', parameters: { /*...*/ }, resetFlagsAfterAction: false },
+                // ... more tiers for combatCpsHigh
+            ]
+        }
+        // ... more rule sets for other checkTypes
+    ]
 };
 ```
 
-**`AutoModRule` Object Properties:**
+**`AutoModRuleSet` Object Properties:**
 
-Each rule object within a `checkType` array in `automodRules` has the following properties:
+Each object within the `automodRuleSets` array has the following properties:
+
+*   `checkType` (string, `camelCase`):
+    *   **Purpose:** The specific type of violation this rule set applies to (e.g., `movementFlyHover`, `chatSwearViolation`). This **must match** the `checkType` used in `actionProfiles.js` and by the detection scripts.
+    *   **Example:** `checkType: 'movementFlyHover'`
+
+*   `enabled` (boolean):
+    *   **Purpose:** Set to `true` to enable AutoMod processing for this specific `checkType`. If `false`, no automated actions from this rule set will be taken, even if the global `enableAutoMod` in `config.js` is true.
+    *   **Example:** `enabled: true`
+
+*   `description` (string, optional):
+    *   **Purpose:** A human-readable description of what this rule set is for. Useful for configuration management.
+    *   **Example:** `description: 'Handles automated responses to players detected flying or hovering.'`
+
+*   `resetFlagsAfterSeconds` (number, optional):
+    *   **Purpose:** If specified, and a player has accumulated flags for this `checkType` but has not triggered an AutoMod action from this rule set (i.e., their flag count is below the lowest `flagThreshold` or actions are only warnings), their flags for this specific `checkType` will be reset to 0 after this many seconds of inactivity (no new flags for this `checkType`). This helps prevent flags from lingering indefinitely for minor, non-escalating offenses.
+    *   **Example:** `resetFlagsAfterSeconds: 3600` (reset flags after 1 hour of no new violations for this check type, if no punitive action was taken)
+
+*   `tiers` (array of `AutoModTier` objects):
+    *   **Purpose:** An array defining the escalating punishment tiers for this `checkType`. Each object in the array represents one tier of action. **Tiers should be sorted by `flagThreshold` in ascending order.**
+
+**`AutoModTier` Object Properties (within the `tiers` array):**
+
+Each tier object defines a specific action to be taken when a flag threshold is met:
 
 *   `flagThreshold` (number):
-    *   **Purpose:** The number of accumulated flags for this specific `checkType` that a player must reach to trigger this rule.
-    *   **Example:** `flagThreshold: 10` (triggers when player gets their 10th flag for this `checkType`).
+    *   **Purpose:** The number of accumulated flags for this rule set's `checkType` that a player must reach to trigger this tier's action.
+    *   **Example:** `flagThreshold: 10`
 
 *   `actionType` (string, `camelCase`):
     *   **Purpose:** The automated action to perform.
@@ -352,19 +378,19 @@ Each rule object within a `checkType` array in `automodRules` has the following 
         *   `kick`: Kicks the player from the server.
         *   `tempBan`: Temporarily bans the player. Requires `duration` in `parameters`.
         *   `permBan`: Permanently bans the player.
-        *   `mute`: Mutes the player in chat. Requires `duration` in `parameters`. (Note: `automodManager.js` internally handles this as `mute`. If `automodConfig.js` uses `mutePlayer`, ensure consistency or that the manager handles the alias).
-        *   `freezePlayer`: (Largely conceptual) Logs and notifies that a player would be frozen. Actual freeze mechanics might need separate implementation beyond AutoMod's direct actions.
+        *   `mute`: Mutes the player in chat. Requires `duration` in `parameters`.
+        *   `freezePlayer`: (Largely conceptual in `automodConfig.js`) Logs and notifies that a player would be frozen. The actual freeze mechanic is usually tied to the `!freeze` command or specific checks, not directly executed by `automodManager` based on this `actionType` alone.
         *   `removeIllegalItem`: Attempts to remove a specified illegal item from the player's inventory. Requires `itemToRemoveTypeId` in `parameters`.
         *   `teleportSafe`: Teleports the player to configured safe coordinates. Requires `coordinates` in `parameters`.
-        *   `flagOnly`: No direct punitive action is taken on the player by this rule. Instead, it logs that the AutoMod rule was triggered. Useful for monitoring rule effectiveness or for very high flag counts where manual review is preferred after logging.
+        *   `flagOnly`: No direct punitive action is taken on the player by this tier. Instead, it logs that the AutoMod tier was triggered. Useful for monitoring or as an intermediate step.
     *   **Example:** `actionType: "tempBan",`
 
 *   `parameters` (object):
     *   **Purpose:** Provides specific parameters for the chosen `actionType`.
     *   **Sub-Properties:**
         *   `messageTemplate` (string): Template for messages sent to the player (for `warn`, `kick`, `tempBan`, `permBan`, `mute`, `removeIllegalItem`, `teleportSafe`).
-            *   **Placeholders:** `{playerName}`, `{actionType}`, `{checkType}`, `{flagCount}` (current flags for this check), `{flagThreshold}` (threshold for this rule), `{duration}` (formatted ban/mute duration), `{itemTypeId}` (for item removal), `{itemQuantity}` (for item removal, actual count removed), `{teleportCoordinates}` (formatted teleport destination).
-        *   `adminMessageTemplate` (string, optional): A separate template for notifications sent to admins if this AutoMod rule triggers. Uses the same placeholders. If not provided, a default admin notification might be generated by `automodManager.js`.
+            *   **Placeholders:** `{playerName}`, `{actionType}`, `{checkType}`, `{flagCount}` (current flags for this check), `{flagThreshold}` (threshold for this tier), `{duration}` (formatted ban/mute duration), `{itemTypeId}` (for item removal), `{itemQuantity}` (for item removal, actual count removed), `{teleportCoordinates}` (formatted teleport destination).
+        *   `adminMessageTemplate` (string, optional): A separate template for notifications sent to admins if this AutoMod tier triggers. Uses the same placeholders. If not provided, a default admin notification might be generated.
         *   `duration` (string, required for `tempBan` and `mute`): Duration of the ban or mute (e.g., `"5m"`, `"1h"`, `"30d"`, `"perm"` for permanent). This string is parsed by the system.
         *   `coordinates` (object, required for `teleportSafe`): Defines the teleport destination: `{ x: number, y: number, z: number }`. `y` is mandatory. `x` and `z` are optional (if omitted, player's current X/Z are used). The system will attempt to find the closest safe location near these coordinates.
         *   `itemToRemoveTypeId` (string, required for `removeIllegalItem`): The Minecraft item ID to remove (e.g., `"minecraft:command_block"`).
@@ -377,54 +403,57 @@ Each rule object within a `checkType` array in `automodRules` has the following 
         },
         ```
 
-*   `resetFlagsAfterAction` (boolean):
-    *   **Purpose:** If `true`, after this AutoMod rule's action is successfully applied, the player's flag count for *this specific `checkType`* will be reset to 0. Their `lastActionThreshold` for this check in `pData.automodState` will also be reset, allowing the punishment ladder to start anew for this check type if they re-offend.
-    *   **Example:** `resetFlagsAfterAction: true,`
+*   `resetFlagsAfterAction` (boolean, optional, default: `false`):
+    *   **Purpose:** If `true`, after this tier's action is successfully applied, the player's flag count for *this specific `checkType`* will be reset to 0. Their `lastActionThreshold` for this check in `pData.automodState` will also be reset, allowing the punishment ladder to start anew for this check type if they re-offend.
+    *   **Example:** `resetFlagsAfterAction: true`
 
-**Customizing AutoMod Rules (`automodRules`):**
+**Customizing AutoMod Rule Sets:**
 
-*   **Adjusting Severity:**
-    *   Change `flagThreshold` values: Lower thresholds mean quicker punishments.
-    *   Modify `actionType`: Escalate from `warn` to `kick` to `tempBan` sooner or later.
+*   **Enabling/Disabling AutoMod for a Check:**
+    *   Set the `enabled` property within the rule set object for a specific `checkType` to `true` or `false`.
+*   **Adjusting Severity within a Rule Set:**
+    *   Modify `flagThreshold` values in the `tiers` array.
+    *   Change `actionType` in different tiers.
     *   Alter `parameters.duration` for `tempBan` or `mute`.
 *   **Customizing Messages:**
-    *   Edit `messageTemplate` and `adminMessageTemplate` using the available placeholders to provide clear information.
-*   **Adding/Removing Rules:**
-    *   To add a new punishment tier for a `checkType`, add a new `AutoModRule` object to its array. Ensure the array remains sorted by `flagThreshold` (lowest to highest) for predictable escalation.
-    *   To remove a punishment tier, delete the corresponding rule object from the array.
-*   **Adding Rules for a New `checkType`:**
-    *   If you've implemented a new cheat detection that flags with a new `checkType` (e.g., `myCustomCheck`), you can add AutoMod rules for it:
+    *   Edit `messageTemplate` and `adminMessageTemplate` in the `parameters` of each tier.
+*   **Adding/Removing Tiers:**
+    *   To add a new punishment tier, add a new `AutoModTier` object to the `tiers` array of the relevant rule set. Ensure the `tiers` array remains sorted by `flagThreshold`.
+    *   To remove a tier, delete its object from the `tiers` array.
+*   **Adding a Rule Set for a New `checkType`:**
+    *   Add a new `AutoModRuleSet` object to the `automodRuleSets` array. Define its `checkType`, `enabled` status, optional `description` and `resetFlagsAfterSeconds`, and its `tiers`.
         ```javascript
-        // In automodRules
-        myCustomCheck: [
-            { flagThreshold: 5, actionType: 'warn', parameters: { messageTemplate: "Warning for My Custom Check!" }, resetFlagsAfterAction: false },
-            { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: "Kicked for My Custom Check!" }, resetFlagsAfterAction: true }
-        ],
-        // In automodPerCheckTypeToggles
-        myCustomCheck: true,
+        // In automodRuleSets array
+        {
+            checkType: 'myNewCheckType',
+            enabled: true,
+            description: 'Handles my new custom check.',
+            tiers: [
+                { flagThreshold: 5, actionType: 'warn', parameters: { messageTemplate: "Warning for My New Check!" }, resetFlagsAfterAction: false },
+                { flagThreshold: 10, actionType: 'kick', parameters: { messageTemplate: "Kicked for My New Check!" }, resetFlagsAfterAction: true }
+            ]
+        }
         ```
 
-**Customizing `automodPerCheckTypeToggles`:**
-
-*   Simply set the value for a `checkType` to `true` to allow AutoMod rules defined in `automodRules` for that check to be processed.
-*   Set it to `false` to disable AutoMod for that `checkType`, regardless of any rules defined in `automodRules`. This is useful if you want a check to only flag and notify admins for manual review, without automatic punishments.
-
-**Interaction Flow:**
+**Interaction Flow (Updated):**
 1.  A check script detects a violation (e.g., `flyCheck.js` detects hovering).
 2.  It calls `actionManager.executeCheckAction()` with the `checkType` (e.g., `movementFlyHover`).
 3.  `actionManager` consults `actionProfiles.js` for `movementFlyHover`.
-4.  The profile in `actionProfiles.js` says to flag the player (e.g., add 2 flags of type `movementFlyHover`). `playerDataManager.addFlag()` is called.
+4.  The profile in `actionProfiles.js` says to flag the player. `playerDataManager.addFlag()` is called.
 5.  `playerDataManager.addFlag()` then calls `automodManager.processAutoModActions()` for the `movementFlyHover` flag type.
-6.  `automodManager` checks if `enableAutoMod` (in `config.js`) is true AND if `automodPerCheckTypeToggles.movementFlyHover` (in `automodConfig.js`) is true.
-7.  If both are true, `automodManager` looks at the player's current total flags for `movementFlyHover` and compares it against the `flagThreshold` of rules in `automodConfig.js` under `automodRules.movementFlyHover`.
-8.  If a threshold is met and the rule hasn't been surpassed or actioned at that exact flag count, the corresponding `actionType` (e.g., `warn`, `kick`) is executed.
+6.  `automodManager` checks if the global `enableAutoMod` (in `config.js`) is true.
+7.  If true, it finds the `AutoModRuleSet` in `automodConfig.js` where `checkType` matches `movementFlyHover`.
+8.  If a matching rule set is found and its `enabled` property is `true`:
+    *   `automodManager` iterates through the `tiers` in that rule set.
+    *   For each tier, it compares the player's current total flags for `movementFlyHover` against the tier's `flagThreshold`.
+    *   If a threshold is met and the action for that tier hasn't already been surpassed or recently applied for that specific flag count, the corresponding `actionType` (e.g., `warn`, `kick`) is executed.
 
-**Important Notes for `automodConfig.js`:**
+**Important Notes for `automodConfig.js` (Updated):**
 *   Always back up `automodConfig.js` before making changes.
-*   **`checkType` keys and `actionType` values MUST be `camelCase`**. Mismatches will cause rules or actions to fail.
-*   Ensure rules within a `checkType` array are logically ordered by `flagThreshold` if you intend an escalating punishment system.
-*   The `duration` strings for bans/mutes must be in a format recognized by `playerUtils.parseDuration` (e.g., "10s", "5m", "1h", "7d", "1mo", "perm").
-*   Thoroughly test any AutoMod rule changes on a non-production server to ensure they trigger correctly and apply the intended actions without unintended side effects. Pay close attention to `resetFlagsAfterAction` behavior.
+*   **`checkType` in rule sets and `actionType` in tiers MUST be `camelCase`**.
+*   Ensure `tiers` within each rule set are logically ordered by `flagThreshold` (lowest to highest) for predictable escalation.
+*   The `duration` strings for bans/mutes must be in a format recognized by `playerUtils.parseDuration`.
+*   Thoroughly test any AutoMod rule changes. Pay close attention to `resetFlagsAfterAction` and the new `resetFlagsAfterSeconds` behavior.
 
 ---
 By understanding these configuration files and principles, you can effectively customize the AntiCheats Addon to create a secure and fair environment for your players.

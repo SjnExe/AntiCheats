@@ -71,14 +71,14 @@ This guide helps you resolve common issues you might encounter with the AntiChea
 
 **Problem: A specific cheat detection isn't working (e.g., Fly, Speed).**
 
-*   **Enabled in Config/UI:** Many detections can be toggled on/off or have their sensitivity adjusted. Check `AntiCheatsBP/scripts/core/automodConfig.js` or use the `!panel` (Settings section) to ensure the specific check is enabled and configured appropriately.
-*   **Sensitivity Levels:** If a check is enabled but not catching cheaters, its sensitivity or thresholds might be too lenient for your needs. Adjust these settings carefully.
+*   **Enabled in Config/UI:** Many detections can be toggled on/off or have their sensitivity adjusted. Check `AntiCheatsBP/scripts/config.js` for master toggles (e.g., `enableFlyCheck`) and specific detection parameters (sensitivity, thresholds for the check to trigger a flag). The `!panel` (Settings section) may also allow adjusting some of these `config.js` values. For automated *responses* to these detections (like auto-kick/ban based on accumulated flags), configure the rules in `AntiCheatsBP/scripts/core/automodConfig.js`.
+*   **Sensitivity Levels:** If a check is enabled but not catching cheaters, its sensitivity or thresholds (primarily in `config.js`) might be too lenient for your needs. Adjust these settings carefully.
 *   **Addon Conflicts:** Another addon might be interfering with player data or events in a way that prevents the AntiCheat from working correctly. See [General Tips](#6-general-tips).
 *   **Minecraft Version Compatibility:** Ensure your addon version is compatible with your Minecraft version. Major Minecraft updates can sometimes break script functionalities.
 
 **Problem: Players are being falsely flagged (false positives).**
 
-*   **Sensitivity Levels:** This is the most common cause. High server lag or certain player activities (e.g., using unique items from other addons, specific parkour moves) can sometimes trigger checks. Try slightly reducing the sensitivity or increasing the thresholds for the specific check causing issues via `!panel` or `automodConfig.js`.
+*   **Sensitivity Levels:** This is the most common cause. High server lag or certain player activities (e.g., using unique items from other addons, specific parkour moves) can sometimes trigger checks. Try slightly reducing the sensitivity or increasing the thresholds for the specific check causing issues (usually in `AntiCheatsBP/scripts/config.js` or adjustable via the `!panel` settings).
 *   **Lag:** Severe server lag can cause players' movements to appear erratic, potentially triggering movement checks.
 *   **Specific Scenarios:** Note down exactly what the player was doing when they were falsely flagged. This information is crucial for diagnosing and fixing the issue, or for adjusting configurations.
 *   **Report It:** If you can consistently reproduce a false positive and can't resolve it through configuration, please [report it as an issue](https://github.com/SjnExe/AntiCheats/issues).

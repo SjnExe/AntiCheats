@@ -157,14 +157,14 @@ To help identify potential bottlenecks, the addon includes a basic performance p
 Contributions are highly welcome and appreciated! Help us make this addon even better.
 
 *   **Fork & Branch:** Create your own fork and make changes in a dedicated branch.
-*   **Code Style:** Follow our [**Coding Style Guide**](Dev/CodingStyle.md).
+*   **Code Style:** Follow our 📄 [**Coding Style Guide**](Dev/CodingStyle.md).
 *   **Test Thoroughly:** Ensure your changes are stable and don't introduce new issues.
 *   **Document Changes:** Update relevant documentation in the `Docs` folder if you add or modify features.
 *   **Pull Request:** Submit your changes for review. Explain what you've changed and why.
 
 Looking for a place to start? Check out our [**issues tab**](https://github.com/SjnExe/AntiCheats/issues) – we often tag issues that are great for new contributors (e.g., `good first issue` or `help wanted` when available).
 
-➡️ For more on development processes and resources, see [**Addon Development Resources**](Dev/README.md).
+➡️ For more on development processes and resources, see 📄 [**Addon Development Resources**](Dev/README.md).
 
 ---
 
