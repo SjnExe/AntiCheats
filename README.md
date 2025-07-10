@@ -179,7 +179,7 @@ If you're interested in helping, please see our [**Contributing section above**]
 ---
 
 <p align="center">
-  <a href=".github/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge" alt="License: MIT"/></a>
   <br />
   Thank you for using the AntiCheats Addon!
   <br />
