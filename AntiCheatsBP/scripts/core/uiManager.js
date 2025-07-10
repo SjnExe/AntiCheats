@@ -251,7 +251,7 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
                 sortId: 10 + index, // Ensure refresh button (sortId 1) is above
                 text: buttonText,
                 icon: 'textures/ui/icon_multiplayer', // Default player icon
-                requiredPermLevel: 2, // Assuming same level as playerManagementPanel access
+                requiredPermLevel: 1, // Changed perm from 2 to 1
                 actionType: 'openPanel',
                 actionValue: 'playerActionsPanel',
                 initialContext: {

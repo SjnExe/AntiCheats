@@ -121,7 +121,7 @@ export const panelDefinitions = {
         items: [
             {
                 id: 'viewOnlinePlayersPanel', sortId: 10, text: '§lView Online Players§r', icon: 'textures/ui/multiplayer_glyph_color',
-                requiredPermLevel: 2, actionType: 'openPanel', actionValue: 'onlinePlayersPanel'
+                requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'onlinePlayersPanel' // Changed perm from 2 to 1
             },
             {
                 id: 'inspectPlayerText', sortId: 20, text: '§lInspect Player (Text)§r', icon: 'textures/ui/magnifying_glass',
@@ -151,7 +151,7 @@ export const panelDefinitions = {
                 sortId: 1, // Show refresh at the top
                 text: '§2Refresh List§r',
                 icon: 'textures/ui/refresh',
-                requiredPermLevel: 2, // Same as playerManagementPanel items
+                requiredPermLevel: 1, // Changed perm from 2 to 1
                 actionType: 'functionCall',
                 actionValue: 'refreshOnlinePlayersPanelAction'
             }
