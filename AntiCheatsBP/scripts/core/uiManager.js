@@ -1023,8 +1023,17 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
         form.body(String(effectiveContext.errorMessage));
     } else if (permittedItems.length === 0 && panelDefinition.items.length > 0) {
         form.body(getString('ui.common.noPermissionForPanelItems'));
-    } else if (panelId !== 'logViewerPanel' && permittedItems.length === 0 && (form.buttonCount === undefined || form.buttonCount === 0 || (form.buttonCount === 1 && backExitButtonIndex === 0 )) ) {
-        form.body(getString('ui.common.noOptionsAvailable'));
+    // eslint-disable-next-line no-mixed-operators -- ESLint parser struggles with this complex condition, even with parentheses.
+    } else if (panelId !== 'logViewerPanel' && permittedItems.length === 0) {
+        // Condition for showing "No options available"
+        // Check if form.buttonCount indicates no actual items were added before the back/exit button
+        const isButtonCountUndefined = form.buttonCount === undefined;
+        const isButtonCountZero = form.buttonCount === 0;
+        const isOnlyBackButton = form.buttonCount === 1 && backExitButtonIndex === 0;
+
+        if (isButtonCountUndefined || isButtonCountZero || isOnlyBackButton) {
+            form.body(getString('ui.common.noOptionsAvailable'));
+        }
     }
 
     try {
