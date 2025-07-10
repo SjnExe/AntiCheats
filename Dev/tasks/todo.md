@@ -19,5 +19,3 @@ This list contains planned features, improvements, and areas for future investig
 - **(Medium) Enhance Configuration Editing UI (uiManager.js):** Modify `showConfigCategoriesListImpl` to dynamically discover editable config keys from `config.js` (e.g., based on metadata or type) instead of using a hardcoded list. Investigate options for safely editing simple array types if feasible.
 
 ## Hierarchical Panel System Enhancements (Post-Refactor)
-- **(High) Thorough Testing of All Panel Flows, Permissions, and Sorting:**
-    - Systematically test every panel and button with various permission levels for correct visibility, sorting, navigation, action execution, and error handling.
