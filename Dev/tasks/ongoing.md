@@ -4,16 +4,13 @@ This document lists tasks currently being worked on. When a task is completed, i
 
 ---
 
-## Task: Create SECURITY.md and GitHub Issue/PR Templates
+## Task: Create CODE_OF_CONDUCT.md File
 - **Agent:** Jules
 - **Date Started:** (Current Date - approximate)
 - **Objective:**
-    - Create a `SECURITY.md` file in `.github/` with security vulnerability reporting guidelines.
-    - Create issue templates (`bug_report.md`, `feature_request.md`, `config.yml`) in `.github/ISSUE_TEMPLATE/` to standardize issue submissions.
-    - Create a `pull_request_template.md` in `.github/` to guide pull request submissions.
-    - Ensure all created files follow general GitHub community standards.
+    - Create a `CODE_OF_CONDUCT.md` file in the repository root.
+    - Populate it using the Contributor Covenant version 2.1 template.
+    - Include a placeholder for project-specific contact information for reporting Code of Conduct violations.
 - **Status:**
-    - `.github/SECURITY.md` created.
-    - Issue templates (`bug_report.md`, `feature_request.md`, `config.yml`) created.
-    - Pull request template (`pull_request_template.md`) created.
+    - `CODE_OF_CONDUCT.md` drafted and created using Contributor Covenant v2.1.
     - Awaiting submission.

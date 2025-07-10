@@ -10,7 +10,7 @@ Instead, please report vulnerabilities using one of the following methods:
 
 1.  **GitHub Private Vulnerability Reporting (Preferred):** If you have a GitHub account, you can privately report a vulnerability directly on GitHub. This is the most secure and preferred method. Go to the "Security" tab of the [AntiCheats repository](https://github.com/SjnExe/AntiCheats) and click on "Report a vulnerability." This will allow you to submit a detailed report directly to the project maintainers.
 
-2.  **Email:** If you prefer, you can send an email to `[PROJECT_SECURITY_EMAIL_PLACEHOLDER]` (Note to project owner: Please replace this with a dedicated security email address if you have one. For now, GitHub's private reporting is the primary channel). Please use a clear subject line, such as "Security Vulnerability Report: AntiCheats Addon".
+2.  **Email:** If you prefer, you can send an email to `sjnexecontact@gmail.com`. Please use a clear subject line, such as "Security Vulnerability Report: AntiCheats Addon".
 
 ## What to Include in Your Report
 

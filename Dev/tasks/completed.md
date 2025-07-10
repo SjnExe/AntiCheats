@@ -30,3 +30,20 @@ This document lists significant tasks that have been completed.
 - **Submission Reference:**
     - Branch: `docs/add-contributing-guide`
     - Commit Message Theme: "Docs: Add CONTRIBUTING.md"
+
+---
+
+## Task: Create SECURITY.md and GitHub Issue/PR Templates
+- **Agent:** Jules
+- **Date Completed:** (Current Date - approximate)
+- **Summary of Work:**
+    - Created `.github/SECURITY.md` with guidelines for responsible disclosure of security vulnerabilities, recommending GitHub's private reporting.
+    - Created issue templates in `.github/ISSUE_TEMPLATE/`:
+        - `bug_report.md`: For detailed bug submissions.
+        - `feature_request.md`: For structured feature suggestions.
+        - `config.yml`: To configure the issue template chooser and disable blank issues.
+    - Created `.github/pull_request_template.md` to guide contributors in submitting pull requests with necessary information and checklists.
+    - All files adhere to common GitHub community standards.
+- **Submission Reference:**
+    - Branch: `docs/add-github-community-files`
+    - Commit Message Theme: "Docs: Add SECURITY.md, issue templates, and PR template"
