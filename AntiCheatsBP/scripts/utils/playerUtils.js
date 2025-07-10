@@ -60,6 +60,7 @@ export function isAdmin(player, dependencies) {
  * @param {import('@minecraft/server').Player} player - The player to warn.
  * @param {string} reason - The reason for the warning.
  * @param {import('../types.js').CommandDependencies} [dependencies] - Optional dependencies, needed if playing a sound.
+ * @returns {void}
  */
 export function warnPlayer(player, reason, dependencies) {
     player?.sendMessage(`§c[AntiCheat] Warning: ${reason}§r`);
@@ -100,6 +101,7 @@ export function formatDimensionName(dimensionId) {
  * @param {import('../types.js').CommandDependencies} dependencies - Standard command dependencies.
  * @param {import('@minecraft/server').Player | null} player - The player primarily involved in the event (for context), or null.
  * @param {import('../types.js').PlayerAntiCheatData | null} pData - The AntiCheat data for the involved player, or null.
+ * @returns {void}
  */
 export function notifyAdmins(baseMessage, dependencies, player, pData) {
     if (!dependencies || !dependencies.config) {
@@ -145,6 +147,7 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
  * @param {string} message - The message to log.
  * @param {import('../types.js').CommandDependencies} dependencies - Access to config for `enableDebugLogging`.
  * @param {string | null} [contextPlayerNameIfWatched] - The name of the player if they are being watched, for contextual prefixing.
+ * @returns {void}
  */
 export function debugLog(message, dependencies, contextPlayerNameIfWatched = null) {
     if (dependencies?.config?.enableDebugLogging) {
@@ -284,8 +287,8 @@ export function formatTimeDifference(msDifference) {
  * @param {import('@minecraft/server').Player | null} primaryPlayer - The primary player associated with the event (e.g., the one executing a command, or an admin receiving a notification). Can be null for global sounds.
  * @param {string} eventName - The key of the sound event in `config.soundEvents` (e.g., "tpaRequestReceived", "adminNotificationReceived").
  * @param {import('../types.js').CommandDependencies} dependencies - Standard dependencies object.
- * @param {import('@minecraft/server').Player | null} [targetPlayerContext] - An optional secondary player, used if `soundConfig.target`
- * is "targetPlayer".
+ * @param {import('@minecraft/server').Player | null} [targetPlayerContext] - An optional secondary player, used if `soundConfig.target` is "targetPlayer".
+ * @returns {void}
  */
 export function playSoundForEvent(primaryPlayer, eventName, dependencies, targetPlayerContext = null) {
     const { config, playerUtils } = dependencies; // playerUtils for isAdmin if needed
