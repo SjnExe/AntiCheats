@@ -4,13 +4,14 @@ This document lists tasks currently being worked on. When a task is completed, i
 
 ---
 
-## Task: Update Links to Relocated LICENSE File
+## Task: Revert LICENSE File Location and Associated Links
 - **Agent:** Jules
 - **Date Started:** (Current Date - approximate)
 - **Objective:**
-    - Identify and update any internal documentation links that were broken or became outdated due to the experimental relocation of the `LICENSE` file to the `.github/` directory.
+    - Revert the experimental move of the `LICENSE` file.
+    - Move `LICENSE` from `.github/LICENSE` back to the repository root.
+    - Update links in `README.md` and `.github/pull_request_template.md` to reflect the original root location of `LICENSE`.
 - **Status:**
-    - Searched relevant Markdown files (`README.md`, `.github/*`, `Docs/*`, `Dev/*`).
-    - Updated link in `README.md` from `LICENSE` to `.github/LICENSE`.
-    - Updated absolute link in `.github/pull_request_template.md` to point to `https://github.com/SjnExe/AntiCheats/blob/main/.github/LICENSE`.
+    - `LICENSE` file moved back to the root directory.
+    - Links in `README.md` and `.github/pull_request_template.md` updated to point to `LICENSE` in the root.
     - Awaiting submission.

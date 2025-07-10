@@ -80,6 +80,7 @@ This document lists significant tasks that have been completed.
 - **Summary of Work:**
     - Researched standard locations for repository `LICENSE` files. GitHub documentation confirmed that the root directory is the standard and recommended location.
     - Per user request for testing, experimentally moved the `LICENSE` file from the repository root to the `.github/LICENSE` path.
+    - Updated links in `README.md` and `.github/pull_request_template.md` to point to the new experimental location of the `LICENSE` file.
 - **Submission Reference:**
     - Branch: `experiment/relocate-license`
-    - Commit Message Theme: "Experiment: Relocate LICENSE to .github directory"
+    - Commit Message Theme: "Experiment: Relocate LICENSE to .github directory" and "Docs: Update internal links to relocated LICENSE file"
