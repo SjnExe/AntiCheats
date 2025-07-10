@@ -213,6 +213,104 @@ const UI_DYNAMIC_ITEM_GENERATORS = {
             }
         });
         return items;
+    },
+    /**
+     * Generates panel items for each currently online player.
+     * Displays their name, flag count (if any), and frozen status.
+     * Each item opens the playerActionsPanel for the selected player.
+     * @param {import('@minecraft/server').Player} player - The admin player viewing the panel.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current panel context.
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for online players.
+     */
+    generateOnlinePlayerItems: (player, dependencies, context) => {
+        const { mc, playerDataManager, playerUtils } = dependencies;
+        const items = [];
+        const onlinePlayers = mc.world.getAllPlayers();
+
+        if (onlinePlayers.length === 0) {
+            // Handled by showPanel's generic "no items" message if this is the only generator
+            // or if static items are also empty.
+            // Alternatively, could return a single disabled button saying "No players online".
+        }
+
+        onlinePlayers.forEach((p, index) => {
+            const playerData = playerDataManager?.getPlayerData(p.id);
+            const isPlayerFrozen = playerData?.isFrozen ?? false;
+            const flagCount = playerData?.flags?.totalFlags ?? 0;
+            let buttonText = p.nameTag;
+            if (flagCount > 0) {
+                buttonText += ` §7(Flags: §c${flagCount}§7)§r`;
+            }
+            if (isPlayerFrozen) {
+                buttonText += " §b[Frozen]§r";
+            }
+
+            items.push({
+                id: `onlinePlayer_${p.id}`,
+                sortId: 10 + index, // Ensure refresh button (sortId 1) is above
+                text: buttonText,
+                icon: 'textures/ui/icon_multiplayer', // Default player icon
+                requiredPermLevel: 2, // Assuming same level as playerManagementPanel access
+                actionType: 'openPanel',
+                actionValue: 'playerActionsPanel',
+                initialContext: {
+                    targetPlayerId: p.id,
+                    targetPlayerName: p.nameTag,
+                    isTargetFrozen: isPlayerFrozen
+                    // Any other context from onlinePlayersPanel itself (via 'context' param)
+                    // will be passed if actionContextVars is omitted or if it's explicitly included.
+                    // For opening playerActionsPanel, we mainly need to set the target.
+                },
+                // actionContextVars: [] // No specific vars from onlinePlayersPanel context needed for playerActionsPanel
+            });
+        });
+        return items;
+    },
+    /**
+     * Generates panel items for each currently online player who is marked as watched.
+     * Displays their name, flag count (if any), and frozen status.
+     * Each item opens the playerActionsPanel for the selected player.
+     * @param {import('@minecraft/server').Player} player - The admin player viewing the panel.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current panel context.
+     * @returns {import('./panelLayoutConfig.js').PanelItem[]} An array of PanelItem objects for watched online players.
+     */
+    generateWatchedPlayerItems: (player, dependencies, context) => {
+        const { mc, playerDataManager, playerUtils } = dependencies;
+        const items = [];
+        const onlinePlayers = mc.world.getAllPlayers();
+
+        onlinePlayers.forEach((p, index) => {
+            const playerData = playerDataManager?.getPlayerData(p.id);
+            if (playerData?.isWatched) {
+                const isPlayerFrozen = playerData?.isFrozen ?? false;
+                const flagCount = playerData?.flags?.totalFlags ?? 0;
+                let buttonText = p.nameTag;
+                if (flagCount > 0) {
+                    buttonText += ` §7(Flags: §c${flagCount}§7)§r`;
+                }
+                if (isPlayerFrozen) {
+                    buttonText += " §b[Frozen]§r";
+                }
+
+                items.push({
+                    id: `watchedPlayer_${p.id}`,
+                    sortId: 10 + index, // Ensure refresh button (sortId 1) is above
+                    text: buttonText,
+                    icon: 'textures/ui/spyglass_flat_color', // Watched player icon
+                    requiredPermLevel: 1, // Matches old command perm
+                    actionType: 'openPanel',
+                    actionValue: 'playerActionsPanel',
+                    initialContext: {
+                        targetPlayerId: p.id,
+                        targetPlayerName: p.nameTag,
+                        isTargetFrozen: isPlayerFrozen
+                    },
+                });
+            }
+        });
+        return items;
     }
 };
 // --- End Dynamic Item Generators ---
@@ -254,29 +352,9 @@ async function showResetFlagsFormImpl(player, dependencies, context) {
     }
 }
 
-async function showWatchedPlayersListImpl(player, dependencies, context) {
-    const { playerUtils, getString, playerDataManager, mc, logManager } = dependencies;
-    const adminPlayerName = player.nameTag;
-    playerUtils?.debugLog(`[UiManager.showWatchedPlayersListImpl] Requested by ${adminPlayerName}`, adminPlayerName, dependencies);
-    let messageBody = "§gCurrently watched players (online):\n§r";
-    const onlinePlayers = mc.world.getAllPlayers();
-    const watchedOnline = onlinePlayers.filter(p => playerDataManager.getPlayerData(p.id)?.isWatched).map(p => p.nameTag);
-    if (watchedOnline.length === 0) messageBody += "No players are currently being watched or online.";
-    else messageBody += watchedOnline.map(name => `- ${name}`).join("\n");
-    const modal = new ModalFormData().title("§l§bWatched Players§r").content(messageBody);
-    modal.button1(getString('common.button.ok'));
-    try {
-        await modal.show(player);
-    } catch (error) {
-        console.error(`[UiManager.showWatchedPlayersListImpl] Error for ${adminPlayerName}: ${error.stack || error}`);
-        playerUtils?.debugLog(`[UiManager.showWatchedPlayersListImpl] Error: ${error.message}`, adminPlayerName, dependencies);
-        logManager?.addLog({ actionType: 'errorUiWatchedPlayersList', context: 'uiManager.showWatchedPlayersListImpl', adminName: adminPlayerName, details: { errorMessage: error.message, stack: error.stack }, }, dependencies);
-        player.sendMessage(getString('common.error.genericForm'));
-    }
-    const callingPanelState = getCurrentTopOfNavStack(player.id) || { panelId: 'playerManagementPanel', context: {} };
-    if (callingPanelState.panelId) await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-    else await showPanel(player, 'playerManagementPanel', dependencies, {});
-}
+// async function showWatchedPlayersListImpl(player, dependencies, context) {
+//     // ... implementation was here ...
+// } // Removed, replaced by watchedPlayersPanel
 
 async function showConfigCategoriesListImpl(player, dependencies, context) {
     const { playerUtils, config, getString, logManager } = dependencies;
@@ -1043,6 +1121,32 @@ const UI_ACTION_FUNCTIONS = {
             await showPanel(player, 'mainUserPanel', dependencies, {});
         }
     },
+    /**
+     * Action function to refresh the `onlinePlayersPanel`.
+     * Called by a button on the `onlinePlayersPanel` itself.
+     * @param {import('@minecraft/server').Player} player - The player who clicked the refresh button.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current context of the `onlinePlayersPanel`.
+     */
+    refreshOnlinePlayersPanelAction: async (player, dependencies, context) => {
+        const { playerUtils } = dependencies;
+        playerUtils.debugLog(`Action: refreshOnlinePlayersPanelAction for ${player.nameTag}`, player.nameTag, dependencies);
+        // context here is the context of the onlinePlayersPanel itself.
+        // Re-showing the panel will trigger its dynamicItemGeneratorKey again.
+        await showPanel(player, 'onlinePlayersPanel', dependencies, context);
+    },
+    /**
+     * Action function to refresh the `watchedPlayersPanel`.
+     * Called by a button on the `watchedPlayersPanel` itself.
+     * @param {import('@minecraft/server').Player} player - The player who clicked the refresh button.
+     * @param {import('../types.js').Dependencies} dependencies - Standard dependencies.
+     * @param {object} context - The current context of the `watchedPlayersPanel`.
+     */
+    refreshWatchedPlayersPanelAction: async (player, dependencies, context) => {
+        const { playerUtils } = dependencies;
+        playerUtils.debugLog(`Action: refreshWatchedPlayersPanelAction for ${player.nameTag}`, player.nameTag, dependencies);
+        await showPanel(player, 'watchedPlayersPanel', dependencies, context);
+    },
     showGeneralTipsPageContent: async (player, dependencies, context) => {
         const { playerUtils, config, getString } = dependencies;
         playerUtils.debugLog(`Action: showGeneralTipsPageContent for ${player.nameTag}`, player.nameTag, dependencies);
@@ -1059,10 +1163,10 @@ const UI_ACTION_FUNCTIONS = {
             await showPanel(player, 'generalTipsPanel', dependencies, context);
         }
     },
-    showOnlinePlayersList: showOnlinePlayersList,
+    // showOnlinePlayersList: showOnlinePlayersList, // Removed, replaced by onlinePlayersPanel
     showInspectPlayerForm: showInspectPlayerForm,
     showResetFlagsForm: showResetFlagsFormImpl,
-    showWatchedPlayersList: showWatchedPlayersListImpl,
+    // showWatchedPlayersList: showWatchedPlayersListImpl, // Removed, replaced by watchedPlayersPanel
     displaySystemInfoModal: async (player, dependencies, context) => {
         const { playerUtils, config, getString, mc, logManager, playerDataManager, reportManager } = dependencies;
         const viewingPlayerName = player.nameTag;
@@ -1768,5 +1872,7 @@ async function showOnlinePlayersList(adminPlayer, dependencies, context = {}) { 
  * `clearPlayerNavStack` is used to reset navigation history for a player, typically when initiating a new top-level UI flow.
  */
 export { showPanel, clearPlayerNavStack };
+
+// Old showOnlinePlayersList function was here. It has been removed as it's replaced by onlinePlayersPanel.
 
 [end of AntiCheatsBP/scripts/core/uiManager.js]

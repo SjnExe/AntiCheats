@@ -120,8 +120,8 @@ export const panelDefinitions = {
         parentPanelId: 'mainAdminPanel',
         items: [
             {
-                id: 'viewOnlinePlayers', sortId: 10, text: '§lView Online Players§r', icon: 'textures/ui/multiplayer_glyph_color',
-                requiredPermLevel: 2, actionType: 'functionCall', actionValue: 'showOnlinePlayersList' // This function will then open playerActionsPanel for a selected player
+                id: 'viewOnlinePlayersPanel', sortId: 10, text: '§lView Online Players§r', icon: 'textures/ui/multiplayer_glyph_color',
+                requiredPermLevel: 2, actionType: 'openPanel', actionValue: 'onlinePlayersPanel'
             },
             {
                 id: 'inspectPlayerText', sortId: 20, text: '§lInspect Player (Text)§r', icon: 'textures/ui/magnifying_glass',
@@ -132,9 +132,51 @@ export const panelDefinitions = {
                 requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showResetFlagsForm'
             },
             {
-                id: 'listWatchedPlayers', sortId: 40, text: '§lList Watched Players§r', icon: 'textures/ui/spyglass_flat_color',
-                requiredPermLevel: 1, actionType: 'functionCall', actionValue: 'showWatchedPlayersList'
+                id: 'listWatchedPlayersPanel', sortId: 40, text: '§lList Watched Players (Online)§r', icon: 'textures/ui/spyglass_flat_color',
+                requiredPermLevel: 1, actionType: 'openPanel', actionValue: 'watchedPlayersPanel'
             },
+        ]
+    },
+    /**
+     * @description Panel to display a list of currently online players.
+     * Items are dynamically generated. Allows navigation to playerActionsPanel for a selected player.
+     */
+    onlinePlayersPanel: {
+        title: '§lOnline Players§r',
+        parentPanelId: 'playerManagementPanel',
+        dynamicItemGeneratorKey: 'generateOnlinePlayerItems',
+        items: [
+            {
+                id: 'refreshOnlinePlayers',
+                sortId: 1, // Show refresh at the top
+                text: '§2Refresh List§r',
+                icon: 'textures/ui/refresh',
+                requiredPermLevel: 2, // Same as playerManagementPanel items
+                actionType: 'functionCall',
+                actionValue: 'refreshOnlinePlayersPanelAction'
+            }
+            // Player items will be dynamically generated
+        ]
+    },
+    /**
+     * @description Panel to display a list of currently online players who are being watched.
+     * Items are dynamically generated. Allows navigation to playerActionsPanel for a selected player.
+     */
+    watchedPlayersPanel: {
+        title: '§lWatched Players (Online)§r',
+        parentPanelId: 'playerManagementPanel',
+        dynamicItemGeneratorKey: 'generateWatchedPlayerItems',
+        items: [
+            {
+                id: 'refreshWatchedPlayers',
+                sortId: 1, // Show refresh at the top
+                text: '§2Refresh List§r',
+                icon: 'textures/ui/refresh',
+                requiredPermLevel: 1, // Matches old command perm
+                actionType: 'functionCall',
+                actionValue: 'refreshWatchedPlayersPanelAction'
+            }
+            // Watched player items will be dynamically generated
         ]
     },
     serverManagementPanel: {
