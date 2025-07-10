@@ -19,9 +19,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Medium) Enhance Configuration Editing UI (uiManager.js):** Modify `showConfigCategoriesListImpl` to dynamically discover editable config keys from `config.js` (e.g., based on metadata or type) instead of using a hardcoded list. Investigate options for safely editing simple array types if feasible.
 
 ## Hierarchical Panel System Enhancements (Post-Refactor)
-- **(Low) `showOnlinePlayersList` and other List-Displaying Functions Refinement:**
-    - Consider converting list-based forms (like `showOnlinePlayersList`) into panel definitions in `panelLayoutConfig.js` with dynamically generated items for better consistency with the `showPanel` system.
-    - Ensure robust "Back" button logic from these forms.
 - **(High) Thorough Testing of All Panel Flows, Permissions, and Sorting:**
     - Systematically test every panel and button with various permission levels for correct visibility, sorting, navigation, action execution, and error handling.
 - **(Medium) Review and Complete All Stubbed/TODO Functions in `uiManager.js`:**
