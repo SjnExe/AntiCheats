@@ -71,3 +71,15 @@ This document lists significant tasks that have been completed.
 - **Submission Reference:**
     - Branch: `docs/relocate-code-of-conduct`
     - Commit Message Theme: "Docs: Relocate CODE_OF_CONDUCT.md to .github directory"
+
+---
+
+## Task: Research and Relocate LICENSE file (Experimental)
+- **Agent:** Jules
+- **Date Completed:** (Current Date - approximate)
+- **Summary of Work:**
+    - Researched standard locations for repository `LICENSE` files. GitHub documentation confirmed that the root directory is the standard and recommended location.
+    - Per user request for testing, experimentally moved the `LICENSE` file from the repository root to the `.github/LICENSE` path.
+- **Submission Reference:**
+    - Branch: `experiment/relocate-license`
+    - Commit Message Theme: "Experiment: Relocate LICENSE to .github directory"

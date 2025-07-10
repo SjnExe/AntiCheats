@@ -68,4 +68,4 @@ Examples:
 
 ---
 
-By submitting this pull request, you agree to license your contribution under the project's [MIT License](https://github.com/SjnExe/AntiCheats/blob/main/LICENSE).
+By submitting this pull request, you agree to license your contribution under the project's [MIT License](https://github.com/SjnExe/AntiCheats/blob/main/.github/LICENSE).
