@@ -1256,8 +1256,8 @@ export const handleBeforeChatSend = profileEventHandler('handleBeforeChatSend', 
 
 /**
  * Handles player dimension change after events (e.g., dimension lock enforcement).
- * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData The event data from the dimension change.
- * @param {import('../types.js').Dependencies} dependencies The standard dependencies object.
+ * @param {import('@minecraft/server').PlayerDimensionChangeAfterEvent} eventData The event data object from the `playerDimensionChange.afterEvents` signal, containing information about the player, their previous and new dimension, and original location.
+ * @param {import('../types.js').Dependencies} dependencies The standard dependencies object, providing access to shared modules like configuration, logging, player utilities, etc.
  */
 async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
     const { player, fromDimension, toDimension, fromLocation } = eventData;

@@ -242,7 +242,7 @@ export default [
         'jsdoc/require-param': ['error', { checkDestructuredRoots: false }],
         'jsdoc/require-param-type': 'error',
         'jsdoc/require-param-name': 'error',
-        'jsdoc/require-param-description': 'off', // MODIFICATION: Turned OFF due to issues with wrapped functions
+        'jsdoc/require-param-description': 'warn', // MODIFICATION: Changed from 'off' to 'warn' to align with StandardizationGuidelines.md (Section 4) - descriptions should be present but can be concise.
 
         'jsdoc/require-returns': ['error', { checkGetters: false }],
         'jsdoc/require-returns-type': 'error',

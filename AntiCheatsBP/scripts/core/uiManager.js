@@ -1023,17 +1023,13 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
         form.body(String(effectiveContext.errorMessage));
     } else if (permittedItems.length === 0 && panelDefinition.items.length > 0) {
         form.body(getString('ui.common.noPermissionForPanelItems'));
-    // eslint-disable-next-line no-mixed-operators -- ESLint parser struggles with this complex condition, even with parentheses.
     } else if (panelId !== 'logViewerPanel' && permittedItems.length === 0) {
-        // Condition for showing "No options available"
-        // Check if form.buttonCount indicates no actual items were added before the back/exit button
-        const isButtonCountUndefined = form.buttonCount === undefined;
-        const isButtonCountZero = form.buttonCount === 0;
-        const isOnlyBackButton = form.buttonCount === 1 && backExitButtonIndex === 0;
-
-        if (isButtonCountUndefined || isButtonCountZero || isOnlyBackButton) {
-            form.body(getString('ui.common.noOptionsAvailable'));
-        }
+        // If there are no permitted items (other than potential back/exit)
+        // and it's not a log viewer panel (which has its own empty state handling),
+        // then display "No options available".
+        // This assumes that if permittedItems is empty, no meaningful actions can be taken from this panel
+        // beyond using the "Back" or "Close" button (which is added separately).
+        form.body(getString('ui.common.noOptionsAvailable'));
     }
 
     try {
