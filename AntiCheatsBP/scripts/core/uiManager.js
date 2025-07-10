@@ -433,19 +433,36 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
             case 'boolean': config[keyName] = !!newValue; updateSuccess = true; break;
             case 'number':
                 const numVal = parseFloat(newValue);
-                if (!isNaN(numVal)) { config[keyName] = numVal; updateSuccess = true; }
-                else player.sendMessage("§cInvalid number entered. Value not changed.");
+                if (!isNaN(numVal)) {
+                    config[keyName] = numVal;
+                    updateSuccess = true;
+                    player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
+                    logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+                    await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+                } else {
+                    player.sendMessage("§cError: Invalid number entered. Please try again.");
+                    // Re-show the same edit form instead of going back to the list.
+                    // The current context already contains keyName, keyType, parentPanelForEdit, etc.
+                    // We need to ensure 'currentValue' in context reflects the *original* value for placeholder, not the bad input.
+                    // The 'context' object was passed in and shouldn't have been mutated by the bad input.
+                    await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context);
+                    return; // Important to prevent falling through to showConfigCategoriesList
+                }
                 break;
-            case 'string': config[keyName] = String(newValue); updateSuccess = true; break;
+            case 'string':
+                config[keyName] = String(newValue);
+                updateSuccess = true;
+                player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
+                logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+                break;
         }
-        if (updateSuccess) {
-            player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
-            logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-        }
-        await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
+        // Removed general success message and call to showConfigCategoriesList from here, as it's handled per type now.
+        // if (updateSuccess) { ... } // This block is now conditional per type
     } catch (e) {
         console.error(`[UiManager.showEditSingleConfigValueFormImpl] Error: ${e.stack || e}`);
         player.sendMessage(getString('common.error.genericForm'));
+        // On error, attempt to return to the list view, as re-showing the edit form might repeat the error.
         await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
     }
 }
@@ -506,10 +523,10 @@ async function confirmLagClearImpl(player, dependencies, context) {
             player.sendMessage("§eNo 'lagclear' command configured. Performing basic item clear as fallback.");
             try {
                 await player.runCommandAsync("kill @e[type=item]");
-                player.sendMessage("§aGround items cleared.");
+                player.sendMessage("§aSuccess: Ground items cleared.");
             } catch (e) {
-                player.sendMessage("§cBasic item clear failed: " + e.message);
-                console.error("[UiManager.confirmLagClearImpl] Basic item clear failed: " + e);
+                player.sendMessage("§cError: Basic item clear command failed. See console for details.");
+                console.error("[UiManager.confirmLagClearImpl] Basic item clear failed: " + (e.stack || e));
             }
         }
     }, dependencies);
@@ -799,6 +816,16 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
                         adminName: viewingPlayerName,
                         details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, panelTitle },
                     }, dependencies);
+                    // Treat as a critical error for this panel's display
+                    if (panelId !== 'errorDisplayPanel' && panelDefinitions['errorDisplayPanel']) {
+                        await showPanel(player, 'errorDisplayPanel', dependencies, {
+                            errorMessage: `Panel "${panelTitle}" (${panelId}) failed to generate content: generator did not return an array.`,
+                            originalPanelId: panelId, originalContext: effectiveContext,
+                            previousPanelIdOnError: getCurrentTopOfNavStack(player.id)?.panelId,
+                            previousContextOnError: getCurrentTopOfNavStack(player.id)?.context
+                        });
+                        return; // Stop further processing of this broken panel
+                    }
                 }
             } catch (genError) {
                 console.error(`[UiManager.showPanel] Error in dynamic item generator "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}": ${genError.stack || genError}`);
@@ -808,16 +835,33 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
                     adminName: viewingPlayerName,
                     details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, errorMessage: genError.message, stack: genError.stack },
                 }, dependencies);
-                // Potentially show an error message in the panel itself or navigate to error panel
+                if (panelId !== 'errorDisplayPanel' && panelDefinitions['errorDisplayPanel']) {
+                    await showPanel(player, 'errorDisplayPanel', dependencies, {
+                        errorMessage: `Panel "${panelTitle}" (${panelId}) failed to generate content due to an internal error in its generator: ${genError.message}.`,
+                        originalPanelId: panelId, originalContext: effectiveContext,
+                        previousPanelIdOnError: getCurrentTopOfNavStack(player.id)?.panelId,
+                        previousContextOnError: getCurrentTopOfNavStack(player.id)?.context
+                    });
+                    return;
+                }
             }
-        } else {
+        } else { // Generator function itself not found
             console.warn(`[UiManager.showPanel] Dynamic item generator key "${panelDefinition.dynamicItemGeneratorKey}" for panel "${panelId}" not found in UI_DYNAMIC_ITEM_GENERATORS.`);
             logManager?.addLog({
-                actionType: 'warningUiDynamicGeneratorNotFound',
+                actionType: 'warningUiDynamicGeneratorNotFound', // Could be upgraded to error type
                 context: 'uiManager.showPanel',
                 adminName: viewingPlayerName,
                 details: { panelId, generatorKey: panelDefinition.dynamicItemGeneratorKey, panelTitle },
             }, dependencies);
+            if (panelId !== 'errorDisplayPanel' && panelDefinitions['errorDisplayPanel']) {
+                await showPanel(player, 'errorDisplayPanel', dependencies, {
+                    errorMessage: `Panel "${panelTitle}" (${panelId}) is misconfigured: content generator "${panelDefinition.dynamicItemGeneratorKey}" not found.`,
+                    originalPanelId: panelId, originalContext: effectiveContext,
+                    previousPanelIdOnError: getCurrentTopOfNavStack(player.id)?.panelId,
+                    previousContextOnError: getCurrentTopOfNavStack(player.id)?.context
+                });
+                return;
+            }
         }
     }
 
@@ -1035,7 +1079,8 @@ const UI_ACTION_FUNCTIONS = {
             await modal.show(player);
         } catch (e) {
             playerUtils.debugLog(`Error showing MyStats modal: ${e}`, player.nameTag, dependencies);
-            // Log error if necessary
+            player.sendMessage(getString('common.error.genericForm') || '§cError: Could not display stats.');
+            // Log error if necessary with logManager
         } finally {
             // Return to the panel that called this function.
             // The 'context' here is the context of 'myStatsPanel'.
@@ -1054,6 +1099,7 @@ const UI_ACTION_FUNCTIONS = {
             await modal.show(player);
         } catch (e) {
             playerUtils.debugLog(`Error showing ServerRules modal: ${e}`, player.nameTag, dependencies);
+            player.sendMessage(getString('common.error.genericForm') || '§cError: Could not display server rules.');
         } finally {
             // Return to the panel that called this function.
             await showPanel(player, 'serverRulesPanel', dependencies, context);
@@ -1365,9 +1411,13 @@ const UI_ACTION_FUNCTIONS = {
         if (targetPlayer?.isValid() && targetPlayer.location && targetPlayer.dimension) {
             try {
                 await player.teleport(targetPlayer.location, { dimension: targetPlayer.dimension });
-                player.sendMessage(`§aTeleported to ${targetPlayerName}.`);
+                player.sendMessage(`§aSuccess: Teleported to ${targetPlayerName}.`);
                 logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportSelfToPlayer', targetName: targetPlayerName, details: `Admin TP to ${targetPlayerName}` }, dependencies);
-            } catch (e) { player.sendMessage(`§cTeleport failed: ${e.message}`); logManager?.addLog({ actionType: 'errorUiTeleportToPlayer', context: 'uiManager.teleportAdminToPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack }}, dependencies); }
+            } catch (e) {
+                player.sendMessage(getString('ui.playerActions.teleport.errorGeneric') || "§cError: Teleport failed. The player might be in an invalid location or dimension.");
+                console.error(`[UiManager.teleportAdminToPlayer] Teleport failed for ${adminPlayerName} to ${targetPlayerName}: ${e.stack || e}`);
+                logManager?.addLog({ actionType: 'errorUiTeleportToPlayer', context: 'uiManager.teleportAdminToPlayer', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack }}, dependencies);
+            }
         } else { player.sendMessage(getString('common.error.playerNotFoundOnline', { playerName: targetPlayerName })); }
         await showPanel(player, 'playerActionsPanel', dependencies, context);
     },
@@ -1388,7 +1438,8 @@ const UI_ACTION_FUNCTIONS = {
                 targetPlayer.sendMessage(getString('ui.playerActions.teleport.targetNotification', { adminName: adminPlayerName })); // Assuming new string
                 logManager?.addLog({ adminName: adminPlayerName, actionType: 'teleportPlayerToAdmin', targetName: targetPlayerName, details: `Admin TP'd ${targetPlayerName} to self` }, dependencies);
             } catch (e) {
-                player.sendMessage(getString('ui.playerActions.teleport.error', { error: e.message }));
+                player.sendMessage(getString('ui.playerActions.teleport.errorGeneric') || "§cError: Teleport failed. The player might be in an invalid location or dimension, or you lack permission.");
+                console.error(`[UiManager.teleportPlayerToAdmin] Teleport failed for ${targetPlayerName} to ${adminPlayerName}: ${e.stack || e}`);
                 logManager?.addLog({ actionType: 'errorUiTeleportPlayerToAdmin', context: 'uiManager.teleportPlayerToAdmin', adminName: adminPlayerName, targetName: targetPlayerName, details: { errorMessage: e.message, stack: e.stack }}, dependencies);
             }
         } else {
