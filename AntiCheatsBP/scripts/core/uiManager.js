@@ -360,38 +360,95 @@ async function showConfigCategoriesListImpl(player, dependencies, context) {
     const { playerUtils, config, getString, logManager } = dependencies;
     playerUtils.debugLog(`[UiManager.showConfigCategoriesListImpl] Called by ${player.nameTag}`, player.nameTag, dependencies);
     const form = new ActionFormData().title("Edit Configuration Key");
-    const editableConfigItems = [
-        { keyName: 'enableFlyCheck', description: 'Enable Fly Check', type: 'boolean' },
-        { keyName: 'maxCpsThreshold', description: 'Max CPS Threshold', type: 'number' },
-        { keyName: 'welcomeMessage', description: 'Welcome Message (string)', type: 'string' },
-        { keyName: 'tpaRequestTimeoutSeconds', description: 'TPA Timeout (seconds)', type: 'number'},
-        { keyName: 'acGlobalNotificationsDefaultOn', description: 'AC Notifications Default On', type: 'boolean'}
-    ];
-    const actualEditableKeys = [];
-    editableConfigItems.forEach(item => {
-        if (Object.prototype.hasOwnProperty.call(config, item.keyName)) {
-            form.button(`${item.description}\n§7(${item.keyName}): §f${config[item.keyName]}`);
-            actualEditableKeys.push(item);
+
+    // Dynamically discovers editable configuration keys from dependencies.config.
+    // Editable types: boolean, number, string, and simple arrays of primitives (string, number, boolean).
+    // Complex objects and arrays of objects are currently excluded from UI editing.
+    const dynamicallyEditableKeys = [];
+
+    for (const key in config) {
+        if (Object.prototype.hasOwnProperty.call(config, key)) {
+            const value = config[key];
+            let typeString = typeof value;
+            let displayValue = String(value);
+            let isEditable = false;
+
+            if (typeString === 'boolean' || typeString === 'number' || typeString === 'string') {
+                isEditable = true;
+                // Truncate long strings for display
+                if (typeString === 'string' && displayValue.length > 30) {
+                    displayValue = displayValue.substring(0, 27) + "...";
+                }
+            } else if (Array.isArray(value)) {
+                // Check if it's a simple array (all elements are primitives)
+                const isSimpleArray = value.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean');
+                if (isSimpleArray) {
+                    isEditable = true;
+                    typeString = 'array_string'; // Special type for our form handler
+                    displayValue = JSON.stringify(value);
+                    if (displayValue.length > 30) {
+                        displayValue = displayValue.substring(0, 27) + "...";
+                    }
+                } else {
+                    typeString = 'array_complex'; // Not editable via simple form
+                    displayValue = "[Complex Array]";
+                }
+            } else if (typeString === 'object' && value !== null) {
+                typeString = 'object_complex'; // Not editable
+                displayValue = "[Complex Object]";
+            } else if (value === null) {
+                typeString = 'null_value'; // Not editable
+                displayValue = "[Null]";
+            }
+
+            if (isEditable) {
+                dynamicallyEditableKeys.push({
+                    keyName: key,
+                    description: key, // Use keyName as description for now
+                    type: typeString, // 'boolean', 'number', 'string', 'array_string'
+                    currentValue: value // Pass the original value for editing
+                });
+                form.button(`${key} (${typeString})\n§7Current: §f${displayValue}`);
+            } else {
+                // Optionally, list non-editable keys as disabled or just omit them
+                // Omitting for cleaner UI for now.
+                // playerUtils.debugLog(`Config key "${key}" of type "${typeString}" is not UI-editable.`, player.nameTag, dependencies);
+            }
         }
-    });
+    }
+
+    if (dynamicallyEditableKeys.length === 0) {
+        form.body("No editable configuration keys found or all are complex types not supported by this editor.");
+    }
+
     const callingPanelState = getCurrentTopOfNavStack(player.id);
     form.button(getString('common.button.back'), 'textures/ui/undo');
-    const backButtonIndex = actualEditableKeys.length;
+    const backButtonIndex = dynamicallyEditableKeys.length; // Index of the back button
+
     try {
         const response = await form.show(player);
         if (response.canceled || response.selection === undefined) {
             if (callingPanelState && callingPanelState.panelId) await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-            else await showPanel(player, 'configEditingRootPanel', dependencies, {});
+            else await showPanel(player, 'configEditingRootPanel', dependencies, {}); // Fallback
             return;
         }
         if (response.selection === backButtonIndex) {
             if (callingPanelState && callingPanelState.panelId) await showPanel(player, callingPanelState.panelId, dependencies, callingPanelState.context);
-            else await showPanel(player, 'configEditingRootPanel', dependencies, {});
+            else await showPanel(player, 'configEditingRootPanel', dependencies, {}); // Fallback
             return;
         }
-        const selectedKeyConfig = actualEditableKeys[response.selection];
+
+        const selectedKeyConfig = dynamicallyEditableKeys[response.selection];
         if (selectedKeyConfig) {
-            const editFormContext = { keyName: selectedKeyConfig.keyName, keyType: selectedKeyConfig.type, currentValue: config[selectedKeyConfig.keyName], parentPanelForEdit: callingPanelState ? callingPanelState.panelId : 'configEditingRootPanel', parentContextForEdit: callingPanelState ? callingPanelState.context : {} };
+            // Note: selectedKeyConfig.currentValue holds the actual value (e.g. boolean, number, actual array)
+            // showEditSingleConfigValueFormImpl will handle stringifying arrays for its text field if type is 'array_string'
+            const editFormContext = {
+                keyName: selectedKeyConfig.keyName,
+                keyType: selectedKeyConfig.type,
+                currentValue: selectedKeyConfig.currentValue, // Pass the original value
+                parentPanelForEdit: callingPanelState ? callingPanelState.panelId : 'configEditingRootPanel',
+                parentContextForEdit: callingPanelState ? callingPanelState.context : {}
+            };
             await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, editFormContext);
         }
     } catch (e) {
@@ -404,21 +461,34 @@ async function showConfigCategoriesListImpl(player, dependencies, context) {
 
 async function showEditSingleConfigValueFormImpl(player, dependencies, context) {
     const { playerUtils, config, getString, logManager } = dependencies;
-    const { keyName, keyType, currentValue, parentPanelForEdit, parentContextForEdit } = context;
-    playerUtils.debugLog(`[UiManager.showEditSingleConfigValueFormImpl] Editing ${keyName} for ${player.nameTag}`, player.nameTag, dependencies);
+    const { keyName, keyType, currentValue, parentPanelForEdit, parentContextForEdit } = context; // currentValue is the actual value from config
+    playerUtils.debugLog(`[UiManager.showEditSingleConfigValueFormImpl] Editing ${keyName} (type: ${keyType}) for ${player.nameTag}`, player.nameTag, dependencies);
+
+    // keyType can be 'boolean', 'number', 'string', or 'array_string'.
+    // For 'array_string', currentValue is the actual array, and it's edited as a JSON string.
     if (!keyName || typeof keyType === 'undefined') {
         player.sendMessage("§cConfiguration key details missing for edit form.");
         if (parentPanelForEdit) await showPanel(player, parentPanelForEdit, dependencies, parentContextForEdit);
         return;
     }
     const modal = new ModalFormData().title(`Edit: ${keyName} (${keyType})`);
-    let originalValue = config[keyName];
+    let originalValue = config[keyName]; // This is the live value from config, which is what we want to compare against.
+                                       // context.currentValue is what was displayed on the list, which is also the original value.
     switch (keyType) {
-        case 'boolean': modal.toggle(`New value for ${keyName}:`, typeof originalValue === 'boolean' ? originalValue : false); break;
-        case 'number': modal.textField(`New value for ${keyName} (number):`, typeof originalValue === 'number' ? originalValue.toString() : "0", typeof originalValue === 'number' ? originalValue.toString() : "0"); break;
-        case 'string': modal.textField(`New value for ${keyName} (string):`, typeof originalValue === 'string' ? originalValue : "", typeof originalValue === 'string' ? originalValue : ""); break;
+        case 'boolean':
+            modal.toggle(`New value for ${keyName}:`, typeof context.currentValue === 'boolean' ? context.currentValue : false);
+            break;
+        case 'number':
+            modal.textField(`New value for ${keyName} (number):`, String(context.currentValue ?? "0"));
+            break;
+        case 'string':
+            modal.textField(`New value for ${keyName} (string):`, String(context.currentValue ?? ""));
+            break;
+        case 'array_string': // Represents a simple array to be edited as a JSON string
+            modal.textField(`New value for ${keyName} (JSON array string, e.g., ["a","b",1]):`, JSON.stringify(context.currentValue ?? []));
+            break;
         default:
-            player.sendMessage(`§cUnsupported config type "${keyType}" for UI editing of key "${keyName}".`);
+            player.sendMessage(`§cError: Unsupported config type "${keyType}" for UI editing of key "${keyName}".`);
             if (parentPanelForEdit) await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit);
             return;
     }
@@ -452,12 +522,33 @@ async function showEditSingleConfigValueFormImpl(player, dependencies, context) 
             case 'string':
                 config[keyName] = String(newValue);
                 updateSuccess = true;
-                player.sendMessage(`§aConfig "${keyName}" updated to: ${config[keyName]}`);
-                logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
-                await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+                // For strings, success message and navigation handled below to keep it DRY
+                break;
+            case 'array_string':
+                try {
+                    const parsedArray = JSON.parse(newValue);
+                    if (Array.isArray(parsedArray) && parsedArray.every(el => typeof el === 'string' || typeof el === 'number' || typeof el === 'boolean')) {
+                        config[keyName] = parsedArray;
+                        updateSuccess = true;
+                    } else {
+                        player.sendMessage("§cError: Invalid input. Value must be a valid JSON array of strings, numbers, or booleans (e.g., [\"a\", \"b\", 123, true]). Please try again.");
+                        await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                        return;
+                    }
+                } catch (parseError) {
+                    player.sendMessage(`§cError: Invalid JSON format for array: ${parseError.message}. Please try again.`);
+                    await UI_ACTION_FUNCTIONS.showEditSingleConfigValueForm(player, dependencies, context); // Re-prompt
+                    return;
+                }
                 break;
         }
-        // Removed general success message and call to showConfigCategoriesList from here, as it's handled per type now.
+
+        if (updateSuccess) { // Common success handling for boolean, string, array_string
+            player.sendMessage(`§aSuccess: Config "${keyName}" updated to: ${JSON.stringify(config[keyName])}`);
+            logManager?.addLog({ adminName: player.nameTag, actionType: 'configValueUpdated', details: { key: keyName, oldValue: originalValue, newValue: config[keyName] } }, dependencies);
+            await UI_ACTION_FUNCTIONS.showConfigCategoriesList(player, dependencies, parentContextForEdit); // Return to list on success
+        }
+        // Note: 'number' type handles its own success message and navigation due to the re-prompt logic on failure.
         // if (updateSuccess) { ... } // This block is now conditional per type
     } catch (e) {
         console.error(`[UiManager.showEditSingleConfigValueFormImpl] Error: ${e.stack || e}`);
