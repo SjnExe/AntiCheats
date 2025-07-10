@@ -16,6 +16,5 @@ This list contains planned features, improvements, and areas for future investig
 
 ### Configuration Files & Data Structures
 <!-- Placeholder for future tasks -->
-- **(Medium) Enhance Configuration Editing UI (uiManager.js):** Modify `showConfigCategoriesListImpl` to dynamically discover editable config keys from `config.js` (e.g., based on metadata or type) instead of using a hardcoded list. Investigate options for safely editing simple array types if feasible.
 
 ## Hierarchical Panel System Enhancements (Post-Refactor)
