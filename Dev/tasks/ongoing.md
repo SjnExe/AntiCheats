@@ -4,14 +4,16 @@ This document lists tasks currently being worked on. When a task is completed, i
 
 ---
 
-## Task: Create CONTRIBUTING.md File
+## Task: Create SECURITY.md and GitHub Issue/PR Templates
 - **Agent:** Jules
 - **Date Started:** (Current Date - approximate)
 - **Objective:**
-    - Create a standard `CONTRIBUTING.md` file in the `.github/` directory.
-    - Populate it with general contribution guidelines.
-    - Incorporate relevant information about contributing, bug reporting, and feature requests from the root `README.md`.
+    - Create a `SECURITY.md` file in `.github/` with security vulnerability reporting guidelines.
+    - Create issue templates (`bug_report.md`, `feature_request.md`, `config.yml`) in `.github/ISSUE_TEMPLATE/` to standardize issue submissions.
+    - Create a `pull_request_template.md` in `.github/` to guide pull request submissions.
+    - Ensure all created files follow general GitHub community standards.
 - **Status:**
-    - `README.md` reviewed for relevant sections.
-    - `.github/CONTRIBUTING.md` drafted and created.
+    - `.github/SECURITY.md` created.
+    - Issue templates (`bug_report.md`, `feature_request.md`, `config.yml`) created.
+    - Pull request template (`pull_request_template.md`) created.
     - Awaiting submission.

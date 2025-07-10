@@ -16,3 +16,17 @@ This document lists significant tasks that have been completed.
 - **Submission Reference:**
     - Branch: `fix/linting-uimanager-parser-error`
     - Commit Message Theme: "Fix: Refactor complex conditional in uiManager.js"
+
+---
+
+## Task: Create CONTRIBUTING.md File
+- **Agent:** Jules
+- **Date Completed:** (Current Date - approximate)
+- **Summary of Work:**
+    - Created a new `.github/CONTRIBUTING.md` file.
+    - Populated the file with standard guidelines for community contributions, covering bug reporting, feature suggestions, and the code contribution workflow (fork, branch, PR).
+    - Incorporated relevant information from the root `README.md` regarding contributing and development resources.
+    - Referenced existing project documentation like `Dev/CodingStyle.md`, `Dev/StandardizationGuidelines.md`, and `Dev/README.md` for more detailed information.
+- **Submission Reference:**
+    - Branch: `docs/add-contributing-guide`
+    - Commit Message Theme: "Docs: Add CONTRIBUTING.md"
