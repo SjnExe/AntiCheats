@@ -39,9 +39,8 @@ This document outlines coding style conventions to be followed for this project 
 
 ### Command Aliases
 - Most new commands should consider having a short, convenient alias.
-- Aliases are defined in `config.js` within the `commandAliases` object. This object maps alias strings to their corresponding main command names.
-  - Example: `export const commandAliases = { "b": "ban", "k": "kick", "i": "inspect" };`
-- The `commandManager.js` is responsible for checking if an entered command string is an alias and resolving it to the main command name before further processing.
+- Command aliases are now defined directly within each command's definition object (typically in `AntiCheatsBP/scripts/commands/yourcommand.js`) under an `aliases` array (e.g., `aliases: ['alias1', 'alias2']`).
+- The `commandManager.js` processes these aliases, resolving them to the main command name.
 - Aliases should be unique and not conflict with other aliases or main command names.
 
 ### `checkType` String Identifiers
