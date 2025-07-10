@@ -47,3 +47,16 @@ This document lists significant tasks that have been completed.
 - **Submission Reference:**
     - Branch: `docs/add-github-community-files`
     - Commit Message Theme: "Docs: Add SECURITY.md, issue templates, and PR template"
+
+---
+
+## Task: Create CODE_OF_CONDUCT.md and Update Contact Emails
+- **Agent:** Jules
+- **Date Completed:** (Current Date - approximate)
+- **Summary of Work:**
+    - Created `CODE_OF_CONDUCT.md` in the repository root using the Contributor Covenant v2.1 template.
+    - Updated the contact email in `CODE_OF_CONDUCT.md` to `sjnexecontact@gmail.com`.
+    - Updated the contact email in the pre-existing `.github/SECURITY.md` to `sjnexecontact@gmail.com`.
+- **Submission Reference:**
+    - Branch: `docs/add-code-of-conduct-and-update-emails`
+    - Commit Message Theme: "Docs: Add CODE_OF_CONDUCT.md and update contact emails"

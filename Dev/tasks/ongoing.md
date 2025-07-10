@@ -4,13 +4,11 @@ This document lists tasks currently being worked on. When a task is completed, i
 
 ---
 
-## Task: Create CODE_OF_CONDUCT.md File
+## Task: Relocate CODE_OF_CONDUCT.md
 - **Agent:** Jules
 - **Date Started:** (Current Date - approximate)
 - **Objective:**
-    - Create a `CODE_OF_CONDUCT.md` file in the repository root.
-    - Populate it using the Contributor Covenant version 2.1 template.
-    - Include a placeholder for project-specific contact information for reporting Code of Conduct violations.
+    - Move the `CODE_OF_CONDUCT.md` file from the repository root to the `.github/` directory for better organization with other community standard files.
 - **Status:**
-    - `CODE_OF_CONDUCT.md` drafted and created using Contributor Covenant v2.1.
+    - File moved from `CODE_OF_CONDUCT.md` to `.github/CODE_OF_CONDUCT.md`.
     - Awaiting submission.
