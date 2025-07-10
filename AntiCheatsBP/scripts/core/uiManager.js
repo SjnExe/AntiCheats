@@ -830,14 +830,24 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
             const selectedItemConfig = permittedItems[selection];
             playerUtils?.debugLog(`[UiManager.showPanel] Panel ${panelId}, Player ${viewingPlayerName} selected item: ${selectedItemConfig.id}`, viewingPlayerName, dependencies);
             if (selectedItemConfig.actionType === 'openPanel') {
-                let nextContext = { ...effectiveContext, ...(selectedItemConfig.initialContext || {}) };
+                let baseForNextPanel = {};
                 if (selectedItemConfig.actionContextVars && selectedItemConfig.actionContextVars.length > 0) {
-                    const extractedContext = {};
+                    // If actionContextVars are specified, only pass those specific variables from effectiveContext.
                     selectedItemConfig.actionContextVars.forEach(varName => {
-                        if (effectiveContext[varName] !== undefined) extractedContext[varName] = effectiveContext[varName];
+                        if (Object.prototype.hasOwnProperty.call(effectiveContext, varName)) {
+                            baseForNextPanel[varName] = effectiveContext[varName];
+                        }
                     });
-                    nextContext = { ...nextContext, ...extractedContext };
+                } else {
+                    // If no actionContextVars, pass all of effectiveContext as the base.
+                    baseForNextPanel = { ...effectiveContext };
                 }
+
+                const nextContext = { ...baseForNextPanel, ...(selectedItemConfig.initialContext || {}) };
+                // initialContext properties will override any same-named properties from baseForNextPanel.
+                // For example, if baseForNextPanel has { A:1, B:2 } and initialContext has { B:3, C:4 },
+                // nextContext will be { A:1, B:3, C:4 }.
+
                 pushToPlayerNavStack(player.id, panelId, effectiveContext);
                 await showPanel(player, selectedItemConfig.actionValue, dependencies, nextContext);
             } else if (selectedItemConfig.actionType === 'functionCall') {

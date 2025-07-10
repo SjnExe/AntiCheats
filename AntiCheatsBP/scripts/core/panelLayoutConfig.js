@@ -40,17 +40,19 @@
  * @property {Array<{contextKey: string, contextValue: any, icon: string}>} [iconVariants] - Optional. Allows dynamic button icon.
  *                                   The first variant where `currentContext[contextKey] === contextValue` will be used.
  *                                   If no variant matches, the default `icon` property is used.
- * @property {string[]} [actionContextVars] - Optional array of strings.
- *                                          When `actionType` is `'openPanel'`, these specify which keys from the *current*
- *                                          panel's context should be explicitly passed along to the *next* panel's context.
- *                                          This allows selective context propagation.
- *                                          For `'functionCall'`, this can document expected context variables, though the function
- *                                          itself will destructure what it needs from the provided context.
- * @property {object} [initialContext] - For `'openPanel'` or `'functionCall'`, this object provides additional
- *                                     key-value pairs to be merged into the context passed to the target panel or function.
- *                                     This is useful for setting up specific context needed by the next step,
- *                                     e.g., `{ logTypeFilter: ['ban', 'unban'], logTypeName: 'Ban Logs' }`.
- *                                     Values from `initialContext` may override values from the current panel's context if keys conflict.
+ * @property {string[]} [actionContextVars] - Optional. For `actionType: 'openPanel'`, this array of strings specifies
+ *                                          which keys from the current panel's `effectiveContext` form the base context for
+ *                                          the next panel. If undefined or empty, the entire `effectiveContext` is used as the base.
+ *                                          For `actionType: 'functionCall'`, this serves as documentation for which context
+ *                                          variables the function might primarily use, though the function receives the full `effectiveContext`.
+ * @property {object} [initialContext] - Optional. For `'openPanel'` or `'functionCall'`.
+ *                                     Provides key-value pairs to be merged into the context for the next step.
+ *                                     For `actionType: 'openPanel'`, `initialContext` properties will override any properties
+ *                                     with the same name that were included in the base context (formed via `actionContextVars`
+ *                                     or the full `effectiveContext`).
+ *                                     For `actionType: 'functionCall'`, `initialContext` properties override those in the
+ *                                     `effectiveContext` passed to the function.
+ *                                     Example: `{ logTypeFilter: ['ban', 'unban'], logTypeName: 'Ban Logs' }`.
  */
 
 /**
