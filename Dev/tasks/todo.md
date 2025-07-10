@@ -21,5 +21,3 @@ This list contains planned features, improvements, and areas for future investig
 ## Hierarchical Panel System Enhancements (Post-Refactor)
 - **(High) Thorough Testing of All Panel Flows, Permissions, and Sorting:**
     - Systematically test every panel and button with various permission levels for correct visibility, sorting, navigation, action execution, and error handling.
-- **(Medium) Error Handling and User Feedback in Panels:**
-    - Ensure all panel actions provide clear, user-friendly feedback (success, failure, invalid input) and that error states allow graceful recovery or return to a safe panel state.
