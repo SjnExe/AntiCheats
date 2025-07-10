@@ -60,3 +60,14 @@ This document lists significant tasks that have been completed.
 - **Submission Reference:**
     - Branch: `docs/add-code-of-conduct-and-update-emails`
     - Commit Message Theme: "Docs: Add CODE_OF_CONDUCT.md and update contact emails"
+
+---
+
+## Task: Relocate CODE_OF_CONDUCT.md
+- **Agent:** Jules
+- **Date Completed:** (Current Date - approximate)
+- **Summary of Work:**
+    - Moved the `CODE_OF_CONDUCT.md` file from the repository root to the `.github/` directory. This change was made to group it with other GitHub-specific community standard files for better project organization, per user request.
+- **Submission Reference:**
+    - Branch: `docs/relocate-code-of-conduct`
+    - Commit Message Theme: "Docs: Relocate CODE_OF_CONDUCT.md to .github directory"
