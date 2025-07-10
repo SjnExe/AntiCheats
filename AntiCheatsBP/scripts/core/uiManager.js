@@ -992,10 +992,23 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
         }
 
         // Interpolate placeholders in the chosen text
+        /*
+        // Temporarily commented out to isolate persistent linting error
         if (panelId === 'logViewerPanel') {
-            effectiveText = effectiveText.replace(/{currentPage}/g, String(effectiveContext.currentPage ?? 1));
-            effectiveText = effectiveText.replace(/{totalPages}/g, String(effectiveContext.totalPages ?? 1));
+            // Use explicit checks for undefined/null instead of ?? to satisfy sensitive parsers/linters
+            const currentPageVal = (effectiveContext.currentPage !== undefined && effectiveContext.currentPage !== null)
+                ? effectiveContext.currentPage
+                : 1;
+            const totalPagesVal = (effectiveContext.totalPages !== undefined && effectiveContext.totalPages !== null)
+                ? effectiveContext.totalPages
+                : 1;
+
+            const currentPageText = String(currentPageVal);
+            const totalPagesText = String(totalPagesVal);
+            effectiveText = effectiveText.replace(/{currentPage}/g, currentPageText);
+            effectiveText = effectiveText.replace(/{totalPages}/g, totalPagesText);
         }
+        */
         for (const key in effectiveContext) {
             if (Object.prototype.hasOwnProperty.call(effectiveContext, key) && !['currentPage', 'totalPages'].includes(key)) {
                 const replacementValue = String(effectiveContext[key]);

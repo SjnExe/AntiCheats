@@ -24,6 +24,7 @@ export const definition = {
 export async function execute(player, _args, dependencies) {
     const { uiManager, logManager, getString, playerUtils, rankManager, permissionLevels } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
+    let initialPanelId = 'mainUserPanel'; // Declare here with a default
 
     if (!player?.isValid()) {
         console.warn('[PanelCommand] Invalid player object.');
@@ -32,13 +33,14 @@ export async function execute(player, _args, dependencies) {
 
     try {
         const userPermLevel = rankManager.getPlayerPermissionLevel(player, dependencies);
-        let initialPanelId = 'mainUserPanel'; // Default for non-admins
-
+        // initialPanelId is already declared, just assign based on logic
         if (userPermLevel <= permissionLevels.admin) { // Admins and above see admin panel
             initialPanelId = 'mainAdminPanel';
         }
 
-        if (uiManager.clearPlayerNavStack) uiManager.clearPlayerNavStack(player.id);
+        if (uiManager.clearPlayerNavStack) {
+            uiManager.clearPlayerNavStack(player.id);
+        }
 
         await uiManager.showPanel(player, initialPanelId, dependencies, { playerName: player.nameTag }); // Pass initial context
 
