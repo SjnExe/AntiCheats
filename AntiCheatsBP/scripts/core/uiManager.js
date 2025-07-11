@@ -1133,14 +1133,22 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
  * @async
  */
 async function prepareBanUnbanLogsViewer(player, dependencies, context) {
-    const { logManager, config } = dependencies;
+    const { logManager, config, getString } = dependencies; // Added getString
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const logTypeFilter = ['ban', 'unban'];
-    const logTypeName = 'Ban/Unban';
-    const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : [];
+    const logTypeFilter = ['playerBanned', 'playerUnbanned']; // Corrected actionTypes
+    const logTypeName = getString('ui.logViewer.title.banUnban'); // Used getString
+    const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : []; // No player name filter initially
     const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
-    const newContext = { ...context, logTypeFilter, logTypeName, playerNameFilter: null, currentPage: 1, totalPages };
+    const newContext = {
+        ...context, // Preserve any incoming context if needed, though usually not for fresh log views
+        logTypeFilter,
+        logTypeName,
+        playerNameFilter: null,
+        currentPage: 1,
+        totalPages
+    };
+    pushToPlayerNavStack(player.id, 'modLogSelectionPanel', context);
     await showPanel(player, 'logViewerPanel', dependencies, newContext);
 }
 
@@ -1149,14 +1157,22 @@ async function prepareBanUnbanLogsViewer(player, dependencies, context) {
  * @async
  */
 async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
-    const { logManager, config } = dependencies;
+    const { logManager, config, getString } = dependencies; // Added getString
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const logTypeFilter = ['mute', 'unmute'];
-    const logTypeName = 'Mute/Unmute';
-    const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : [];
+    const logTypeFilter = ['playerMuted', 'playerUnmuted']; // Corrected actionTypes
+    const logTypeName = getString('ui.logViewer.title.muteUnmute'); // Used getString
+    const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : []; // No player name filter initially
     const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
-    const newContext = { ...context, logTypeFilter, logTypeName, playerNameFilter: null, currentPage: 1, totalPages };
+    const newContext = {
+        ...context,
+        logTypeFilter,
+        logTypeName,
+        playerNameFilter: null,
+        currentPage: 1,
+        totalPages
+    };
+    pushToPlayerNavStack(player.id, 'modLogSelectionPanel', context);
     await showPanel(player, 'logViewerPanel', dependencies, newContext);
 }
 
@@ -1818,10 +1834,10 @@ async function goToPrevLogPage(player, dependencies, context) {
  * @param {object} context - Context from the calling panel (e.g., `modLogSelectionPanel`).
  */
 async function prepareBanUnbanLogsViewer(player, dependencies, context) {
-    const { logManager, config, getString } = dependencies;
+    const { logManager, config, getString } = dependencies; // Added getString
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const logTypeFilter = ['ban', 'unban'];
-    const logTypeName = getString('ui.logViewer.title.banUnban');
+    const logTypeFilter = ['playerBanned', 'playerUnbanned']; // Corrected actionTypes
+    const logTypeName = getString('ui.logViewer.title.banUnban'); // Used getString
     const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : []; // No player name filter initially
     const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
@@ -1846,10 +1862,10 @@ async function prepareBanUnbanLogsViewer(player, dependencies, context) {
  * @param {object} context - Context from the calling panel (e.g., `modLogSelectionPanel`).
  */
 async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
-    const { logManager, config, getString } = dependencies;
+    const { logManager, config, getString } = dependencies; // Added getString
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
-    const logTypeFilter = ['mute', 'unmute'];
-    const logTypeName = getString('ui.logViewer.title.muteUnmute');
+    const logTypeFilter = ['playerMuted', 'playerUnmuted']; // Corrected actionTypes
+    const logTypeName = getString('ui.logViewer.title.muteUnmute'); // Used getString
     const allLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, null) : []; // No player name filter initially
     const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
 
@@ -2023,5 +2039,3 @@ async function showOnlinePlayersList(adminPlayer, dependencies, context = {}) { 
 export { showPanel, clearPlayerNavStack };
 
 // Old showOnlinePlayersList function was here. It has been removed as it's replaced by onlinePlayersPanel.
-
-[end of AntiCheatsBP/scripts/core/uiManager.js]
