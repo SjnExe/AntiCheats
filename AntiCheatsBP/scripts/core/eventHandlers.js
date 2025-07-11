@@ -44,17 +44,17 @@ import * as mc from '@minecraft/server';
 import { getExpectedBreakTicks, isNetherLocked, isEndLocked, formatSessionDuration } from '../utils/index.js';
 
 // Constants for magic numbers used in this file
-const DEFAULT_COMBAT_LOG_THRESHOLD_SECONDS = 15;
-const WELCOME_MESSAGE_DELAY_TICKS = 20;
-const DEATH_COORDS_MESSAGE_DELAY_TICKS = 5;
-const DEFAULT_FOOD_USE_DURATION_SECONDS = 1.6;
-const TICKS_PER_SECOND = 20;
-const DEFAULT_TOWER_HISTORY_LENGTH = 20;
-const BLOCK_OFFSET_ONE_BELOW = -1;
-const BLOCK_OFFSET_TWO_BELOW = -2;
-const GOLEM_CONSTRUCTION_CHECK_TICK_WINDOW = 10; // For Math.abs(...) < 10
-const RENDER_DISTANCE_CHECK_DELAY_TICKS = 100;
-const MIN_TIMEOUT_DELAY_TICKS = 1;
+const defaultCombatLogThresholdSeconds = 15;
+const welcomeMessageDelayTicks = 20;
+const deathCoordsMessageDelayTicks = 5;
+const defaultFoodUseDurationSeconds = 1.6;
+const ticksPerSecond = 20;
+const defaultTowerHistoryLength = 20;
+const blockOffsetOneBelow = -1;
+const blockOffsetTwoBelow = -2;
+const golemConstructionCheckTickWindow = 10; // For Math.abs(...) < 10
+const renderDistanceCheckDelayTicks = 100;
+const minTimeoutDelayTicks = 1;
 
 
 /**
@@ -78,7 +78,7 @@ async function _handlePlayerLeave(eventData, dependencies) { // Renamed to indic
     if (pData && config?.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) {
         const currentTime = Date.now();
         const timeSinceLastCombatMs = currentTime - pData.lastCombatInteractionTime;
-        const combatLogThresholdMs = (config.combatLogThresholdSeconds ?? DEFAULT_COMBAT_LOG_THRESHOLD_SECONDS) * 1000;
+        const combatLogThresholdMs = (config.combatLogThresholdSeconds ?? defaultCombatLogThresholdSeconds) * 1000;
 
         if (timeSinceLastCombatMs < combatLogThresholdMs) {
             const timeSinceLastCombatSeconds = (timeSinceLastCombatMs / 1000).toFixed(1);
@@ -238,7 +238,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                     } catch (e) {
                         console.warn(`[EventHandler.handlePlayerSpawn] Failed to send welcome to ${playerName}: ${e.message}`);
                     }
-                }, WELCOME_MESSAGE_DELAY_TICKS);
+                }, welcomeMessageDelayTicks);
             }
 
             logManager?.addLog({
@@ -276,7 +276,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                 } catch (e) {
                     console.warn(`[EventHandler.handlePlayerSpawn] Failed to send death coords to ${playerName}: ${e.message}`);
                 }
-            }, DEATH_COORDS_MESSAGE_DELAY_TICKS);
+            }, deathCoordsMessageDelayTicks);
             playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] DeathCoords: Displayed to ${playerName}: '${pData.deathMessageToShowOnSpawn}'`, pData.isWatched ? playerName : null, dependencies);
             pData.deathMessageToShowOnSpawn = null;
             pData.isDirtyForSave = true;
@@ -294,7 +294,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                     return;
                 }
                 await checks.checkInvalidRenderDistance(player, currentPData, dependencies);
-            }, RENDER_DISTANCE_CHECK_DELAY_TICKS);
+            }, renderDistanceCheckDelayTicks);
         }
 
         if (config.enableDetailedJoinLeaveLogging) {
@@ -411,7 +411,7 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
             const expectedTick = pData?.expectingConstructedEntity?.tick ?? 0;
             const currentSystemTick = minecraftSystem?.system?.currentTick ?? 0;
             if (pData?.expectingConstructedEntity?.type === entity.typeId &&
-                Math.abs(expectedTick - currentSystemTick) < GOLEM_CONSTRUCTION_CHECK_TICK_WINDOW) {
+                Math.abs(expectedTick - currentSystemTick) < golemConstructionCheckTickWindow) {
                 const playerName = player.nameTag;
                 playerUtils?.debugLog(
                     `[EvtHdlr.EntSpawn] Attributed ${entityName} to ${playerName}. ` +
@@ -961,8 +961,8 @@ async function _handleItemUse(eventData, dependencies) {
         pData.isUsingConsumable = true;
         pData.isDirtyForSave = true;
         const foodUseDurationTicks = (itemFoodComponent.usingConvertsTo === undefined)
-            ? (itemFoodComponent.useDuration ?? DEFAULT_FOOD_USE_DURATION_SECONDS) * TICKS_PER_SECOND
-            : MIN_TIMEOUT_DELAY_TICKS;
+            ? (itemFoodComponent.useDuration ?? defaultFoodUseDurationSeconds) * ticksPerSecond
+            : minTimeoutDelayTicks;
         minecraftSystem?.system?.runTimeout(() => {
             if (player.isValid()) { // Check player validity in timeout
                 const currentPData = playerDataManager?.getPlayerData(player.id); // Re-fetch
@@ -971,7 +971,7 @@ async function _handleItemUse(eventData, dependencies) {
                     currentPData.isDirtyForSave = true;
                 }
             }
-        }, Math.max(MIN_TIMEOUT_DELAY_TICKS, Math.round(foodUseDurationTicks))); // Ensure at least 1 tick delay
+        }, Math.max(minTimeoutDelayTicks, Math.round(foodUseDurationTicks))); // Ensure at least 1 tick delay
     }
 
     if (itemStack.typeId === mc.MinecraftItemTypes.bow.id || itemStack.typeId === mc.MinecraftItemTypes.crossbow.id) {

@@ -370,10 +370,10 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     let maxObservedPitch = initialMaxObservedPitch;
     let allPitchesInHorizontalRange = true;
     let allPitchesInDownwardRange = true;
-    const horizontalMin = config.flatRotationPitchHorizontalMin ?? DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MIN;
-    const horizontalMax = config.flatRotationPitchHorizontalMax ?? DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MAX;
-    const downwardMin = config.flatRotationPitchDownwardMin ?? DEFAULT_FLAT_ROTATION_PITCH_DOWNWARD_MIN;
-    const downwardMax = config.flatRotationPitchDownwardMax ?? DEFAULT_FLAT_ROTATION_PITCH_DOWNWARD_MAX;
+    const horizontalMin = config.flatRotationPitchHorizontalMin ?? defaultFlatRotationPitchHorizontalMin;
+    const horizontalMax = config.flatRotationPitchHorizontalMax ?? defaultFlatRotationPitchHorizontalMax;
+    const downwardMin = config.flatRotationPitchDownwardMin ?? defaultFlatRotationPitchDownwardMin;
+    const downwardMax = config.flatRotationPitchDownwardMax ?? defaultFlatRotationPitchDownwardMax;
 
     for (const placement of relevantPlacements) {
         if (placement.pitch < minObservedPitch) {
@@ -398,8 +398,8 @@ export async function checkFlatRotationBuilding(player, pData, dependencies) {
     if (relevantPlacements.length > 1) {
         for (let i = 1; i < relevantPlacements.length; i++) {
             let diff = Math.abs(relevantPlacements[i].yaw - firstYaw);
-            if (diff > DEGREES_HALF_CIRCLE) {
-                diff = DEGREES_FULL_CIRCLE - diff;
+            if (diff > degreesHalfCircle) {
+                diff = degreesFullCircle - diff;
             }
             if (diff > maxIndividualYawDifference) {
                 maxIndividualYawDifference = diff;
@@ -495,7 +495,7 @@ export async function checkBlockSpam(player, pData, dependencies, eventSpecificD
         pData.isDirtyForSave = true;
     }
 
-    const maxBlocks = config.blockSpamMaxBlocksInWindow || DEFAULT_BLOCK_SPAM_MAX_BLOCKS_IN_WINDOW;
+    const maxBlocks = config.blockSpamMaxBlocksInWindow || defaultBlockSpamMaxBlocksInWindow;
     if (pData.recentBlockSpamTimestamps.length > maxBlocks) {
         const violationDetails = {
             playerName: player.nameTag,
@@ -549,7 +549,7 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
 
     const newBlockLocation = block.location;
     let playerPlacedBlocksInVolumeCount = 0;
-    const densityTimeWindowTicks = config.blockSpamDensityTimeWindowTicks ?? DEFAULT_BLOCK_SPAM_DENSITY_TIME_WINDOW_TICKS;
+    const densityTimeWindowTicks = config.blockSpamDensityTimeWindowTicks ?? defaultBlockSpamDensityTimeWindowTicks;
     const monitoredTypes = config.blockSpamDensityMonitoredBlockTypes ?? [];
 
     for (const record of pData.recentBlockPlacements) {
@@ -573,7 +573,7 @@ export async function checkBlockSpamDensity(player, pData, dependencies, eventSp
     }
 
     const densityPercentage = (playerPlacedBlocksInVolumeCount / totalVolumeBlocks) * 100;
-    const thresholdPercentage = config.blockSpamDensityThresholdPercentage ?? DEFAULT_BLOCK_SPAM_DENSITY_THRESHOLD_PERCENTAGE;
+    const thresholdPercentage = config.blockSpamDensityThresholdPercentage ?? defaultBlockSpamDensityThresholdPercentage;
 
     if (densityPercentage > thresholdPercentage) {
         const violationDetails = {

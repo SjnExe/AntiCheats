@@ -6,7 +6,7 @@
 import * as mc from '@minecraft/server';
 
 // Default configuration values
-const VERY_LONG_EFFECT_DURATION = 2000000;
+const veryLongEffectDuration = 2000000;
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -80,7 +80,7 @@ export async function execute(player, args, dependencies) {
         pData.vanishTagApplied = true;
         pData.isDirtyForSave = true;
 
-        player.addEffect(mc.MinecraftEffectTypes.invisibility, VERY_LONG_EFFECT_DURATION, { amplifier: 1, showParticles: false });
+        player.addEffect(mc.MinecraftEffectTypes.invisibility, veryLongEffectDuration, { amplifier: 1, showParticles: false });
 
         if (mode === 'notify') {
             mc.world.sendMessage(getString('command.vanish.notify.leftGame', { playerName: adminName }));

@@ -5,10 +5,10 @@
 import * as mc from '@minecraft/server';
 
 // Default configuration values and argument counts
-const MIN_ARGS_WB_SET = 4;
-const DEFAULT_WB_DAMAGE_AMOUNT = 0.5;
-const DEFAULT_WB_DAMAGE_INTERVAL_TICKS = 20;
-const DEFAULT_WB_TELEPORT_AFTER_DAMAGE_EVENTS = 30;
+const minArgsWbSet = 4;
+const defaultWbDamageAmount = 0.5;
+const defaultWbDamageIntervalTicks = 20;
+const defaultWbTeleportAfterDamageEvents = 30;
 
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
@@ -107,7 +107,7 @@ export async function execute(player, args, dependencies) {
     try {
         switch (subCommand) {
             case 'set': {
-                if (subArgs.length < MIN_ARGS_WB_SET) {
+                if (subArgs.length < minArgsWbSet) {
                     player.sendMessage(getString('command.worldborder.set.usage', { prefix }));
                     player.sendMessage(getString('command.worldborder.set.noteSize'));
                     return;
@@ -155,7 +155,7 @@ export async function execute(player, args, dependencies) {
                     const sizeDisplay = shape === 'square' ? `${size} (Diameter: ${size * 2})` : `${size}`;
                     message += `${getString('command.worldborder.set.successDetails', { shape, centerX: centerX.toString(), centerZ: centerZ.toString(), sizeDisplay }) }\n`;
                     const damageStatus = newSettings.enableDamage
-                        ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? DEFAULT_WB_DAMAGE_AMOUNT).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? DEFAULT_WB_DAMAGE_INTERVAL_TICKS).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? DEFAULT_WB_TELEPORT_AFTER_DAMAGE_EVENTS).toString() })
+                        ? getString('command.worldborder.set.damage.on', { damageAmount: (newSettings.damageAmount ?? defaultWbDamageAmount).toString(), damageIntervalTicks: (newSettings.damageIntervalTicks ?? defaultWbDamageIntervalTicks).toString(), teleportAfterNumDamageEvents: (newSettings.teleportAfterNumDamageEvents ?? defaultWbTeleportAfterDamageEvents).toString() })
                         : getString('command.worldborder.set.damage.off');
                     message += getString('command.worldborder.set.successDamage', { damageStatus });
                     if (newSettings.wasResizing) {

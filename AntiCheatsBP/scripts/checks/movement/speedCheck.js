@@ -11,12 +11,12 @@
  */
 
 // Constants for magic numbers
-const TICKS_PER_SECOND_SPEED = 20;
-const DEFAULT_MAX_HORIZONTAL_SPEED_VANILLA_SPRINT = 5.7;
-const DEFAULT_SPEED_EFFECT_MULTIPLIER_PER_LEVEL = 0.20;
-const DEFAULT_SPEED_TOLERANCE_BUFFER = 0.5;
-const SPEED_LOGGING_DECIMAL_PLACES = 3;
-const DEFAULT_SPEED_GROUND_CONSECUTIVE_TICKS_THRESHOLD = 5;
+const ticksPerSecondSpeed = 20;
+const defaultMaxHorizontalSpeedVanillaSprint = 5.7;
+const defaultSpeedEffectMultiplierPerLevel = 0.20;
+const defaultSpeedToleranceBuffer = 0.5;
+const speedLoggingDecimalPlaces = 3;
+const defaultSpeedGroundConsecutiveTicksThreshold = 5;
 
 /**
  * Checks for speed-related hacks by analyzing player's horizontal movement speed.
@@ -56,20 +56,20 @@ export async function checkSpeed(player, pData, dependencies) {
     }
 
     const hSpeed = Math.sqrt((pData.velocity.x ** 2) + (pData.velocity.z ** 2));
-    const hSpeedBPS = hSpeed * TICKS_PER_SECOND_SPEED;
+    const hSpeedBPS = hSpeed * ticksPerSecondSpeed;
 
-    let maxAllowedSpeedBPS = config?.maxHorizontalSpeedVanillaSprint ?? DEFAULT_MAX_HORIZONTAL_SPEED_VANILLA_SPRINT;
+    let maxAllowedSpeedBPS = config?.maxHorizontalSpeedVanillaSprint ?? defaultMaxHorizontalSpeedVanillaSprint;
 
     const speedAmplifier = pData.speedAmplifier ?? -1; // -1 is fine
     if (speedAmplifier >= 0) { // 0 is fine
-        maxAllowedSpeedBPS *= (1 + ((speedAmplifier + 1) * (config?.speedEffectMultiplierPerLevel ?? DEFAULT_SPEED_EFFECT_MULTIPLIER_PER_LEVEL))); // 1 is fine
+        maxAllowedSpeedBPS *= (1 + ((speedAmplifier + 1) * (config?.speedEffectMultiplierPerLevel ?? defaultSpeedEffectMultiplierPerLevel))); // 1 is fine
     }
 
-    maxAllowedSpeedBPS += (config?.speedToleranceBuffer ?? DEFAULT_SPEED_TOLERANCE_BUFFER);
+    maxAllowedSpeedBPS += (config?.speedToleranceBuffer ?? defaultSpeedToleranceBuffer);
 
     if (pData.isWatched && config?.enableDebugLogging) {
         playerUtils?.debugLog(
-            `[SpeedCheck] Processing for ${playerName}. HSpeedBPS=${hSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES)}, MaxAllowedBPS=${maxAllowedSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}, OnGround=${player.isOnGround}`,
+            `[SpeedCheck] Processing for ${playerName}. HSpeedBPS=${hSpeedBPS.toFixed(speedLoggingDecimalPlaces)}, MaxAllowedBPS=${maxAllowedSpeedBPS.toFixed(speedLoggingDecimalPlaces)}, GroundSpeedingTicks=${pData.consecutiveOnGroundSpeedingTicks ?? 0}, OnGround=${player.isOnGround}`,
             watchedPlayerName, dependencies,
         );
     }
@@ -84,7 +84,7 @@ export async function checkSpeed(player, pData, dependencies) {
             pData.consecutiveOnGroundSpeedingTicks = (pData.consecutiveOnGroundSpeedingTicks || 0) + 1; // 0 and 1 are fine
             pData.isDirtyForSave = true;
 
-            const groundTicksThreshold = config?.speedGroundConsecutiveTicksThreshold ?? DEFAULT_SPEED_GROUND_CONSECUTIVE_TICKS_THRESHOLD;
+            const groundTicksThreshold = config?.speedGroundConsecutiveTicksThreshold ?? defaultSpeedGroundConsecutiveTicksThreshold;
             if (pData.consecutiveOnGroundSpeedingTicks >= groundTicksThreshold) {
                 let activeEffectsString = 'none';
                 try {
@@ -95,14 +95,14 @@ export async function checkSpeed(player, pData, dependencies) {
                 } catch (_e) { /* Error suppressed, default value will be used */ }
 
                 const violationDetails = {
-                    detectedSpeedBps: hSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES),
-                    maxAllowedBps: maxAllowedSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES),
+                    detectedSpeedBps: hSpeedBPS.toFixed(speedLoggingDecimalPlaces),
+                    maxAllowedBps: maxAllowedSpeedBPS.toFixed(speedLoggingDecimalPlaces),
                     consecutiveTicks: (pData.consecutiveOnGroundSpeedingTicks ?? 0).toString(), // 0 is fine
                     onGround: player.isOnGround.toString(),
                     activeEffects: activeEffectsString,
                 };
                 await actionManager?.executeCheckAction(player, groundActionProfileKey, violationDetails, dependencies);
-                playerUtils?.debugLog(`[SpeedCheck] Flagged ${playerName} for ground speed. Speed: ${hSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES)} > ${maxAllowedSpeedBPS.toFixed(SPEED_LOGGING_DECIMAL_PLACES)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
+                playerUtils?.debugLog(`[SpeedCheck] Flagged ${playerName} for ground speed. Speed: ${hSpeedBPS.toFixed(speedLoggingDecimalPlaces)} > ${maxAllowedSpeedBPS.toFixed(speedLoggingDecimalPlaces)} for ${pData.consecutiveOnGroundSpeedingTicks} ticks.`, watchedPlayerName, dependencies);
 
                 const pDataToUpdate = pData; // Re-affirm pData reference
                 pDataToUpdate.consecutiveOnGroundSpeedingTicks = 0; // 0 is fine

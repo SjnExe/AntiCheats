@@ -7,13 +7,13 @@ import * as mc from '@minecraft/server';
 import { stringDB } from '../core/textDatabase.js';
 
 // Time constants
-const MILLISECONDS_PER_SECOND = 1000;
-const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
-const HOURS_PER_DAY = 24;
-const DAYS_PER_WEEK = 7;
-const AVG_DAYS_PER_MONTH = 30.4375;
-const AVG_DAYS_PER_YEAR = 365.25;
+const millisecondsPerSecond = 1000;
+const secondsPerMinute = 60;
+const minutesPerHour = 60;
+const hoursPerDay = 24;
+const daysPerWeek = 7;
+const avgDaysPerMonth = 30.4375;
+const avgDaysPerYear = 365.25;
 
 
 /**
@@ -193,11 +193,11 @@ export function parseDuration(durationString) {
         const value = parseInt(match[1], 10);
         const unit = match[2];
         switch (unit) {
-            case 's': return value * MILLISECONDS_PER_SECOND;
-            case 'm': return value * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
-            case 'h': return value * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
-            case 'd': return value * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
-            case 'w': return value * DAYS_PER_WEEK * HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND; // Added weeks
+            case 's': return value * millisecondsPerSecond;
+            case 'm': return value * secondsPerMinute * millisecondsPerSecond;
+            case 'h': return value * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
+            case 'd': return value * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond;
+            case 'w': return value * daysPerWeek * hoursPerDay * minutesPerHour * secondsPerMinute * millisecondsPerSecond; // Added weeks
             default:
                 // This case should ideally not be reached if the regex is correct.
                 console.warn(`[PlayerUtils.parseDuration] Unexpected unit '${unit}' from regex match.`);
@@ -221,11 +221,11 @@ export function formatSessionDuration(ms) {
     if (ms <= 0 || typeof ms !== 'number' || isNaN(ms)) {
         return 'N/A';
     }
-    let seconds = Math.floor(ms / MILLISECONDS_PER_SECOND);
-    let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
-    const hours = Math.floor(minutes / MINUTES_PER_HOUR);
-    seconds %= SECONDS_PER_MINUTE;
-    minutes %= MINUTES_PER_HOUR;
+    let seconds = Math.floor(ms / millisecondsPerSecond);
+    let minutes = Math.floor(seconds / secondsPerMinute);
+    const hours = Math.floor(minutes / minutesPerHour);
+    seconds %= secondsPerMinute;
+    minutes %= minutesPerHour;
 
     const parts = [];
     if (hours > 0) {

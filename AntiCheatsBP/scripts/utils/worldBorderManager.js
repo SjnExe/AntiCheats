@@ -8,12 +8,12 @@ import * as mc from '@minecraft/server';
 const worldBorderDynamicPropertyPrefix = 'anticheat:worldborder_';
 
 // Constants for calculations and defaults
-const BORDER_TELEPORT_INWARD_OFFSET = 0.5;
-const TICKS_PER_SECOND = 20.0;
-const DEFAULT_PULSE_DENSITY_MIN = 0.1;
-const SAFE_TELEPORT_Y_SEARCH_DOWN_DEPTH = 10;
-const SAFE_TELEPORT_Y_SEARCH_UP_DEPTH = 5;
-const PLAYER_HEIGHT_BLOCKS = 2;
+const borderTeleportInwardOffset = 0.5;
+const ticksPerSecond = 20.0;
+const defaultPulseDensityMin = 0.1;
+const safeTeleportYSearchDownDepth = 10;
+const safeTeleportYSearchUpDepth = 5;
+const playerHeightBlocks = 2;
 
 
 /**
@@ -307,10 +307,10 @@ function easeInOutQuad(t) {
  */
 function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
     const minDimensionHeight = dimension.heightRange.min;
-    const maxDimensionHeight = dimension.heightRange.max - PLAYER_HEIGHT_BLOCKS;
+    const maxDimensionHeight = dimension.heightRange.max - playerHeightBlocks;
     const currentY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
 
-    for (let i = 0; i < SAFE_TELEPORT_Y_SEARCH_DOWN_DEPTH; i++) {
+    for (let i = 0; i < safeTeleportYSearchDownDepth; i++) {
         const checkY = currentY - i;
         if (checkY < minDimensionHeight) {
             break;
@@ -328,7 +328,7 @@ function findSafeTeleportY(dimension, targetX, initialY, targetZ) {
     }
 
     const searchUpStartY = Math.max(minDimensionHeight, Math.min(Math.floor(initialY), maxDimensionHeight));
-    for (let i = 1; i < SAFE_TELEPORT_Y_SEARCH_UP_DEPTH; i++) {
+    for (let i = 1; i < safeTeleportYSearchUpDepth; i++) {
         const checkY = searchUpStartY + i;
         if (checkY > maxDimensionHeight) {
             break;
@@ -455,14 +455,14 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 const minZ = centerZ - currentSize;
                 const maxZ = centerZ + currentSize;
                 if (loc.x < minX) {
-                    targetX = minX + BORDER_TELEPORT_INWARD_OFFSET;
+                    targetX = minX + borderTeleportInwardOffset;
                 } else if (loc.x > maxX) {
-                    targetX = maxX - BORDER_TELEPORT_INWARD_OFFSET;
+                    targetX = maxX - borderTeleportInwardOffset;
                 }
                 if (loc.z < minZ) {
-                    targetZ = minZ + BORDER_TELEPORT_INWARD_OFFSET;
+                    targetZ = minZ + borderTeleportInwardOffset;
                 } else if (loc.z > maxZ) {
-                    targetZ = maxZ - BORDER_TELEPORT_INWARD_OFFSET;
+                    targetZ = maxZ - borderTeleportInwardOffset;
                 }
             } else if (shape === 'circle') {
                 const { centerX, centerZ } = borderSettings;
@@ -470,11 +470,11 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
                 const dz = loc.z - centerZ;
                 const distSq = dx * dx + dz * dz;
                 const currentDist = Math.sqrt(distSq);
-                if (currentDist === 0 || currentSize <= BORDER_TELEPORT_INWARD_OFFSET) {
-                    targetX = centerX + (currentSize > BORDER_TELEPORT_INWARD_OFFSET ? currentSize - BORDER_TELEPORT_INWARD_OFFSET : 0);
+                if (currentDist === 0 || currentSize <= borderTeleportInwardOffset) {
+                    targetX = centerX + (currentSize > borderTeleportInwardOffset ? currentSize - borderTeleportInwardOffset : 0);
                     targetZ = centerZ;
                 } else {
-                    const scale = (currentSize - BORDER_TELEPORT_INWARD_OFFSET) / currentDist;
+                    const scale = (currentSize - borderTeleportInwardOffset) / currentDist;
                     targetX = centerX + dx * scale;
                     targetZ = centerZ + dz * scale;
                 }
@@ -544,19 +544,19 @@ export function enforceWorldBorderForPlayer(player, pData, dependencies) { // Re
             let particleNameToUse;
             const particleSequence = config.worldBorderParticleSequence;
             if (Array.isArray(particleSequence) && particleSequence.length > 0) {
-                const visualUpdateInterval = config.worldBorderVisualUpdateIntervalTicks > 0 ? config.worldBorderVisualUpdateIntervalTicks : TICKS_PER_SECOND;
+                const visualUpdateInterval = config.worldBorderVisualUpdateIntervalTicks > 0 ? config.worldBorderVisualUpdateIntervalTicks : ticksPerSecond;
                 particleNameToUse = particleSequence[Math.floor(currentTick / visualUpdateInterval) % particleSequence.length];
             } else {
                 particleNameToUse = borderSettings.particleNameOverride || config.worldBorderParticleName;
             }
             const visualRange = config.worldBorderVisualRange;
-            let density = Math.max(DEFAULT_PULSE_DENSITY_MIN, config.worldBorderParticleDensity);
+            let density = Math.max(defaultPulseDensityMin, config.worldBorderParticleDensity);
             if (config.worldBorderEnablePulsingDensity) {
                 const pulseSpeed = config.worldBorderPulseSpeed > 0 ? config.worldBorderPulseSpeed : 1.0;
-                const pulseMin = config.worldBorderPulseDensityMin > 0 ? config.worldBorderPulseDensityMin : DEFAULT_PULSE_DENSITY_MIN;
+                const pulseMin = config.worldBorderPulseDensityMin > 0 ? config.worldBorderPulseDensityMin : defaultPulseDensityMin;
                 const pulseMax = config.worldBorderPulseDensityMax > pulseMin ? config.worldBorderPulseDensityMax : pulseMin + 1.0;
-                density = pulseMin + (Math.sin((currentTick * pulseSpeed) / TICKS_PER_SECOND) + 1) * 0.5 * (pulseMax - pulseMin); // 0.5 here is for sin normalization
-                density = Math.max(DEFAULT_PULSE_DENSITY_MIN, density);
+                density = pulseMin + (Math.sin((currentTick * pulseSpeed) / ticksPerSecond) + 1) * 0.5 * (pulseMax - pulseMin); // 0.5 here is for sin normalization
+                density = Math.max(defaultPulseDensityMin, density);
             }
             const wallHeight = config.worldBorderParticleWallHeight;
             const segmentLength = config.worldBorderParticleSegmentLength;

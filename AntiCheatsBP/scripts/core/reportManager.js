@@ -10,8 +10,8 @@
 const reportsPropertyKeyName = 'anticheat:reports_v1';
 
 // Constants for ID generation
-const ALPHANUMERIC_RADIX = 36;
-const RANDOM_ID_COMPONENT_LENGTH = 5; // Results in a 5-character random string part
+const alphanumericRadix = 36;
+const randomIdComponentLength = 5; // Results in a 5-character random string part
 
 /**
  * @typedef {import('../types.js').ReportEntry} ReportEntry
@@ -30,7 +30,7 @@ let reportsAreDirty = false;
  */
 function generateReportId() {
     // Timestamp + random component for uniqueness
-    return `${Date.now().toString(ALPHANUMERIC_RADIX)}-${Math.random().toString(ALPHANUMERIC_RADIX).substring(2, 2 + RANDOM_ID_COMPONENT_LENGTH)}`;
+    return `${Date.now().toString(alphanumericRadix)}-${Math.random().toString(alphanumericRadix).substring(2, 2 + randomIdComponentLength)}`;
 }
 
 /**
