@@ -1245,9 +1245,6 @@ async function _handleBeforeChatSend(eventData, dependencies) {
     await chatProcessor.processChatMessage(player, pData, originalMessage, eventData, dependencies);
 }
 /**
- *
- */
-/**
  * Handles chat messages before they are sent, dispatching to chatProcessor.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - Data for the 'beforeChatSend' event, including the player sending the message and the message itself. This object can be modified to cancel the event or change the message.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object providing access to shared modules (e.g., config, logManager, playerUtils, chatProcessor).
