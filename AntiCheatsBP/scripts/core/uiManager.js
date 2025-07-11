@@ -1411,9 +1411,9 @@ const UI_ACTION_FUNCTIONS = {
      * @param {object} _context The context from the calling panel.
      */
     showHelpfulLinksPageContent: async (player, dependencies, _context) => {
-        const { playerUtils, config, getString: _getString } = dependencies;
+        const { playerUtils, config: _config, getString: _getString } = dependencies; // _config as helpfulLinks is not used
         playerUtils.debugLog(`Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
-        const helpfulLinks = config?.helpfulLinks ?? [];
+        // const helpfulLinks = config?.helpfulLinks ?? []; // Unused variable
         // This function is no longer used by helpfulLinksPanel, which now dynamically generates items.
         // It can be removed or kept for other potential uses if any. For this refactor, we'll remove it.
         playerUtils.debugLog(`DEPRECATED Action: showHelpfulLinksPageContent for ${player.nameTag}`, player.nameTag, dependencies);
@@ -1924,7 +1924,7 @@ const UI_ACTION_FUNCTIONS = {
         }
         playerUtils?.debugLog(`[UiManager.showUnmuteFormForPlayer] Admin: ${adminPlayerName} initiating unmute for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
 
-        const confirmed = await _showConfirmationModal(
+        await _showConfirmationModal(
             player,
             getString('ui.playerActions.unmute.confirmTitle'),
             getString('ui.playerActions.unmute.confirmBody', { targetPlayerName }),
@@ -1967,7 +1967,7 @@ const UI_ACTION_FUNCTIONS = {
         }
         playerUtils?.debugLog(`[UiManager.confirmClearPlayerInventory] Admin: ${adminPlayerName} initiating clear inventory for Target: ${targetPlayerName}`, adminPlayerName, dependencies);
 
-        const confirmed = await _showConfirmationModal(
+        await _showConfirmationModal(
             player,
             getString('ui.playerActions.clearInventory.confirmTitle'),
             getString('ui.playerActions.clearInventory.confirmBody', { targetPlayerName }),
