@@ -1014,8 +1014,9 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
     }
     const backExitButtonText = atRootLevel ? getString('common.button.close') : getString('common.button.back');
     const backExitButtonIcon = atRootLevel ? 'textures/ui/cancel' : 'textures/ui/undo';
-    // Wrap the condition in parentheses to satisfy ESLint rule about mixing logical expressions
-    const shouldAddBackExitButton = ((panelId === 'errorDisplayPanel') || (permittedItems.length > 0) || (panelDefinition.items.length === 0));
+    // Condition for adding a back/exit button.
+    // It's added if it's an error panel, or if there are items to show, or if the panel is defined to have no static items (implying it's dynamic or just a message panel).
+    const shouldAddBackExitButton = (panelId === 'errorDisplayPanel' || permittedItems.length > 0 || panelDefinition.items.length === 0);
     if (shouldAddBackExitButton) {
         form.button(backExitButtonText, backExitButtonIcon);
     }
