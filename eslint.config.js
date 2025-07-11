@@ -308,5 +308,16 @@ export default [
             }
         }],
     }
+  },
+  // Override for eventHandlers.js to relax jsdoc/require-param-description
+  {
+    files: ["AntiCheatsBP/scripts/core/eventHandlers.js"],
+    plugins: {
+        jsdoc: jsdoc,
+    },
+    rules: {
+        // Turn off for this file due to issues with profiled function wrappers
+        'jsdoc/require-param-description': 'off',
+    }
   }
 ];

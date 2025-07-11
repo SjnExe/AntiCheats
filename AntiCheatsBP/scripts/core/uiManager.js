@@ -347,12 +347,13 @@ async function showResetFlagsFormImpl(player, dependencies, _context) {
         if (response.canceled) {
             player.sendMessage('§7Flag reset action cancelled.');
         } else {
-            const [targetPlayerName, confirmed] = response.formValues;
+            const targetPlayerName = response.formValues[0];
+            const confirmedReset = response.formValues[1]; // Renamed for clarity from 'confirmed'
             if (!targetPlayerName || targetPlayerName.trim() === '') {
                 player.sendMessage(getString('common.error.nameEmpty'));
                 await showResetFlagsFormImpl(player, dependencies, _context); return;
             }
-            if (!confirmed) {
+            if (!confirmedReset) {
                 player.sendMessage('§eFlag reset not confirmed. Action cancelled.');
             } else {
                 const resetFlagsCommand = commandExecutionMap?.get('resetflags');
