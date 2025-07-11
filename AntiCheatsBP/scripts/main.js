@@ -84,7 +84,13 @@ function logProfilingData(dependencies) {
         logOutput += formatStats(handlerName, profilingData.eventHandlers[handlerName]);
     }
 
-    dependencies.playerUtils.debugLog(logOutput, 'PerformanceProfile', dependencies);
+    if (dependencies.playerUtils && typeof dependencies.playerUtils.debugLog === 'function') {
+        dependencies.playerUtils.debugLog(logOutput, 'PerformanceProfile', dependencies);
+    } else {
+        // If debugLog is not available, we might want to output the performance profile to console.warn directly
+        // This ensures the profiling data isn't completely lost if debugLog is the issue.
+        console.warn("[Main.logProfilingData] playerUtils.debugLog not available. Raw profiling data:\n" + logOutput);
+    }
 
     // Optional: Reset stats after logging to capture fresh data for the next interval
     // This depends on whether cumulative or interval-specific data is more useful.
@@ -235,8 +241,18 @@ function checkEventAPIsReady(dependencies) {
  */
 function performInitializations() {
     const startupDependencies = getStandardDependencies();
-    startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', startupDependencies);
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
+    } else {
+        console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available at initial log point. This might indicate a loading issue.`);
+    }
+    // The second debugLog call also needs protection if the first one could fail
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', startupDependencies);
+    } else {
+        // Optionally, log a warning for this too, or assume the first warning is sufficient
+        // console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available for event subscription log.`);
+    }
 
     if (mc.world?.beforeEvents?.chatSend) {
         mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
@@ -372,7 +388,11 @@ function performInitializations() {
         console.warn(`[${mainModuleName}.performInitializations] Skipping subscription for pistonActivate (after): object undefined.`);
     }
 
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules (commands, logs, ranks, etc.)...`, 'System', startupDependencies);
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules (commands, logs, ranks, etc.)...`, 'System', startupDependencies);
+    } else {
+        console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before module initialization log.`);
+    }
     commandManager.initializeCommands(startupDependencies);
     logManager.initializeLogCache(startupDependencies);
     reportManager.initializeReportCache(startupDependencies);
@@ -383,16 +403,28 @@ function performInitializations() {
         knownDims.forEach(dimId => {
             worldBorderManager.getBorderSettings(dimId, startupDependencies);
         });
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] World border settings loaded/initialized for known dimensions.`, 'System', startupDependencies);
+        if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+            startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] World border settings loaded/initialized for known dimensions.`, 'System', startupDependencies);
+        } else {
+            console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before world border log.`);
+        }
     }
 
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Anti-Cheat Core System Initialized. Event handlers and tick loop are active.`, 'System', startupDependencies);
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Anti-Cheat Core System Initialized. Event handlers and tick loop are active.`, 'System', startupDependencies);
+    } else {
+        console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before core system initialized log.`);
+    }
     if (mc.world && typeof mc.world.sendMessage === 'function') {
         mc.world.sendMessage(startupDependencies.getString('system.core.initialized', { version: configModule.acVersion }));
     }
 
     // --- Configuration Validation ---
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', startupDependencies);
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', startupDependencies);
+    } else {
+        console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before config validation log.`);
+    }
     const allValidationErrors = [];
     const knownCommands = commandManager.getAllRegisteredCommandNames(); // Get known commands for validation
 
@@ -406,10 +438,14 @@ function performInitializations() {
         configModule.commandAliases, // Pass commandAliases separately
     );
     if (mainConfigErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Main Config (config.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+            startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Main Config (config.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        }
         mainConfigErrors.forEach(err => {
             console.error(`[ConfigValidation|config.js] ${err}`);
-            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+                startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            }
         });
         allValidationErrors.push(...mainConfigErrors.map(e => `[config.js] ${e}`));
     }
@@ -417,10 +453,14 @@ function performInitializations() {
     // Validate actionProfiles.js
     const actionProfileErrors = configValidator.validateActionProfiles(checkActionProfiles);
     if (actionProfileErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Action Profiles (actionProfiles.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+            startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Action Profiles (actionProfiles.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        }
         actionProfileErrors.forEach(err => {
             console.error(`[ConfigValidation|actionProfiles.js] ${err}`);
-            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+                startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            }
         });
         allValidationErrors.push(...actionProfileErrors.map(e => `[actionProfiles.js] ${e}`));
     }
@@ -428,10 +468,14 @@ function performInitializations() {
     // Validate automodConfig.js
     const autoModErrors = configValidator.validateAutoModConfig(automodConfig, checkActionProfiles);
     if (autoModErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] AutoMod Config (automodConfig.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+            startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] AutoMod Config (automodConfig.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        }
         autoModErrors.forEach(err => {
             console.error(`[ConfigValidation|automodConfig.js] ${err}`);
-            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+                startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            }
         });
         allValidationErrors.push(...autoModErrors.map(e => `[automodConfig.js] ${e}`));
     }
@@ -450,10 +494,14 @@ function performInitializations() {
         startupDependencies.config.adminTag,
     );
     if (ranksConfigErrors.length > 0) {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Ranks Config (ranksConfig.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+            startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Ranks Config (ranksConfig.js) validation errors found:`, 'SystemCritical', startupDependencies);
+        }
         ranksConfigErrors.forEach(err => {
             console.error(`[ConfigValidation|ranksConfig.js] ${err}`);
-            startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+                startupDependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', startupDependencies);
+            }
         });
         allValidationErrors.push(...ranksConfigErrors.map(e => `[ranksConfig.js] ${e}`));
     }
@@ -461,17 +509,27 @@ function performInitializations() {
     if (allValidationErrors.length > 0) {
         const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s). System may be unstable or not function correctly. Please check server logs for details.`;
         console.error(`[${mainModuleName}.performInitializations] ${summaryMessage}`);
+        // Assuming notifyAdmins also uses debugLog internally or is critical, it might also need guards or careful review if issues persist.
+        // For now, focusing on direct debugLog calls.
         startupDependencies.playerUtils.notifyAdmins(summaryMessage, 'SystemCritical', startupDependencies, true); // Force notify even if default is off for this
         // Depending on severity, could throw an error here to halt initialization,
         // or allow it to continue in a potentially degraded state.
         // For now, logging and notifying admins.
     } else {
-        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] All configurations validated successfully.`, 'System', startupDependencies);
+        if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+            startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] All configurations validated successfully.`, 'System', startupDependencies);
+        } else {
+            console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available for config success log.`);
+        }
     }
     // --- End Configuration Validation ---
 
 
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Starting main tick loop...`, 'System', startupDependencies);
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Starting main tick loop...`, 'System', startupDependencies);
+    } else {
+        console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before starting tick loop.`);
+    }
     mc.system.runInterval(async () => {
         currentTick++;
         const tickDependencies = getStandardDependencies();
@@ -486,7 +544,9 @@ function performInitializations() {
                 worldBorderManager.processWorldBorderResizing(tickDependencies);
             } catch (e) {
                 console.error(`[${mainModuleName}.TickLoop] Error processing world border resizing: ${e.stack || e.message}`);
-                tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
+                if (tickDependencies.playerUtils && typeof tickDependencies.playerUtils.debugLog === 'function') {
+                    tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error processing world border resizing: ${e.message}`, 'System', tickDependencies);
+                }
                 logManager.addLog({
                     actionType: 'errorMainWorldBorderResize',
                     context: 'Main.TickLoop.worldBorderResizing',
@@ -527,12 +587,16 @@ function performInitializations() {
                 pData = await playerDataManager.ensurePlayerDataInitialized(player, currentTick, tickDependencies);
             } catch (e) {
                 console.error(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.stack || e}`);
-                tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, tickDependencies);
+                if (tickDependencies.playerUtils && typeof tickDependencies.playerUtils.debugLog === 'function') {
+                    tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, tickDependencies);
+                }
                 continue;
             }
 
             if (!pData) {
-                tickDependencies.playerUtils.debugLog(`CRITICAL: pData not available for ${player.nameTag} in tick loop after ensure. Skipping checks for this player this tick.`, player.nameTag, tickDependencies);
+                if (tickDependencies.playerUtils && typeof tickDependencies.playerUtils.debugLog === 'function') {
+                    tickDependencies.playerUtils.debugLog(`CRITICAL: pData not available for ${player.nameTag} in tick loop after ensure. Skipping checks for this player this tick.`, player.nameTag, tickDependencies);
+                }
                 continue;
             }
 
@@ -621,7 +685,9 @@ function performInitializations() {
                 }
             } catch (checkError) {
                 console.error(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.stack || checkError}`);
-                tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
+                if (tickDependencies.playerUtils && typeof tickDependencies.playerUtils.debugLog === 'function') {
+                    tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error during player-specific checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
+                }
                 logManager.addLog({
                     actionType: 'error.main.playerTick.checkFail', // Standardized actionType
                     context: 'Main.TickLoop.playerChecks', // Specific context
@@ -656,7 +722,9 @@ function performInitializations() {
                     worldBorderManager.enforceWorldBorderForPlayer(player, pData, tickDependencies);
                 } catch (e) {
                     console.error(`[${mainModuleName}.TickLoop] Error enforcing world border for player ${player.nameTag}: ${e.stack || e.message}`);
-                    tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
+                    if (tickDependencies.playerUtils && typeof tickDependencies.playerUtils.debugLog === 'function') {
+                        tickDependencies.playerUtils.debugLog(`[${mainModuleName}.TickLoop] Error enforcing world border for ${player.nameTag}: ${e.message}`, player.nameTag, tickDependencies);
+                    }
                     logManager.addLog({
                         actionType: 'errorMainWorldBorderEnforce',
                         context: 'Main.TickLoop.worldBorderEnforcement',
@@ -668,7 +736,9 @@ function performInitializations() {
         }
 
         if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-            tickDependencies.playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
+            if (tickDependencies.playerUtils && typeof tickDependencies.playerUtils.debugLog === 'function') {
+                tickDependencies.playerUtils.debugLog(`Performing periodic data persistence. Current Tick: ${currentTick}`, 'System', tickDependencies);
+            }
             allPlayers.forEach(async player => {
                 if (!player.isValid()) {
                     return;
@@ -732,6 +802,9 @@ function performInitializations() {
         }
     }, TPA_SYSTEM_TICK_INTERVAL);
 }
+
+// No direct playerUtils.debugLog calls in attemptInitializeSystem, they are inside checkEventAPIsReady
+// and performInitializations which are already being handled.
 
 /**
  * Attempts to initialize the system. If critical APIs are not ready, it schedules a retry.
