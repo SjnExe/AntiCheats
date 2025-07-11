@@ -6,8 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .js",
-    "lint:fix": "eslint . --ext .js --fix",
-    "build:registry": "node scripts/build/generateCommandRegistry.js"
+    "lint:fix": "eslint . --ext .js --fix"
   },
   "repository": {
     "type": "git",
