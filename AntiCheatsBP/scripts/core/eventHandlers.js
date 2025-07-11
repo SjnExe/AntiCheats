@@ -1213,9 +1213,9 @@ async function _handlePlayerPlaceBlockAfterEvent(eventData, dependencies) {
 export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlayerPlaceBlockAfterEvent', _handlePlayerPlaceBlockAfterEvent);
 
 /**
- * Handles chat messages before they are sent, dispatching to chatProcessor.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData Object containing details about the chat message being sent and the sender.
- * @param {import('../types.js').Dependencies} dependencies Object containing shared modules and utility functions required by the handler.
+ * Processes chat messages before they are sent to other players.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - Provides details about the chat message and its sender.
+ * @param {import('../types.js').Dependencies} dependencies - Provides access to shared resources and helper functions.
  */
 async function _handleBeforeChatSend(eventData, dependencies) {
     const { playerDataManager, playerUtils, getString, chatProcessor } = dependencies;
