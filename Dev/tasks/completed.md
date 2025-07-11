@@ -4,6 +4,16 @@ This document lists significant tasks that have been completed.
 
 ---
 
+* **(Jules) Linting Codebase (Partial - Submitted: `lint-fixes` branch):** Used ESLint to fix syntax errors and other issues across the project.
+    *   **Completed Actions:**
+        *   Installed npm dependencies.
+        *   Fixed critical duplicate function errors (`prepareBanUnbanLogsViewer`, `prepareMuteUnmuteLogsViewer`) in `AntiCheatsBP/scripts/core/uiManager.js`.
+        *   Ran `eslint --fix` which automatically corrected ~200 errors/warnings in `AntiCheatsBP/scripts/core/uiManager.js`.
+        *   Manually addressed a batch of JSDoc issues (missing descriptions, types for some functions) and some `no-unused-vars` / `no-magic-numbers` in `AntiCheatsBP/scripts/core/uiManager.js`.
+    *   **Outstanding Issues Noted for Future Work (see `todo.md`):**
+        *   Approximately 128 linting issues (mostly JSDoc related) remain in `AntiCheatsBP/scripts/core/uiManager.js`.
+        *   Two JSDoc warnings in `AntiCheatsBP/scripts/core/eventHandlers.js` (lines 1006-1007 for `_handleDataDrivenPlayerTriggerEvent`) persist due to a file content discrepancy preventing automated or manual fixing during this session.
+
 **Task:** Apply ESLint fixes to the codebase
 **Agent:** Jules (AI Assistant)
 **Date Completed:** (To be filled upon merge/completion)
