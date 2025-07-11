@@ -1346,3 +1346,34 @@ async function _handlePlayerDimensionChangeAfterEvent(eventData, dependencies) {
  *
  */
 export const handlePlayerDimensionChangeAfterEvent = profileEventHandler('handlePlayerDimensionChangeAfterEvent', _handlePlayerDimensionChangeAfterEvent);
+
+/**
+ * Handles player hit entity events for specific checks like NoSwing.
+ * @async
+ * @param {import('@minecraft/server').EntityHitEntityAfterEvent} eventData - The event data object from the `entityHitEntity.afterEvents` signal, containing information about the hitting and hit entities.
+ * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object providing access to shared modules and utilities.
+ */
+async function _handlePlayerHitEntityEvent(eventData, dependencies) {
+    const { checks, config, playerDataManager, mc } = dependencies; // Added mc here
+    // Placeholder for actual logic - this function body might be missing or was intended to be implemented.
+    // Example: Accessing eventData properties
+    const { damagingEntity, hitEntity } = eventData;
+
+    if (!damagingEntity?.isValid() || !hitEntity?.isValid()) {
+        return;
+    }
+
+    // Example of how checks might be called:
+    if (damagingEntity instanceof mc.Player && config.enableNoSwingCheck && checks?.checkNoSwing) {
+        const pData = playerDataManager.getPlayerData(damagingEntity.id);
+        if (pData) {
+            await checks.checkNoSwing(damagingEntity, pData, dependencies, eventData);
+        }
+    }
+    dependencies.playerUtils.debugLog(`[EvtHdlr.HitEnt] _handlePlayerHitEntityEvent called for ${damagingEntity?.nameTag} hitting ${hitEntity?.nameTag}. Add actual implementation if missing.`, damagingEntity?.nameTag, dependencies);
+}
+
+/**
+ *
+ */
+export const handlePlayerHitEntityEvent = profileEventHandler('handlePlayerHitEntityEvent', _handlePlayerHitEntityEvent);
