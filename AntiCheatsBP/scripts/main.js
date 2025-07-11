@@ -235,8 +235,18 @@ function checkEventAPIsReady(dependencies) {
  */
 function performInitializations() {
     const startupDependencies = getStandardDependencies();
-    startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
-    startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', startupDependencies);
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
+    } else {
+        console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available at initial log point. This might indicate a loading issue.`);
+    }
+    // The second debugLog call also needs protection if the first one could fail
+    if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
+        startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', startupDependencies);
+    } else {
+        // Optionally, log a warning for this too, or assume the first warning is sufficient
+        // console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available for event subscription log.`);
+    }
 
     if (mc.world?.beforeEvents?.chatSend) {
         mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
