@@ -4,6 +4,28 @@ This document lists significant tasks that have been completed.
 
 ---
 
+**Task:** Apply ESLint fixes to the codebase
+**Agent:** Jules (AI Assistant)
+**Date Completed:** (To be filled upon merge/completion)
+**Summary:**
+- Installed npm dependencies using `npm install`.
+- Ran `npm run lint` to identify an initial 36 linting issues (20 errors, 16 warnings).
+- Ran `npm run lint:fix`, which did not automatically correct any issues.
+- Manually addressed several issues:
+    - Corrected constant naming conventions (UPPER_SNAKE_CASE to camelCase) and their usage in:
+        - `AntiCheatsBP/scripts/checks/world/buildingChecks.js`
+        - `AntiCheatsBP/scripts/core/eventHandlers.js`
+        - `AntiCheatsBP/scripts/utils/playerUtils.js` (also prefixed unused `avgDaysPerMonth` and `avgDaysPerYear` with `_`)
+    - Attempted to fix JSDoc `require-param-description` warnings in `AntiCheatsBP/scripts/core/eventHandlers.js` for the `_handleBeforeChatSend` function by providing descriptions.
+    - Attempted to fix a parsing error (`Logical expressions and coalesce expressions cannot be mixed`) in `AntiCheatsBP/scripts/core/uiManager.js` (line 756) by various parenthesizing strategies and temporary simplification of the line.
+- After multiple attempts and verification of file contents, 3 issues stubbornly remained:
+    - 2 `jsdoc/require-param-description` warnings in `eventHandlers.js` for `_handleBeforeChatSend`, despite descriptions being present in the source.
+    - 1 parsing error in `uiManager.js` at line 756, column 90, which seems to be a misattribution by the parser or a tool state issue, as changes to the line (including simplification to `const x = true;`) did not alter the error message or its reported location relative to the original code structure.
+- The majority of linting issues (33 out of 36) were resolved. The remaining 3 are suspected to be related to the linting tool's behavior or environment state rather than solvable code issues at the reported locations with available tools.
+**Branch/Commit Theme:** `fix/linting-fixes` (Proposed)
+
+---
+
 **Task:** Linting the Codebase (Attempted Full Fix)
 **Agent:** Jules (AI Assistant)
 **Date Completed:** (Current Date - to be filled by user/system)
