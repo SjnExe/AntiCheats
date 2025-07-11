@@ -153,10 +153,86 @@ function getStandardDependencies() {
             MAX_PROFILING_HISTORY,
         };
     } catch (error) {
-        console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error: ${error.stack || error}`);
+        console.error(`[${mainModuleName}.getStandardDependencies CRITICAL] Error during initial assembly: ${error.stack || error}`);
+        // Attempt to return a minimal dependencies object or rethrow, depending on desired resilience.
+        // For now, rethrowing as this is a critical failure.
         throw error;
     }
 }
+
+/**
+ * Validates the assembled standard dependencies object for critical function existence.
+ * Logs errors if functions are missing.
+ * @param {import('./types.js').Dependencies} deps - The dependencies object to validate.
+ * @param {string} callContext - A string indicating when/where getStandardDependencies was called from.
+ * @returns {boolean} True if all critical functions are present, false otherwise.
+ */
+function validateDependencies(deps, callContext) {
+    let allValid = true;
+    const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
+
+    if (!deps) {
+        console.error(`${mainContext} CRITICAL: Dependencies object itself is null or undefined.`);
+        return false;
+    }
+
+    // Player Data Manager
+    if (typeof deps.playerDataManager?.ensurePlayerDataInitialized !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.playerDataManager.ensurePlayerDataInitialized is NOT a function (type: ${typeof deps.playerDataManager?.ensurePlayerDataInitialized}). Player data will fail.`);
+        allValid = false;
+    }
+    if (typeof deps.playerDataManager?.getPlayerData !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.playerDataManager.getPlayerData is NOT a function (type: ${typeof deps.playerDataManager?.getPlayerData}).`);
+        allValid = false;
+    }
+
+    // Player Utils
+    if (typeof deps.playerUtils?.debugLog !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.playerUtils.debugLog is NOT a function (type: ${typeof deps.playerUtils?.debugLog}). Debug logging will fail.`);
+        // This is critical for further diagnostics, but might not break core functionality if other logs work.
+        // Not setting allValid = false to allow system to limp along if only debugLog is broken.
+    }
+    if (typeof deps.playerUtils?.getString !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.playerUtils.getString is NOT a function (type: ${typeof deps.playerUtils?.getString}). UI/messages will fail.`);
+        allValid = false;
+    }
+    if (typeof deps.playerUtils?.notifyAdmins !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.playerUtils.notifyAdmins is NOT a function (type: ${typeof deps.playerUtils?.notifyAdmins}). Admin notifications will fail.`);
+        allValid = false;
+    }
+
+    // Action Manager
+    if (typeof deps.actionManager?.executeCheckAction !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.actionManager.executeCheckAction is NOT a function (type: ${typeof deps.actionManager?.executeCheckAction}). Check actions will fail.`);
+        allValid = false;
+    }
+
+    // MC System (already checked in checkEventAPIsReady, but good for context here)
+    if (typeof deps.system?.runInterval !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.system.runInterval is NOT a function. Main tick loop will fail.`);
+        allValid = false;
+    }
+    if (typeof deps.system?.runTimeout !== 'function') {
+        console.error(`${mainContext} CRITICAL: deps.system.runTimeout is NOT a function. Timed operations will fail.`);
+        allValid = false;
+    }
+
+    // Config module (ensure editableConfigValues is an object, as it's directly accessed)
+    if (typeof deps.config !== 'object' || deps.config === null) {
+        console.error(`${mainContext} CRITICAL: deps.config (editableConfigValues) is NOT an object or is null. Config access will fail.`);
+        allValid = false;
+    }
+
+
+    if (!allValid) {
+        console.error(`${mainContext} One or more critical functions are missing from the dependencies object. System stability is compromised.`);
+    } else {
+        // Optional: log success if needed for verbose debugging
+        // console.log(`${mainContext} All checked critical functions in dependencies object are present.`);
+    }
+    return allValid;
+}
+
 
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
@@ -227,10 +303,27 @@ function checkEventAPIsReady(dependencies) {
         });
     }
 
-    if (overallAllReady) {
-        logger(`[${mainModuleName}.checkEventAPIsReady] All checked Minecraft event APIs appear to be available.`);
+    // Check mc.system and its methods
+    if (!mc.system) {
+        errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.system: UNDEFINED - CRITICAL`);
+        overallAllReady = false;
     } else {
-        errorLogger(`[${mainModuleName}.checkEventAPIsReady] Not all required Minecraft event APIs are available. See details above.`);
+        logger(`[${mainModuleName}.checkEventAPIsReady] mc.system: DEFINED (type: ${typeof mc.system})`);
+        const systemMethods = ['runInterval', 'runTimeout', 'clearRun']; // Added clearRun as it's related
+        systemMethods.forEach(methodName => {
+            if (mc.system[methodName] && typeof mc.system[methodName] === 'function') {
+                logger(`[${mainModuleName}.checkEventAPIsReady] mc.system.${methodName}: DEFINED (type: function)`);
+            } else {
+                errorLogger(`[${mainModuleName}.checkEventAPIsReady] mc.system.${methodName}: UNDEFINED or NOT A FUNCTION (type: ${typeof mc.system[methodName]}) - CRITICAL`);
+                overallAllReady = false;
+            }
+        });
+    }
+
+    if (overallAllReady) {
+        logger(`[${mainModuleName}.checkEventAPIsReady] All checked Minecraft event and system APIs appear to be available.`);
+    } else {
+        errorLogger(`[${mainModuleName}.checkEventAPIsReady] Not all required Minecraft event or system APIs are available. See details above.`);
     }
     return overallAllReady;
 }
@@ -241,6 +334,12 @@ function checkEventAPIsReady(dependencies) {
  */
 function performInitializations() {
     const startupDependencies = getStandardDependencies();
+    if (!validateDependencies(startupDependencies, 'performInitializations - startup')) {
+        // Optionally, halt further initialization if critical dependencies are missing.
+        // For now, it logs errors and continues, which might lead to subsequent failures.
+        // Consider adding: console.error(`[${mainModuleName}.performInitializations] Halting due to missing critical dependencies.`); return;
+    }
+
     if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
         startupDependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', startupDependencies);
     } else {
@@ -812,17 +911,29 @@ function performInitializations() {
  */
 function attemptInitializeSystem(retryCount = 0) {
     const tempStartupDepsForLog = getStandardDependencies();
+    // Validate dependencies used for API checks, crucial for debugLog within checkEventAPIsReady
+    validateDependencies(tempStartupDepsForLog, `attemptInitializeSystem - pre-check - attempt ${retryCount}`);
 
     if (checkEventAPIsReady(tempStartupDepsForLog)) {
-        performInitializations();
+        console.log(`[${mainModuleName}.attemptInitializeSystem] APIs reported as ready. Proceeding with performInitializations. Attempt: ${retryCount}`);
+        performInitializations(); // This will internally call getStandardDependencies and validate again
     } else {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
         console.warn(`[${mainModuleName}.attemptInitializeSystem] API not fully ready. Retrying initialization in ${delay / 20} seconds (${delay} ticks). Attempt ${retryCount + 1}/${maxInitRetries}`);
 
         if (retryCount < maxInitRetries) {
-            mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
+            // It's important that mc.system.runTimeout is available. checkEventAPIsReady now checks for this.
+            // If mc.system.runTimeout itself is missing, this path would also fail.
+            if (mc.system && typeof mc.system.runTimeout === 'function') {
+                mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
+            } else {
+                console.error(`[${mainModuleName}.attemptInitializeSystem CRITICAL] mc.system.runTimeout is NOT available. Cannot schedule retry. System will not initialize.`);
+            }
         } else {
-            if (checkEventAPIsReady(tempStartupDepsForLog)) {
+            // Final attempt to check APIs after max retries
+            const finalTempDeps = getStandardDependencies();
+            validateDependencies(finalTempDeps, `attemptInitializeSystem - final check - attempt ${retryCount}`);
+            if (checkEventAPIsReady(finalTempDeps)) {
                 console.warn(`[${mainModuleName}.attemptInitializeSystem] MAX RETRIES REACHED, but APIs appear to be ready now. Proceeding with initialization.`);
                 performInitializations();
             } else {
@@ -833,6 +944,15 @@ function attemptInitializeSystem(retryCount = 0) {
     }
 }
 
-mc.system.runTimeout(() => {
-    attemptInitializeSystem();
-}, initialRetryDelayTicks * 2); // Slightly increased delay to ensure other scripts might load if there are ordering issues.
+// Initial call to start the system initialization process
+// Ensure mc.system.runTimeout is available for this very first call.
+// If it's not, the script won't even start its initialization attempt logic.
+// This implies a fundamental issue with the @minecraft/server API availability.
+if (mc.system && typeof mc.system.runTimeout === 'function') {
+    mc.system.runTimeout(() => {
+        attemptInitializeSystem();
+    }, initialRetryDelayTicks * 2); // Slightly increased delay
+} else {
+    console.error(`[${mainModuleName} CRITICAL INITIALIZATION FAILURE] mc.system or mc.system.runTimeout is not available at the script entry point. AntiCheat system cannot start.`);
+    // At this stage, if these are missing, there's little the script can do.
+}
