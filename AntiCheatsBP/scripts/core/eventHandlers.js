@@ -49,9 +49,9 @@ const welcomeMessageDelayTicks = 20;
 const deathCoordsMessageDelayTicks = 5;
 const defaultFoodUseDurationSeconds = 1.6;
 const ticksPerSecond = 20;
-const defaultTowerHistoryLength = 20;
-const blockOffsetOneBelow = -1;
-const blockOffsetTwoBelow = -2;
+const defaultTowerPlacementHistoryLength = 20; // Renamed for clarity and to match usage
+const blockOffsetOneBelow = -1; // This seems to be used as a direct value, not a config default
+const blockOffsetTwoBelow = -2; // This also seems to be used as a direct value
 const golemConstructionCheckTickWindow = 10; // For Math.abs(...) < 10
 const renderDistanceCheckDelayTicks = 100;
 const minTimeoutDelayTicks = 1;
@@ -1120,7 +1120,7 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
         tick: currentTick,
         dimensionId: player.dimension.id,
     });
-    if (pDataInternal.recentBlockPlacements.length > (config?.towerPlacementHistoryLength ?? DEFAULT_TOWER_HISTORY_LENGTH)) {
+    if (pDataInternal.recentBlockPlacements.length > (config?.towerPlacementHistoryLength ?? defaultTowerPlacementHistoryLength)) {
         pDataInternal.recentBlockPlacements.shift();
     }
     pDataInternal.isDirtyForSave = true;
@@ -1156,8 +1156,8 @@ async function _processPlayerPlaceBlockAfterEffects(player, pData, block, depend
     // Golem construction check
     if (config?.enableEntitySpamAntiGrief && block.typeId === mc.MinecraftBlockTypes.carvedPumpkin.id) {
         const dimension = player.dimension;
-        const blockBelow = dimension.getBlock(block.location.offset(0, BLOCK_OFFSET_ONE_BELOW, 0));
-        const blockTwoBelow = dimension.getBlock(block.location.offset(0, BLOCK_OFFSET_TWO_BELOW, 0));
+        const blockBelow = dimension.getBlock(block.location.offset(0, blockOffsetOneBelow, 0));
+        const blockTwoBelow = dimension.getBlock(block.location.offset(0, blockOffsetTwoBelow, 0));
         let potentialGolemType = null;
 
         if (blockBelow?.typeId === mc.MinecraftBlockTypes.ironBlock.id &&
@@ -1214,8 +1214,8 @@ export const handlePlayerPlaceBlockAfterEvent = profileEventHandler('handlePlaye
 
 /**
  * Handles chat messages before they are sent, dispatching to chatProcessor.
- * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData - Data for the 'beforeChatSend' event, including the player sending the message and the message itself. This object can be modified to cancel the event or change the message.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object providing access to shared modules (e.g., config, logManager, playerUtils, chatProcessor).
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {import('../types.js').Dependencies} dependencies The shared dependencies.
  */
 async function _handleBeforeChatSend(eventData, dependencies) {
     const { playerDataManager, playerUtils, getString, chatProcessor } = dependencies;

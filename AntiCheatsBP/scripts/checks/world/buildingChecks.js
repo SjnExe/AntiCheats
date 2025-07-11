@@ -15,15 +15,15 @@ const defaultDownwardScaffoldMinHorizontalSpeed = 3.0;
 const defaultFlatRotationConsecutiveBlocks = 4;
 const initialMinObservedPitch = 91;
 const initialMaxObservedPitch = -91;
-const DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MIN = -5.0;
-const DEFAULT_FLAT_ROTATION_PITCH_HORIZONTAL_MAX = 5.0;
-const DEFAULT_FLAT_ROTATION_PITCH_DOWNWARD_MIN = -90.0;
-const DEFAULT_FLAT_ROTATION_PITCH_DOWNWARD_MAX = -85.0;
-const DEGREES_HALF_CIRCLE = 180;
-const DEGREES_FULL_CIRCLE = 360;
-const DEFAULT_BLOCK_SPAM_MAX_BLOCKS_IN_WINDOW = 8;
-const DEFAULT_BLOCK_SPAM_DENSITY_TIME_WINDOW_TICKS = 60;
-const DEFAULT_BLOCK_SPAM_DENSITY_THRESHOLD_PERCENTAGE = 70;
+const defaultFlatRotationPitchHorizontalMin = -5.0;
+const defaultFlatRotationPitchHorizontalMax = 5.0;
+const defaultFlatRotationPitchDownwardMin = -90.0;
+const defaultFlatRotationPitchDownwardMax = -85.0;
+const degreesHalfCircle = 180;
+const degreesFullCircle = 360;
+const defaultBlockSpamMaxBlocksInWindow = 8;
+const defaultBlockSpamDensityTimeWindowTicks = 60;
+const defaultBlockSpamDensityThresholdPercentage = 70;
 
 
 /**

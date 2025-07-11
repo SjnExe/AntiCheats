@@ -1015,7 +1015,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
     const backExitButtonText = atRootLevel ? getString('common.button.close') : getString('common.button.back');
     const backExitButtonIcon = atRootLevel ? 'textures/ui/cancel' : 'textures/ui/undo';
     // Wrap the condition in parentheses to satisfy ESLint rule about mixing logical expressions
-    const shouldAddBackExitButton = (panelId === 'errorDisplayPanel') || (permittedItems.length > 0) || (panelDefinition.items.length === 0);
+    const shouldAddBackExitButton = ((panelId === 'errorDisplayPanel') || (permittedItems.length > 0) || (panelDefinition.items.length === 0));
     if (shouldAddBackExitButton) {
         form.button(backExitButtonText, backExitButtonIcon);
     }
