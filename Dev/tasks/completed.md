@@ -88,3 +88,25 @@ This document lists significant tasks that have been completed.
     - `AntiCheatsBP/scripts/utils/worldBorderManager.js`
 - No strict JavaScript syntax errors (that would prevent code execution) were found during the review. The focus was on ensuring code conforms to the established project guidelines, particularly naming conventions.
 **Branch/Commit Theme:** `fix/guideline-adherence-camelcase`
+
+---
+
+**Task:** Comprehensive ESLint Fixes and False Positive Analysis
+**Agent:** Jules (AI Assistant)
+**Date Completed:** (To be filled upon merge/completion)
+**Summary:**
+- Installed npm dependencies.
+- Executed `npm run lint` and `npm run lint:fix` iteratively.
+- Manually addressed a large number of ESLint errors and warnings across the codebase, primarily in `AntiCheatsBP/scripts/core/uiManager.js` and `AntiCheatsBP/scripts/core/eventHandlers.js`.
+- Fixes included:
+    - Correcting JSDoc issues (missing descriptions, parameter name mismatches, missing types).
+    - Resolving `no-undef` errors.
+    - Fixing `no-case-declarations` errors by adding block scopes.
+    - Replacing magic numbers with constants.
+    - Removing unused variables and deprecated functions (e.g., `showOnlinePlayersList` in `uiManager.js`).
+    - Removing unused `eslint-disable` directives.
+- Investigated and identified several persistent warnings as likely false positives or linter quirks, particularly:
+    - `jsdoc/require-param-description` in `eventHandlers.js` for `_handleBeforeChatSend` (descriptions are present).
+    - `no-unused-vars` in `uiManager.js` for `helpfulLinks` (misattributed scope), `confirmed` (variable is used), and `logManager` (used indirectly via callbacks).
+- The codebase has been significantly cleaned, reducing linting issues from over 100 to 5 persistent, likely false-positive warnings.
+**Branch/Commit Theme:** `fix/eslint-fixes-jul7` (Proposed)
