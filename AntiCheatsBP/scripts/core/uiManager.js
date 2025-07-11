@@ -753,7 +753,7 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
     const filteredLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, playerNameFilter) : [];
     const totalLogs = filteredLogs.length;
     // totalPages should ideally be passed in context, but recalculate if missing for robustness
-    const effectiveTotalPages = context.totalPages ?? Math.ceil(totalLogs / logsPerPage) || 1;
+    const effectiveTotalPages = (context.totalPages ?? Math.ceil(totalLogs / logsPerPage)) || 1;
 
     let title = '';
     if (playerNameFilter) {
