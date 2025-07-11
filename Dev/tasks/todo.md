@@ -13,6 +13,6 @@ This list contains planned features, improvements, and areas for future investig
 - **(Low) Add GIF/Screenshot for World Border to README.md**: Create and add a visual of the World Border feature. (Context: `README.md:75`).
 
 ## Code Quality & Linting
-- **(Medium) Complete JSDoc and minor linting for `AntiCheatsBP/scripts/core/uiManager.js`:**
-    - **Details:** After fixing critical errors and running `eslint --fix`, approximately 128 linting issues remain in `uiManager.js`. These are primarily JSDoc-related (missing descriptions, param types, etc.) but also include some `no-unused-vars`, `no-magic-numbers`, and other minor warnings/errors.
-    - **Context:** This is a follow-up from the general linting task undertaken by Jules on the `fix/linting-issues` branch. Note: 3 `no-unused-vars` warnings for `helpfulLinks` and `confirmed` variables are persistent false positives and have been accepted with disable comments in place.
+- **(Medium) Complete JSDoc and remaining minor linting for `AntiCheatsBP/scripts/core/uiManager.js`:**
+    - **Details:** After fixing critical errors and running `eslint --fix`, a number of linting issues remain in `uiManager.js`. These are primarily JSDoc-related (missing descriptions, param types, etc.) but may also include some `no-magic-numbers`, and other minor warnings/errors. The previously noted `no-unused-vars` warnings (3 instances for `helpfulLinks` and `confirmed`) have been resolved by code changes (removal of unused variables).
+    - **Context:** This is a follow-up from the general linting task undertaken by Jules on the `fix/linting-issues` branch. The remaining issues require manual review and correction.
