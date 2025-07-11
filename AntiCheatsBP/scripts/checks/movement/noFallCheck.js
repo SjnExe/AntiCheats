@@ -14,9 +14,9 @@ import * as mc from '@minecraft/server';
  */
 
 // Constants for magic numbers
-const DEFAULT_SLIME_BLOCK_NO_FALL_GRACE_TICKS = 20;
-const NOFALL_LOGGING_DECIMAL_PLACES = 3;
-const DEFAULT_MIN_FALL_DISTANCE_FOR_DAMAGE = 3.5;
+const defaultSlimeBlockNoFallGraceTicks = 20;
+const nofallLoggingDecimalPlaces = 3;
+const defaultMinFallDistanceForDamage = 3.5;
 
 /**
  * Checks for NoFall violations by verifying if a player takes appropriate fall damage
@@ -80,7 +80,7 @@ export async function checkNoFall(player, pData, dependencies) {
     }
 
     if (player.isOnGround) {
-        const slimeBlockGraceTicks = config?.slimeBlockNoFallGraceTicks ?? DEFAULT_SLIME_BLOCK_NO_FALL_GRACE_TICKS;
+        const slimeBlockGraceTicks = config?.slimeBlockNoFallGraceTicks ?? defaultSlimeBlockNoFallGraceTicks;
         if ((currentTick - (pData.lastOnSlimeBlockTick ?? -Infinity)) < slimeBlockGraceTicks) {
             if (pData.isWatched) {
                 playerUtils?.debugLog(`[NoFallCheck] Player ${playerName} recently on slime block (LastSlimeTick: ${pData.lastOnSlimeBlockTick}, CurrentTick: ${currentTick}). Fall damage check modified/bypassed. FallDistance reset.`, watchedPlayerName, dependencies);
@@ -115,12 +115,12 @@ export async function checkNoFall(player, pData, dependencies) {
         if (pData.isWatched) {
             playerUtils?.debugLog(
                 `[NoFallCheck] ${playerName} landed. FallDistance=${pData.fallDistance.toFixed(2)}, ` + // .toFixed(2) is fine
-                `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.previousVelocity?.y?.toFixed(NOFALL_LOGGING_DECIMAL_PLACES) ?? 'N/A'}`,
+                `TookDamageThisTick=${pData.isTakingFallDamage}, LastVy=${pData.previousVelocity?.y?.toFixed(nofallLoggingDecimalPlaces) ?? 'N/A'}`,
                 watchedPlayerName, dependencies,
             );
         }
 
-        const minDamageDistance = config?.minFallDistanceForDamage ?? DEFAULT_MIN_FALL_DISTANCE_FOR_DAMAGE;
+        const minDamageDistance = config?.minFallDistanceForDamage ?? defaultMinFallDistanceForDamage;
 
         if (pData.fallDistance > minDamageDistance && !pData.isTakingFallDamage) {
             let currentHealth = 'N/A';
@@ -143,7 +143,7 @@ export async function checkNoFall(player, pData, dependencies) {
                 fallDistance: pData.fallDistance.toFixed(2), // .toFixed(2) is fine
                 minDamageDistance: minDamageDistance.toFixed(2), // .toFixed(2) is fine
                 playerHealth: currentHealth,
-                lastVerticalVelocity: pData.previousVelocity?.y?.toFixed(NOFALL_LOGGING_DECIMAL_PLACES) ?? 'N/A',
+                lastVerticalVelocity: pData.previousVelocity?.y?.toFixed(nofallLoggingDecimalPlaces) ?? 'N/A',
                 activeEffects: activeEffectsString,
                 onGround: player.isOnGround.toString(),
                 isTakingFallDamageReported: (pData.isTakingFallDamage ?? false).toString(),

@@ -30,3 +30,29 @@ This document lists significant tasks that have been completed.
 - Attempted to fix JSDoc warnings in `AntiCheatsBP/scripts/core/eventHandlers.js` for `handleBeforeChatSend`. Descriptions were present, but warnings persisted, likely due to linter interaction with higher-order functions.
 - The codebase is now linted according to the refined configuration, with the exception of the aforementioned persistent issues.
 **Branch/Commit Theme:** `fix/linting-improvements` (Proposed)
+
+---
+
+**Task:** Fix Syntax Errors Throughout Addon (Guideline Adherence)
+**Agent:** Jules (AI Assistant)
+**Date Completed:** (Current Date - to be filled by user/system)
+**Summary:**
+- Manually reviewed JavaScript files across the addon, focusing on `AntiCheatsBP/scripts/`.
+- Corrected deviations from project guidelines, primarily by changing constants from `UPPER_SNAKE_CASE` to `camelCase` in multiple files and updating their usages. This was the main type of "syntax error" addressed, interpreting the request as adherence to project coding standards.
+- Files modified include:
+    - `AntiCheatsBP/scripts/core/automodManager.js`
+    - `AntiCheatsBP/scripts/core/eventHandlers.js`
+    - `AntiCheatsBP/scripts/core/reportManager.js`
+    - `AntiCheatsBP/scripts/core/tpaManager.js`
+    - `AntiCheatsBP/scripts/core/uiManager.js`
+    - `AntiCheatsBP/scripts/checks/world/buildingChecks.js`
+    - `AntiCheatsBP/scripts/checks/movement/noFallCheck.js`
+    - `AntiCheatsBP/scripts/checks/movement/speedCheck.js`
+    - `AntiCheatsBP/scripts/commands/tp.js`
+    - `AntiCheatsBP/scripts/commands/worldborder.js`
+    - `AntiCheatsBP/scripts/commands/vanish.js`
+    - `AntiCheatsBP/scripts/utils/itemUtils.js`
+    - `AntiCheatsBP/scripts/utils/playerUtils.js`
+    - `AntiCheatsBP/scripts/utils/worldBorderManager.js`
+- No strict JavaScript syntax errors (that would prevent code execution) were found during the review. The focus was on ensuring code conforms to the established project guidelines, particularly naming conventions.
+**Branch/Commit Theme:** `fix/guideline-adherence-camelcase`

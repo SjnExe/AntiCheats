@@ -5,16 +5,16 @@
  */
 
 // Constants for UUID generation
-const UUID_RANDOM_MULTIPLIER = 16;
-const UUID_VARIANT_MASK = 0x3;
-const UUID_VARIANT_SET = 0x8;
-const UUID_TO_STRING_RADIX = 16;
+const uuidRandomMultiplier = 16;
+const uuidVariantMask = 0x3;
+const uuidVariantSet = 0x8;
+const uuidToStringRadix = 16;
 
 // Default configuration values
-const DEFAULT_TPA_REQUEST_COOLDOWN_SECONDS = 60;
-const DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS = 60;
-const DEFAULT_TPA_TELEPORT_WARMUP_SECONDS = 5;
-const DEFAULT_TPA_MOVEMENT_TOLERANCE = 0.5;
+const defaultTpaRequestCooldownSeconds = 60;
+const defaultTpaRequestTimeoutSeconds = 60;
+const defaultTpaTeleportWarmupSeconds = 5;
+const defaultTpaMovementTolerance = 0.5;
 
 /**
  * @typedef {import('../types.js').TpaRequest} TpaRequest
@@ -36,9 +36,9 @@ const playerTpaStatuses = new Map(); // Stores player TPA acceptance status, key
 function generateRequestId() {
     // Simple UUID v4 like generator
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * UUID_RANDOM_MULTIPLIER | 0;
-        const v = c === 'x' ? r : ((r & UUID_VARIANT_MASK) | UUID_VARIANT_SET);
-        return v.toString(UUID_TO_STRING_RADIX);
+        const r = Math.random() * uuidRandomMultiplier | 0;
+        const v = c === 'x' ? r : ((r & uuidVariantMask) | uuidVariantSet);
+        return v.toString(uuidToStringRadix);
     });
 }
 
@@ -58,7 +58,7 @@ export function addRequest(requester, target, type, dependencies) {
 
     if (lastPlayerRequestTimestamp.has(requester.name)) { // Use player.name as key for consistency with other maps
         const elapsedTime = now - (lastPlayerRequestTimestamp.get(requester.name) ?? 0);
-        const cooldownMs = (config?.tpaRequestCooldownSeconds ?? DEFAULT_TPA_REQUEST_COOLDOWN_SECONDS) * 1000;
+        const cooldownMs = (config?.tpaRequestCooldownSeconds ?? defaultTpaRequestCooldownSeconds) * 1000;
         if (elapsedTime < cooldownMs) {
             const remainingSeconds = Math.ceil((cooldownMs - elapsedTime) / 1000);
             playerUtils?.debugLog(`[TpaManager.addRequest] Cooldown for ${requesterName}. Remaining: ${remainingSeconds}s`, requesterName, dependencies);
@@ -79,7 +79,7 @@ export function addRequest(requester, target, type, dependencies) {
         requestType: type, // 'tpa' or 'tpahere'
         status: 'pendingAcceptance', // Standardized status string
         creationTimestamp: now,
-        expiryTimestamp: now + ((config?.tpaRequestTimeoutSeconds ?? DEFAULT_TPA_REQUEST_TIMEOUT_SECONDS) * 1000),
+        expiryTimestamp: now + ((config?.tpaRequestTimeoutSeconds ?? defaultTpaRequestTimeoutSeconds) * 1000),
         warmupExpiryTimestamp: 0,
         teleportingPlayerInitialLocation: undefined,
     };
@@ -183,9 +183,9 @@ export function acceptRequest(requestId, dependencies) {
 
     const requestToUpdate = request;
     requestToUpdate.status = 'pendingTeleportWarmup'; // Standardized status string
-    requestToUpdate.warmupExpiryTimestamp = Date.now() + ((config?.tpaTeleportWarmupSeconds ?? DEFAULT_TPA_TELEPORT_WARMUP_SECONDS) * 1000);
+    requestToUpdate.warmupExpiryTimestamp = Date.now() + ((config?.tpaTeleportWarmupSeconds ?? defaultTpaTeleportWarmupSeconds) * 1000);
 
-    const warmupSeconds = config?.tpaTeleportWarmupSeconds ?? DEFAULT_TPA_TELEPORT_WARMUP_SECONDS;
+    const warmupSeconds = config?.tpaTeleportWarmupSeconds ?? defaultTpaTeleportWarmupSeconds;
     const warmupMsgString = getString('tpa.manager.warmupMessage', { warmupSeconds: warmupSeconds.toString() });
 
     if (request.requestType === 'tpa') {
@@ -475,7 +475,7 @@ export function checkPlayerMovementDuringWarmup(request, dependencies) {
         return;
     }
 
-    const movementTolerance = config?.tpaMovementTolerance ?? DEFAULT_TPA_MOVEMENT_TOLERANCE;
+    const movementTolerance = config?.tpaMovementTolerance ?? defaultTpaMovementTolerance;
     const initialLoc = request.teleportingPlayerInitialLocation;
     const currentLoc = teleportingPlayer.location;
 

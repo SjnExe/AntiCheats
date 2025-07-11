@@ -4,14 +4,14 @@
  */
 
 // Time constants
-const SECONDS_PER_MINUTE = 60;
-const MINUTES_PER_HOUR = 60;
-const HOURS_PER_DAY = 24;
-const MILLISECONDS_PER_SECOND = 1000; // Already allowed by no-magic-numbers, but good for clarity
+const secondsPerMinute = 60;
+const minutesPerHour = 60;
+const hoursPerDay = 24;
+const millisecondsPerSecond = 1000; // Already allowed by no-magic-numbers, but good for clarity
 
 // Default durations for automod actions if not specified in config
-const DEFAULT_AUTMOD_TEMPBAN_DURATION_MS = 300000; // 5 minutes
-const DEFAULT_AUTMOD_MUTE_DURATION_MS = 600000;   // 10 minutes
+const defaultAutomodTempbanDurationMs = 300000; // 5 minutes
+const defaultAutomodMuteDurationMs = 600000;   // 10 minutes
 
 
 /**
@@ -26,13 +26,13 @@ function formatDuration(ms) {
     if (typeof ms !== 'number' || ms <= 0) {
         return '0s';
     }
-    let seconds = Math.floor(ms / MILLISECONDS_PER_SECOND);
-    let minutes = Math.floor(seconds / SECONDS_PER_MINUTE);
-    let hours = Math.floor(minutes / MINUTES_PER_HOUR);
-    const days = Math.floor(hours / HOURS_PER_DAY);
-    seconds %= SECONDS_PER_MINUTE;
-    minutes %= MINUTES_PER_HOUR;
-    hours %= HOURS_PER_DAY;
+    let seconds = Math.floor(ms / millisecondsPerSecond);
+    let minutes = Math.floor(seconds / secondsPerMinute);
+    let hours = Math.floor(minutes / minutesPerHour);
+    const days = Math.floor(hours / hoursPerDay);
+    seconds %= secondsPerMinute;
+    minutes %= minutesPerHour;
+    hours %= hoursPerDay;
     const parts = [];
     if (days > 0) {
         parts.push(`${days}d`);
@@ -137,7 +137,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             let parsedDurationMsTempBan = playerUtils?.parseDuration(durationStringTempBan);
             if (parsedDurationMsTempBan === null || (parsedDurationMsTempBan <= 0 && parsedDurationMsTempBan !== Infinity)) {
                 playerUtils?.debugLog(`[AutoModManager] Invalid duration string '${durationStringTempBan}' for tempBan on ${player?.nameTag}. Defaulting to 5m.`, player?.nameTag, dependencies);
-                parsedDurationMsTempBan = DEFAULT_AUTMOD_TEMPBAN_DURATION_MS;
+                parsedDurationMsTempBan = defaultAutomodTempbanDurationMs;
             }
             const friendlyDurationTempBan = formatDuration(parsedDurationMsTempBan);
             const tempBanContext = { ...baseMessageContext, duration: friendlyDurationTempBan };
@@ -200,7 +200,7 @@ function _executeAutomodAction(player, pData, actionType, parameters, checkType,
             let parsedDurationMsMute = playerUtils?.parseDuration(durationStringMute);
             if (parsedDurationMsMute === null || (parsedDurationMsMute <= 0 && parsedDurationMsMute !== Infinity)) {
                 playerUtils?.debugLog(`[AutoModManager] Invalid duration string '${durationStringMute}' for mute on ${player?.nameTag}. Defaulting to 10m.`, player?.nameTag, dependencies);
-                parsedDurationMsMute = DEFAULT_AUTMOD_MUTE_DURATION_MS;
+                parsedDurationMsMute = defaultAutomodMuteDurationMs;
             }
             const friendlyDurationMute = formatDuration(parsedDurationMsMute);
             const muteContext = { ...baseMessageContext, duration: friendlyDurationMute };
