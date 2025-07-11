@@ -1350,8 +1350,8 @@ export const handlePlayerDimensionChangeAfterEvent = profileEventHandler('handle
 /**
  * Handles player hit entity events for specific checks like NoSwing.
  * @async
- * @param {import('@minecraft/server').EntityHitEntityAfterEvent} eventData - The event data object from the `entityHitEntity.afterEvents` signal, containing information about the hitting and hit entities.
- * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object providing access to shared modules and utilities.
+ * @param {import('@minecraft/server').EntityHitEntityAfterEvent} eventData Details about the hit event.
+ * @param {import('../types.js').Dependencies} dependencies Required shared modules.
  */
 async function _handlePlayerHitEntityEvent(eventData, dependencies) {
     const { checks, config, playerDataManager, mc } = dependencies; // Added mc here
