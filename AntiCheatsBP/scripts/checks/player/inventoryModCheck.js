@@ -101,8 +101,8 @@ export async function checkInventoryMoveWhileActionLocked(player, pData, depende
     if (lockingActionKey) {
         const newItem = inventoryChangeDetails.newItemStack ?? inventoryChangeDetails.newItem;
         const oldItem = inventoryChangeDetails.oldItemStack ?? inventoryChangeDetails.oldItem;
-        const changedItemType = newItem?.typeId ?? oldItem?.typeId ?? 'unknown_item';
-        const slotIdentifier = inventoryChangeDetails.slotName ?? inventoryChangeDetails.inventorySlot?.toString() ?? inventoryChangeDetails.slot?.toString() ?? 'unknown_slot';
+        const changedItemType = newItem?.typeId ?? oldItem?.typeId ?? 'unknownItem';
+        const slotIdentifier = inventoryChangeDetails.slotName ?? inventoryChangeDetails.inventorySlot?.toString() ?? inventoryChangeDetails.slot?.toString() ?? 'unknownSlot';
 
         const violationDetails = {
             reasonDetail: `Moved item in slot ${slotIdentifier} while ${lockingActionKey}.`,

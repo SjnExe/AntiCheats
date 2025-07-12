@@ -10,7 +10,7 @@ const DEFAULT_REPORTS_VIEW_PER_PAGE = 5;
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'viewreports',
-    syntax: '[player_name|report_id|page <number>]',
+    syntax: '[playerName|reportId|page <number>]',
     description: 'Views player reports. Can filter by player/ID or view paginated list.',
     aliases: ['vr'],
     permissionLevel: 1, // admin

@@ -120,8 +120,8 @@ export function notifyAdmins(baseMessage, dependencies, player, pData) {
     }
 
     const allPlayers = mc.world.getAllPlayers();
-    const notificationsOffTag = 'ac_notifications_off';
-    const notificationsOnTag = 'ac_notifications_on';
+    const notificationsOffTag = 'notifications_off';
+    const notificationsOnTag = 'notifications_on';
 
     for (const p of allPlayers) {
         if (isAdmin(p, dependencies)) {
@@ -221,23 +221,37 @@ export function formatSessionDuration(ms) {
     if (ms <= 0 || typeof ms !== 'number' || isNaN(ms)) {
         return 'N/A';
     }
-    let seconds = Math.floor(ms / millisecondsPerSecond);
-    let minutes = Math.floor(seconds / secondsPerMinute);
-    const hours = Math.floor(minutes / minutesPerHour);
-    seconds %= secondsPerMinute;
-    minutes %= minutesPerHour;
+
+    if (ms < 1000) {
+        return '0s';
+    }
+
+    let totalSeconds = Math.floor(ms / millisecondsPerSecond);
+
+    const days = Math.floor(totalSeconds / (hoursPerDay * secondsPerMinute));
+    totalSeconds %= (hoursPerDay * secondsPerMinute);
+
+    const hours = Math.floor(totalSeconds / (minutesPerHour * secondsPerMinute));
+    totalSeconds %= (minutesPerHour * secondsPerMinute);
+
+    const minutes = Math.floor(totalSeconds / secondsPerMinute);
+    const seconds = totalSeconds % secondsPerMinute;
 
     const parts = [];
+    if (days > 0) {
+        parts.push(`${days}d`);
+    }
     if (hours > 0) {
         parts.push(`${hours}h`);
     }
     if (minutes > 0) {
         parts.push(`${minutes}m`);
     }
-    if (seconds > 0 || parts.length === 0) {
+    if (seconds > 0) {
         parts.push(`${seconds}s`);
     }
-    return parts.join(' ');
+
+    return parts.length > 0 ? parts.join(' ') : '0s';
 }
 
 /**

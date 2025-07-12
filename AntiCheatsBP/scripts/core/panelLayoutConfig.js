@@ -16,7 +16,7 @@
  * Placeholder interpolation (e.g., `{playerName}`) is applied to the text *after* a variant
  * (or default) has been selected.
  * @typedef {object} PanelItem
- * @property {string} id - Unique string identifier for this item within its panel (e.g., 'viewPlayers', 'editConfigKey_maxCps').
+ * @property {string} id - Unique string identifier for this item within its panel (e.g., 'viewPlayers', 'editConfigKeyMaxCps').
  *                         Used for logging and potentially for direct item manipulation if ever needed.
  * @property {number} sortId - Numerical ID for ordering items within the panel. Lower numbers appear first.
  *                             Items with the same sortId will have a stable but otherwise undefined relative order.
