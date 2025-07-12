@@ -6,7 +6,7 @@
  */
 
 /** @type {string} The dynamic property key used for storing action logs. */
-const logPropertyKeyName = 'anticheat:action_logs_v1'; // Using _v1 suffix for potential future format changes.
+const logPropertyKey = 'anticheat:action_logs_v1'; // Using _v1 suffix for potential future format changes.
 
 /** @type {number} Maximum number of log entries to keep in memory and persisted storage. */
 const maxLogEntriesCount = 200; // Guideline: Keep this reasonable to avoid large dynamic property sizes.
@@ -25,7 +25,7 @@ let logsAreDirty = false;
 export function initializeLogCache(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies; // mc provided via dependencies
     try {
-        const rawLogs = minecraftSystem?.world?.getDynamicProperty(logPropertyKeyName);
+        const rawLogs = minecraftSystem?.world?.getDynamicProperty(logPropertyKey);
         if (typeof rawLogs === 'string') {
             const parsedLogs = JSON.parse(rawLogs);
             if (Array.isArray(parsedLogs)) {
@@ -51,11 +51,11 @@ export function initializeLogCache(dependencies) {
 export function persistLogCacheToDisk(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
     // Only persist if dirty OR if the property doesn't exist (initial save of potentially empty logs)
-    if (!logsAreDirty && minecraftSystem?.world?.getDynamicProperty(logPropertyKeyName) !== undefined) {
+    if (!logsAreDirty && minecraftSystem?.world?.getDynamicProperty(logPropertyKey) !== undefined) {
         return true;
     }
     try {
-        minecraftSystem?.world?.setDynamicProperty(logPropertyKeyName, JSON.stringify(logsInMemory));
+        minecraftSystem?.world?.setDynamicProperty(logPropertyKey, JSON.stringify(logsInMemory));
         logsAreDirty = false; // Reset dirty flag after successful persistence
         playerUtils?.debugLog(`[LogManager.persistLogCacheToDisk] Persisted ${logsInMemory.length} logs.`, null, dependencies);
         return true;

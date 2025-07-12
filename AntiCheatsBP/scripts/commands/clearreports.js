@@ -8,7 +8,7 @@ import { clearAllReports, clearReportById, clearReportsForPlayer } from '../core
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'clearreports',
-    syntax: '<report_id|player_name|all>',
+    syntax: '<reportId|playerName|all>',
     description: 'Admin command to clear player reports. Use "all" to clear all reports (use with caution).',
     aliases: ['cr'],
     permissionLevel: 1, // admin
@@ -27,7 +27,7 @@ export function execute(player, args, dependencies) {
     const adminName = player?.nameTag ?? 'UnknownAdmin';
     const prefix = config?.prefix ?? '!';
     const usageMessage = `§cUsage: ${prefix}${definition.syntax}`;
-    const exampleMessage = `§cExample: ${prefix}clearreports <report_id> OR ${prefix}clearreports <player_name> OR ${prefix}clearreports all`;
+    const exampleMessage = `§cExample: ${prefix}clearreports <reportId> OR ${prefix}clearreports <playerName> OR ${prefix}clearreports all`;
 
     if (args.length < 1) {
         playerUtils?.sendMessage(player, usageMessage);

@@ -13,7 +13,7 @@
  * @param {mc.ItemStack | undefined} itemStack - The ItemStack involved in the action. Can be undefined if player's hand is empty.
  * @param {(mc.ItemUseBeforeEvent | mc.ItemUseOnBeforeEvent | mc.PlayerPlaceBlockBeforeEvent) & {cancel: boolean, block?: mc.Block, source?: mc.Entity}} eventData - The event data object.
  * Must have a `cancel` property. For 'place' actions, `eventData.block` is used. For 'use', `eventData.source` might be relevant.
- * @param {'use' | 'place' | 'inventory_change'} actionType - The type of action being performed.
+ * @param {'use' | 'place' | 'inventoryChange'} actionType - The type of action being performed.
  * @param {import('../../types.js').PlayerAntiCheatData | undefined} pData - Player-specific anti-cheat data (primarily for `isWatched` status).
  * @param {import('../../types.js').Dependencies} dependencies - The standard dependencies object.
  * @returns {Promise<void>}
@@ -28,7 +28,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
     const watchedPrefix = pData?.isWatched ? player.nameTag : null;
 
     if (!itemStack) {
-        if (actionType !== 'inventory_change' || (actionType === 'inventory_change' && eventData.newItemStack)) {
+        if (actionType !== 'inventoryChange' || (actionType === 'inventoryChange' && eventData.newItemStack)) {
             playerUtils.debugLog(`[IllegalItemCheck] No itemStack provided for ${player.nameTag}, action: ${actionType}. Skipping check.`, watchedPrefix, dependencies);
         }
         return;
@@ -64,7 +64,7 @@ export async function checkIllegalItems(player, itemStack, eventData, actionType
         checkProfileKey = rawProfileKey
             .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
             .replace(/^[A-Z]/, (match) => match.toLowerCase());
-        violationDetails.sourceTypeId = eventData.source?.typeId ?? 'unknown_source';
+        violationDetails.sourceTypeId = eventData.source?.typeId ?? 'unknownSource';
     }
 
     if (isBanned && checkProfileKey) {

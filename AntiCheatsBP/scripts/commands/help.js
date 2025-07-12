@@ -5,7 +5,7 @@
 /** @type {import('../types.js').CommandDefinition} */
 export const definition = {
     name: 'help',
-    syntax: '[command_name]',
+    syntax: '[commandName]',
     description: 'command.help.description',
     aliases: ['h'],
     permissionLevel: 1024, // member
@@ -18,7 +18,7 @@ export const definition = {
  * or detailed information if a specific command name is provided.
  * @async
  * @param {import('@minecraft/server').Player} player - The player issuing the command.
- * @param {string[]} args - Command arguments: [command_name].
+ * @param {string[]} args - Command arguments: [commandName].
  * @param {import('../types.js').Dependencies} dependencies - Object containing dependencies.
  * @returns {void}
  */

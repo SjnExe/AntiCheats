@@ -7,7 +7,7 @@
  */
 
 /** @constant {string} The dynamic property key for storing player reports. */
-const reportsPropertyKeyName = 'anticheat:reports_v1';
+const reportsPropertyKey = 'anticheat:reports_v1';
 
 // Constants for ID generation
 const alphanumericRadix = 36;
@@ -41,7 +41,7 @@ function generateReportId() {
 export function initializeReportCache(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
     try {
-        const rawReports = minecraftSystem?.world?.getDynamicProperty(reportsPropertyKeyName);
+        const rawReports = minecraftSystem?.world?.getDynamicProperty(reportsPropertyKey);
         if (typeof rawReports === 'string') {
             const parsedReports = JSON.parse(rawReports);
             if (Array.isArray(parsedReports)) {
@@ -50,7 +50,7 @@ export function initializeReportCache(dependencies) {
                 return;
             }
         }
-        playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKeyName}'. Initializing empty cache.`, 'System', dependencies);
+        playerUtils?.debugLog(`[ReportManager.initializeReportCache] No valid reports at '${reportsPropertyKey}'. Initializing empty cache.`, 'System', dependencies);
     } catch (error) {
         console.error(`[ReportManager.initializeReportCache] Error loading reports: ${error.stack || error}`);
         playerUtils?.debugLog(`[ReportManager.initializeReportCache] Exception: ${error.message}`, 'System', dependencies);
@@ -65,11 +65,11 @@ export function initializeReportCache(dependencies) {
  */
 export function persistReportsToDisk(dependencies) {
     const { playerUtils, mc: minecraftSystem } = dependencies;
-    if (!reportsAreDirty && minecraftSystem?.world?.getDynamicProperty(reportsPropertyKeyName) !== undefined) {
+    if (!reportsAreDirty && minecraftSystem?.world?.getDynamicProperty(reportsPropertyKey) !== undefined) {
         return true;
     }
     try {
-        minecraftSystem?.world?.setDynamicProperty(reportsPropertyKeyName, JSON.stringify(reportsInMemory));
+        minecraftSystem?.world?.setDynamicProperty(reportsPropertyKey, JSON.stringify(reportsInMemory));
         reportsAreDirty = false;
         playerUtils?.debugLog(`[ReportManager.persistReportsToDisk] Persisted ${reportsInMemory.length} reports.`, 'System', dependencies);
         return true;

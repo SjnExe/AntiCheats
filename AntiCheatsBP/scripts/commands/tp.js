@@ -25,17 +25,17 @@ export const definition = {
 
 /**
  * Parses dimension ID string to a valid Minecraft Dimension object.
- * @param {string | undefined} dimensionIdString - The dimension ID string (e.g., "overworld", "nether", "the_end").
+ * @param {string | undefined} dimensionId - The dimension ID string (e.g., "overworld", "nether", "the_end").
  * @param {import('@minecraft/server').Player} currentPlayer - The player whose dimension to use as default if string is invalid/undefined.
  * @param {import('../types.js').Dependencies} dependencies - For logging.
  * @returns {import('@minecraft/server').Dimension | undefined} The Dimension object or undefined if invalid.
  */
-function parseDimension(dimensionIdString, currentPlayer, dependencies) {
+function parseDimension(dimensionId, currentPlayer, dependencies) {
     const { playerUtils } = dependencies;
-    if (!dimensionIdString) {
+    if (!dimensionId) {
         return currentPlayer.dimension;
     }
-    const lowerDimId = dimensionIdString.toLowerCase().replace('minecraft:', '');
+    const lowerDimId = dimensionId.toLowerCase().replace('minecraft:', '');
     switch (lowerDimId) {
         case 'overworld':
             return mc.world.getDimension(mc.DimensionTypes.overworld.id);
@@ -44,7 +44,7 @@ function parseDimension(dimensionIdString, currentPlayer, dependencies) {
         case 'the_end':
             return mc.world.getDimension(mc.DimensionTypes.theEnd.id);
         default:
-            playerUtils?.debugLog(`[TPCommand.parseDimension] Invalid dimension string: ${dimensionIdString}`, currentPlayer.nameTag, dependencies);
+            playerUtils?.debugLog(`[TPCommand.parseDimension] Invalid dimension string: ${dimensionId}`, currentPlayer.nameTag, dependencies);
             return undefined;
     }
 }
