@@ -537,6 +537,11 @@ function performInitializations() {
     } else {
         console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before config validation log.`);
     }
+
+    console.warn(`[DIAGNOSTIC PRE-CONFIG-VALIDATION] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
+    console.warn(`[DIAGNOSTIC PRE-CONFIG-VALIDATION] typeof startupDependencies.playerUtils.debugLog: ${typeof startupDependencies.playerUtils.debugLog}`);
+    console.warn(`[DIAGNOSTIC PRE-CONFIG-VALIDATION] typeof configValidator.validateMainConfig: ${typeof configValidator.validateMainConfig}`);
+
     const allValidationErrors = [];
     const knownCommands = commandManager.getAllRegisteredCommandNames(); // Get known commands for validation
 
@@ -550,6 +555,8 @@ function performInitializations() {
         configModule.commandAliases, // Pass commandAliases separately
     );
     if (mainConfigErrors.length > 0) {
+        console.warn(`[DIAGNOSTIC PRE-MAINCONFIG-ERROR-LOG] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
+        console.warn(`[DIAGNOSTIC PRE-MAINCONFIG-ERROR-LOG] typeof startupDependencies.playerUtils.debugLog: ${typeof startupDependencies.playerUtils.debugLog}`);
         if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
             startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Main Config (config.js) validation errors found:`, 'SystemCritical', startupDependencies);
         }
