@@ -128,7 +128,7 @@ function getStandardDependencies() {
             ModalFormData: mcui.ModalFormData,
             ItemComponentTypes: mc.ItemComponentTypes,
             chatProcessor,
-            getString: playerUtils.getString,
+            // getString: playerUtils.getString, // Removed: Access via playerUtils.getString
             rankManager: { // Subset for direct use
                 getPlayerPermissionLevel: rankManager.getPlayerPermissionLevel,
                 updatePlayerNametag: rankManager.updatePlayerNametag,
@@ -168,69 +168,75 @@ function getStandardDependencies() {
  * @returns {boolean} True if all critical functions are present, false otherwise.
  */
 function validateDependencies(deps, callContext) {
-    let allValid = true;
+    throw new Error("TEST ERROR FROM VALIDATE_DEPENDENCIES_START"); // Intentionally throwing an error at the start for diagnostics
+
     const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
+    const errors = [];
 
     if (!deps) {
-        console.error(`${mainContext} CRITICAL: Dependencies object itself is null or undefined.`);
-        return false;
-    }
-
-    // Player Data Manager
-    if (typeof deps.playerDataManager?.ensurePlayerDataInitialized !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.playerDataManager.ensurePlayerDataInitialized is NOT a function (type: ${typeof deps.playerDataManager?.ensurePlayerDataInitialized}). Player data will fail.`);
-        allValid = false;
-    }
-    if (typeof deps.playerDataManager?.getPlayerData !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.playerDataManager.getPlayerData is NOT a function (type: ${typeof deps.playerDataManager?.getPlayerData}).`);
-        allValid = false;
-    }
-
-    // Player Utils
-    if (typeof deps.playerUtils?.debugLog !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.playerUtils.debugLog is NOT a function (type: ${typeof deps.playerUtils?.debugLog}). Debug logging will fail.`);
-        // This is critical for further diagnostics, but might not break core functionality if other logs work.
-        // Not setting allValid = false to allow system to limp along if only debugLog is broken.
-    }
-    if (typeof deps.playerUtils?.getString !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.playerUtils.getString is NOT a function (type: ${typeof deps.playerUtils?.getString}). UI/messages will fail.`);
-        allValid = false;
-    }
-    if (typeof deps.playerUtils?.notifyAdmins !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.playerUtils.notifyAdmins is NOT a function (type: ${typeof deps.playerUtils?.notifyAdmins}). Admin notifications will fail.`);
-        allValid = false;
-    }
-
-    // Action Manager
-    if (typeof deps.actionManager?.executeCheckAction !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.actionManager.executeCheckAction is NOT a function (type: ${typeof deps.actionManager?.executeCheckAction}). Check actions will fail.`);
-        allValid = false;
-    }
-
-    // MC System (already checked in checkEventAPIsReady, but good for context here)
-    if (typeof deps.system?.runInterval !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.system.runInterval is NOT a function. Main tick loop will fail.`);
-        allValid = false;
-    }
-    if (typeof deps.system?.runTimeout !== 'function') {
-        console.error(`${mainContext} CRITICAL: deps.system.runTimeout is NOT a function. Timed operations will fail.`);
-        allValid = false;
-    }
-
-    // Config module (ensure editableConfigValues is an object, as it's directly accessed)
-    if (typeof deps.config !== 'object' || deps.config === null) {
-        console.error(`${mainContext} CRITICAL: deps.config (editableConfigValues) is NOT an object or is null. Config access will fail.`);
-        allValid = false;
-    }
-
-
-    if (!allValid) {
-        console.error(`${mainContext} One or more critical functions are missing from the dependencies object. System stability is compromised.`);
+        errors.push("CRITICAL: Dependencies object itself is null or undefined.");
     } else {
-        // Optional: log success if needed for verbose debugging
-        // console.log(`${mainContext} All checked critical functions in dependencies object are present.`);
+        // Player Data Manager
+        if (typeof deps.playerDataManager?.ensurePlayerDataInitialized !== 'function') {
+            errors.push(`CRITICAL: deps.playerDataManager.ensurePlayerDataInitialized is NOT a function (type: ${typeof deps.playerDataManager?.ensurePlayerDataInitialized}). Player data will fail.`);
+        }
+        if (typeof deps.playerDataManager?.getPlayerData !== 'function') {
+            errors.push(`CRITICAL: deps.playerDataManager.getPlayerData is NOT a function (type: ${typeof deps.playerDataManager?.getPlayerData}).`);
+        }
+
+        // Player Utils
+        if (typeof deps.playerUtils?.debugLog !== 'function') {
+            errors.push(`CRITICAL: deps.playerUtils.debugLog is NOT a function (type: ${typeof deps.playerUtils?.debugLog}). Debug logging will fail.`);
+        }
+        if (typeof deps.playerUtils?.getString !== 'function') {
+            errors.push(`CRITICAL: deps.playerUtils.getString is NOT a function (type: ${typeof deps.playerUtils?.getString}). UI/messages will fail.`);
+        }
+        if (typeof deps.playerUtils?.notifyAdmins !== 'function') {
+            errors.push(`CRITICAL: deps.playerUtils.notifyAdmins is NOT a function (type: ${typeof deps.playerUtils?.notifyAdmins}). Admin notifications will fail.`);
+        }
+
+        // Action Manager
+        if (typeof deps.actionManager?.executeCheckAction !== 'function') {
+            errors.push(`CRITICAL: deps.actionManager.executeCheckAction is NOT a function (type: ${typeof deps.actionManager?.executeCheckAction}). Check actions will fail.`);
+        }
+
+        // MC System
+        if (typeof deps.system?.runInterval !== 'function') {
+            errors.push(`CRITICAL: deps.system.runInterval is NOT a function. Main tick loop will fail.`);
+        }
+        if (typeof deps.system?.runTimeout !== 'function') {
+            errors.push(`CRITICAL: deps.system.runTimeout is NOT a function. Timed operations will fail.`);
+        }
+
+        // Config module
+        if (typeof deps.config !== 'object' || deps.config === null) {
+            errors.push(`CRITICAL: deps.config (editableConfigValues) is NOT an object or is null. Config access will fail.`);
+        }
+
+        // Chat Processor (new check)
+        if (typeof deps.chatProcessor?.processChatMessage !== 'function') {
+            errors.push(`CRITICAL: deps.chatProcessor.processChatMessage is NOT a function (type: ${typeof deps.chatProcessor?.processChatMessage}). Chat processing will fail.`);
+        }
+
+        // Checks (new check - basic check for the namespace)
+        if (typeof deps.checks !== 'object' || deps.checks === null) {
+            errors.push(`CRITICAL: deps.checks is NOT an object or is null. Cheat checks will fail.`);
+        } else {
+            // Optionally, check for a few key check functions if needed, e.g.:
+            // if (typeof deps.checks?.checkFly !== 'function') errors.push("CRITICAL: deps.checks.checkFly is not a function.");
+        }
     }
-    return allValid;
+
+    if (errors.length > 0) {
+        const fullErrorMessage = `${mainContext} Dependency validation failed with ${errors.length} error(s):\n` + errors.map(e => `  - ${e}`).join('\n');
+        console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        console.error("!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!");
+        console.error(fullErrorMessage);
+        console.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        throw new Error(fullErrorMessage);
+    }
+    // console.log(`${mainContext} All checked critical functions in dependencies object are present.`); // For verbose success
+    return true;
 }
 
 
@@ -515,7 +521,8 @@ function performInitializations() {
         console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before core system initialized log.`);
     }
     if (mc.world && typeof mc.world.sendMessage === 'function') {
-        mc.world.sendMessage(startupDependencies.getString('system.core.initialized', { version: configModule.acVersion }));
+        // Corrected to use playerUtils.getString
+        mc.world.sendMessage(startupDependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
     }
 
     // --- Configuration Validation ---
