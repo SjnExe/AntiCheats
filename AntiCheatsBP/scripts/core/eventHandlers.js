@@ -64,14 +64,14 @@ const minTimeoutDelayTicks = 1;
  */
 async function _handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
-    const { getPlayerData, prepareAndSavePlayerData } = playerDataManager;
-    const { debugLog, getString } = playerUtils;
-    const { addLog } = logManager;
-    const { executeCheckAction } = actionManager;
+    const { getPlayerData } = playerDataManager;
+    const { debugLog } = playerUtils;
     const { player } = eventData;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!player?.isValid()) return;
+    if (!player?.isValid()) {
+        return;
+    }
 
     debugLog(`[EventHandler.handlePlayerLeave] Player ${playerName} is leaving. Processing data...`, playerName, dependencies);
 
@@ -772,6 +772,9 @@ function _subscribeToCombatLogEvents(dependencies) {
     dependencies.playerUtils?.debugLog('[EvtHdlr.CombatLogSub] Subscribed to entityHurt for CombatLog detection.', null, dependencies);
 }
 
+/**
+ *
+ */
 export const subscribeToCombatLogEvents = _subscribeToCombatLogEvents;
 
 
