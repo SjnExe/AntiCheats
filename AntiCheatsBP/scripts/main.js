@@ -148,6 +148,7 @@ function getStandardDependencies() {
                 reloadCommands: commandManager.initializeCommands,
             },
             editableConfig: configModule,
+            configValidator, // Add configValidator to dependencies
             // Add profiling related data to dependencies
             profilingData,
             MAX_PROFILING_HISTORY,
@@ -168,8 +169,7 @@ function getStandardDependencies() {
  * @returns {boolean} True if all critical functions are present, false otherwise.
  */
 function validateDependencies(deps, callContext) {
-    throw new Error("TEST ERROR FROM VALIDATE_DEPENDENCIES_START"); // Intentionally throwing an error at the start for diagnostics
-
+    // Reverted the diagnostic throw, original logic restored for collecting errors.
     const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
     const errors = [];
 
@@ -225,6 +225,12 @@ function validateDependencies(deps, callContext) {
             // Optionally, check for a few key check functions if needed, e.g.:
             // if (typeof deps.checks?.checkFly !== 'function') errors.push("CRITICAL: deps.checks.checkFly is not a function.");
         }
+
+        // Config Validator (new check)
+        if (typeof deps.configValidator?.validateMainConfig !== 'function') {
+            errors.push(`CRITICAL: deps.configValidator.validateMainConfig is NOT a function (type: ${typeof deps.configValidator?.validateMainConfig}). Main config validation will fail.`);
+        }
+        // We could also check other exported functions from configValidator if they are critical path
     }
 
     if (errors.length > 0) {
