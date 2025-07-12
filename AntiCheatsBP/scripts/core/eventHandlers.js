@@ -62,18 +62,20 @@ const minTimeoutDelayTicks = 1;
  * @param {import('@minecraft/server').PlayerLeaveBeforeEvent} eventData - The player leave event data.
  * @param {import('../types.js').Dependencies} dependencies - Standard dependencies object.
  */
-async function _handlePlayerLeave(eventData, dependencies) { // Renamed to indicate it's the original, unwrapped function
+async function _handlePlayerLeave(eventData, dependencies) {
     const { playerDataManager, playerUtils, config, logManager, actionManager } = dependencies;
+    const { getPlayerData, prepareAndSavePlayerData } = playerDataManager;
+    const { debugLog, getString } = playerUtils;
+    const { addLog } = logManager;
+    const { executeCheckAction } = actionManager;
     const { player } = eventData;
-    const playerName = player?.nameTag ?? 'UnknownPlayer'; // Handle potentially undefined player or nameTag
+    const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!player?.isValid()) {
-        console.warn('[EventHandler.handlePlayerLeave] Player undefined or invalid in eventData.');
-        return;
-    }
-    playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Player ${playerName} is leaving. Processing data...`, playerName, dependencies);
+    if (!player?.isValid()) return;
 
-    const pData = playerDataManager?.getPlayerData(player.id); // Fetch pData once
+    debugLog(`[EventHandler.handlePlayerLeave] Player ${playerName} is leaving. Processing data...`, playerName, dependencies);
+
+    const pData = getPlayerData(player.id);
 
     if (pData && config?.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) {
         const currentTime = Date.now();
