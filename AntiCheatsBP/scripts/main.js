@@ -519,7 +519,8 @@ function performInitializations() {
         console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available before core system initialized log.`);
     }
     if (mc.world && typeof mc.world.sendMessage === 'function') {
-        mc.world.sendMessage(startupDependencies.getString('system.core.initialized', { version: configModule.acVersion }));
+        // Corrected to use playerUtils.getString
+        mc.world.sendMessage(startupDependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
     }
 
     // --- Configuration Validation ---
