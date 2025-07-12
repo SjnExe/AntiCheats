@@ -369,18 +369,35 @@ function performInitializations() {
             updateTransientPlayerData(player, pData, tickDependencies);
             clearExpiredItemUseStates(pData, tickDependencies);
 
-            try {
-                // Simplified check execution for brevity
-                if (tickDependencies.config.enableFlyCheck) {
-                    await checks.checkFly(player, pData, tickDependencies);
+            // Execute all registered checks for the player
+            for (const checkName in checks) {
+                // Skip non-function properties if any exist on the checks object
+                if (typeof checks[checkName] !== 'function') {
+                    continue;
                 }
-                if (tickDependencies.config.enableSpeedCheck) {
-                    await checks.checkSpeed(player, pData, tickDependencies);
+
+                // Map check function name to its corresponding config key
+                const configKey = `enable${checkName.charAt(0).toUpperCase() + checkName.slice(1)}`;
+                if (tickDependencies.config[configKey]) {
+                    try {
+                        // Await the check function
+                        await checks[checkName](player, pData, tickDependencies);
+                    } catch (checkError) {
+                        const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
+                        tickDependencies.playerUtils.debugLog(errorMessage, player?.nameTag, tickDependencies);
+                        addLog({
+                            actionType: 'error.main.playerTick.checkFail',
+                            context: 'Main.TickLoop.playerChecks',
+                            targetName: player?.nameTag || 'UnknownPlayer',
+                            details: {
+                                check: checkName,
+                                configKey,
+                                message: checkError?.message ?? 'N/A',
+                                rawErrorStack: checkError?.stack ?? 'N/A',
+                            },
+                        }, tickDependencies);
+                    }
                 }
-                // ... other checks
-            } catch (checkError) {
-                tickDependencies.playerUtils.debugLog(`[TickLoop] Error during checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
-                addLog({ actionType: 'error.main.playerTick.checkFail', context: 'Main.TickLoop.playerChecks', targetName: player?.nameTag || 'UnknownPlayer', details: { message: checkError.message, rawErrorStack: checkError.stack } }, tickDependencies);
             }
 
             if (tickDependencies.config.enableWorldBorderSystem) {
