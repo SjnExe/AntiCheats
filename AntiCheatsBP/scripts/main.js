@@ -168,6 +168,8 @@ function getStandardDependencies() {
  * @returns {boolean} True if all critical functions are present, false otherwise.
  */
 function validateDependencies(deps, callContext) {
+    throw new Error("TEST ERROR FROM VALIDATE_DEPENDENCIES_START"); // Intentionally throwing an error at the start for diagnostics
+
     const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
     const errors = [];
 
