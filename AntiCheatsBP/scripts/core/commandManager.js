@@ -126,7 +126,7 @@ export function unregisterCommandInternal(commandName, dependencies) {
  */
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels, rankManager, getString } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, permissionLevels, rankManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
     if (!player?.isValid()) {
@@ -149,7 +149,7 @@ export async function handleChatCommand(eventData, dependencies) {
     playerUtils?.debugLog(`[CommandManager.handleChatCommand] Player ${playerName} command attempt: '${commandNameInput || ''}', Args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
 
     if (!commandNameInput) {
-        player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config.prefix }));
+        player?.sendMessage(playerUtils.getString('command.error.noCommandEntered', { prefix: config.prefix }));
         eventData.cancel = true;
         return;
     }
@@ -167,7 +167,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const commandExecute = dependencies.commandExecutionMap?.get(finalCommandName);
 
     if (!commandDef || !commandExecute) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
+        player?.sendMessage(playerUtils.getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
         eventData.cancel = true;
         return;
     }
@@ -178,7 +178,7 @@ export async function handleChatCommand(eventData, dependencies) {
     }
 
     if (!isEffectivelyEnabled) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
+        player?.sendMessage(playerUtils.getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
         eventData.cancel = true;
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Command '${finalCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
@@ -186,7 +186,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     const userPermissionLevel = rankManager?.getPlayerPermissionLevel(player, dependencies);
     if (typeof userPermissionLevel !== 'number' || userPermissionLevel > commandDef.permissionLevel) {
-        playerUtils?.warnPlayer(player, getString('common.error.permissionDenied'));
+        playerUtils?.warnPlayer(player, playerUtils.getString('common.error.permissionDenied'));
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Command '${commandDef.name}' denied for ${playerName}. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel ?? 'N/A'}`, playerName, dependencies);
         eventData.cancel = true;
         return;
@@ -208,7 +208,7 @@ export async function handleChatCommand(eventData, dependencies) {
         playerUtils?.debugLog(`[CommandManager.handleChatCommand] Successfully executed '${finalCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
         playerUtils?.playSoundForEvent(player, 'commandSuccess', dependencies);
     } catch (error) {
-        player?.sendMessage(getString('command.error.executionFailed', { commandName: finalCommandName }));
+        player?.sendMessage(playerUtils.getString('command.error.executionFailed', { commandName: finalCommandName }));
         const errorMessage = error?.message || String(error);
         const errorStack = error?.stack || 'N/A';
         console.error(`[CommandManager.handleChatCommand CRITICAL] Error executing ${finalCommandName} for ${playerName}: ${errorStack}`);
