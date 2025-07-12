@@ -21,7 +21,7 @@ import {
     commandDefinitionMap,
     commandExecutionMap,
     registerCommandInternal,
-    unregisterCommandInternal
+    unregisterCommandInternal,
 } from './core/commandManager.js';
 import * as configModule from './config.js';
 import {
@@ -39,7 +39,7 @@ import {
     handleEntityDieForDeathEffects,
     handleEntitySpawnEventAntiGrief,
     handlePistonActivateAntiGrief,
-    handleBeforeChatSend
+    handleBeforeChatSend,
 } from './core/eventHandlers.js';
 import { initializeLogCache, addLog, persistLogCacheToDisk } from './core/logManager.js';
 import {
@@ -48,7 +48,7 @@ import {
     cleanupActivePlayerData,
     updateTransientPlayerData,
     clearExpiredItemUseStates,
-    saveDirtyPlayerData
+    saveDirtyPlayerData,
 } from './core/playerDataManager.js';
 import { debugLog, getString, notifyAdmins, playSoundForEvent, isAdmin, formatSessionDuration } from './utils/playerUtils.js';
 import {
@@ -56,7 +56,7 @@ import {
     getPlayerPermissionLevel,
     updatePlayerNametag,
     getPlayerRankFormattedChatElements,
-    permissionLevels
+    permissionLevels,
 } from './core/rankManager.js';
 import { initializeReportCache, persistReportsToDisk } from './core/reportManager.js';
 import { clearExpiredRequests, getRequestsInWarmup, checkPlayerMovementDuringWarmup, executeTeleport } from './core/tpaManager.js';
@@ -66,13 +66,13 @@ import {
     saveBorderSettings,
     processWorldBorderResizing,
     enforceWorldBorderForPlayer,
-    isPlayerOutsideBorder
+    isPlayerOutsideBorder,
 } from './utils/worldBorderManager.js';
 import {
     validateMainConfig,
     validateActionProfiles,
     validateAutoModConfig,
-    validateRanksConfig
+    validateRanksConfig,
 } from './core/configValidator.js';
 import { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel } from './core/ranksConfig.js';
 
@@ -85,37 +85,13 @@ const profilingData = {
     eventHandlers: {},
 };
 const MAX_PROFILING_HISTORY = 100;
-const PROFILING_LOG_INTERVAL_TICKS = 1200;
-let lastProfilingLogTick = 0;
 
-function logProfilingData(dependencies) {
-    if (!dependencies.config.enablePerformanceProfiling) {
-        return;
-    }
-    const now = Date.now();
-    let logOutput = `[PerformanceProfiling] Report @ ${new Date(now).toISOString()} (Tick: ${currentTick})\n`;
-    const formatStats = (name, stats) => {
-        if (stats.count === 0) return `  ${name}: No data captured.\n`;
-        const avgTime = (stats.totalTime / stats.count).toFixed(3);
-        return `  ${name}: Avg: ${avgTime}ms, Min: ${stats.minTime}ms, Max: ${stats.maxTime}ms, Count: ${stats.count}, Total: ${stats.totalTime}ms\n`;
-    };
-    logOutput += '----- Tick Loop -----\n';
-    logOutput += formatStats('Overall Tick', profilingData.tickLoop);
-    logOutput += '\n----- Player Checks -----\n';
-    for (const checkName in profilingData.playerChecks) {
-        logOutput += formatStats(checkName, profilingData.playerChecks[checkName]);
-    }
-    logOutput += '\n----- Event Handlers -----\n';
-    for (const handlerName in profilingData.eventHandlers) {
-        logOutput += formatStats(handlerName, profilingData.eventHandlers[handlerName]);
-    }
-    if (dependencies.debugLog) {
-        dependencies.debugLog(logOutput, 'PerformanceProfile', dependencies);
-    } else {
-        console.warn("[Main.logProfilingData] debugLog not available. Raw profiling data:\n" + logOutput);
-    }
-}
 
+/**
+ * Assembles and returns a standardized dependency object for use throughout the system.
+ * This ensures that all modules have consistent access to core functionalities.
+ * @returns {import('./types.js').Dependencies} The assembled dependencies object.
+ */
 function getStandardDependencies() {
     try {
         return {
@@ -133,14 +109,14 @@ function getStandardDependencies() {
                 cleanupActivePlayerData,
                 updateTransientPlayerData,
                 clearExpiredItemUseStates,
-                saveDirtyPlayerData
+                saveDirtyPlayerData,
             },
             worldBorderManager: {
                 getBorderSettings,
                 saveBorderSettings,
                 processWorldBorderResizing,
                 enforceWorldBorderForPlayer,
-                isPlayerOutsideBorder
+                isPlayerOutsideBorder,
             },
 
             // Core Managers & Utils
@@ -185,26 +161,48 @@ function getStandardDependencies() {
 
 // NOTE: This function now needs to be updated to match the new dependency structure.
 // This is a critical part of the refactor.
+/**
+ * Validates that the core dependencies are available and of the correct type.
+ * @param {import('./types.js').Dependencies} deps The dependencies object to validate.
+ * @param {string} callContext The context from which this function is called.
+ * @returns {boolean} True if the dependencies are valid.
+ */
 function validateDependencies(deps, callContext) {
     const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
     const errors = [];
 
     if (!deps) {
-        errors.push("CRITICAL: Dependencies object itself is null or undefined.");
+        errors.push('CRITICAL: Dependencies object itself is null or undefined.');
     } else {
-        if (typeof deps.playerDataManager?.ensurePlayerDataInitialized !== 'function') errors.push("CRITICAL: deps.playerDataManager.ensurePlayerDataInitialized is NOT a function.");
-        if (typeof deps.playerUtils?.debugLog !== 'function') errors.push("CRITICAL: deps.playerUtils.debugLog is NOT a function.");
-        if (typeof deps.playerUtils?.getString !== 'function') errors.push("CRITICAL: deps.playerUtils.getString is NOT a function.");
-        if (typeof deps.actionManager?.executeCheckAction !== 'function') errors.push("CRITICAL: deps.actionManager.executeCheckAction is NOT a function.");
-        if (typeof deps.system?.runInterval !== 'function') errors.push("CRITICAL: deps.system.runInterval is NOT a function.");
-        if (typeof deps.configValidator?.validateMainConfig !== 'function') errors.push("CRITICAL: deps.configValidator.validateMainConfig is NOT a function.");
-        if (typeof deps.chatProcessor?.processChatMessage !== 'function') errors.push("CRITICAL: deps.chatProcessor.processChatMessage is NOT a function.");
-        if (typeof deps.checks !== 'object') errors.push("CRITICAL: deps.checks is NOT an object.");
+        if (typeof deps.playerDataManager?.ensurePlayerDataInitialized !== 'function') {
+            errors.push('CRITICAL: deps.playerDataManager.ensurePlayerDataInitialized is NOT a function.');
+        }
+        if (typeof deps.playerUtils?.debugLog !== 'function') {
+            errors.push('CRITICAL: deps.playerUtils.debugLog is NOT a function.');
+        }
+        if (typeof deps.playerUtils?.getString !== 'function') {
+            errors.push('CRITICAL: deps.playerUtils.getString is NOT a function.');
+        }
+        if (typeof deps.actionManager?.executeCheckAction !== 'function') {
+            errors.push('CRITICAL: deps.actionManager.executeCheckAction is NOT a function.');
+        }
+        if (typeof deps.system?.runInterval !== 'function') {
+            errors.push('CRITICAL: deps.system.runInterval is NOT a function.');
+        }
+        if (typeof deps.configValidator?.validateMainConfig !== 'function') {
+            errors.push('CRITICAL: deps.configValidator.validateMainConfig is NOT a function.');
+        }
+        if (typeof deps.chatProcessor?.processChatMessage !== 'function') {
+            errors.push('CRITICAL: deps.chatProcessor.processChatMessage is NOT a function.');
+        }
+        if (typeof deps.checks !== 'object') {
+            errors.push('CRITICAL: deps.checks is NOT an object.');
+        }
     }
 
     if (errors.length > 0) {
-        const fullErrorMessage = `${mainContext} Dependency validation failed:\n` + errors.map(e => `  - ${e}`).join('\n');
-        console.error("!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!");
+        const fullErrorMessage = `${mainContext} Dependency validation failed:\n${ errors.map(e => `  - ${e}`).join('\n')}`;
+        console.error('!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!');
         console.error(fullErrorMessage);
         throw new Error(fullErrorMessage);
     }
@@ -214,11 +212,20 @@ function validateDependencies(deps, callContext) {
 const maxInitRetries = 3;
 const initialRetryDelayTicks = 20;
 const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
-const PLAYER_FALL_DAMAGE_VELOCITY_Y_THRESHOLD = -0.0784;
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
+/**
+ * Checks if the core Minecraft Server APIs are ready to be used.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ * @returns {boolean} True if the APIs are ready.
+ */
 function checkEventAPIsReady(dependencies) {
-    let allReady = true;
+    const allReady = true;
+    /**
+     * Logs a message to the console or using the debug logger.
+     * @param {string} msg The message to log.
+     * @returns {void}
+     */
     const logger = (msg) => dependencies.playerUtils?.debugLog ? dependencies.playerUtils.debugLog(msg, 'System', dependencies) : console.log(msg);
 
     if (!mc.world?.beforeEvents || !mc.world?.afterEvents || !mc.system) {
@@ -228,6 +235,9 @@ function checkEventAPIsReady(dependencies) {
     return allReady;
 }
 
+/**
+ * Performs all initializations for the AntiCheat system.
+ */
 function performInitializations() {
     const startupDependencies = getStandardDependencies();
     validateDependencies(startupDependencies, 'performInitializations - startup');
@@ -248,20 +258,24 @@ function performInitializations() {
     mc.world.afterEvents.playerSpawn.subscribe((eventData) => handlePlayerSpawn(eventData, getStandardDependencies()));
     mc.world.beforeEvents.playerLeave.subscribe((eventData) => handlePlayerLeave(eventData, getStandardDependencies()));
     mc.world.afterEvents.entityHurt.subscribe((eventData) => handleEntityHurt(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.playerBreakBlock.subscribe(async (eventData) => handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies()));
-    mc.world.afterEvents.playerBreakBlock.subscribe(async (eventData) => handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.itemUse.subscribe(async (eventData) => handleItemUse(eventData, getStandardDependencies()));
-    mc.world.beforeEvents.playerPlaceBlock.subscribe(async (eventData) => handlePlayerPlaceBlockBefore(eventData, getStandardDependencies()));
-    mc.world.afterEvents.playerPlaceBlock.subscribe(async (eventData) => handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies()));
-    mc.world.afterEvents.playerInventoryItemChange.subscribe(async (eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, getStandardDependencies()));
+    mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockBeforeEvent(eventData, getStandardDependencies()));
+    mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockAfterEvent(eventData, getStandardDependencies()));
+    mc.world.beforeEvents.itemUse.subscribe((eventData) => handleItemUse(eventData, getStandardDependencies()));
+    mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockBefore(eventData, getStandardDependencies()));
+    mc.world.afterEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockAfterEvent(eventData, getStandardDependencies()));
+    mc.world.afterEvents.playerInventoryItemChange.subscribe((eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, getStandardDependencies()));
     mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => handlePlayerDimensionChangeAfterEvent(eventData, getStandardDependencies()));
     mc.world.afterEvents.entityDie.subscribe((eventData) => {
         const dependencies = getStandardDependencies();
-        if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) handlePlayerDeath(eventData, dependencies);
-        if (dependencies.config.enableDeathEffects) handleEntityDieForDeathEffects(eventData, dependencies);
+        if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
+            handlePlayerDeath(eventData, dependencies);
+        }
+        if (dependencies.config.enableDeathEffects) {
+            handleEntityDieForDeathEffects(eventData, dependencies);
+        }
     });
-    mc.world.afterEvents.entitySpawn.subscribe(async (eventData) => handleEntitySpawnEventAntiGrief(eventData, getStandardDependencies()));
-    mc.world.afterEvents.pistonActivate.subscribe(async (eventData) => handlePistonActivateAntiGrief(eventData, getStandardDependencies()));
+    mc.world.afterEvents.entitySpawn.subscribe((eventData) => handleEntitySpawnEventAntiGrief(eventData, getStandardDependencies()));
+    mc.world.afterEvents.pistonActivate.subscribe((eventData) => handlePistonActivateAntiGrief(eventData, getStandardDependencies()));
 
     startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules...`, 'System', startupDependencies);
     initializeCommands(startupDependencies);
@@ -338,7 +352,9 @@ function performInitializations() {
         cleanupActivePlayerData(allPlayers, tickDependencies);
 
         for (const player of allPlayers) {
-            if (!player?.isValid()) continue;
+            if (!player?.isValid()) {
+                continue;
+            }
             let pData;
             try {
                 pData = await ensurePlayerDataInitialized(player, currentTick, tickDependencies);
@@ -346,19 +362,25 @@ function performInitializations() {
                 tickDependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, tickDependencies);
                 continue;
             }
-            if (!pData) continue;
+            if (!pData) {
+                continue;
+            }
 
             updateTransientPlayerData(player, pData, tickDependencies);
             clearExpiredItemUseStates(pData, tickDependencies);
 
             try {
                 // Simplified check execution for brevity
-                if (tickDependencies.config.enableFlyCheck) await checks.checkFly(player, pData, tickDependencies);
-                if (tickDependencies.config.enableSpeedCheck) await checks.checkSpeed(player, pData, tickDependencies);
+                if (tickDependencies.config.enableFlyCheck) {
+                    await checks.checkFly(player, pData, tickDependencies);
+                }
+                if (tickDependencies.config.enableSpeedCheck) {
+                    await checks.checkSpeed(player, pData, tickDependencies);
+                }
                 // ... other checks
             } catch (checkError) {
                 tickDependencies.playerUtils.debugLog(`[TickLoop] Error during checks for ${player?.nameTag}: ${checkError.message}`, player?.nameTag, tickDependencies);
-                addLog({ actionType: 'error.main.playerTick.checkFail', context: 'Main.TickLoop.playerChecks', targetName: player?.nameTag || 'UnknownPlayer', details: { message: checkError.message, rawErrorStack: checkError.stack }}, tickDependencies);
+                addLog({ actionType: 'error.main.playerTick.checkFail', context: 'Main.TickLoop.playerChecks', targetName: player?.nameTag || 'UnknownPlayer', details: { message: checkError.message, rawErrorStack: checkError.stack } }, tickDependencies);
             }
 
             if (tickDependencies.config.enableWorldBorderSystem) {
@@ -369,7 +391,9 @@ function performInitializations() {
         if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
             tickDependencies.playerUtils.debugLog(`Performing periodic data persistence.`, 'System', tickDependencies);
             allPlayers.forEach(async player => {
-                if (!player.isValid()) return;
+                if (!player.isValid()) {
+                    return;
+                }
                 const pData = getPlayerData(player.id);
                 if (pData?.isDirtyForSave) {
                     await saveDirtyPlayerData(player, tickDependencies);
@@ -385,13 +409,21 @@ function performInitializations() {
         if (tpaDeps.config.enableTpaSystem) {
             clearExpiredRequests(tpaDeps);
             getRequestsInWarmup().forEach(req => {
-                if (tpaDeps.config.tpaCancelOnMoveDuringWarmup) checkPlayerMovementDuringWarmup(req, tpaDeps);
-                if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) executeTeleport(req.requestId, tpaDeps);
+                if (tpaDeps.config.tpaCancelOnMoveDuringWarmup) {
+                    checkPlayerMovementDuringWarmup(req, tpaDeps);
+                }
+                if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
+                    executeTeleport(req.requestId, tpaDeps);
+                }
             });
         }
     }, TPA_SYSTEM_TICK_INTERVAL);
 }
 
+/**
+ * Attempts to initialize the system, with a retry mechanism.
+ * @param {number} retryCount The current retry count.
+ */
 function attemptInitializeSystem(retryCount = 0) {
     try {
         const tempStartupDepsForLog = getStandardDependencies();
@@ -400,7 +432,7 @@ function attemptInitializeSystem(retryCount = 0) {
             console.log(`[${mainModuleName}.attemptInitializeSystem] APIs reported as ready. Proceeding with performInitializations. Attempt: ${retryCount}`);
             performInitializations();
         } else {
-            throw new Error("APIs not ready");
+            throw new Error('APIs not ready');
         }
     } catch (e) {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);

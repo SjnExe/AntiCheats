@@ -6,9 +6,19 @@
  */
 import { commandModules } from './commandRegistry.js';
 
+/**
+ * @type {Map<string, import('../types.js').CommandDefinition>}
+ */
 export const commandDefinitionMap = new Map();
+/**
+ * @type {Map<string, import('../types.js').CommandExecuteFunction>}
+ */
 export const commandExecutionMap = new Map();
 
+/**
+ * Initializes or reloads all commands from the commandRegistry.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object
+ */
 export function initializeCommands(dependencies) {
     const { playerUtils } = dependencies;
     const { debugLog } = playerUtils;
@@ -51,18 +61,38 @@ export function initializeCommands(dependencies) {
     debugLog(`[CommandManager.initializeCommands] Initialized/Reloaded ${commandDefinitionMap.size} command definitions and ${dependencies.aliasToCommandMap.size} aliases.`, null, dependencies);
 }
 
+/**
+ * Registers a single command module dynamically. (STUB)
+ * @param {object} commandModule The command module to register.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
 export function registerCommandInternal(commandModule, dependencies) {
     const { debugLog } = dependencies.playerUtils;
     debugLog('[CommandManager.registerCommandInternal] Stub function. Dynamic registration not fully implemented. Please use commandRegistry.js and reload.', null, dependencies);
 }
 
+/**
+ * Unregisters a command dynamically. (STUB)
+ * @param {string} commandName The name of the command to unregister.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
 export function unregisterCommandInternal(commandName, dependencies) {
     const { debugLog } = dependencies.playerUtils;
     debugLog('[CommandManager.unregisterCommandInternal] Stub function. Dynamic unregistration not fully implemented. Please modify commandRegistry.js and reload.', null, dependencies);
 }
 
+/**
+ * IIFE for initial command loading on script startup.
+ */
 (() => {
-    const initialLoadDeps = { playerUtils: { debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`) }};
+    const initialLoadDeps = { playerUtils: {
+        /**
+         * Logs a message to the console.
+         * @param {string} msg The message to log.
+         * @returns {void}
+         */
+        debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`),
+    } };
     try {
         initializeCommands(initialLoadDeps);
     } catch (e) {
@@ -70,6 +100,11 @@ export function unregisterCommandInternal(commandName, dependencies) {
     }
 })();
 
+/**
+ * Handles incoming chat messages to check for and execute commands.
+ * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
     const { config, playerUtils, playerDataManager, logManager, permissionLevels, rankManager } = dependencies;
@@ -163,12 +198,16 @@ export async function handleChatCommand(eventData, dependencies) {
             targetName: playerName,
             targetId: player.id,
             context: `commandManager.handleChatCommand.${finalCommandName}`,
-            details: { errorCode: 'CMD_EXEC_FAIL', message: errorMessage, rawErrorStack: errorStack, meta: { command: finalCommandName, args: args.join(', ') }},
+            details: { errorCode: 'CMD_EXEC_FAIL', message: errorMessage, rawErrorStack: errorStack, meta: { command: finalCommandName, args: args.join(', ') } },
         }, dependencies);
         playSoundForEvent(player, 'commandError', dependencies);
     }
 }
 
+/**
+ * Gets a list of all registered command names.
+ * @returns {string[]} An array of command names.
+ */
 export function getAllRegisteredCommandNames() {
     return Array.from(commandDefinitionMap.keys());
 }
