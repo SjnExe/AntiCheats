@@ -532,6 +532,8 @@ function performInitializations() {
     }
 
     // --- Configuration Validation ---
+    // Section temporarily commented out for diagnostic purposes to isolate the source of the persistent TypeError.
+    /*
     if (startupDependencies.playerUtils && typeof startupDependencies.playerUtils.debugLog === 'function') {
         startupDependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', startupDependencies);
     } else {
@@ -647,6 +649,7 @@ function performInitializations() {
             console.warn(`[${mainModuleName}.performInitializations] playerUtils.debugLog not available for config success log.`);
         }
     }
+    */
     // --- End Configuration Validation ---
 
 
