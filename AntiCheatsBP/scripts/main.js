@@ -548,12 +548,18 @@ function performInitializations() {
     // Validate main config (config.js)
     // defaultConfigSettings is the object to validate from config.js
     // TODO: Ensure commandManager.getAllRegisteredCommandNames() is implemented and returns an array of command name strings.
-    const mainConfigErrors = configValidator.validateMainConfig(
-        configModule.defaultConfigSettings, // Assuming this is the direct object with all settings
-        checkActionProfiles,
-        knownCommands,
-        configModule.commandAliases, // Pass commandAliases separately
-    );
+    let mainConfigErrors = [];
+    try {
+        mainConfigErrors = configValidator.validateMainConfig(
+            configModule.defaultConfigSettings, // Assuming this is the direct object with all settings
+            checkActionProfiles,
+            knownCommands,
+            configModule.commandAliases, // Pass commandAliases separately
+        );
+    } catch (e) {
+        console.error(`[CRITICAL] Error during configValidator.validateMainConfig call: ${e.message}\nStack: ${e.stack}`);
+    }
+
     if (mainConfigErrors.length > 0) {
         console.warn(`[DIAGNOSTIC PRE-MAINCONFIG-ERROR-LOG] typeof playerUtils.debugLog: ${typeof playerUtils.debugLog}`);
         console.warn(`[DIAGNOSTIC PRE-MAINCONFIG-ERROR-LOG] typeof startupDependencies.playerUtils.debugLog: ${typeof startupDependencies.playerUtils.debugLog}`);
