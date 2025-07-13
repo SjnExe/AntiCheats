@@ -21,11 +21,7 @@
       "description": "Behavior pack data and functions.",
       "type": "data",
       "uuid": "623bbed8-14c8-45c3-893b-c0492855b668",
-      "version": [
-        1,
-        0,
-        0
-      ]
+      "version": "__VERSION_ARRAY__"
     },
     {
       "description": "Core scripting module for Anti Cheats.",
@@ -33,11 +29,7 @@
       "language": "javascript",
       "entry": "scripts/main.js",
       "uuid": "ecb49e35-ade4-459d-83ff-85c3770c1e74",
-      "version": [
-        1,
-        0,
-        0
-      ]
+      "version": "__VERSION_ARRAY__"
     }
   ],
   "dependencies": [
