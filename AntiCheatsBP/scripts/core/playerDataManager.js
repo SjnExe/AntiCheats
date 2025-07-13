@@ -1,24 +1,436 @@
 /**
  * @file playerDataManager.js
- * @description Manages player data and state restrictions.
+ * @description Manages all aspects of player data, including loading, saving, caching, and state management.
  */
+
+const maxSerializedDataLength = 30000;
+const itemUseStateExpiryMs = 5000;
+const minecraftFallingVelocity = -0.0784;
+
+/**
+ * A map to hold all active player data, keyed by player ID.
+ * This serves as the in-memory cache.
+ * @type {Map<string, import('../types.js').PlayerAntiCheatData>}
+ */
+const activePlayerData = new Map();
+
+/**
+ * A set to keep track of player names for whom a flag purge is scheduled.
+ * Purges are executed upon their next join.
+ * @type {Set<string>}
+ */
+const scheduledFlagPurges = new Set();
+
+
+// --- Data Initialization and Default Structure ---
+
+/**
+ * Initializes the default data structure for a new player.
+ * This function defines the "schema" for the player data object.
+ * @param {import('@minecraft/server').Player} player The player object.
+ * @param {number} currentTick The current server tick at the time of initialization.
+ * @param {import('../types.js').Dependencies} _dependencies The dependencies object.
+ * @returns {import('../types.js').PlayerAntiCheatData} The fully formed default player data object.
+ */
+export function initializeDefaultPlayerData(player, currentTick, _dependencies) {
+    const now = Date.now();
+
+    return {
+        // Core Identifiers
+        playerId: player.id,
+        playerNameTag: player.nameTag,
+
+        // Session and State
+        isOnline: true,
+        isDirtyForSave: false,
+        joinTick: currentTick,
+        lastTickUpdated: currentTick,
+        sessionStartTime: now,
+        lastSavedTimestamp: 0,
+        isWatched: false,
+
+        // Flags and Violations
+        flags: { totalFlags: 0 },
+        lastFlagType: '',
+        lastViolationDetailsMap: {},
+        automodState: {},
+
+        // Restrictions and Status
+        permissionLevel: null, // Will be set by rankManager
+        banInfo: null,
+        muteInfo: null,
+        isFrozen: false,
+        isVanished: false,
+        godModeActive: false,
+
+        // Movement and Teleportation
+        lastKnownLocation: { ...player.location },
+        lastKnownDimensionId: player.dimension.id,
+        lastSignificantMovement: now,
+        lastTeleportTimestamp: 0,
+        isTeleporting: false,
+
+        // Combat and Interaction
+        lastAttackTimestamp: 0,
+        lastDamageTimestamp: 0,
+        lastHealTimestamp: 0,
+        lastEnderPearlTimestamp: 0,
+        lastFoodConsumptionTimestamp: 0,
+        itemUseStates: {},
+        consecutiveHits: 0,
+        lastAttackedEntityId: null,
+
+        // Block Interactions
+        blockBreakTimestamps: [],
+        lastBlockPlacedTimestamp: 0,
+
+        // Chat and Communication
+        lastChatMessageTimestamp: 0,
+        chatMessageTimestamps: [],
+
+        // Miscellaneous and Transient Data (Not Saved)
+        transient: {
+            lastVelocity: { x: 0, y: 0, z: 0 },
+            isFalling: false,
+            fallDistance: 0,
+            ticksSinceLastOnGround: 0,
+            ticksInAir: 0,
+            isNearLiquid: false,
+            isClimbing: false,
+            isSleeping: false,
+            isRiding: false,
+            isSprinting: false,
+            isSwimming: false,
+            isGliding: false,
+            headRotation: { ...player.getHeadRotation() },
+            bodyRotation: player.bodyRotation,
+        },
+    };
+}
+
+
+// --- Core Data Access and Management ---
+
+/**
+ * Retrieves a player's data from the active data map (cache).
+ * This is the primary function for accessing player data.
+ * @param {string} playerId The player's ID.
+ * @returns {import('../types.js').PlayerAntiCheatData | undefined} The player's data object, or undefined if not found.
+ */
+export function getPlayerData(playerId) {
+    return activePlayerData.get(playerId);
+}
+
+/**
+ * Ensures a player's data is loaded into the cache, initializing it if it's their first time.
+ * This function orchestrates loading from dynamic properties or creating a default object.
+ * @param {import('@minecraft/server').Player} player The player object.
+ * @param {number} currentTick The current server tick.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {Promise<import('../types.js').PlayerAntiCheatData>} A promise that resolves with the player's data.
+ */
+export async function ensurePlayerDataInitialized(player, currentTick, dependencies) {
+    const { playerUtils, logManager } = dependencies;
+
+    if (activePlayerData.has(player.id)) {
+        return activePlayerData.get(player.id);
+    }
+
+    try {
+        let pData = await _loadPlayerDataFromDynamicProperties(player, dependencies);
+
+        if (!pData) {
+            pData = initializeDefaultPlayerData(player, currentTick, dependencies);
+            playerUtils.debugLog(`[PlayerDataManager] No existing data found for ${player.nameTag}. Initialized new default data.`, player.nameTag, dependencies);
+            logManager.addLog({ actionType: 'playerInitialJoin', targetName: player.nameTag, targetId: player.id }, dependencies);
+        } else {
+            playerUtils.debugLog(`[PlayerDataManager] Successfully loaded data for ${player.nameTag} from dynamic properties.`, player.nameTag, dependencies);
+        }
+
+        // Handle scheduled flag purges
+        if (scheduledFlagPurges.has(player.nameTag)) {
+            const defaultFlags = initializeDefaultPlayerData(player, currentTick, dependencies).flags;
+            pData.flags = defaultFlags;
+            pData.lastFlagType = '';
+            pData.lastViolationDetailsMap = {};
+            pData.automodState = {};
+            pData.isDirtyForSave = true;
+            scheduledFlagPurges.delete(player.nameTag);
+            playerUtils.debugLog(`[PlayerDataManager] Executed scheduled flag purge for ${player.nameTag} upon join.`, player.nameTag, dependencies);
+            logManager.addLog({ actionType: 'flagsPurgedOnJoin', targetName: player.nameTag, targetId: player.id, context: 'PlayerDataManager.ensurePlayerDataInitialized' }, dependencies);
+        }
+
+        pData.isOnline = true;
+        pData.joinTick = currentTick;
+        pData.sessionStartTime = Date.now();
+        activePlayerData.set(player.id, pData);
+        return pData;
+
+    } catch (error) {
+        logManager.addLog({
+            actionType: 'error.pdm.init.generic',
+            context: 'playerDataManager.ensurePlayerDataInitialized',
+            targetName: player.nameTag,
+            details: {
+                errorCode: 'PDM_INIT_FAILURE',
+                message: error.message,
+                rawErrorStack: error.stack,
+            },
+        }, dependencies);
+        console.error(`[PlayerDataManager CRITICAL] Failed to initialize player data for ${player.nameTag}: ${error.stack}`);
+        // Fallback to default data to prevent system failure for this player
+        const fallbackData = initializeDefaultPlayerData(player, currentTick, dependencies);
+        activePlayerData.set(player.id, fallbackData);
+        return fallbackData;
+    }
+}
+
+
+// --- Data Persistence (Save/Load) ---
+
+/**
+ * Saves a player's data to a dynamic property if it has been marked as dirty.
+ * @param {import('@minecraft/server').Player} player The player object.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {Promise<boolean>} A promise that resolves to true if data was saved, false otherwise.
+ */
+export function saveDirtyPlayerData(player, dependencies) {
+    const { playerUtils, logManager, config } = dependencies;
+    const pData = getPlayerData(player.id);
+
+    if (!pData || !pData.isDirtyForSave) {
+        return Promise.resolve(false);
+    }
+
+    try {
+        // Create a savable copy, excluding transient data
+        const dataToSave = { ...pData };
+        delete dataToSave.transient;
+
+        const serializedData = JSON.stringify(dataToSave);
+
+        // Basic size check
+        if (serializedData.length > maxSerializedDataLength) { // Leave buffer for Minecraft's limits
+            logManager.addLog({
+                actionType: 'error.pdm.dpWrite.sizeLimit',
+                context: 'playerDataManager.saveDirtyPlayerData',
+                targetName: player.nameTag,
+                details: {
+                    errorCode: 'PDM_DP_WRITE_SIZE_EXCEEDED',
+                    message: `Serialized player data for ${player.nameTag} exceeds size limits.`,
+                    meta: { size: serializedData.length },
+                },
+            }, dependencies);
+            return Promise.resolve(false);
+        }
+
+        player.setDynamicProperty(config.playerDataDynamicPropertyKey, serializedData);
+
+        pData.isDirtyForSave = false;
+        pData.lastSavedTimestamp = Date.now();
+        playerUtils.debugLog(`[PlayerDataManager] Saved data for ${player.nameTag}.`, pData.isWatched ? player.nameTag : null, dependencies);
+        return Promise.resolve(true);
+
+    } catch (error) {
+        logManager.addLog({
+            actionType: 'error.pdm.dpWrite.generic',
+            context: 'playerDataManager.saveDirtyPlayerData',
+            targetName: player.nameTag,
+            details: {
+                errorCode: 'PDM_DP_WRITE_FAILURE',
+                message: error.message,
+                rawErrorStack: error.stack,
+            },
+        }, dependencies);
+        console.error(`[PlayerDataManager CRITICAL] Failed to save player data for ${player.nameTag}: ${error.stack}`);
+        return Promise.resolve(false);
+    }
+}
+
+/**
+ * (Internal) Loads player data from a dynamic property.
+ * @param {import('@minecraft/server').Player} player The player object.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {Promise<import('../types.js').PlayerAntiCheatData | null>} The loaded player data, or null if not found or invalid.
+ * @private
+ */
+function _loadPlayerDataFromDynamicProperties(player, dependencies) {
+    const { logManager, config } = dependencies;
+    try {
+        const serializedData = player.getDynamicProperty(config.playerDataDynamicPropertyKey);
+
+        if (typeof serializedData !== 'string') {
+            return Promise.resolve(null);
+        }
+
+        const pData = JSON.parse(serializedData);
+
+        // Basic validation
+        if (typeof pData !== 'object' || pData === null || pData.playerId !== player.id) {
+            logManager.addLog({
+                actionType: 'error.pdm.dpRead.invalidData',
+                context: 'playerDataManager._loadPlayerDataFromDynamicProperties',
+                targetName: player.nameTag,
+                details: {
+                    errorCode: 'PDM_DP_READ_INVALID_DATA',
+                    message: `Loaded data for ${player.nameTag} is invalid or mismatched.`,
+                    meta: { loadedId: pData?.playerId, expectedId: player.id },
+                },
+            }, dependencies);
+            return Promise.resolve(null);
+        }
+
+        // Re-initialize transient data as it's not saved
+        pData.transient = initializeDefaultPlayerData(player, 0, dependencies).transient;
+        return Promise.resolve(pData);
+
+    } catch (error) {
+        if (error instanceof SyntaxError) { // JSON.parse failed
+            logManager.addLog({
+                actionType: 'error.pdm.dpRead.parseFail',
+                context: 'playerDataManager._loadPlayerDataFromDynamicProperties',
+                targetName: player.nameTag,
+                details: {
+                    errorCode: 'PDM_DP_READ_PARSE_FAIL',
+                    message: error.message,
+                    rawErrorStack: error.stack,
+                },
+            }, dependencies);
+        } else {
+            logManager.addLog({
+                actionType: 'error.pdm.dpRead.generic',
+                context: 'playerDataManager._loadPlayerDataFromDynamicProperties',
+                targetName: player.nameTag,
+                details: {
+                    errorCode: 'PDM_DP_READ_GENERIC_FAIL',
+                    message: error.message,
+                    rawErrorStack: error.stack,
+                },
+            }, dependencies);
+        }
+        console.error(`[PlayerDataManager] Error loading data for ${player.nameTag}: ${error.stack}`);
+        return Promise.resolve(null);
+    }
+}
+
+
+// --- Tick-Based Updates and Cleanup ---
+
+/**
+ * Updates transient player data that changes every tick (e.g., location, velocity).
+ * @param {import('@minecraft/server').Player} player The player object.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
+export function updateTransientPlayerData(player, pData, dependencies) {
+    const { currentTick } = dependencies;
+    const transient = pData.transient;
+
+    // Update location and rotation
+    pData.lastKnownLocation = { ...player.location };
+    transient.headRotation = { ...player.getHeadRotation() };
+    transient.bodyRotation = player.bodyRotation;
+
+    // Update velocity
+    const velocity = player.getVelocity();
+    transient.lastVelocity = { ...velocity };
+
+    // Update states from components
+    const onGround = player.isOnGround;
+    transient.isClimbing = player.isClimbing;
+    transient.isFalling = !onGround && velocity.y < minecraftFallingVelocity; // Minecraft constant for falling
+    transient.isGliding = player.isGliding;
+    transient.isJumping = player.isJumping;
+    transient.isRiding = player.isRiding;
+    transient.isSprinting = player.isSprinting;
+    transient.isSwimming = player.isSwimming;
+    transient.isSleeping = player.isSleeping;
+    transient.isInsideWater = player.isInWater;
+
+    // Update fall distance and air ticks
+    if (!onGround) {
+        transient.ticksInAir++;
+        transient.ticksSinceLastOnGround++;
+        if (transient.isFalling) {
+            transient.fallDistance -= velocity.y;
+        }
+    } else {
+        transient.ticksInAir = 0;
+        transient.ticksSinceLastOnGround = 0;
+        transient.fallDistance = 0;
+    }
+
+    pData.lastTickUpdated = currentTick;
+}
+
+/**
+ * Clears expired item use states from a player's data.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The player's data.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
+export function clearExpiredItemUseStates(pData, dependencies) {
+    const { config } = dependencies;
+    const now = Date.now();
+    const expiryTime = config.itemUseStateExpiryMs || itemUseStateExpiryMs;
+
+    for (const key in pData.itemUseStates) {
+        if (now - pData.itemUseStates[key].timestamp > expiryTime) {
+            delete pData.itemUseStates[key];
+        }
+    }
+}
+
+/**
+ * Removes player data from the cache for players who have left the server.
+ * Also marks their data as offline.
+ * @param {Array<import('@minecraft/server').Player>} allPlayers A list of all current players.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ */
+export function cleanupActivePlayerData(allPlayers, dependencies) {
+    const onlinePlayerIds = new Set(allPlayers.map(p => p.id));
+    for (const [playerId, pData] of activePlayerData.entries()) {
+        if (!onlinePlayerIds.has(playerId)) {
+            pData.isOnline = false;
+            // Optionally, trigger a final save on logout
+            // saveDirtyPlayerData(player, dependencies); // This is tricky as player object is gone
+            activePlayerData.delete(playerId);
+            dependencies.playerUtils.debugLog(`[PlayerDataManager] Cleaned up and removed cached data for logged-out player ${pData.playerNameTag}.`, null, dependencies);
+        }
+    }
+}
+
+
+// --- State Management and Restrictions ---
+
+/**
+ * Schedules a flag purge for an offline player, to be executed on their next join.
+ * @param {string} playerName The name of the player to purge flags for.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {Promise<boolean>} True if scheduled successfully.
+ */
+export function scheduleFlagPurge(playerName, dependencies) {
+    // This is a simplified implementation. A robust version might involve
+    // saving this to a world dynamic property to persist across server restarts.
+    scheduledFlagPurges.add(playerName);
+    dependencies.playerUtils.debugLog(`[PlayerDataManager] Scheduled flag purge for offline player: ${playerName}`, null, dependencies);
+    return Promise.resolve(true);
+}
 
 /**
  * Adds a state restriction (ban or mute) to a player's data.
  * @param {import('@minecraft/server').Player} player The player object.
- * @param {object} pData The player's data object.
- * @param {string} stateType The type of restriction ('ban' or 'mute').
- * @param {number} durationMs The duration of the restriction in milliseconds.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The player's data object.
+ * @param {'ban' | 'mute'} stateType The type of restriction.
+ * @param {number} durationMs The duration of the restriction in milliseconds. Infinity for permanent.
  * @param {string} reason The reason for the restriction.
- * @param {string} restrictedBy The entity that applied the restriction.
- * @param {boolean} isAutoMod Whether the restriction was applied by automod.
- * @param {string} triggeringCheckType The check that triggered the restriction.
- * @param {object} dependencies The dependencies object.
- * @returns {boolean} Whether the restriction was successfully added.
+ * @param {string} restrictedBy The name of the admin or "AutoMod" who applied the restriction.
+ * @param {boolean} isAutoMod Whether the restriction was applied by the AutoMod system.
+ * @param {string} triggeringCheckType The check that triggered the restriction, if applicable.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {boolean} True if the restriction was successfully added.
  */
-function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason, restrictedBy, isAutoMod, triggeringCheckType, dependencies) {
-    const { playerUtils } = dependencies;
-    const { debugLog, getString } = playerUtils;
+export function addPlayerStateRestriction(player, pData, stateType, durationMs, reason, restrictedBy, isAutoMod, triggeringCheckType, dependencies) {
+    const { playerUtils, getString } = dependencies;
     const playerName = pData.playerNameTag;
 
     const expiryTime = (durationMs === Infinity) ? Infinity : Date.now() + durationMs;
@@ -26,22 +438,48 @@ function _addPlayerStateRestriction(player, pData, stateType, durationMs, reason
 
     const restrictionInfo = {
         reason: actualReason,
-        [stateType === 'ban' ? 'bannedBy' : 'mutedBy']: restrictedBy,
+        restrictedBy,
         isAutoMod,
         triggeringCheckType,
-        [stateType === 'ban' ? 'unbanTime' : 'unmuteTime']: expiryTime,
+        expiryTimestamp: expiryTime,
+        startTimestamp: Date.now(),
     };
 
     if (stateType === 'ban') {
-        restrictionInfo.xuid = player.id;
-        restrictionInfo.playerName = playerName;
-        restrictionInfo.banTime = Date.now();
+        pData.banInfo = restrictionInfo;
+    } else {
+        pData.muteInfo = restrictionInfo;
     }
 
-    pData[stateType === 'ban' ? 'banInfo' : 'muteInfo'] = restrictionInfo;
     pData.isDirtyForSave = true;
 
-    const logMsg = `[PlayerDataManager._addPlayerStateRestriction] Player ${playerName} ${stateType}d by ${restrictedBy}. Reason: '${actualReason}'. Duration: ${durationMs === Infinity ? 'Permanent' : new Date(expiryTime).toISOString()}`;
-    debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
+    const logMsg = `[PlayerDataManager] Player ${playerName} ${stateType}d by ${restrictedBy}. Reason: '${actualReason}'. Duration: ${durationMs === Infinity ? 'Permanent' : new Date(expiryTime).toISOString()}`;
+    playerUtils.debugLog(logMsg, pData.isWatched ? playerName : null, dependencies);
     return true;
+}
+
+/**
+ * Removes a state restriction (ban or mute) from a player's data.
+ * @param {import('../types.js').PlayerAntiCheatData} pData The player's data object.
+ * @param {'ban' | 'mute'} stateType The type of restriction to remove.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
+ * @returns {boolean} True if a restriction was removed.
+ */
+export function removePlayerStateRestriction(pData, stateType, dependencies) {
+    const { playerUtils } = dependencies;
+    let wasRestricted = false;
+
+    if (stateType === 'ban' && pData.banInfo) {
+        pData.banInfo = null;
+        wasRestricted = true;
+    } else if (stateType === 'mute' && pData.muteInfo) {
+        pData.muteInfo = null;
+        wasRestricted = true;
+    }
+
+    if (wasRestricted) {
+        pData.isDirtyForSave = true;
+        playerUtils.debugLog(`[PlayerDataManager] Removed ${stateType} for player ${pData.playerNameTag}.`, pData.isWatched ? pData.playerNameTag : null, dependencies);
+    }
+    return wasRestricted;
 }
