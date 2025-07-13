@@ -9,7 +9,7 @@ This file lists the tasks for improving the AntiCheat addon.
     - [ ] Provide clear and concise comments for each setting.
     - [ ] Simplify complex or redundant settings.
 - [ ] **Improve `commandManager.js`:**
-    - [ ] Implement dynamic command loading to improve performance.
+    - [x] Implement dynamic command loading to improve performance.
     - [ ] Streamline the command disabling mechanism.
     - [ ] Provide more specific error messages for command failures.
 - [ ] **Standardize code style:**
