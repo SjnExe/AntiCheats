@@ -838,7 +838,7 @@ async function showModLogFilterModalImpl(player, dependencies, _context) {
             player.sendMessage(getString('ui.modLogSelect.filterModal.filterCleared'));
         }
 
-        // eslint-disable-next-line no-magic-numbers
+
         const logsPerPage = config?.ui?.logsPerPage ?? 5;
         const allLogs = logManager.getLogs ? logManager.getLogs(_context.logTypeFilter || [], newPlayerNameFilter) : [];
         const totalPages = Math.ceil(allLogs.length / logsPerPage) || 1;
@@ -889,7 +889,7 @@ async function displaySpecificLogsPageImpl(player, dependencies, context) {
         // totalPages is expected to be in context, calculated by showPanel or prepareXLogViewer
     } = context;
 
-    // eslint-disable-next-line no-magic-numbers
+
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
     const filteredLogs = logManager.getLogs ? logManager.getLogs(logTypeFilter, playerNameFilter) : [];
     const totalLogs = filteredLogs.length;
@@ -982,7 +982,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
 
     // Special context handling for logViewerPanel (pagination)
     if (panelId === 'logViewerPanel') {
-        // eslint-disable-next-line no-magic-numbers
+
         const logsPerPage = config?.ui?.logsPerPage ?? 5;
         const { logTypeFilter = [], playerNameFilter = null } = effectiveContext; // Filters from context
         const allLogs = logManager?.getLogs ? logManager.getLogs(logTypeFilter, playerNameFilter) : [];
@@ -1299,7 +1299,7 @@ async function showPanel(player, panelId, dependencies, currentContext = {}) {
  */
 async function prepareBanUnbanLogsViewer(player, dependencies, context) {
     const { logManager, config, getString } = dependencies; // Added getString
-    // eslint-disable-next-line no-magic-numbers
+
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
     const logTypeFilter = ['playerBanned', 'playerUnbanned']; // Corrected actionTypes
     const logTypeName = getString('ui.logViewer.title.banUnban'); // Used getString
@@ -1328,7 +1328,7 @@ async function prepareBanUnbanLogsViewer(player, dependencies, context) {
  */
 async function prepareMuteUnmuteLogsViewer(player, dependencies, context) {
     const { logManager, config, getString } = dependencies; // Added getString
-    // eslint-disable-next-line no-magic-numbers
+
     const logsPerPage = config?.ui?.logsPerPage ?? 5;
     const logTypeFilter = ['playerMuted', 'playerUnmuted']; // Corrected actionTypes
     const logTypeName = getString('ui.logViewer.title.muteUnmute'); // Used getString
