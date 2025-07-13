@@ -1,3 +1,5 @@
+import { CommandError } from '../types.js';
+
 /**
  * @file Defines the !ban command for administrators to ban players.
  */
@@ -40,13 +42,7 @@ export function execute(
     let reason = parsedArgs.reason;
 
     if (!targetPlayerName) {
-        if (player) {
-            player.sendMessage(usageMessage);
-        } else {
-            console.warn(`[BanCommand.execute] System call missing arguments. Usage: ${prefix}${definition.name} ${definition.syntax}`);
-            playerUtils?.debugLog('[BanCommand.execute] System call missing target player name.', null, dependencies);
-        }
-        return;
+        throw new CommandError(usageMessage);
     }
 
     const durationString = args[1] || 'perm';

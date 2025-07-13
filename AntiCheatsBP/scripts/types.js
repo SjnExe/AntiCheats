@@ -479,6 +479,22 @@
 // This line is important to make this file a module and allow JSDoc types to be imported globally by other files.
 
 /**
+ * Custom error class for command-related errors.
+ * This allows for more specific error handling in the command manager.
+ * @extends Error
+ */
+export class CommandError extends Error {
+    /**
+     * Creates an instance of CommandError.
+     * @param {string} message - The error message to be displayed to the user.
+     */
+    constructor(message) {
+        super(message);
+        this.name = 'CommandError';
+    }
+}
+
+/**
  * @ignore
  */
 export {};

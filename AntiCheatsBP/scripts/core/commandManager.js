@@ -5,6 +5,7 @@
  */
 import { commandFilePaths, commandAliases } from './commandRegistry.js';
 import { loadCommand } from './dynamicCommandLoader.js';
+import { CommandError } from '../types.js';
 
 /** @type {Map<string, import('../types.js').CommandDefinition>} */
 export const commandDefinitionMap = new Map();
@@ -100,7 +101,7 @@ export async function handleChatCommand(eventData, dependencies) {
 
     // Check if the command is enabled
     if (!isCommandEnabled(resolvedCommandName, commandDef, config)) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
+        player?.sendMessage(getString('command.error.disabled', { commandName: resolvedCommandName }));
         debugLog(`[CommandManager.handleChatCommand] Command '${resolvedCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
     }
@@ -125,7 +126,12 @@ export async function handleChatCommand(eventData, dependencies) {
         debugLog(`[CommandManager.handleChatCommand] Successfully executed '${resolvedCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
         playSoundForEvent(player, 'commandSuccess', dependencies);
     } catch (error) {
-        player?.sendMessage(getString('command.error.executionFailed', { commandName: resolvedCommandName }));
+        if (error instanceof CommandError) {
+            player?.sendMessage(error.message);
+        } else {
+            player?.sendMessage(getString('command.error.executionFailed', { commandName: resolvedCommandName }));
+        }
+
         const errorMessage = error?.message || String(error);
         const errorStack = error?.stack || 'N/A';
         console.error(`[CommandManager.handleChatCommand CRITICAL] Error executing ${resolvedCommandName} for ${playerName}: ${errorStack}`);
