@@ -99,11 +99,7 @@ export async function handleChatCommand(eventData, dependencies) {
     const { definition: commandDef, execute: commandExecute } = commandModule;
 
     // Check if the command is enabled
-    let isEffectivelyEnabled = commandDef.enabled !== false;
-    if (config?.commandSettings?.[resolvedCommandName] && typeof config.commandSettings[resolvedCommandName].enabled === 'boolean') {
-        isEffectivelyEnabled = config.commandSettings[resolvedCommandName].enabled;
-    }
-    if (!isEffectivelyEnabled) {
+    if (!isCommandEnabled(resolvedCommandName, commandDef, config)) {
         player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
         debugLog(`[CommandManager.handleChatCommand] Command '${resolvedCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
@@ -142,6 +138,21 @@ export async function handleChatCommand(eventData, dependencies) {
         }, dependencies);
         playSoundForEvent(player, 'commandError', dependencies);
     }
+}
+
+/**
+ * Checks if a command is enabled, considering both its definition and global config overrides.
+ * @param {string} commandName - The name of the command.
+ * @param {import('../types.js').CommandDefinition} commandDef - The command's definition object.
+ * @param {import('../types.js').Config} config - The system's configuration object.
+ * @returns {boolean} True if the command is enabled, false otherwise.
+ */
+function isCommandEnabled(commandName, commandDef, config) {
+    const commandConfig = config?.commandSettings?.[commandName];
+    if (typeof commandConfig?.enabled === 'boolean') {
+        return commandConfig.enabled;
+    }
+    return commandDef.enabled !== false;
 }
 
 /**
