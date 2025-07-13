@@ -93,7 +93,7 @@ function initializeSwearList(dependencies) {
         lastSwearList = currentSwearList;
         if (Array.isArray(currentSwearList)) {
             normalizedSwearWordSet = new Set(
-                currentSwearList.map(sw => normalizeWordForSwearCheck(String(sw ?? ''), dependencies)).filter(Boolean)
+                currentSwearList.map(sw => normalizeWordForSwearCheck(String(sw ?? ''), dependencies)).filter(Boolean),
             );
         } else {
             normalizedSwearWordSet = new Set();
