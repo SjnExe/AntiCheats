@@ -82,36 +82,43 @@ function normalizeWordForSwearCheck(word, dependencies) {
  * @param {Dependencies} dependencies - Full dependencies object.
  * @returns {Promise<void>}
  */
+let normalizedSwearWordSet = new Set();
+let lastSwearList;
+
+function initializeSwearList(dependencies) {
+    const { config } = dependencies;
+    const currentSwearList = config?.chatChecks?.swear?.words;
+
+    if (currentSwearList !== lastSwearList) {
+        lastSwearList = currentSwearList;
+        if (Array.isArray(currentSwearList)) {
+            normalizedSwearWordSet = new Set(
+                currentSwearList.map(sw => normalizeWordForSwearCheck(String(sw ?? ''), dependencies)).filter(Boolean)
+            );
+        } else {
+            normalizedSwearWordSet = new Set();
+        }
+    }
+}
+
 export async function checkSwear(player, eventData, pData, dependencies) {
     const { config, playerUtils, actionManager } = dependencies;
     const playerName = player?.nameTag ?? 'UnknownPlayer';
 
-    if (!config?.enableSwearCheck) {
+    if (!config?.chatChecks?.swear?.enabled) {
         return;
     }
+
+    initializeSwearList(dependencies);
+
+    if (normalizedSwearWordSet.size === 0) {
+        playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: swear word list is empty or not configured.`, pData?.isWatched ? playerName : null, dependencies);
+        return;
+    }
+
     const originalMessage = eventData.message;
-    if (!Array.isArray(config.swearWordList) || config.swearWordList.length === 0) {
-        playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: swearWordList is empty/undefined.`, pData?.isWatched ? playerName : null, dependencies);
-        return;
-    }
-
-    const normalizedSwearWordList = config.swearWordList
-        .map(sw => {
-            const originalSwear = String(sw ?? '');
-            return {
-                original: originalSwear,
-                normalized: normalizeWordForSwearCheck(originalSwear, dependencies),
-            };
-        })
-        .filter(item => item.normalized.length > 0);
-
-    if (normalizedSwearWordList.length === 0) {
-        playerUtils?.debugLog(`[SwearCheck] Skipped for ${playerName}: normalizedSwearWordList is empty after processing.`, pData?.isWatched ? playerName : null, dependencies);
-        return;
-    }
-
     const wordsInMessage = originalMessage.split(/\s+/);
-    const rawActionProfileKey = config?.swearCheckActionProfileName ?? 'chatSwearViolation';
+    const rawActionProfileKey = config?.chatChecks?.swear?.actionProfile ?? 'chatSwearViolation';
     const actionProfileKey = rawActionProfileKey
         .replace(/([-_][a-z0-9])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', ''))
         .replace(/^[A-Z]/, (match) => match.toLowerCase());
@@ -127,29 +134,25 @@ export async function checkSwear(player, eventData, pData, dependencies) {
             continue;
         }
 
-        for (const swearItem of normalizedSwearWordList) {
-            if (normalizedInputWord === swearItem.normalized) {
-                const violationDetails = {
-                    detectedSwear: swearItem.original,
-                    matchedWordInMessage: wordInMessage,
-                    normalizedInput: normalizedInputWord,
-                    normalizedSwear: swearItem.normalized,
-                    matchMethod: 'exactNormalized',
-                    originalMessage,
-                };
-                playerUtils?.debugLog(
-                    `[SwearCheck] ${playerName} triggered swear check. Word: '${wordInMessage}' (norm: '${normalizedInputWord}') matched '${swearItem.original}' (norm: '${swearItem.normalized}').`,
-                    watchedPlayerName, dependencies,
-                );
+        if (normalizedSwearWordSet.has(normalizedInputWord)) {
+            const violationDetails = {
+                detectedSwear: wordInMessage,
+                normalizedInput: normalizedInputWord,
+                matchMethod: 'exactNormalized',
+                originalMessage,
+            };
+            playerUtils?.debugLog(
+                `[SwearCheck] ${playerName} triggered swear check. Word: '${wordInMessage}' (norm: '${normalizedInputWord}')`,
+                watchedPlayerName, dependencies,
+            );
 
-                await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
+            await actionManager?.executeCheckAction(player, actionProfileKey, violationDetails, dependencies);
 
-                const profile = dependencies.checkActionProfiles?.[actionProfileKey];
-                if (profile?.cancelMessage) {
-                    eventData.cancel = true;
-                }
-                return;
+            const profile = dependencies.checkActionProfiles?.[actionProfileKey];
+            if (profile?.cancelMessage) {
+                eventData.cancel = true;
             }
+            return;
         }
     }
 }

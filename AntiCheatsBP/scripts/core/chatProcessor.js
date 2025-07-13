@@ -82,17 +82,17 @@ export async function processChatMessage(player, pData, originalMessage, eventDa
             playerUtils?.debugLog(`[ChatProcessor.processChatMessage] Cleared isChargingBow for ${playerName} due to chat attempt.`, playerName, dependencies);
         }
         const chatCheckFunctions = [
-            { fn: checks?.checkSwear, enabled: config?.enableSwearCheck, name: 'swearCheck' },
-            { fn: checks?.checkMessageRate, enabled: config?.enableFastMessageSpamCheck, name: 'messageRateCheck' },
-            { fn: checks?.checkChatContentRepeat, enabled: config?.enableChatContentRepeatCheck, name: 'chatContentRepeatCheck' },
-            { fn: checks?.checkUnicodeAbuse, enabled: config?.enableUnicodeAbuseCheck, name: 'unicodeAbuseCheck' },
-            { fn: checks?.checkGibberish, enabled: config?.enableGibberishCheck, name: 'gibberishCheck' },
-            { fn: checks?.checkExcessiveMentions, enabled: config?.enableExcessiveMentionsCheck, name: 'excessiveMentionsCheck' },
-            { fn: checks?.checkSimpleImpersonation, enabled: config?.enableSimpleImpersonationCheck, name: 'simpleImpersonationCheck' },
-            { fn: checks?.checkAntiAdvertising, enabled: config?.enableAntiAdvertisingCheck || config?.enableAdvancedLinkDetection, name: 'antiAdvertisingCheck' },
-            { fn: checks?.checkCapsAbuse, enabled: config?.enableCapsCheck, name: 'capsAbuseCheck' },
-            { fn: checks?.checkCharRepeat, enabled: config?.enableCharRepeatCheck, name: 'charRepeatCheck' },
-            { fn: checks?.checkSymbolSpam, enabled: config?.enableSymbolSpamCheck, name: 'symbolSpamCheck' },
+            { fn: checks?.checkSwear, enabled: config?.chatChecks?.swear?.enabled, name: 'swearCheck' },
+            { fn: checks?.checkMessageRate, enabled: config?.chatChecks?.fastMessage?.enabled, name: 'messageRateCheck' },
+            { fn: checks?.checkChatContentRepeat, enabled: config?.chatChecks?.contentRepeat?.enabled, name: 'chatContentRepeatCheck' },
+            { fn: checks?.checkUnicodeAbuse, enabled: config?.chatChecks?.unicodeAbuse?.enabled, name: 'unicodeAbuseCheck' },
+            { fn: checks?.checkGibberish, enabled: config?.chatChecks?.gibberish?.enabled, name: 'gibberishCheck' },
+            { fn: checks?.checkExcessiveMentions, enabled: config?.chatChecks?.excessiveMentions?.enabled, name: 'excessiveMentionsCheck' },
+            { fn: checks?.checkSimpleImpersonation, enabled: config?.chatChecks?.simpleImpersonation?.enabled, name: 'simpleImpersonationCheck' },
+            { fn: checks?.checkAntiAdvertising, enabled: config?.chatChecks?.advertising?.enabled, name: 'antiAdvertisingCheck' },
+            { fn: checks?.checkCapsAbuse, enabled: config?.chatChecks?.caps?.enabled, name: 'capsAbuseCheck' },
+            { fn: checks?.checkCharRepeat, enabled: config?.chatChecks?.charRepeat?.enabled, name: 'charRepeatCheck' },
+            { fn: checks?.checkSymbolSpam, enabled: config?.chatChecks?.symbolSpam?.enabled, name: 'symbolSpamCheck' },
         ];
         for (const check of chatCheckFunctions) {
             if (eventData.cancel) {

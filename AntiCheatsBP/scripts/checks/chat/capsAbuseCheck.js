@@ -56,7 +56,8 @@ export async function checkCapsAbuse(player, eventData, pData, dependencies) {
 
     const upperCasePercentage = (upperCaseLetters / totalLetters) * 100;
 
-    if (upperCasePercentage >= (config?.capsCheckUpperCasePercentage ?? 70)) {
+    const percentageThreshold = config?.capsCheckUpperCasePercentage ?? 70;
+    if (upperCasePercentage >= percentageThreshold) {
         const watchedPlayerName = pData?.isWatched ? playerName : null;
         playerUtils?.debugLog(
             `[CapsAbuseCheck] Player ${playerName} triggered CAPS abuse. ` +

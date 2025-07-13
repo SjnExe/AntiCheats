@@ -1,99 +1,82 @@
 /**
- * @file Central registry for all command modules. This file imports all individual command
+ * @file Central registry for all command modules. This file provides mappings
  * @module AntiCheatsBP/scripts/core/commandRegistry
- * files and exports them as an array to be used by the commandManager.
+ * for command names to their module paths and for aliases to their main command names.
+ * This setup facilitates dynamic command loading.
  */
-import * as addrankCmd from '../commands/addrank.js';
-import * as banCmd from '../commands/ban.js';
-import * as clearchatCmd from '../commands/clearchat.js';
-import * as clearreportsCmd from '../commands/clearreports.js';
-import * as copyinvCmd from '../commands/copyinv.js';
-import * as endlockCmd from '../commands/endlock.js';
-import * as freezeCmd from '../commands/freeze.js';
-import * as gmaCmd from '../commands/gma.js';
-import * as gmcCmd from '../commands/gmc.js';
-import * as gmsCmd from '../commands/gms.js';
-import * as gmspCmd from '../commands/gmsp.js';
-import * as helpCmd from '../commands/help.js';
-import * as inspectCmd from '../commands/inspect.js';
-import * as invseeCmd from '../commands/invsee.js';
-import * as kickCmd from '../commands/kick.js';
-import * as listranksCmd from '../commands/listranks.js';
-import * as listwatchedCmd from '../commands/listwatched.js';
-import * as muteCmd from '../commands/mute.js';
-import * as myflagsCmd from '../commands/myflags.js';
-import * as netherlockCmd from '../commands/netherlock.js';
-import * as notifyCmd from '../commands/notify.js';
-import * as panelCmd from '../commands/panel.js';
-import * as purgeflagsCmd from '../commands/purgeflags.js';
-import * as removerankCmd from '../commands/removerank.js';
-import * as reportCmd from '../commands/report.js';
-import * as resetflagsCmd from '../commands/resetflags.js';
-import * as rulesCmd from '../commands/rules.js';
-import * as testnotifyCmd from '../commands/testnotify.js';
-import * as tpCmd from '../commands/tp.js';
-import * as tpaCmd from '../commands/tpa.js';
-import * as tpacancelCmd from '../commands/tpacancel.js';
-import * as tpacceptCmd from '../commands/tpaccept.js';
-import * as tpahereCmd from '../commands/tpahere.js';
-import * as tpastatusCmd from '../commands/tpastatus.js';
-import * as unbanCmd from '../commands/unban.js';
-import * as unmuteCmd from '../commands/unmute.js';
-import * as vanishCmd from '../commands/vanish.js';
-import * as versionCmd from '../commands/version.js';
-import * as viewreportsCmd from '../commands/viewreports.js';
-import * as warningsCmd from '../commands/warnings.js';
-import * as watchCmd from '../commands/watch.js';
-import * as worldborderCmd from '../commands/worldborder.js';
-import * as xraynotifyCmd from '../commands/xraynotify.js';
+
 /**
- * Array containing all registered command modules.
- * Each module is expected to export a `definition` object (conforming to `CommandDefinition` type)
- * and an `execute` function.
- * @type {Array<import('../types.js').CommandModule>}
+ * A map where keys are lowercase command names and values are the paths to the command modules.
+ * This allows the commandManager to dynamically import a command only when it's first used.
+ * @type {Map<string, string>}
  */
-export const commandModules = [
-    addrankCmd,
-    banCmd,
-    clearchatCmd,
-    clearreportsCmd,
-    copyinvCmd,
-    endlockCmd,
-    freezeCmd,
-    gmaCmd,
-    gmcCmd,
-    gmsCmd,
-    gmspCmd,
-    helpCmd,
-    inspectCmd,
-    invseeCmd,
-    kickCmd,
-    listranksCmd,
-    listwatchedCmd,
-    muteCmd,
-    myflagsCmd,
-    netherlockCmd,
-    notifyCmd,
-    panelCmd,
-    purgeflagsCmd,
-    removerankCmd,
-    reportCmd,
-    resetflagsCmd,
-    rulesCmd,
-    testnotifyCmd,
-    tpCmd,
-    tpaCmd,
-    tpacancelCmd,
-    tpacceptCmd,
-    tpahereCmd,
-    tpastatusCmd,
-    unbanCmd,
-    unmuteCmd,
-    vanishCmd,
-    versionCmd,
-    viewreportsCmd,
-    warningsCmd,
-    watchCmd,
-    worldborderCmd,
-    xraynotifyCmd,
-];
+export const commandFilePaths = new Map([
+    ['addrank', '../commands/addrank.js'],
+    ['ban', '../commands/ban.js'],
+    ['clearchat', '../commands/clearchat.js'],
+    ['clearreports', '../commands/clearreports.js'],
+    ['copyinv', '../commands/copyinv.js'],
+    ['endlock', '../commands/endlock.js'],
+    ['freeze', '../commands/freeze.js'],
+    ['gma', '../commands/gma.js'],
+    ['gmc', '../commands/gmc.js'],
+    ['gms', '../commands/gms.js'],
+    ['gmsp', '../commands/gmsp.js'],
+    ['help', '../commands/help.js'],
+    ['inspect', '../commands/inspect.js'],
+    ['invsee', '../commands/invsee.js'],
+    ['kick', '../commands/kick.js'],
+    ['listranks', '../commands/listranks.js'],
+    ['listwatched', '../commands/listwatched.js'],
+    ['mute', '../commands/mute.js'],
+    ['myflags', '../commands/myflags.js'],
+    ['netherlock', '../commands/netherlock.js'],
+    ['notify', '../commands/notify.js'],
+    ['panel', '../commands/panel.js'],
+    ['purgeflags', '../commands/purgeflags.js'],
+    ['removerank', '../commands/removerank.js'],
+    ['report', '../commands/report.js'],
+    ['resetflags', '../commands/resetflags.js'],
+    ['rules', '../commands/rules.js'],
+    ['testnotify', '../commands/testnotify.js'],
+    ['tp', '../commands/tp.js'],
+    ['tpa', '../commands/tpa.js'],
+    ['tpacancel', '../commands/tpacancel.js'],
+    ['tpaccept', '../commands/tpaccept.js'],
+    ['tpahere', '../commands/tpahere.js'],
+    ['tpastatus', '../commands/tpastatus.js'],
+    ['unban', '../commands/unban.js'],
+    ['unmute', '../commands/unmute.js'],
+    ['vanish', '../commands/vanish.js'],
+    ['version', '../commands/version.js'],
+    ['viewreports', '../commands/viewreports.js'],
+    ['warnings', '../commands/warnings.js'],
+    ['watch', '../commands/watch.js'],
+    ['worldborder', '../commands/worldborder.js'],
+    ['xraynotify', '../commands/xraynotify.js'],
+]);
+
+/**
+ * A map where keys are lowercase aliases and values are their corresponding main command names (also lowercase).
+ * This map is loaded at startup to allow for immediate alias resolution without needing to load the command module itself.
+ * @type {Map<string, string>}
+ */
+export const commandAliases = new Map([
+    ['b', 'ban'],
+    ['cc', 'clearchat'],
+    ['i', 'inspect'],
+    ['inv', 'invsee'],
+    ['lr', 'listranks'],
+    ['lw', 'listwatched'],
+    ['m', 'mute'],
+    ['p', 'panel'],
+    ['pr', 'purgerank'],
+    ['rr', 'removerank'],
+    ['v', 'vanish'],
+    ['ver', 'version'],
+    ['vr', 'viewreports'],
+    ['w', 'watch'],
+    ['wb', 'worldborder'],
+    ['xray', 'xraynotify'],
+    // Add other aliases here
+]);

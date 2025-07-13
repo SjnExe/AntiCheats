@@ -63,7 +63,7 @@ The addon employs a sophisticated suite of checks to identify and mitigate unfai
         *   *Key Configs: `enableAirPlaceCheck`, `airPlaceSolidBlocks`*
 *   **Anti-Grief Measures:** Provides configurable actions against various forms of griefing.
     *   **TNT, Fire, Lava, Water Placement Control:** Restrict or manage the placement of potentially harmful elements by non-admins.
-        *   *Key Configs: `enableTntAntiGrief`, `enableFireAntiGrief`, `enableLavaAntiGrief`, `enableWaterAntiGrief`, and related `allowAdmin...` toggles.*
+        *   *Key Configs: `antiGrief.tnt.enabled`, `antiGrief.fire.enabled`, etc.*
     *   **Wither Spawning Control:** Manage unauthorized Wither spawns.
         *   *Key Configs: `enableWitherAntiGrief`, `allowAdminWitherSpawn`*
     *   **Block Spam (Rate & Density):** Detects excessively fast or dense block placement in an area.

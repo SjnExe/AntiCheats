@@ -51,74 +51,70 @@ async function _handlePlayerLeave(eventData, dependencies) {
 
     const pData = getPlayerData(player.id);
 
-    if (pData && config?.enableCombatLogDetection && pData.lastCombatInteractionTime > 0) {
+    if (pData && config?.combatLog?.enabled && pData.lastCombatInteractionTime > 0) {
         const currentTime = Date.now();
         const timeSinceLastCombatMs = currentTime - pData.lastCombatInteractionTime;
-        const combatLogThresholdMs = (config.combatLogThresholdSeconds ?? defaultCombatLogThresholdSeconds) * 1000;
+        const combatLogThresholdMs = (config.combatLog.thresholdSeconds ?? defaultCombatLogThresholdSeconds) * 1000;
 
         if (timeSinceLastCombatMs < combatLogThresholdMs) {
             const timeSinceLastCombatSeconds = (timeSinceLastCombatMs / 1000).toFixed(1);
-            const incrementAmount = config.combatLogFlagIncrement ?? 1;
+            const incrementAmount = 1;
 
             playerUtils?.debugLog(
                 `[EvtHdlr.Leave] CombatLog: ${playerName} left ${timeSinceLastCombatSeconds}s after combat. ` +
-                `Thresh: ${config.combatLogThresholdSeconds}s. Flag +${incrementAmount}.`,
+        `Thresh: ${config.combatLog.thresholdSeconds}s. Flag +${incrementAmount}.`,
                 playerName, dependencies,
             );
 
             const violationDetails = { timeSinceLastCombat: timeSinceLastCombatSeconds, incrementAmount };
-            // Assuming 'combatLog' is a defined checkType in actionProfiles
             await actionManager?.executeCheckAction(player, 'combatLog', violationDetails, dependencies);
         }
     }
 
-    // Re-fetch pData as actionManager.executeCheckAction involves awaits and player might have left
-    // or pData cache could have been affected.
     const pDataAfterAction = playerDataManager?.getPlayerData(player.id);
 
-    if (pDataAfterAction) { // Use the potentially updated pData
+    if (pDataAfterAction) {
         pDataAfterAction.lastLogoutTime = Date.now();
-        pDataAfterAction.isOnline = false; // Mark as offline
-        pDataAfterAction.isDirtyForSave = true; // Ensure data is marked for saving
+        pDataAfterAction.isOnline = false;
+        pDataAfterAction.isDirtyForSave = true;
 
         const lastLocation = pDataAfterAction.lastPosition ?? player?.location;
         const lastDimensionId = (pDataAfterAction.lastDimensionId ?? player?.dimension?.id)?.replace('minecraft:', '');
         const lastGameModeString = mc.GameMode[pDataAfterAction.lastGameMode ?? player?.gameMode] ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
         let sessionDurationString = playerUtils.getString('common.value.notApplicable', dependencies) ?? 'N/A';
         if (pDataAfterAction.joinTime && pDataAfterAction.joinTime > 0) {
-            sessionDurationString = formatSessionDuration(Date.now() - pDataAfterAction.joinTime); // formatSessionDuration is from utils/index.js, not playerUtils
+            sessionDurationString = formatSessionDuration(Date.now() - pDataAfterAction.joinTime);
         }
         logManager?.addLog({
             actionType: 'playerLeave',
             targetName: playerName,
             targetId: player.id,
             details: `Last Loc: ${Math.floor(lastLocation?.x ?? 0)},${Math.floor(lastLocation?.y ?? 0)},` +
-                `${Math.floor(lastLocation?.z ?? 0)} in ${lastDimensionId}. GM: ${lastGameModeString}. Session: ${sessionDurationString}.`,
+        `${Math.floor(lastLocation?.z ?? 0)} in ${lastDimensionId}. GM: ${lastGameModeString}. Session: ${sessionDurationString}.`,
             location: lastLocation ? { x: Math.floor(lastLocation.x), y: Math.floor(lastLocation.y), z: Math.floor(lastLocation.z), dimensionId: lastDimensionId } : undefined,
             gameMode: lastGameModeString,
             sessionDuration: sessionDurationString,
         }, dependencies);
     }
 
-    // Attempt to save player data regardless of pData presence if playerDataManager is available
     if (playerDataManager?.prepareAndSavePlayerData) {
         try {
-            await playerDataManager.prepareAndSavePlayerData(player, dependencies); // This should handle pData internally
+            await playerDataManager.prepareAndSavePlayerData(player, dependencies);
             playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Data save processed for ${playerName} on leave.`, playerName, dependencies);
         } catch (error) {
             console.error(`[EventHandler.handlePlayerLeave CRITICAL] Error in prepareAndSavePlayerData for ${playerName} on leave: ${error.stack || error}`);
             logManager?.addLog({
-                actionType: 'errorEventHandlersPdataSaveOnLeave', // More specific error type
+                actionType: 'errorEventHandlersPdataSaveOnLeave',
                 context: 'eventHandlers.handlePlayerLeave.prepareAndSavePlayerData',
                 targetName: playerName,
                 targetId: player.id,
                 details: { errorMessage: error.message },
-                errorStack: error.stack, // Store stack for debugging
+                errorStack: error.stack,
             }, dependencies);
         }
     }
 
-    if (config?.enableDetailedJoinLeaveLogging) {
+    if (config?.playerInfo?.enableDetailedJoinLeaveLogging) {
         console.warn(`[LeaveLog] Player: ${playerName} (ID: ${player?.id}) left the game.`);
     }
     playerUtils?.debugLog(`[EventHandler.handlePlayerLeave] Finished processing for ${playerName}.`, playerName, dependencies);
@@ -149,11 +145,10 @@ async function _handlePlayerSpawn(eventData, dependencies) {
     );
 
     try {
-        // currentTick is now sourced from dependencies within ensurePlayerDataInitialized
         const pData = await playerDataManager.ensurePlayerDataInitialized(player, dependencies);
         if (!pData) {
             console.error(`[EvtHdlr.Spawn CRITICAL] pData null for ${playerName}. Aborting spawn logic.`);
-            player.sendMessage(playerUtils.getString('error.playerDataLoadFailedKick', dependencies)); // Kick if data can't be loaded/created
+            player.sendMessage(playerUtils.getString('error.playerDataLoadFailedKick', dependencies));
             player.kick(playerUtils.getString('error.playerDataLoadFailedKickReason', dependencies));
             return;
         }
@@ -164,13 +159,13 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         pData.isUsingConsumable = false;
         pData.isChargingBow = false;
         pData.isUsingShield = false;
-        pData.isDirtyForSave = true; // Mark for save after updates
+        pData.isDirtyForSave = true;
 
         const banInfo = playerDataManager.getBanInfo(player, dependencies);
         if (banInfo) {
             playerUtils.debugLog(
                 `[EvtHdlr.Spawn] Player ${playerName} is banned. Kicking. Reason: ${banInfo.reason}, ` +
-                `Expires: ${new Date(banInfo.unbanTime).toISOString()}`,
+        `Expires: ${new Date(banInfo.unbanTime).toISOString()}`,
                 playerName, dependencies,
             );
             const durationStringKick = playerUtils.getString(
@@ -181,8 +176,8 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                 reason: banInfo.reason ?? playerUtils.getString('common.value.noReasonProvided', dependencies),
                 durationMessage: durationStringKick,
             });
-            if (config.discordLink && config.discordLink.trim() !== '' && config.discordLink.trim() !== 'https://discord.gg/example') {
-                kickReason += `\n${playerUtils.getString('ban.kickMessage.discord', dependencies, { discordLink: config.discordLink })}`;
+            if (config.serverInfo.discordLink && config.serverInfo.discordLink.trim() !== '' && !config.serverInfo.discordLink.includes('example.com')) {
+                kickReason += `\n${playerUtils.getString('ban.kickMessage.discord', dependencies, { discordLink: config.serverInfo.discordLink })}`;
             }
             await player.kick(kickReason);
             return;
@@ -191,18 +186,17 @@ async function _handlePlayerSpawn(eventData, dependencies) {
         rankManager?.updatePlayerNametag(player, dependencies);
         playerUtils.debugLog(`[EventHandler.handlePlayerSpawn] Nametag updated for ${playerName}.`, playerName, dependencies);
 
-        const spawnLocation = player.location; // Get location after potential teleport/spawn logic
+        const spawnLocation = player.location;
         const spawnDimensionId = player.dimension.id.replace('minecraft:', '');
         const spawnGameMode = mc.GameMode[player.gameMode] ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
 
         if (initialSpawn) {
-            pData.joinTime = Date.now(); // This correctly sets the start of the current session
+            pData.joinTime = Date.now();
             pData.joinCount = (pData.joinCount || 0) + 1;
             pData.isDirtyForSave = true;
 
-            if (config.enableWelcomerMessage) {
-                const welcomeMsgKey = config.welcomeMessageKey || 'welcome.joinMessage'; // Use a key for welcomer
-                const message = playerUtils.getString(welcomeMsgKey, dependencies, { playerName: player.nameTag });
+            if (config.playerInfo.enableWelcomer) {
+                const message = playerUtils.getString('welcome.joinMessage', dependencies, { playerName: player.nameTag });
                 minecraftSystem.system.runTimeout(() => {
                     try {
                         if (player.isValid()) {
@@ -218,29 +212,29 @@ async function _handlePlayerSpawn(eventData, dependencies) {
                 actionType: 'playerInitialJoin',
                 targetName: playerName, targetId: player.id,
                 details: `Joined. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},` +
-                    `${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}. Join Count: ${pData.joinCount}.`,
+          `${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}. Join Count: ${pData.joinCount}.`,
                 location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
                 gameMode: spawnGameMode,
             }, dependencies);
 
-            if (config.notifyAdminOnNewPlayerJoin) {
+            if (config.playerInfo.notifyAdminOnNewPlayer) {
                 playerUtils.notifyAdmins(
                     playerUtils.getString('admin.notify.newPlayerJoined', dependencies, { playerName: player.nameTag }),
                     dependencies, player, pData,
                 );
             }
-        } else { // Respawn
+        } else {
             logManager?.addLog({
                 actionType: 'playerRespawn',
                 targetName: playerName, targetId: player.id,
                 details: `Respawned. Loc: ${Math.floor(spawnLocation.x)},${Math.floor(spawnLocation.y)},` +
-                    `${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}.`,
+          `${Math.floor(spawnLocation.z)} in ${spawnDimensionId}. GM: ${spawnGameMode}.`,
                 location: { x: Math.floor(spawnLocation.x), y: Math.floor(spawnLocation.y), z: Math.floor(spawnLocation.z), dimensionId: spawnDimensionId },
                 gameMode: spawnGameMode,
             }, dependencies);
         }
 
-        if (pData.deathMessageToShowOnSpawn && config.enableDeathCoordsMessage) {
+        if (pData.deathMessageToShowOnSpawn && config.playerInfo.enableDeathCoords) {
             minecraftSystem.system.runTimeout(() => {
                 try {
                     if (player.isValid()) {
@@ -255,7 +249,7 @@ async function _handlePlayerSpawn(eventData, dependencies) {
             pData.isDirtyForSave = true;
         }
 
-        if (checks?.checkInvalidRenderDistance && config.enableInvalidRenderDistanceCheck) {
+        if (checks?.checkInvalidRenderDistance && config.checks.invalidRenderDistance.enabled) {
             minecraftSystem.system.runTimeout(async () => {
                 if (!player.isValid()) {
                     return;
@@ -269,12 +263,12 @@ async function _handlePlayerSpawn(eventData, dependencies) {
             }, renderDistanceCheckDelayTicks);
         }
 
-        if (config.enableDetailedJoinLeaveLogging) {
+        if (config.playerInfo.enableDetailedJoinLeaveLogging) {
             const deviceType = playerUtils.getDeviceType(player) ?? playerUtils.getString('common.value.unknown', dependencies) ?? 'Unknown';
             const locStr = `${Math.floor(spawnLocation.x)}, ${Math.floor(spawnLocation.y)}, ${Math.floor(spawnLocation.z)} in ${spawnDimensionId}`;
             console.warn(
                 `[JoinLog] Player: ${playerName} (ID: ${player.id}, Device: ${deviceType}, Mode: ${spawnGameMode}) ` +
-                `${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`,
+        `${initialSpawn ? 'joined' : 'spawned'} at ${locStr}.`,
             );
         }
 
@@ -309,7 +303,7 @@ export const handlePlayerSpawn = profileEventHandler('handlePlayerSpawn', _handl
  */
 async function _handlePistonActivateAntiGrief(eventData, dependencies) {
     const { config, playerUtils, checks } = dependencies;
-    if (!config?.enablePistonLagCheck) {
+    if (!config?.checks?.pistonLag?.enabled) {
         return;
     }
 
@@ -345,17 +339,17 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
     }
     const entityName = entity.typeId;
 
-    if (entity.typeId === mc.MinecraftEntityTypes.wither.id && config?.enableWitherAntiGrief) {
+    if (entity.typeId === mc.MinecraftEntityTypes.wither.id && config?.antiGrief?.wither?.enabled) {
         playerUtils?.debugLog(
-            `[EvtHdlr.EntSpawn] Wither spawned (ID: ${entity.id}). Action: ${config.witherSpawnAction}. Cause: ${cause}`,
+            `[EvtHdlr.EntSpawn] Wither spawned (ID: ${entity.id}). Action: ${config.antiGrief.wither.action}. Cause: ${cause}`,
             null, dependencies,
         );
         const violationDetails = {
-            entityId: entity.id, entityType: entity.typeId, actionTaken: config.witherSpawnAction,
+            entityId: entity.id, entityType: entity.typeId, actionTaken: config.antiGrief.wither.action,
             playerNameOrContext: 'System/Environment', cause,
         };
         await actionManager?.executeCheckAction(null, 'worldAntiGriefWitherSpawn', violationDetails, dependencies);
-        if (config.witherSpawnAction === 'kill') {
+        if (config.antiGrief.wither.action === 'kill') {
             try {
                 entity.kill();
                 playerUtils?.debugLog(`[EvtHdlr.EntSpawn] Wither (ID: ${entity.id}) killed.`, null, dependencies);
@@ -368,7 +362,7 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                 }, dependencies);
             }
         }
-    } else if (config?.enableEntitySpamAntiGrief && (entity.typeId === mc.MinecraftEntityTypes.snowGolem.id || entity.typeId === mc.MinecraftEntityTypes.ironGolem.id)) {
+    } else if (config?.checks?.entitySpam?.enabled && (entity.typeId === mc.MinecraftEntityTypes.snowGolem.id || entity.typeId === mc.MinecraftEntityTypes.ironGolem.id)) {
         playerUtils?.debugLog(
             `[EvtHdlr.EntSpawn] ${entityName} spawned. Checking attribution. Tick: ${minecraftSystem?.system?.currentTick}`,
             null, dependencies,
@@ -382,11 +376,11 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
             const expectedTick = pData?.expectingConstructedEntity?.tick ?? 0;
             const currentSystemTick = minecraftSystem?.system?.currentTick ?? 0;
             if (pData?.expectingConstructedEntity?.type === entity.typeId &&
-                Math.abs(expectedTick - currentSystemTick) < golemConstructionCheckTickWindow) {
+        Math.abs(expectedTick - currentSystemTick) < golemConstructionCheckTickWindow) {
                 const playerName = player.nameTag;
                 playerUtils?.debugLog(
                     `[EvtHdlr.EntSpawn] Attributed ${entityName} to ${playerName}. ` +
-                    `Expectation: ${JSON.stringify(pData.expectingConstructedEntity)}`,
+          `Expectation: ${JSON.stringify(pData.expectingConstructedEntity)}`,
                     playerName, dependencies,
                 );
                 if (checks?.checkEntitySpam) {
@@ -399,7 +393,7 @@ async function _handleEntitySpawnEventAntiGrief(eventData, dependencies) {
                         break;
                     }
 
-                    if (isSpam && config.entitySpamAction === 'kill') {
+                    if (isSpam && config.checks.entitySpam.action === 'kill') {
                         try {
                             entity.kill();
                             playerUtils?.debugLog(
@@ -453,25 +447,24 @@ async function _handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependenci
     let defaultMessageKey = '';
     const cancelByDefault = true;
 
-    if (itemStack.typeId === 'minecraft:tnt' && config?.enableTntAntiGrief) {
+    if (itemStack.typeId === 'minecraft:tnt' && config?.antiGrief?.tnt?.enabled) {
         checkType = 'worldAntiGriefTntPlace';
-        actionConfigKey = 'tntPlacementAction';
+        actionConfigKey = 'tnt';
         defaultMessageKey = 'antigrief.tntPlacementDenied';
-    } else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.enableLavaAntiGrief) {
+    } else if (itemStack.typeId === 'minecraft:lava_bucket' && config?.antiGrief?.lava?.enabled) {
         checkType = 'worldAntiGriefLava';
-        actionConfigKey = 'lavaPlacementAction';
+        actionConfigKey = 'lava';
         defaultMessageKey = 'antigrief.lavaPlacementDenied';
-    } else if (itemStack.typeId === 'minecraft:water_bucket' && config?.enableWaterAntiGrief) {
+    } else if (itemStack.typeId === 'minecraft:water_bucket' && config?.antiGrief?.water?.enabled) {
         checkType = 'worldAntiGriefWater';
-        actionConfigKey = 'waterPlacementAction';
+        actionConfigKey = 'water';
         defaultMessageKey = 'antigrief.waterPlacementDenied';
     }
 
     if (checkType) {
         const playerPermission = rankManager?.getPlayerPermissionLevel(player, dependencies);
-        const isAdminAllowed = (checkType === 'worldAntiGriefTntPlace' && config.allowAdminTntPlacement) ||
-                               (checkType === 'worldAntiGriefLava' && config.allowAdminLava) ||
-                               (checkType === 'worldAntiGriefWater' && config.allowAdminWater);
+        const griefConfig = config.antiGrief[actionConfigKey];
+        const isAdminAllowed = griefConfig.allowAdmins;
 
         if (isAdminAllowed && permissionLevels?.admin !== undefined && playerPermission <= permissionLevels.admin) {
             playerUtils?.debugLog(
@@ -481,7 +474,7 @@ async function _handlePlayerPlaceBlockBeforeEventAntiGrief(eventData, dependenci
             return;
         }
 
-        const actionTaken = config[actionConfigKey] || 'prevent';
+        const actionTaken = griefConfig.action || 'prevent';
         const violationDetails = {
             itemTypeId: itemStack.typeId,
             location: { x: block.location.x, y: block.location.y, z: block.location.z },
