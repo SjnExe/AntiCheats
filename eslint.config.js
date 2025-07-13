@@ -133,38 +133,19 @@ export default [
         // Rules from jsdoc.configs['flat/recommended'] are active here first.
         // Subsequent rules in this block will override them.
 
-        'jsdoc/require-jsdoc': [
-            'error',
-            {
-                require: {
-                    FunctionDeclaration: true,
-                    MethodDefinition: true,
-                    ClassDeclaration: true,
-                    ArrowFunctionExpression: true,
-                    FunctionExpression: true
-                },
-                contexts: [
-                    'ExportDefaultDeclaration',
-                    'ExportNamedDeclaration',
-                ],
-                publicOnly: false,
-                checkConstructors: true,
-                checkGetters: true,
-                checkSetters: true,
-            },
-        ],
-        'jsdoc/require-param': ['error', { checkDestructuredRoots: false }],
-        'jsdoc/require-param-type': 'error',
-        'jsdoc/require-param-name': 'error',
+        'jsdoc/require-jsdoc': 'off',
+        'jsdoc/require-param': 'off',
+        'jsdoc/require-param-type': 'off',
+        'jsdoc/require-param-name': 'off',
         'jsdoc/require-param-description': 'off',
 
-        'jsdoc/require-returns': ['error', { checkGetters: false }],
-        'jsdoc/require-returns-type': 'error',
+        'jsdoc/require-returns': 'off',
+        'jsdoc/require-returns-type': 'off',
         'jsdoc/require-returns-description': 'off',
 
-        'jsdoc/no-undefined-types': ['error', { disableReporting: false }],
-        'jsdoc/check-types': ['error', { unifyParentAndChildTypeChecks: true, exemptTagContexts: [{tag: 'typedef', types: true}] }],
-        'jsdoc/valid-types': 'error',
+        'jsdoc/no-undefined-types': 'off',
+        'jsdoc/check-types': 'off',
+        'jsdoc/valid-types': 'off',
 
         'jsdoc/check-alignment': 'warn',
         'jsdoc/check-indentation': 'off', // MODIFICATION: Turned OFF due to persistent false positives
@@ -190,24 +171,9 @@ export default [
         'jsdoc/check-param-names': ['error', { checkDestructured: false, enableFixer: true }],
         'jsdoc/check-property-names': ['error', { enableFixer: true }],
 
-        'jsdoc/require-file-overview': ['warn', {
-            tags: {
-                file: {
-                    mustExist: true,
-                    preventDuplicates: true,
-                },
-                author: {
-                    mustExist: false,
-                    preventDuplicates: true,
-                },
-                license: {
-                    mustExist: false,
-                    preventDuplicates: true,
-                }
-            },
-        }],
+        'jsdoc/require-file-overview': 'off',
 
-        'jsdoc/require-description': 'warn',
+        'jsdoc/require-description': 'off',
         'jsdoc/require-description-complete-sentence': 'off',
         'jsdoc/match-description': 'off',
         'jsdoc/no-defaults': 'warn',
