@@ -1,166 +1,154 @@
 /**
  * @file Manages the registration, parsing, and execution of chat-based commands for the AntiCheat system.
  * @module AntiCheatsBP/scripts/core/commandManager
- * It dynamically loads command modules and handles permission checking and alias resolution.
- * All command names and aliases are treated as case-insensitive (converted to lowerCase).
+ * It dynamically loads command modules on-demand to improve performance and reduce memory usage.
  */
-import { commandModules } from './commandRegistry.js';
-/**
- * @type {Map<string, import('../types.js').CommandDefinition>}
- */
+import { commandFilePaths, commandAliases } from './commandRegistry.js';
+import { loadCommand } from './dynamicCommandLoader.js';
+
+/** @type {Map<string, import('../types.js').CommandDefinition>} */
 export const commandDefinitionMap = new Map();
-/**
- * @type {Map<string, import('../types.js').CommandExecuteFunction>}
- */
+
+/** @type {Map<string, import('../types.js').CommandExecuteFunction>} */
 export const commandExecutionMap = new Map();
+
 /**
- * Initializes or reloads all commands from the commandRegistry.
- * @param {import('../types.js').Dependencies} dependencies The dependencies object
+ * Initializes the command manager, preparing it for dynamic command loading.
+ * This function clears any existing command data and sets up the alias map.
+ * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export function initializeCommands(dependencies) {
     const { playerUtils } = dependencies;
     const { debugLog } = playerUtils;
+
     commandDefinitionMap.clear();
     commandExecutionMap.clear();
-    dependencies.aliasToCommandMap = new Map();
-    if (!Array.isArray(commandModules)) {
-        console.error('[CommandManager.initializeCommands CRITICAL] commandModules is not an array or is undefined. No commands loaded.');
-        return;
-    }
-    for (const cmdModule of commandModules) {
-        if (cmdModule?.definition?.name && typeof cmdModule.definition.name === 'string' && typeof cmdModule.execute === 'function') {
-            const cmdNameLower = cmdModule.definition.name.toLowerCase();
-            if (commandDefinitionMap.has(cmdNameLower)) {
-                debugLog(`[CommandManager.initializeCommands WARNING] Duplicate main command name detected and overwritten: ${cmdNameLower}`, null, dependencies);
-            }
-            commandDefinitionMap.set(cmdNameLower, cmdModule.definition);
-            commandExecutionMap.set(cmdNameLower, cmdModule.execute);
-            if (Array.isArray(cmdModule.definition.aliases)) {
-                cmdModule.definition.aliases.forEach(alias => {
-                    const aliasLower = alias.toLowerCase();
-                    if (commandDefinitionMap.has(aliasLower)) {
-                        debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' conflicts with an existing main command name. Alias NOT registered.`, null, dependencies);
-                    } else if (dependencies.aliasToCommandMap.has(aliasLower)) {
-                        const existingCmd = dependencies.aliasToCommandMap.get(aliasLower);
-                        debugLog(`[CommandManager.initializeCommands WARNING] Alias '${aliasLower}' for command '${cmdNameLower}' is already an alias for command '${existingCmd}'. Alias NOT registered for '${cmdNameLower}'.`, null, dependencies);
-                    } else {
-                        dependencies.aliasToCommandMap.set(aliasLower, cmdNameLower);
-                    }
-                });
-            }
-        } else {
-            debugLog(`[CommandManager.initializeCommands WARNING] Invalid command module structure encountered. Module: ${JSON.stringify(cmdModule)}`, null, dependencies);
-        }
-    }
-    debugLog(`[CommandManager.initializeCommands] Initialized/Reloaded ${commandDefinitionMap.size} command definitions and ${dependencies.aliasToCommandMap.size} aliases.`, null, dependencies);
+
+    // Set the alias map from the command registry
+    dependencies.aliasToCommandMap = new Map(commandAliases);
+
+    debugLog(`[CommandManager.initializeCommands] Command system initialized. ${commandFilePaths.size} commands available, ${dependencies.aliasToCommandMap.size} aliases registered.`, null, dependencies);
 }
+
 /**
- * IIFE for initial command loading on script startup.
+ * IIFE for initial command system setup on script startup.
  */
 (() => {
     const initialLoadDeps = {
         playerUtils: {
             debugLog: (msg) => console.log(`[CommandManagerInitialLoad] ${msg}`),
-        }
+        },
+        // aliasToCommandMap will be initialized within initializeCommands
     };
     try {
         initializeCommands(initialLoadDeps);
     } catch (e) {
-        console.error(`[CommandManagerInitialLoad CRITICAL] Error during initial command loading: ${e.stack || e}`);
+        console.error(`[CommandManagerInitialLoad CRITICAL] Error during initial command setup: ${e.stack || e}`);
     }
 })();
+
 /**
  * Handles incoming chat messages to check for and execute commands.
+ * It dynamically loads commands upon their first use.
  * @param {import('@minecraft/server').ChatSendBeforeEvent} eventData The chat event data.
  * @param {import('../types.js').Dependencies} dependencies The dependencies object.
  */
 export async function handleChatCommand(eventData, dependencies) {
     const { sender: player, message } = eventData;
-    const { config, playerUtils, playerDataManager, logManager, permissionLevels, rankManager } = dependencies;
+    const { config, playerUtils, playerDataManager, logManager, rankManager, aliasToCommandMap } = dependencies;
     const { debugLog, getString, warnPlayer, playSoundForEvent } = playerUtils;
     const { getPlayerData } = playerDataManager;
     const { addLog } = logManager;
     const { getPlayerPermissionLevel } = rankManager;
+
     const playerName = player?.nameTag ?? 'UnknownPlayer';
     if (!player?.isValid()) {
         console.warn('[CommandManager.handleChatCommand] Invalid player object in eventData.');
         eventData.cancel = true;
         return;
     }
-    if (!config?.prefix) {
-        console.error('[CommandManager.handleChatCommand CRITICAL] Command prefix is not configured.');
-        debugLog(`[CommandManager.handleChatCommand] Prefix not configured. Message from ${playerName} not treated as command.`, playerName, dependencies);
-        return;
+
+    if (!config?.prefix || !message.startsWith(config.prefix)) {
+        return; // Not a command
     }
+
+    eventData.cancel = true; // Cancel the original chat message
+
     const args = message.substring(config.prefix.length).trim().split(/\s+/);
     const commandNameInput = args.shift()?.toLowerCase();
     const senderPDataForLog = getPlayerData(player.id);
+
     debugLog(`[CommandManager.handleChatCommand] Player ${playerName} command attempt: '${commandNameInput || ''}', Args: [${args.join(', ')}]`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
+
     if (!commandNameInput) {
         player?.sendMessage(getString('command.error.noCommandEntered', { prefix: config.prefix }));
-        eventData.cancel = true;
         return;
     }
-    const aliasTargetCommand = dependencies.aliasToCommandMap?.get(commandNameInput);
-    const finalCommandName = aliasTargetCommand || commandNameInput;
-    if (aliasTargetCommand) {
-        debugLog(`[CommandManager.handleChatCommand] Alias '${commandNameInput}' for ${playerName} resolved to main command '${finalCommandName}'.`, playerName, dependencies);
-    }
-    const commandDef = dependencies.commandDefinitionMap?.get(finalCommandName);
-    const commandExecute = dependencies.commandExecutionMap?.get(finalCommandName);
-    if (!commandDef || !commandExecute) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
-        eventData.cancel = true;
+
+    // Resolve alias or use the input name
+    const resolvedCommandName = aliasToCommandMap.get(commandNameInput) || commandNameInput;
+
+    // Dynamically load the command
+    const commandModule = await loadCommand(resolvedCommandName, dependencies);
+    if (!commandModule) {
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
+        debugLog(`[CommandManager.handleChatCommand] Failed to load module for command '${resolvedCommandName}'.`, playerName, dependencies);
         return;
     }
+
+    const { definition: commandDef, execute: commandExecute } = commandModule;
+
+    // Check if the command is enabled
     let isEffectivelyEnabled = commandDef.enabled !== false;
-    if (config?.commandSettings?.[finalCommandName] && typeof config.commandSettings[finalCommandName].enabled === 'boolean') {
-        isEffectivelyEnabled = config.commandSettings[finalCommandName].enabled;
+    if (config?.commandSettings?.[resolvedCommandName] && typeof config.commandSettings[resolvedCommandName].enabled === 'boolean') {
+        isEffectivelyEnabled = config.commandSettings[resolvedCommandName].enabled;
     }
     if (!isEffectivelyEnabled) {
-        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: finalCommandName }));
-        eventData.cancel = true;
-        debugLog(`[CommandManager.handleChatCommand] Command '${finalCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
+        player?.sendMessage(getString('command.error.unknownCommand', { prefix: config.prefix, commandName: commandNameInput }));
+        debugLog(`[CommandManager.handleChatCommand] Command '${resolvedCommandName}' is disabled. Access denied for ${playerName}.`, playerName, dependencies);
         return;
     }
+
+    // Check permission level
     const userPermissionLevel = getPlayerPermissionLevel(player, dependencies);
     if (typeof userPermissionLevel !== 'number' || userPermissionLevel > commandDef.permissionLevel) {
         warnPlayer(player, getString('common.error.permissionDenied'), dependencies);
         debugLog(`[CommandManager.handleChatCommand] Command '${commandDef.name}' denied for ${playerName}. Required: ${commandDef.permissionLevel}, Player has: ${userPermissionLevel ?? 'N/A'}`, playerName, dependencies);
-        eventData.cancel = true;
         return;
     }
-    eventData.cancel = true;
-    if (permissionLevels?.admin !== undefined && userPermissionLevel <= permissionLevels.admin) {
+
+    // Log admin command usage
+    if (dependencies.permissionLevels?.admin !== undefined && userPermissionLevel <= dependencies.permissionLevels.admin) {
         const timestamp = new Date().toISOString();
         console.warn(`[AdminCommandLog] ${timestamp} - Player: ${playerName} (Perm: ${userPermissionLevel}) - Command: ${message}`);
-        if (senderPDataForLog?.isWatched) {
-            debugLog(`[CommandManager.handleChatCommand] Watched admin ${playerName} is executing command: ${message}`, playerName, dependencies);
-        }
     }
+
+    // Execute the command
     try {
         await commandExecute(player, args, dependencies);
-        debugLog(`[CommandManager.handleChatCommand] Successfully executed '${finalCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
+        debugLog(`[CommandManager.handleChatCommand] Successfully executed '${resolvedCommandName}' for ${playerName}.`, senderPDataForLog?.isWatched ? playerName : null, dependencies);
         playSoundForEvent(player, 'commandSuccess', dependencies);
     } catch (error) {
-        player?.sendMessage(getString('command.error.executionFailed', { commandName: finalCommandName }));
+        player?.sendMessage(getString('command.error.executionFailed', { commandName: resolvedCommandName }));
         const errorMessage = error?.message || String(error);
         const errorStack = error?.stack || 'N/A';
-        console.error(`[CommandManager.handleChatCommand CRITICAL] Error executing ${finalCommandName} for ${playerName}: ${errorStack}`);
+        console.error(`[CommandManager.handleChatCommand CRITICAL] Error executing ${resolvedCommandName} for ${playerName}: ${errorStack}`);
         addLog({
             actionType: 'error.cmd.exec',
             targetName: playerName,
             targetId: player.id,
-            context: `commandManager.handleChatCommand.${finalCommandName}`,
-            details: { errorCode: 'CMD_EXEC_FAIL', message: errorMessage, rawErrorStack: errorStack, meta: { command: finalCommandName, args: args.join(', ') } },
+            context: `commandManager.handleChatCommand.${resolvedCommandName}`,
+            details: { errorCode: 'CMD_EXEC_FAIL', message: errorMessage, rawErrorStack: errorStack, meta: { command: resolvedCommandName, args: args.join(', ') } },
         }, dependencies);
         playSoundForEvent(player, 'commandError', dependencies);
     }
 }
+
 /**
- * Gets a list of all registered command names.
+ * Gets a list of all available command names from the registry.
+ * Note: This does not mean they are all loaded into memory.
  * @returns {string[]} An array of command names.
  */
 export function getAllRegisteredCommandNames() {
-    return Array.from(commandDefinitionMap.keys());
+    return Array.from(commandFilePaths.keys());
 }
