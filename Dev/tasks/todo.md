@@ -4,29 +4,12 @@ This file lists the tasks for improving the AntiCheat addon.
 
 ## Code Quality and Maintainability
 
-- [ ] **Refactor `config.js`:**
-    - [x] Group related settings into logical sections.
-    - [x] Provide clear and concise comments for each setting.
-    - [x] Simplify complex or redundant settings.
-- [ ] **Improve `commandManager.js`:**
-    - [x] Implement dynamic command loading to improve performance.
-    - [x] Streamline the command disabling mechanism.
-    - [x] Provide more specific error messages for command failures.
-- [x] **Standardize code style:**
-    - [x] Ensure all code adheres to a consistent style guide.
-    - [x] Use a linter to automatically enforce code style.
 - [ ] **Add unit tests:**
     - [ ] Write unit tests for critical components, such as the command manager and the configuration loader.
     - [ ] Set up a continuous integration (CI) pipeline to run tests automatically.
 
 ## Performance
 
-- [x] **Optimize the main tick loop:**
-    - [x] Profile the main tick loop to identify performance bottlenecks.
-    - [x] Implement caching or other optimizations to reduce the frequency of expensive checks.
-- [x] **Optimize individual checks:**
-    - [x] Review each check to identify potential performance improvements.
-    - [x] Use more efficient algorithms and data structures.
 - [ ] **Provide performance guidance:**
     - [ ] Document the performance impact of each check.
     - [ ] Provide recommendations for configuring the addon for optimal performance.
