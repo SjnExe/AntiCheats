@@ -9,18 +9,19 @@
       1,
       21,
       90
-    ]
+    ],
+    "authors": [
+      "Sjn.exe"
+    ],
+    "license": "MIT",
+    "url": "https://github.com/SjnExe/AntiCheats"
   },
   "modules": [
     {
       "description": "Resource pack assets.",
       "type": "resources",
       "uuid": "da4ec34d-3a7a-4b10-bd5d-909810558a51",
-      "version": [
-        1,
-        0,
-        0
-      ]
+      "version": "__VERSION_ARRAY__"
     }
   ],
   "dependencies": [
