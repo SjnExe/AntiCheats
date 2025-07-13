@@ -1,11 +1,3 @@
-/**
- * @file Main entry point for the AntiCheat system.
- * @module AntiCheatsBP/scripts/main
- * Initializes all core modules, subscribes to Minecraft server events,
- * and runs the main system tick loop for processing checks, player data updates,
- * and other periodic tasks.
- */
-
 import * as mc from '@minecraft/server';
 import * as mcui from '@minecraft/server-ui';
 
@@ -94,58 +86,73 @@ const MAX_PROFILING_HISTORY = 100;
  */
 function getStandardDependencies() {
     try {
+        const playerDataManager = {
+            ensurePlayerDataInitialized,
+            getPlayerData,
+            cleanupActivePlayerData,
+            updateTransientPlayerData,
+            clearExpiredItemUseStates,
+            saveDirtyPlayerData,
+        };
+
+        const worldBorderManager = {
+            getBorderSettings,
+            saveBorderSettings,
+            processWorldBorderResizing,
+            enforceWorldBorderForPlayer,
+            isPlayerOutsideBorder,
+        };
+
+        const commandManager = {
+            registerCommand: registerCommandInternal,
+            unregisterCommand: unregisterCommandInternal,
+            reloadCommands: initializeCommands,
+        };
+
+        const playerUtils = {
+            debugLog,
+            getString,
+            notifyAdmins,
+            playSoundForEvent,
+            isAdmin,
+            formatSessionDuration,
+        };
+
+        const rankManager = {
+            getPlayerPermissionLevel,
+            updatePlayerNametag,
+            getPlayerRankFormattedChatElements,
+        };
+
+        const configValidator = {
+            validateMainConfig,
+            validateActionProfiles,
+            validateAutoModConfig,
+            validateRanksConfig,
+        };
+
         return {
-            // Configs
             config: configModule.editableConfigValues,
             automodConfig,
             checkActionProfiles,
-
-            // Player/World State & Data
             mc,
             currentTick,
-            playerDataManager: { // Grouped for clarity
-                ensurePlayerDataInitialized,
-                getPlayerData,
-                cleanupActivePlayerData,
-                updateTransientPlayerData,
-                clearExpiredItemUseStates,
-                saveDirtyPlayerData,
-            },
-            worldBorderManager: {
-                getBorderSettings,
-                saveBorderSettings,
-                processWorldBorderResizing,
-                enforceWorldBorderForPlayer,
-                isPlayerOutsideBorder,
-            },
-
-            // Core Managers & Utils
+            playerDataManager,
+            worldBorderManager,
             actionManager: { executeCheckAction },
             logManager: { addLog, persistLogCacheToDisk },
             reportManager: { persistReportsToDisk },
             tpaManager: { clearExpiredRequests, getRequestsInWarmup, checkPlayerMovementDuringWarmup, executeTeleport },
-            commandManager: { registerCommand: registerCommandInternal, unregisterCommand: unregisterCommandInternal, reloadCommands: initializeCommands },
-            playerUtils: { debugLog, getString, notifyAdmins, playSoundForEvent, isAdmin, formatSessionDuration }, // Pass as a group
-
-            // Ranks
-            rankManager: {
-                getPlayerPermissionLevel,
-                updatePlayerNametag,
-                getPlayerRankFormattedChatElements,
-            },
+            commandManager,
+            playerUtils,
+            rankManager,
             permissionLevels,
-
-            // Checks & Validation
             checks,
-            configValidator: { validateMainConfig, validateActionProfiles, validateAutoModConfig, validateRanksConfig },
-
-            // UI
-            uiManager, // Keep as namespace
+            configValidator,
+            uiManager,
             ActionFormData: mcui.ActionFormData,
             MessageFormData: mcui.MessageFormData,
             ModalFormData: mcui.ModalFormData,
-
-            // System & Misc
             system: mc.system,
             ItemComponentTypes: mc.ItemComponentTypes,
             chatProcessor: { processChatMessage },
@@ -159,8 +166,7 @@ function getStandardDependencies() {
     }
 }
 
-// NOTE: This function now needs to be updated to match the new dependency structure.
-// This is a critical part of the refactor.
+
 /**
  * Validates that the core dependencies are available and of the correct type.
  * @param {import('./types.js').Dependencies} deps The dependencies object to validate.
@@ -171,41 +177,48 @@ function validateDependencies(deps, callContext) {
     const mainContext = `[${mainModuleName}.validateDependencies from ${callContext}]`;
     const errors = [];
 
+    const dependencyChecks = {
+        'playerDataManager.ensurePlayerDataInitialized': 'function',
+        'playerUtils.debugLog': 'function',
+        'playerUtils.getString': 'function',
+        'actionManager.executeCheckAction': 'function',
+        'system.runInterval': 'function',
+        'configValidator.validateMainConfig': 'function',
+        'chatProcessor.processChatMessage': 'function',
+        'checks': 'object',
+    };
+
     if (!deps) {
         errors.push('CRITICAL: Dependencies object itself is null or undefined.');
     } else {
-        if (typeof deps.playerDataManager?.ensurePlayerDataInitialized !== 'function') {
-            errors.push('CRITICAL: deps.playerDataManager.ensurePlayerDataInitialized is NOT a function.');
-        }
-        if (typeof deps.playerUtils?.debugLog !== 'function') {
-            errors.push('CRITICAL: deps.playerUtils.debugLog is NOT a function.');
-        }
-        if (typeof deps.playerUtils?.getString !== 'function') {
-            errors.push('CRITICAL: deps.playerUtils.getString is NOT a function.');
-        }
-        if (typeof deps.actionManager?.executeCheckAction !== 'function') {
-            errors.push('CRITICAL: deps.actionManager.executeCheckAction is NOT a function.');
-        }
-        if (typeof deps.system?.runInterval !== 'function') {
-            errors.push('CRITICAL: deps.system.runInterval is NOT a function.');
-        }
-        if (typeof deps.configValidator?.validateMainConfig !== 'function') {
-            errors.push('CRITICAL: deps.configValidator.validateMainConfig is NOT a function.');
-        }
-        if (typeof deps.chatProcessor?.processChatMessage !== 'function') {
-            errors.push('CRITICAL: deps.chatProcessor.processChatMessage is NOT a function.');
-        }
-        if (typeof deps.checks !== 'object') {
-            errors.push('CRITICAL: deps.checks is NOT an object.');
+        for (const keyPath in dependencyChecks) {
+            const expectedType = dependencyChecks[keyPath];
+            const keys = keyPath.split('.');
+            let current = deps;
+            let path = '';
+            for (const key of keys) {
+                path = path ? `${path}.${key}` : key;
+                if (current === null || typeof current !== 'object' || !current.hasOwnProperty(key)) {
+                    errors.push(`CRITICAL: deps.${path} is missing.`);
+                    current = undefined;
+                    break;
+                }
+                current = current[key];
+            }
+
+            if (current !== undefined && typeof current !== expectedType) {
+                errors.push(`CRITICAL: deps.${keyPath} is NOT a ${expectedType}.`);
+            }
         }
     }
 
     if (errors.length > 0) {
-        const fullErrorMessage = `${mainContext} Dependency validation failed:\n${ errors.map(e => `  - ${e}`).join('\n')}`;
+        const fullErrorMessage = `${mainContext} Dependency validation failed:\n${errors.map(e => `  - ${e}`).join('\n')}`;
         console.error('!!!! CRITICAL DEPENDENCY VALIDATION FAILURE !!!!');
         console.error(fullErrorMessage);
         throw new Error(fullErrorMessage);
     }
+
     return true;
 }
 
@@ -215,27 +228,6 @@ const PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS = 600;
 const TPA_SYSTEM_TICK_INTERVAL = 20;
 
 /**
- * Checks if the core Minecraft Server APIs are ready to be used.
- * @param {import('./types.js').Dependencies} dependencies The dependencies object.
- * @returns {boolean} True if the APIs are ready.
- */
-function checkEventAPIsReady(dependencies) {
-    const allReady = true;
-    /**
-     * Logs a message to the console or using the debug logger.
-     * @param {string} msg The message to log.
-     * @returns {void}
-     */
-    const logger = (msg) => dependencies.playerUtils?.debugLog ? dependencies.playerUtils.debugLog(msg, 'System', dependencies) : console.log(msg);
-
-    if (!mc.world?.beforeEvents || !mc.world?.afterEvents || !mc.system) {
-        logger(`[${mainModuleName}.checkEventAPIsReady] Critical APIs (world.beforeEvents, world.afterEvents, system) not yet available.`);
-        return false;
-    }
-    return allReady;
-}
-
-/**
  * Performs all initializations for the AntiCheat system.
  */
 function performInitializations() {
@@ -243,7 +235,23 @@ function performInitializations() {
     validateDependencies(dependencies, 'performInitializations - startup');
 
     dependencies.playerUtils.debugLog('Anti-Cheat Script Loaded. Performing initializations...', 'System', dependencies);
-    dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Attempting to subscribe to events...`, 'System', dependencies);
+
+    subscribeToEvents(dependencies);
+    initializeModules(dependencies);
+    validateConfigurations(dependencies);
+
+    mc.world.sendMessage(dependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
+    dependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
+
+    mc.system.runInterval(() => mainTick(dependencies), 1);
+    mc.system.runInterval(() => tpaTick(dependencies), TPA_SYSTEM_TICK_INTERVAL);
+}
+/**
+ * Subscribes to all necessary Minecraft server events.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ */
+function subscribeToEvents(dependencies) {
+    dependencies.playerUtils.debugLog(`[${mainModuleName}] Subscribing to events...`, 'System', dependencies);
 
     mc.world.beforeEvents.chatSend.subscribe(async (eventData) => {
         if (eventData.message.startsWith(dependencies.config.prefix)) {
@@ -254,28 +262,43 @@ function performInitializations() {
         }
     });
 
-    mc.world.afterEvents.playerSpawn.subscribe((eventData) => handlePlayerSpawn(eventData, dependencies));
-    mc.world.beforeEvents.playerLeave.subscribe((eventData) => handlePlayerLeave(eventData, dependencies));
-    mc.world.afterEvents.entityHurt.subscribe((eventData) => handleEntityHurt(eventData, dependencies));
-    mc.world.beforeEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockBeforeEvent(eventData, dependencies));
-    mc.world.afterEvents.playerBreakBlock.subscribe((eventData) => handlePlayerBreakBlockAfterEvent(eventData, dependencies));
-    mc.world.beforeEvents.itemUse.subscribe((eventData) => handleItemUse(eventData, dependencies));
-    mc.world.beforeEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockBefore(eventData, dependencies));
-    mc.world.afterEvents.playerPlaceBlock.subscribe((eventData) => handlePlayerPlaceBlockAfterEvent(eventData, dependencies));
-    mc.world.afterEvents.playerInventoryItemChange.subscribe((eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, dependencies));
-    mc.world.afterEvents.playerDimensionChange.subscribe((eventData) => handlePlayerDimensionChangeAfterEvent(eventData, dependencies));
-    mc.world.afterEvents.entityDie.subscribe((eventData) => {
-        if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
-            handlePlayerDeath(eventData, dependencies);
-        }
-        if (dependencies.config.enableDeathEffects) {
-            handleEntityDieForDeathEffects(eventData, dependencies);
-        }
-    });
-    mc.world.afterEvents.entitySpawn.subscribe((eventData) => handleEntitySpawnEventAntiGrief(eventData, dependencies));
-    mc.world.afterEvents.pistonActivate.subscribe((eventData) => handlePistonActivateAntiGrief(eventData, dependencies));
+    const eventSubscriptions = {
+        'playerSpawn': handlePlayerSpawn,
+        'playerLeave': handlePlayerLeave,
+        'entityHurt': handleEntityHurt,
+        'playerBreakBlock': handlePlayerBreakBlockBeforeEvent,
+        'afterPlayerBreakBlock': handlePlayerBreakBlockAfterEvent,
+        'itemUse': handleItemUse,
+        'playerPlaceBlock': handlePlayerPlaceBlockBefore,
+        'afterPlayerPlaceBlock': handlePlayerPlaceBlockAfterEvent,
+        'afterPlayerInventoryItemChange': (eventData) => handleInventoryItemChange(eventData.player, eventData.newItemStack, eventData.oldItemStack, eventData.inventorySlot, dependencies),
+        'afterPlayerDimensionChange': handlePlayerDimensionChangeAfterEvent,
+        'afterEntityDie': (eventData) => {
+            if (eventData.deadEntity.typeId === mc.MinecraftEntityTypes.player.id) {
+                handlePlayerDeath(eventData, dependencies);
+            }
+            if (dependencies.config.enableDeathEffects) {
+                handleEntityDieForDeathEffects(eventData, dependencies);
+            }
+        },
+        'afterEntitySpawn': handleEntitySpawnEventAntiGrief,
+        'afterPistonActivate': handlePistonActivateAntiGrief,
+    };
 
-    dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Initializing other modules...`, 'System', dependencies);
+    for (const eventName in eventSubscriptions) {
+        const handler = eventSubscriptions[eventName];
+        const eventEmitter = eventName.startsWith('after') ? mc.world.afterEvents : mc.world.beforeEvents;
+        const actualEventName = eventName.startsWith('after') ? eventName.substring(5) : eventName;
+        eventEmitter[actualEventName].subscribe((eventData) => handler(eventData, dependencies));
+    }
+}
+/**
+ * Initializes all core modules.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ */
+function initializeModules(dependencies) {
+    dependencies.playerUtils.debugLog(`[${mainModuleName}] Initializing modules...`, 'System', dependencies);
+
     initializeCommands(dependencies);
     initializeLogCache(dependencies);
     initializeReportCache(dependencies);
@@ -284,44 +307,36 @@ function performInitializations() {
     if (dependencies.config.enableWorldBorderSystem) {
         const knownDims = dependencies.config.worldBorderKnownDimensions || ['minecraft:overworld', 'minecraft:the_nether', 'minecraft:the_end'];
         knownDims.forEach(dimId => getBorderSettings(dimId, dependencies));
-        dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] World border settings loaded.`, 'System', dependencies);
+        dependencies.playerUtils.debugLog(`[${mainModuleName}] World border settings loaded.`, 'System', dependencies);
     }
-
-    mc.world.sendMessage(dependencies.playerUtils.getString('system.core.initialized', { version: configModule.acVersion }));
-
-    // --- Configuration Validation ---
-    dependencies.playerUtils.debugLog(`[${mainModuleName}.performInitializations] Performing configuration validation...`, 'System', dependencies);
+}
+/**
+ * Validates all configurations.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ */
+function validateConfigurations(dependencies) {
+    dependencies.playerUtils.debugLog(`[${mainModuleName}] Validating configurations...`, 'System', dependencies);
     const allValidationErrors = [];
     const knownCommands = getAllRegisteredCommandNames();
 
-    const mainConfigErrors = validateMainConfig(configModule.defaultConfigSettings, checkActionProfiles, knownCommands, configModule.commandAliases);
-    if (mainConfigErrors.length > 0) {
-        dependencies.playerUtils.debugLog(`[${mainModuleName}] Main Config validation errors found:`, 'SystemCritical', dependencies);
-        mainConfigErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
-        allValidationErrors.push(...mainConfigErrors.map(e => `[config.js] ${e}`));
-    }
+    const validationTasks = [
+        () => validateMainConfig(configModule.defaultConfigSettings, checkActionProfiles, knownCommands, configModule.commandAliases),
+        () => validateActionProfiles(checkActionProfiles),
+        () => validateAutoModConfig(automodConfig, checkActionProfiles),
+        () => validateRanksConfig({ rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel }, dependencies.config.ownerPlayerName, dependencies.config.adminTag),
+    ];
 
-    const actionProfileErrors = validateActionProfiles(checkActionProfiles);
-    if (actionProfileErrors.length > 0) {
-        dependencies.playerUtils.debugLog(`[${mainModuleName}] Action Profiles validation errors found:`, 'SystemCritical', dependencies);
-        actionProfileErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
-        allValidationErrors.push(...actionProfileErrors.map(e => `[actionProfiles.js] ${e}`));
-    }
+    const errorContexts = ['config.js', 'actionProfiles.js', 'automodConfig.js', 'ranksConfig.js'];
 
-    const autoModErrors = validateAutoModConfig(automodConfig, checkActionProfiles);
-    if (autoModErrors.length > 0) {
-        dependencies.playerUtils.debugLog(`[${mainModuleName}] AutoMod Config validation errors found:`, 'SystemCritical', dependencies);
-        autoModErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
-        allValidationErrors.push(...autoModErrors.map(e => `[automodConfig.js] ${e}`));
-    }
-
-    const ranksConfigForValidation = { rankDefinitions, defaultChatFormatting, defaultNametagPrefix, defaultPermissionLevel };
-    const ranksConfigErrors = validateRanksConfig(ranksConfigForValidation, dependencies.config.ownerPlayerName, dependencies.config.adminTag);
-    if (ranksConfigErrors.length > 0) {
-        dependencies.playerUtils.debugLog(`[${mainModuleName}] Ranks Config validation errors found:`, 'SystemCritical', dependencies);
-        ranksConfigErrors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
-        allValidationErrors.push(...ranksConfigErrors.map(e => `[ranksConfig.js] ${e}`));
-    }
+    validationTasks.forEach((task, index) => {
+        const errors = task();
+        if (errors.length > 0) {
+            const context = errorContexts[index];
+            dependencies.playerUtils.debugLog(`[${mainModuleName}] ${context} validation errors found:`, 'SystemCritical', dependencies);
+            errors.forEach(err => dependencies.playerUtils.debugLog(`    - ${err}`, 'SystemError', dependencies));
+            allValidationErrors.push(...errors.map(e => `[${context}] ${e}`));
+        }
+    });
 
     if (allValidationErrors.length > 0) {
         const summaryMessage = `CRITICAL: AntiCheat configuration validation failed with ${allValidationErrors.length} error(s). Check logs for details.`;
@@ -329,110 +344,130 @@ function performInitializations() {
     } else {
         dependencies.playerUtils.debugLog(`[${mainModuleName}] All configurations validated successfully.`, 'System', dependencies);
     }
-    // --- End Configuration Validation ---
+}
+/**
+ * Processes all tasks for a single system tick.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ */
+async function mainTick(dependencies) {
+    currentTick++;
+    dependencies.currentTick = currentTick;
 
-    dependencies.playerUtils.debugLog(`[${mainModuleName}] Anti-Cheat Core System Initialized. Tick loop active.`, 'System', dependencies);
+    if (dependencies.config.enableWorldBorderSystem) {
+        try {
+            processWorldBorderResizing(dependencies);
+        } catch (e) {
+            dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
+            addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
+        }
+    }
 
-    mc.system.runInterval(async () => {
-        currentTick++;
-        dependencies.currentTick = currentTick; // Update the tick in the shared dependencies object
+    const allPlayers = mc.world.getAllPlayers();
+    cleanupActivePlayerData(allPlayers, dependencies);
 
-        if (dependencies.config.enableWorldBorderSystem) {
+    for (const player of allPlayers) {
+        await processPlayer(player, dependencies);
+    }
+
+    if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
+        await handlePeriodicDataPersistence(allPlayers, dependencies);
+    }
+}
+/**
+ * Processes all checks and updates for a single player.
+ * @param {mc.Player} player The player to process.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ */
+async function processPlayer(player, dependencies) {
+    if (!player?.isValid()) {
+        return;
+    }
+
+    let pData;
+    try {
+        pData = await ensurePlayerDataInitialized(player, currentTick, dependencies);
+    } catch (e) {
+        dependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, dependencies);
+        return;
+    }
+
+    if (!pData) {
+        return;
+    }
+
+    updateTransientPlayerData(player, pData, dependencies);
+    clearExpiredItemUseStates(pData, dependencies);
+
+    for (const checkName in checks) {
+        const checkFunction = checks[checkName];
+        if (typeof checkFunction !== 'function') {
+            continue;
+        }
+
+        const configKey = `enable${checkName.charAt(0).toUpperCase() + checkName.slice(1)}`;
+        if (dependencies.config[configKey]) {
             try {
-                processWorldBorderResizing(dependencies);
-            } catch (e) {
-                dependencies.playerUtils.debugLog(`[TickLoop] Error processing world border resizing: ${e.message}`, 'System', dependencies);
-                addLog({ actionType: 'errorMainWorldBorderResize', context: 'Main.TickLoop.worldBorderResizing', details: { errorMessage: e.message, stack: e.stack } }, dependencies);
+                await checkFunction(player, pData, dependencies);
+            } catch (checkError) {
+                const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
+                dependencies.playerUtils.debugLog(errorMessage, player?.nameTag, dependencies);
+                addLog({
+                    actionType: 'error.main.playerTick.checkFail',
+                    context: 'Main.TickLoop.playerChecks',
+                    targetName: player?.nameTag || 'UnknownPlayer',
+                    details: {
+                        check: checkName,
+                        configKey,
+                        message: checkError?.message ?? 'N/A',
+                        rawErrorStack: checkError?.stack ?? 'N/A',
+                    },
+                }, dependencies);
             }
         }
+    }
 
-        const allPlayers = mc.world.getAllPlayers();
-        cleanupActivePlayerData(allPlayers, dependencies);
+    if (dependencies.config.enableWorldBorderSystem) {
+        enforceWorldBorderForPlayer(player, pData, dependencies);
+    }
+}
 
-        for (const player of allPlayers) {
-            if (!player?.isValid()) {
-                continue;
-            }
-            let pData;
-            try {
-                pData = await ensurePlayerDataInitialized(player, currentTick, dependencies);
-            } catch (e) {
-                dependencies.playerUtils.debugLog(`[TickLoop] Error in ensurePlayerDataInitialized for ${player?.nameTag}: ${e.message}`, player?.nameTag, dependencies);
-                continue;
-            }
-            if (!pData) {
-                continue;
-            }
-
-            updateTransientPlayerData(player, pData, dependencies);
-            clearExpiredItemUseStates(pData, dependencies);
-
-            // Execute all registered checks for the player
-            for (const checkName in checks) {
-                const checkFunction = checks[checkName];
-                // Skip non-function properties if any exist on the checks object
-                if (typeof checkFunction !== 'function') {
-                    continue;
-                }
-
-                // Map check function name to its corresponding config key
-                const configKey = `enable${checkName.charAt(0).toUpperCase() + checkName.slice(1)}`;
-                if (dependencies.config[configKey]) {
-                    try {
-                        // Await the check function
-                        await checkFunction(player, pData, dependencies);
-                    } catch (checkError) {
-                        const errorMessage = `[TickLoop] Error during ${checkName} for ${player?.nameTag}: ${checkError?.message ?? 'Unknown error'}`;
-                        dependencies.playerUtils.debugLog(errorMessage, player?.nameTag, dependencies);
-                        addLog({
-                            actionType: 'error.main.playerTick.checkFail',
-                            context: 'Main.TickLoop.playerChecks',
-                            targetName: player?.nameTag || 'UnknownPlayer',
-                            details: {
-                                check: checkName,
-                                configKey,
-                                message: checkError?.message ?? 'N/A',
-                                rawErrorStack: checkError?.stack ?? 'N/A',
-                            },
-                        }, dependencies);
-                    }
-                }
-            }
-
-            if (dependencies.config.enableWorldBorderSystem) {
-                enforceWorldBorderForPlayer(player, pData, dependencies);
-            }
+/**
+ * Handles the periodic saving of data to disk.
+ * @param {mc.Player[]} allPlayers
+ * @param {import('./types.js').Dependencies} dependencies
+ */
+async function handlePeriodicDataPersistence(allPlayers, dependencies) {
+    dependencies.playerUtils.debugLog(`Performing periodic data persistence.`, 'System', dependencies);
+    for (const player of allPlayers) {
+        if (!player.isValid()) {
+            continue;
         }
-
-        if (currentTick % PERIODIC_DATA_PERSISTENCE_INTERVAL_TICKS === 0) {
-            dependencies.playerUtils.debugLog(`Performing periodic data persistence.`, 'System', dependencies);
-            allPlayers.forEach(async player => {
-                if (!player.isValid()) {
-                    return;
-                }
-                const pData = getPlayerData(player.id);
-                if (pData?.isDirtyForSave) {
-                    await saveDirtyPlayerData(player, dependencies);
-                }
-            });
-            persistLogCacheToDisk(dependencies);
-            persistReportsToDisk(dependencies);
+        const pData = getPlayerData(player.id);
+        if (pData?.isDirtyForSave) {
+            await saveDirtyPlayerData(player, dependencies);
         }
-    }, 1);
+    }
+    persistLogCacheToDisk(dependencies);
+    persistReportsToDisk(dependencies);
+}
 
-    mc.system.runInterval(() => {
-        if (dependencies.config.enableTpaSystem) {
-            clearExpiredRequests(dependencies);
-            getRequestsInWarmup().forEach(req => {
-                if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
-                    checkPlayerMovementDuringWarmup(req, dependencies);
-                }
-                if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
-                    executeTeleport(req.requestId, dependencies);
-                }
-            });
-        }
-    }, TPA_SYSTEM_TICK_INTERVAL);
+
+/**
+ * Processes TPA (Teleport Ask) system ticks.
+ * @param {import('./types.js').Dependencies} dependencies The dependencies object.
+ */
+function tpaTick(dependencies) {
+    if (dependencies.config.enableTpaSystem) {
+        clearExpiredRequests(dependencies);
+        getRequestsInWarmup().forEach(req => {
+            if (dependencies.config.tpaCancelOnMoveDuringWarmup) {
+                checkPlayerMovementDuringWarmup(req, dependencies);
+            }
+            if (req.status === 'pendingTeleportWarmup' && Date.now() >= (req.warmupExpiryTimestamp || 0)) {
+                executeTeleport(req.requestId, dependencies);
+            }
+        });
+    }
 }
 
 /**
@@ -441,31 +476,25 @@ function performInitializations() {
  */
 function attemptInitializeSystem(retryCount = 0) {
     try {
+        if (!mc.world || !mc.world.beforeEvents || !mc.world.afterEvents || !mc.system) {
+            throw new Error('Core Minecraft APIs not ready');
+        }
+
         const tempStartupDepsForLog = getStandardDependencies();
         validateDependencies(tempStartupDepsForLog, `attemptInitializeSystem - pre-check - attempt ${retryCount}`);
-        if (checkEventAPIsReady(tempStartupDepsForLog)) {
-            console.log(`[${mainModuleName}.attemptInitializeSystem] APIs reported as ready. Proceeding with performInitializations. Attempt: ${retryCount}`);
-            performInitializations();
-        } else {
-            throw new Error('APIs not ready');
-        }
+
+        console.log(`[${mainModuleName}] APIs ready, initializing...`);
+        performInitializations();
     } catch (e) {
         const delay = initialRetryDelayTicks * Math.pow(2, retryCount);
-        console.warn(`[${mainModuleName}.attemptInitializeSystem] Initialization failed or APIs not ready. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`);
+        console.warn(`[${mainModuleName}] Initialization failed. Retrying in ${delay / 20}s. Attempt ${retryCount + 1}/${maxInitRetries}. Error: ${e.message}`);
+
         if (retryCount < maxInitRetries) {
-            if (mc.system?.runTimeout) {
-                mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
-            } else {
-                console.error(`[CRITICAL] mc.system.runTimeout is not available. Cannot schedule retry.`);
-            }
+            mc.system.runTimeout(() => attemptInitializeSystem(retryCount + 1), delay);
         } else {
-            console.error(`[CRITICAL] MAX RETRIES REACHED. System will not initialize.`);
+            console.error(`[${mainModuleName}] CRITICAL: MAX RETRIES REACHED. System will not initialize.`);
         }
     }
 }
 
-if (mc.system?.runTimeout) {
-    mc.system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks * 2);
-} else {
-    console.error(`[CRITICAL] mc.system or mc.system.runTimeout is not available at script entry point. AntiCheat system cannot start.`);
-}
+mc.system.runTimeout(() => attemptInitializeSystem(), initialRetryDelayTicks);
