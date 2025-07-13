@@ -1,8 +1,8 @@
 {
   "format_version": 2,
   "header": {
-    "name": "Anti Cheats RP",
-    "description": "Anti Cheats Resource Pack v__VERSION_STRING__.",
+    "name": "§l§cAnti §eCheats RP",
+    "description": "§aAnti Cheats Resource Pack §uv__VERSION_STRING__.",
     "uuid": "9dca0c93-f6ec-4701-a74c-a774600640a4",
     "version": "__VERSION_ARRAY__",
     "min_engine_version": [
@@ -27,7 +27,7 @@
   ],
   "metadata": {
     "authors": [
-      "Sjn.exe"
+      "§6Sjn.exe"
     ],
     "license": "MIT",
     "url": "https://github.com/SjnExe/AntiCheats"
